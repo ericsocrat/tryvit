@@ -14,6 +14,7 @@
  */
 
 import { type Page, expect } from "@playwright/test";
+import { waitForTestId } from "./helpers/network";
 
 /* ── Types ───────────────────────────────────────────────────────────────── */
 
@@ -403,7 +404,15 @@ export async function checkProductInvariants(
   page: Page,
   route: string
 ): Promise<void> {
+  // Wait for the client-rendered product data to load — the tab bar only
+  // appears after the async profile query resolves.
+  const tabBarLoaded = await waitForTestId(page, "tab-bar", 15_000);
+
   // 21 — Exactly 1 tab bar
+  expect(
+    tabBarLoaded,
+    `Tab bar did not appear on ${route} within 15 s — product data may have failed to load`
+  ).toBe(true);
   const tabBars = await page
     .locator('[data-testid="tab-bar"], [role="tablist"]')
     .count();

@@ -32,6 +32,16 @@ const authenticatedProject = {
   },
 };
 
+const functionalProject = {
+  name: "functional",
+  testMatch: /functional.*\.spec\.ts/,
+  dependencies: ["auth-setup"],
+  use: {
+    ...devices["Desktop Chrome"],
+    storageState: "e2e/.auth/user.json",
+  },
+};
+
 const visualSmokeProject = {
   name: "visual-smoke",
   testMatch: /smoke-visual\.spec\.ts/,
@@ -81,7 +91,7 @@ const qualityDesktopProject = {
 const projects = [
   ...(HAS_AUTH ? [authSetupProject] : []),
   smokeProject,
-  ...(HAS_AUTH ? [authenticatedProject] : []),
+  ...(HAS_AUTH ? [authenticatedProject, functionalProject] : []),
   ...(HAS_VISUAL ? [visualSmokeProject] : []),
   ...(HAS_VISUAL && HAS_AUTH ? [visualAuthenticatedProject] : []),
   ...(HAS_QUALITY ? [qualityMobileProject, qualityDesktopProject] : []),

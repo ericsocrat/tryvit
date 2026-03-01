@@ -56,6 +56,7 @@ interface LocatorMock {
   filter: (opts: unknown) => LocatorMock;
   nth: (n: number) => LocatorMock;
   first: () => LocatorMock;
+  waitFor: (opts?: { state?: string; timeout?: number }) => Promise<void>;
 }
 
 function createLocatorMock(config: LocatorMockConfig = {}): LocatorMock {
@@ -68,6 +69,11 @@ function createLocatorMock(config: LocatorMockConfig = {}): LocatorMock {
     filter: vi.fn(() => config.filter?.() ?? mock),
     nth: vi.fn((n: number) => config.nth?.(n) ?? mock),
     first: vi.fn(() => config.first?.() ?? mock),
+    waitFor: vi.fn(async () => {
+      // Simulate element appearing: if count > 0, resolve; else throw (timeout)
+      if ((config.count ?? 0) > 0) return;
+      throw new Error("waitFor timed out");
+    }),
   };
   return mock;
 }
@@ -110,6 +116,10 @@ function createPageMock(options: PageMockOptions = {}) {
     on: vi.fn((event: string, handler: (...args: unknown[]) => void) => {
       if (!eventListeners[event]) eventListeners[event] = [];
       eventListeners[event].push(handler);
+    }),
+    getByTestId: vi.fn((testId: string) => {
+      const config = locatorOverrides[testId];
+      return createLocatorMock(config ?? { count: 0 });
     }),
     // Helper for tests to trigger events
     _emit: (event: string, ...args: unknown[]) => {
