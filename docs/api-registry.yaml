@@ -1,7 +1,7 @@
 # API Registry — Poland Food DB
 #
-# Canonical registry of all 191 public-schema functions.
-# Last updated: 2026-03-14
+# Canonical registry of all 198 public-schema functions.
+# Last updated: 2026-03-15
 # Naming convention: docs/API_CONVENTIONS.md
 # Contract details: docs/API_CONTRACTS.md
 # Frontend mapping: docs/FRONTEND_API_MAP.md
@@ -826,6 +826,75 @@ api_admin_review_submission:
 # ═══════════════════════════════════════════════════════════════════
 # ADMIN — OPS TOOLING (not exposed via PostgREST)
 # ═══════════════════════════════════════════════════════════════════
+
+# ─── Admin Governance Dashboard (#206) ────────────────────────────
+
+api_admin_provenance_health:
+  domain: governance
+  visibility: admin
+  auth: authenticated
+  returns: jsonb
+  p95_target: 500
+  deprecated: false
+  notes: "Data provenance coverage stats per country. SECURITY DEFINER."
+
+api_admin_scoring_drift:
+  domain: governance
+  visibility: admin
+  auth: authenticated
+  returns: jsonb
+  p95_target: 200
+  deprecated: false
+  notes: "Scoring model versions with latest drift check results."
+
+api_admin_search_quality:
+  domain: governance
+  visibility: admin
+  auth: authenticated
+  params:
+    p_days: { type: integer, required: false, default: 30 }
+  returns: jsonb
+  p95_target: 500
+  deprecated: false
+  notes: "Daily search performance metrics for last N days."
+
+api_admin_freshness_sla:
+  domain: governance
+  visibility: admin
+  auth: authenticated
+  returns: jsonb
+  p95_target: 500
+  deprecated: false
+  notes: "Per-category data freshness SLA compliance status."
+
+api_admin_migration_audit:
+  domain: governance
+  visibility: admin
+  auth: authenticated
+  returns: jsonb
+  p95_target: 200
+  deprecated: false
+  notes: "Backfill, MV refresh, and drift check health summaries."
+
+api_admin_event_summary:
+  domain: governance
+  visibility: admin
+  auth: authenticated
+  params:
+    p_days: { type: integer, required: false, default: 30 }
+  returns: jsonb
+  p95_target: 500
+  deprecated: false
+  notes: "Event volume breakdown by event_name, device_type, country."
+
+api_admin_health_overview:
+  domain: governance
+  visibility: admin
+  auth: authenticated
+  returns: jsonb
+  p95_target: 1000
+  deprecated: false
+  notes: "Combined single-call governance health summary with per-domain status."
 
 admin_activate_scoring_version:
   domain: scoring
