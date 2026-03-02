@@ -1,8 +1,8 @@
 # Documentation Index
 
-> **Last updated:** 2026-03-14
+> **Last updated:** 2026-03-02
 > **Status:** Active — update when adding, renaming, or archiving docs
-> **Total documents:** 49 in `docs/` + 8 in `docs/decisions/` + 17 in `docs/assets/logo/` + 5 in `docs/assets/banners/` + 6 elsewhere in repo
+> **Total documents:** 50 in `docs/` + 8 in `docs/decisions/` + 17 in `docs/assets/logo/` + 5 in `docs/assets/banners/` + 7 elsewhere in repo
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
 
 ---
@@ -22,7 +22,7 @@
 | [Observability & Operations](#observability--operations) | 9     | Monitoring, observability, log schema, alerts, on-call policy, SLOs, metrics, incident response, disaster drill                    |
 | [DevOps & Environment](#devops--environment)             | 3     | Environment strategy, staging setup, Sonar config                                                                                  |
 | [Frontend & UX](#frontend--ux)                           | 5     | UX/UI design, UX impact metrics, brand guidelines, design system, frontend README                                                  |
-| [Process & Workflow](#process--workflow)                 | 6     | Research workflow, viewing & testing, backfill standard, migration conventions, labels, country expansion                          |
+| [Process & Workflow](#process--workflow)                 | 7     | Agent workflow reference, research workflow, viewing & testing, backfill standard, migration conventions, labels, country expansion |
 | [Governance & Policy](#governance--policy)               | 6     | Feature sunsetting, performance report, performance guardrails, doc governance, repo governance, this index                        |
 | [Architecture Decisions](#architecture-decisions-adrs)   | 8     | MADR template + 7 retroactive ADRs (stack, scoring, country isolation, pipeline, API versioning, migrations, ingredients)          |
 
@@ -209,6 +209,9 @@
 | [MIGRATION_CONVENTIONS.md](MIGRATION_CONVENTIONS.md)     | Migration safety, trigger naming, lock risk, idempotency standards         | [#203](https://github.com/ericsocrat/tryvit/issues/203), [#207](https://github.com/ericsocrat/tryvit/issues/207) | 2026-03-02   |
 | [LABELS.md](LABELS.md)                                   | GitHub labeling conventions — issue/PR label taxonomy                      | Process domain                                                                                                                   | 2026-02-23   |
 | [COUNTRY_EXPANSION_GUIDE.md](COUNTRY_EXPANSION_GUIDE.md) | Multi-country expansion protocol — PL active, DE micro-pilot               | [#148](https://github.com/ericsocrat/tryvit/issues/148)                                                                  | 2026-02-24   |
+| [AGENT_WORKFLOW.md](AGENT_WORKFLOW.md)                   | Agent/AI workflow reference — execution protocol, command quick-reference, domain matrix, priority definitions | [#200](https://github.com/ericsocrat/tryvit/issues/200) | 2026-03-02   |
+
+> **Repo root script:** [`setup-env.ps1`](../setup-env.ps1) — `.env` → PowerShell session loader with `-Verify` connectivity checks and `-ShowValues` masked display. Dot-source with `. .\setup-env.ps1`.
 
 ## Governance & Policy
 

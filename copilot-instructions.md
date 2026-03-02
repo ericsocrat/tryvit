@@ -489,6 +489,20 @@ tryvit/
 
 **`v_data_freshness_summary`** — Per-country, per-category freshness breakdown. Columns: country, category, total_products, has_fetch_date, fresh_30d, aging_30_90d, stale_90d, never_fetched, oldest_fetch, newest_fetch, pct_fresh. Used for monitoring data staleness.
 
+### Edge Functions
+
+> **Location:** `supabase/functions/`
+> **Runtime:** Deno + TypeScript
+> **Deploy:** `supabase functions deploy <name> --no-verify-jwt`
+> **Secrets:** `supabase secrets set KEY=value` — never committed to git
+> **Local test:** `supabase start && supabase functions serve`
+
+| Function                 | Trigger       | Purpose                                                                                                                                               |
+| ------------------------ | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `api-gateway`            | HTTP          | Write-path API gateway — rate limiting, auth validation, submission scoring, trust score enforcement. All user write operations (submit, scan, share) route through here. Calls `check_submission_rate_limit()`, `score_submission_quality()`, and `api_admin_batch_reject_user()` RPC internally. |
+| `send-push-notification` | HTTP (RPC)    | Web Push delivery via VAPID. Accepts `{user_id, title, body, url}`. Validates subscription records, applies Upstash Redis deduplication, delivers via Web Push Protocol. VAPID keys injected as secrets. |
+| `verify-turnstile`       | HTTP (public) | Cloudflare Turnstile CAPTCHA server-side verification. Validates challenge token before allowing signup and product submission flows. TURNSTILE_SECRET_KEY injected as secret. |
+
 ---
 
 ## 5. Categories (20 PL + 5 DE)
@@ -1501,3 +1515,158 @@ After **API changes:**
 - Separate structural moves from logic edits; separate data from schema changes
 - Include verification output (§8.17) and use conventional commit format (§13)
 - CI must be green before merge — never bypass by deleting tests or lowering thresholds
+
+---
+
+## 17. When Starting Work — Audit Protocol
+
+> **Goal:** Orient fully before touching any code. Prevents incorrect assumptions,
+> duplicate work, and merge conflicts with active PRs.
+
+### 17.1 Audit Steps (execute in order)
+
+1. **Read `CURRENT_STATE.md`** — check last push SHA, open PRs, branch name, any in-flight changes
+2. **Run `git status` and `git log --oneline -10`** — confirm clean tree and understand recent history
+3. **Load governance docs** — read `docs/REPO_GOVERNANCE.md`, `copilot-instructions.md §16`
+4. **Check open issues** — are there related GitHub issues for this work? Reference them in commits
+5. **Verify the correct branch** — never commit directly to `main`; confirm or create a feature branch
+6. **Run `pwsh scripts/repo_verify.ps1`** — baseline hygiene check before any changes
+7. **Load domain docs** — from §20.4 matrix for the work domain(s) being touched
+
+### 17.2 Branch Naming
+
+Follow `copilot-instructions.md §13`:
+
+```
+feat/<scope>     fix/<scope>     chore/<scope>
+docs/<scope>     test/<scope>    perf/<scope>
+refactor/<scope> ci/<scope>      db/<scope>
+```
+
+### 17.3 Definition of "Next"
+
+Only write code after §17.1 is complete. Then load domain-specific docs (§20.4) for each area
+being modified before proceeding to §19 (Pre-Implementation Checklist).
+
+---
+
+## 18. Documentation Freshness — Drift Prevention
+
+> **Policy:** Docs must stay in sync with code. Stale docs are treated as bugs.
+> Full rules: `docs/GOVERNANCE_BLUEPRINT.md` and `docs/DRIFT_DETECTION.md`.
+
+### 18.1 When to Update Docs
+
+| Change Made | Docs That Must Update |
+| ----------- | --------------------- |
+| DB table added/removed | `copilot-instructions.md §4`, `docs/ARCHITECTURE.md` |
+| Function added/modified | `copilot-instructions.md §4 Key Functions` |
+| View added/modified | `copilot-instructions.md §4 Views` |
+| Edge Function added | `copilot-instructions.md §4 Edge Functions` |
+| API endpoint changed | `docs/API_CONTRACTS.md`, `docs/FRONTEND_API_MAP.md`, `docs/api-registry.yaml` |
+| New env variable | `.env.example` (add entry + comment) |
+| Directory structure changed | `copilot-instructions.md §3 Project Layout` |
+| New `docs/*.md` file | `docs/INDEX.md` (add entry, update count) |
+| Scoring formula changed | `docs/SCORING_METHODOLOGY.md`, `docs/SCORING_ENGINE.md` |
+| New category added | `copilot-instructions.md §5` |
+| New migration | Monotonic timestamp, `supabase/migrations/` |
+| New QA suite | `copilot-instructions.md §8.18 DB QA Suites` |
+
+### 18.2 Drift Detection
+
+`governance_drift_check()` runs 8 automated checks across scoring, search, naming, and
+feature flag drift. Run manually or inspect the `drift_check_results` table after any
+schema or formula change.
+
+### 18.3 Doc Governance
+
+`docs/DOCUMENTATION_GOVERNANCE.md` owns the doc lifecycle policy (review triggers,
+owner fields, archive criteria). Follow it when creating or retiring docs.
+
+---
+
+## 19. Pre-Implementation Checklist
+
+> **Mandatory before writing any non-trivial code.**
+> Reference: `copilot-instructions.md §15 Feature Implementation Standard` (full template).
+
+### 19.1 Steps (execute in order)
+
+1. **Confirm scope** — is this in scope of the current issue? Check issue description/acceptance criteria
+2. **Check for existing patterns** — `copilot-instructions.md §8.2`; never reinvent what already exists
+3. **Write the test plan** — `copilot-instructions.md §8.11`; enumerate test cases before writing code
+4. **Load domain-specific docs** — from §20.4 matrix for ALL domains being touched
+5. **Assess API impact** — will any public API shape change? If yes, read `docs/API_CONTRACTS.md`
+6. **Assess RLS impact** — new table or function? Read `docs/SECURITY_AUDIT.md`
+7. **Assess migration impact** — does this require a DB migration? Read `docs/MIGRATION_CONVENTIONS.md`
+8. **Assess i18n impact** — any new user-facing strings? Read `copilot-instructions.md §15.15`
+9. **Check coverage baseline** — run `npx vitest run --coverage` before changing anything (baseline)
+10. **Write the implementation** — small commits per concern, tests alongside code
+
+### 19.2 Definition of Done
+
+A change is "done" when ALL of:
+
+- [ ] Tests pass locally (vitest + pgTAP + QA SQL)
+- [ ] Coverage has not regressed (§8.5)
+- [ ] Verification output recorded (§8.17)
+- [ ] Docs updated per §18.1
+- [ ] `.env.example` updated if new env vars added
+- [ ] `docs/INDEX.md` updated if new docs created
+- [ ] `CHANGELOG.md` updated under `[Unreleased]`
+- [ ] `copilot-instructions.md §4` updated if DB objects changed
+- [ ] Conventional commit message written (§13)
+- [ ] PR is one concern only (§16 PR Discipline)
+
+---
+
+## 20. Domain-Aware Documentation Loading
+
+> **Purpose:** Prevent agents from working with incomplete context.
+> Before any work, identify the domain(s) being touched and load ALL listed docs
+> for those domains. The invariant docs in §20.5 apply to every session.
+
+### 20.4 Domain Reading Matrix
+
+| Domain | Load First | Also Relevant |
+| ------ | ---------- | ------------- |
+| **Database schema** | `ARCHITECTURE.md`, `MIGRATION_CONVENTIONS.md` | `copilot-instructions.md §4`, `DATA_PROVENANCE.md` |
+| **Migrations** | `MIGRATION_CONVENTIONS.md`, `BACKFILL_STANDARD.md` | `copilot-instructions.md §7` |
+| **Scoring formula** | `SCORING_METHODOLOGY.md`, `SCORING_ENGINE.md` | `copilot-instructions.md §14`, `DRIFT_DETECTION.md` |
+| **API / RPC functions** | `API_CONTRACTS.md`, `API_CONVENTIONS.md` | `API_VERSIONING.md`, `FRONTEND_API_MAP.md`, `api-registry.yaml` |
+| **Search / indexing** | `SEARCH_ARCHITECTURE.md` | `PERFORMANCE_GUARDRAILS.md` |
+| **Frontend components** | `frontend/docs/DESIGN_SYSTEM.md`, `UX_UI_DESIGN.md` | `UX_IMPACT_METRICS.md`, `BRAND_GUIDELINES.md` |
+| **Security / RLS** | `SECURITY_AUDIT.md`, `PRIVACY_CHECKLIST.md` | `ACCESS_AUDIT.md`, `RATE_LIMITING.md` |
+| **Performance** | `PERFORMANCE_GUARDRAILS.md`, `PERFORMANCE_REPORT.md` | `SEARCH_ARCHITECTURE.md`, `SLO.md` |
+| **Multi-market expansion** | `COUNTRY_EXPANSION_GUIDE.md` | `copilot-instructions.md §5`, `DATA_SOURCES.md` |
+| **Observability / monitoring** | `MONITORING.md`, `LOG_SCHEMA.md` | `OBSERVABILITY.md`, `ALERT_POLICY.md`, `METRICS.md` |
+| **CI / CD** | `copilot-instructions.md §13` | `copilot-instructions.md §9`, `ENVIRONMENT_STRATEGY.md` |
+| **Feature flags** | `FEATURE_FLAGS.md` | `FEATURE_SUNSETTING.md`, `GOVERNANCE_BLUEPRINT.md` |
+| **Pipeline / ETL** | `DATA_SOURCES.md`, `DATA_PROVENANCE.md` | `copilot-instructions.md §6` |
+| **EAN / barcode** | `EAN_VALIDATION_STATUS.md` | `copilot-instructions.md §4 Tables (product_submissions)` |
+| **i18n / localization** | `copilot-instructions.md §15.15` | `COUNTRY_EXPANSION_GUIDE.md` |
+| **Brand / assets** | `BRAND_GUIDELINES.md` | `docs/assets/design-tokens.json`, `frontend/docs/DESIGN_SYSTEM.md` |
+| **Governance / policy** | `GOVERNANCE_BLUEPRINT.md`, `REPO_GOVERNANCE.md` | `DOCUMENTATION_GOVERNANCE.md`, `DOMAIN_BOUNDARIES.md` |
+| **SLOs / alerting** | `SLO.md`, `ALERT_POLICY.md` | `MONITORING.md`, `INCIDENT_RESPONSE.md`, `ON_CALL_POLICY.md` |
+| **Contract testing** | `CONTRACT_TESTING.md`, `API_CONTRACTS.md` | `API_VERSIONING.md`, `copilot-instructions.md §8.12` |
+| **Data integrity** | `DATA_INTEGRITY_AUDITS.md` | `EAN_VALIDATION_STATUS.md`, `PRODUCTION_DATA.md`, `DATA_PROVENANCE.md` |
+
+### 20.5 Invariant Documents (Every Session)
+
+These 4 docs apply to ALL work regardless of domain. Load them first, every time:
+
+| Doc | Purpose |
+| --- | ------- |
+| `CURRENT_STATE.md` | Live status — last SHA, open PRs, active branch, recent changes |
+| `copilot-instructions.md §8` | Testing requirements — non-negotiable; read before writing any code |
+| `copilot-instructions.md §13` | Git workflow — branch naming, conventional commits, PR discipline |
+| `docs/INDEX.md` | Navigation index — find the right doc fast |
+
+### 20.6 Using the Matrix
+
+1. Identify all domains touched by the current work (can be multiple)
+2. Union all "Load First" docs for those domains
+3. Load them before writing any code
+4. If a doc is referenced but doesn't exist, note it — do not assume its contents
+5. After loading, proceed with §19 Pre-Implementation Checklist
+

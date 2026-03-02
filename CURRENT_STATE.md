@@ -1,6 +1,6 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-03-02 04:05 UTC by GitHub Copilot
+> **Last updated:** 2026-03-02 by GitHub Copilot
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
@@ -8,11 +8,33 @@
 ## Active Branch & PR
 
 - **Branch:** `chore/rename-to-tryvit-clean` (rename PR — open, awaiting CI)
-- **Latest SHA:** `5e7cd6a` (brand display-name + design-tokens v2.0.0 + CHANGELOG)
+- **Latest SHA:** `b0d6e8f` (complete TryVit brand rename — 99 files, all assets + strings)
 - **Open PRs:** [#546](https://github.com/ericsocrat/tryvit/pull/546) — chore(cleanup): rename poland-food-db → TryVit across all source files
 - **main SHA:** `3bd6fb3` (origin/main — stable, unmodified)
 
 > ⚠️ **GitHub repo already renamed** — remote is now `https://github.com/ericsocrat/tryvit.git`
+
+## Recently Shipped (This Session)
+
+| SHA       | Summary                                                                                         |
+| --------- | ----------------------------------------------------------------------------------------------- |
+| `b0d6e8f` | chore(brand): complete TryVit rename across all assets and strings (99 files)                   |
+| `64af278` | chore: fix remaining poland-food-db refs and set SENTRY_PROJECT default in .env.example         |
+| `88e6019` | chore: update CURRENT_STATE.md — SHA 5e7cd6a, brand commit complete                            |
+| `5e7cd6a` | chore(brand): fix TryVit display name in sonar, manifest, design-tokens, css                   |
+
+## Uncommitted Session Work (2026-03-02)
+
+The following were created/modified this session and need to be committed:
+
+| File | Change |
+| ---- | ------ |
+| `setup-env.ps1` | **Created** — `.env` → PowerShell session loader. `-Verify` connectivity checks, `-ShowValues` masked display. Dot-source: `. .\setup-env.ps1` |
+| `docs/AGENT_WORKFLOW.md` | **Created** — Agent workflow pointer doc. Execution protocol, command quick-reference, domain matrix, priority definitions. |
+| `copilot-instructions.md` | **Modified** — Added §4 Edge Functions subsection (api-gateway, send-push-notification, verify-turnstile). Added §17 Audit Protocol, §18 Doc Freshness, §19 Pre-Implementation Checklist, §20 Domain-Aware Doc Loading (20-domain matrix + 4 invariants). 1,503 → 1,672 lines. |
+| `docs/INDEX.md` | **Modified** — Total docs 49→50. Process & Workflow 6→7. Added AGENT_WORKFLOW.md entry + setup-env.ps1 note. |
+
+
 
 ## Recently Shipped (Last 7 Days)
 
