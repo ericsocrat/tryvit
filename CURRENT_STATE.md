@@ -16,35 +16,35 @@
 
 ## Recently Shipped (This Session)
 
-| SHA       | Summary                                                                                                                              |
-| --------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `4232c30` | chore(tooling): elite copilot-instructions §17-§20 rewrite + full dev tooling upgrade (10 files)                                    |
-| `d0a2e0f` | docs(workflow): add agent workflow reference, setup-env.ps1, and §17-§20                                                             |
-| `b0d6e8f` | chore(brand): complete TryVit rename across all assets and strings (99 files)                                                        |
+| SHA       | Summary                                                                                          |
+| --------- | ------------------------------------------------------------------------------------------------ |
+| `4232c30` | chore(tooling): elite copilot-instructions §17-§20 rewrite + full dev tooling upgrade (10 files) |
+| `d0a2e0f` | docs(workflow): add agent workflow reference, setup-env.ps1, and §17-§20                         |
+| `b0d6e8f` | chore(brand): complete TryVit rename across all assets and strings (99 files)                    |
 
 
 ## Recently Shipped (Last 7 Days)
 
-| Date       | PR   | Summary                                                                                                    |
-| ---------- | ---- | ---------------------------------------------------------------------------------------------------------- |
-| 2026-03-02 | #546 | chore(tooling): elite copilot-instructions §17-§20 rewrite + full dev tooling upgrade (4232c30)           |
-| 2026-03-02 | #546 | docs(workflow): add agent workflow reference, setup-env.ps1, §17-§20 (d0a2e0f)                            |
-| 2026-03-02 | #546 | chore(cleanup): rename poland-food-db → TryVit across all source files (open PR, awaiting CI)             |
-| 2026-03-01 | #540 | fix(deps): resolve 6 high-severity npm audit vulnerabilities                                  |
-| 2026-03-01 | #537 | fix(ci): exclude script tags from quality-gate body text checks                               |
-| 2026-03-01 | #536 | fix(ci): add 5xx network-error allowlist for quality-gate audits                              |
-| 2026-03-01 | #535 | fix(ci): fix quality-gate browser overrides for mobile/desktop projects                       |
-| 2026-03-01 | #534 | fix(ci): fix quality-gate testDir and auth-route filtering                                    |
-| 2026-03-01 | #533 | docs: add CURRENT_STATE.md live project status tracker (closes #529)                          |
-| 2026-03-01 | #532 | fix(ci): move secrets out of quality-gate.yml step if condition                               |
-| 2026-03-01 | #531 | test(coverage): add tests for download, dashboard, product comps                              |
-| 2026-03-01 | #528 | test(vitest): add tests for LearnCard, SourceCitation, typography                             |
-| 2026-03-01 | #526 | deps(python): bump ruff from 0.15.2 to 0.15.4                                                 |
-| 2026-03-01 | #525 | fix(ci): add secret validation step to deploy.yml preflight                                   |
-| 2026-03-01 | #524 | test(vitest): fix flaky test timeouts (testTimeout → 15s)                                     |
-| 2026-03-01 | #523 | ci(deploy): fix deploy.yml sanity parser, BACKUP.ps1 xpath                                    |
-| 2026-03-01 | #522 | data(pipeline): import product images from OFF API                                            |
-| 2026-03-01 | #521 | ci(config): enforce Unix LF line endings for SQL files                                        |
+| Date       | PR   | Summary                                                                                         |
+| ---------- | ---- | ----------------------------------------------------------------------------------------------- |
+| 2026-03-02 | #546 | chore(tooling): elite copilot-instructions §17-§20 rewrite + full dev tooling upgrade (4232c30) |
+| 2026-03-02 | #546 | docs(workflow): add agent workflow reference, setup-env.ps1, §17-§20 (d0a2e0f)                  |
+| 2026-03-02 | #546 | chore(cleanup): rename poland-food-db → TryVit across all source files (open PR, awaiting CI)   |
+| 2026-03-01 | #540 | fix(deps): resolve 6 high-severity npm audit vulnerabilities                                    |
+| 2026-03-01 | #537 | fix(ci): exclude script tags from quality-gate body text checks                                 |
+| 2026-03-01 | #536 | fix(ci): add 5xx network-error allowlist for quality-gate audits                                |
+| 2026-03-01 | #535 | fix(ci): fix quality-gate browser overrides for mobile/desktop projects                         |
+| 2026-03-01 | #534 | fix(ci): fix quality-gate testDir and auth-route filtering                                      |
+| 2026-03-01 | #533 | docs: add CURRENT_STATE.md live project status tracker (closes #529)                            |
+| 2026-03-01 | #532 | fix(ci): move secrets out of quality-gate.yml step if condition                                 |
+| 2026-03-01 | #531 | test(coverage): add tests for download, dashboard, product comps                                |
+| 2026-03-01 | #528 | test(vitest): add tests for LearnCard, SourceCitation, typography                               |
+| 2026-03-01 | #526 | deps(python): bump ruff from 0.15.2 to 0.15.4                                                   |
+| 2026-03-01 | #525 | fix(ci): add secret validation step to deploy.yml preflight                                     |
+| 2026-03-01 | #524 | test(vitest): fix flaky test timeouts (testTimeout → 15s)                                       |
+| 2026-03-01 | #523 | ci(deploy): fix deploy.yml sanity parser, BACKUP.ps1 xpath                                      |
+| 2026-03-01 | #522 | data(pipeline): import product images from OFF API                                              |
+| 2026-03-01 | #521 | ci(config): enforce Unix LF line endings for SQL files                                          |
 
 ## Known Issues & Broken Items
 

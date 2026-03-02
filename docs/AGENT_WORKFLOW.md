@@ -26,12 +26,12 @@ Before starting ANY work, follow this sequence:
 
 ## Priority Definitions
 
-| Priority | Label | Meaning |
-| -------- | ----- | ------- |
-| **P0** | Critical | Security, data loss, production down — act immediately |
-| **P1** | High | Blocking user functionality, broken CI, scoring regression |
-| **P2** | Normal | Feature work, performance improvements, doc updates |
-| **P3** | Low | Cosmetic, nice-to-have, deferred cleanup |
+| Priority | Label    | Meaning                                                    |
+| -------- | -------- | ---------------------------------------------------------- |
+| **P0**   | Critical | Security, data loss, production down — act immediately     |
+| **P1**   | High     | Blocking user functionality, broken CI, scoring regression |
+| **P2**   | Normal   | Feature work, performance improvements, doc updates        |
+| **P3**   | Low      | Cosmetic, nice-to-have, deferred cleanup                   |
 
 > P0/P1 issues must reference a GitHub issue and link to it in the commit.
 
@@ -121,28 +121,28 @@ python run_data_audit.py
 
 > Full matrix with doc paths: see `copilot-instructions.md` §20.
 
-| Domain | Key Docs to Load First |
-| ------ | ---------------------- |
-| Database schema | `ARCHITECTURE.md`, `MIGRATION_CONVENTIONS.md` |
-| Migrations | `MIGRATION_CONVENTIONS.md`, `BACKFILL_STANDARD.md` |
-| Scoring formula | `SCORING_METHODOLOGY.md`, `SCORING_ENGINE.md` |
-| API / RPC functions | `API_CONTRACTS.md`, `API_CONVENTIONS.md` |
-| Search / indexing | `SEARCH_ARCHITECTURE.md` |
-| Frontend | `frontend/docs/DESIGN_SYSTEM.md`, `UX_UI_DESIGN.md` |
-| Security / RLS | `SECURITY_AUDIT.md`, `PRIVACY_CHECKLIST.md` |
-| Performance | `PERFORMANCE_GUARDRAILS.md` |
-| Multi-market expansion | `COUNTRY_EXPANSION_GUIDE.md` |
-| Observability | `MONITORING.md`, `LOG_SCHEMA.md` |
-| CI/CD | `copilot-instructions.md §13`, §9 |
-| Feature flags | `FEATURE_FLAGS.md` |
-| Pipeline / ETL | `DATA_SOURCES.md`, `DATA_PROVENANCE.md` |
-| EAN / barcode | `EAN_VALIDATION_STATUS.md` |
-| i18n / localization | `copilot-instructions.md §15.15` |
-| Brand / assets | `BRAND_GUIDELINES.md` |
-| Governance | `GOVERNANCE_BLUEPRINT.md`, `REPO_GOVERNANCE.md` |
-| SLOs / alerting | `SLO.md`, `ALERT_POLICY.md` |
-| Contract testing | `CONTRACT_TESTING.md`, `API_CONTRACTS.md` |
-| Data integrity | `DATA_INTEGRITY_AUDITS.md`, `EAN_VALIDATION_STATUS.md` |
+| Domain                 | Key Docs to Load First                                 |
+| ---------------------- | ------------------------------------------------------ |
+| Database schema        | `ARCHITECTURE.md`, `MIGRATION_CONVENTIONS.md`          |
+| Migrations             | `MIGRATION_CONVENTIONS.md`, `BACKFILL_STANDARD.md`     |
+| Scoring formula        | `SCORING_METHODOLOGY.md`, `SCORING_ENGINE.md`          |
+| API / RPC functions    | `API_CONTRACTS.md`, `API_CONVENTIONS.md`               |
+| Search / indexing      | `SEARCH_ARCHITECTURE.md`                               |
+| Frontend               | `frontend/docs/DESIGN_SYSTEM.md`, `UX_UI_DESIGN.md`    |
+| Security / RLS         | `SECURITY_AUDIT.md`, `PRIVACY_CHECKLIST.md`            |
+| Performance            | `PERFORMANCE_GUARDRAILS.md`                            |
+| Multi-market expansion | `COUNTRY_EXPANSION_GUIDE.md`                           |
+| Observability          | `MONITORING.md`, `LOG_SCHEMA.md`                       |
+| CI/CD                  | `copilot-instructions.md §13`, §9                      |
+| Feature flags          | `FEATURE_FLAGS.md`                                     |
+| Pipeline / ETL         | `DATA_SOURCES.md`, `DATA_PROVENANCE.md`                |
+| EAN / barcode          | `EAN_VALIDATION_STATUS.md`                             |
+| i18n / localization    | `copilot-instructions.md §15.15`                       |
+| Brand / assets         | `BRAND_GUIDELINES.md`                                  |
+| Governance             | `GOVERNANCE_BLUEPRINT.md`, `REPO_GOVERNANCE.md`        |
+| SLOs / alerting        | `SLO.md`, `ALERT_POLICY.md`                            |
+| Contract testing       | `CONTRACT_TESTING.md`, `API_CONTRACTS.md`              |
+| Data integrity         | `DATA_INTEGRITY_AUDITS.md`, `EAN_VALIDATION_STATUS.md` |
 
 ---
 
@@ -150,12 +150,12 @@ python run_data_audit.py
 
 These docs apply to ALL work regardless of domain:
 
-| Doc | Why |
-| --- | --- |
-| `CURRENT_STATE.md` | Live project status, recent PRs, active issues |
-| `copilot-instructions.md §8` | Testing requirements — non-negotiable |
-| `copilot-instructions.md §13` | Git workflow and PR discipline |
-| `docs/INDEX.md` | Navigation — find the right doc fast |
+| Doc                           | Why                                            |
+| ----------------------------- | ---------------------------------------------- |
+| `CURRENT_STATE.md`            | Live project status, recent PRs, active issues |
+| `copilot-instructions.md §8`  | Testing requirements — non-negotiable          |
+| `copilot-instructions.md §13` | Git workflow and PR discipline                 |
+| `docs/INDEX.md`               | Navigation — find the right doc fast           |
 
 ---
 

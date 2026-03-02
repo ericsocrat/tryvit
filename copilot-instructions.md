@@ -1548,23 +1548,23 @@ Execute in order — no skipping:
 
 #### 17.1.2 Audit Execution Steps
 
-| Step | Action                                    | Commands                                                                                                                                          |
-| ---- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A1   | Git health & branch state                 | `git status`, `git log --oneline -15`, `git branch -a`, `git diff --stat HEAD~1`                                                                  |
-| A2   | Open GitHub issues inventory              | `gh issue list --state open --limit 50 --json number,title,labels,milestone,assignees`                                                            |
-| A3   | Open PRs inventory                        | `gh pr list --state open --json number,title,headRefName,isDraft,statusCheckRollup`                                                               |
-| A4   | CI health check                           | Read `.github/workflows/pr-gate.yml`, `main-gate.yml`, `qa.yml` status from last run                                                              |
-| A5   | QA suite health                           | `.\RUN_QA.ps1` (or inspect last CI output) — report total checks, any failures                                                                    |
-| A6   | Database schema drift                     | `supabase db diff --linked` (if linked) or inspect `supabase/migrations/` count vs `copilot-instructions.md §7`                                   |
-| A7   | Test coverage health                      | Inspect last `main-gate.yml` coverage run or `cd frontend && npx vitest run --coverage --reporter=json 2>/dev/null \| tail -5`                    |
-| A8   | Dependency health                         | `cd frontend && npm audit --audit-level=high 2>&1 \| tail -10`                                                                                    |
-| A9   | SonarCloud quality gate                   | Check `sonar-project.properties` thresholds; inspect last CI run quality gate result                                                              |
-| A10  | Documentation drift                       | `python scripts/check_doc_counts.py && python scripts/check_doc_drift.py`                                                                         |
-| A11  | Repo hygiene                              | `pwsh scripts/repo_verify.ps1`                                                                                                                    |
-| A12  | Pipeline & structure integrity             | `python check_pipeline_structure.py`                                                                                                              |
-| A13  | Scoring formula drift                     | `SELECT * FROM governance_drift_check();` via psql or Supabase Studio                                                                             |
-| A14  | EAN coverage                              | `python validate_eans.py 2>&1 \| tail -3`                                                                                                         |
-| A15  | MV staleness                              | `SELECT * FROM mv_staleness_check();` — check if MVs are fresh                                                                                    |
+| Step | Action                         | Commands                                                                                                                       |
+| ---- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| A1   | Git health & branch state      | `git status`, `git log --oneline -15`, `git branch -a`, `git diff --stat HEAD~1`                                               |
+| A2   | Open GitHub issues inventory   | `gh issue list --state open --limit 50 --json number,title,labels,milestone,assignees`                                         |
+| A3   | Open PRs inventory             | `gh pr list --state open --json number,title,headRefName,isDraft,statusCheckRollup`                                            |
+| A4   | CI health check                | Read `.github/workflows/pr-gate.yml`, `main-gate.yml`, `qa.yml` status from last run                                           |
+| A5   | QA suite health                | `.\RUN_QA.ps1` (or inspect last CI output) — report total checks, any failures                                                 |
+| A6   | Database schema drift          | `supabase db diff --linked` (if linked) or inspect `supabase/migrations/` count vs `copilot-instructions.md §7`                |
+| A7   | Test coverage health           | Inspect last `main-gate.yml` coverage run or `cd frontend && npx vitest run --coverage --reporter=json 2>/dev/null \| tail -5` |
+| A8   | Dependency health              | `cd frontend && npm audit --audit-level=high 2>&1 \| tail -10`                                                                 |
+| A9   | SonarCloud quality gate        | Check `sonar-project.properties` thresholds; inspect last CI run quality gate result                                           |
+| A10  | Documentation drift            | `python scripts/check_doc_counts.py && python scripts/check_doc_drift.py`                                                      |
+| A11  | Repo hygiene                   | `pwsh scripts/repo_verify.ps1`                                                                                                 |
+| A12  | Pipeline & structure integrity | `python check_pipeline_structure.py`                                                                                           |
+| A13  | Scoring formula drift          | `SELECT * FROM governance_drift_check();` via psql or Supabase Studio                                                          |
+| A14  | EAN coverage                   | `python validate_eans.py 2>&1 \| tail -3`                                                                                      |
+| A15  | MV staleness                   | `SELECT * FROM mv_staleness_check();` — check if MVs are fresh                                                                 |
 
 #### 17.1.3 Mandatory Audit Output Template
 
@@ -1572,6 +1572,7 @@ Produce **exactly this structure** — fill every section with real data:
 
 ```markdown
 # Project Audit — TryVit
+
 > **Audit date:** YYYY-MM-DD HH:MM UTC
 > **Branch:** <branch-name> | **HEAD:** <sha-7> | **Auditor:** GitHub Copilot
 
@@ -1579,40 +1580,41 @@ Produce **exactly this structure** — fill every section with real data:
 
 ## 1. Project Health Metrics
 
-| Metric                    | Current Value         | Target / Baseline           | Status  |
-| ------------------------- | --------------------- | --------------------------- | ------- |
-| Active products (PL+DE)   | ~X,XXX                | ≥1,281                      | ✅/⚠️/❌ |
-| QA checks passing         | XXX/733               | 733/733                     | ✅/⚠️/❌ |
-| Negative tests passing    | 23/23                 | 23/23                       | ✅/⚠️/❌ |
-| Migrations committed      | XXX                   | ≥182                        | ✅/⚠️/❌ |
-| Vitest coverage (lines)   | XX%                   | ≥88%                        | ✅/⚠️/❌ |
-| SonarCloud quality gate   | PASS/FAIL             | PASS                        | ✅/⚠️/❌ |
-| EAN coverage              | XXXX/XXXX (XX%)       | ≥99.8%                      | ✅/⚠️/❌ |
-| Open PRs                  | X                     | ≤2 active                   | ✅/⚠️/❌ |
-| Open issues               | XX                    | tracked (no hard limit)     | ✅      |
-| npm audit (high+critical) | X vulns               | 0                           | ✅/⚠️/❌ |
-| Docs count (docs/)        | XX                    | 50                          | ✅/⚠️/❌ |
+| Metric                    | Current Value   | Target / Baseline       | Status   |
+| ------------------------- | --------------- | ----------------------- | -------- |
+| Active products (PL+DE)   | ~X,XXX          | ≥1,281                  | ✅/⚠️/❌ |
+| QA checks passing         | XXX/733         | 733/733                 | ✅/⚠️/❌ |
+| Negative tests passing    | 23/23           | 23/23                   | ✅/⚠️/❌ |
+| Migrations committed      | XXX             | ≥182                    | ✅/⚠️/❌ |
+| Vitest coverage (lines)   | XX%             | ≥88%                    | ✅/⚠️/❌ |
+| SonarCloud quality gate   | PASS/FAIL       | PASS                    | ✅/⚠️/❌ |
+| EAN coverage              | XXXX/XXXX (XX%) | ≥99.8%                  | ✅/⚠️/❌ |
+| Open PRs                  | X               | ≤2 active               | ✅/⚠️/❌ |
+| Open issues               | XX              | tracked (no hard limit) | ✅       |
+| npm audit (high+critical) | X vulns         | 0                       | ✅/⚠️/❌ |
+| Docs count (docs/)        | XX              | 50                      | ✅/⚠️/❌ |
 
 ---
 
 ## 2. CI Pipeline Status
 
-| Workflow       | Last Run Status | Triggered By | Notes                          |
-| -------------- | --------------- | ------------ | ------------------------------ |
-| pr-gate.yml    | ✅/❌/⚠️        | PR #XXX      | <any failures>                 |
-| main-gate.yml  | ✅/❌/⚠️        | SHA XXXXXXX  | <coverage, sonar result>       |
-| qa.yml         | ✅/❌/⚠️        | SHA XXXXXXX  | <QA count, any failures>       |
-| nightly.yml    | ✅/❌/⚠️        | Scheduled    | <playwright result>            |
+| Workflow      | Last Run Status | Triggered By | Notes                    |
+| ------------- | --------------- | ------------ | ------------------------ |
+| pr-gate.yml   | ✅/❌/⚠️        | PR #XXX      | <any failures>           |
+| main-gate.yml | ✅/❌/⚠️        | SHA XXXXXXX  | <coverage, sonar result> |
+| qa.yml        | ✅/❌/⚠️        | SHA XXXXXXX  | <QA count, any failures> |
+| nightly.yml   | ✅/❌/⚠️        | Scheduled    | <playwright result>      |
 
 ---
 
 ## 3. Open GitHub Issues — Prioritized Inventory
 
-| # | Title | Priority | Milestone | Labels | Status |
-| - | ----- | -------- | --------- | ------ | ------ |
-| XX | ... | P0/P1/P2/P3/Deferred | M-X | feat/fix/... | open |
+| #   | Title | Priority             | Milestone | Labels       | Status |
+| --- | ----- | -------------------- | --------- | ------------ | ------ |
+| XX  | ...   | P0/P1/P2/P3/Deferred | M-X       | feat/fix/... | open   |
 
 **Priority matrix applied:**
+
 - P0 (Blocking): Security vulnerability, data corruption, CI broken
 - P1 (Critical): Feature gap blocking user value, QA regression, major bug
 - P2 (High): Significant feature, technical debt with user impact
@@ -1624,22 +1626,27 @@ Produce **exactly this structure** — fill every section with real data:
 ## 4. Gap Analysis
 
 ### 4a. Documentation Gaps
+
 | Gap | File/Section | Impact | Priority |
 | --- | ------------ | ------ | -------- |
 
 ### 4b. Schema / Function Gaps
+
 | Gap | Evidence | Impact | Priority |
 | --- | -------- | ------ | -------- |
 
 ### 4c. Test Coverage Gaps
+
 | Gap | File/Function | Coverage% | Priority |
 | --- | ------------- | --------- | -------- |
 
 ### 4d. CI / Infrastructure Gaps
+
 | Gap | Workflow | Impact | Priority |
 | --- | -------- | ------ | -------- |
 
 ### 4e. Technical Debt
+
 | Item | Location | Severity | Effort | Priority |
 | ---- | -------- | -------- | ------ | -------- |
 
@@ -1654,35 +1661,39 @@ Produce **exactly this structure** — fill every section with real data:
 
 ## 6. Recently Shipped (Last 10 Commits)
 
-| SHA     | Type         | Summary                         | Issue  |
-| ------- | ------------ | ------------------------------- | ------ |
-| XXXXXXX | feat/fix/... | <description>                   | #XXX   |
+| SHA     | Type         | Summary       | Issue |
+| ------- | ------------ | ------------- | ----- |
+| XXXXXXX | feat/fix/... | <description> | #XXX  |
 
 ---
 
 ## 7. Drift & Staleness Alerts
 
-| Check                     | Status  | Detail                              |
-| ------------------------- | ------- | ----------------------------------- |
-| Scoring formula drift     | ✅/❌   | <governance_drift_check result>     |
-| MV staleness              | ✅/❌   | <mv_staleness_check result>         |
-| Doc drift                 | ✅/❌   | <check_doc_drift.py result>         |
-| Repo hygiene              | ✅/❌   | <repo_verify.ps1 result>            |
+| Check                 | Status | Detail                          |
+| --------------------- | ------ | ------------------------------- |
+| Scoring formula drift | ✅/❌  | <governance_drift_check result> |
+| MV staleness          | ✅/❌  | <mv_staleness_check result>     |
+| Doc drift             | ✅/❌  | <check_doc_drift.py result>     |
+| Repo hygiene          | ✅/❌  | <repo_verify.ps1 result>        |
 
 ---
 
 ## 8. Recommendations (Ranked by Priority)
 
 ### P0 — Fix Immediately (Blocking)
+
 1. **[Issue title]** — [Why P0, what breaks, what file/function, recommended fix]
 
 ### P1 — Critical (Next Sprint)
+
 1. **[Issue title]** — [Impact, effort estimate, recommended approach]
 
 ### P2 — High Value (Current Milestone)
+
 1. **[Issue title]** — [Impact, effort, file(s) affected]
 
 ### P3 — Nice-to-Have (Backlog)
+
 1. **[Issue title]** — [Rational, trade-off]
 
 ---
@@ -1707,15 +1718,15 @@ To begin implementing the highest-priority item: type `next`
 
 Before creating issues, apply the following triage:
 
-| Condition                                        | Action                                              |
-| ------------------------------------------------ | --------------------------------------------------- |
-| Issue already exists with same scope             | Do not duplicate — add a comment with new findings  |
-| Multiple small items in same domain (< 2h each)  | Bundle into one issue with sub-tasks checklist      |
-| P0 item without existing issue                   | Create immediately before P1/P2/P3 items            |
-| Item is a documentation update only              | Use `docs(scope):` commit type, may skip full issue |
-| Item requires architectural decision             | Add `decision-required` label; include ADR template |
-| Uncertainty about scope/approach                 | Include **at minimum 3 approaches** in §15.2 table  |
-| Item touches >5 files or >3 domains              | Mark as "significant" — use full §15 template       |
+| Condition                                       | Action                                              |
+| ----------------------------------------------- | --------------------------------------------------- |
+| Issue already exists with same scope            | Do not duplicate — add a comment with new findings  |
+| Multiple small items in same domain (< 2h each) | Bundle into one issue with sub-tasks checklist      |
+| P0 item without existing issue                  | Create immediately before P1/P2/P3 items            |
+| Item is a documentation update only             | Use `docs(scope):` commit type, may skip full issue |
+| Item requires architectural decision            | Add `decision-required` label; include ADR template |
+| Uncertainty about scope/approach                | Include **at minimum 3 approaches** in §15.2 table  |
+| Item touches >5 files or >3 domains             | Mark as "significant" — use full §15 template       |
 
 #### 17.2.2 Issue Title Convention
 
@@ -1733,6 +1744,7 @@ chore(scope): what housekeeping
 ```
 
 **Title rules:**
+
 - ≤72 characters
 - Present tense, imperative mood ("add", "fix", "implement" — not "added", "fixed")
 - Include scope in parentheses
@@ -1753,11 +1765,11 @@ Every significant issue (as defined in §15) must use this exact structure:
 
 ## Architectural Evaluation
 
-| Approach | Verdict | Rationale |
-| -------- | ------- | --------- |
-| A. ... | ❌ Rejected | ... |
-| B. ... | ❌ Rejected | ... |
-| C. ... | ✅ Chosen | ... |
+| Approach | Verdict     | Rationale |
+| -------- | ----------- | --------- |
+| A. ...   | ❌ Rejected | ...       |
+| B. ...   | ❌ Rejected | ...       |
+| C. ...   | ✅ Chosen   | ...       |
 
 **Prior art considered:** [Yuka / Open Food Facts / MyFitnessPal / comparable product]
 
@@ -1766,6 +1778,7 @@ Every significant issue (as defined in §15) must use this exact structure:
 ## Core Principles (Invariants)
 
 <!-- Which invariants from §15.3 apply? Explicitly confirm each. -->
+
 - [ ] Data integrity — no invented nutrition values
 - [ ] Backward compatibility — additive API changes only
 - [ ] Idempotency — all migrations safe to run 1× or 100×
@@ -1778,6 +1791,7 @@ Every significant issue (as defined in §15) must use this exact structure:
 ## Phased Implementation Plan
 
 ### Phase 1 — [Title] (Foundation)
+
 **Migration:** `YYYYMMDDHHMMSS_description.sql`
 **Rationale:** [Why this first? What does it unlock?]
 **DB changes:** [Tables, columns, functions, triggers, indexes]
@@ -1787,9 +1801,11 @@ Every significant issue (as defined in §15) must use this exact structure:
 **Tests:** [pgTAP file, QA suite, schema contract changes]
 
 ### Phase 2 — [Title] (Surface)
+
 [same sub-structure]
 
 ### Phase N — [Title] (Polish / Docs)
+
 [same sub-structure]
 
 ---
@@ -1814,9 +1830,9 @@ Every significant issue (as defined in §15) must use this exact structure:
 
 ## API Contract Impact
 
-| Function | Change | Backward Compatible? | New Params (with defaults) |
-| -------- | ------ | -------------------- | --------------------------- |
-| `api_*()` | Added `p_new_param text DEFAULT NULL` | ✅ Yes | `p_new_param`: ... |
+| Function  | Change                                | Backward Compatible? | New Params (with defaults) |
+| --------- | ------------------------------------- | -------------------- | -------------------------- |
+| `api_*()` | Added `p_new_param text DEFAULT NULL` | ✅ Yes               | `p_new_param`: ...         |
 
 **What happens if p_new_param is omitted:** [fallback behavior]
 
@@ -1825,6 +1841,7 @@ Every significant issue (as defined in §15) must use this exact structure:
 ## Test Requirements
 
 ### pgTAP (supabase/tests/)
+
 - [ ] `has_table('new_table')` in `schema_contracts.test.sql`
 - [ ] Happy path: correct inputs → expected outputs
 - [ ] Edge cases: NULL inputs, empty strings, invalid codes
@@ -1832,10 +1849,12 @@ Every significant issue (as defined in §15) must use this exact structure:
 - [ ] Fallback: resolve_language('xx') → 'en'
 
 ### DB QA (db/qa/)
+
 - [ ] Suite: `QA__[domain].sql` — add N checks (total: before → after)
 - [ ] Checks added: [list them]
 
 ### Frontend (frontend/src/)
+
 - [ ] `cd frontend && npx tsc --noEmit` — 0 errors
 - [ ] Vitest unit tests: [describe what is tested]
 - [ ] Playwright E2E: [smoke or authenticated spec, what flow]
@@ -1864,16 +1883,17 @@ Else → fallback Z (always safe, always returns a value)
 
 ## Architectural Decisions Log
 
-| Decision | Choice | Rationale |
-| -------- | ------ | --------- |
-| Storage pattern | `_ref` table + FK | [Reason] |
-| ... | ... | ... |
+| Decision        | Choice            | Rationale |
+| --------------- | ----------------- | --------- |
+| Storage pattern | `_ref` table + FK | [Reason]  |
+| ...             | ...               | ...       |
 
 ---
 
 ## File Impact Summary
 
 **Estimated: N files, +X / -Y lines**
+
 - X new DB migrations (Y lines)
 - X new/modified pgTAP test files (Y lines)
 - X new/modified QA suites (checks: N → M)
@@ -1910,9 +1930,9 @@ When creating multiple issues from an audit:
 ```markdown
 ## Issues Created
 
-| # | Title | Priority | Milestone | Labels |
-| - | ----- | -------- | --------- | ------ |
-| #XXX | feat(domain): ... | P1 | M-X | feat, data, P1 |
+| #    | Title             | Priority | Milestone | Labels         |
+| ---- | ----------------- | -------- | --------- | -------------- |
+| #XXX | feat(domain): ... | P1       | M-X       | feat, data, P1 |
 ```
 
 6. Conclude with: "Type `next` to begin implementing the highest-priority issue."
@@ -1961,17 +1981,20 @@ Before writing any code, output **exactly** this block:
 **Estimated effort:** [S=<2h / M=2-8h / L=8-24h / XL=>24h]
 
 ### Docs loading (per §20.4)
+
 - ✅ CURRENT_STATE.md — read
 - ✅ [Domain doc 1] — read
 - ✅ [Domain doc 2] — read
 - [any gaps noted]
 
 ### Test plan
+
 1. [Test case 1 — what, where, which level]
 2. [Test case 2]
-...
+   ...
 
 ### Implementation order
+
 1. [Step 1 — e.g., write migration]
 2. [Step 2 — e.g., add pgTAP tests]
 3. [Step 3 — e.g., update API function]
@@ -1985,13 +2008,13 @@ Then execute §19 (Canonical Execution Discipline Protocol v2) in full.
 
 ### 17.4 Priority Definitions
 
-| Label | Meaning | Response Time | Examples |
-| ----- | ------- | ------------- | -------- |
-| **P0** | Blocking — system broken or data corrupted | Immediate | CI red, security CVE, data integrity failure, scoring broken |
-| **P1** | Critical — core user value blocked or significant regression | Current sprint | Missing QA suite, broken auth flow, API contract violation |
-| **P2** | High value — significant improvement, no emergency | Next sprint or milestone | New feature, performance improvement, major coverage gap |
-| **P3** | Enhancement — nice-to-have | Backlog | Minor UX polish, doc updates, tooling improvements |
-| **Deferred** | Valid but not current scope | Future milestone | Post-MVP features, experimental ideas |
+| Label        | Meaning                                                      | Response Time            | Examples                                                     |
+| ------------ | ------------------------------------------------------------ | ------------------------ | ------------------------------------------------------------ |
+| **P0**       | Blocking — system broken or data corrupted                   | Immediate                | CI red, security CVE, data integrity failure, scoring broken |
+| **P1**       | Critical — core user value blocked or significant regression | Current sprint           | Missing QA suite, broken auth flow, API contract violation   |
+| **P2**       | High value — significant improvement, no emergency           | Next sprint or milestone | New feature, performance improvement, major coverage gap     |
+| **P3**       | Enhancement — nice-to-have                                   | Backlog                  | Minor UX polish, doc updates, tooling improvements           |
+| **Deferred** | Valid but not current scope                                  | Future milestone         | Post-MVP features, experimental ideas                        |
 
 ---
 
@@ -2003,105 +2026,105 @@ Then execute §19 (Canonical Execution Discipline Protocol v2) in full.
 
 ### 18.1 Architecture & System Design
 
-| Document | Purpose | Load When |
-| -------- | ------- | --------- |
-| `docs/ARCHITECTURE.md` | Full system architecture — data flow, schema topology, scoring pipeline, API layer, security perimeter | Any schema, API, or infra work |
-| `docs/DOMAIN_BOUNDARIES.md` | Domain ownership map — who owns what, cross-domain coupling rules | Adding new domains, touching multiple services |
-| `docs/ENVIRONMENT_STRATEGY.md` | Local / staging / production environment strategy, secret management | Env config, deployment, secrets changes |
-| `docs/STAGING_SETUP.md` | Staging environment setup guide | Setting up staging, CI config |
-| `docs/DEPLOYMENT.md` | Deployment procedures, rollback playbook, emergency checklist | Any production deployment |
-| `docs/DISASTER_DRILL_REPORT.md` | DR drill findings and follow-up actions | Incident prep, DR automation |
-| `docs/PRODUCTION_DATA.md` | Production data management rules — no PII, retention policies | Any migration touching prod |
+| Document                        | Purpose                                                                                                | Load When                                      |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------------------------- |
+| `docs/ARCHITECTURE.md`          | Full system architecture — data flow, schema topology, scoring pipeline, API layer, security perimeter | Any schema, API, or infra work                 |
+| `docs/DOMAIN_BOUNDARIES.md`     | Domain ownership map — who owns what, cross-domain coupling rules                                      | Adding new domains, touching multiple services |
+| `docs/ENVIRONMENT_STRATEGY.md`  | Local / staging / production environment strategy, secret management                                   | Env config, deployment, secrets changes        |
+| `docs/STAGING_SETUP.md`         | Staging environment setup guide                                                                        | Setting up staging, CI config                  |
+| `docs/DEPLOYMENT.md`            | Deployment procedures, rollback playbook, emergency checklist                                          | Any production deployment                      |
+| `docs/DISASTER_DRILL_REPORT.md` | DR drill findings and follow-up actions                                                                | Incident prep, DR automation                   |
+| `docs/PRODUCTION_DATA.md`       | Production data management rules — no PII, retention policies                                          | Any migration touching prod                    |
 
 ### 18.2 API & Frontend
 
-| Document | Purpose | Load When |
-| -------- | ------- | --------- |
-| `docs/API_CONTRACTS.md` | Full API surface contracts — response shapes, hidden columns, auth requirements, error envelopes | Any API function change |
-| `docs/API_CONVENTIONS.md` | RPC naming convention, breaking change definition, security standards | Adding/renaming API functions |
-| `docs/API_VERSIONING.md` | API deprecation policy, version lifecycle | Deprecating or versioning endpoints |
-| `docs/FRONTEND_API_MAP.md` | Frontend component ↔ API function mapping | Frontend work touching API calls |
-| `docs/api-registry.yaml` | Structured registry of all 191 functions (YAML) | Auditing API coverage, documentation |
-| `docs/CONTRACT_TESTING.md` | API contract testing strategy and pgTAP patterns | Adding pgTAP contract tests |
-| `docs/UX_UI_DESIGN.md` | UI/UX guidelines, component standards, accessibility | Frontend component development |
-| `docs/UX_IMPACT_METRICS.md` | UX measurement standard, metric catalog, SQL event templates | Any UX-visible frontend change |
-| `docs/BRAND_GUIDELINES.md` | TryVit brand standards — color palette, typography, voice, usage rules | Brand-related UI work |
-| `docs/SEARCH_ARCHITECTURE.md` | pg_trgm, tsvector, ranking algorithm, synonym table | Search functionality changes |
+| Document                      | Purpose                                                                                          | Load When                            |
+| ----------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------ |
+| `docs/API_CONTRACTS.md`       | Full API surface contracts — response shapes, hidden columns, auth requirements, error envelopes | Any API function change              |
+| `docs/API_CONVENTIONS.md`     | RPC naming convention, breaking change definition, security standards                            | Adding/renaming API functions        |
+| `docs/API_VERSIONING.md`      | API deprecation policy, version lifecycle                                                        | Deprecating or versioning endpoints  |
+| `docs/FRONTEND_API_MAP.md`    | Frontend component ↔ API function mapping                                                        | Frontend work touching API calls     |
+| `docs/api-registry.yaml`      | Structured registry of all 191 functions (YAML)                                                  | Auditing API coverage, documentation |
+| `docs/CONTRACT_TESTING.md`    | API contract testing strategy and pgTAP patterns                                                 | Adding pgTAP contract tests          |
+| `docs/UX_UI_DESIGN.md`        | UI/UX guidelines, component standards, accessibility                                             | Frontend component development       |
+| `docs/UX_IMPACT_METRICS.md`   | UX measurement standard, metric catalog, SQL event templates                                     | Any UX-visible frontend change       |
+| `docs/BRAND_GUIDELINES.md`    | TryVit brand standards — color palette, typography, voice, usage rules                           | Brand-related UI work                |
+| `docs/SEARCH_ARCHITECTURE.md` | pg_trgm, tsvector, ranking algorithm, synonym table                                              | Search functionality changes         |
 
 ### 18.3 Data Governance & Quality
 
-| Document | Purpose | Load When |
-| -------- | ------- | --------- |
-| `docs/DATA_SOURCES.md` | Source hierarchy, OFF API reliability tiers, validation workflow | Pipeline changes, sourcing decisions |
-| `docs/DATA_PROVENANCE.md` | Data freshness governance, update cycles, source provenance tracking | Adding provenance columns, staleness logic |
-| `docs/DATA_INTEGRITY_AUDITS.md` | Nightly audit framework, check catalog, alert thresholds | Adding data quality checks |
-| `docs/EAN_VALIDATION_STATUS.md` | 1,024/1,026 (99.8%) EAN coverage, known gaps, validation rules | EAN changes, barcode work |
-| `docs/RESEARCH_WORKFLOW.md` | Data collection lifecycle — manual curation + automated OFF pipeline | Adding new products, categories, countries |
+| Document                        | Purpose                                                              | Load When                                  |
+| ------------------------------- | -------------------------------------------------------------------- | ------------------------------------------ |
+| `docs/DATA_SOURCES.md`          | Source hierarchy, OFF API reliability tiers, validation workflow     | Pipeline changes, sourcing decisions       |
+| `docs/DATA_PROVENANCE.md`       | Data freshness governance, update cycles, source provenance tracking | Adding provenance columns, staleness logic |
+| `docs/DATA_INTEGRITY_AUDITS.md` | Nightly audit framework, check catalog, alert thresholds             | Adding data quality checks                 |
+| `docs/EAN_VALIDATION_STATUS.md` | 1,024/1,026 (99.8%) EAN coverage, known gaps, validation rules       | EAN changes, barcode work                  |
+| `docs/RESEARCH_WORKFLOW.md`     | Data collection lifecycle — manual curation + automated OFF pipeline | Adding new products, categories, countries |
 
 ### 18.4 Security & Privacy
 
-| Document | Purpose | Load When |
-| -------- | ------- | --------- |
-| `docs/SECURITY_AUDIT.md` | Full security audit — RLS gaps, SSRF vectors, injection risks, trust scoring | Any table, function, or RLS change |
-| `docs/PRIVACY_CHECKLIST.md` | GDPR/RODO compliance checklist — data lifecycle, consent, deletion | User data, PII, consent flows |
-| `docs/ACCESS_AUDIT.md` | Data access pattern audit — who reads what, quarterly review cadence | Access control design |
-| `docs/RATE_LIMITING.md` | Rate limiting strategy, per-endpoint config, abuse prevention | Adding rate limits, API abuse |
+| Document                    | Purpose                                                                      | Load When                          |
+| --------------------------- | ---------------------------------------------------------------------------- | ---------------------------------- |
+| `docs/SECURITY_AUDIT.md`    | Full security audit — RLS gaps, SSRF vectors, injection risks, trust scoring | Any table, function, or RLS change |
+| `docs/PRIVACY_CHECKLIST.md` | GDPR/RODO compliance checklist — data lifecycle, consent, deletion           | User data, PII, consent flows      |
+| `docs/ACCESS_AUDIT.md`      | Data access pattern audit — who reads what, quarterly review cadence         | Access control design              |
+| `docs/RATE_LIMITING.md`     | Rate limiting strategy, per-endpoint config, abuse prevention                | Adding rate limits, API abuse      |
 
 ### 18.5 Performance & Observability
 
-| Document | Purpose | Load When |
-| -------- | ------- | --------- |
-| `docs/PERFORMANCE_GUARDRAILS.md` | Query budgets, index requirements, MV refresh policies, scale projections | Any query, index, or MV change |
-| `docs/PERFORMANCE_REPORT.md` | Baseline performance audit, slow query catalog, query patterns | Performance investigation |
-| `docs/SLO.md` | Service Level Objectives — availability 99.5%, latency p95 <400ms, error rate <0.1% | Reliability engineering, alert design |
-| `docs/MONITORING.md` | Runtime monitoring strategy, Supabase metrics, alert channels | Adding monitoring, alerts |
-| `docs/OBSERVABILITY.md` | Full observability strategy — logs, metrics, traces | Instrumentation work |
-| `docs/METRICS.md` | Application, infrastructure, and business metrics catalog | Adding metrics, dashboards |
-| `docs/LOG_SCHEMA.md` | Structured log format, error taxonomy, field definitions | Logging changes, error handling |
-| `docs/ALERT_POLICY.md` | Alert escalation rules, SLA targets, on-call routing | Alert and notification work |
-| `docs/ON_CALL_POLICY.md` | On-call schedule, ack targets, triage labels, escalation chain | Incident response, on-call setup |
+| Document                         | Purpose                                                                             | Load When                             |
+| -------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------- |
+| `docs/PERFORMANCE_GUARDRAILS.md` | Query budgets, index requirements, MV refresh policies, scale projections           | Any query, index, or MV change        |
+| `docs/PERFORMANCE_REPORT.md`     | Baseline performance audit, slow query catalog, query patterns                      | Performance investigation             |
+| `docs/SLO.md`                    | Service Level Objectives — availability 99.5%, latency p95 <400ms, error rate <0.1% | Reliability engineering, alert design |
+| `docs/MONITORING.md`             | Runtime monitoring strategy, Supabase metrics, alert channels                       | Adding monitoring, alerts             |
+| `docs/OBSERVABILITY.md`          | Full observability strategy — logs, metrics, traces                                 | Instrumentation work                  |
+| `docs/METRICS.md`                | Application, infrastructure, and business metrics catalog                           | Adding metrics, dashboards            |
+| `docs/LOG_SCHEMA.md`             | Structured log format, error taxonomy, field definitions                            | Logging changes, error handling       |
+| `docs/ALERT_POLICY.md`           | Alert escalation rules, SLA targets, on-call routing                                | Alert and notification work           |
+| `docs/ON_CALL_POLICY.md`         | On-call schedule, ack targets, triage labels, escalation chain                      | Incident response, on-call setup      |
 
 ### 18.6 CI/CD & Governance
 
-| Document | Purpose | Load When |
-| -------- | ------- | --------- |
-| `docs/REPO_GOVERNANCE.md` | Root structure rules, allowed-files list, PR checklist, hygiene enforcement | Any structural change |
-| `docs/GOVERNANCE_BLUEPRINT.md` | Master execution governance — development lifecycle, decision authority | Strategic planning, major features |
-| `docs/DOCUMENTATION_GOVERNANCE.md` | Doc lifecycle — creation, ownership, review cadence, deprecation | Creating or retiring docs |
-| `docs/DRIFT_DETECTION.md` | 8-check automated drift catalog — scoring, search, naming, flags | Any scoring/search formula change |
-| `docs/MIGRATION_CONVENTIONS.md` | Migration safety rules, trigger naming, lock risk, idempotency patterns | Any DB migration work |
-| `docs/BACKFILL_STANDARD.md` | Backfill orchestration standard, batch templates, rollback patterns | Any bulk data operation |
-| `docs/FEATURE_FLAGS.md` | Feature flag registry, activation criteria, toggle patterns | Feature flag work |
-| `docs/FEATURE_SUNSETTING.md` | Feature retirement criteria, cleanup protocol | Deprecating features |
-| `docs/LABELS.md` | GitHub label taxonomy — type, domain, priority, status | Issue and PR labeling |
+| Document                           | Purpose                                                                     | Load When                          |
+| ---------------------------------- | --------------------------------------------------------------------------- | ---------------------------------- |
+| `docs/REPO_GOVERNANCE.md`          | Root structure rules, allowed-files list, PR checklist, hygiene enforcement | Any structural change              |
+| `docs/GOVERNANCE_BLUEPRINT.md`     | Master execution governance — development lifecycle, decision authority     | Strategic planning, major features |
+| `docs/DOCUMENTATION_GOVERNANCE.md` | Doc lifecycle — creation, ownership, review cadence, deprecation            | Creating or retiring docs          |
+| `docs/DRIFT_DETECTION.md`          | 8-check automated drift catalog — scoring, search, naming, flags            | Any scoring/search formula change  |
+| `docs/MIGRATION_CONVENTIONS.md`    | Migration safety rules, trigger naming, lock risk, idempotency patterns     | Any DB migration work              |
+| `docs/BACKFILL_STANDARD.md`        | Backfill orchestration standard, batch templates, rollback patterns         | Any bulk data operation            |
+| `docs/FEATURE_FLAGS.md`            | Feature flag registry, activation criteria, toggle patterns                 | Feature flag work                  |
+| `docs/FEATURE_SUNSETTING.md`       | Feature retirement criteria, cleanup protocol                               | Deprecating features               |
+| `docs/LABELS.md`                   | GitHub label taxonomy — type, domain, priority, status                      | Issue and PR labeling              |
 
 ### 18.7 Scoring & Nutrition Science
 
-| Document | Purpose | Load When |
-| -------- | ------- | --------- |
-| `docs/SCORING_METHODOLOGY.md` | v3.2 algorithm — 9 factors, weights, ceilings, band thresholds, scientific rationale | Any scoring change |
-| `docs/SCORING_ENGINE.md` | Scoring engine architecture — versioning, drift detection, formula registry | Scoring formula work, version management |
-| `copilot-instructions.md §14` | Scoring quick reference — formula, ceilings, band table | Quick coding reference |
-| `copilot-instructions.md §8.19` | Regression anchors — 16 products with expected scores ±2 | Regression testing after scoring changes |
+| Document                        | Purpose                                                                              | Load When                                |
+| ------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------- |
+| `docs/SCORING_METHODOLOGY.md`   | v3.2 algorithm — 9 factors, weights, ceilings, band thresholds, scientific rationale | Any scoring change                       |
+| `docs/SCORING_ENGINE.md`        | Scoring engine architecture — versioning, drift detection, formula registry          | Scoring formula work, version management |
+| `copilot-instructions.md §14`   | Scoring quick reference — formula, ceilings, band table                              | Quick coding reference                   |
+| `copilot-instructions.md §8.19` | Regression anchors — 16 products with expected scores ±2                             | Regression testing after scoring changes |
 
 ### 18.8 Country Expansion & Localization
 
-| Document | Purpose | Load When |
-| -------- | ------- | --------- |
-| `docs/COUNTRY_EXPANSION_GUIDE.md` | Multi-country protocol — adding countries, activating DE, language matrix | Country/language expansion |
-| `copilot-instructions.md §5` | Active categories — 20 PL + 5 DE, pipeline folder mappings | Category additions, DE expansion |
-| `copilot-instructions.md §15.15` | i18n impact checklist — dictionary keys, translations, search synonyms | Any translated string change |
+| Document                          | Purpose                                                                   | Load When                        |
+| --------------------------------- | ------------------------------------------------------------------------- | -------------------------------- |
+| `docs/COUNTRY_EXPANSION_GUIDE.md` | Multi-country protocol — adding countries, activating DE, language matrix | Country/language expansion       |
+| `copilot-instructions.md §5`      | Active categories — 20 PL + 5 DE, pipeline folder mappings                | Category additions, DE expansion |
+| `copilot-instructions.md §15.15`  | i18n impact checklist — dictionary keys, translations, search synonyms    | Any translated string change     |
 
 ### 18.9 Architecture Decision Records
 
-| Decision | Status | Summary |
-| -------- | ------ | ------- |
-| `docs/decisions/001-postgresql-only-stack.md` | Accepted | No ORM, no Redis cluster, PostgreSQL as sole data store |
-| `docs/decisions/002-weighted-scoring-formula.md` | Accepted | 9-factor weighted model, science-backed, EFSA-aligned |
-| `docs/decisions/003-country-scoped-isolation.md` | Accepted | All queries country-filtered, no cross-contamination |
-| `docs/decisions/004-pipeline-generates-sql.md` | Accepted | Python pipeline generates idempotent SQL, no runtime inserts |
-| `docs/decisions/005-api-function-name-versioning.md` | Accepted | Additive versioning via suffix (`_v2`), never rename |
-| `docs/decisions/006-append-only-migrations.md` | Accepted | Never modify committed migrations; forward-only schema evolution |
+| Decision                                              | Status   | Summary                                                                  |
+| ----------------------------------------------------- | -------- | ------------------------------------------------------------------------ |
+| `docs/decisions/001-postgresql-only-stack.md`         | Accepted | No ORM, no Redis cluster, PostgreSQL as sole data store                  |
+| `docs/decisions/002-weighted-scoring-formula.md`      | Accepted | 9-factor weighted model, science-backed, EFSA-aligned                    |
+| `docs/decisions/003-country-scoped-isolation.md`      | Accepted | All queries country-filtered, no cross-contamination                     |
+| `docs/decisions/004-pipeline-generates-sql.md`        | Accepted | Python pipeline generates idempotent SQL, no runtime inserts             |
+| `docs/decisions/005-api-function-name-versioning.md`  | Accepted | Additive versioning via suffix (`_v2`), never rename                     |
+| `docs/decisions/006-append-only-migrations.md`        | Accepted | Never modify committed migrations; forward-only schema evolution         |
 | `docs/decisions/007-english-canonical-ingredients.md` | Accepted | `name_en` is canonical; translations stored in `ingredient_translations` |
 
 ---
@@ -2146,18 +2169,18 @@ cd frontend && npx vitest run --coverage --reporter=json 2>/dev/null | tail -3
 
 Answer each question explicitly before coding:
 
-| Question | Answer |
-| -------- | ------ |
-| What DB tables are affected? | <list or "none"> |
-| What API functions are affected? | <list or "none"> |
-| What frontend components are affected? | <list or "none"> |
-| Does this require a migration? | Yes/No — if yes, what's the filename? |
-| Does this touch RLS policies? | Yes/No — if yes, read `docs/SECURITY_AUDIT.md` §X |
-| Does this touch scoring logic? | Yes/No — if yes, run regression anchors §8.19 after |
-| Does this change any API response shape? | Yes/No — if yes, confirm additive-only |
-| Does this add user-visible strings? | Yes/No — if yes, update both `en.json` and `pl.json` |
-| What QA suites are affected? | <list or "none"> |
-| What pgTAP tests are affected? | <list or "none"> |
+| Question                                 | Answer                                               |
+| ---------------------------------------- | ---------------------------------------------------- |
+| What DB tables are affected?             | <list or "none">                                     |
+| What API functions are affected?         | <list or "none">                                     |
+| What frontend components are affected?   | <list or "none">                                     |
+| Does this require a migration?           | Yes/No — if yes, what's the filename?                |
+| Does this touch RLS policies?            | Yes/No — if yes, read `docs/SECURITY_AUDIT.md` §X    |
+| Does this touch scoring logic?           | Yes/No — if yes, run regression anchors §8.19 after  |
+| Does this change any API response shape? | Yes/No — if yes, confirm additive-only               |
+| Does this add user-visible strings?      | Yes/No — if yes, update both `en.json` and `pl.json` |
+| What QA suites are affected?             | <list or "none">                                     |
+| What pgTAP tests are affected?           | <list or "none">                                     |
 
 Load domain docs from §20.4 for every "Yes" answer.
 
@@ -2168,12 +2191,13 @@ Write this explicitly. Do not skip.
 ```markdown
 ### Test Plan — Issue #XXX
 
-| # | Test Case | Level | File | What It Verifies |
-| - | --------- | ----- | ---- | ---------------- |
-| 1 | [description] | unit/component/e2e/pgTAP/QA | [path] | [specific behavior] |
-| 2 | ... | ... | ... | ... |
+| #   | Test Case     | Level                       | File   | What It Verifies    |
+| --- | ------------- | --------------------------- | ------ | ------------------- |
+| 1   | [description] | unit/component/e2e/pgTAP/QA | [path] | [specific behavior] |
+| 2   | ...           | ...                         | ...    | ...                 |
 
 **Edge cases to cover:**
+
 - NULL inputs to new functions
 - Empty arrays, zero counts
 - Unicode/diacritics (Polish characters: ą, ę, ó, ł, ź, ż, ń, ć, ś)
@@ -2181,6 +2205,7 @@ Write this explicitly. Do not skip.
 - Cross-country data contamination (PL ≠ DE)
 
 **Regression tests to preserve:**
+
 - QA suite N: [suite name] — [how many checks affected]
 - Scoring anchor: [product name] ≈ [score] (from §8.19)
 ```
@@ -2194,19 +2219,19 @@ Map out every file that will change:
 
 **Estimated effort:** S / M / L / XL
 
-| Step | File | Change Type | Dependencies |
-| ---- | ---- | ----------- | ------------ |
-| 1 | `supabase/migrations/YYYYMMDDHHMMSS_*.sql` | New migration | None |
-| 2 | `supabase/tests/schema_contracts.test.sql` | Add has_table/has_function | Step 1 |
-| 3 | `supabase/tests/[domain]_functions.test.sql` | Add pgTAP function tests | Step 1 |
-| 4 | `db/qa/QA__[domain].sql` | Add QA checks | Step 1 |
-| 5 | `frontend/src/lib/api.ts` | New/modified RPC wrapper | Step 1 |
-| 6 | `frontend/src/hooks/use-[domain].ts` | New TanStack Query hook | Step 5 |
-| 7 | `frontend/src/components/[domain]/*.tsx` | UI component | Step 6 |
-| 8 | `frontend/src/app/app/[route]/page.tsx` | Page integration | Step 7 |
-| 9 | `docs/API_CONTRACTS.md` | Document new endpoint | Step 5 |
-| 10 | `copilot-instructions.md §4` | Update function/table list | Step 1 |
-| 11 | `CHANGELOG.md` | Add [Unreleased] entry | Final |
+| Step | File                                         | Change Type                | Dependencies |
+| ---- | -------------------------------------------- | -------------------------- | ------------ |
+| 1    | `supabase/migrations/YYYYMMDDHHMMSS_*.sql`   | New migration              | None         |
+| 2    | `supabase/tests/schema_contracts.test.sql`   | Add has_table/has_function | Step 1       |
+| 3    | `supabase/tests/[domain]_functions.test.sql` | Add pgTAP function tests   | Step 1       |
+| 4    | `db/qa/QA__[domain].sql`                     | Add QA checks              | Step 1       |
+| 5    | `frontend/src/lib/api.ts`                    | New/modified RPC wrapper   | Step 1       |
+| 6    | `frontend/src/hooks/use-[domain].ts`         | New TanStack Query hook    | Step 5       |
+| 7    | `frontend/src/components/[domain]/*.tsx`     | UI component               | Step 6       |
+| 8    | `frontend/src/app/app/[route]/page.tsx`      | Page integration           | Step 7       |
+| 9    | `docs/API_CONTRACTS.md`                      | Document new endpoint      | Step 5       |
+| 10   | `copilot-instructions.md §4`                 | Update function/table list | Step 1       |
+| 11   | `CHANGELOG.md`                               | Add [Unreleased] entry     | Final        |
 ```
 
 ---
@@ -2216,6 +2241,7 @@ Map out every file that will change:
 #### 19.5 Implementation Rules (non-negotiable)
 
 **Rule 1 — One concern per commit.** Each commit addresses exactly one logical change:
+
 ```
 schema(migration): add ingredient_translations table and FK
 
@@ -2283,12 +2309,12 @@ COMMENT ON FUNCTION public.api_example_function IS
 ```typescript
 // ✅ RPC wrapper pattern (frontend/src/lib/rpc.ts style)
 export async function exampleFeature(params: ExampleParams): Promise<ExampleResult> {
-  const { data, error } = await supabase.rpc('api_example_function', {
+  const { data, error } = await supabase.rpc("api_example_function", {
     p_param1: params.param1,
     p_param2: params.param2 ?? null,
   });
 
-  if (error) throw new RpcError('api_example_function', error);
+  if (error) throw new RpcError("api_example_function", error);
   return data as ExampleResult;
 }
 
@@ -2297,7 +2323,7 @@ export function useExampleFeature(param1: string) {
   return useQuery({
     queryKey: queryKeys.example(param1),
     queryFn: () => exampleFeature({ param1 }),
-    staleTime: 5 * 60 * 1000,  // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (count, err) => !(err instanceof RpcError && err.isAuth),
   });
 }
@@ -2344,27 +2370,28 @@ python scripts/check_doc_drift.py            # No stale docs
 
 After implementation, update ALL of these that apply (per §18.1):
 
-| Artifact | Update Required When | What to Update |
-| -------- | -------------------- | -------------- |
-| `copilot-instructions.md §4` | Table, view, function, or Edge Function added/changed | Add row to appropriate table |
-| `copilot-instructions.md §3` | Directory structure changed | Update project layout tree |
-| `copilot-instructions.md §5` | New category added | Add row to category table |
-| `copilot-instructions.md §8.18` | New QA suite added | Add row + update check count |
-| `docs/API_CONTRACTS.md` | Any `api_*` function changed | Update contract definition |
-| `docs/FRONTEND_API_MAP.md` | Frontend-API wiring changed | Update mapping row |
-| `docs/api-registry.yaml` | Any function added/removed | Add/update YAML entry |
-| `docs/SCORING_METHODOLOGY.md` | Scoring formula changed | Update formula, weights, bands |
-| `docs/ARCHITECTURE.md` | Major structural change | Update architecture diagram/prose |
-| `.env.example` | New env variable needed | Add entry with description + source |
-| `docs/INDEX.md` | New `docs/*.md` file created | Add entry, increment count |
-| `CHANGELOG.md` | Any user-visible change | Add entry under `[Unreleased]` |
+| Artifact                        | Update Required When                                  | What to Update                      |
+| ------------------------------- | ----------------------------------------------------- | ----------------------------------- |
+| `copilot-instructions.md §4`    | Table, view, function, or Edge Function added/changed | Add row to appropriate table        |
+| `copilot-instructions.md §3`    | Directory structure changed                           | Update project layout tree          |
+| `copilot-instructions.md §5`    | New category added                                    | Add row to category table           |
+| `copilot-instructions.md §8.18` | New QA suite added                                    | Add row + update check count        |
+| `docs/API_CONTRACTS.md`         | Any `api_*` function changed                          | Update contract definition          |
+| `docs/FRONTEND_API_MAP.md`      | Frontend-API wiring changed                           | Update mapping row                  |
+| `docs/api-registry.yaml`        | Any function added/removed                            | Add/update YAML entry               |
+| `docs/SCORING_METHODOLOGY.md`   | Scoring formula changed                               | Update formula, weights, bands      |
+| `docs/ARCHITECTURE.md`          | Major structural change                               | Update architecture diagram/prose   |
+| `.env.example`                  | New env variable needed                               | Add entry with description + source |
+| `docs/INDEX.md`                 | New `docs/*.md` file created                          | Add entry, increment count          |
+| `CHANGELOG.md`                  | Any user-visible change                               | Add entry under `[Unreleased]`      |
 
 #### 19.10 Verification Report (output in every PR description)
 
-```markdown
+````markdown
 ## Verification
 
 ### Commands Run
+
 ```powershell
 supabase test db                  → XX/XX pgTAP tests pass
 .\RUN_QA.ps1                      → 733/733 checks pass (0 failures)
@@ -2375,17 +2402,21 @@ npx vitest run --coverage         → Lines: XX% (baseline: 88%, delta: +X.X%)
 npx playwright test --project=smoke → XX/XX pass
 pwsh scripts/repo_verify.ps1      → 6/6 checks pass
 ```
+````
 
 ### New/Updated Tests
+
 - `supabase/tests/[file].test.sql` — N new pgTAP tests
 - `db/qa/QA__[suite].sql` — N checks added (total: XX → YY)
 - `frontend/src/[file].test.ts` — N new Vitest tests
 
 ### Documentation Updated
+
 - `copilot-instructions.md §4` — [what was updated]
 - `docs/API_CONTRACTS.md` — [what was updated]
 - `CHANGELOG.md` — added entry under [Unreleased]
-```
+
+````
 
 ---
 
@@ -2442,17 +2473,17 @@ git diff --stat HEAD
 
 # Step 4 — Quick health check
 pwsh scripts/repo_verify.ps1
-```
+````
 
 ### 20.2 Invariant Documents (load every session, regardless of domain)
 
-| Priority | Document | Purpose | Where |
-| -------- | -------- | ------- | ----- |
-| 1 | `CURRENT_STATE.md` | Live status — SHA, open PRs, in-flight work | repo root |
-| 2 | `copilot-instructions.md §1–§4` | Role, architecture, project layout, schema | repo root |
-| 3 | `copilot-instructions.md §8` | Testing requirements — NON-NEGOTIABLE | repo root |
-| 4 | `copilot-instructions.md §13` | Git workflow, branch naming, conventional commits | repo root |
-| 5 | `docs/INDEX.md` | Navigation — find the right doc fast | docs/ |
+| Priority | Document                        | Purpose                                           | Where     |
+| -------- | ------------------------------- | ------------------------------------------------- | --------- |
+| 1        | `CURRENT_STATE.md`              | Live status — SHA, open PRs, in-flight work       | repo root |
+| 2        | `copilot-instructions.md §1–§4` | Role, architecture, project layout, schema        | repo root |
+| 3        | `copilot-instructions.md §8`    | Testing requirements — NON-NEGOTIABLE             | repo root |
+| 4        | `copilot-instructions.md §13`   | Git workflow, branch naming, conventional commits | repo root |
+| 5        | `docs/INDEX.md`                 | Navigation — find the right doc fast              | docs/     |
 
 ### 20.3 Domain Docs (load when that domain is touched)
 
@@ -2460,28 +2491,28 @@ pwsh scripts/repo_verify.ps1
 
 ### 20.4 Domain Reading Matrix
 
-| Domain | Load First | Also Relevant |
-| ------ | ---------- | ------------- |
-| **Database schema** | `docs/ARCHITECTURE.md`, `docs/MIGRATION_CONVENTIONS.md` | `copilot-instructions.md §4`, `docs/DATA_PROVENANCE.md` |
-| **Migrations** | `docs/MIGRATION_CONVENTIONS.md`, `docs/BACKFILL_STANDARD.md` | `copilot-instructions.md §7` |
-| **Scoring formula** | `docs/SCORING_METHODOLOGY.md`, `docs/SCORING_ENGINE.md` | `copilot-instructions.md §14`, `docs/DRIFT_DETECTION.md` |
-| **API / RPC functions** | `docs/API_CONTRACTS.md`, `docs/API_CONVENTIONS.md` | `docs/API_VERSIONING.md`, `docs/FRONTEND_API_MAP.md`, `docs/api-registry.yaml` |
-| **Search / indexing** | `docs/SEARCH_ARCHITECTURE.md` | `docs/PERFORMANCE_GUARDRAILS.md` |
-| **Frontend components** | `docs/UX_UI_DESIGN.md`, `docs/BRAND_GUIDELINES.md` | `docs/UX_IMPACT_METRICS.md` |
-| **Security / RLS** | `docs/SECURITY_AUDIT.md`, `docs/PRIVACY_CHECKLIST.md` | `docs/ACCESS_AUDIT.md`, `docs/RATE_LIMITING.md` |
-| **Performance** | `docs/PERFORMANCE_GUARDRAILS.md`, `docs/PERFORMANCE_REPORT.md` | `docs/SEARCH_ARCHITECTURE.md`, `docs/SLO.md` |
-| **Multi-market expansion** | `docs/COUNTRY_EXPANSION_GUIDE.md` | `copilot-instructions.md §5`, `docs/DATA_SOURCES.md` |
-| **Observability / monitoring** | `docs/MONITORING.md`, `docs/LOG_SCHEMA.md` | `docs/OBSERVABILITY.md`, `docs/ALERT_POLICY.md`, `docs/METRICS.md` |
-| **CI / CD** | `copilot-instructions.md §13`, `copilot-instructions.md §8.10` | `docs/ENVIRONMENT_STRATEGY.md`, `docs/DEPLOYMENT.md` |
-| **Feature flags** | `docs/FEATURE_FLAGS.md` | `docs/FEATURE_SUNSETTING.md`, `docs/GOVERNANCE_BLUEPRINT.md` |
-| **Pipeline / ETL** | `docs/DATA_SOURCES.md`, `docs/DATA_PROVENANCE.md` | `copilot-instructions.md §6` |
-| **EAN / barcode** | `docs/EAN_VALIDATION_STATUS.md` | `copilot-instructions.md §4 Tables (product_submissions)` |
-| **i18n / localization** | `copilot-instructions.md §15.15`, `docs/COUNTRY_EXPANSION_GUIDE.md` | `docs/DATA_SOURCES.md` |
-| **Brand / assets** | `docs/BRAND_GUIDELINES.md` | `docs/assets/design-tokens.json`, `docs/UX_UI_DESIGN.md` |
-| **Governance / policy** | `docs/GOVERNANCE_BLUEPRINT.md`, `docs/REPO_GOVERNANCE.md` | `docs/DOCUMENTATION_GOVERNANCE.md`, `docs/DOMAIN_BOUNDARIES.md` |
-| **SLOs / alerting** | `docs/SLO.md`, `docs/ALERT_POLICY.md` | `docs/MONITORING.md`, `docs/INCIDENT_RESPONSE.md`, `docs/ON_CALL_POLICY.md` |
-| **Contract testing** | `docs/CONTRACT_TESTING.md`, `docs/API_CONTRACTS.md` | `docs/API_VERSIONING.md`, `copilot-instructions.md §8.12` |
-| **Data integrity** | `docs/DATA_INTEGRITY_AUDITS.md` | `docs/EAN_VALIDATION_STATUS.md`, `docs/PRODUCTION_DATA.md`, `docs/DATA_PROVENANCE.md` |
+| Domain                         | Load First                                                          | Also Relevant                                                                         |
+| ------------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| **Database schema**            | `docs/ARCHITECTURE.md`, `docs/MIGRATION_CONVENTIONS.md`             | `copilot-instructions.md §4`, `docs/DATA_PROVENANCE.md`                               |
+| **Migrations**                 | `docs/MIGRATION_CONVENTIONS.md`, `docs/BACKFILL_STANDARD.md`        | `copilot-instructions.md §7`                                                          |
+| **Scoring formula**            | `docs/SCORING_METHODOLOGY.md`, `docs/SCORING_ENGINE.md`             | `copilot-instructions.md §14`, `docs/DRIFT_DETECTION.md`                              |
+| **API / RPC functions**        | `docs/API_CONTRACTS.md`, `docs/API_CONVENTIONS.md`                  | `docs/API_VERSIONING.md`, `docs/FRONTEND_API_MAP.md`, `docs/api-registry.yaml`        |
+| **Search / indexing**          | `docs/SEARCH_ARCHITECTURE.md`                                       | `docs/PERFORMANCE_GUARDRAILS.md`                                                      |
+| **Frontend components**        | `docs/UX_UI_DESIGN.md`, `docs/BRAND_GUIDELINES.md`                  | `docs/UX_IMPACT_METRICS.md`                                                           |
+| **Security / RLS**             | `docs/SECURITY_AUDIT.md`, `docs/PRIVACY_CHECKLIST.md`               | `docs/ACCESS_AUDIT.md`, `docs/RATE_LIMITING.md`                                       |
+| **Performance**                | `docs/PERFORMANCE_GUARDRAILS.md`, `docs/PERFORMANCE_REPORT.md`      | `docs/SEARCH_ARCHITECTURE.md`, `docs/SLO.md`                                          |
+| **Multi-market expansion**     | `docs/COUNTRY_EXPANSION_GUIDE.md`                                   | `copilot-instructions.md §5`, `docs/DATA_SOURCES.md`                                  |
+| **Observability / monitoring** | `docs/MONITORING.md`, `docs/LOG_SCHEMA.md`                          | `docs/OBSERVABILITY.md`, `docs/ALERT_POLICY.md`, `docs/METRICS.md`                    |
+| **CI / CD**                    | `copilot-instructions.md §13`, `copilot-instructions.md §8.10`      | `docs/ENVIRONMENT_STRATEGY.md`, `docs/DEPLOYMENT.md`                                  |
+| **Feature flags**              | `docs/FEATURE_FLAGS.md`                                             | `docs/FEATURE_SUNSETTING.md`, `docs/GOVERNANCE_BLUEPRINT.md`                          |
+| **Pipeline / ETL**             | `docs/DATA_SOURCES.md`, `docs/DATA_PROVENANCE.md`                   | `copilot-instructions.md §6`                                                          |
+| **EAN / barcode**              | `docs/EAN_VALIDATION_STATUS.md`                                     | `copilot-instructions.md §4 Tables (product_submissions)`                             |
+| **i18n / localization**        | `copilot-instructions.md §15.15`, `docs/COUNTRY_EXPANSION_GUIDE.md` | `docs/DATA_SOURCES.md`                                                                |
+| **Brand / assets**             | `docs/BRAND_GUIDELINES.md`                                          | `docs/assets/design-tokens.json`, `docs/UX_UI_DESIGN.md`                              |
+| **Governance / policy**        | `docs/GOVERNANCE_BLUEPRINT.md`, `docs/REPO_GOVERNANCE.md`           | `docs/DOCUMENTATION_GOVERNANCE.md`, `docs/DOMAIN_BOUNDARIES.md`                       |
+| **SLOs / alerting**            | `docs/SLO.md`, `docs/ALERT_POLICY.md`                               | `docs/MONITORING.md`, `docs/INCIDENT_RESPONSE.md`, `docs/ON_CALL_POLICY.md`           |
+| **Contract testing**           | `docs/CONTRACT_TESTING.md`, `docs/API_CONTRACTS.md`                 | `docs/API_VERSIONING.md`, `copilot-instructions.md §8.12`                             |
+| **Data integrity**             | `docs/DATA_INTEGRITY_AUDITS.md`                                     | `docs/EAN_VALIDATION_STATUS.md`, `docs/PRODUCTION_DATA.md`, `docs/DATA_PROVENANCE.md` |
 
 ### 20.5 Quick Health Commands
 

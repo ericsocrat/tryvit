@@ -109,7 +109,7 @@ if ($ShowValues) {
     Write-Host "  ── Loaded Variables ──────────────────────────────────" -ForegroundColor Gray
 
     # Non-secret keys shown in full; secrets masked
-    $secret_patterns = @("KEY","TOKEN","SECRET","PASSWORD","PASS","PRIVATE","AUTH")
+    $secret_patterns = @("KEY", "TOKEN", "SECRET", "PASSWORD", "PASS", "PRIVATE", "AUTH")
 
     foreach ($key in $loaded_keys | Sort-Object) {
         $val = [System.Environment]::GetEnvironmentVariable($key)
@@ -178,7 +178,8 @@ if ($Verify) {
             if ($code -in @(400, 401, 403, 404)) {
                 Write-Ok "Remote Supabase reachable (HTTP $code — expected without auth)"
                 $pass++
-            } else {
+            }
+            else {
                 Write-Warn "Remote Supabase unreachable ($($_.Exception.Message))"
                 $fail++
             }
@@ -205,7 +206,8 @@ if ($Verify) {
             if ($code -in @(401, 403)) {
                 Write-Ok "Upstash Redis reachable (auth required — as expected)"
                 $pass++
-            } else {
+            }
+            else {
                 Write-Warn "Upstash Redis unreachable ($($_.Exception.Message))"
                 $fail++
             }
@@ -232,7 +234,8 @@ if ($Verify) {
             if ($code -gt 0) {
                 Write-Ok "App URL reachable (HTTP $code)"
                 $pass++
-            } else {
+            }
+            else {
                 Write-Warn "App URL unreachable ($($_.Exception.Message))"
                 $fail++
             }

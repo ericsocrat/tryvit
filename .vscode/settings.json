@@ -5,11 +5,12 @@
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
   "editor.formatOnSave": true,
-  "editor.rulers": [100],
+  "editor.rulers": [
+    100
+  ],
   "files.eol": "\n",
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
-
   // ═══════════════════════════════════════════════════════════════════════
   // File associations
   // ═══════════════════════════════════════════════════════════════════════
@@ -18,7 +19,6 @@
     ".env.*": "dotenv",
     ".env.example": "dotenv"
   },
-
   // ═══════════════════════════════════════════════════════════════════════
   // SQLTools — local Supabase connection
   // ═══════════════════════════════════════════════════════════════════════
@@ -37,12 +37,10 @@
   "sqltools.autoOpenSessionFiles": false,
   "sqltools.results.reuseTabs": "connection",
   "sqltools.format.indentSize": 2,
-
   // ═══════════════════════════════════════════════════════════════════════
   // PostgreSQL (ms-ossdata.vscode-pgsql)
   // ═══════════════════════════════════════════════════════════════════════
   "pgsql.defaultDatabase": "postgres",
-
   // ═══════════════════════════════════════════════════════════════════════
   // SQL formatting
   // ═══════════════════════════════════════════════════════════════════════
@@ -51,7 +49,6 @@
     "editor.formatOnSave": false,
     "editor.defaultFormatter": "mtxr.sqltools"
   },
-
   // ═══════════════════════════════════════════════════════════════════════
   // PowerShell
   // ═══════════════════════════════════════════════════════════════════════
@@ -61,7 +58,6 @@
   },
   "powershell.codeFormatting.preset": "Stroustrup",
   "powershell.integratedConsole.showOnStartup": false,
-
   // ═══════════════════════════════════════════════════════════════════════
   // Markdown
   // ═══════════════════════════════════════════════════════════════════════
@@ -71,7 +67,6 @@
     "editor.defaultFormatter": "yzhang.markdown-all-in-one"
   },
   "markdown.extension.toc.levels": "2..4",
-
   // ═══════════════════════════════════════════════════════════════════════
   // TOML
   // ═══════════════════════════════════════════════════════════════════════
@@ -80,7 +75,6 @@
   },
   "evenBetterToml.formatter.alignEntries": false,
   "evenBetterToml.formatter.compactArrays": true,
-
   // ═══════════════════════════════════════════════════════════════════════
   // Todo Tree — custom tags used in SQL & docs
   // ═══════════════════════════════════════════════════════════════════════
@@ -93,12 +87,30 @@
     "REVIEW"
   ],
   "todo-tree.highlights.customHighlight": {
-    "TODO": { "icon": "checklist", "foreground": "#FFA500" },
-    "FIXME": { "icon": "alert", "foreground": "#FF4500" },
-    "HACK": { "icon": "flame", "foreground": "#FF6347" },
-    "LEGACY": { "icon": "archive", "foreground": "#A0A0A0" },
-    "PLACEHOLDER": { "icon": "pencil", "foreground": "#87CEEB" },
-    "REVIEW": { "icon": "eye", "foreground": "#9370DB" }
+    "TODO": {
+      "icon": "checklist",
+      "foreground": "#FFA500"
+    },
+    "FIXME": {
+      "icon": "alert",
+      "foreground": "#FF4500"
+    },
+    "HACK": {
+      "icon": "flame",
+      "foreground": "#FF6347"
+    },
+    "LEGACY": {
+      "icon": "archive",
+      "foreground": "#A0A0A0"
+    },
+    "PLACEHOLDER": {
+      "icon": "pencil",
+      "foreground": "#87CEEB"
+    },
+    "REVIEW": {
+      "icon": "eye",
+      "foreground": "#9370DB"
+    }
   },
   "todo-tree.filtering.excludeGlobs": [
     "**/node_modules/**",
@@ -107,50 +119,159 @@
     "**/coverage/**",
     "**/.venv/**"
   ],
-
   // ═══════════════════════════════════════════════════════════════════════
   // Code Spell Checker — project dictionary
   // ═══════════════════════════════════════════════════════════════════════
   "cSpell.words": [
     // ── Polish retail brands & stores ───────────────────────────────────
-    "supabase", "psql", "postgres", "upsert", "upserts", "idempotent", "idempotency",
-    "nutri", "nutriscore", "NOVA", "zabka", "Żabka", "Biedronka", "Lidl", "Rossmann",
-    "Auchan", "Carrefour", "Makro", "Netto", "Leclerc", "Selgros", "HoReCa",
+    "supabase",
+    "psql",
+    "postgres",
+    "upsert",
+    "upserts",
+    "idempotent",
+    "idempotency",
+    "nutri",
+    "nutriscore",
+    "NOVA",
+    "zabka",
+    "Żabka",
+    "Biedronka",
+    "Lidl",
+    "Rossmann",
+    "Auchan",
+    "Carrefour",
+    "Makro",
+    "Netto",
+    "Leclerc",
+    "Selgros",
+    "HoReCa",
     // ── Food & snack brands ──────────────────────────────────────────────
-    "Pringles", "Doritos", "Cheetos", "Crunchips", "Lorenz", "Chio",
-    "Piątnica", "Melvit", "Tarczyński", "Somersby", "Mestemacher", "Marinero",
-    "Lajkonik", "Naleśniki", "Pudliszki", "Wedel", "Indomie",
+    "Pringles",
+    "Doritos",
+    "Cheetos",
+    "Crunchips",
+    "Lorenz",
+    "Chio",
+    "Piątnica",
+    "Melvit",
+    "Tarczyński",
+    "Somersby",
+    "Mestemacher",
+    "Marinero",
+    "Lajkonik",
+    "Naleśniki",
+    "Pudliszki",
+    "Wedel",
+    "Indomie",
     // ── Nutrition & food science ─────────────────────────────────────────
-    "saturated", "unhealthiness", "healthiness", "additives", "diacritics",
-    "reformulates", "allergen", "allergens", "provenance", "idempotency",
-    "EFSA", "GDPR", "RODO", "Nutri", "nutriscore", "NOVA", "tsvector", "trgm",
-    "MADR", "VAIO", "VAPID",
+    "saturated",
+    "unhealthiness",
+    "healthiness",
+    "additives",
+    "diacritics",
+    "reformulates",
+    "allergen",
+    "allergens",
+    "provenance",
+    "idempotency",
+    "EFSA",
+    "GDPR",
+    "RODO",
+    "Nutri",
+    "nutriscore",
+    "NOVA",
+    "tsvector",
+    "trgm",
+    "MADR",
+    "VAIO",
+    "VAPID",
     // ── Project architecture ──────────────────────────────────────────────
-    "supabase", "pgTAP", "psql", "postgresql", "pgcrypto", "plpgsql", "pgrst",
-    "jsonb", "jsonc", "upserted", "upserting", "backfill", "backfills",
-    "idempotent", "materialized", "denormalized", "subscore", "prepend",
-    "pipelines", "servings", "SKU",
+    "supabase",
+    "pgTAP",
+    "psql",
+    "postgresql",
+    "pgcrypto",
+    "plpgsql",
+    "pgrst",
+    "jsonb",
+    "jsonc",
+    "upserted",
+    "upserting",
+    "backfill",
+    "backfills",
+    "idempotent",
+    "materialized",
+    "denormalized",
+    "subscore",
+    "prepend",
+    "pipelines",
+    "servings",
+    "SKU",
     // ── Frontend / JS ecosystem ───────────────────────────────────────────
-    "vitest", "playwright", "tanstack", "zustand", "serwist", "workbox",
-    "tailwindcss", "clsx", "cva", "classnames", "prettier", "eslint",
-    "turborepo", "monorepo", "nextjs", "supabase", "tryvit", "TryVit",
-    "Tryvit", "vitGreen", "vitDark", "vitLight", "vitAccent",
+    "vitest",
+    "playwright",
+    "tanstack",
+    "zustand",
+    "serwist",
+    "workbox",
+    "tailwindcss",
+    "clsx",
+    "cva",
+    "classnames",
+    "prettier",
+    "eslint",
+    "turborepo",
+    "monorepo",
+    "nextjs",
+    "supabase",
+    "tryvit",
+    "TryVit",
+    "Tryvit",
+    "vitGreen",
+    "vitDark",
+    "vitLight",
+    "vitAccent",
     // ── Database / SQL types ──────────────────────────────────────────────
-    "timestamptz", "bigint", "smallint", "bytea", "uuid", "jsonb", "tsvector",
-    "tsquery", "pgvector", "pgcrypto", "plpgsql", "pgrst", "rls",
+    "timestamptz",
+    "bigint",
+    "smallint",
+    "bytea",
+    "uuid",
+    "jsonb",
+    "tsvector",
+    "tsquery",
+    "pgvector",
+    "pgcrypto",
+    "plpgsql",
+    "pgrst",
+    "rls",
     // ── Open Food Facts / data sources ───────────────────────────────────
-    "OpenFoodFacts", "barcode", "barcodes", "EAN", "GS1", "nutriments",
-    "additifs", "conservateurs",
+    "OpenFoodFacts",
+    "barcode",
+    "barcodes",
+    "EAN",
+    "GS1",
+    "nutriments",
+    "additifs",
+    "conservateurs",
     // ── Misc ─────────────────────────────────────────────────────────────
-    "scannable", "deduplicate", "deduplication", "dedup", "backoffice",
-    "healthcheck", "healthchecks", "automerge", "autorun", "teardown"
+    "scannable",
+    "deduplicate",
+    "deduplication",
+    "dedup",
+    "backoffice",
+    "healthcheck",
+    "healthchecks",
+    "automerge",
+    "autorun",
+    "teardown"
   ],
   "cSpell.enableFiletypes": [
     "sql",
     "powershell",
     "toml"
   ],
-
   // ═══════════════════════════════════════════════════════════════════════
   // Error Lens
   // ═══════════════════════════════════════════════════════════════════════
@@ -161,13 +282,11 @@
   "errorLens.excludeBySource": [
     "cSpell"
   ],
-
   // ═══════════════════════════════════════════════════════════════════════
   // GitLens
   // ═══════════════════════════════════════════════════════════════════════
   "gitlens.codeLens.enabled": true,
   "gitlens.currentLine.enabled": true,
-
   // ═══════════════════════════════════════════════════════════════════════
   // SonarLint / SonarQube for IDE
   // ═══════════════════════════════════════════════════════════════════════
@@ -183,14 +302,25 @@
     "**/.github/workflows/**"
   ],
   "sonarlint.rules": {
-    "plsql:S1192": { "level": "off" },
-    "plsql:S1138": { "level": "off" },
-    "plsql:NullComparison": { "level": "off" },
-    "plsql:JoinConditionNumberCheck": { "level": "off" },
-    "typescript:S7780": { "level": "off" },
-    "yaml:S2068": { "level": "off" }
+    "plsql:S1192": {
+      "level": "off"
+    },
+    "plsql:S1138": {
+      "level": "off"
+    },
+    "plsql:NullComparison": {
+      "level": "off"
+    },
+    "plsql:JoinConditionNumberCheck": {
+      "level": "off"
+    },
+    "typescript:S7780": {
+      "level": "off"
+    },
+    "yaml:S2068": {
+      "level": "off"
+    }
   },
-
   // ═══════════════════════════════════════════════════════════════════════
   // TypeScript / JavaScript
   // ═══════════════════════════════════════════════════════════════════════
@@ -225,14 +355,22 @@
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "javascript.updateImportsOnFileMove.enabled": "always",
   "typescript.updateImportsOnFileMove.enabled": "always",
-
   // ═══════════════════════════════════════════════════════════════════════
   // ESLint
   // ═══════════════════════════════════════════════════════════════════════
-  "eslint.workingDirectories": [{ "directory": "frontend", "changeProcessCWD": true }],
-  "eslint.validate": ["typescript", "typescriptreact", "javascript", "javascriptreact"],
+  "eslint.workingDirectories": [
+    {
+      "directory": "frontend",
+      "changeProcessCWD": true
+    }
+  ],
+  "eslint.validate": [
+    "typescript",
+    "typescriptreact",
+    "javascript",
+    "javascriptreact"
+  ],
   "eslint.format.enable": true,
-
   // ═══════════════════════════════════════════════════════════════════════
   // JSON / JSONC
   // ═══════════════════════════════════════════════════════════════════════
@@ -244,7 +382,6 @@
     "editor.tabSize": 2,
     "editor.defaultFormatter": "vscode.json-language-features"
   },
-
   // ═══════════════════════════════════════════════════════════════════════
   // YAML — Red Hat formatter + GitHub Actions schema
   // ═══════════════════════════════════════════════════════════════════════
@@ -260,7 +397,6 @@
   "yaml.format.enable": true,
   "yaml.validate": true,
   "yaml.completion": true,
-
   // ═══════════════════════════════════════════════════════════════════════
   // CSS / Tailwind
   // ═══════════════════════════════════════════════════════════════════════
@@ -270,10 +406,22 @@
   },
   "css.validate": true,
   "tailwindCSS.experimental.classRegex": [
-    ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
-    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
-    ["cva\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
-    ["twMerge\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+    [
+      "clsx\\(([^)]*)\\)",
+      "(?:'|\"|`)([^']*)(?:'|\"|`)"
+    ],
+    [
+      "cn\\(([^)]*)\\)",
+      "(?:'|\"|`)([^']*)(?:'|\"|`)"
+    ],
+    [
+      "cva\\(([^)]*)\\)",
+      "(?:'|\"|`)([^']*)(?:'|\"|`)"
+    ],
+    [
+      "twMerge\\(([^)]*)\\)",
+      "(?:'|\"|`)([^']*)(?:'|\"|`)"
+    ]
   ],
   "tailwindCSS.includeLanguages": {
     "typescript": "javascript",
@@ -281,7 +429,6 @@
   },
   "css.customData": [],
   "scss.validate": false,
-
   // ═══════════════════════════════════════════════════════════════════════
   // Ruff (Python linter / formatter)
   // ═══════════════════════════════════════════════════════════════════════
@@ -302,12 +449,10 @@
   "python.terminal.activateEnvironment": true,
   "python.analysis.typeCheckingMode": "basic",
   "python.analysis.autoImportCompletions": true,
-
   // ═══════════════════════════════════════════════════════════════════════
   // Docker
   // ═══════════════════════════════════════════════════════════════════════
   "docker.showStartPage": false,
-
   // ═══════════════════════════════════════════════════════════════════════
   // Terminal — default PowerShell + Polish character encoding
   // ═══════════════════════════════════════════════════════════════════════
@@ -316,7 +461,6 @@
     "PYTHONIOENCODING": "utf-8"
   },
   "terminal.integrated.scrollback": 5000,
-
   // ═══════════════════════════════════════════════════════════════════════
   // File Watcher — exclude heavy directories from watching
   // ═══════════════════════════════════════════════════════════════════════
@@ -336,7 +480,6 @@
     "**/.venv/**": true,
     "**/dist/**": true
   },
-
   // ═══════════════════════════════════════════════════════════════════════
   // Explorer — file nesting rules
   // ═══════════════════════════════════════════════════════════════════════
@@ -358,7 +501,6 @@
     "CHANGELOG.md": "CURRENT_STATE.md",
     "copilot-instructions.md": "docs/AGENT_WORKFLOW.md"
   },
-
   // ═══════════════════════════════════════════════════════════════════════
   // Editor refinements
   // ═══════════════════════════════════════════════════════════════════════
@@ -371,7 +513,6 @@
   "editor.unicodeHighlight.ambiguousCharacters": false,
   "editor.suggest.showStatusBar": true,
   "editor.inlineSuggest.enabled": true,
-
   // ═══════════════════════════════════════════════════════════════════════
   // Search — exclude noise
   // ═══════════════════════════════════════════════════════════════════════
@@ -389,7 +530,6 @@
     "**/__pycache__": true,
     "**/.venv": true
   },
-
   // ═══════════════════════════════════════════════════════════════════════
   // Todo Tree — scans TS/TSX/YAML in addition to SQL/MD/PS1/PY/TOML
   // ═══════════════════════════════════════════════════════════════════════
@@ -404,13 +544,11 @@
     "**/*.yaml",
     "**/*.yml"
   ],
-
   // ═══════════════════════════════════════════════════════════════════════
   // MSSQL — disable for this PostgreSQL workspace
   // ═══════════════════════════════════════════════════════════════════════
   "mssql.enabled": false,
   "mssql.intelliSense.enableIntelliSense": false,
-
   // ═══════════════════════════════════════════════════════════════════════
   // Search — exclude noise
   // ═══════════════════════════════════════════════════════════════════════
