@@ -10,20 +10,25 @@ import { Icon } from "@/components/common/Icon";
 import { useActiveRoute, type PrimaryRouteKey } from "@/hooks/use-active-route";
 import { useTranslation } from "@/lib/i18n";
 import {
+    Activity,
     Camera,
     ClipboardList,
     Eye,
+    FileText,
     FolderOpen,
+    Gauge,
     Home,
     Scale,
     ScanText,
     Search,
     Settings,
+    ShieldCheck,
     Trophy,
     UtensilsCrossed,
     type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 /* ── Nav item type ────────────────────────────────────────────────────────── */
 
@@ -98,10 +103,37 @@ const SECONDARY_ITEMS: readonly SidebarNavItem[] = [
   },
 ] as const;
 
+/* ── Admin items (middleware-gated, shown unconditionally for discoverability) */
+
+interface AdminNavItem {
+  readonly href: string;
+  readonly labelKey: string;
+  readonly icon: LucideIcon;
+}
+
+const ADMIN_ITEMS: readonly AdminNavItem[] = [
+  {
+    href: "/app/admin/submissions",
+    labelKey: "nav.adminSubmissions",
+    icon: FileText,
+  },
+  {
+    href: "/app/admin/metrics",
+    labelKey: "nav.adminMetrics",
+    icon: Gauge,
+  },
+  {
+    href: "/app/admin/monitoring",
+    labelKey: "nav.adminMonitoring",
+    icon: Activity,
+  },
+] as const;
+
 /* ── Component ────────────────────────────────────────────────────────────── */
 
 export function DesktopSidebar() {
   const activeRoute = useActiveRoute();
+  const pathname = usePathname();
   const { t } = useTranslation();
 
   return (
@@ -136,6 +168,37 @@ export function DesktopSidebar() {
             isActive={activeRoute === item.routeKey}
           />
         ))}
+      </div>
+
+      {/* Divider + admin nav (access gated by middleware) */}
+      <div className="border-t border-border px-3 py-2">
+        <div className="mb-1 flex items-center gap-2 px-3 pt-1 pb-1.5">
+          <Icon icon={ShieldCheck} size="sm" className="text-foreground-tertiary" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-foreground-tertiary">
+            {t("nav.admin")}
+          </span>
+        </div>
+        {ADMIN_ITEMS.map((item) => {
+          const label = t(item.labelKey);
+          const isActive =
+            activeRoute === "admin" &&
+            pathname.startsWith(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={isActive ? "page" : undefined}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                isActive
+                  ? "border-l-3 border-brand bg-brand-subtle font-semibold text-brand"
+                  : "text-foreground-secondary hover:bg-surface-muted hover:text-foreground"
+              }`}
+            >
+              <Icon icon={item.icon} size="md" />
+              <span>{label}</span>
+            </Link>
+          );
+        })}
       </div>
     </nav>
   );

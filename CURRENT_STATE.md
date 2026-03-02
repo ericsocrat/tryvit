@@ -13,17 +13,17 @@
 
 ## Recently Shipped (This Session)
 
-| SHA       | Summary                                                                    |
-| --------- | -------------------------------------------------------------------------- |
-| `282f5db` | docs(screenshots): add visual audit screenshots (41 desktop + 13 mobile)   |
-| `2c60cf6` | test(e2e): add comprehensive visual audit spec (55 tests, all pages)       |
-| `70f50bd` | fix(frontend): replace require() with ESM import in tailwind.config.ts     |
+| SHA       | Summary                                                                  |
+| --------- | ------------------------------------------------------------------------ |
+| `282f5db` | docs(screenshots): add visual audit screenshots (41 desktop + 13 mobile) |
+| `2c60cf6` | test(e2e): add comprehensive visual audit spec (55 tests, all pages)     |
+| `70f50bd` | fix(frontend): replace require() with ESM import in tailwind.config.ts   |
 
 ## Recently Shipped (Last 7 Days)
 
 | Date       | PR/SHA    | Summary                                                                             |
 | ---------- | --------- | ----------------------------------------------------------------------------------- |
-| 2026-03-16 | `282f5db` | Visual audit screenshots (54 PNGs) — direct to main                                |
+| 2026-03-16 | `282f5db` | Visual audit screenshots (54 PNGs) — direct to main                                 |
 | 2026-03-16 | `2c60cf6` | Visual audit Playwright spec (55 tests) — direct to main                            |
 | 2026-03-16 | `70f50bd` | Tailwind ESM fix (require → import) — direct to main                                |
 | 2026-03-15 | #564      | **MERGED** — fix doc count drift — migration 184→185 (closes #562)                  |
@@ -36,15 +36,15 @@
 
 ## CI Gate Status (main branch)
 
-| Gate         | Status | Notes                                                               |
-| ------------ | ------ | ------------------------------------------------------------------- |
-| pr-gate      | ✅      | Typecheck, lint, unit tests, build, Playwright smoke                |
-| main-gate    | ✅      | Last runs all success                                               |
-| qa.yml       | ✅      | 733/733 checks passing                                              |
-| dep-audit    | ✅      | 0 high/critical vulnerabilities                                     |
-| python-lint  | ✅      | 0 ruff errors                                                       |
-| quality-gate | ⚠️      | 18/20 pass; dashboard 400s from staging DB schema gap               |
-| nightly      | ✅      | Data audit fix shipped (#560)                                       |
+| Gate         | Status | Notes                                                 |
+| ------------ | ------ | ----------------------------------------------------- |
+| pr-gate      | ✅      | Typecheck, lint, unit tests, build, Playwright smoke  |
+| main-gate    | ✅      | Last runs all success                                 |
+| qa.yml       | ✅      | 733/733 checks passing                                |
+| dep-audit    | ✅      | 0 high/critical vulnerabilities                       |
+| python-lint  | ✅      | 0 ruff errors                                         |
+| quality-gate | ⚠️      | 18/20 pass; dashboard 400s from staging DB schema gap |
+| nightly      | ✅      | Data audit fix shipped (#560)                         |
 
 ## Open Issues (19 total)
 
@@ -57,25 +57,25 @@
 
 ### Milestone #17 — Elite World-Class UX v1.0 (17 issues)
 
-| Issue | Priority | Summary                                                           |
-| ----- | -------- | ----------------------------------------------------------------- |
-| #566  | P0       | Add real logomark SVG throughout the app                          |
-| #567  | P0       | Add admin links to desktop navigation                             |
-| #568  | P0       | Add branding and illustration to auth pages                       |
-| #569  | P1       | Simplify dashboard to 3-4 focused sections                       |
-| #570  | P1       | Make /learn/* pages public (remove auth gate)                     |
-| #571  | P1       | Break settings into grouped sub-pages                             |
-| #572  | P1       | Simplify product listing rows in category pages                   |
-| #573  | P2       | Redesign landing page with hero, features, social proof           |
-| #574  | P2       | Improve product image fallback with styled placeholder            |
-| #575  | P2       | Align navigation items across desktop breakpoints                 |
-| #576  | P2       | Progressive disclosure on product detail page                     |
-| #577  | P3       | Rename Home to Dashboard in navigation labels                     |
-| #578  | P3       | Add admin sub-navigation between admin pages                      |
-| #579  | P3       | Friendly 403 page for non-admin users                             |
-| #580  | P3       | Replace hardcoded colors in admin with design tokens              |
-| #581  | P3       | Replace category emoji icons with SVG icons                       |
-| #582  | P3       | Add social login (Google, Apple) via Supabase Auth                |
+| Issue | Priority | Summary                                                 |
+| ----- | -------- | ------------------------------------------------------- |
+| #566  | P0       | Add real logomark SVG throughout the app                |
+| #567  | P0       | Add admin links to desktop navigation                   |
+| #568  | P0       | Add branding and illustration to auth pages             |
+| #569  | P1       | Simplify dashboard to 3-4 focused sections              |
+| #570  | P1       | Make /learn/* pages public (remove auth gate)           |
+| #571  | P1       | Break settings into grouped sub-pages                   |
+| #572  | P1       | Simplify product listing rows in category pages         |
+| #573  | P2       | Redesign landing page with hero, features, social proof |
+| #574  | P2       | Improve product image fallback with styled placeholder  |
+| #575  | P2       | Align navigation items across desktop breakpoints       |
+| #576  | P2       | Progressive disclosure on product detail page           |
+| #577  | P3       | Rename Home to Dashboard in navigation labels           |
+| #578  | P3       | Add admin sub-navigation between admin pages            |
+| #579  | P3       | Friendly 403 page for non-admin users                   |
+| #580  | P3       | Replace hardcoded colors in admin with design tokens    |
+| #581  | P3       | Replace category emoji icons with SVG icons             |
+| #582  | P3       | Add social login (Google, Apple) via Supabase Auth      |
 
 ## Next Planned Work
 

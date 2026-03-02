@@ -7,9 +7,9 @@
 //
 // Issue #72 — Desktop Navigation Architecture
 
-import Link from "next/link";
 import { useActiveRoute, type PrimaryRouteKey } from "@/hooks/use-active-route";
 import { useTranslation } from "@/lib/i18n";
+import Link from "next/link";
 
 /* ── Route definitions ────────────────────────────────────────────────────── */
 
@@ -32,6 +32,11 @@ const NAV_ITEMS: readonly HeaderNavItem[] = [
     routeKey: "categories",
   },
   { href: "/app/settings", labelKey: "nav.settings", routeKey: "settings" },
+  {
+    href: "/app/admin/submissions",
+    labelKey: "nav.admin",
+    routeKey: "admin",
+  },
 ] as const;
 
 /* ── Component ────────────────────────────────────────────────────────────── */

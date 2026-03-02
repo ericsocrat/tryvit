@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { DesktopHeaderNav } from "./DesktopHeaderNav";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -33,6 +33,7 @@ describe("DesktopHeaderNav", () => {
     expect(screen.getByText("Compare")).toBeInTheDocument();
     expect(screen.getByText("Categories")).toBeInTheDocument();
     expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByText("Admin")).toBeInTheDocument();
   });
 
   it("renders the header navigation landmark", () => {
@@ -70,6 +71,17 @@ describe("DesktopHeaderNav", () => {
       "href",
       "/app/compare",
     );
+    expect(screen.getByText("Admin").closest("a")).toHaveAttribute(
+      "href",
+      "/app/admin/submissions",
+    );
+  });
+
+  it("marks Admin as active on /app/admin paths", () => {
+    mockPathname.mockReturnValue("/app/admin/metrics");
+    render(<DesktopHeaderNav />);
+    const adminLink = screen.getByText("Admin").closest("a");
+    expect(adminLink).toHaveAttribute("aria-current", "page");
   });
 
   it("nav has lg:flex and xl:hidden classes for responsive visibility", () => {

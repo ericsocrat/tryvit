@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { DesktopSidebar } from "./DesktopSidebar";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -37,6 +37,46 @@ describe("DesktopSidebar", () => {
   it("renders settings in secondary section", () => {
     render(<DesktopSidebar />);
     expect(screen.getByText("Settings")).toBeInTheDocument();
+  });
+
+  // ─── Admin section ─────────────────────────────────────────────────────────
+
+  it("renders admin section with heading and three sub-links", () => {
+    render(<DesktopSidebar />);
+    expect(screen.getByText("Admin")).toBeInTheDocument();
+    expect(screen.getByText("Submissions")).toBeInTheDocument();
+    expect(screen.getByText("Metrics")).toBeInTheDocument();
+    expect(screen.getByText("Monitoring")).toBeInTheDocument();
+  });
+
+  it("has correct hrefs for admin sub-links", () => {
+    render(<DesktopSidebar />);
+    expect(screen.getByText("Submissions").closest("a")).toHaveAttribute(
+      "href",
+      "/app/admin/submissions",
+    );
+    expect(screen.getByText("Metrics").closest("a")).toHaveAttribute(
+      "href",
+      "/app/admin/metrics",
+    );
+    expect(screen.getByText("Monitoring").closest("a")).toHaveAttribute(
+      "href",
+      "/app/admin/monitoring",
+    );
+  });
+
+  it("marks admin sub-link as active on /app/admin/submissions", () => {
+    mockPathname.mockReturnValue("/app/admin/submissions");
+    render(<DesktopSidebar />);
+    const submissionsLink = screen.getByText("Submissions").closest("a");
+    expect(submissionsLink).toHaveAttribute("aria-current", "page");
+  });
+
+  it("does not mark admin sub-links as active on non-admin route", () => {
+    mockPathname.mockReturnValue("/app/search");
+    render(<DesktopSidebar />);
+    const submissionsLink = screen.getByText("Submissions").closest("a");
+    expect(submissionsLink).not.toHaveAttribute("aria-current");
   });
 
   it("renders the sidebar navigation landmark", () => {
