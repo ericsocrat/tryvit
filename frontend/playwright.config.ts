@@ -58,6 +58,26 @@ const visualAuthenticatedProject = {
   },
 };
 
+// ── Screenshot capture toggle ───────────────────────────────────────────────
+// Set CAPTURE_SCREENSHOTS=true to enable the screenshot capture project.
+// This captures polished PNGs for docs/screenshots/ (Issues #404, #430, #431).
+const HAS_SCREENSHOTS = !!process.env.CAPTURE_SCREENSHOTS;
+
+const screenshotsProject = {
+  name: "screenshots",
+  testMatch: /screenshot-capture\.spec\.ts/,
+  // Self-contained: handles its own auth (no dependency on auth-setup).
+  // CSP bypass needed because local Supabase (127.0.0.1) is blocked by
+  // connect-src in production CSP headers.
+  dependencies: [] as string[],
+  use: {
+    ...devices["Desktop Chrome"],
+    bypassCSP: true,
+    actionTimeout: 15_000,
+    navigationTimeout: 20_000,
+  },
+};
+
 // ── Quality gate audit toggle ───────────────────────────────────────────────
 const HAS_QUALITY = !!process.env.QA_MODE_LEVEL;
 
@@ -95,6 +115,7 @@ const projects = [
   ...(HAS_VISUAL ? [visualSmokeProject] : []),
   ...(HAS_VISUAL && HAS_AUTH ? [visualAuthenticatedProject] : []),
   ...(HAS_QUALITY ? [qualityMobileProject, qualityDesktopProject] : []),
+  ...(HAS_SCREENSHOTS ? [screenshotsProject] : []),
 ];
 
 /* ── Config ──────────────────────────────────────────────────────────────── */
