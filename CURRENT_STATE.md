@@ -1,21 +1,25 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-03-01 20:30 UTC by GitHub Copilot
+> **Last updated:** 2026-03-02 03:20 UTC by GitHub Copilot
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
 
 ## Active Branch & PR
 
-- **Branch:** `main`
-- **Latest SHA:** `a3bb704`
-- **Open PRs:** None
+- **Branch:** `chore/rename-to-tryvit-clean` (rename PR — open, awaiting CI)
+- **Latest SHA:** `95169e0`
+- **Open PRs:** [#546](https://github.com/ericsocrat/tryvit/pull/546) — chore(cleanup): rename poland-food-db → TryVit across all source files
+- **main SHA:** `3bd6fb3` (origin/main — stable, unmodified)
+
+> ⚠️ **GitHub repo already renamed** — remote is now `https://github.com/ericsocrat/tryvit.git`
 
 ## Recently Shipped (Last 7 Days)
 
-| Date       | PR   | Summary                                                                 |
-| ---------- | ---- | ----------------------------------------------------------------------- |
-| 2026-03-01 | #540 | fix(deps): resolve 6 high-severity npm audit vulnerabilities            |
+| Date       | PR    | Summary                                                                                             |
+| ---------- | ----- | --------------------------------------------------------------------------------------------------- |
+| 2026-03-02 | #546  | chore(cleanup): rename poland-food-db → TryVit across all source files (open PR, awaiting CI)      |
+| 2026-03-01 | #540  | fix(deps): resolve 6 high-severity npm audit vulnerabilities                                        |
 | 2026-03-01 | #537 | fix(ci): exclude script tags from quality-gate body text checks         |
 | 2026-03-01 | #536 | fix(ci): add 5xx network-error allowlist for quality-gate audits        |
 | 2026-03-01 | #535 | fix(ci): fix quality-gate browser overrides for mobile/desktop projects |
@@ -49,10 +53,10 @@
 
 ## Open Issues (7 total)
 
-| Issue | Priority | Effort | Summary                                              |
-| ----- | -------- | ------ | ---------------------------------------------------- |
-| #539  | —        | High   | Full project rename — comprehensive migration plan   |
-| #530  | P2       | High   | Comprehensive Playwright Functional E2E Suite        |
+| Issue | Priority | Effort | Summary                                                         |
+| ----- | -------- | ------ | --------------------------------------------------------------- |
+| #539  | —        | High   | Full project rename — PR #546 open, awaiting CI merge           |
+| #530  | P2       | High   | Comprehensive Playwright Functional E2E Suite                   |
 | #431  | P3       | Medium | Mobile/dark mode/device-framed screenshots           |
 | #430  | P3       | High   | 12 polished desktop screenshots                      |
 | #404  | P3       | High   | Epic: App Screenshot Mockups                         |
@@ -61,10 +65,10 @@
 
 ## Next Planned Work
 
-- [ ] #539 — Full project rename (blocked on new name decision)
+- [ ] Merge #546 — rename PR (awaiting CI); then close #539
+- [ ] After merge: update remote URL refs in `.git/config` (local repo) → `https://github.com/ericsocrat/tryvit.git`
+- [ ] After merge: manual external service display names (Vercel, SonarCloud, Sentry, Supabase)
 - [ ] #530 — Comprehensive Playwright Functional E2E Suite (largely obsolete — ~276 E2E tests already exist; needs triage/update)
-- [x] Triage #527 (Renovate) — closed, keeping Dependabot
-- [x] Fix #483 (minimatch) + serialize-javascript audit — shipped as #540
 
 ## Key Metrics Snapshot
 
@@ -72,7 +76,7 @@
 - **QA checks:** 733/733 passing
 - **EAN coverage:** 1,277/1,279 with EAN (99.8%)
 - **Frontend test coverage:** ~88% lines (SonarCloud Quality Gate passing)
-- **Open issues:** 7 | **Open PRs:** 0
+- **Open issues:** 7 | **Open PRs:** 1 (#546 rename)
 - **Vitest test files:** 255 co-located unit/component tests
 - **DB migrations:** 182 append-only
 
