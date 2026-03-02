@@ -536,5 +536,5 @@ Changes that **MUST** be flagged as breaking in commits and changelog:
 
 ---
 
-[Unreleased]: https://github.com/ericsocrat/poland-food-db/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/ericsocrat/poland-food-db/releases/tag/v0.1.0
+[Unreleased]: https://github.com/ericsocrat/tryvit/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/ericsocrat/tryvit/releases/tag/v0.1.0
