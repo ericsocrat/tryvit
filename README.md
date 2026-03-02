@@ -6,7 +6,7 @@
 <!-- ═══════════════════════════ 1. HERO BANNER ═══════════════════════════ -->
 
 <p align="center">
-  <img src="docs/assets/banners/readme-banner.png" alt="TryVit — Science-driven food quality intelligence" width="100%" />
+  <img src="docs/assets/banners/readme-banner.png" alt="TryVit — Food Health Scanner" width="100%" />
 </p>
 
 <!-- ═══════════════════════════ 2. BADGES ROW ════════════════════════════ -->
@@ -16,7 +16,7 @@
   <img src="https://img.shields.io/badge/QA%20checks-733%20passing-brightgreen?style=flat-square" alt="QA Checks" />
   <img src="https://img.shields.io/badge/coverage-%E2%89%A588%25-brightgreen?style=flat-square" alt="Coverage" />
   <img src="https://img.shields.io/badge/products-1%2C281-1DB954?style=flat-square" alt="Products" />
-  <img src="https://img.shields.io/badge/countries-PL%20%2B%20DE-1DB954?style=flat-square" alt="Countries" />
+  <img src="https://img.shields.io/badge/market-Poland-1DB954?style=flat-square" alt="Market" />
   <img src="https://img.shields.io/badge/scoring-v3.2-7c3aed?style=flat-square" alt="Scoring Version" />
   <a href="LICENSE"><img src="https://img.shields.io/github/license/ericsocrat/tryvit?style=flat-square" alt="License" /></a>
   <img src="https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
@@ -26,7 +26,7 @@
 <!-- ═══════════════════════════ 3. ELEVATOR PITCH ════════════════════════ -->
 
 <p align="center">
-  <strong>A transparent, multi-axis food quality database for Poland and Germany.</strong><br />
+  <strong>Scan, score &amp; compare food products with multi-axis health scoring.</strong><br />
   Every product scored on 9 independent factors. Every number traceable to its source.<br />
   Not a calorie counter. Not a Nutri-Score app. A research-grade scoring engine.
 </p>
@@ -230,7 +230,7 @@ Every score is fully explainable via `api_score_explanation()` — returns the 9
   <tr>
     <td align="center" width="16%"><strong>1,281</strong><br />Active Products</td>
     <td align="center" width="16%"><strong>25</strong><br />Categories</td>
-    <td align="center" width="16%"><strong>PL + DE</strong><br />Countries</td>
+    <td align="center" width="16%"><strong>PL</strong><br />Primary Market</td>
     <td align="center" width="16%"><strong>2,995</strong><br />Ingredients</td>
     <td align="center" width="16%"><strong>99.8%</strong><br />EAN Coverage</td>
     <td align="center" width="16%"><strong>182</strong><br />Migrations</td>

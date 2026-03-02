@@ -7,7 +7,7 @@
 
 ```markdown
 <p align="center">
-  <img src="docs/assets/banners/readme-banner.png" alt="TryVit — Science-driven food quality intelligence" width="100%" />
+  <img src="docs/assets/banners/readme-banner.png" alt="TryVit — Food Health Scanner" width="100%" />
 </p>
 ```
 
@@ -19,7 +19,7 @@
   <img src="https://img.shields.io/badge/QA%20checks-733%20passing-brightgreen?style=flat-square" alt="QA Checks" />
   <img src="https://img.shields.io/badge/coverage-%E2%89%A588%25-brightgreen?style=flat-square" alt="Coverage" />
   <img src="https://img.shields.io/badge/products-1%2C281-1DB954?style=flat-square" alt="Products" />
-  <img src="https://img.shields.io/badge/countries-PL%20%2B%20DE-1DB954?style=flat-square" alt="Countries" />
+  <img src="https://img.shields.io/badge/market-Poland-1DB954?style=flat-square" alt="Market" />
   <img src="https://img.shields.io/badge/scoring-v3.2-7c3aed?style=flat-square" alt="Scoring Version" />
   <a href="LICENSE"><img src="https://img.shields.io/github/license/ericsocrat/tryvit?style=flat-square" alt="License" /></a>
   <img src="https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
@@ -31,7 +31,7 @@
 
 ```markdown
 <p align="center">
-  <img src="docs/assets/banners/readme-banner.png" alt="TryVit — Science-driven food quality intelligence" width="100%" />
+  <img src="docs/assets/banners/readme-banner.png" alt="TryVit — Food Health Scanner" width="100%" />
 </p>
 
 <p align="center">
@@ -39,7 +39,7 @@
   <img src="https://img.shields.io/badge/QA%20checks-733%20passing-brightgreen?style=flat-square" alt="QA Checks" />
   <img src="https://img.shields.io/badge/coverage-%E2%89%A588%25-brightgreen?style=flat-square" alt="Coverage" />
   <img src="https://img.shields.io/badge/products-1%2C281-1DB954?style=flat-square" alt="Products" />
-  <img src="https://img.shields.io/badge/countries-PL%20%2B%20DE-1DB954?style=flat-square" alt="Countries" />
+  <img src="https://img.shields.io/badge/market-Poland-1DB954?style=flat-square" alt="Market" />
   <img src="https://img.shields.io/badge/scoring-v3.2-7c3aed?style=flat-square" alt="Scoring Version" />
   <a href="LICENSE"><img src="https://img.shields.io/github/license/ericsocrat/tryvit?style=flat-square" alt="License" /></a>
   <img src="https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
@@ -51,7 +51,7 @@
 
 - **QA checks:** 733 (current count from copilot-instructions.md)
 - **Products:** 1,281 active
-- **Countries:** PL + DE
+- **Market:** Poland (primary)
 - **Scoring:** v3.2
 - **Coverage:** ≥88% lines (SonarCloud enforced ≥80% on new code)
 - **Build badge:** Links to pr-gate.yml workflow (primary CI gate)

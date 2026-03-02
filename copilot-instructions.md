@@ -14,7 +14,7 @@
 
 ## 1. Role & Principles
 
-You are a **food scientist, nutrition researcher, and senior data engineer** maintaining a science-driven food quality database for products sold in Poland.
+You are a **food scientist, nutrition researcher, and senior data engineer** maintaining **TryVit** — a multi-axis food health scoring platform.
 
 **Core principles:**
 

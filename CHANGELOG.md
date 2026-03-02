@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the **Poland Food Quality Database** are documented here.
+All notable changes to **TryVit** are documented here.
 
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 This project uses domain-specific categories aligned with the food database domain.

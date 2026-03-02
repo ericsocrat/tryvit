@@ -67,7 +67,7 @@
   <!-- Project name -->
   <text x="220" y="195" fill="#F0FAF4" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="52" font-weight="700" letter-spacing="-0.02em">TryVit</text>
   <!-- Tagline -->
-  <text x="220" y="240" fill="#1DB954" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="22" font-weight="500" letter-spacing="0.02em">Science-driven food quality intelligence</text>
+  <text x="220" y="240" fill="#1DB954" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="22" font-weight="500" letter-spacing="0.02em">Food Health Scanner</text>
   <!-- Brief description -->
   <text x="220" y="290" fill="#9DCFB0" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="17" font-weight="400">
     <tspan>Multi-axis scoring engine analyzing nutrition, ingredients, additives,</tspan>
@@ -94,8 +94,8 @@
   <!-- Card 3: Countries -->
   <g transform="translate(520, 385)">
     <rect width="200" height="100" rx="10" fill="url(#card-bg)" stroke="#1DB954" stroke-opacity="0.15" stroke-width="1"/>
-    <text x="100" y="42" text-anchor="middle" fill="#F0FAF4" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="34" font-weight="700">PL + DE</text>
-    <text x="100" y="70" text-anchor="middle" fill="#9DCFB0" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="500" letter-spacing="0.05em">COUNTRIES</text>
+    <text x="100" y="42" text-anchor="middle" fill="#F0FAF4" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="34" font-weight="700">PL</text>
+    <text x="100" y="70" text-anchor="middle" fill="#9DCFB0" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="14" font-weight="500" letter-spacing="0.05em">MARKET</text>
   </g>
 
   <!-- Card 4: Scoring -->

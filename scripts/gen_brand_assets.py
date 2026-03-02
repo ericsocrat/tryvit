@@ -23,13 +23,13 @@ except ImportError:
     sys.exit(1)
 
 # ── Brand constants ──────────────────────────────────────────────────────────
-VIT_GREEN = (29, 185, 84)       # #1DB954
-VIT_DARK  = (10,  46, 26)       # #0A2E1A
-VIT_LIGHT = (240, 250, 244)     # #F0FAF4
-WHITE     = (255, 255, 255)
+VIT_GREEN = (29, 185, 84)  # #1DB954
+VIT_DARK = (10, 46, 26)  # #0A2E1A
+VIT_LIGHT = (240, 250, 244)  # #F0FAF4
+WHITE = (255, 255, 255)
 
 REPO_ROOT = Path(__file__).parent.parent
-LOGO_DIR  = REPO_ROOT / "docs" / "assets" / "logo"
+LOGO_DIR = REPO_ROOT / "docs" / "assets" / "logo"
 ICONS_DIR = REPO_ROOT / "frontend" / "public" / "icons"
 SPLASH_DIR = REPO_ROOT / "frontend" / "public" / "splash"
 
@@ -38,6 +38,7 @@ SPLASH_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # ── Helper: draw V-leaf mark ─────────────────────────────────────────────────
+
 
 def draw_v_leaf(draw: ImageDraw.ImageDraw, cx: int, cy: int, size: int, color: tuple) -> None:
     """
@@ -52,8 +53,8 @@ def draw_v_leaf(draw: ImageDraw.ImageDraw, cx: int, cy: int, size: int, color: t
 
     half = size / 2
     # Three key points of the V:
-    top_left  = (cx - half * 0.42, cy - half * 0.52)
-    bottom    = (cx,               cy + half * 0.56)
+    top_left = (cx - half * 0.42, cy - half * 0.52)
+    bottom = (cx, cy + half * 0.56)
     top_right = (cx + half * 0.42, cy - half * 0.52)
 
     # Stroke width proportional to size — minimum 2px
@@ -96,15 +97,18 @@ def make_splash_image(width: int, height: int) -> Image.Image:
             logo = Image.open(logo_source).convert("RGBA")
             # Tint: replace non-transparent pixels with white
             r, g, b, a = logo.split()
-            white_logo = Image.merge("RGBA", (
-                Image.new("L", logo.size, 255),
-                Image.new("L", logo.size, 255),
-                Image.new("L", logo.size, 255),
-                a,
-            ))
+            white_logo = Image.merge(
+                "RGBA",
+                (
+                    Image.new("L", logo.size, 255),
+                    Image.new("L", logo.size, 255),
+                    Image.new("L", logo.size, 255),
+                    a,
+                ),
+            )
             icon_px = 120
             white_logo = white_logo.resize((icon_px, icon_px), Image.LANCZOS)
-            paste_x = (width  - icon_px) // 2
+            paste_x = (width - icon_px) // 2
             paste_y = (height - icon_px) // 2
             img.paste(white_logo, (paste_x, paste_y), white_logo)
             return img.convert("RGB")
@@ -122,6 +126,7 @@ def make_splash_image(width: int, height: int) -> Image.Image:
 # ── PWA icon generation ───────────────────────────────────────────────────────
 
 MISSING_ICON_SIZES = [72, 96, 128, 144, 152, 384]
+
 
 def generate_icons() -> None:
     print("\n── PWA icons ─────────────────────────────────────────────")
@@ -164,9 +169,10 @@ SPLASH_SPECS = [
     ("apple-splash-2532-1170.png", 1170, 2532, "iPhone 14 Pro / 13 / 12"),
     ("apple-splash-2436-1125.png", 1125, 2436, "iPhone X / XS / 11 Pro"),
     ("apple-splash-2208-1242.png", 1242, 2208, "iPhone 8 Plus"),
-    ("apple-splash-1334-750.png",   750, 1334, "iPhone 8 / SE 2nd-3rd gen"),
-    ("apple-splash-1136-640.png",   640, 1136, "iPhone SE 1st gen"),
+    ("apple-splash-1334-750.png", 750, 1334, "iPhone 8 / SE 2nd-3rd gen"),
+    ("apple-splash-1136-640.png", 640, 1136, "iPhone SE 1st gen"),
 ]
+
 
 def generate_splash() -> None:
     print("\n── Apple splash screens ──────────────────────────────────")
@@ -185,6 +191,7 @@ def generate_splash() -> None:
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
+
 
 def main() -> None:
     print("TryVit brand asset generator")

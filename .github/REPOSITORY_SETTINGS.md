@@ -10,8 +10,8 @@ Step-by-step guide for configuring GitHub repository settings for `ericsocrat/tr
 
 **Already applied** (via `gh repo edit`):
 
-- **Description:** `Science-driven food quality database for Poland & Germany. 9-factor scoring (v3.2), 1,281 products, 2,995 ingredients, EFSA concern analysis, allergen tracking, barcode scanning. PostgreSQL + Supabase + Next.js + TypeScript.`
-- **Topics (20):** `food-database`, `food-quality`, `nutrition`, `health`, `nutri-score`, `nova-score`, `food-safety`, `allergens`, `ingredients`, `barcode-scanner`, `poland`, `germany`, `postgresql`, `supabase`, `nextjs`, `typescript`, `open-food-facts`, `efsa`, `food-science`, `health-tech`
+- **Description:** `TryVit — Food Health Scanner. Scan, score & compare food products with multi-axis health scoring (v3.2). 1,281 products, 2,995 ingredients, EFSA concern analysis, allergen tracking, barcode scanning. PostgreSQL + Supabase + Next.js + TypeScript.`
+- **Topics (20):** `tryvit`, `food-health`, `nutrition`, `health`, `nutri-score`, `nova-score`, `food-safety`, `allergens`, `ingredients`, `barcode-scanner`, `poland`, `food-scoring`, `postgresql`, `supabase`, `nextjs`, `typescript`, `open-food-facts`, `efsa`, `food-science`, `health-tech`
 
 **To update manually:**
 

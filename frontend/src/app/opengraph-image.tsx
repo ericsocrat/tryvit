@@ -89,8 +89,7 @@ export default async function OGImage() {
           lineHeight: 1.4,
         }}
       >
-        Multi-axis food quality scoring — find healthier alternatives in Poland
-        and Germany
+        Scan, score & compare food products with multi-axis health scoring
       </div>
 
       {/* Feature pills */}
