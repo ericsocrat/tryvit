@@ -680,7 +680,7 @@
     "contact": "Contact",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
-    "copyright": "© {year} TryVit DB. Data sourced from Open Food Facts."
+    "copyright": "© {year} TryVit. Data sourced from Open Food Facts."
   },
   "theme": {
     "label": "Theme preference",
@@ -772,15 +772,15 @@
     "yourRights": "Your Rights",
     "yourRightsText": "Under GDPR, you have the right to access, correct, or delete your personal data. Contact us at the email below to exercise these rights.",
     "acceptance": "Acceptance",
-    "acceptanceText": "By using TryVit DB, you agree to these terms. If you do not agree, please do not use the service.",
+    "acceptanceText": "By using TryVit, you agree to these terms. If you do not agree, please do not use the service.",
     "serviceDescription": "Service Description",
-    "serviceDescText": "TryVit DB provides food product information, health scores, and nutritional data sourced from Open Food Facts and our own analysis. This is for informational purposes only and does not constitute medical or dietary advice.",
+    "serviceDescText": "TryVit provides food product information, health scores, and nutritional data sourced from Open Food Facts and our own analysis. This is for informational purposes only and does not constitute medical or dietary advice.",
     "dataAccuracy": "Data Accuracy",
     "dataAccuracyText": "While we strive for accuracy, food data may contain errors. Always check product labels for allergen and nutritional information. We are not liable for decisions made based on our data.",
     "userAccounts": "User Accounts",
     "userAccountsText": "You are responsible for maintaining the security of your account. Do not share your credentials. We reserve the right to suspend accounts that violate these terms.",
     "liability": "Limitation of Liability",
-    "liabilityText": "TryVit DB is provided \"as is\" without warranties. We are not liable for any damages arising from the use of this service.",
+    "liabilityText": "TryVit is provided \"as is\" without warranties. We are not liable for any damages arising from the use of this service.",
     "imageProcessing": "Image Processing",
     "imageWhatWeProcess": "What We Process",
     "imageWhatWeProcessText": "Barcode images (camera-based barcode scanning) and product label images (OCR text extraction — Beta feature, coming soon).",

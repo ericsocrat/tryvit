@@ -1,4 +1,4 @@
-# TryVit DB — Viewing & Testing Guide
+# TryVit — Viewing & Testing Guide
 
 ## 🔍 How to View Your Data
 

@@ -1,4 +1,4 @@
-﻿import { test, expect } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 
 // ─── Extended smoke tests: deeper coverage of public pages ──────────────────
 // All tests are public-page only — no Supabase auth dependency.
@@ -50,7 +50,7 @@ test.describe("Footer links", () => {
   test("footer shows copyright text", async ({ page }) => {
     await page.goto("/");
     await expect(
-      page.locator("footer").getByText("TryVit DB", { exact: false }),
+      page.locator("footer").getByText("TryVit", { exact: false }),
     ).toBeVisible();
   });
 
@@ -243,16 +243,16 @@ test.describe("Page meta and SEO basics", () => {
 
   test("contact page has correct title", async ({ page }) => {
     await page.goto("/contact");
-    await expect(page).toHaveTitle(/TryVit DB/);
+    await expect(page).toHaveTitle(/TryVit/);
   });
 
   test("privacy page has correct title", async ({ page }) => {
     await page.goto("/privacy");
-    await expect(page).toHaveTitle(/TryVit DB/);
+    await expect(page).toHaveTitle(/TryVit/);
   });
 
   test("login page has correct title", async ({ page }) => {
     await page.goto("/auth/login");
-    await expect(page).toHaveTitle(/TryVit DB/);
+    await expect(page).toHaveTitle(/TryVit/);
   });
 });

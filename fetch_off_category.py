@@ -874,7 +874,7 @@ def main() -> None:
     output_dir = PIPELINE_DIR / folder_name
 
     print("=" * 60)
-    print("  TryVit DB — OFF Category Fetcher")
+    print("  TryVit — OFF Category Fetcher")
     print("=" * 60)
     print(f"  Country:      {country} (en:{COUNTRY_TAGS[country]})")
     print(f"  Category:     {category}")

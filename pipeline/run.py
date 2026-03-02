@@ -159,7 +159,7 @@ def run_pipeline(
         dir_slug = f"{slug_base}-{country.lower()}" if country != "PL" else slug_base
         output_dir = str(project_root / "db" / "pipelines" / dir_slug)
 
-    print("TryVit DB — Open Food Facts Pipeline")
+    print("TryVit — Open Food Facts Pipeline")
     print("=" * 42)
     print(f"Category: {category}")
     print(f"Country:  {country} ({off_country})")

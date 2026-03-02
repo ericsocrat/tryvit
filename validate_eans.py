@@ -1,5 +1,5 @@
 """
-EAN-13 Checksum Validator for TryVit DB.
+EAN-13 Checksum Validator for TryVit.
 
 Queries all non-deprecated products with EAN codes and validates
 that each has a correct EAN-13 check digit.

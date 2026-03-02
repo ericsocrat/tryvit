@@ -143,7 +143,7 @@ switch ($Env) {
 if (-not $Json) {
     Write-Host ""
     Write-Host "================================================" -ForegroundColor $envColor
-    Write-Host "  TryVit DB — Sanity Check Pack" -ForegroundColor Cyan
+    Write-Host "  TryVit — Sanity Check Pack" -ForegroundColor Cyan
     Write-Host "  Target: $envLabel" -ForegroundColor $envColor
     Write-Host "================================================" -ForegroundColor $envColor
     Write-Host ""

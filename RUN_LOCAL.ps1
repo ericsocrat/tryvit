@@ -52,7 +52,7 @@ $PIPELINE_ROOT = Join-Path $PSScriptRoot "db" "pipelines"
 
 Write-Host ""
 Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "  TryVit DB — Local Pipeline Runner" -ForegroundColor Cyan
+Write-Host "  TryVit — Local Pipeline Runner" -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Target: LOCAL (docker exec $CONTAINER)" -ForegroundColor Green

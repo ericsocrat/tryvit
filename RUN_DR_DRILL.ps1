@@ -188,7 +188,7 @@ function Add-ScenarioResult {
 
 Write-Host ""
 Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-Write-Host "║           DISASTER RECOVERY DRILL — TryVit DB         ║" -ForegroundColor Cyan
+Write-Host "║           DISASTER RECOVERY DRILL — TryVit         ║" -ForegroundColor Cyan
 Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Environment : $Env" -ForegroundColor White

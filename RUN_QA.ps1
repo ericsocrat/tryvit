@@ -240,7 +240,7 @@ function Write-TrimmedViolationOutput {
 
 Write-Host ""
 Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "  TryVit DB — QA Test Suite" -ForegroundColor Cyan
+Write-Host "  TryVit — QA Test Suite" -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 

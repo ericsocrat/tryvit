@@ -680,7 +680,7 @@
     "contact": "Kontakt",
     "privacy": "Datenschutzerklärung",
     "terms": "Nutzungsbedingungen",
-    "copyright": "© {year} TryVit DB. Daten stammen von Open Food Facts."
+    "copyright": "© {year} TryVit. Daten stammen von Open Food Facts."
   },
   "theme": {
     "label": "Design-Einstellung",
@@ -772,15 +772,15 @@
     "yourRights": "Ihre Rechte",
     "yourRightsText": "Gemäß der DSGVO haben Sie das Recht, Ihre persönlichen Daten einzusehen, zu berichtigen oder zu löschen. Kontaktieren Sie uns unter der unten angegebenen E-Mail-Adresse, um diese Rechte auszuüben.",
     "acceptance": "Einwilligung",
-    "acceptanceText": "Durch die Nutzung von TryVit DB stimmen Sie diesen Bedingungen zu. Wenn Sie nicht einverstanden sind, nutzen Sie den Dienst bitte nicht.",
+    "acceptanceText": "Durch die Nutzung von TryVit stimmen Sie diesen Bedingungen zu. Wenn Sie nicht einverstanden sind, nutzen Sie den Dienst bitte nicht.",
     "serviceDescription": "Dienstbeschreibung",
-    "serviceDescText": "TryVit DB bietet Lebensmittel-Produktinformationen, Gesundheitsbewertungen und Nährwertdaten aus Open Food Facts und unseren eigenen Analysen. Dies dient nur zu Informationszwecken und stellt keine medizinische oder diätetische Beratung dar.",
+    "serviceDescText": "TryVit bietet Lebensmittel-Produktinformationen, Gesundheitsbewertungen und Nährwertdaten aus Open Food Facts und unseren eigenen Analysen. Dies dient nur zu Informationszwecken und stellt keine medizinische oder diätetische Beratung dar.",
     "dataAccuracy": "Datengenauigkeit",
     "dataAccuracyText": "Obwohl wir auf Genauigkeit bestrebt sind, können Lebensmitteldaten Fehler enthalten. Überprüfen Sie immer die Produktetiketten auf Allergen- und Nährstoffinformationen. Wir haften nicht für Entscheidungen, die auf Grundlage unserer Daten getroffen werden.",
     "userAccounts": "Benutzerkonten",
     "userAccountsText": "Sie sind für die Sicherheit Ihres Kontos verantwortlich. Geben Sie Ihre Zugangsdaten nicht weiter. Wir behalten uns das Recht vor, Konten zu sperren, die gegen diese Bedingungen verstoßen.",
     "liability": "Haftungsbeschränkung",
-    "liabilityText": "TryVit DB wird 'wie besehen' ohne Gewährleistung bereitgestellt. Wir haften nicht für Schäden, die aus der Nutzung dieses Dienstes entstehen.",
+    "liabilityText": "TryVit wird 'wie besehen' ohne Gewährleistung bereitgestellt. Wir haften nicht für Schäden, die aus der Nutzung dieses Dienstes entstehen.",
     "imageProcessing": "Bildverarbeitung",
     "imageWhatWeProcess": "Was wir verarbeiten",
     "imageWhatWeProcessText": "Barcode-Bilder (kamerabasiertes Barcode-Scannen) und Produktetikettenbilder (OCR-Texterkennung — Beta-Funktion, demnächst verfügbar).",

@@ -129,7 +129,7 @@ switch ($Env) {
 
 Write-Host ""
 Write-Host "================================================" -ForegroundColor $envColor
-Write-Host "  TryVit DB — Seed Runner" -ForegroundColor Cyan
+Write-Host "  TryVit — Seed Runner" -ForegroundColor Cyan
 Write-Host "  Target: $envLabel" -ForegroundColor $envColor
 Write-Host "================================================" -ForegroundColor $envColor
 Write-Host ""

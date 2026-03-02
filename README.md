@@ -1,12 +1,12 @@
 <!-- ╔══════════════════════════════════════════════════════════════════╗ -->
-<!-- ║  TryVit DB — README.md                                     ║ -->
+<!-- ║  TryVit — README.md                                     ║ -->
 <!-- ║  Redesigned 2026-02-28 · Issue #413                             ║ -->
 <!-- ╚══════════════════════════════════════════════════════════════════╝ -->
 
 <!-- ═══════════════════════════ 1. HERO BANNER ═══════════════════════════ -->
 
 <p align="center">
-  <img src="docs/assets/banners/readme-banner.png" alt="TryVit DB — Science-driven food quality intelligence" width="100%" />
+  <img src="docs/assets/banners/readme-banner.png" alt="TryVit — Science-driven food quality intelligence" width="100%" />
 </p>
 
 <!-- ═══════════════════════════ 2. BADGES ROW ════════════════════════════ -->
@@ -15,8 +15,8 @@
   <a href="https://github.com/ericsocrat/tryvit/actions/workflows/pr-gate.yml"><img src="https://img.shields.io/github/actions/workflow/status/ericsocrat/tryvit/pr-gate.yml?style=flat-square&label=build" alt="Build Status" /></a>
   <img src="https://img.shields.io/badge/QA%20checks-733%20passing-brightgreen?style=flat-square" alt="QA Checks" />
   <img src="https://img.shields.io/badge/coverage-%E2%89%A588%25-brightgreen?style=flat-square" alt="Coverage" />
-  <img src="https://img.shields.io/badge/products-1%2C281-0d7377?style=flat-square" alt="Products" />
-  <img src="https://img.shields.io/badge/countries-PL%20%2B%20DE-0d7377?style=flat-square" alt="Countries" />
+  <img src="https://img.shields.io/badge/products-1%2C281-1DB954?style=flat-square" alt="Products" />
+  <img src="https://img.shields.io/badge/countries-PL%20%2B%20DE-1DB954?style=flat-square" alt="Countries" />
   <img src="https://img.shields.io/badge/scoring-v3.2-7c3aed?style=flat-square" alt="Scoring Version" />
   <a href="LICENSE"><img src="https://img.shields.io/github/license/ericsocrat/tryvit?style=flat-square" alt="License" /></a>
   <img src="https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
@@ -64,7 +64,7 @@
 
 ## 🔍 How It Differs
 
-| Dimension | Nutri-Score Apps | TryVit DB |
+| Dimension | Nutri-Score Apps | TryVit |
 | --- | :---: | :---: |
 | **Scoring axes** | 1 (A–E letter) | 4 independent (unhealthiness, Nutri-Score, NOVA, confidence) |
 | **Additive analysis** | ❌ | ✅ EFSA concern tiers + additive count |
@@ -509,7 +509,7 @@ This project is licensed under the terms in the [LICENSE](LICENSE) file.
 <!-- ═══════════════════════════ FOOTER ═══════════════════════════════════ -->
 
 <p align="center">
-  <img src="docs/assets/logo/logomark-64.png" alt="TryVit DB" width="32" />
+  <img src="docs/assets/logo/logomark-64.png" alt="TryVit" width="32" />
   <br />
   <em>Built with science and care.</em>
 </p>

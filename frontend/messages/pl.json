@@ -680,7 +680,7 @@
     "contact": "Kontakt",
     "privacy": "Polityka prywatności",
     "terms": "Regulamin",
-    "copyright": "© {year} TryVit DB. Dane pochodzą z Open Food Facts."
+    "copyright": "© {year} TryVit. Dane pochodzą z Open Food Facts."
   },
   "theme": {
     "label": "Preferencja motywu",
@@ -772,15 +772,15 @@
     "yourRights": "Twoje prawa",
     "yourRightsText": "Na mocy RODO masz prawo do dostępu, poprawiania lub usuwania swoich danych osobowych. Skontaktuj się z nami pod poniższym adresem e-mail, aby skorzystać z tych praw.",
     "acceptance": "Akceptacja",
-    "acceptanceText": "Korzystając z TryVit DB, akceptujesz niniejszy regulamin. Jeśli się nie zgadzasz, prosimy o niekorzystanie z usługi.",
+    "acceptanceText": "Korzystając z TryVit, akceptujesz niniejszy regulamin. Jeśli się nie zgadzasz, prosimy o niekorzystanie z usługi.",
     "serviceDescription": "Opis usługi",
-    "serviceDescText": "TryVit DB dostarcza informacje o produktach spożywczych, oceny zdrowotne i dane żywieniowe pozyskane z Open Food Facts i naszych własnych analiz. Służy to wyłącznie celom informacyjnym i nie stanowi porady medycznej ani dietetycznej.",
+    "serviceDescText": "TryVit dostarcza informacje o produktach spożywczych, oceny zdrowotne i dane żywieniowe pozyskane z Open Food Facts i naszych własnych analiz. Służy to wyłącznie celom informacyjnym i nie stanowi porady medycznej ani dietetycznej.",
     "dataAccuracy": "Dokładność danych",
     "dataAccuracyText": "Choć dążymy do dokładności, dane o żywności mogą zawierać błędy. Zawsze sprawdzaj etykiety produktów pod kątem alergenów i informacji żywieniowych. Nie ponosimy odpowiedzialności za decyzje podjęte na podstawie naszych danych.",
     "userAccounts": "Konta użytkowników",
     "userAccountsText": "Odpowiadasz za bezpieczeństwo swojego konta. Nie udostępniaj swoich danych logowania. Zastrzegamy sobie prawo do zawieszenia kont naruszających niniejszy regulamin.",
     "liability": "Ograniczenie odpowiedzialności",
-    "liabilityText": "TryVit DB jest dostarczany w stanie „takim, jakim jest” bez gwarancji. Nie ponosimy odpowiedzialności za jakiekolwiek szkody wynikające z korzystania z tej usługi.",
+    "liabilityText": "TryVit jest dostarczany w stanie „takim, jakim jest” bez gwarancji. Nie ponosimy odpowiedzialności za jakiekolwiek szkody wynikające z korzystania z tej usługi.",
     "imageProcessing": "Przetwarzanie obrazów",
     "imageWhatWeProcess": "Co przetwarzamy",
     "imageWhatWeProcessText": "Obrazy kodów kreskowych (skanowanie aparatem) oraz zdjęcia etykiet produktów (ekstrakcja tekstu OCR — funkcja Beta, wkrótce dostępna).",

@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" fill="none">
   <style>
-    .bg { fill: #0d7377; }
+    .bg { fill: #1DB954; }
     .title { font-family: system-ui, -apple-system, sans-serif; font-size: 28px; font-weight: 800; fill: #ffffff; text-anchor: middle; letter-spacing: 2px; }
     .subtitle { font-family: system-ui, -apple-system, sans-serif; font-size: 13px; fill: #99f6e4; text-anchor: middle; letter-spacing: 1px; }
     .card { fill: #ffffff; opacity: 0.12; }
@@ -9,13 +9,13 @@
     .divider { stroke: #ffffff; stroke-width: 0.5; opacity: 0.2; }
     .icon-circle { fill: #ffffff; opacity: 0.15; }
     .footer { font-family: system-ui, -apple-system, sans-serif; font-size: 10px; fill: #5eead4; text-anchor: middle; letter-spacing: 0.5px; }
-    .accent { fill: #d4a844; }
+    .accent { fill: #F59E0B; }
     .accent-text { font-family: system-ui, -apple-system, sans-serif; font-size: 32px; font-weight: 800; fill: #fbbf24; text-anchor: middle; }
   </style>
   <!-- Background -->
   <defs>
     <linearGradient id="bg-grad" x1="0" y1="0" x2="900" y2="480" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0d7377"/>
+      <stop offset="0%" stop-color="#1DB954"/>
       <stop offset="100%" stop-color="#064e52"/>
     </linearGradient>
   </defs>
