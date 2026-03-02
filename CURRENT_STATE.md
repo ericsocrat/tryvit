@@ -8,7 +8,7 @@
 ## Active Branch & PR
 
 - **Branch:** `chore/rename-to-tryvit-clean` (rename PR — open, awaiting CI)
-- **Latest SHA:** `550d35f` (chore(cleanup): fix workspace debris, dup assets, stale docs)
+- **Latest SHA:** `4d83c13` (fix(lint): resolve 59 ruff errors + fix 17 stale doc counts)
 - **Open PRs:** [#546](https://github.com/ericsocrat/tryvit/pull/546) — chore(cleanup): rename poland-food-db → TryVit across all source files + 4 dependabot PRs (#547, #549, #551, #552)
 - **main SHA:** `3bd6fb3` (origin/main — stable, unmodified)
 
@@ -18,7 +18,7 @@
 
 | SHA       | Summary                                                                                         |
 | --------- | ----------------------------------------------------------------------------------------------- |
-| `pending` | fix(lint): resolve 59 ruff errors + fix 17 stale doc counts across 4 files                     |
+| `4d83c13` | fix(lint): resolve 59 ruff errors + fix 17 stale doc counts across 4 files                     |
 | `550d35f` | chore(cleanup): fix workspace debris, dup assets, stale docs                                   |
 
 ## Recently Shipped (Last 7 Days)
