@@ -2,15 +2,22 @@
   "id": "/app",
   "name": "TryVit",
   "short_name": "TryVit",
-  "description": "Multi-axis food quality scoring — compare health scores and nutritional data for food products in Poland and Germany.",
+  "description": "Scan food barcodes and see a health score from 1–100. Find healthier alternatives instantly.",
   "start_url": "/app",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
   "orientation": "portrait",
   "theme_color": "#1DB954",
-  "background_color": "#f9fafb",
-  "categories": ["food", "health", "lifestyle"],
+  "background_color": "#F0FAF4",
+  "categories": [
+    "food",
+    "health",
+    "lifestyle"
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.svg",

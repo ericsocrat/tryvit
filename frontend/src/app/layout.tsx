@@ -1,9 +1,9 @@
-﻿import type { Metadata, Viewport } from "next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Providers } from "@/components/Providers";
+﻿import { Providers } from "@/components/Providers";
 import { ThemeScript } from "@/components/ThemeScript";
 import { IS_QA_MODE } from "@/lib/qa-mode";
 import "@/styles/globals.css";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import type { Metadata, Viewport } from "next";
 
 export const viewport: Viewport = {
   themeColor: [
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: "%s | TryVit",
   },
   description:
-    "Science-driven food health scoring — find healthier alternatives in Poland and Germany.",
+    "Scan barcodes and instantly see a science-driven health score for food products sold in Poland.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
@@ -51,14 +51,14 @@ export const metadata: Metadata = {
     locale: "en_US",
     title: "TryVit — Food Health Scanner",
     description:
-      "Compare health scores and nutritional data for food products in Poland and Germany.",
+      "Scan barcodes and see a health score for food products sold in Poland.",
     url: "https://tryvit.vercel.app",
     images: [
       {
-        url: "/og-image.png",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
-        alt: "TryVit — Science-driven food quality intelligence for Poland and Germany",
+        alt: "TryVit — Scan. Score. Choose better.",
       },
     ],
   },
@@ -66,8 +66,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "TryVit",
     description:
-      "Compare health scores and nutritional data for food products in Poland and Germany.",
-    images: ["/og-image.png"],
+      "Scan barcodes and see a health score for food products sold in Poland.",
+    images: ["/opengraph-image"],
   },
   robots: {
     index: true,
@@ -92,7 +92,7 @@ export default function RootLayout({
     name: "TryVit",
     url: "https://tryvit.vercel.app",
     description:
-      "Science-driven food health scoring — find healthier alternatives and understand nutrition for products in Poland and Germany.",
+      "Scan barcodes and instantly see a science-driven health score for food products sold in Poland.",
     applicationCategory: "HealthApplication",
     operatingSystem: "Any",
     browserRequirements: "Requires a modern web browser",
