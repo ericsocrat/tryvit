@@ -468,7 +468,12 @@
     "originalName": "Originalname",
     "ecoScoreTitle": "Umweltauswirkungen",
     "ecoScoreComingSoon": "Eco-Score-Daten demnächst verfügbar. Wir arbeiten an der Integration von Umweltdaten für Produkte.",
-    "trafficLightSummary": "Nährstoff-Ampelzusammenfassung"
+    "trafficLightSummary": "Nährstoff-Ampelzusammenfassung",
+    "quickSummary": "Schnellübersicht",
+    "showFullAnalysis": "Vollständige Analyse anzeigen",
+    "showSummary": "Zusammenfassung anzeigen",
+    "topAlternatives": "Top-Alternativen",
+    "viewAllAlternatives": "Alle Alternativen anzeigen"
   },
   "scoreGauge": {
     "label": "Gesundheitsbewertung: {score} von 100",

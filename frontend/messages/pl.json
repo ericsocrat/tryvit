@@ -468,7 +468,12 @@
     "originalName": "Oryginalna nazwa",
     "ecoScoreTitle": "Wpływ na środowisko",
     "ecoScoreComingSoon": "Dane Eco-Score wkrótce dostępne. Pracujemy nad integracją danych o wpływie produktów na środowisko.",
-    "trafficLightSummary": "Podsumowanie sygnalizacji świetlnej składników odżywczych"
+    "trafficLightSummary": "Podsumowanie sygnalizacji świetlnej składników odżywczych",
+    "quickSummary": "Szybkie podsumowanie",
+    "showFullAnalysis": "Pokaż pełną analizę",
+    "showSummary": "Pokaż podsumowanie",
+    "topAlternatives": "Najlepsze alternatywy",
+    "viewAllAlternatives": "Zobacz wszystkie alternatywy"
   },
   "scoreGauge": {
     "label": "Wynik zdrowotny: {score} na 100",

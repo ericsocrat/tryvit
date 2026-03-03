@@ -468,7 +468,12 @@
     "originalName": "Original name",
     "ecoScoreTitle": "Environmental Impact",
     "ecoScoreComingSoon": "Eco-Score data coming soon. We're working on integrating environmental impact data for products.",
-    "trafficLightSummary": "Nutrient traffic light summary"
+    "trafficLightSummary": "Nutrient traffic light summary",
+    "quickSummary": "Quick Summary",
+    "showFullAnalysis": "Show full analysis",
+    "showSummary": "Show summary",
+    "topAlternatives": "Top Alternatives",
+    "viewAllAlternatives": "View all alternatives"
   },
   "scoreGauge": {
     "label": "Health score: {score} out of 100",
