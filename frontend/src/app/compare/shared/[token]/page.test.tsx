@@ -44,7 +44,7 @@ describe("SharedComparisonPage", () => {
 
     render(<SharedComparisonPage />);
     // Should render without crashing
-    expect(screen.getByText("TryVit", { exact: false })).toBeInTheDocument();
+    expect(screen.getByAltText("TryVit")).toBeInTheDocument();
   });
 
   it("shows error message on error", () => {

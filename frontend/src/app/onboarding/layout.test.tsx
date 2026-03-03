@@ -1,15 +1,15 @@
-import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import OnboardingLayout from "./layout";
 
 describe("OnboardingLayout", () => {
-  it("renders TryVit brand text in header", () => {
+  it("renders TryVit logo in header", () => {
     render(
       <OnboardingLayout>
         <p>child</p>
       </OnboardingLayout>,
     );
-    expect(screen.getByText("🥗 TryVit")).toBeInTheDocument();
+    expect(screen.getByAltText("TryVit")).toBeInTheDocument();
   });
 
   it("renders children in main area", () => {
@@ -27,7 +27,7 @@ describe("OnboardingLayout", () => {
         <span />
       </OnboardingLayout>,
     );
-    const header = screen.getByText("🥗 TryVit").closest("header");
+    const header = screen.getByAltText("TryVit").closest("header");
     expect(header?.className).toContain("border-b");
   });
 });

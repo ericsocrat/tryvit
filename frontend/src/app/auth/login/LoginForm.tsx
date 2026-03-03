@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { showToast } from "@/lib/toast";
-import { createClient } from "@/lib/supabase/client";
-import { sanitizeRedirect } from "@/lib/validation";
-import { useTranslation } from "@/lib/i18n";
+import { Logo } from "@/components/common/Logo";
 import { SkipLink } from "@/components/common/SkipLink";
+import { useTranslation } from "@/lib/i18n";
+import { createClient } from "@/lib/supabase/client";
+import { showToast } from "@/lib/toast";
 import type { FormSubmitEvent } from "@/lib/types";
+import { sanitizeRedirect } from "@/lib/validation";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 export function LoginForm() {
   const router = useRouter();
@@ -46,6 +47,9 @@ export function LoginForm() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <SkipLink />
       <div id="main-content" className="w-full max-w-sm">
+        <div className="mb-6 flex justify-center">
+          <Logo variant="icon" size={48} />
+        </div>
         <h1 className="mb-2 text-center text-2xl font-bold text-foreground">
           {t("auth.welcomeBack")}
         </h1>

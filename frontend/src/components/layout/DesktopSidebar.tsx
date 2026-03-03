@@ -7,6 +7,7 @@
 // Issue #72 — Desktop Navigation Architecture
 
 import { Icon } from "@/components/common/Icon";
+import { Logo } from "@/components/common/Logo";
 import { useActiveRoute, type PrimaryRouteKey } from "@/hooks/use-active-route";
 import { useTranslation } from "@/lib/i18n";
 import {
@@ -143,8 +144,8 @@ export function DesktopSidebar() {
     >
       {/* Logo */}
       <div className="flex h-14 items-center px-5">
-        <Link href="/app" className="text-lg font-bold text-brand">
-          {t("layout.appNameWithEmoji")}
+        <Link href="/app" aria-label="TryVit">
+          <Logo variant="lockup" size={24} />
         </Link>
       </div>
 

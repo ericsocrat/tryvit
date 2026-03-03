@@ -1,13 +1,17 @@
 "use client";
 
-import Link from "next/link";
+import { Logo } from "@/components/common/Logo";
 import { useTranslation } from "@/lib/i18n";
+import Link from "next/link";
 
 export function Footer() {
   const { t } = useTranslation();
   return (
     <footer className="border-t bg-surface-subtle py-8">
       <div className="mx-auto max-w-5xl px-4 text-center text-sm text-foreground-secondary">
+        <div className="mb-4 flex justify-center">
+          <Logo variant="lockup" size={24} />
+        </div>
         <div className="mb-3 flex items-center justify-center gap-2">
           <Link
             href="/learn"

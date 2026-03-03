@@ -1,8 +1,8 @@
 // ─── Onboarding layout ───────────────────────────────────────────────────────
 // Minimal chrome for the onboarding wizard.
 
+import { Logo } from "@/components/common/Logo";
 import { SkipLink } from "@/components/common/SkipLink";
-import { AppName } from "./AppName";
 
 export default function OnboardingLayout({
   children,
@@ -15,7 +15,7 @@ export default function OnboardingLayout({
       <header className="border-b border bg-surface">
         <div className="mx-auto flex h-14 max-w-lg items-center justify-center px-4">
           <span className="text-lg font-bold text-brand">
-            <AppName />
+            <Logo variant="lockup" size={28} />
           </span>
         </div>
       </header>

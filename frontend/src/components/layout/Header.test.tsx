@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { Header } from "./Header";
 
 vi.mock("next/link", () => ({
@@ -20,7 +20,7 @@ vi.mock("next/link", () => ({
 describe("Header", () => {
   it("renders logo linking to home", () => {
     render(<Header />);
-    const logo = screen.getByText(/TryVit/);
+    const logo = screen.getByAltText("TryVit");
     expect(logo.closest("a")).toHaveAttribute("href", "/");
   });
 

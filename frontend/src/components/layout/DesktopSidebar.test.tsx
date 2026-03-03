@@ -88,8 +88,8 @@ describe("DesktopSidebar", () => {
 
   it("renders the app logo link", () => {
     render(<DesktopSidebar />);
-    const logoLink = screen.getAllByText("🥗 TryVit")[0];
-    expect(logoLink.closest("a")).toHaveAttribute("href", "/app");
+    const logoImg = screen.getByAltText("TryVit");
+    expect(logoImg.closest("a")).toHaveAttribute("href", "/app");
   });
 
   it("marks Home as active on /app", () => {

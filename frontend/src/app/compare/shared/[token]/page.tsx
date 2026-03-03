@@ -5,14 +5,15 @@
 // Displays a shared comparison with the ComparisonGrid component.
 // No avoid badges or save features — read-only public view.
 
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useSharedComparison } from "@/hooks/use-compare";
-import { ComparisonGrid } from "@/components/compare/ComparisonGrid";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { Logo } from "@/components/common/Logo";
+import { ComparisonGrid } from "@/components/compare/ComparisonGrid";
+import { useSharedComparison } from "@/hooks/use-compare";
 import { useTranslation } from "@/lib/i18n";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Link2, Scale } from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
 const queryClient = new QueryClient();
 
@@ -29,9 +30,9 @@ function SharedComparisonContent() {
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
           <Link
             href="/"
-            className="text-lg font-bold text-brand"
+            aria-label="TryVit"
           >
-            🥗 TryVit
+            <Logo variant="lockup" size={28} />
           </Link>
           <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
             {t("shared.sharedComparison")}
