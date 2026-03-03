@@ -88,10 +88,10 @@ describe("CategoriesPage", () => {
     render(<CategoriesPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText("Chips")).toBeInTheDocument();
+      expect(screen.getAllByText("Chips").length).toBeGreaterThan(0);
     });
-    expect(screen.getByText("Drinks")).toBeInTheDocument();
-    expect(screen.getByText("Cereals")).toBeInTheDocument();
+    expect(screen.getAllByText("Drinks").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Cereals").length).toBeGreaterThan(0);
   });
 
   it("renders page title", async () => {
@@ -102,14 +102,16 @@ describe("CategoriesPage", () => {
     });
   });
 
-  it("shows category icons", async () => {
+  it("shows category SVG icons instead of emojis", async () => {
     render(<CategoriesPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText("🍟")).toBeInTheDocument();
+      expect(screen.getAllByText("Chips").length).toBeGreaterThan(0);
     });
-    expect(screen.getByText("🥤")).toBeInTheDocument();
-    expect(screen.getByText("🥣")).toBeInTheDocument();
+    // Each category card renders a CategoryIcon SVG with a <title>
+    expect(screen.getByTitle("Chips")).toBeInTheDocument();
+    expect(screen.getByTitle("Drinks")).toBeInTheDocument();
+    expect(screen.getByTitle("Cereals")).toBeInTheDocument();
   });
 
   it("shows product counts with correct pluralization", async () => {
@@ -136,10 +138,10 @@ describe("CategoriesPage", () => {
     render(<CategoriesPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText("Chips")).toBeInTheDocument();
+      expect(screen.getAllByText("Chips").length).toBeGreaterThan(0);
     });
 
-    const chipsLink = screen.getByText("Chips").closest("a");
+    const chipsLink = screen.getByRole("link", { name: /Chips/ });
     expect(chipsLink).toHaveAttribute("href", "/app/categories/chips");
   });
 
@@ -161,10 +163,10 @@ describe("CategoriesPage", () => {
     render(<CategoriesPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText("Seafood & Fish")).toBeInTheDocument();
+      expect(screen.getAllByText("Seafood & Fish").length).toBeGreaterThan(0);
     });
 
-    const link = screen.getByText("Seafood & Fish").closest("a");
+    const link = screen.getByRole("link", { name: /Seafood & Fish/ });
     expect(link).toHaveAttribute("href", "/app/categories/seafood-fish");
   });
 
@@ -217,7 +219,7 @@ describe("CategoriesPage", () => {
     await user.click(screen.getByRole("button", { name: "Retry" }));
 
     await waitFor(() => {
-      expect(screen.getByText("Chips")).toBeInTheDocument();
+      expect(screen.getAllByText("Chips").length).toBeGreaterThan(0);
     });
   });
 });
@@ -271,10 +273,10 @@ describe("Categories desktop grid layout", () => {
     render(<CategoriesPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText("Chips")).toBeInTheDocument();
+      expect(screen.getAllByText("Chips").length).toBeGreaterThan(0);
     });
 
-    const grid = screen.getByText("Chips").closest("a")!.parentElement!;
+    const grid = screen.getByRole("link", { name: /Chips/ })!.parentElement!;
     expect(grid.className).toContain("grid");
     expect(grid.className).toContain("lg:grid-cols-3");
     expect(grid.className).toContain("xl:grid-cols-4");
@@ -284,10 +286,10 @@ describe("Categories desktop grid layout", () => {
     render(<CategoriesPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText("Chips")).toBeInTheDocument();
+      expect(screen.getAllByText("Chips").length).toBeGreaterThan(0);
     });
 
-    const card = screen.getByText("Chips").closest(".card")!;
+    const card = screen.getAllByText("Chips")[0].closest(".card")!;
     expect(card.className).toContain("transition-all");
     expect(card.className).toContain("duration-fast");
   });

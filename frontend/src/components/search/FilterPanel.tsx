@@ -10,6 +10,7 @@ import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { ALLERGEN_TAGS, NUTRI_COLORS } from "@/lib/constants";
 import { nutriScoreLabel } from "@/lib/nutri-label";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { CategoryIcon } from "@/components/common/CategoryIcon";
 import { useTranslation } from "@/lib/i18n";
 import type { SearchFilters } from "@/lib/types";
 
@@ -190,8 +191,9 @@ export function FilterPanel({
                         }
                         className="h-5 w-5 rounded border-strong text-brand focus:ring-brand"
                       />
-                      <span className="text-sm">
-                        {cat.icon_emoji} {cat.display_name}
+                      <span className="flex items-center gap-1.5 text-sm">
+                        <CategoryIcon slug={cat.category} size="sm" />
+                        {cat.display_name}
                       </span>
                       <span className="ml-auto text-xs text-foreground-muted">
                         {cat.count}

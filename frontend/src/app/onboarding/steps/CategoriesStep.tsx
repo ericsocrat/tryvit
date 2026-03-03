@@ -4,6 +4,7 @@
 
 import type { StepProps } from "@/app/onboarding/types";
 import { FOOD_CATEGORIES } from "@/lib/constants";
+import { CategoryIcon } from "@/components/common/CategoryIcon";
 import { useTranslation } from "@/lib/i18n";
 
 export function CategoriesStep({ data, onChange, onNext, onBack }: StepProps) {
@@ -37,7 +38,7 @@ export function CategoriesStep({ data, onChange, onNext, onBack }: StepProps) {
             }`}
             data-testid={`category-${cat.slug}`}
           >
-            <span className="text-lg">{cat.emoji}</span>
+            <CategoryIcon slug={cat.slug} size="md" />
             <span>{t(cat.labelKey)}</span>
           </button>
         ))}
