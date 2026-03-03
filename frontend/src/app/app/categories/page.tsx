@@ -2,16 +2,17 @@
 
 // ─── Categories overview — grid of category cards ───────────────────────────
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { getCategoryOverview } from "@/lib/api";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
-import { SCORE_5BAND_DISPLAY, scoreColorFromScore } from "@/lib/constants";
+import { CategoryIcon } from "@/components/common/CategoryIcon";
 import { CategoryGridSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { getCategoryOverview } from "@/lib/api";
+import { SCORE_5BAND_DISPLAY, scoreColorFromScore } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
+import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { createClient } from "@/lib/supabase/client";
 import type { CategoryOverviewItem } from "@/lib/types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 export default function CategoriesPage() {
   const supabase = createClient();
   const queryClient = useQueryClient();
@@ -81,7 +82,7 @@ function CategoryCard({
   return (
     <Link href={`/app/categories/${category.slug}`}>
       <div className="card hover-lift-press flex flex-col items-center gap-2 p-4 text-center transition-all duration-fast">
-        <span className="text-3xl">{category.icon_emoji}</span>
+        <CategoryIcon slug={category.slug} size="xl" />
         <p className="text-sm font-semibold text-foreground">
           {category.display_name}
         </p>

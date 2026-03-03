@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { useTranslation } from "@/lib/i18n";
+import { Logo } from "@/components/common/Logo";
 import { useTheme } from "@/hooks/use-theme";
-import { Sun, Moon } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
+import { Moon, Sun } from "lucide-react";
+import Link from "next/link";
 
 export function Header() {
   const { t } = useTranslation();
@@ -16,11 +17,8 @@ export function Header() {
   return (
     <header className="border-b bg-surface">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-        <Link
-          href="/"
-          className="text-xl font-bold text-brand"
-        >
-          {t("layout.appNameWithEmoji")}
+        <Link href="/" aria-label="TryVit">
+          <Logo variant="lockup" size={28} />
         </Link>
         <nav className="flex items-center gap-4">
           <Link

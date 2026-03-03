@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { DesktopSidebar } from "./DesktopSidebar";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -25,7 +25,7 @@ vi.mock("next/link", () => ({
 describe("DesktopSidebar", () => {
   it("renders all primary nav items", () => {
     render(<DesktopSidebar />);
-    expect(screen.getByText("Home")).toBeInTheDocument();
+    expect(screen.getByText("Dashboard")).toBeInTheDocument();
     expect(screen.getByText("Search")).toBeInTheDocument();
     expect(screen.getByText("Scan")).toBeInTheDocument();
     expect(screen.getByText("Lists")).toBeInTheDocument();
@@ -39,6 +39,46 @@ describe("DesktopSidebar", () => {
     expect(screen.getByText("Settings")).toBeInTheDocument();
   });
 
+  // ─── Admin section ─────────────────────────────────────────────────────────
+
+  it("renders admin section with heading and three sub-links", () => {
+    render(<DesktopSidebar />);
+    expect(screen.getByText("Admin")).toBeInTheDocument();
+    expect(screen.getByText("Submissions")).toBeInTheDocument();
+    expect(screen.getByText("Metrics")).toBeInTheDocument();
+    expect(screen.getByText("Monitoring")).toBeInTheDocument();
+  });
+
+  it("has correct hrefs for admin sub-links", () => {
+    render(<DesktopSidebar />);
+    expect(screen.getByText("Submissions").closest("a")).toHaveAttribute(
+      "href",
+      "/app/admin/submissions",
+    );
+    expect(screen.getByText("Metrics").closest("a")).toHaveAttribute(
+      "href",
+      "/app/admin/metrics",
+    );
+    expect(screen.getByText("Monitoring").closest("a")).toHaveAttribute(
+      "href",
+      "/app/admin/monitoring",
+    );
+  });
+
+  it("marks admin sub-link as active on /app/admin/submissions", () => {
+    mockPathname.mockReturnValue("/app/admin/submissions");
+    render(<DesktopSidebar />);
+    const submissionsLink = screen.getByText("Submissions").closest("a");
+    expect(submissionsLink).toHaveAttribute("aria-current", "page");
+  });
+
+  it("does not mark admin sub-links as active on non-admin route", () => {
+    mockPathname.mockReturnValue("/app/search");
+    render(<DesktopSidebar />);
+    const submissionsLink = screen.getByText("Submissions").closest("a");
+    expect(submissionsLink).not.toHaveAttribute("aria-current");
+  });
+
   it("renders the sidebar navigation landmark", () => {
     render(<DesktopSidebar />);
     expect(
@@ -48,14 +88,14 @@ describe("DesktopSidebar", () => {
 
   it("renders the app logo link", () => {
     render(<DesktopSidebar />);
-    const logoLink = screen.getAllByText("🥗 TryVit")[0];
-    expect(logoLink.closest("a")).toHaveAttribute("href", "/app");
+    const logoImg = screen.getByAltText("TryVit");
+    expect(logoImg.closest("a")).toHaveAttribute("href", "/app");
   });
 
-  it("marks Home as active on /app", () => {
+  it("marks Dashboard as active on /app", () => {
     mockPathname.mockReturnValue("/app");
     render(<DesktopSidebar />);
-    const homeLink = screen.getByText("Home").closest("a");
+    const homeLink = screen.getByText("Dashboard").closest("a");
     expect(homeLink).toHaveAttribute("aria-current", "page");
   });
 
@@ -73,17 +113,17 @@ describe("DesktopSidebar", () => {
     expect(searchLink).toHaveAttribute("aria-current", "page");
   });
 
-  it("does not mark Home active on /app/search", () => {
+  it("does not mark Dashboard active on /app/search", () => {
     mockPathname.mockReturnValue("/app/search");
     render(<DesktopSidebar />);
-    const homeLink = screen.getByText("Home").closest("a");
+    const homeLink = screen.getByText("Dashboard").closest("a");
     expect(homeLink).not.toHaveAttribute("aria-current");
   });
 
   it("has correct hrefs for all primary items", () => {
     render(<DesktopSidebar />);
     const expectedHrefs = [
-      { label: "Home", href: "/app" },
+      { label: "Dashboard", href: "/app" },
       { label: "Search", href: "/app/search" },
       { label: "Scan", href: "/app/scan" },
       { label: "Lists", href: "/app/lists" },

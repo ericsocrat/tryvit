@@ -259,6 +259,8 @@ function makeProfile(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   vi.clearAllMocks();
   features.ECO_SCORE = false; // reset to default before each test
+  // Set full analysis mode so all existing tab-based tests see expanded state
+  localStorage.setItem("tryvit:product-full-analysis", "true");
 });
 
 describe("ProductDetailPage", () => {
@@ -1518,6 +1520,125 @@ describe("ProductDetailPage", () => {
 
       expect(rightCol).toContainElement(tabBar);
       expect(leftCol).not.toContainElement(tabBar);
+    });
+  });
+
+  // ── Progressive disclosure (#576) ─────────────────────────────────────
+
+  describe("progressive disclosure", () => {
+    beforeEach(() => {
+      // Clear full-analysis preference so tests start in summary mode
+      localStorage.removeItem("tryvit:product-full-analysis");
+      mockGetProductProfile.mockResolvedValue({
+        ok: true,
+        data: makeProfile(),
+      });
+    });
+
+    it("shows quick summary by default when no localStorage preference", async () => {
+      render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("quick-summary")).toBeInTheDocument();
+      });
+
+      expect(screen.queryByTestId("tab-bar")).not.toBeInTheDocument();
+    });
+
+    it("quick summary displays score interpretation text", async () => {
+      render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("quick-summary")).toBeInTheDocument();
+      });
+
+      // Score is 65 → "red" band → scoreInterpretation.red key
+      expect(screen.getByTestId("quick-summary")).toHaveTextContent(
+        /Quick Summary/i,
+      );
+    });
+
+    it("quick summary shows top alternatives preview", async () => {
+      render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("quick-summary-alternatives"),
+        ).toBeInTheDocument();
+      });
+
+      expect(
+        screen.getByTestId("quick-summary-alternatives"),
+      ).toHaveTextContent(/Healthy Veggie Sticks/);
+    });
+
+    it("clicking 'Show full analysis' reveals tab bar and hides summary", async () => {
+      const user = userEvent.setup();
+      render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("quick-summary")).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId("toggle-analysis"));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("tab-bar")).toBeInTheDocument();
+      });
+      expect(screen.queryByTestId("quick-summary")).not.toBeInTheDocument();
+    });
+
+    it("clicking 'Show summary' collapses back to quick summary", async () => {
+      const user = userEvent.setup();
+      render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+      // Expand first
+      await waitFor(() => {
+        expect(screen.getByTestId("quick-summary")).toBeInTheDocument();
+      });
+      await user.click(screen.getByTestId("toggle-analysis"));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("tab-bar")).toBeInTheDocument();
+      });
+
+      // Collapse back
+      await user.click(screen.getByTestId("toggle-analysis"));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("quick-summary")).toBeInTheDocument();
+      });
+      expect(screen.queryByTestId("tab-bar")).not.toBeInTheDocument();
+    });
+
+    it("persists full-analysis preference to localStorage", async () => {
+      const user = userEvent.setup();
+      render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("quick-summary")).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId("toggle-analysis"));
+
+      await waitFor(() => {
+        expect(screen.getByTestId("tab-bar")).toBeInTheDocument();
+      });
+
+      expect(localStorage.getItem("tryvit:product-full-analysis")).toBe(
+        "true",
+      );
+    });
+
+    it("respects stored full-analysis preference on mount", async () => {
+      localStorage.setItem("tryvit:product-full-analysis", "true");
+      render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("tab-bar")).toBeInTheDocument();
+      });
+
+      expect(screen.queryByTestId("quick-summary")).not.toBeInTheDocument();
     });
   });
 });

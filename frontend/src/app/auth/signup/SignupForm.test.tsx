@@ -1,6 +1,6 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SignupForm } from "./SignupForm";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -37,6 +37,10 @@ vi.mock("@/lib/supabase/client", () => ({
 
 vi.mock("@/lib/toast", () => ({
   showToast: vi.fn(),
+}));
+
+vi.mock("@/components/auth/SocialLoginButtons", () => ({
+  SocialLoginButtons: () => <div data-testid="social-login-buttons" />,
 }));
 
 // Mock TurnstileWidget to expose a trigger for simulating token receipt
@@ -83,6 +87,11 @@ beforeEach(() => {
 });
 
 describe("SignupForm", () => {
+  it("renders social login buttons", () => {
+    render(<SignupForm />);
+    expect(screen.getByTestId("social-login-buttons")).toBeInTheDocument();
+  });
+
   it("renders email and password fields", () => {
     render(<SignupForm />);
     expect(screen.getByLabelText("Email")).toBeInTheDocument();

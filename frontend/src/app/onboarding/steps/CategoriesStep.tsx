@@ -3,6 +3,7 @@
 // ─── Step 6: Favorite Food Categories ───────────────────────────────────────
 
 import type { StepProps } from "@/app/onboarding/types";
+import { CategoryIcon } from "@/components/common/CategoryIcon";
 import { FOOD_CATEGORIES } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 
@@ -37,7 +38,7 @@ export function CategoriesStep({ data, onChange, onNext, onBack }: StepProps) {
             }`}
             data-testid={`category-${cat.slug}`}
           >
-            <span className="text-lg">{cat.emoji}</span>
+            <CategoryIcon slug={cat.slug} size="md" />
             <span>{t(cat.labelKey)}</span>
           </button>
         ))}

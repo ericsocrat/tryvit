@@ -1,15 +1,17 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { showToast } from "@/lib/toast";
-import { createClient } from "@/lib/supabase/client";
-import { useTranslation } from "@/lib/i18n";
+import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
+import { Logo } from "@/components/common/Logo";
 import { SkipLink } from "@/components/common/SkipLink";
 import { TurnstileWidget } from "@/components/common/TurnstileWidget";
+import { useTranslation } from "@/lib/i18n";
+import { createClient } from "@/lib/supabase/client";
+import { showToast } from "@/lib/toast";
 import { verifyTurnstileToken } from "@/lib/turnstile";
 import type { FormSubmitEvent } from "@/lib/types";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 
 export function SignupForm() {
   const router = useRouter();
@@ -71,15 +73,23 @@ export function SignupForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
+    <>
       <SkipLink />
       <div id="main-content" className="w-full max-w-sm">
+        <div className="mb-2 flex justify-center lg:hidden">
+          <Logo variant="lockup" size={36} />
+        </div>
+        <p className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-brand lg:hidden">
+          {t("landing.tagline")}
+        </p>
         <h1 className="mb-2 text-center text-2xl font-bold text-foreground">
           {t("auth.createAccount")}
         </h1>
         <p className="mb-8 text-center text-sm text-foreground-secondary">
           {t("auth.signUpSubtitle")}
         </p>
+
+        <SocialLoginButtons />
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
@@ -146,6 +156,6 @@ export function SignupForm() {
           </Link>
         </p>
       </div>
-    </div>
+    </>
   );
 }

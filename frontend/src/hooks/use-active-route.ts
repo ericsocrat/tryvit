@@ -14,6 +14,7 @@ import { useMemo } from "react";
 
 /** Primary navigation routes in match order (most specific first). */
 const PRIMARY_ROUTES = [
+  { key: "admin", prefix: "/app/admin" },
   { key: "search", prefix: "/app/search" },
   { key: "scan", prefix: "/app/scan" },
   { key: "lists", prefix: "/app/lists" },

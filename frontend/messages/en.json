@@ -1,6 +1,6 @@
 {
   "nav": {
-    "home": "Home",
+    "home": "Dashboard",
     "search": "Search",
     "scan": "Scan",
     "lists": "Lists",
@@ -8,10 +8,14 @@
     "compare": "Compare",
     "categories": "Categories",
     "admin": "Admin",
+    "adminSubmissions": "Submissions",
+    "adminMetrics": "Metrics",
+    "adminMonitoring": "Monitoring",
     "watchlist": "Watchlist",
     "achievements": "Achievements",
     "recipes": "Recipes",
     "imageSearch": "Image Search",
+    "learn": "Learn",
     "more": "More"
   },
   "common": {
@@ -464,7 +468,12 @@
     "originalName": "Original name",
     "ecoScoreTitle": "Environmental Impact",
     "ecoScoreComingSoon": "Eco-Score data coming soon. We're working on integrating environmental impact data for products.",
-    "trafficLightSummary": "Nutrient traffic light summary"
+    "trafficLightSummary": "Nutrient traffic light summary",
+    "quickSummary": "Quick Summary",
+    "showFullAnalysis": "Show full analysis",
+    "showSummary": "Show summary",
+    "topAlternatives": "Top Alternatives",
+    "viewAllAlternatives": "View all alternatives"
   },
   "scoreGauge": {
     "label": "Health score: {score} out of 100",
@@ -504,6 +513,9 @@
     "noProducts": "No products in this category.",
     "previous": "Previous",
     "toggleSortDirection": "Toggle sort direction",
+    "toggleViewMode": "Toggle view mode",
+    "compactView": "Compact",
+    "detailedView": "Detailed",
     "statAvgScore": "Avg. Score",
     "scoreRange": "Score Range",
     "nutriAB": "Nutri-Score A–B",
@@ -545,6 +557,10 @@
   },
   "settings": {
     "title": "Settings",
+    "tabProfile": "Profile & Preferences",
+    "tabNutrition": "Nutrition & Diet",
+    "tabPrivacy": "Privacy & Data",
+    "tabAccount": "Account",
     "country": "Country",
     "language": "Language",
     "dietPreference": "Diet preference",
@@ -670,7 +686,11 @@
     "hasAccount": "Already have an account?",
     "checkEmail": "Check your email to confirm your account.",
     "captchaRequired": "Please complete the security check before signing up.",
-    "captchaFailed": "Security verification failed. Please try again."
+    "captchaFailed": "Security verification failed. Please try again.",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithApple": "Continue with Apple",
+    "orContinueWithEmail": "or continue with email",
+    "socialLoginError": "Could not sign in with {provider}. Please try again."
   },
   "layout": {
     "appName": "TryVit",
@@ -733,7 +753,11 @@
     "notFoundCode": "404",
     "notFoundTitle": "Page not found",
     "notFoundMessage": "The page you're looking for doesn't exist or has been moved.",
-    "goHome": "Go home"
+    "goHome": "Go home",
+    "forbiddenCode": "403",
+    "forbiddenTitle": "Access denied",
+    "forbiddenMessage": "You don't have permission to view this page.",
+    "goToDashboard": "Go to Dashboard"
   },
   "errorBoundary": {
     "pageTitle": "Something went wrong on this page",
@@ -748,12 +772,27 @@
     "description": "Search, scan, and compare food products. Get instant TryVit health scores, allergen warnings, and find healthier alternatives.",
     "getStarted": "Get started",
     "signIn": "Sign in",
+    "featuresHeading": "Everything you need to eat healthier",
     "featureSearch": "Search",
     "featureSearchDesc": "Find products by name, brand, or category",
     "featureScan": "Scan",
     "featureScanDesc": "Scan barcodes for instant product info",
     "featureCompare": "Compare",
-    "featureCompareDesc": "See health scores and find better alternatives"
+    "featureCompareDesc": "See health scores and find better alternatives",
+    "howItWorksHeading": "How it works",
+    "step1Title": "Search or scan",
+    "step1Desc": "Find any product by name, brand, or barcode scan.",
+    "step2Title": "Get your score",
+    "step2Desc": "See a clear 1–100 health score based on 9 nutrition factors.",
+    "step3Title": "Find better",
+    "step3Desc": "Discover healthier alternatives in the same category.",
+    "statsHeading": "Trusted data you can rely on",
+    "statProducts": "Products analyzed",
+    "statCategories": "Food categories",
+    "statFactors": "Scoring factors",
+    "statCountries": "Countries covered",
+    "ctaHeading": "Ready to eat healthier?",
+    "ctaDescription": "Join TryVit and make informed food choices backed by real nutrition data."
   },
   "legal": {
     "privacyTitle": "Privacy Policy",

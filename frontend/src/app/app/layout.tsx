@@ -4,22 +4,23 @@
 // This is the AUTHORITATIVE onboarding gate (server-side).
 // RouteGuard provides a secondary client-side gate for UX + session expiry handling.
 
-import { redirect } from "next/navigation";
-import { AlertTriangle } from "lucide-react";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { translate } from "@/lib/i18n";
-import { Navigation } from "@/components/layout/Navigation";
-import { DesktopSidebar } from "@/components/layout/DesktopSidebar";
-import { DesktopHeaderNav } from "@/components/layout/DesktopHeaderNav";
-import { SkipLink } from "@/components/common/SkipLink";
 import { CountryChip } from "@/components/common/CountryChip";
-import { ListsHydrator } from "@/components/product/ListsHydrator";
-import { LanguageHydrator } from "@/components/i18n/LanguageHydrator";
+import { Logo } from "@/components/common/Logo";
+import { SkipLink } from "@/components/common/SkipLink";
 import { CompareFloatingButton } from "@/components/compare/CompareFloatingButton";
 import { ComparisonTray } from "@/components/desktop/ComparisonTray";
-import { OfflineIndicator } from "@/components/pwa/OfflineIndicator";
-import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { LanguageHydrator } from "@/components/i18n/LanguageHydrator";
+import { DesktopHeaderNav } from "@/components/layout/DesktopHeaderNav";
+import { DesktopSidebar } from "@/components/layout/DesktopSidebar";
 import { GlobalKeyboardShortcuts } from "@/components/layout/GlobalKeyboardShortcuts";
+import { Navigation } from "@/components/layout/Navigation";
+import { ListsHydrator } from "@/components/product/ListsHydrator";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { OfflineIndicator } from "@/components/pwa/OfflineIndicator";
+import { translate } from "@/lib/i18n";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { AlertTriangle } from "lucide-react";
+import { redirect } from "next/navigation";
 
 export default async function AppLayout({
   children,
@@ -84,9 +85,7 @@ export default async function AppLayout({
         {/* Header — visible below xl. Hidden at xl+ where sidebar takes over. */}
         <header className="sticky top-0 z-40 border-b border-border bg-surface/80 pt-[env(safe-area-inset-top)] backdrop-blur xl:hidden">
           <div className="mx-auto flex h-12 md:h-14 max-w-5xl items-center justify-between px-4">
-            <span className="text-lg font-bold text-brand">
-              {translate("en", "layout.appNameWithEmoji")}
-            </span>
+            <Logo variant="lockup" size={24} />
             {/* Desktop header nav — lg to xl only */}
             <DesktopHeaderNav />
             <CountryChip country={prefs.country} />

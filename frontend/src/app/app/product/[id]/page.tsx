@@ -3,7 +3,7 @@
 // ─── Product detail page ────────────────────────────────────────────────────
 // Uses the composite api_get_product_profile() endpoint for a single round-trip.
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import { eventBus } from "@/lib/events";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -51,7 +51,7 @@ import { IngredientList } from "@/components/product/IngredientList";
 import { CachedTimestamp } from "@/components/pwa/CachedTimestamp";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { cacheProduct, getCachedProduct } from "@/lib/cache-manager";
-import { Info, Globe } from "lucide-react";
+import { Info, Globe, ChevronDown, ChevronUp } from "lucide-react";
 import type {
   ProductProfile,
   ProfileAlternative,
@@ -60,16 +60,42 @@ import type {
 
 type Tab = "overview" | "nutrition" | "alternatives" | "scoring";
 
+// ─── Progressive Disclosure Persistence ─────────────────────────────────────
+const FULL_ANALYSIS_KEY = "tryvit:product-full-analysis";
+
+function getStoredFullAnalysis(): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(FULL_ANALYSIS_KEY) === "true";
+}
+
+function setStoredFullAnalysis(expanded: boolean) {
+  localStorage.setItem(FULL_ANALYSIS_KEY, expanded ? "true" : "false");
+}
+
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = Number(params.id);
   const supabase = createClient();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [showFullAnalysis, setShowFullAnalysis] = useState(false);
   const { track } = useAnalytics();
   const { t } = useTranslation();
   const isOnline = useOnlineStatus();
   const [cachedAt, setCachedAt] = useState<number | null>(null);
+
+  // Hydrate progressive disclosure preference from localStorage (SSR-safe)
+  useEffect(() => {
+    setShowFullAnalysis(getStoredFullAnalysis());
+  }, []);
+
+  const toggleFullAnalysis = useCallback(() => {
+    setShowFullAnalysis((prev) => {
+      const next = !prev;
+      setStoredFullAnalysis(next);
+      return next;
+    });
+  }, []);
 
   const {
     data: profile,
@@ -355,43 +381,131 @@ export default function ProductDetailPage() {
 
         {/* Right column — scrollable content */}
         <div className="mt-4 space-y-4 lg:col-span-7 lg:mt-0 lg:space-y-6">
-          {/* Tab bar */}
-          <div
-            className="flex gap-1 rounded-lg bg-surface-muted p-1"
-            role="tablist"
-            data-testid="tab-bar"
-          >
-            {tabs.map((tab) => (
+          {showFullAnalysis ? (
+            <>
+              {/* Collapse to summary */}
               <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                role="tab"
-                aria-selected={activeTab === tab.key}
-                className={`flex-1 cursor-pointer rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
-                  activeTab === tab.key
-                    ? "bg-surface text-brand shadow-sm"
-                    : "text-foreground-secondary hover:text-foreground"
-                }`}
+                type="button"
+                onClick={toggleFullAnalysis}
+                data-testid="toggle-analysis"
+                className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground-secondary transition-colors hover:bg-surface-muted"
               >
-                {tab.label}
+                <ChevronUp className="h-4 w-4" />
+                {t("product.showSummary")}
               </button>
-            ))}
-          </div>
 
-          {/* Tab content */}
-          <ErrorBoundary
-            level="section"
-            context={{ section: "tab-content", productId, tab: activeTab }}
-          >
-            {activeTab === "overview" && <OverviewTab profile={profile} />}
-            {activeTab === "nutrition" && <NutritionTab profile={profile} />}
-            {activeTab === "alternatives" && (
-              <AlternativesTab alternatives={profile.alternatives} />
-            )}
-            {activeTab === "scoring" && <ScoringTab profile={profile} />}
-          </ErrorBoundary>
+              {/* Tab bar */}
+              <div
+                className="flex gap-1 rounded-lg bg-surface-muted p-1"
+                role="tablist"
+                data-testid="tab-bar"
+              >
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    role="tab"
+                    aria-selected={activeTab === tab.key}
+                    className={`flex-1 cursor-pointer rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
+                      activeTab === tab.key
+                        ? "bg-surface text-brand shadow-sm"
+                        : "text-foreground-secondary hover:text-foreground"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab content */}
+              <ErrorBoundary
+                level="section"
+                context={{ section: "tab-content", productId, tab: activeTab }}
+              >
+                {activeTab === "overview" && <OverviewTab profile={profile} />}
+                {activeTab === "nutrition" && (
+                  <NutritionTab profile={profile} />
+                )}
+                {activeTab === "alternatives" && (
+                  <AlternativesTab alternatives={profile.alternatives} />
+                )}
+                {activeTab === "scoring" && <ScoringTab profile={profile} />}
+              </ErrorBoundary>
+            </>
+          ) : (
+            <QuickSummary
+              profile={profile}
+              onExpand={toggleFullAnalysis}
+            />
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ─── Quick Summary (Progressive Disclosure) ────────────────────────────────
+
+function QuickSummary({
+  profile,
+  onExpand,
+}: Readonly<{
+  profile: ProductProfile;
+  onExpand: () => void;
+}>) {
+  const { t } = useTranslation();
+  const interp = getScoreInterpretation(profile.scores.unhealthiness_score);
+  const topAlts = profile.alternatives.slice(0, 2);
+
+  return (
+    <div className="space-y-4" data-testid="quick-summary">
+      {/* Score interpretation */}
+      <div className={`card ${interp.bg}`}>
+        <h3 className="mb-1 text-sm font-semibold text-foreground-secondary">
+          {t("product.quickSummary")}
+        </h3>
+        <p className={`text-sm ${interp.color}`}>{t(interp.key)}</p>
+      </div>
+
+      {/* Traffic light strip */}
+      <div className="card">
+        <TrafficLightStrip nutrition={profile.nutrition.per_100g} />
+      </div>
+
+      {/* Top alternatives preview */}
+      {topAlts.length > 0 && (
+        <div className="card" data-testid="quick-summary-alternatives">
+          <h3 className="mb-2 text-sm font-semibold text-foreground-secondary">
+            {t("product.topAlternatives")}
+          </h3>
+          <div className="space-y-2">
+            {topAlts.map((alt) => (
+              <AlternativeCard key={alt.product_id} alt={alt} />
+            ))}
+          </div>
+          {profile.alternatives.length > 2 && (
+            <button
+              type="button"
+              onClick={onExpand}
+              className="mt-2 text-sm font-medium text-brand hover:underline"
+            >
+              {t("product.viewAllAlternatives")} (
+              {profile.alternatives.length})
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Expand to full analysis */}
+      <button
+        type="button"
+        onClick={onExpand}
+        data-testid="toggle-analysis"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
+      >
+        <ChevronDown className="h-4 w-4" />
+        {t("product.showFullAnalysis")}
+      </button>
     </div>
   );
 }

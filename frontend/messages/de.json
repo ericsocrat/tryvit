@@ -1,6 +1,6 @@
 {
   "nav": {
-    "home": "Startseite",
+    "home": "Dashboard",
     "search": "Suche",
     "scan": "Scannen",
     "lists": "Listen",
@@ -8,10 +8,14 @@
     "compare": "Vergleichen",
     "categories": "Kategorien",
     "admin": "Admin",
+    "adminSubmissions": "Einreichungen",
+    "adminMetrics": "Metriken",
+    "adminMonitoring": "Monitoring",
     "watchlist": "Beobachtungsliste",
     "achievements": "Erfolge",
     "recipes": "Rezepte",
     "imageSearch": "Bildersuche",
+    "learn": "Lernen",
     "more": "Mehr"
   },
   "common": {
@@ -464,7 +468,12 @@
     "originalName": "Originalname",
     "ecoScoreTitle": "Umweltauswirkungen",
     "ecoScoreComingSoon": "Eco-Score-Daten demnächst verfügbar. Wir arbeiten an der Integration von Umweltdaten für Produkte.",
-    "trafficLightSummary": "Nährstoff-Ampelzusammenfassung"
+    "trafficLightSummary": "Nährstoff-Ampelzusammenfassung",
+    "quickSummary": "Schnellübersicht",
+    "showFullAnalysis": "Vollständige Analyse anzeigen",
+    "showSummary": "Zusammenfassung anzeigen",
+    "topAlternatives": "Top-Alternativen",
+    "viewAllAlternatives": "Alle Alternativen anzeigen"
   },
   "scoreGauge": {
     "label": "Gesundheitsbewertung: {score} von 100",
@@ -504,6 +513,9 @@
     "noProducts": "Keine Produkte in dieser Kategorie.",
     "previous": "Zurück",
     "toggleSortDirection": "Sortierrichtung umschalten",
+    "toggleViewMode": "Ansichtsmodus umschalten",
+    "compactView": "Kompakt",
+    "detailedView": "Detailliert",
     "statAvgScore": "Durchschn. Bewertung",
     "scoreRange": "Bewertungsbereich",
     "nutriAB": "Nutri-Score A–B",
@@ -545,6 +557,10 @@
   },
   "settings": {
     "title": "Einstellungen",
+    "tabProfile": "Profil & Einstellungen",
+    "tabNutrition": "Ernährung & Diät",
+    "tabPrivacy": "Datenschutz & Daten",
+    "tabAccount": "Konto",
     "country": "Land",
     "language": "Sprache",
     "dietPreference": "Ernährungspräferenz",
@@ -670,7 +686,11 @@
     "hasAccount": "Bereits ein Konto?",
     "checkEmail": "Überprüfen Sie Ihre E-Mail, um Ihr Konto zu bestätigen.",
     "captchaRequired": "Bitte schließen Sie die Sicherheitsüberprüfung vor der Registrierung ab.",
-    "captchaFailed": "Sicherheitsüberprüfung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    "captchaFailed": "Sicherheitsüberprüfung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "continueWithGoogle": "Weiter mit Google",
+    "continueWithApple": "Weiter mit Apple",
+    "orContinueWithEmail": "oder weiter mit E-Mail",
+    "socialLoginError": "Anmeldung mit {provider} fehlgeschlagen. Bitte versuchen Sie es erneut."
   },
   "layout": {
     "appName": "TryVit",
@@ -733,7 +753,11 @@
     "notFoundCode": "404",
     "notFoundTitle": "Seite nicht gefunden",
     "notFoundMessage": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
-    "goHome": "Zur Startseite"
+    "goHome": "Zur Startseite",
+    "forbiddenCode": "403",
+    "forbiddenTitle": "Zugriff verweigert",
+    "forbiddenMessage": "Sie haben keine Berechtigung, diese Seite anzuzeigen.",
+    "goToDashboard": "Zum Dashboard"
   },
   "errorBoundary": {
     "pageTitle": "Auf dieser Seite ist etwas schiefgelaufen",
@@ -748,12 +772,27 @@
     "description": "Suchen, scannen und vergleichen Sie Lebensmittel aus Polen und Deutschland. Erhalten Sie sofortige Gesundheitsbewertungen, Allergenwarnungen und bessere Alternativen.",
     "getStarted": "Jetzt starten",
     "signIn": "Anmelden",
+    "featuresHeading": "Alles was Sie brauchen, um gesünder zu essen",
     "featureSearch": "Suchen",
     "featureSearchDesc": "Finden Sie Produkte nach Name, Marke oder Kategorie",
     "featureScan": "Scannen",
     "featureScanDesc": "Scannen Sie Barcodes für sofortige Produktinformationen",
     "featureCompare": "Vergleichen",
-    "featureCompareDesc": "Sehen Sie Gesundheitsbewertungen und finden Sie bessere Alternativen"
+    "featureCompareDesc": "Sehen Sie Gesundheitsbewertungen und finden Sie bessere Alternativen",
+    "howItWorksHeading": "So funktioniert es",
+    "step1Title": "Suchen oder scannen",
+    "step1Desc": "Finden Sie jedes Produkt nach Name, Marke oder Barcode-Scan.",
+    "step2Title": "Bewertung erhalten",
+    "step2Desc": "Sehen Sie einen klaren Gesundheitswert von 1–100, basierend auf 9 Ernährungsfaktoren.",
+    "step3Title": "Besseres finden",
+    "step3Desc": "Entdecken Sie gesündere Alternativen in derselben Kategorie.",
+    "statsHeading": "Vertrauenswürdige Daten",
+    "statProducts": "Analysierte Produkte",
+    "statCategories": "Lebensmittelkategorien",
+    "statFactors": "Bewertungsfaktoren",
+    "statCountries": "Abgedeckte Länder",
+    "ctaHeading": "Bereit, gesünder zu essen?",
+    "ctaDescription": "Treten Sie TryVit bei und treffen Sie fundierte Lebensmittelentscheidungen auf Basis echter Ernährungsdaten."
   },
   "legal": {
     "privacyTitle": "Datenschutzerklärung",

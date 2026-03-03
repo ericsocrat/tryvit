@@ -32,11 +32,14 @@ describe("CategoriesStep", () => {
     }
   });
 
-  it("renders category emojis", () => {
+  it("renders category SVG icons", () => {
     renderStep();
-    expect(screen.getByText("🍞")).toBeInTheDocument();
-    expect(screen.getByText("🍟")).toBeInTheDocument();
-    expect(screen.getByText("🧀")).toBeInTheDocument();
+    // Each category button renders a CategoryIcon SVG with a <title>
+    const buttons = FOOD_CATEGORIES.map((c) => screen.getByTestId(`category-${c.slug}`));
+    // All buttons should contain an SVG element (CategoryIcon)
+    for (const btn of buttons) {
+      expect(btn.querySelector("svg")).toBeTruthy();
+    }
   });
 
   it("toggles category on when clicked", async () => {

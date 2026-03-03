@@ -4,13 +4,14 @@
 // Accessible without authentication via share token URL.
 // Shows read-only view of a shared list with product details.
 
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { useSharedList } from "@/hooks/use-lists";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import { SCORE_BANDS, NUTRI_COLORS, scoreBandFromScore } from "@/lib/constants";
-import { useTranslation } from "@/lib/i18n";
+import { Logo } from "@/components/common/Logo";
 import { SkipLink } from "@/components/common/SkipLink";
+import { useSharedList } from "@/hooks/use-lists";
+import { NUTRI_COLORS, SCORE_BANDS, scoreBandFromScore } from "@/lib/constants";
+import { useTranslation } from "@/lib/i18n";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
 export default function SharedListPage() {
   const params = useParams();
@@ -50,7 +51,7 @@ export default function SharedListPage() {
       {/* Header */}
       <header className="border-b border bg-white/80 backdrop-blur">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
-          <span className="text-lg font-bold text-brand">🥗 TryVit</span>
+          <Logo variant="lockup" size={28} />
           <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-600">
             {t("shared.sharedList")}
           </span>

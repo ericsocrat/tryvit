@@ -4,34 +4,34 @@
 // Accessible at /app/admin/submissions — uses SECURITY DEFINER functions
 // that bypass RLS. In production, restrict route via middleware or auth check.
 
-import { useState, useCallback, useMemo } from "react";
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import {
-  Clock,
-  CheckCircle,
-  XCircle,
-  Link2,
-  RefreshCw,
-  FileText,
-  ShieldCheck,
-  ShieldAlert,
-  Activity,
-  Ban,
-} from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { showToast } from "@/lib/toast";
-import { createClient } from "@/lib/supabase/client";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { useTranslation } from "@/lib/i18n";
 import { callRpc } from "@/lib/rpc";
+import { createClient } from "@/lib/supabase/client";
+import { showToast } from "@/lib/toast";
 import type {
-  AdminSubmission,
-  RpcResult,
-  AdminSubmissionsResponse,
-  AdminReviewResponse,
-  AdminVelocityResponse,
   AdminBatchRejectResponse,
+  AdminReviewResponse,
+  AdminSubmission,
+  AdminSubmissionsResponse,
+  AdminVelocityResponse,
+  RpcResult,
 } from "@/lib/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  Activity,
+  Ban,
+  CheckCircle,
+  Clock,
+  FileText,
+  Link2,
+  RefreshCw,
+  ShieldAlert,
+  ShieldCheck,
+  XCircle,
+} from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 
 const TAB_KEYS: Record<string, string> = {
   pending: "admin.pendingTab",
@@ -358,11 +358,11 @@ function statusBadgeClass(status: string): string {
 }
 
 function trustBadgeClass(score: number | null): string {
-  if (score === null) return "bg-gray-100 text-gray-600";
+  if (score === null) return "bg-surface-muted text-foreground-secondary";
   if (score >= 80) return "bg-green-100 text-green-700";
   if (score < 20) return "bg-red-100 text-red-700";
   if (score < 40) return "bg-amber-100 text-amber-700";
-  return "bg-gray-100 text-gray-600";
+  return "bg-surface-muted text-foreground-secondary";
 }
 
 function AdminSubmissionCard({

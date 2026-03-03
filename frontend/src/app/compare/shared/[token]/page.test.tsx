@@ -1,5 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import SharedComparisonPage from "./page";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ describe("SharedComparisonPage", () => {
 
     render(<SharedComparisonPage />);
     // Should render without crashing
-    expect(screen.getByText("TryVit", { exact: false })).toBeInTheDocument();
+    expect(screen.getByAltText("TryVit")).toBeInTheDocument();
   });
 
   it("shows error message on error", () => {

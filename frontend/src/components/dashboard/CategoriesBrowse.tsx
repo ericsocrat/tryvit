@@ -2,14 +2,15 @@
 
 // ─── CategoriesBrowse — horizontal scrollable category chips ────────────────
 
-import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
-import { getCategoryOverview } from "@/lib/api";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
-import { useTranslation } from "@/lib/i18n";
+import { CategoryIcon } from "@/components/common/CategoryIcon";
 import { Skeleton } from "@/components/common/Skeleton";
+import { getCategoryOverview } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
+import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { createClient } from "@/lib/supabase/client";
 import type { CategoryOverviewItem } from "@/lib/types";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 
 function CategoryChip({
   category,
@@ -20,9 +21,7 @@ function CategoryChip({
       className="flex shrink-0 flex-col items-center gap-1.5 rounded-xl border bg-surface px-3 py-3 text-center shadow-sm hover-lift-press"
       style={{ minWidth: "5rem" }}
     >
-      <span className="text-2xl" aria-hidden="true">
-        {category.icon_emoji}
-      </span>
+      <CategoryIcon slug={category.slug} size="xl" />
       <span className="max-w-[5rem] truncate text-xs font-medium text-foreground">
         {category.display_name}
       </span>
