@@ -3,8 +3,8 @@
 // ─── Step 6: Favorite Food Categories ───────────────────────────────────────
 
 import type { StepProps } from "@/app/onboarding/types";
-import { FOOD_CATEGORIES } from "@/lib/constants";
 import { CategoryIcon } from "@/components/common/CategoryIcon";
+import { FOOD_CATEGORIES } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 
 export function CategoriesStep({ data, onChange, onNext, onBack }: StepProps) {

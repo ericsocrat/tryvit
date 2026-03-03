@@ -2,17 +2,17 @@
 
 // ─── Categories overview — grid of category cards ───────────────────────────
 
+import { CategoryIcon } from "@/components/common/CategoryIcon";
+import { CategoryGridSkeleton } from "@/components/common/skeletons";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { getCategoryOverview } from "@/lib/api";
+import { SCORE_5BAND_DISPLAY, scoreColorFromScore } from "@/lib/constants";
+import { useTranslation } from "@/lib/i18n";
+import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { createClient } from "@/lib/supabase/client";
+import type { CategoryOverviewItem } from "@/lib/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { getCategoryOverview } from "@/lib/api";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
-import { SCORE_5BAND_DISPLAY, scoreColorFromScore } from "@/lib/constants";
-import { CategoryGridSkeleton } from "@/components/common/skeletons";
-import { CategoryIcon } from "@/components/common/CategoryIcon";
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import { useTranslation } from "@/lib/i18n";
-import type { CategoryOverviewItem } from "@/lib/types";
 export default function CategoriesPage() {
   const supabase = createClient();
   const queryClient = useQueryClient();

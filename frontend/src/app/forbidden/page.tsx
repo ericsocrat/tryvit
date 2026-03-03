@@ -6,9 +6,9 @@
 
 "use client";
 
-import Link from "next/link";
-import { ShieldOff } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
+import { ShieldOff } from "lucide-react";
+import Link from "next/link";
 
 export default function ForbiddenPage() {
   const { t } = useTranslation();

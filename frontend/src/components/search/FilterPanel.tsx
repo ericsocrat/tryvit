@@ -2,17 +2,17 @@
 
 // ─── FilterPanel — sidebar (desktop) / bottom sheet (mobile) ────────────────
 
-import { useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
-import { getFilterOptions } from "@/lib/api";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
-import { ALLERGEN_TAGS, NUTRI_COLORS } from "@/lib/constants";
-import { nutriScoreLabel } from "@/lib/nutri-label";
-import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { CategoryIcon } from "@/components/common/CategoryIcon";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { getFilterOptions } from "@/lib/api";
+import { ALLERGEN_TAGS, NUTRI_COLORS } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
+import { nutriScoreLabel } from "@/lib/nutri-label";
+import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { createClient } from "@/lib/supabase/client";
 import type { SearchFilters } from "@/lib/types";
+import { useQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
 
 interface FilterPanelProps {
   filters: SearchFilters;

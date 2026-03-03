@@ -2,15 +2,15 @@
 
 // ─── CategoriesBrowse — horizontal scrollable category chips ────────────────
 
-import Link from "next/link";
-import { useQuery } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
-import { getCategoryOverview } from "@/lib/api";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
-import { useTranslation } from "@/lib/i18n";
-import { Skeleton } from "@/components/common/Skeleton";
 import { CategoryIcon } from "@/components/common/CategoryIcon";
+import { Skeleton } from "@/components/common/Skeleton";
+import { getCategoryOverview } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
+import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { createClient } from "@/lib/supabase/client";
 import type { CategoryOverviewItem } from "@/lib/types";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 
 function CategoryChip({
   category,
