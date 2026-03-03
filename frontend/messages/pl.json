@@ -686,7 +686,11 @@
     "hasAccount": "Masz już konto?",
     "checkEmail": "Sprawdź e-mail, aby potwierdzić konto.",
     "captchaRequired": "Proszę przejść weryfikację bezpieczeństwa przed rejestracją.",
-    "captchaFailed": "Weryfikacja bezpieczeństwa nie powiodła się. Spróbuj ponownie."
+    "captchaFailed": "Weryfikacja bezpieczeństwa nie powiodła się. Spróbuj ponownie.",
+    "continueWithGoogle": "Kontynuuj z Google",
+    "continueWithApple": "Kontynuuj z Apple",
+    "orContinueWithEmail": "lub kontynuuj przez e-mail",
+    "socialLoginError": "Nie udało się zalogować przez {provider}. Spróbuj ponownie."
   },
   "layout": {
     "appName": "TryVit",

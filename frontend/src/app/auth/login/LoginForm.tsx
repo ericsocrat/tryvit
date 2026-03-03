@@ -1,5 +1,6 @@
 "use client";
 
+import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
 import { Logo } from "@/components/common/Logo";
 import { SkipLink } from "@/components/common/SkipLink";
 import { useTranslation } from "@/lib/i18n";
@@ -65,6 +66,8 @@ export function LoginForm() {
             {t("auth.sessionExpiredBanner")}
           </div>
         )}
+
+        <SocialLoginButtons />
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>

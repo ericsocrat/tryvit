@@ -686,7 +686,11 @@
     "hasAccount": "Already have an account?",
     "checkEmail": "Check your email to confirm your account.",
     "captchaRequired": "Please complete the security check before signing up.",
-    "captchaFailed": "Security verification failed. Please try again."
+    "captchaFailed": "Security verification failed. Please try again.",
+    "continueWithGoogle": "Continue with Google",
+    "continueWithApple": "Continue with Apple",
+    "orContinueWithEmail": "or continue with email",
+    "socialLoginError": "Could not sign in with {provider}. Please try again."
   },
   "layout": {
     "appName": "TryVit",

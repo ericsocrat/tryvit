@@ -1,5 +1,6 @@
 "use client";
 
+import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
 import { Logo } from "@/components/common/Logo";
 import { SkipLink } from "@/components/common/SkipLink";
 import { TurnstileWidget } from "@/components/common/TurnstileWidget";
@@ -87,6 +88,8 @@ export function SignupForm() {
         <p className="mb-8 text-center text-sm text-foreground-secondary">
           {t("auth.signUpSubtitle")}
         </p>
+
+        <SocialLoginButtons />
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>

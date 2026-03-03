@@ -39,6 +39,10 @@ vi.mock("@/lib/toast", () => ({
   showToast: vi.fn(),
 }));
 
+vi.mock("@/components/auth/SocialLoginButtons", () => ({
+  SocialLoginButtons: () => <div data-testid="social-login-buttons" />,
+}));
+
 // Mock TurnstileWidget to expose a trigger for simulating token receipt
 let capturedOnSuccess: ((token: string) => void) | undefined;
 let capturedOnError: (() => void) | undefined;
@@ -83,6 +87,11 @@ beforeEach(() => {
 });
 
 describe("SignupForm", () => {
+  it("renders social login buttons", () => {
+    render(<SignupForm />);
+    expect(screen.getByTestId("social-login-buttons")).toBeInTheDocument();
+  });
+
   it("renders email and password fields", () => {
     render(<SignupForm />);
     expect(screen.getByLabelText("Email")).toBeInTheDocument();

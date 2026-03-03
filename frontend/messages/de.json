@@ -686,7 +686,11 @@
     "hasAccount": "Bereits ein Konto?",
     "checkEmail": "Überprüfen Sie Ihre E-Mail, um Ihr Konto zu bestätigen.",
     "captchaRequired": "Bitte schließen Sie die Sicherheitsüberprüfung vor der Registrierung ab.",
-    "captchaFailed": "Sicherheitsüberprüfung fehlgeschlagen. Bitte versuchen Sie es erneut."
+    "captchaFailed": "Sicherheitsüberprüfung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+    "continueWithGoogle": "Weiter mit Google",
+    "continueWithApple": "Weiter mit Apple",
+    "orContinueWithEmail": "oder weiter mit E-Mail",
+    "socialLoginError": "Anmeldung mit {provider} fehlgeschlagen. Bitte versuchen Sie es erneut."
   },
   "layout": {
     "appName": "TryVit",
