@@ -17,6 +17,7 @@ import {
   getProductDetail,
   lookupByEan,
   getBetterAlternatives,
+  getBetterAlternativesV2,
   getScoreExplanation,
   getDataConfidence,
   // Health Profiles
@@ -391,6 +392,31 @@ describe("Product Detail API functions", () => {
     mockCallRpc.mockResolvedValue({ ok: true, data: { alternatives: [] } });
     await getBetterAlternatives(fakeSupabase, 42);
     expect(mockCallRpc).toHaveBeenCalledWith(fakeSupabase, "api_better_alternatives", {
+      p_product_id: 42,
+    });
+  });
+
+  it("getBetterAlternativesV2 passes v2 params", async () => {
+    mockCallRpc.mockResolvedValue({ ok: true, data: { alternatives: [] } });
+    await getBetterAlternativesV2(fakeSupabase, 42, {
+      p_cross_category: true,
+      p_limit: 3,
+      p_prefer_no_palm_oil: true,
+      p_max_concern_tier: 1,
+    });
+    expect(mockCallRpc).toHaveBeenCalledWith(fakeSupabase, "api_better_alternatives_v2", {
+      p_product_id: 42,
+      p_cross_category: true,
+      p_limit: 3,
+      p_prefer_no_palm_oil: true,
+      p_max_concern_tier: 1,
+    });
+  });
+
+  it("getBetterAlternativesV2 works without optional params", async () => {
+    mockCallRpc.mockResolvedValue({ ok: true, data: { alternatives: [] } });
+    await getBetterAlternativesV2(fakeSupabase, 42);
+    expect(mockCallRpc).toHaveBeenCalledWith(fakeSupabase, "api_better_alternatives_v2", {
       p_product_id: 42,
     });
   });

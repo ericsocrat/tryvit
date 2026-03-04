@@ -21,6 +21,7 @@ export {
 export {
   ProductDetailContract,
   BetterAlternativesContract,
+  BetterAlternativesV2Contract,
   ScoreExplanationContract,
   DataConfidenceContract,
 } from "./product.contracts";
