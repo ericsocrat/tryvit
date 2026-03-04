@@ -1085,7 +1085,10 @@
       "title": "Dlaczego taki wynik?",
       "error": "Nie udało się załadować rozkładu wyniku. Spróbuj ponownie.",
       "rank": "Pozycja #{rank} z {total} w kategorii",
-      "categoryAvg": "Średnia kategorii: {avg}/100"
+      "categoryAvg": "Średnia kategorii: {avg}/100",
+      "nutrientBonus": "Bonus za gęstość odżywczą",
+      "proteinBonus": "Białko: −{pts}%",
+      "fibreBonus": "Błonnik: −{pts}%"
     }
   },
   "export": {
@@ -1174,11 +1177,11 @@
     },
     "unhealthinessScore": {
       "title": "Nasz Wynik Zdrowotny",
-      "description": "Jak działa 9-czynnikowy Wynik Niezdrowowści i co oznaczają zakresy.",
-      "summary": "Wynik Niezdrowowści (1–100) to nasz główny wskaźnik złożony. Szacuje potencjał kumulatywnej szkodliwości, ważąc 9 czynników: tłuszcze nasycone, cukry, sól, kalorie, tłuszcze trans, dodatki, metoda przygotowania, kontrowersje i obawy dotyczące składników.",
+      "description": "Jak działa 10-czynnikowy Wynik Niezdrowowści i co oznaczają zakresy.",
+      "summary": "Wynik Niezdrowowści (1–100) to nasz główny wskaźnik złożony. Szacuje potencjał kumulatywnej szkodliwości, ważąc 10 czynników: tłuszcze nasycone, cukry, sól, kalorie, tłuszcze trans, dodatki, metoda przygotowania, kontrowersje, obawy dotyczące składników oraz bonus za gęstość odżywczą (białko i błonnik).",
       "whatIsTitle": "Czym jest Wynik Niezdrowowści?",
       "whatIsText": "Wynik Niezdrowowści odpowiada na proste pytanie: jeśli ktoś regularnie jadłby ten produkt, jaki potencjał kumulatywnej szkodliwości niesie? Skala biegnie od 1 (niskie ryzyko) do 100 (bardzo wysokie ryzyko). Celowo nazywamy to 'Niezdrowowścią' a nie 'zdrowością' — wynik 30 nie oznacza, że produkt jest zdrowy, oznacza że jest mniej niezdrowy niż produkt z wynikiem 70.",
-      "factorsTitle": "9 czynników",
+      "factorsTitle": "10 czynników",
       "factorSatFat": "Tłuszcze nasycone (waga: 17%) — pułap: 10g na 100g. Oparte na wartościach referencyjnych EFSA.",
       "factorSugars": "Cukry (waga: 17%) — pułap: 27g na 100g. Oparte na wytycznych WHO dot. wolnych cukrów.",
       "factorSalt": "Sól (waga: 17%) — pułap: 3g na 100g. Oparte na wytycznych WHO 2023 dot. sodu.",
@@ -1188,6 +1191,7 @@
       "factorPrepMethod": "Metoda przygotowania (waga: 8%) — smażenie głębokie punktuje najwyżej ze względu na akrylamid/WWA/HCA.",
       "factorControversies": "Kontrowersje (waga: 8%) — uwzględnia problemy produktowe jak olej palmowy lub zakazane substancje.",
       "factorConcern": "Obawy o składniki (waga: 5%) — oparte na klasach ryzyka EFSA (poziomy 0–3).",
+      "factorNutrientDensity": "Bonus za gęstość odżywczą (waga: −8%) — obniża wynik dla produktów bogatych w białko (≥10g) lub błonnik (≥3g). Nagradza wartość odżywczą.",
       "bandsTitle": "Zakresy wyników",
       "band1": "1–20: Niskie ryzyko — płatki owsiane, surowe warzywa",
       "band2": "21–40: Umiarkowane — chleb pełnoziarnisty, zwykły jogurt",
