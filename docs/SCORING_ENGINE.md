@@ -28,14 +28,14 @@ The Canonical Scoring Engine is a versioned, auditable, multi-country scoring la
 │  │ Version         │  │ Country        │  │ Entry Points    │    │
 │  │ Registry        │  │ Profiles       │  │                 │    │
 │  │                 │  │                │  │ compute_score() │    │
-│  │ v3.2 (active)   │  │ PL (baseline)  │  │ score_category()│    │
+│  │ v3.3 (active)   │  │ PL (baseline)  │  │ score_category()│    │
 │  │ v4.0 (shadow)   │  │ DE (overrides) │  │ rescore_batch() │    │
-│  │ v3.1 (retired)  │  │ CZ (overrides) │  │                 │    │
+│  │ v3.2 (retired)  │  │ CZ (overrides) │  │                 │    │
 │  └───────┬────────┘  └───────┬────────┘  └────────┬────────┘    │
 │          └──────────┬────────┘                     │             │
 │                     ▼                              │             │
 │  ┌──────────────────────────────────────────────────────────┐   │
-│  │  v3.2 fast path: compute_unhealthiness_v32()             │   │
+│  │  v3.3 fast path: compute_unhealthiness_v33()             │   │
 │  │  vN+ config path: _compute_from_config(product, config)  │   │
 │  └──────────────────────────┬───────────────────────────────┘   │
 │                     ┌───────┼───────────────┐                    │
@@ -65,7 +65,7 @@ The Canonical Scoring Engine is a versioned, auditable, multi-country scoring la
 
 | Column | Type | Purpose |
 |--------|------|---------|
-| `score_model_version` | `text DEFAULT 'v3.2'` | Which model produced the score |
+| `score_model_version` | `text DEFAULT 'v3.3'` | Which model produced the score |
 | `scored_at` | `timestamptz DEFAULT now()` | When the score was last computed |
 
 ### Functions
@@ -97,9 +97,11 @@ The Canonical Scoring Engine is a versioned, auditable, multi-country scoring la
 
 ---
 
-## 4. Scoring Model v3.2 Config
+## 4. Scoring Model v3.3 Config
 
-The active model's JSONB config mirrors `compute_unhealthiness_v32()`:
+The active model's JSONB config mirrors `compute_unhealthiness_v33()`:
+
+### Penalty Factors (9 factors — weights sum to 1.00)
 
 | # | Factor | Weight | Ceiling | Unit |
 |---|--------|--------|---------|------|
@@ -113,7 +115,13 @@ The active model's JSONB config mirrors `compute_unhealthiness_v32()`:
 | 8 | controversies | 0.08 | — | categorical |
 | 9 | ingredient_concern | 0.05 | 100 | score |
 
-**Weights sum to 1.00.** Clamped to `[1, 100]`.
+### Bonus Factor (v3.3 — subtracted from penalty sum)
+
+| # | Factor | Weight | Ceiling | Unit | Reference |
+|---|--------|--------|---------|------|-----------|
+| 10 | nutrient_density | 0.08 | 100 (combined) | protein_g + fibre_g | EFSA 2017 protein DRV, WHO 2015 fibre, see `SCORING_METHODOLOGY.md §2.8` |
+
+**Penalty weights sum to 1.00.** Bonus subtracted after penalty sum. Clamped to `[1, 100]`. Maximum bonus: 8 points.
 
 ---
 
@@ -128,7 +136,7 @@ The active model's JSONB config mirrors `compute_unhealthiness_v32()`:
 
 **Returns:** JSONB with `product_id`, `score`, `previous_score`, `version`, `country`, `mode`, `breakdown`, `changed`.
 
-**v3.2 fast path:** For v3.2, delegates directly to `compute_unhealthiness_v32()` — guaranteeing bit-perfect backward compatibility.
+**v3.3 fast path:** For v3.3, delegates directly to `compute_unhealthiness_v33()` — guaranteeing bit-perfect backward compatibility.
 
 ### score_category(category, data_completeness, country)
 
@@ -197,7 +205,7 @@ When `compute_score(123, NULL, 'DE')` is called, the DE overrides merge over the
 
 Validate profiles with:
 ```sql
-SELECT validate_country_profile('v3.2', 'DE');
+SELECT validate_country_profile('v3.3', 'DE');
 -- Returns: { valid: true, total_weight: 1.0, factor_count: 9, ... }
 ```
 
@@ -245,7 +253,7 @@ The `ScoreBreakdownPanel` displays a model version badge and freshness timestamp
 | `rescore_batch()` 1000 products | <30s | Loop via compute_score |
 | Audit trigger overhead | <1ms/row | Single INSERT, no cascading |
 
-The v3.2 fast path ensures zero performance regression for pipeline scoring.
+The v3.3 fast path ensures zero performance regression for pipeline scoring.
 
 ---
 
@@ -264,9 +272,9 @@ The v3.2 fast path ensures zero performance regression for pipeline scoring.
 
 | Test | Validates |
 |------|-----------|
-| T01 | v3.2 is active |
+| T01 | v3.3 is active |
 | T02 | Single active version constraint |
-| T03 | v3.2 config: 9 factors, weights sum to 1.0 |
+| T03 | v3.3 config: 10 factors (9 penalty + 1 bonus), weights sum to 1.0 |
 | T04 | `score_model_version` populated for all scored products |
 | T05 | `scored_at` populated for all scored products |
 | T06 | Audit log table exists |
@@ -323,8 +331,8 @@ SELECT * FROM check_function_source_drift() WHERE status != 'match';
 ### Registered Function Source Hashes
 
 The `formula_source_hashes` table stores expected `pg_proc.prosrc` SHA-256 hashes for:
-- `compute_unhealthiness_v32` — core scoring function
-- `explain_score_v32` — score breakdown
+- `compute_unhealthiness_v33` — core scoring function
+- `explain_score_v33` — score breakdown
 - `compute_score` — canonical entry point
 - `_compute_from_config` — config-driven engine
 - `_explain_from_config` — config-driven breakdown
@@ -350,7 +358,7 @@ Changing scoring or search weights is a **controlled operation** with mandatory 
 
 ### When to Use This Process
 
-- Changing any weight in `compute_unhealthiness_v32()` or `scoring_model_versions.config`
+- Changing any weight in `compute_unhealthiness_v33()` or `scoring_model_versions.config`
 - Changing any weight in `search_ranking_config.weights`
 - Adding or removing a scoring factor
 - Modifying a ceiling value or categorical map entry
@@ -388,5 +396,5 @@ Changing scoring or search weights is a **controlled operation** with mandatory 
 
 | Domain | Formula | Version | Weights Sum | Status |
 |--------|---------|---------|-------------|--------|
-| Scoring | `compute_unhealthiness` | v3.2 | 1.00 (9 factors) | Active |
+| Scoring | `compute_unhealthiness` | v3.3 | 1.00 (9 penalty) + 0.08 (bonus) | Active |
 | Search | `default` | v1.0.0 | 1.00 (5 signals) | Active |

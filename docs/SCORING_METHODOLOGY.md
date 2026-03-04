@@ -1,7 +1,7 @@
 # Scoring Methodology
 
-> **Version:** 3.2
-> **Last updated:** 2026-02-10
+> **Version:** 3.3
+> **Last updated:** 2026-03-03
 > **Scope:** TryVit
 
 ---
@@ -32,9 +32,11 @@ It is explicitly called **Unhealthiness** (not "healthiness") to avoid false-pos
 
 ### 2.2 Input Factors, Weights, and Scientific Justification
 
-The score is a **weighted sum of sub-scores**, each normalized to 0–100, then combined with the weights below.
+The score is a **weighted sum of sub-scores**, each normalized to 0–100, then combined with the weights below. In v3.3, a 10th factor — **nutrient density bonus** — is *subtracted* from the penalty sum, rewarding products with meaningful protein and fibre content.
 
 **Why these thresholds?** Each ceiling is set at the point where a product consumed regularly at that level would approach or exceed daily recommended limits. The per-100g ceiling represents the concentration at which ~2–3 servings would meet or exceed the WHO/EFSA daily guideline.
+
+#### Penalty Factors (9 factors — weights sum to 1.00)
 
 | Factor             | Column source              | Weight   | Ceiling (per 100g) | Scientific basis for ceiling                                                                              |
 | ------------------ | -------------------------- | -------- | ------------------ | --------------------------------------------------------------------------------------------------------- |
@@ -49,7 +51,13 @@ The score is a **weighted sum of sub-scores**, each normalized to 0–100, then 
 | Ingredient concern | `ingredient_concern_score` | 0.05     | 100 = 100          | EFSA additive risk tiers. Nitrites (tier 3) = high; artificial sweeteners (tier 2) = moderate.            |
 |                    |                            | **1.00** |                    |                                                                                                           |
 
-**Weight rationale (v3.2):** Saturated fat, sugars, and salt share the highest weight (0.17 each, reduced from 0.18 in v3.1) because they are the three nutrients cited by WHO as primary dietary risks for NCDs. Trans fat has high weight (0.11) because trans fats have no safe level of intake (WHO). The new ingredient concern factor (0.05) captures additive safety signals from EFSA re-evaluations — separate from additive count (which measures processing degree) and controversies (which covers product-level issues like palm oil). Calories carry moderate weight because energy density alone does not indicate harm.
+#### Bonus Factor (v3.3 — subtracted from penalty sum)
+
+| Factor           | Column source            | Weight   | Ceiling        | Scientific basis                                                                             |
+| ---------------- | ------------------------ | -------- | -------------- | -------------------------------------------------------------------------------------------- |
+| Nutrient density | `protein_g` + `fibre_g`  | 0.08     | 100 (combined) | EFSA 2017 DRV for protein (0.83 g/kg/day); WHO 2015 fibre guideline (≥25 g/day). See §2.8.   |
+
+**Weight rationale (v3.3):** The 9 penalty factors are unchanged from v3.2. Saturated fat, sugars, and salt share the highest weight (0.17 each) because they are the three nutrients cited by WHO as primary dietary risks for NCDs. Trans fat has high weight (0.11) because trans fats have no safe level of intake (WHO). The ingredient concern factor (0.05) captures additive safety signals from EFSA re-evaluations. The new nutrient density bonus (0.08, subtracted) rewards products with meaningful protein and fibre — the two positive nutrients most reliably reported on EU food labels. This follows the Nutri-Score 2024 approach of crediting positive nutrients. The bonus weight of 0.08 was chosen to produce a maximum 8-point reduction, enough to meaningfully differentiate within categories without overwhelming penalty factors.
 
 ### 2.3 Formula
 
@@ -64,16 +72,25 @@ Unhealthiness Score = round(
     oil_sub         * 0.08 +
     controversy_sub * 0.08 +
     concern_sub     * 0.05
+    - nutrient_density_sub * 0.08
 )
 ```
 
-Where each sub-score is computed as:
+Where each **penalty** sub-score is computed as:
 
 ```
 sub_score = LEAST(100, (value / threshold) * 100)
 ```
 
 For categorical factors (oil method, controversies, ingredient concern), use the fixed lookup values from the tables above.
+
+The **nutrient density** bonus sub-score is computed as:
+
+```
+nutrient_density_sub = LEAST(100, protein_tier + fibre_tier)
+```
+
+See §2.8 for the protein and fibre tier tables.
 
 **Clamping:** The final score is clamped to the range `[1, 100]`. A product with all zeroes scores 1 (not 0) to avoid implying "perfectly healthy."
 
@@ -132,11 +149,11 @@ Each ingredient in `ingredient_ref` has a `concern_tier` (0–3) assigned from E
 | 2    | Moderate | Artificial sweeteners, some colorants | 40                 |
 | 3    | High     | Nitrites (E250), BHA (E320), azo dyes | 100                |
 
-The per-product `ingredient_concern_score` (0–100) is computed as: `LEAST(100, SUM(concern_tier_score_per_ingredient))`. Products with no classified additives score 0. The score is stored on the `products` table and passed to `compute_unhealthiness_v32()` as the 9th parameter.
+The per-product `ingredient_concern_score` (0–100) is computed as: `LEAST(100, SUM(concern_tier_score_per_ingredient))`. Products with no classified additives score 0. The score is stored on the `products` table and passed to `compute_unhealthiness_v33()` as the 9th parameter.
 
 ```sql
 -- Function signature (returns INTEGER [1, 100])
-compute_unhealthiness_v32(
+compute_unhealthiness_v33(
     p_saturated_fat_g NUMERIC,    -- ceiling: 10g
     p_sugars_g        NUMERIC,    -- ceiling: 27g
     p_salt_g          NUMERIC,    -- ceiling: 3g
@@ -145,7 +162,9 @@ compute_unhealthiness_v32(
     p_additives_count NUMERIC,    -- ceiling: 10
     p_prep_method     TEXT,       -- categorical
     p_controversies   TEXT,       -- categorical
-    p_concern_score   NUMERIC     -- 0-100 EFSA concern score
+    p_concern_score   NUMERIC,    -- 0-100 EFSA concern score
+    p_protein_g       NUMERIC,    -- nutrient density: protein (v3.3)
+    p_fibre_g         NUMERIC     -- nutrient density: fibre (v3.3)
 )
 ```
 
@@ -161,7 +180,7 @@ CALL score_category('<CATEGORY>');
 ```
 
 The `score_category()` procedure handles: ingredient concern defaults,
-`compute_unhealthiness_v32()`, flag computation, data completeness, and confidence.
+`compute_unhealthiness_v33()`, flag computation, data completeness, and confidence.
 
 ### ~~2.5 `scored_at` Timestamp~~ (removed — column dropped in migration 20260211000500)
 
@@ -180,6 +199,60 @@ The `score_category()` procedure handles: ingredient concern defaults,
 ### ~~2.7 Scoring Version~~ (removed — column dropped in migration 20260211000500)
 
 > The `scoring_version` column was dropped because all rows were `'v3.2'`. The version is now tracked only in `score_breakdown->>'version'` (JSONB). When methodology changes, update the function and this document.
+
+### 2.8 Nutrient Density Bonus Factor (v3.3)
+
+Added in v3.3, the nutrient density factor rewards products with meaningful protein and/or fibre content by **subtracting** a bonus from the penalty sum. This addresses a v3.2 limitation where nutritionally dense products (Greek yogurt, whole-grain bread, smoked fish) scored identically to nutrient-poor products at the same fat/sugar/salt levels.
+
+#### 2.8.1 Protein Tier Table
+
+| Protein per 100g | Tier Score | Rationale                                                     |
+| ---------------- | ---------- | ------------------------------------------------------------- |
+| ≥ 20 g           | 50         | High-protein (meat, fish, Greek yogurt, legumes)              |
+| ≥ 15 g           | 40         | Good protein source (EU Regulation 1924/2006 "high protein") |
+| ≥ 10 g           | 30         | Moderate protein (cheese, eggs, tofu)                         |
+| ≥ 5 g            | 15         | Some protein contribution                                     |
+| < 5 g            | 0          | Negligible protein — no bonus                                 |
+
+**Scientific basis:** EFSA (2017) Dietary Reference Values for protein — adult PRI of 0.83 g/kg body weight/day (~58 g for 70 kg adult). Products providing ≥20 g/100g deliver >34% of daily needs per 100g serving.
+
+#### 2.8.2 Fibre Tier Table
+
+| Fibre per 100g | Tier Score | Rationale                                                    |
+| -------------- | ---------- | ------------------------------------------------------------ |
+| ≥ 8 g          | 50         | Very high fibre (bran cereals, legumes)                      |
+| ≥ 5 g          | 35         | High fibre — EU "high fibre" claim threshold (Reg 1924/2006) |
+| ≥ 3 g          | 20         | Source of fibre — EU "source of fibre" threshold             |
+| ≥ 1 g          | 10         | Some fibre contribution                                       |
+| < 1 g          | 0          | Negligible fibre — no bonus                                   |
+
+**Scientific basis:** WHO (2015) recommends ≥25 g/day dietary fibre for adults. Products providing ≥8 g/100g deliver >32% of daily needs per 100g serving.
+
+#### 2.8.3 Combined Bonus Calculation
+
+```
+nutrient_density_sub = LEAST(100, protein_tier + fibre_tier)
+bonus = nutrient_density_sub * 0.08
+final_score = GREATEST(1, penalty_sum - bonus)
+```
+
+**Maximum bonus:** 8 points (when protein_tier + fibre_tier ≥ 100, e.g., 50 + 50 for a high-protein, high-fibre product like lentils).
+
+**Design rationale:**
+- **Subtracted, not added:** Protein and fibre are health-positive nutrients. Subtracting their contribution from the unhealthiness penalty rewards nutritionally dense foods.
+- **Tiered, not linear:** Prevents gaming — 100g of pure protein isolate doesn't get an infinite bonus. Diminishing returns above practical thresholds.
+- **Capped at 100 combined:** The combined tier score is capped at 100 before applying the 0.08 weight, ensuring the bonus never exceeds 8 points.
+- **Weight of 0.08:** Chosen to provide meaningful differentiation (up to 8 points) without overwhelming the penalty factors. Approximately equal to the prep_method and controversies weights.
+
+#### 2.8.4 Impact Examples
+
+| Product                     | Protein | Fibre | Protein Tier | Fibre Tier | Combined | Bonus | Effect                     |
+| --------------------------- | ------- | ----- | ------------ | ---------- | -------- | ----- | -------------------------- |
+| Piątnica Skyr Naturalny     | 12.0 g  | 0.0 g | 30           | 0          | 30       | 2.4   | Score reduced by ~2 points |
+| Mestemacher Chleb wielozbożowy | 5.8 g  | 8.8 g | 15           | 50         | 65       | 5.2   | Score reduced by ~5 points |
+| Tarczyński Kabanosy         | 26.0 g  | 0.0 g | 50           | 0          | 50       | 4.0   | Score reduced by ~4 points |
+| Coca-Cola Zero              | 0.0 g   | 0.0 g | 0            | 0          | 0        | 0.0   | No change — no nutrients   |
+| Melvit Płatki owsiane      | 13.0 g  | 9.0 g | 30           | 50         | 80       | 6.4   | Score reduced by ~6 points |
 
 ---
 
@@ -439,6 +512,9 @@ See `DATA_SOURCES.md` §5 and `RESEARCH_WORKFLOW.md` §6.4 for the full confiden
 - **Regulation (EU) No 1169/2011** on the provision of food information to consumers.
 - **Regulation (EU) No 1169/2011, Annex XIII** — Reference intakes and "high" thresholds for front-of-pack declarations.
 - **Nutri-Score algorithm** (2024 update). Santé Publique France.
+- **EFSA Dietary Reference Values for protein** (2017). EFSA Journal 15(6):4880. PRI of 0.83 g/kg body weight/day for adults.
+- **WHO guidelines on dietary fibre** (2015). Guideline: Sugars intake for adults and children (≥25 g/day fibre recommendation). Geneva: WHO.
+- **Nutri-Score positive points methodology** (2024). Santé Publique France — protein and fibre as protective nutrients in front-of-pack scoring.
 
 ---
 
@@ -454,3 +530,4 @@ See `DATA_SOURCES.md` §5 and `RESEARCH_WORKFLOW.md` §6.4 for the full confiden
 | v3.1    | 2026-02-07 | Removed healthiness_score (derivable), personal lenses (unimplemented), ingredient_complexity scoring factor (redundant with additives + NOVA). Dropped cholesterol_mg, potassium_mg, aluminium_based_additives columns. Redistributed 0.04 weight to additives (0.05→0.07) and controversies (0.06→0.08). Extracted formula into `compute_unhealthiness_v31()` PostgreSQL function (migration 000501); all category pipelines now call the function instead of inline SQL.                                               |
 | v3.1b   | 2026-02-10 | Expanded `prep_method` scoring: added `steamed=30`, `grilled=60`, `smoked=65` (were all 50 via ELSE). Backfilled 134 NULL prep_method values across 5 categories. Made `prep_method` NOT NULL with default `'not-applicable'`. Added scientific references for PAH (EFSA 2008), HCA (IARC Group 2A).                                                                                                                                                                                                                      |
 | v3.2    | 2026-02-10 | Added 9th scoring factor: **ingredient concern** (weight 0.05) based on EFSA additive risk tiers (concern_tier 0–3 on ingredient_ref). New `compute_unhealthiness_v32()` function. Redistributed weights: sat_fat/sugars/salt 0.18→0.17, trans_fat 0.12→0.11, prep 0.09→0.08. Cleaned 375 foreign ingredient names to ASCII English. Rebuilt `ingredients_raw` from junction data (492 products). Added real serving sizes from OFF API (317 products). Fixed v_master fan-out with `serving_basis = 'per 100 g'` filter. |
+| v3.3    | 2026-03-03 | Added 10th factor: **nutrient density bonus** (weight 0.08, subtracted). New `compute_unhealthiness_v33()` function with 11 parameters — added `p_protein_g` and `p_fibre_g`. Protein tiered at 5/10/15/20 g thresholds; fibre tiered at 1/3/5/8 g thresholds. Combined bonus `LEAST(100, protein_tier + fibre_tier) * 0.08` subtracted from penalty sum, clamped to [1, 100]. Maximum 8-point reduction for nutrient-dense products. Penalty factor weights unchanged from v3.2. Scientific basis: EFSA 2017 protein DRV, WHO 2015 fibre guideline, Nutri-Score 2024 positive points methodology. |
