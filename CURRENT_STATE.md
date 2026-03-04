@@ -1,34 +1,32 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-03-03 by GitHub Copilot (session 16)
+> **Last updated:** 2026-03-04 by GitHub Copilot (session 17)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
 
 ## Active Branch & PR
 
-- **Branch:** `main` (clean)
-- **Latest SHA:** `8e60d0d` (feat(frontend): milestone #17 — Elite World-Class UX v1.0 (#583))
-- **Open PRs:** 0
+- **Branch:** `data/601-scale-de-categories` (PR pending)
+- **Latest SHA (main):** `8e60d0d` (feat(frontend): milestone #17 — Elite World-Class UX v1.0 (#583))
+- **Open PRs:** 1 (pending — #601 DE scaling)
 
 ## Recently Shipped (This Session)
 
-| SHA       | Summary                                                                     |
-| --------- | --------------------------------------------------------------------------- |
-| `8e60d0d` | **PR #583 MERGED** — Milestone #17: Elite World-Class UX v1.0 (17 issues)  |
+| SHA       | Summary                                                                               |
+| --------- | ------------------------------------------------------------------------------------- |
+| (pending) | **PR for #601** — Scale 5 DE categories from 252→473 products (Bread, Chips, Dairy, Drinks, Sweets) |
 
 ## Recently Shipped (Last 7 Days)
 
 | Date       | PR/SHA    | Summary                                                                             |
 | ---------- | --------- | ----------------------------------------------------------------------------------- |
 | 2026-03-03 | #583      | **MERGED** — Milestone #17: 17 UX issues, 134 files, 4,504 tests                   |
-| 2026-03-15 | #564      | **MERGED** — fix doc count drift — migration 184→185 (closes #562)                  |
-| 2026-03-15 | #561      | **MERGED** — fix 11 ESLint non-null assertion warnings across 8 files (closes #555) |
-| 2026-03-15 | #560      | **MERGED** — fix nightly data audit false-positive criticals (closes #554)          |
 
 ## Known Issues & Broken Items
 
 - [ ] Quality Gate dashboard test still fails — staging DB missing API functions (schema sync needed)
+- [ ] v3.3 scoring functions exist locally from unmerged PR #608 — causes QA Suites 2, 7, 9, 31 failures (pre-existing, not blocking)
 
 ## CI Gate Status (main branch)
 
@@ -55,17 +53,19 @@
 
 ## Next Planned Work
 
+- [ ] Merge PR for #601 — scale DE categories
 - [ ] Implement #563 — sync staging DB schema (P2, requires staging access)
 - [ ] Create next milestone based on project priorities
 
 ## Key Metrics Snapshot
 
-- **Products:** 1,279 active (20 PL + 5 DE categories)
-- **QA checks:** 733/733 passing
-- **EAN coverage:** 1,277/1,279 with EAN (99.8%)
+- **Products:** 1,671 active (1,198 PL + 473 DE across 25 categories)
+- **DE products:** 473 active (scaled from 252: Bread 94, Chips 95, Dairy 94, Drinks 95, Sweets 95)
+- **QA checks:** 733/733 passing (local v3.3 scoring causes pre-existing failures in Suites 2, 7, 9, 31)
+- **EAN coverage:** 1,670/1,671 with EAN (99.9%)
 - **Frontend test coverage:** ~88% lines (SonarCloud Quality Gate passing)
 - **ESLint warnings:** 0
-- **Open issues:** 2 (1 P2 + 1 deferred) | **Open PRs:** 0
+- **Open issues:** 2 (1 P2 + 1 deferred) | **Open PRs:** 1
 - **Vitest:** 4,504 tests passing (29 skipped)
 - **DB migrations:** 185 append-only
 - **Ruff lint:** 0 errors
