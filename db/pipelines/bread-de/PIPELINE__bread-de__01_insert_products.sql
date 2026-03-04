@@ -1,4 +1,4 @@
--- PIPELINE (Bread): insert products
+﻿-- PIPELINE (Bread): insert products
 -- Source: Open Food Facts API (automated pipeline)
 -- Generated: 2026-02-25
 
@@ -35,7 +35,7 @@ values
   ('DE', 'Aldi', 'Grocery', 'Bread', 'Bio-Landbrötchen - Kernig', 'baked', null, 'none', '4068706471902'),
   ('DE', 'Sinnack', 'Grocery', 'Bread', 'Brot Protein Brötchen', 'not-applicable', null, 'none', '4009097010691'),
   ('DE', 'Harry', 'Grocery', 'Bread', 'Körner Balance Toastbrötchen', 'not-applicable', null, 'none', '4071800038568'),
-  ('DE', 'Gut bio', 'Grocery', 'Bread', 'Finnkorn Toastbrötchen', 'not-applicable', null, 'none', '4061462968624'),
+  ('DE', 'Gut Bio', 'Grocery', 'Bread', 'Finnkorn Toastbrötchen', 'not-applicable', null, 'none', '4061462968624'),
   ('DE', 'Grafschafter', 'Grocery', 'Bread', 'Pure Kornkraft Haferbrot', 'not-applicable', 'Lidl', 'none', '4056489183631'),
   ('DE', 'Goldähren', 'Grocery', 'Bread', 'Vollkorn-Sandwich', 'not-applicable', 'Aldi', 'none', '4061458022040'),
   ('DE', 'Golden Toast', 'Grocery', 'Bread', 'Vollkorn-Toast', 'not-applicable', 'Lidl', 'none', '4009249019923'),

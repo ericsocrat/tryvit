@@ -1,4 +1,4 @@
--- PIPELINE (Bread): source provenance
+﻿-- PIPELINE (Bread): source provenance
 -- Generated: 2026-02-25
 
 -- 1. Update source info on products
@@ -26,7 +26,7 @@ FROM (
     ('Aldi', 'Bio-Landbrötchen - Kernig', 'https://world.openfoodfacts.org/product/4068706471902', '4068706471902'),
     ('Sinnack', 'Brot Protein Brötchen', 'https://world.openfoodfacts.org/product/4009097010691', '4009097010691'),
     ('Harry', 'Körner Balance Toastbrötchen', 'https://world.openfoodfacts.org/product/4071800038568', '4071800038568'),
-    ('Gut bio', 'Finnkorn Toastbrötchen', 'https://world.openfoodfacts.org/product/4061462968624', '4061462968624'),
+    ('Gut Bio', 'Finnkorn Toastbrötchen', 'https://world.openfoodfacts.org/product/4061462968624', '4061462968624'),
     ('Grafschafter', 'Pure Kornkraft Haferbrot', 'https://world.openfoodfacts.org/product/4056489183631', '4056489183631'),
     ('Goldähren', 'Vollkorn-Sandwich', 'https://world.openfoodfacts.org/product/4061458022040', '4061458022040'),
     ('Golden Toast', 'Vollkorn-Toast', 'https://world.openfoodfacts.org/product/4009249019923', '4009249019923'),

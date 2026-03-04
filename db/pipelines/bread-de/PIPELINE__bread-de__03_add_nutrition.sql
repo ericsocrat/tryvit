@@ -1,4 +1,4 @@
--- PIPELINE (Bread): add nutrition facts
+﻿-- PIPELINE (Bread): add nutrition facts
 -- Source: Open Food Facts verified per-100g data
 
 -- 1) Remove existing
@@ -38,7 +38,7 @@ from (
     ('Aldi', 'Bio-Landbrötchen - Kernig', 249.0, 1.9, 0.3, 0, 47.0, 2.4, 4.2, 8.8, 1.0),
     ('Sinnack', 'Brot Protein Brötchen', 275.0, 8.6, 1.0, 0, 25.0, 2.9, 6.7, 21.0, 1.0),
     ('Harry', 'Körner Balance Toastbrötchen', 223.2, 3.2, 0.6, 0, 38.0, 2.4, 4.7, 8.5, 1.0),
-    ('Gut bio', 'Finnkorn Toastbrötchen', 232.0, 1.4, 0.2, 0, 43.0, 2.9, 0, 7.4, 1.2),
+    ('Gut Bio', 'Finnkorn Toastbrötchen', 232.0, 1.4, 0.2, 0, 43.0, 2.9, 0, 7.4, 1.2),
     ('Grafschafter', 'Pure Kornkraft Haferbrot', 286.0, 15.1, 2.2, 0, 20.1, 0.7, 11.9, 11.4, 1.0),
     ('Goldähren', 'Vollkorn-Sandwich', 239.0, 3.2, 0.3, 0, 40.7, 3.2, 6.6, 8.6, 0.0),
     ('Golden Toast', 'Vollkorn-Toast', 268.0, 5.2, 0.4, 0, 43.2, 4.4, 6.4, 8.8, 1.1),

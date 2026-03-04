@@ -1,4 +1,4 @@
--- PIPELINE (Bread): scoring
+﻿-- PIPELINE (Bread): scoring
 -- Generated: 2026-02-25
 
 -- 2. Nutri-Score
@@ -24,7 +24,7 @@ from (
     ('Aldi', 'Bio-Landbrötchen - Kernig', 'B'),
     ('Sinnack', 'Brot Protein Brötchen', 'A'),
     ('Harry', 'Körner Balance Toastbrötchen', 'B'),
-    ('Gut bio', 'Finnkorn Toastbrötchen', 'C'),
+    ('Gut Bio', 'Finnkorn Toastbrötchen', 'C'),
     ('Grafschafter', 'Pure Kornkraft Haferbrot', 'A'),
     ('Goldähren', 'Vollkorn-Sandwich', 'A'),
     ('Golden Toast', 'Vollkorn-Toast', 'B'),
@@ -83,7 +83,7 @@ from (
     ('Aldi', 'Bio-Landbrötchen - Kernig', '4'),
     ('Sinnack', 'Brot Protein Brötchen', '4'),
     ('Harry', 'Körner Balance Toastbrötchen', '4'),
-    ('Gut bio', 'Finnkorn Toastbrötchen', '4'),
+    ('Gut Bio', 'Finnkorn Toastbrötchen', '4'),
     ('Grafschafter', 'Pure Kornkraft Haferbrot', '4'),
     ('Goldähren', 'Vollkorn-Sandwich', '3'),
     ('Golden Toast', 'Vollkorn-Toast', '3'),

@@ -1,4 +1,4 @@
--- PIPELINE (Bread): add product images
+﻿-- PIPELINE (Bread): add product images
 -- Source: Open Food Facts API (image_importer.py)
 -- Generated: 2026-02-28
 -- Products with images: 49
@@ -99,8 +99,8 @@ FROM (
     ('Harry', 'Körner Balance Toastbrötchen', 'https://images.openfoodfacts.org/images/products/407/180/003/8568/ingredients_de.6.400.jpg', 'off_api', 'ingredients', false, 'Ingredients — EAN 4071800038568', 'ingredients_4071800038568'),
     ('Harry', 'Körner Balance Toastbrötchen', 'https://images.openfoodfacts.org/images/products/407/180/003/8568/nutrition_de.56.400.jpg', 'off_api', 'nutrition_label', false, 'Nutrition Label — EAN 4071800038568', 'nutrition_label_4071800038568'),
     ('Harry', 'Körner Balance Toastbrötchen', 'https://images.openfoodfacts.org/images/products/407/180/003/8568/packaging_de.38.400.jpg', 'off_api', 'packaging', false, 'Packaging — EAN 4071800038568', 'packaging_de.38.400_4071800038568'),
-    ('Gut bio', 'Finnkorn Toastbrötchen', 'https://images.openfoodfacts.org/images/products/406/146/296/8624/front_de.3.400.jpg', 'off_api', 'front', true, 'Front — EAN 4061462968624', 'front_4061462968624'),
-    ('Gut bio', 'Finnkorn Toastbrötchen', 'https://images.openfoodfacts.org/images/products/406/146/296/8624/nutrition_de.5.400.jpg', 'off_api', 'nutrition_label', false, 'Nutrition Label — EAN 4061462968624', 'nutrition_label_4061462968624'),
+    ('Gut Bio', 'Finnkorn Toastbrötchen', 'https://images.openfoodfacts.org/images/products/406/146/296/8624/front_de.3.400.jpg', 'off_api', 'front', true, 'Front — EAN 4061462968624', 'front_4061462968624'),
+    ('Gut Bio', 'Finnkorn Toastbrötchen', 'https://images.openfoodfacts.org/images/products/406/146/296/8624/nutrition_de.5.400.jpg', 'off_api', 'nutrition_label', false, 'Nutrition Label — EAN 4061462968624', 'nutrition_label_4061462968624'),
     ('Grafschafter', 'Pure Kornkraft Haferbrot', 'https://images.openfoodfacts.org/images/products/405/648/918/3631/front_de.23.400.jpg', 'off_api', 'front', true, 'Front — EAN 4056489183631', 'front_4056489183631'),
     ('Grafschafter', 'Pure Kornkraft Haferbrot', 'https://images.openfoodfacts.org/images/products/405/648/918/3631/ingredients_de.66.400.jpg', 'off_api', 'ingredients', false, 'Ingredients — EAN 4056489183631', 'ingredients_4056489183631'),
     ('Grafschafter', 'Pure Kornkraft Haferbrot', 'https://images.openfoodfacts.org/images/products/405/648/918/3631/nutrition_de.59.400.jpg', 'off_api', 'nutrition_label', false, 'Nutrition Label — EAN 4056489183631', 'nutrition_label_4056489183631'),
