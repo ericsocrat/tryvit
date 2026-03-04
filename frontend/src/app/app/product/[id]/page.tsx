@@ -47,6 +47,7 @@ import { eventBus } from "@/lib/events";
 import { useTranslation } from "@/lib/i18n";
 import { IS_QA_MODE } from "@/lib/qa-mode";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { toTryVitScore } from "@/lib/score-utils";
 import { createClient } from "@/lib/supabase/client";
 import type {
     DataConfidence,
@@ -373,7 +374,7 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Score interpretation — expandable "What does this score mean?" */}
-          <ScoreInterpretationCard score={profile.scores.unhealthiness_score} />
+          <ScoreInterpretationCard score={toTryVitScore(profile.scores.unhealthiness_score)} />
 
           {/* Personalized health warnings */}
           <ErrorBoundary
@@ -459,7 +460,7 @@ function QuickSummary({
   onExpand: () => void;
 }>) {
   const { t } = useTranslation();
-  const interp = getScoreInterpretation(profile.scores.unhealthiness_score);
+  const interp = getScoreInterpretation(toTryVitScore(profile.scores.unhealthiness_score));
   const topAlts = profile.alternatives.slice(0, 2);
 
   return (
@@ -980,7 +981,7 @@ function AlternativeCard({ alt }: Readonly<{ alt: ProfileAlternative }>) {
         <div
           className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg text-lg font-bold ${SCORE_BANDS[scoreBandFromScore(alt.unhealthiness_score)].bg} ${SCORE_BANDS[scoreBandFromScore(alt.unhealthiness_score)].color}`}
         >
-          {alt.unhealthiness_score}
+          {toTryVitScore(alt.unhealthiness_score)}
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium text-foreground">
@@ -1059,7 +1060,7 @@ function ScoringTab({ profile }: Readonly<{ profile: ProductProfile }>) {
       {/* Detailed score breakdown (lazy-loaded) */}
       <ScoreBreakdownPanel
         productId={profile.product.product_id}
-        score={scores.unhealthiness_score}
+        score={toTryVitScore(scores.unhealthiness_score)}
         scoreBand={SCORE_BANDS[scores.score_band]?.label ?? scores.score_band}
       />
 
