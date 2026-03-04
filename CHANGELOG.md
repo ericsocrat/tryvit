@@ -13,6 +13,13 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Re-score all 1,671 active products with v3.3 nutrient density bonus (protein +
+  fibre credit); 1,667 products unchanged, 4 DE products drifted within expected
+  range (max |Δ|=5); updated 11 QA regression anchor ranges and copilot-instructions
+  anchor references to reflect v3.3 scores (#610)
+
 ### Fixed
 
 - Remove 11 ESLint `@typescript-eslint/no-non-null-assertion` warnings across 8

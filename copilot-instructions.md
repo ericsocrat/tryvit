@@ -4,7 +4,7 @@
 > **Scope:** Poland (`PL`) primary + Germany (`DE`) micro-pilot (252 products across 5 categories)
 > **Products:** ~1,281 active (20 PL categories + 5 DE categories), 51 deprecated
 > **EAN coverage:** 1,024/1,026 (99.8%)
-> **Scoring:** v3.2 — 9-factor weighted formula via `compute_unhealthiness_v32()` (added ingredient concern scoring)
+> **Scoring:** v3.3 — 10-factor weighted formula via `compute_unhealthiness_v33()` (added nutrient density bonus: protein + fibre)
 > **Servings:** removed as separate table — all nutrition data is per-100g on nutrition_facts
 > **Ingredient analytics:** 2,995 unique ingredients (all clean ASCII English), 1,269 allergen declarations, 1,361 trace declarations
 > **Ingredient concerns:** EFSA-based 4-tier additive classification (0=none, 1=low, 2=moderate, 3=high)
@@ -434,7 +434,7 @@ tryvit/
 
 | Function                                | Purpose                                                                                                                                                             |
 | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `compute_unhealthiness_v32()`           | Scores 1–100 from 9 factors: sat fat, sugars, salt, calories, trans fat, additives, prep, controversies, ingredient concern                                         |
+| `compute_unhealthiness_v33()`           | Scores 1–100 from 10 factors: sat fat, sugars, salt, calories, trans fat, additives, prep, controversies, ingredient concern − nutrient density bonus (protein + fibre)  |
 | `explain_score_v32()`                   | Returns JSONB breakdown of score: final_score + 9 factors with name, weight, raw (0–100), weighted, input, ceiling                                                  |
 | `find_similar_products()`               | Top-N products by Jaccard ingredient similarity (returns product details + similarity coefficient)                                                                  |
 | `find_better_alternatives()`            | Healthier substitutes in same/any category, ranked by score improvement and ingredient overlap                                                                      |
@@ -954,22 +954,22 @@ At the end of every PR-like change, include a **Verification** section:
 
 These are **anchor products** whose scores must remain stable. If a scoring change causes drift beyond ±2 points, investigate before committing:
 
-- Doritos Sweet Chili ≈ 45 (chips, 7 additives + high concern)
-- Coca-Cola Zero (DE) ≈ 13 (zero nutrition, 8 additives + concern)
-- Piątnica Skyr Naturalny ≈ 8 (healthiest dairy, fermented)
-- Melvit Płatki owsiane górskie ≈ 13 (healthiest cereal)
-- Auchan Tortilla Pszenno-Żytnia ≈ 30 (bread, 9 additives + concern)
-- Tarczyński Kabanosy wieprzowe ≈ 31 (high-fat cured meat)
-- BoboVita Kaszka Mleczna ≈ 34 (baby food, high sugars)
-- Somersby Blueberry Cider ≈ 10 (alcohol regression)
-- Mestemacher Chleb wielozbożowy ≈ 18 (bread regression, baked)
-- Marinero Łosoś wędzony ≈ 29 (smoked salmon regression)
-- Dr. Oetker Pizza 4 sery ≈ 32 (frozen pizza, palm oil)
-- Lajkonik Paluszki extra cienkie ≈ 31 (snacks regression, baked)
-- Naleśniki z jabłkami ≈ 16 (żabka, low score)
+- Doritos Sweet Chili ≈ 33 (chips, 7 additives + concern, protein credit)
+- Coca-Cola Zero (DE) ≈ 4 (zero nutrition, additives + concern, no protein/fibre)
+- Piątnica Skyr Naturalny ≈ 5 (healthiest dairy, fermented, high protein bonus)
+- Melvit Płatki owsiane górskie ≈ 7 (healthiest cereal, protein + fibre bonus)
+- Auchan Tortilla Pszenno-Żytnia ≈ 21 (bread, 9 additives + concern, protein credit)
+- Tarczyński Kabanosy wieprzowe ≈ 27 (high-fat cured meat, high protein bonus)
+- BoboVita Kaszka Mleczna ≈ 28 (baby food, high sugars, protein credit)
+- Somersby Blueberry Cider ≈ 10 (alcohol regression — product deprecated)
+- Mestemacher Chleb wielozbożowy ≈ 12 (bread, baked, protein + fibre bonus)
+- Marinero Łosoś wędzony ≈ 25 (smoked salmon, high protein bonus)
+- Dr. Oetker Pizza 4 sery ≈ 24 (frozen pizza, palm oil, protein credit)
+- Lajkonik Paluszki extra cienkie ≈ 31 (snacks, baked — product deprecated)
+- Naleśniki z jabłkami ≈ 16 (żabka — product deprecated)
 - Pudliszki Ketchup łagodny ≈ 18 (condiments, sugar + salt)
-- E. Wedel Czekolada Tiramisu ≈ 57 (sweets, palm oil + additives)
-- Indomie Noodles Chicken ≈ 55 (instant, palm oil + 10 additives)
+- E. Wedel Czekolada Tiramisu ≈ 46 (sweets, palm oil + additives, protein credit)
+- Indomie Noodles Chicken ≈ 43 (instant, palm oil + 10 additives, protein credit)
 
 Run QA after **every** schema change, data update, or scoring formula adjustment.
 
@@ -1029,7 +1029,7 @@ echo "SELECT * FROM v_master LIMIT 5;" | docker exec -i supabase_db_tryvit psql 
 - ❌ Invent nutrition data or Nutri-Score values
 - ❌ Add products from countries not in `country_ref` (currently PL and DE only)
 - ❌ Use `DELETE` or `TRUNCATE` in pipeline files — deprecate instead
-- ❌ Inline the scoring formula — always call `compute_unhealthiness_v32()`
+- ❌ Inline the scoring formula — always call `compute_unhealthiness_v33()`
 - ❌ Run pipelines against remote without explicit user confirmation
 - ❌ Drop or rename tables without a new migration
 - ❌ Collapse categories — each gets its own pipeline folder
@@ -1105,9 +1105,14 @@ unhealthiness_score (1-100) =
   sat_fat(0.17) + sugars(0.17) + salt(0.17) + calories(0.10) +
   trans_fat(0.11) + additives(0.07) + prep_method(0.08) +
   controversies(0.08) + ingredient_concern(0.05)
+  − nutrient_density_bonus(0.08)
 ```
 
 **Ceilings** (per 100g): sat fat 10g, sugars 27g, salt 3g, trans fat 2g, calories 600 kcal, additives 10, ingredient concern 100.
+
+**Nutrient density bonus** (subtracted from penalty total, weight 0.08):
+- Protein tiers: 5g→15, 10g→30, 15g→40, 20g→50
+- Fibre tiers: 1g→10, 3g→20, 5g→35, 8g→50
 
 | Band     | Score  | Meaning        |
 | -------- | ------ | -------------- |
@@ -2443,7 +2448,7 @@ When encountering ambiguity, apply the default action without pausing to ask unl
 | ------------ | ------------------- |
 | Modifying an existing `supabase/migrations/` file | Write a new migration with next timestamp |
 | Inventing nutrition data or Nutri-Score values | Fetch from OFF API or mark `nutri_score_source = 'unknown'` |
-| Inlining the scoring formula | Always call `compute_unhealthiness_v32()` |
+| Inlining the scoring formula | Always call `compute_unhealthiness_v33()` |
 | Removing an API response key | Add a deprecation notice; keep the key returning `null` for 2 versions |
 | Using `DELETE` in pipeline SQL | Set `is_deprecated = true` with deprecation reason |
 | Writing tests after submitting PR | Tests are part of the same commit as the feature code |
