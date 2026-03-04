@@ -25,6 +25,7 @@ vi.mock("@/components/common/RouteGuard", () => ({
 const mockMatchProductAllergens = vi.fn();
 
 vi.mock("@/lib/allergen-matching", async (importOriginal) => {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
   const original = await importOriginal<typeof import("@/lib/allergen-matching")>();
   return {
     ...original,
