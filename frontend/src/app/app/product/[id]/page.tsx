@@ -21,6 +21,7 @@ import {
 import { IngredientList } from "@/components/product/IngredientList";
 import { NovaIndicator } from "@/components/product/NovaIndicator";
 import { NutritionDVBar } from "@/components/product/NutritionDVBar";
+import { PercentileBadge } from "@/components/product/PercentileBadge";
 import { ProductHeroImage } from "@/components/product/ProductHeroImage";
 import { ProductImageTabs } from "@/components/product/ProductImageTabs";
 import { ScoreBreakdownPanel } from "@/components/product/ScoreBreakdownPanel";
@@ -306,6 +307,10 @@ export default function ProductDetailPage() {
                   >
                     {band.label}
                   </span>
+                  <PercentileBadge
+                    rank={profile.scores.category_context?.rank}
+                    total={profile.scores.category_context?.total_in_category}
+                  />
                 </div>
               </div>
             </div>
@@ -1113,12 +1118,18 @@ function ScoringTab({ profile }: Readonly<{ profile: ProductProfile }>) {
           {t("product.categoryContext")}
         </h3>
         <div className="text-sm text-foreground-secondary">
-          <p>
-            {t("product.rank", {
-              rank: scores.category_context.rank,
-              total: scores.category_context.total_in_category,
-            })}
-          </p>
+          <div className="flex items-center gap-2">
+            <p>
+              {t("product.rank", {
+                rank: scores.category_context.rank,
+                total: scores.category_context.total_in_category,
+              })}
+            </p>
+            <PercentileBadge
+              rank={scores.category_context.rank}
+              total={scores.category_context.total_in_category}
+            />
+          </div>
           <p>
             {t("product.categoryAvg", {
               avg: Math.round(scores.category_context.category_avg_score),
