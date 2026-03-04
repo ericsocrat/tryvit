@@ -25,6 +25,16 @@ Adheres to [Semantic Versioning](https://semver.org/).
   all 31 formula anchor ranges updated, view consistency check updated (10
   factors). Docs: SCORING_METHODOLOGY.md v3.3, copilot-instructions §14 (#608)
 
+### Documentation
+
+- Overhaul scoring docs for TryVit Score consumer display layer: add §2.8
+  Consumer Display Layer (TryVit Score = 100 − unhealthiness, band table with
+  consumer labels Excellent/Good/Moderate/Poor/Bad, rationale for higher=healthier
+  inversion) and §2.9 Category Percentile to SCORING_METHODOLOGY.md; add
+  consumer-facing columns to §2.6 band table; add §10.1 TryVit Score and
+  regression anchor notes to SCORING_ENGINE.md; update copilot-instructions §14
+  with consumer display note and dual-column band table (#591)
+
 ### Fixed
 
 - Remove 11 ESLint `@typescript-eslint/no-non-null-assertion` warnings across 8
