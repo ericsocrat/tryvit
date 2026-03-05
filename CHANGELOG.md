@@ -13,6 +13,16 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Testing
+
+- Comprehensive Playwright E2E suite for M18-M22 features: 4 new functional
+  spec files with 34 tests — product journey (TryVit Score display, progressive
+  disclosure, cross-country links, user actions), comparison sharing (grid,
+  empty state, save/share flow, public shared view), recipe nutrition (browse
+  filters, detail, score badge, ingredient-product linking), search cross-country
+  (search basics, autocomplete, country switching, result isolation). All files
+  auto-matched by existing `functional` project in Playwright config (#622)
+
 ### Documentation
 
 - Update COUNTRY_EXPANSION_GUIDE.md for DE full market graduation: DE status

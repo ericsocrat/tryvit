@@ -1,34 +1,35 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-03-05 by GitHub Copilot (session 21)
+> **Last updated:** 2026-03-06 by GitHub Copilot (session 22)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
 
 ## Active Branch & PR
 
-- **Branch:** `docs/606-de-graduation-guide` (implementing #606 — DE graduation docs)
-- **Latest SHA (main):** `d08e7f5`
-- **Open PRs:** 1 (#653 — docs update for PL expansion, CI running)
+- **Branch:** `test/622-e2e-comprehensive` (implementing #622 — comprehensive Playwright E2E)
+- **Latest SHA (main):** `a0ed189`
+- **Open PRs:** 0
 
 ## Recently Shipped (This Session)
 
 | SHA       | Summary                                                                                |
 | --------- | -------------------------------------------------------------------------------------- |
-| `0e16d8c` | fix(frontend): a11y contrast ratio on scoring learn page — PR #650 merged              |
-| `d08e7f5` | data(ingredients): enrich DE products — PR #654 merged (18,938-line migration)          |
+| `a0ed189` | docs(expansion): update COUNTRY_EXPANSION_GUIDE for DE graduation (#606) — PR #656     |
+| `29de6cf` | docs(state): update copilot-instructions and EAN docs for PL+DE expansion (#598) — PR #653 |
 
 ## Recently Shipped (Last 7 Days)
 
 | Date       | PR/SHA    | Summary                                                                           |
 | ---------- | --------- | --------------------------------------------------------------------------------- |
+| 2026-03-06 | #656      | docs(expansion): update COUNTRY_EXPANSION_GUIDE for DE graduation (#606)          |
+| 2026-03-06 | #653      | docs(state): update copilot-instructions and EAN docs for PL+DE expansion (#598)  |
 | 2026-03-05 | #655      | test(qa): DE validation suite — anchors, multi-country fixes (#602)               |
 | 2026-03-05 | #654      | data(ingredients): enrich DE products (#603)                                      |
 | 2026-03-05 | #652      | test(qa): PL validation gate (#595)                                               |
 | 2026-03-05 | #651      | data(ingredients): enrich PL products — 14,392 product_ingredients, 2,872 allergens/traces |
 | 2026-03-05 | #650      | fix(frontend): a11y contrast ratio on scoring learn page (#589)                   |
 | 2026-03-04 | #649      | chore(docs): copilot-instructions §8, §13 — merge marathon lessons learned       |
-| 2026-03-03 | #583      | **MERGED** — Milestone #17: 17 UX issues, 134 files, 4,504 tests                 |
 
 ## Known Issues & Broken Items
 
@@ -51,17 +52,14 @@
 | quality-gate | ⚠️      | 18/20 pass; dashboard 400s from staging DB schema gap |
 | nightly      | ✅      | Data audit fix shipped (#560)                         |
 
-## Open Issues (11 total)
+## Open Issues (8 total)
 
 | Issue | Priority | Effort | Summary                                                          |
 | ----- | -------- | ------ | ---------------------------------------------------------------- |
 | #599  | P1       | S      | Deploy expanded PL dataset to production                         |
 | #607  | P1       | S      | Deploy DE dataset to production                                  |
 | #614  | P1       | S      | Deploy v3.3 scoring to production                                |
-| #598  | P2       | M      | Update CURRENT_STATE + copilot-instructions for PL expansion (PR #653 open) |
-| #606  | P2       | S      | Update COUNTRY_EXPANSION_GUIDE for DE graduation (in progress)   |
-| #597  | P2       | M      | Validate MV refresh + API perf at 2K PL products                 |
-| #622  | P2       | L      | Comprehensive Playwright E2E for M18–M22 features                |
+| #622  | P2       | L      | Comprehensive Playwright E2E for M18–M22 features (PR pending)   |
 | #594  | P3       | M      | Add Oils & Vinegars + Spreads & Dips categories for PL           |
 | #620  | P3       | L      | Product score trend timeline + history visualization             |
 | #563  | Deferred | S      | Sync staging DB schema for quality-gate                          |
@@ -73,8 +71,7 @@
 
 ## Next Planned Work
 
-- [ ] Merge PR #653 (issue #598) once CI passes
-- [ ] Ship PR for #606 (DE graduation docs — in progress)
+- [ ] Create PR for #622 (comprehensive Playwright E2E — 4 spec files, 34 tests)
 - [ ] Implement #599 — deploy expanded PL dataset to production (needs user confirmation)
 - [ ] Implement #607 — deploy DE dataset to production (needs user confirmation)
 - [ ] Implement #614 — deploy v3.3 scoring to production (needs user confirmation)
@@ -93,8 +90,9 @@
 - **Confidence bands (PL):** 1,027 high / 168 medium / 3 low
 - **Frontend test coverage:** ~88% lines (SonarCloud Quality Gate passing)
 - **ESLint warnings:** 0
-- **Open issues:** 11 (3 P1 + 4 P2 + 2 P3 + 2 deferred) | **Open PRs:** 1
+- **Open issues:** 8 (3 P1 + 1 P2 + 2 P3 + 2 deferred) | **Open PRs:** 0
 - **Vitest:** 4,901 tests passing (29 skipped)
+- **Playwright E2E:** 83 functional tests across 11 files (34 new from #622)
 - **DB migrations:** 186 append-only
 - **Ruff lint:** 0 errors
 - **Nutrition rows:** 2,511
