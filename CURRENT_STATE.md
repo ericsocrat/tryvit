@@ -1,27 +1,27 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-03-05 by GitHub Copilot (session 21)
+> **Last updated:** 2026-03-06 by GitHub Copilot (session 22)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
 
 ## Active Branch & PR
 
-- **Branch:** `docs/606-de-graduation-guide` (implementing #606 — DE graduation docs)
-- **Latest SHA (main):** `d08e7f5`
-- **Open PRs:** 1 (#653 — docs update for PL expansion, CI running)
+- **Branch:** `feat/594-oils-vinegars-spreads-dips` (implementing #594 — new PL categories)
+- **Latest SHA (main):** `a0ed189`
+- **Open PRs:** 1 (#657 — Playwright E2E tests for #622)
 
 ## Recently Shipped (This Session)
 
 | SHA       | Summary                                                                                |
 | --------- | -------------------------------------------------------------------------------------- |
-| `0e16d8c` | fix(frontend): a11y contrast ratio on scoring learn page — PR #650 merged              |
-| `d08e7f5` | data(ingredients): enrich DE products — PR #654 merged (18,938-line migration)          |
+| (pending) | feat(pipeline): add Oils & Vinegars + Spreads & Dips categories for PL (#594) — PR pending |
 
 ## Recently Shipped (Last 7 Days)
 
 | Date       | PR/SHA    | Summary                                                                           |
 | ---------- | --------- | --------------------------------------------------------------------------------- |
+| 2026-03-06 | #657      | test(e2e): comprehensive Playwright E2E for M18–M22 features (#622)               |
 | 2026-03-05 | #655      | test(qa): DE validation suite — anchors, multi-country fixes (#602)               |
 | 2026-03-05 | #654      | data(ingredients): enrich DE products (#603)                                      |
 | 2026-03-05 | #652      | test(qa): PL validation gate (#595)                                               |
@@ -33,10 +33,9 @@
 ## Known Issues & Broken Items
 
 - [ ] Quality Gate dashboard test still fails — staging DB missing API functions (schema sync needed)
-- [ ] QA Suite 2 (Scoring): Coca-Cola Zero test 12 — score 13 vs expected 2-6 (pre-existing after DE enrichment)
 - [ ] QA Suite 11 (NutriRange): 9 calorie back-calculation outliers — OFF source data quality
 - [ ] QA Suite 16 (Security): 2 anon-accessible non-public api_* functions
-- [ ] QA Suite 35 (StoreArch): 48 orphan junction rows + 2 backfill coverage gaps
+- [ ] QA Suite 35 (StoreArch): 50 orphan junction rows + 2 backfill coverage gaps
 - [ ] QA Suite 41 (IdxVerify): 1 FK column missing supporting index
 
 ## CI Gate Status (main branch)
@@ -62,7 +61,7 @@
 | #606  | P2       | S      | Update COUNTRY_EXPANSION_GUIDE for DE graduation (in progress)   |
 | #597  | P2       | M      | Validate MV refresh + API perf at 2K PL products                 |
 | #622  | P2       | L      | Comprehensive Playwright E2E for M18–M22 features                |
-| #594  | P3       | M      | Add Oils & Vinegars + Spreads & Dips categories for PL           |
+| #594  | P3       | M      | Add Oils & Vinegars + Spreads & Dips categories for PL (**PR pending**) |
 | #620  | P3       | L      | Product score trend timeline + history visualization             |
 | #563  | Deferred | S      | Sync staging DB schema for quality-gate                          |
 | #212  | Deferred | —      | Infrastructure Cost Attribution Framework                        |
@@ -73,6 +72,7 @@
 
 ## Next Planned Work
 
+- [ ] Create PR for #594 (Oils & Vinegars + Spreads & Dips — branch ready)
 - [ ] Merge PR #653 (issue #598) once CI passes
 - [ ] Ship PR for #606 (DE graduation docs — in progress)
 - [ ] Implement #599 — deploy expanded PL dataset to production (needs user confirmation)
@@ -81,23 +81,24 @@
 
 ## Key Metrics Snapshot
 
-- **Products:** 2,264 active (1,198 PL + 1,066 DE across 19 PL + 19 DE categories)
-- **Deprecated products:** 273 (168 PL + 105 DE)
-- **QA checks:** 743/743 passing (48 suites)
+- **Products:** 2,396 active (1,330 PL across 22 categories + 1,066 DE across 19 categories)
+- **Deprecated products:** 275
+- **QA checks:** 44/48 suites passing (4 pre-existing failures)
 - **Negative tests:** 23/23 caught
-- **EAN coverage:** 2,261/2,264 with EAN (99.9%)
-- **Ingredient refs:** 2,898 unique ingredients
-- **Product-ingredient links:** 14,392
-- **Allergen declarations:** 1,391 allergens + 1,481 traces
-- **Data completeness (PL):** 97.5% average, 73% minimum, all 19 categories ≥92%
-- **Confidence bands (PL):** 1,027 high / 168 medium / 3 low
+- **EAN coverage:** 2,393/2,396 with EAN (99.9%)
+- **Ingredient refs:** 5,340 unique ingredients
+- **Product-ingredient links:** 28,065
+- **Allergen declarations:** 2,691 allergens + 2,702 traces
+- **Data completeness (PL):** 97.5% average, 73% minimum, all 22 categories active
+- **Confidence bands (PL):** high / medium / low (unchanged distribution)
 - **Frontend test coverage:** ~88% lines (SonarCloud Quality Gate passing)
 - **ESLint warnings:** 0
 - **Open issues:** 11 (3 P1 + 4 P2 + 2 P3 + 2 deferred) | **Open PRs:** 1
 - **Vitest:** 4,901 tests passing (29 skipped)
-- **DB migrations:** 186 append-only
+- **DB migrations:** 187 append-only
 - **Ruff lint:** 0 errors
-- **Nutrition rows:** 2,511
+- **Nutrition rows:** 2,645
+- **Pipeline folders:** 41 (22 PL + 19 DE)
 
 ---
 
