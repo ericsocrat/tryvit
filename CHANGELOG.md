@@ -25,6 +25,13 @@ Adheres to [Semantic Versioning](https://semver.org/).
   all 31 formula anchor ranges updated, view consistency check updated (10
   factors). Docs: SCORING_METHODOLOGY.md v3.3, copilot-instructions §14 (#608)
 
+### Changed
+
+- Re-score all 1,671 active products with v3.3 nutrient density bonus (protein +
+  fibre credit); 1,667 products unchanged, 4 DE products drifted within expected
+  range (max |Δ|=5); updated 11 QA regression anchor ranges and copilot-instructions
+  anchor references to reflect v3.3 scores (#610)
+
 ### Data
 
 - Scale all 20 PL categories to maximum OFF API capacity: 1,198 active PL
