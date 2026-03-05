@@ -954,22 +954,22 @@ At the end of every PR-like change, include a **Verification** section:
 
 These are **anchor products** whose scores must remain stable. If a scoring change causes drift beyond ±2 points, investigate before committing:
 
-- Doritos Sweet Chili ≈ 33 (chips, 7 additives + high concern)
-- Coca-Cola Zero (DE) ≈ 13 (zero nutrition, 8 additives + concern)
-- Piątnica Skyr Naturalny ≈ 5 (healthiest dairy, fermented)
-- Melvit Płatki owsiane górskie ≈ 7 (healthiest cereal)
-- Auchan Tortilla Pszenno-Żytnia ≈ 21 (bread, 9 additives + concern)
-- Tarczyński Kabanosy wieprzowe ≈ 27 (high-fat cured meat)
-- BoboVita Kaszka Mleczna ≈ 28 (baby food, high sugars)
-- Somersby Blueberry Cider ≈ 10 (alcohol regression)
-- Mestemacher Chleb wielozbożowy ≈ 12 (bread regression, baked)
-- Marinero Łosoś wędzony ≈ 25 (smoked salmon regression)
-- Dr. Oetker Pizza 4 sery ≈ 24 (frozen pizza, palm oil)
-- Lajkonik Paluszki extra cienkie ≈ 25 (snacks regression, baked)
-- Naleśniki z jabłkami ≈ 15 (żabka, low score)
+- Doritos Sweet Chili ≈ 33 (chips, 7 additives + concern, protein credit)
+- Coca-Cola Zero (DE) ≈ 4 (zero nutrition, additives + concern, no protein/fibre)
+- Piątnica Skyr Naturalny ≈ 5 (healthiest dairy, fermented, high protein bonus)
+- Melvit Płatki owsiane górskie ≈ 7 (healthiest cereal, protein + fibre bonus)
+- Auchan Tortilla Pszenno-Żytnia ≈ 21 (bread, 9 additives + concern, protein credit)
+- Tarczyński Kabanosy wieprzowe ≈ 27 (high-fat cured meat, high protein bonus)
+- BoboVita Kaszka Mleczna ≈ 28 (baby food, high sugars, protein credit)
+- Somersby Blueberry Cider ≈ 10 (alcohol regression — product deprecated)
+- Mestemacher Chleb wielozbożowy ≈ 12 (bread, baked, protein + fibre bonus)
+- Marinero Łosoś wędzony ≈ 25 (smoked salmon, high protein bonus)
+- Dr. Oetker Pizza 4 sery ≈ 24 (frozen pizza, palm oil, protein credit)
+- Lajkonik Paluszki extra cienkie ≈ 31 (snacks, baked — product deprecated)
+- Naleśniki z jabłkami ≈ 16 (żabka — product deprecated)
 - Pudliszki Ketchup łagodny ≈ 18 (condiments, sugar + salt)
-- E. Wedel Czekolada Tiramisu ≈ 46 (sweets, palm oil + additives)
-- Indomie Noodles Chicken ≈ 43 (instant, palm oil + 10 additives)
+- E. Wedel Czekolada Tiramisu ≈ 46 (sweets, palm oil + additives, protein credit)
+- Indomie Noodles Chicken ≈ 43 (instant, palm oil + 10 additives, protein credit)
 
 Run QA after **every** schema change, data update, or scoring formula adjustment.
 

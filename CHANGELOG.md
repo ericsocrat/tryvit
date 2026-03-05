@@ -39,6 +39,13 @@ Adheres to [Semantic Versioning](https://semver.org/).
   QA push suite 14→17 checks; pgTAP plan 9→15; schema contracts plan 262→264;
   15 Vitest tests for new page; i18n keys in en/pl/de (#617)
 
+### Changed
+
+- Re-score all 1,671 active products with v3.3 nutrient density bonus (protein +
+  fibre credit); 1,667 products unchanged, 4 DE products drifted within expected
+  range (max |Δ|=5); updated 11 QA regression anchor ranges and copilot-instructions
+  anchor references to reflect v3.3 scores (#610)
+
 ### Data
 
 - Scale all 20 PL categories to maximum OFF API capacity: 1,198 active PL
