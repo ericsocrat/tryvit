@@ -7,15 +7,15 @@
 
 ## Active Branch & PR
 
-- **Branch:** `data/601-scale-de-categories` (PR pending)
-- **Latest SHA (main):** `8e60d0d` (feat(frontend): milestone #17 — Elite World-Class UX v1.0 (#583))
-- **Open PRs:** 1 (pending — #601 DE scaling)
+- **Branch:** `data/593-scale-pl-categories` (PR pending)
+- **Latest SHA (main):** `6471be9`
+- **Open PRs:** 1 (pending — #593 scale PL categories)
 
 ## Recently Shipped (This Session)
 
-| SHA       | Summary                                                                               |
-| --------- | ------------------------------------------------------------------------------------- |
-| (pending) | **PR for #601** — Scale 5 DE categories from 252→473 products (Bread, Chips, Dairy, Drinks, Sweets) |
+| SHA       | Summary                                                                          |
+| --------- | -------------------------------------------------------------------------------- |
+| (pending) | data(pipeline): scale all 20 PL categories to max capacity — 1,198 PL products  |
 
 ## Recently Shipped (Last 7 Days)
 
@@ -26,7 +26,6 @@
 ## Known Issues & Broken Items
 
 - [ ] Quality Gate dashboard test still fails — staging DB missing API functions (schema sync needed)
-- [ ] v3.3 scoring functions exist locally from unmerged PR #608 — causes QA Suites 2, 7, 9, 31 failures (pre-existing, not blocking)
 
 ## CI Gate Status (main branch)
 
@@ -34,7 +33,7 @@
 | ------------ | ------ | ----------------------------------------------------- |
 | pr-gate      | ✅      | Typecheck, lint, unit tests, build, Playwright smoke  |
 | main-gate    | ✅      | Last runs all success                                 |
-| qa.yml       | ✅      | 733/733 checks passing                                |
+| qa.yml       | ✅      | 735/735 checks passing                                |
 | dep-audit    | ✅      | 0 high/critical vulnerabilities                       |
 | python-lint  | ✅      | 0 ruff errors                                         |
 | quality-gate | ⚠️      | 18/20 pass; dashboard 400s from staging DB schema gap |
@@ -53,16 +52,14 @@
 
 ## Next Planned Work
 
-- [ ] Merge PR for #601 — scale DE categories
 - [ ] Implement #563 — sync staging DB schema (P2, requires staging access)
 - [ ] Create next milestone based on project priorities
 
 ## Key Metrics Snapshot
 
-- **Products:** 1,671 active (1,198 PL + 473 DE across 25 categories)
-- **DE products:** 473 active (scaled from 252: Bread 94, Chips 95, Dairy 94, Drinks 95, Sweets 95)
-- **QA checks:** 733/733 passing (local v3.3 scoring causes pre-existing failures in Suites 2, 7, 9, 31)
-- **EAN coverage:** 1,670/1,671 with EAN (99.9%)
+- **Products:** 1,450 active (1,198 PL + 252 DE across 19 PL + 5 DE categories)
+- **QA checks:** 735/735 passing
+- **EAN coverage:** 1,449/1,450 with EAN (99.9%)
 - **Frontend test coverage:** ~88% lines (SonarCloud Quality Gate passing)
 - **ESLint warnings:** 0
 - **Open issues:** 2 (1 P2 + 1 deferred) | **Open PRs:** 1
