@@ -7,20 +7,22 @@
 
 ## Active Branch & PR
 
-- **Branch:** `test/595-pl-qa-validation` (PR pending)
-- **Latest SHA (main):** `171cd64`
+- **Branch:** `data/603-enrich-de-ingredients` (PR pending)
+- **Latest SHA (main):** `fa00673`
 - **Open PRs:** 1 (#650 — scoring learn page)
 
 ## Recently Shipped (This Session)
 
 | SHA       | Summary                                                                                |
 | --------- | -------------------------------------------------------------------------------------- |
-| `171cd64` | data(ingredients): enrich PL products with OFF API ingredient and allergen data (#651)  |
+| `fa00673` | test(qa): PL validation gate — 43/48 QA, 23/23 negative, 9/9 anchors (#595) (#652)     |
+| pending   | data(ingredients): enrich DE products with OFF API ingredient and allergen data (#603)  |
 
 ## Recently Shipped (Last 7 Days)
 
 | Date       | PR/SHA    | Summary                                                                           |
 | ---------- | --------- | --------------------------------------------------------------------------------- |
+| 2026-03-05 | #652      | test(qa): PL validation gate + docs update (#595, #598)                           |
 | 2026-03-05 | #651      | data(ingredients): enrich PL products — 14,392 product_ingredients, 2,872 allergens/traces |
 | 2026-03-04 | #649      | chore(docs): copilot-instructions §8, §13 — merge marathon lessons learned       |
 | 2026-03-03 | #583      | **MERGED** — Milestone #17: 17 UX issues, 134 files, 4,504 tests                 |
@@ -51,12 +53,12 @@
 | ----- | -------- | ------ | ---------------------------------------------------------------- |
 | #595  | P1       | S      | PL QA validation gate (this session — PR pending)                |
 | #589  | P1       | M      | Scoring learn page + v3.3 docs (PR #650 open)                   |
-| #603  | P1       | M      | DE ingredient enrichment (blocked by #600/#601, now merged)      |
+| #603  | P1       | M      | DE ingredient enrichment (**this session — PR pending**)           |
 | #602  | P1       | M      | DE QA validation suite                                           |
 | #599  | P1       | S      | Deploy expanded PL dataset to production                         |
 | #607  | P1       | S      | Deploy DE dataset to production                                  |
 | #614  | P1       | S      | Deploy v3.3 scoring to production                                |
-| #598  | P2       | M      | Update CURRENT_STATE + copilot-instructions for PL expansion     |
+| #598  | P2       | M      | Update CURRENT_STATE + copilot-instructions for PL expansion (**done**)  |
 | #606  | P2       | S      | Update COUNTRY_EXPANSION_GUIDE for DE graduation                 |
 | #597  | P2       | M      | Validate MV refresh + API perf at 2K PL products                 |
 | #622  | P2       | L      | Comprehensive Playwright E2E for M18–M22 features                |
@@ -71,10 +73,10 @@
 
 ## Next Planned Work
 
-- [ ] Complete #595 — PL QA validation (this session)
-- [ ] Implement #598 — update docs for PL expansion
-- [ ] Implement #603 — DE ingredient enrichment (unblocked now)
-- [ ] Implement #563 — sync staging DB schema (P2, requires staging access)
+- [ ] Complete #603 — DE ingredient enrichment (PR pending)
+- [ ] Implement #602 — DE QA validation suite
+- [ ] Implement #599 — deploy expanded PL dataset to production
+- [ ] Implement #607 — deploy DE dataset to production
 
 ## Key Metrics Snapshot
 
@@ -83,11 +85,13 @@
 - **QA checks:** 735/735 passing (48 suites)
 - **Negative tests:** 23/23 caught
 - **EAN coverage:** 2,261/2,264 with EAN (99.9%)
-- **Ingredient refs:** 2,898 unique ingredients
-- **Product-ingredient links:** 14,392
-- **Allergen declarations:** 1,391 allergens + 1,481 traces
+- **Ingredient refs:** 5,340 unique ingredients
+- **Product-ingredient links:** 28,065
+- **Allergen declarations:** 2,691 allergens + 2,702 traces
 - **Data completeness (PL):** 97.5% average, 73% minimum, all 19 categories ≥92%
+- **Data completeness (DE):** 99% average, 80% minimum
 - **Confidence bands (PL):** 1,027 high / 168 medium / 3 low
+- **Confidence bands (DE):** 1,017 high / 49 medium / 0 low
 - **Frontend test coverage:** ~88% lines (SonarCloud Quality Gate passing)
 - **ESLint warnings:** 0
 - **Open issues:** 15 (7 P1 + 4 P2 + 2 P3 + 2 deferred) | **Open PRs:** 1
