@@ -469,7 +469,7 @@ export function isStale(
   entry: { cachedAt: number },
   maxAgeMs: number = STALE_THRESHOLD_MS,
 ): boolean {
-  return Date.now() - entry.cachedAt > maxAgeMs;
+  return Date.now() - entry.cachedAt >= maxAgeMs;
 }
 
 // ─── Stale-While-Revalidate ─────────────────────────────────────────────────
