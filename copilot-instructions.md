@@ -1,14 +1,14 @@
 # Copilot Instructions — TryVit
 
-> **Last updated:** 2026-03-02
-> **Scope:** Poland (`PL`) primary + Germany (`DE`) micro-pilot (252 products across 5 categories)
-> **Products:** ~1,281 active (20 PL categories + 5 DE categories), 51 deprecated
-> **EAN coverage:** 1,024/1,026 (99.8%)
+> **Last updated:** 2026-03-05
+> **Scope:** Poland (`PL`) primary + Germany (`DE`) full parity (1,066 products across 19 categories)
+> **Products:** ~2,264 active (20 PL categories + 19 DE categories), 273 deprecated
+> **EAN coverage:** 2,261/2,264 (99.9%)
 > **Scoring:** v3.3 — 9-factor weighted penalty + nutrient density bonus via `compute_unhealthiness_v33()` (protein & fibre credit)
 > **Servings:** removed as separate table — all nutrition data is per-100g on nutrition_facts
-> **Ingredient analytics:** 2,995 unique ingredients (all clean ASCII English), 1,269 allergen declarations, 1,361 trace declarations
+> **Ingredient analytics:** 5,340 unique ingredients (all clean ASCII English), 2,691 allergen declarations, 2,702 trace declarations
 > **Ingredient concerns:** EFSA-based 4-tier additive classification (0=none, 1=low, 2=moderate, 3=high)
-> **QA:** 736 checks across 48 suites + 20 negative validation tests — all passing
+> **QA:** 736 checks across 48 suites + 23 negative validation tests — all passing
 
 ---
 
@@ -22,7 +22,7 @@ You are a **food scientist, nutrition researcher, and senior data engineer** mai
 - **Never guess Nutri-Score.** Compute from nutrition or cite official sources.
 - **Idempotent everything.** Every SQL file safe to run 1× or 100×.
 - **Reproducible setup.** `supabase db reset` + pipelines = full rebuild.
-- **Country-scoped.** PL is primary; DE micro-pilot active (51 Chips). All queries are country-filtered. See `docs/COUNTRY_EXPANSION_GUIDE.md`.
+- **Country-scoped.** PL is primary; DE at full parity (1,066 products across 19 categories). All queries are country-filtered. See `docs/COUNTRY_EXPANSION_GUIDE.md`.
 - **Every change must be tested.** No code ships without corresponding tests. See §8.
 
 ---
@@ -78,14 +78,14 @@ tryvit/
 │   ├── image_importer.py            # Product image import utility
 │   └── categories.py               # 20 category definitions + OFF tag mappings
 ├── db/
-│   ├── pipelines/                   # 25 category folders (20 PL + 5 DE), 4-5 SQL files each
+│   ├── pipelines/                   # 39 category folders (20 PL + 19 DE), 4-5 SQL files each
 │   │   ├── chips-pl/                # Reference PL implementation (copy for new categories)
-│   │   ├── chips-de/                # Germany micro-pilot (51 products)
+│   │   ├── chips-de/                # DE Chips (~56 products)
 │   │   ├── bread-de/                # DE Bread (51 products)
 │   │   ├── dairy-de/                # DE Dairy (51 products)
 │   │   ├── drinks-de/               # DE Drinks (51 products)
 │   │   ├── sweets-de/               # DE Sweets (51 products)
-│   │   └── ... (19 more PL)         # Variable product counts per category
+│   │   └── ... (20 PL + 14 more DE)  # Variable product counts per category
 │   ├── qa/                          # Test suites
 │   │   ├── QA__null_checks.sql      # 29 data integrity checks
 │   │   ├── QA__scoring_formula_tests.sql  # 29 scoring validation checks
@@ -209,7 +209,7 @@ tryvit/
 │   ├── BACKFILL_STANDARD.md         # Backfill orchestration standard & migration templates
 │   ├── CI_ARCHITECTURE_PROPOSAL.md  # CI pipeline design
 │   ├── CONTRACT_TESTING.md          # API contract testing strategy & pgTAP patterns
-│   ├── COUNTRY_EXPANSION_GUIDE.md   # Multi-country protocol (PL active, DE micro-pilot)
+│   ├── COUNTRY_EXPANSION_GUIDE.md   # Multi-country protocol (PL active, DE full parity)
 │   ├── DATA_INTEGRITY_AUDITS.md     # Ongoing data integrity audit framework
 │   ├── DATA_PROVENANCE.md           # Data provenance & freshness governance
 │   ├── DATA_SOURCES.md              # Source hierarchy & validation workflow
@@ -505,9 +505,11 @@ tryvit/
 
 ---
 
-## 5. Categories (20 PL + 5 DE)
+## 5. Categories (20 PL + 19 DE)
 
-All categories have **variable product counts** (28–95 active products). Categories are expanded by running the pipeline with `--max-products N`. DE categories target ~51 products each.
+All categories have **variable product counts** (28–95 active products). Categories are expanded by running the pipeline with `--max-products N`. DE categories target ~51 products each. All 19 PL categories (except Żabka) have a DE counterpart.
+
+### PL Categories (20)
 
 | Category                   | Folder slug                 |
 | -------------------------- | --------------------------- |
@@ -517,17 +519,10 @@ All categories have **variable product counts** (28–95 active products). Categ
 | Breakfast & Grain-Based    | `breakfast-grain-based/`    |
 | Canned Goods               | `canned-goods/`             |
 | Cereals                    | `cereals/`                  |
-| Bread (DE)                 | `bread-de/`                 |
-| Breakfast & Grain-Based    | `breakfast-grain-based/`    |
-| Canned Goods               | `canned-goods/`             |
-| Cereals                    | `cereals/`                  |
 | Chips (PL)                 | `chips-pl/`                 |
-| Chips (DE)                 | `chips-de/`                 |
 | Condiments                 | `condiments/`               |
 | Dairy                      | `dairy/`                    |
-| Dairy (DE)                 | `dairy-de/`                 |
 | Drinks                     | `drinks/`                   |
-| Drinks (DE)                | `drinks-de/`                |
 | Frozen & Prepared          | `frozen-prepared/`          |
 | Instant & Frozen           | `instant-frozen/`           |
 | Meat                       | `meat/`                     |
@@ -537,10 +532,33 @@ All categories have **variable product counts** (28–95 active products). Categ
 | Seafood & Fish             | `seafood-fish/`             |
 | Snacks                     | `snacks/`                   |
 | Sweets                     | `sweets/`                   |
-| Sweets (DE)                | `sweets-de/`                |
 | Żabka                      | `zabka/`                    |
 
-**25 pipeline folders** (20 PL + 5 DE). Category-to-OFF tag mappings live in `pipeline/categories.py`. Each category has multiple OFF tags and search terms for comprehensive coverage.
+### DE Categories (19)
+
+| Category                   | Folder slug                       |
+| -------------------------- | --------------------------------- |
+| Alcohol (DE)               | `alcohol-de/`                     |
+| Baby (DE)                  | `baby-de/`                        |
+| Bread (DE)                 | `bread-de/`                       |
+| Breakfast & Grain-Based (DE) | `breakfast-grain-based-de/`     |
+| Canned Goods (DE)          | `canned-goods-de/`                |
+| Cereals (DE)               | `cereals-de/`                     |
+| Chips (DE)                 | `chips-de/`                       |
+| Condiments (DE)            | `condiments-de/`                  |
+| Dairy (DE)                 | `dairy-de/`                       |
+| Drinks (DE)                | `drinks-de/`                      |
+| Frozen & Prepared (DE)     | `frozen-prepared-de/`             |
+| Instant & Frozen (DE)      | `instant-frozen-de/`              |
+| Meat (DE)                  | `meat-de/`                        |
+| Nuts, Seeds & Legumes (DE) | `nuts-seeds-legumes-de/`          |
+| Plant-Based & Alternatives (DE) | `plant-based-alternatives-de/` |
+| Sauces (DE)                | `sauces-de/`                      |
+| Seafood & Fish (DE)        | `seafood-fish-de/`                |
+| Snacks (DE)                | `snacks-de/`                      |
+| Sweets (DE)                | `sweets-de/`                      |
+
+**39 pipeline folders** (20 PL + 19 DE). Category-to-OFF tag mappings live in `pipeline/categories.py`. Each category has multiple OFF tags and search terms for comprehensive coverage.
 
 ---
 
@@ -961,7 +979,7 @@ At the end of every PR-like change, include a **Verification** section:
 These are **anchor products** whose scores must remain stable. If a scoring change causes drift beyond ±2 points, investigate before committing:
 
 - Doritos Sweet Chili ≈ 41 (chips, 7 additives + concern 55, protein credit)
-- Coca-Cola Zero (DE) ≈ 4 (zero nutrition, additives + concern, no protein/fibre)
+- Coca-Cola Zero (DE) ≈ 13 (zero nutrition, 8 additives + concern 70 (enriched), no protein/fibre)
 - Piątnica Skyr Naturalny ≈ 5 (healthiest dairy, fermented, high protein bonus)
 - Melvit Płatki owsiane górskie ≈ 7 (healthiest cereal, protein + fibre bonus)
 - Auchan Tortilla Pszenno-Żytnia ≈ 29 (bread, 9 additives + concern 25, protein credit)
@@ -973,7 +991,7 @@ These are **anchor products** whose scores must remain stable. If a scoring chan
 - Dr. Oetker Pizza 4 sery ≈ 30 (frozen pizza, palm oil, 4 additives, protein credit)
 - Lajkonik Paluszki extra cienkie ≈ 31 (snacks, baked — product deprecated)
 - Naleśniki z jabłkami ≈ 16 (żabka — product deprecated)
-- Pudliszki Ketchup łagodny ≈ 18 (condiments, sugar + salt)
+- Pudliszki Ketchup Łagodny Premium ≈ 33 (condiments, sugar + salt + additives)
 - E. Wedel Czekolada Tiramisu ≈ 52 (sweets, palm oil + 4 additives, protein credit)
 - Indomie Noodles Chicken ≈ 43 (instant, palm oil + 10 additives, protein credit)
 
@@ -2145,7 +2163,7 @@ Then execute §19 (Canonical Execution Discipline Protocol v2) in full.
 | Document                          | Purpose                                                                   | Load When                        |
 | --------------------------------- | ------------------------------------------------------------------------- | -------------------------------- |
 | `docs/COUNTRY_EXPANSION_GUIDE.md` | Multi-country protocol — adding countries, activating DE, language matrix | Country/language expansion       |
-| `copilot-instructions.md §5`      | Active categories — 20 PL + 5 DE, pipeline folder mappings                | Category additions, DE expansion |
+| `copilot-instructions.md §5`      | Active categories — 20 PL + 19 DE, pipeline folder mappings               | Category additions, DE expansion |
 | `copilot-instructions.md §15.15`  | i18n impact checklist — dictionary keys, translations, search synonyms    | Any translated string change     |
 
 ### 18.9 Architecture Decision Records
