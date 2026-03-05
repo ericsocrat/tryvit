@@ -64,7 +64,7 @@
 - **ESLint warnings:** 0
 - **Open issues:** 2 (1 P2 + 1 deferred) | **Open PRs:** 1
 - **Vitest:** 4,504 tests passing (29 skipped)
-- **DB migrations:** 185 append-only
+- **DB migrations:** 193 append-only
 - **Ruff lint:** 0 errors
 
 ---
