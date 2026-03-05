@@ -386,7 +386,7 @@ tryvit/
 | `product_type_ref`          | Product sub-type taxonomy per category          | `product_type` (text PK)                | ~100 rows across 20 categories; FK from products.product_type; display_name, icon_emoji, sort_order. Issue #354.                                                                                                                   |
 | `brand_ref`                 | Canonical brand dictionary                      | `brand_name` (text PK)                  | Auto-seeded from products.brand (~478 rows); parent_company, country_origin, is_store_brand, display_name. Issue #356.                                                                                                             |
 | `ingredient_translations`   | Localized ingredient display names              | `(ingredient_id, language_code)`        | FK to ingredient_ref + language_ref; name, source (curated/off_api/auto_translated/user_submitted), reviewed_at. Issue #355.                                                                                                       |
-| `user_preferences`          | User personalization (country, diet, allergens) | `user_id` (FK → auth.users)             | One row per user; diet enum, allergen arrays, strict_mode flags, notification_score_changes, notification_frequency; RLS by user                                                                                                    |
+| `user_preferences`          | User personalization (country, diet, allergens) | `user_id` (FK → auth.users)             | One row per user; diet enum, allergen arrays, strict_mode flags, notification_score_changes, notification_frequency; RLS by user                                                                                                   |
 | `user_health_profiles`      | Health condition profiles                       | `profile_id` (identity)                 | Conditions + nutrient thresholds (sodium, sugar, sat fat limits). One active profile per user. RLS by user                                                                                                                         |
 | `user_product_lists`        | User-created product lists                      | `list_id` (identity)                    | Name, description, share_token, is_public. Default lists: Favorites, Avoid. RLS by user                                                                                                                                            |
 | `user_product_list_items`   | Items in product lists                          | `(list_id, product_id)`                 | sort_order, notes. FK to user_product_lists + products. RLS by user                                                                                                                                                                |
@@ -432,50 +432,50 @@ tryvit/
 
 ### Key Functions
 
-| Function                                | Purpose                                                                                                                                                             |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Function                                | Purpose                                                                                                                                                                            |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `compute_unhealthiness_v33()`           | Scores 1–100 from 9 penalty factors + nutrient density bonus: sat fat, sugars, salt, calories, trans fat, additives, prep, controversies, ingredient concern − protein/fibre bonus |
-| `explain_score_v33()`                   | Returns JSONB breakdown of score: final_score + 10 factors (9 penalties + 1 bonus) with name, weight, raw (0–100), weighted, input, ceiling                          |
-| `find_similar_products()`               | Top-N products by Jaccard ingredient similarity (returns product details + similarity coefficient)                                                                  |
-| `find_better_alternatives()`            | Healthier substitutes in same/any category, ranked by score improvement and ingredient overlap                                                                      |
-| `resolve_ingredient_name()`             | Returns localized ingredient name. Fallback: requested lang → en translation → name_en → NULL                                                                       |
-| `assign_confidence()`                   | Returns `'verified'`/`'estimated'`/`'low'` from data completeness                                                                                                   |
-| `score_category()`                      | Consolidated scoring procedure: Steps 0/1/4/5 (concern defaults, unhealthiness, flags + dynamic `data_completeness_pct`, confidence) for a given category           |
-| `compute_data_confidence()`             | Composite confidence score (0-100) with 6 components; band, completeness profile                                                                                    |
-| `compute_data_completeness()`           | Dynamic 15-checkpoint field-coverage function for `data_completeness_pct` (EAN, 9 nutrition, Nutri-Score, NOVA, ingredients, allergens, source)                     |
-| `api_data_confidence()`                 | API wrapper for compute_data_confidence(); returns structured JSONB                                                                                                 |
-| `api_product_detail()`                  | Single product as structured JSONB (identity, scores, flags, nutrition, ingredients, allergens, trust)                                                              |
-| `api_category_listing()`                | Paged category listing with sort (score\|calories\|protein\|name\|nutri_score) + pagination                                                                         |
-| `api_score_explanation()`               | Score breakdown + human-readable headline + warnings + category context (rank, avg, relative position)                                                              |
-| `api_better_alternatives()`             | Healthier substitutes wrapper with source product context and structured JSON                                                                                       |
-| `api_search_products()`                 | Full-text + trigram search across product_name and brand; uses pg_trgm GIN indexes                                                                                  |
-| `api_get_cross_country_links()`         | Returns linked products for a given product_id; bidirectional query across product_links; returns JSONB array                                                       |
-| `api_get_recipes()`                     | Browse published recipes with filters (country, category, tag, difficulty, max_time); paginated JSONB with total_count + recipes array                              |
-| `api_get_recipe_detail()`               | Full recipe detail by slug: recipe metadata + ingredients (with linked products) + steps; returns structured JSONB                                                  |
-| `api_get_recipe_nutrition()`            | Aggregate nutrition summary from linked products; picks primary product per ingredient; returns per-100g averages + coverage_pct                                    |
-| `browse_recipes()`                      | Browse published recipes with filters (category, country, tag, difficulty, max_time); returns TABLE rows                                                            |
-| `get_recipe_detail()`                   | Recipe detail by slug: returns JSONB with metadata, steps, ingredients (with linked_products array)                                                                 |
-| `find_products_for_recipe_ingredient()` | Finds products for a recipe ingredient: admin-curated links first, then auto-suggested via ingredient_ref matching                                                  |
-| `refresh_all_materialized_views()`      | Refreshes all MVs concurrently; returns timing report JSONB                                                                                                         |
-| `mv_staleness_check()`                  | Checks if MVs are stale by comparing row counts to source tables                                                                                                    |
-| `check_formula_drift()`                 | Compares stored SHA-256 fingerprints against recomputed hashes for active scoring/search formulas                                                                   |
-| `check_function_source_drift()`         | Compares registered pg_proc source hashes against actual function bodies for critical functions                                                                     |
-| `governance_drift_check()`              | Master drift detection runner — 8 checks across scoring, search, naming conventions, and feature flags                                                              |
-| `log_drift_check()`                     | Executes governance_drift_check() and persists results into drift_check_results; returns run_id UUID                                                                |
-| `validate_log_entry()`                  | Validates a structured log JSON entry against LOG_SCHEMA.md spec; returns `{valid: true}` or `{valid: false, errors: [...]}`                                        |
-| `execute_retention_cleanup()`           | Deletes audit rows older than retention_policies window; SECURITY DEFINER, dry-run by default, batch deletion via ctid; returns JSONB summary                       |
-| `mv_last_refresh()`                     | Returns the most recent refresh per MV; columns: mv_name, refreshed_at, duration_ms, row_count, triggered_by, age_minutes                                           |
-| `check_flag_readiness()`                | Returns activation readiness status for all feature flags — dependency resolution, expiry tracking, status (ready/blocked/expired/enabled)                          |
-| `api_export_user_data()`                | GDPR Art.15/20 — exports all user data as structured JSONB (preferences, health profiles, lists, comparisons, searches, scans). SECURITY DEFINER                    |
-| `api_delete_user_data()`                | GDPR Art.17 — cascading delete across 8 tables in FK-safe order; writes anonymized audit to `deletion_audit_log`. SECURITY DEFINER                                  |
-| `is_valid_ean()`                        | GS1 checksum validation for EAN-8/EAN-13 barcodes. IMMUTABLE STRICT — returns NULL for NULL, false for invalid                                                      |
-| `check_submission_rate_limit()`         | Returns rate limit status for product submissions: 10 per 24h rolling window per user. SECURITY DEFINER                                                             |
-| `check_scan_rate_limit()`               | Returns rate limit status for barcode scans: 100 per 24h rolling window per user. SECURITY DEFINER                                                                  |
-| `check_api_rate_limit()`                | Generic per-endpoint rate limiter: checks `api_rate_limits` config, logs to `api_rate_limit_log`. Returns `{allowed, remaining}` or blocked JSONB. SECURITY DEFINER |
-| `check_share_limit()`                   | Per-user share count limiter: max 50 shared items per type (comparisons/lists). Returns `{allowed, type, limit}` JSONB. SECURITY DEFINER                            |
-| `score_submission_quality()`            | Scores a submission's quality (0-100) from 7 signals: account age, velocity, EAN match, photo, brand/name quality, user trust score. SECURITY DEFINER               |
-| `api_admin_batch_reject_user()`         | Rejects all pending/manual_review/flag_for_review submissions from a user, flags trust score (cap at 10). SECURITY DEFINER                                          |
-| `api_admin_submission_velocity()`       | Returns submission velocity stats: last_24h, last_7d, pending_count, auto_rejected_24h, status_breakdown, top_submitters with trust. SECURITY DEFINER               |
+| `explain_score_v33()`                   | Returns JSONB breakdown of score: final_score + 10 factors (9 penalties + 1 bonus) with name, weight, raw (0–100), weighted, input, ceiling                                        |
+| `find_similar_products()`               | Top-N products by Jaccard ingredient similarity (returns product details + similarity coefficient)                                                                                 |
+| `find_better_alternatives()`            | Healthier substitutes in same/any category, ranked by score improvement and ingredient overlap                                                                                     |
+| `resolve_ingredient_name()`             | Returns localized ingredient name. Fallback: requested lang → en translation → name_en → NULL                                                                                      |
+| `assign_confidence()`                   | Returns `'verified'`/`'estimated'`/`'low'` from data completeness                                                                                                                  |
+| `score_category()`                      | Consolidated scoring procedure: Steps 0/1/4/5 (concern defaults, unhealthiness, flags + dynamic `data_completeness_pct`, confidence) for a given category                          |
+| `compute_data_confidence()`             | Composite confidence score (0-100) with 6 components; band, completeness profile                                                                                                   |
+| `compute_data_completeness()`           | Dynamic 15-checkpoint field-coverage function for `data_completeness_pct` (EAN, 9 nutrition, Nutri-Score, NOVA, ingredients, allergens, source)                                    |
+| `api_data_confidence()`                 | API wrapper for compute_data_confidence(); returns structured JSONB                                                                                                                |
+| `api_product_detail()`                  | Single product as structured JSONB (identity, scores, flags, nutrition, ingredients, allergens, trust)                                                                             |
+| `api_category_listing()`                | Paged category listing with sort (score\|calories\|protein\|name\|nutri_score) + pagination                                                                                        |
+| `api_score_explanation()`               | Score breakdown + human-readable headline + warnings + category context (rank, avg, relative position)                                                                             |
+| `api_better_alternatives()`             | Healthier substitutes wrapper with source product context and structured JSON                                                                                                      |
+| `api_search_products()`                 | Full-text + trigram search across product_name and brand; uses pg_trgm GIN indexes                                                                                                 |
+| `api_get_cross_country_links()`         | Returns linked products for a given product_id; bidirectional query across product_links; returns JSONB array                                                                      |
+| `api_get_recipes()`                     | Browse published recipes with filters (country, category, tag, difficulty, max_time); paginated JSONB with total_count + recipes array                                             |
+| `api_get_recipe_detail()`               | Full recipe detail by slug: recipe metadata + ingredients (with linked products) + steps; returns structured JSONB                                                                 |
+| `api_get_recipe_nutrition()`            | Aggregate nutrition summary from linked products; picks primary product per ingredient; returns per-100g averages + coverage_pct                                                   |
+| `browse_recipes()`                      | Browse published recipes with filters (category, country, tag, difficulty, max_time); returns TABLE rows                                                                           |
+| `get_recipe_detail()`                   | Recipe detail by slug: returns JSONB with metadata, steps, ingredients (with linked_products array)                                                                                |
+| `find_products_for_recipe_ingredient()` | Finds products for a recipe ingredient: admin-curated links first, then auto-suggested via ingredient_ref matching                                                                 |
+| `refresh_all_materialized_views()`      | Refreshes all MVs concurrently; returns timing report JSONB                                                                                                                        |
+| `mv_staleness_check()`                  | Checks if MVs are stale by comparing row counts to source tables                                                                                                                   |
+| `check_formula_drift()`                 | Compares stored SHA-256 fingerprints against recomputed hashes for active scoring/search formulas                                                                                  |
+| `check_function_source_drift()`         | Compares registered pg_proc source hashes against actual function bodies for critical functions                                                                                    |
+| `governance_drift_check()`              | Master drift detection runner — 8 checks across scoring, search, naming conventions, and feature flags                                                                             |
+| `log_drift_check()`                     | Executes governance_drift_check() and persists results into drift_check_results; returns run_id UUID                                                                               |
+| `validate_log_entry()`                  | Validates a structured log JSON entry against LOG_SCHEMA.md spec; returns `{valid: true}` or `{valid: false, errors: [...]}`                                                       |
+| `execute_retention_cleanup()`           | Deletes audit rows older than retention_policies window; SECURITY DEFINER, dry-run by default, batch deletion via ctid; returns JSONB summary                                      |
+| `mv_last_refresh()`                     | Returns the most recent refresh per MV; columns: mv_name, refreshed_at, duration_ms, row_count, triggered_by, age_minutes                                                          |
+| `check_flag_readiness()`                | Returns activation readiness status for all feature flags — dependency resolution, expiry tracking, status (ready/blocked/expired/enabled)                                         |
+| `api_export_user_data()`                | GDPR Art.15/20 — exports all user data as structured JSONB (preferences, health profiles, lists, comparisons, searches, scans). SECURITY DEFINER                                   |
+| `api_delete_user_data()`                | GDPR Art.17 — cascading delete across 8 tables in FK-safe order; writes anonymized audit to `deletion_audit_log`. SECURITY DEFINER                                                 |
+| `is_valid_ean()`                        | GS1 checksum validation for EAN-8/EAN-13 barcodes. IMMUTABLE STRICT — returns NULL for NULL, false for invalid                                                                     |
+| `check_submission_rate_limit()`         | Returns rate limit status for product submissions: 10 per 24h rolling window per user. SECURITY DEFINER                                                                            |
+| `check_scan_rate_limit()`               | Returns rate limit status for barcode scans: 100 per 24h rolling window per user. SECURITY DEFINER                                                                                 |
+| `check_api_rate_limit()`                | Generic per-endpoint rate limiter: checks `api_rate_limits` config, logs to `api_rate_limit_log`. Returns `{allowed, remaining}` or blocked JSONB. SECURITY DEFINER                |
+| `check_share_limit()`                   | Per-user share count limiter: max 50 shared items per type (comparisons/lists). Returns `{allowed, type, limit}` JSONB. SECURITY DEFINER                                           |
+| `score_submission_quality()`            | Scores a submission's quality (0-100) from 7 signals: account age, velocity, EAN match, photo, brand/name quality, user trust score. SECURITY DEFINER                              |
+| `api_admin_batch_reject_user()`         | Rejects all pending/manual_review/flag_for_review submissions from a user, flags trust score (cap at 10). SECURITY DEFINER                                                         |
+| `api_admin_submission_velocity()`       | Returns submission velocity stats: last_24h, last_7d, pending_count, auto_rejected_24h, status_breakdown, top_submitters with trust. SECURITY DEFINER                              |
 
 ### Views
 
@@ -717,11 +717,13 @@ For **any** functional change:
 - Use `describe()` + `it()` blocks (not `test()`). Descriptions in plain English.
 - Import `{ describe, it, expect, vi, beforeEach }` from `"vitest"`.
 - Use `@/` path alias for imports (e.g., `@/lib/api`, `@/components/common/RouteGuard`).
-- Mock modules with `vi.mock("@/lib/module", () => ({ ... }))`.
+- Mock modules with `vi.mock("@/lib/module", () => ({ ... }))`. **Provide ALL exports** used by the component under test — not just the ones being asserted. Missing mock exports cause cryptic runtime errors (e.g., `TypeError: X is not a function`).
 - Clear mocks in `beforeEach` with `vi.clearAllMocks()`.
 - Component tests: wrap in `QueryClientProvider` via a `createWrapper()` helper with `{ retry: false, staleTime: 0 }`.
 - Assertions: `expect(...).toEqual()`, `.toHaveBeenCalledWith()`, `.toBeTruthy()`, `.toBeVisible()`.
 - Use ASCII-art section dividers (`// ─── Section ───`) to group test blocks.
+- **Never hardcode constants that mirror source code.** Import or reference the source constant (e.g., `MAX_PRODUCTS`, `MAX_SEARCHES`). Hardcoded duplicates silently drift when the source value changes.
+- **When adding a route, tab, or nav item,** grep the test suite for count-based assertions (e.g., `expect(links).toHaveLength(N)`) and update them.
 - Setup file: `frontend/src/__tests__/setup.ts` (imports `@testing-library/jest-dom/vitest`).
 
 #### Playwright E2E tests
@@ -730,6 +732,7 @@ For **any** functional change:
 - Import `{ test, expect }` from `@playwright/test` only.
 - No mocks — tests run against a live dev server at `http://localhost:3000`.
 - Locators: prefer `page.locator("text=...")`, `page.getByRole(...)`, CSS selectors.
+- **Strict mode:** Playwright fails when a locator matches multiple elements. If a page has duplicate accessible names (e.g., two "Get started" CTAs), disambiguate with `.first()`, `.nth(0)`, or a more specific parent locator. Never disable strict mode.
 - Assertions: `expect(page).toHaveTitle(...)`, `expect(locator).toBeVisible()`.
 - Auth-protected routes: assert redirect via `page.waitForURL(/\/auth\/login/)`.
 - Smoke tests go in `e2e/smoke.spec.ts`; authenticated flows in `e2e/authenticated.spec.ts`.
@@ -801,7 +804,7 @@ Before finalizing any change:
 All tests **must** be deterministic:
 
 - **No live network calls.** Mock external APIs (`vi.mock()` for OFF API, Supabase).
-- **No time-dependent assertions** without freezing time (`vi.useFakeTimers()`).
+- **No time-dependent assertions** without freezing time (`vi.useFakeTimers()`). Use `>=` (not `>`) for staleness comparisons — `Date.now() - createdAt > 0` fails in same-millisecond operations.
 - **No randomness** without seeding.
 - **No dependency on local machine state** (port availability, file system, env vars).
 - If unavoidable, mock/stub and document why.
@@ -822,6 +825,9 @@ E2E tests are the **only** exception — they run against a live dev server but 
   - **`qa.yml`**: Pipeline structure guard → Schema migrations → Schema drift detection → Pipelines → QA (736 checks) → Sanity (17 checks) → Confidence threshold
   - **`deploy.yml`**: Manual trigger → Schema diff → Approval gate (production) → Pre-deploy backup → `supabase db push` → Post-deploy sanity
   - **`sync-cloud-db.yml`**: Auto-sync migrations to production on merge to `main`
+- **Required (merge-blocking) checks:** `Unit Tests`, `Playwright Smoke`, `Typecheck & Lint`, `Build`. These four must pass before a PR can merge.
+- **Non-blocking checks:** `quality_gate`, `DB Integrity`, `Lighthouse`, `verify`, `Vercel`. Failures on these do not block merging but should be investigated.
+- **ESLint `consistent-type-imports`:** Use `import type { X }` for type-only imports — `import { X }` for a type will fail the lint gate.
 
 ### 8.11 Test Plan Required (Before Coding)
 
@@ -1095,6 +1101,26 @@ security(rls): lock down product_submissions to authenticated users
 3. No modifications to existing `supabase/migrations/`
 4. Docs updated if schema or methodology changed
 5. `CHANGELOG.md` updated (add entry under `[Unreleased]`)
+
+### 13.1 Conflict Resolution Rules (Learned Patterns)
+
+When resolving merge conflicts, apply these deterministic rules:
+
+| Conflict Type                               | Resolution                                                                                                        |
+| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **CHANGELOG.md**                            | Keep **BOTH** sides — never discard either side's entries. Main's entries go first, then HEAD's.                  |
+| **Pipeline SQL data** (`db/pipelines/`)     | Take main's version (`git checkout --theirs <file>`). Pipeline SQL is regenerated.                                |
+| **Import lists** (TypeScript)               | Use main's formatting style (4-space indent, alphabetical order). Add HEAD's unique additions in sorted position. |
+| **SQL test fixtures** (pgTAP)               | Keep **BOTH** sides. Watch for `product_id` collisions — renumber if needed.                                      |
+| **`copilot-instructions.md` counts/tables** | Take the higher/more complete version. Verify counts match reality.                                               |
+
+### 13.2 Branch Update & Multi-PR Workflow
+
+- **`gh pr update-branch`:** Always use merge-based (no `--rebase` flag — it returns "rebase not prepared" error).
+- **After `gh pr update-branch`:** Must `git pull origin <branch> --no-edit` before any local work on that branch.
+- **Auto-merge cascade:** When merging multiple PRs, each merge makes remaining PRs behind main. Pattern: merge → `gh pr update-branch` on next → wait for CI → repeat.
+- **Windows CRLF blocking checkout:** If `git checkout <branch>` fails due to CRLF auto-changes, run `git checkout -- .` first to discard the line-ending diffs.
+- **PowerShell conflict resolution:** Never use multi-line regex to resolve git conflict markers in PowerShell — it silently fails. Use `git checkout --theirs <file>` or `git checkout --ours <file>` instead.
 
 ---
 
@@ -2107,12 +2133,12 @@ Then execute §19 (Canonical Execution Discipline Protocol v2) in full.
 
 ### 18.7 Scoring & Nutrition Science
 
-| Document                        | Purpose                                                                              | Load When                                |
-| ------------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------- |
+| Document                        | Purpose                                                                                                     | Load When                                |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
 | `docs/SCORING_METHODOLOGY.md`   | v3.3 algorithm — 9 penalty factors + nutrient density bonus, weights, ceilings, bands, scientific rationale | Any scoring change                       |
-| `docs/SCORING_ENGINE.md`        | Scoring engine architecture — versioning, drift detection, formula registry          | Scoring formula work, version management |
-| `copilot-instructions.md §14`   | Scoring quick reference — formula, ceilings, band table                              | Quick coding reference                   |
-| `copilot-instructions.md §8.19` | Regression anchors — 16 products with expected scores ±2                             | Regression testing after scoring changes |
+| `docs/SCORING_ENGINE.md`        | Scoring engine architecture — versioning, drift detection, formula registry                                 | Scoring formula work, version management |
+| `copilot-instructions.md §14`   | Scoring quick reference — formula, ceilings, band table                                                     | Quick coding reference                   |
+| `copilot-instructions.md §8.19` | Regression anchors — 16 products with expected scores ±2                                                    | Regression testing after scoring changes |
 
 ### 18.8 Country Expansion & Localization
 
