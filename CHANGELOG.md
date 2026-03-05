@@ -86,6 +86,12 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Tests
 
+- DE QA validation suite: fix multi-country consistency checks 1 and 10 (stale
+  `compute_unhealthiness_v32` calls → upgraded to v33 with `_g` param suffix,
+  `p_protein_g`/`p_fibre_g`, and LATERAL subquery for `additives_count`); add
+  5 DE scoring anchor regression tests (Ritter Sport ≈48, Alpro Sojadrink ≈8,
+  Chipsfrisch ≈25, Wildlachsfilet ≈3, Instant-Nudeln ≈55); scoring formula
+  checks 35→40, multi-country checks catalog 13→16 in RUN_QA.ps1 (#602)
 - Add 2 QA checks to nutrition ranges suite (18 → 20 checks, total 733 → 735):
   protein_g NULL coverage < 5% threshold and fibre_g NULL coverage < 10%
   threshold — required for v3.3 nutrient density bonus (#609)
