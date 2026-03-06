@@ -8,7 +8,7 @@
  * @see https://github.com/ericsocrat/tryvit/issues/174
  */
 
-import { describe, it, expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 /* ── We test the module's exported helpers indirectly ─────────────────────
  *
@@ -19,19 +19,19 @@ import { describe, it, expect, vi } from "vitest";
  * ──────────────────────────────────────────────────────────────────────── */
 
 import {
-  checkGlobalInvariants,
-  checkMobileInvariants,
-  checkProductInvariants,
-  checkAdminInvariants,
-  checkSettingsInvariants,
-  checkRecipesInvariants,
-  checkDesktopInvariants,
-  setupErrorCollectors,
-  assertNoErrors,
-  runInvariantsForRoute,
-  CONSOLE_ERROR_ALLOWLIST,
-  NETWORK_ALLOWLIST,
-  NETWORK_4XX_ALLOWLIST,
+    assertNoErrors,
+    checkAdminInvariants,
+    checkDesktopInvariants,
+    checkGlobalInvariants,
+    checkMobileInvariants,
+    checkProductInvariants,
+    checkRecipesInvariants,
+    checkSettingsInvariants,
+    CONSOLE_ERROR_ALLOWLIST,
+    NETWORK_4XX_ALLOWLIST,
+    NETWORK_ALLOWLIST,
+    runInvariantsForRoute,
+    setupErrorCollectors,
 } from "./invariants";
 
 /* ── Page mock factory ───────────────────────────────────────────────────── */
