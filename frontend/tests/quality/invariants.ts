@@ -416,8 +416,11 @@ export async function checkProductInvariants(
     `Analysis toggle did not appear on ${route} within 15 s — product data may have failed to load`
   ).toBe(true);
 
-  // Expand to full analysis so the tab bar becomes visible
-  await page.locator('[data-testid="toggle-analysis"]').click();
+  // Expand to full analysis so the tab bar becomes visible.
+  // Use force:true because async product-data loading causes continuous layout
+  // shifts that prevent Playwright from considering the button "stable" within
+  // the default action timeout.
+  await page.locator('[data-testid="toggle-analysis"]').click({ force: true });
   const tabBarLoaded = await waitForTestId(page, "tab-bar", 5_000);
 
   // 21 — Exactly 1 tab bar
