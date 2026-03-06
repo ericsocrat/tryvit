@@ -21,6 +21,16 @@ Adheres to [Semantic Versioning](https://semver.org/).
   CASE branches. Added explicit `::numeric` casts. Migration
   `20260316000100_fix_score_history_case_type.sql` (#620)
 
+### Added
+
+- Add Oils & Vinegars and Spreads & Dips categories for Poland: ~150 new
+  products (75 per category) via OFF API pipeline; fix `_dedup()` for
+  case-insensitive identity_key matching; add cross-category identity_key
+  collision resolution (step 0c) to sql_generator.py; fix `mv_staleness_check()`
+  source count bug (was counting deprecated product ingredients as stale);
+  2 new migration files; 12 new product_type_ref entries; frontend i18n updates
+  (en/pl/de); QA NutriRange expected categories updated for oils/spreads (#594)
+
 ### Tests
 
 - Add pgTAP test suite `score_history_functions.test.sql` — 30 tests covering
