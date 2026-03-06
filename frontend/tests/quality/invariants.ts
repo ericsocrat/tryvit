@@ -146,6 +146,9 @@ export const CONSOLE_ERROR_ALLOWLIST = [
   "challenges.cloudflare.com/turnstile",
   // Service worker / script redirect errors in CI (CDN redirect artifact)
   "script resource is behind a redirect",
+  // Browser-emitted console error for 405 status on auth endpoints (mirrors
+  // NETWORK_ALLOWLIST entries for supabase.co/auth — harmless in audit context)
+  "the server responded with a status of 405",
 ];
 
 /* ═══════════════════════════════════════════════════════════════════════════
