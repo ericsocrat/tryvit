@@ -57,6 +57,7 @@ interface LocatorMock {
   nth: (n: number) => LocatorMock;
   first: () => LocatorMock;
   waitFor: (opts?: { state?: string; timeout?: number }) => Promise<void>;
+  click: () => Promise<void>;
 }
 
 function createLocatorMock(config: LocatorMockConfig = {}): LocatorMock {
@@ -74,6 +75,7 @@ function createLocatorMock(config: LocatorMockConfig = {}): LocatorMock {
       if ((config.count ?? 0) > 0) return;
       throw new Error("waitFor timed out");
     }),
+    click: vi.fn(async () => {}),
   };
   return mock;
 }
@@ -350,10 +352,11 @@ describe("checkMobileInvariants", () => {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 describe("checkProductInvariants", () => {
-  it("passes with exactly 1 tab bar and no issues", async () => {
+  it("passes when toggle-analysis clicked reveals 1 tab bar", async () => {
     const page = createPageMock({
       bodyText: "Product details with 3 alternatives",
       locatorOverrides: {
+        "toggle-analysis": { count: 1 },
         "tab-bar": { count: 1 },
         "score-breakdown-panel": { count: 1 },
         "health-warnings-card": { count: 1 },
@@ -368,10 +371,11 @@ describe("checkProductInvariants", () => {
     ).resolves.toBeUndefined();
   });
 
-  it("fails when 0 tab bars found", async () => {
+  it("fails when toggle-analysis button is missing", async () => {
     const page = createPageMock({
       bodyText: "Product",
       locatorOverrides: {
+        "toggle-analysis": { count: 0 },
         "tab-bar": { count: 0 },
         "score-breakdown-panel": { count: 0 },
         "health-warnings-card": { count: 0 },
@@ -390,6 +394,7 @@ describe("checkProductInvariants", () => {
     const page = createPageMock({
       bodyText: "Product",
       locatorOverrides: {
+        "toggle-analysis": { count: 1 },
         "tab-bar": { count: 2 },
         "score-breakdown-panel": { count: 0 },
         "health-warnings-card": { count: 0 },
@@ -408,6 +413,7 @@ describe("checkProductInvariants", () => {
     const page = createPageMock({
       bodyText: "Product with 3 alternatives",
       locatorOverrides: {
+        "toggle-analysis": { count: 1 },
         "tab-bar": { count: 1 },
         "score-breakdown-panel": { count: 1 },
         "health-warnings-card": { count: 1 },
@@ -428,6 +434,7 @@ describe("checkProductInvariants", () => {
     const page = createPageMock({
       bodyText: "Contains 1 ingredients",
       locatorOverrides: {
+        "toggle-analysis": { count: 1 },
         "tab-bar": { count: 1 },
         "score-breakdown-panel": { count: 0 },
         "health-warnings-card": { count: 0 },
@@ -496,7 +503,7 @@ describe("checkAdminInvariants", () => {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 describe("checkSettingsInvariants", () => {
-  it("passes with exactly 1 health profile section", async () => {
+  it("passes on /settings/nutrition with 1 health profile section", async () => {
     const page = createPageMock({
       locatorOverrides: {
         "health-profile-section": { count: 1 },
@@ -504,11 +511,23 @@ describe("checkSettingsInvariants", () => {
     });
 
     await expect(
-      checkSettingsInvariants(page as never, "/app/settings")
+      checkSettingsInvariants(page as never, "/app/settings/nutrition")
     ).resolves.toBeUndefined();
   });
 
-  it("fails when health profile section is missing", async () => {
+  it("fails on /settings/nutrition when health profile section is missing", async () => {
+    const page = createPageMock({
+      locatorOverrides: {
+        "health-profile-section": { count: 0 },
+      },
+    });
+
+    await expect(
+      checkSettingsInvariants(page as never, "/app/settings/nutrition")
+    ).rejects.toThrow();
+  });
+
+  it("passes on /settings without health profile section", async () => {
     const page = createPageMock({
       locatorOverrides: {
         "health-profile-section": { count: 0 },
@@ -517,7 +536,7 @@ describe("checkSettingsInvariants", () => {
 
     await expect(
       checkSettingsInvariants(page as never, "/app/settings")
-    ).rejects.toThrow();
+    ).resolves.toBeUndefined();
   });
 });
 
