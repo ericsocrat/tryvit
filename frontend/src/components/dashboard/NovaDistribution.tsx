@@ -87,7 +87,7 @@ export function NovaDistributionChart({
             className="text-center"
             style={{ width: BAR_WIDTH + (i < bars.length - 1 ? BAR_GAP : 0) }}
           >
-            <span className="text-[10px] font-medium text-foreground-secondary">
+            <span className="text-xs font-medium text-foreground-secondary">
               {bar.pct}%
             </span>
           </div>
@@ -103,7 +103,7 @@ export function NovaDistributionChart({
               style={{ backgroundColor: bar.color }}
               aria-hidden="true"
             />
-            <span className="text-[10px] text-foreground-secondary">
+            <span className="text-xs text-foreground-secondary">
               {t(`dashboard.nova.${bar.key}`)} ({bar.count})
             </span>
           </div>
