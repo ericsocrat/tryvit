@@ -417,10 +417,13 @@ export async function checkProductInvariants(
   ).toBe(true);
 
   // Expand to full analysis so the tab bar becomes visible.
-  // Use force:true because async product-data loading causes continuous layout
+  // Use JS-level click: async product-data loading causes continuous layout
   // shifts that prevent Playwright from considering the button "stable" within
-  // the default action timeout.
-  await page.locator('[data-testid="toggle-analysis"]').click({ force: true });
+  // the default action timeout; and force:true skips scrollIntoView which
+  // can cause the click to miss off-screen elements.
+  const toggle = page.locator('[data-testid="toggle-analysis"]');
+  await toggle.scrollIntoViewIfNeeded();
+  await toggle.evaluate((el) => (el as HTMLElement).click());
   const tabBarLoaded = await waitForTestId(page, "tab-bar", 5_000);
 
   // 21 — Exactly 1 tab bar
