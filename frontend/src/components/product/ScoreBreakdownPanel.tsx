@@ -9,15 +9,15 @@
 
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { createClient } from "@/lib/supabase/client";
-import { getScoreExplanation } from "@/lib/api";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
-import { useTranslation } from "@/lib/i18n";
 import { Skeleton } from "@/components/common/Skeleton";
-import { BarChart3, AlertTriangle, Clock, Leaf } from "lucide-react";
+import { getScoreExplanation } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
+import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { createClient } from "@/lib/supabase/client";
 import type { ScoreExplanation } from "@/lib/types";
+import { useQuery } from "@tanstack/react-query";
+import { AlertTriangle, BarChart3, Clock, Leaf } from "lucide-react";
+import { useState } from "react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -172,10 +172,10 @@ function BreakdownContent({
       {/* Nutrient density bonus (v3.3) */}
       {bonus && bonus.weighted < 0 && (
         <div
-          className="rounded-md border border-green-200 bg-green-50 px-3 py-2 dark:border-green-800 dark:bg-green-950/20"
+          className="rounded-md border border-success-border bg-success-bg px-3 py-2"
           data-testid="nutrient-bonus"
         >
-          <div className="flex items-center gap-1.5 text-xs font-medium text-green-700 dark:text-green-400">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-success-text">
             <Leaf size={14} aria-hidden="true" />
             <span>{t("tooltip.scoreBreakdown.nutrientBonus")}</span>
             <span className="ml-auto tabular-nums">
@@ -183,7 +183,7 @@ function BreakdownContent({
             </span>
           </div>
           {bonus.components && (
-            <div className="mt-1 flex gap-3 text-[10px] text-green-600 dark:text-green-500">
+            <div className="mt-1 flex gap-3 text-[10px] text-success-text/80">
               {bonus.components.protein_bonus > 0 && (
                 <span>
                   {t("tooltip.scoreBreakdown.proteinBonus", {

@@ -1,5 +1,5 @@
 import { useTranslation } from "@/lib/i18n";
-import { User, BarChart3 } from "lucide-react";
+import { BarChart3, User } from "lucide-react";
 
 /**
  * Human-readable labels for regulation constants stored in the DB.
@@ -41,7 +41,7 @@ export function DVReferenceBadge({
     <span
       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
         isPersonalized
-          ? "bg-blue-100 text-blue-700"
+          ? "bg-info-bg text-info-text"
           : "bg-surface-muted text-foreground-secondary"
       }`}
     >

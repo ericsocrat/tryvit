@@ -30,29 +30,29 @@ export function SwapSavingsBadge({
   return (
     <div className="flex flex-col gap-1">
       {/* Primary headline */}
-      <p className="text-sm font-medium text-green-700 dark:text-green-400">
+      <p className="text-sm font-medium text-success-text">
         {savings.headline || `${scoreDelta} points healthier`}
       </p>
 
       {/* Nutrient savings chips */}
       <div className="flex flex-wrap gap-1.5">
         {savings.calories_saved > 0 && (
-          <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+          <span className="inline-flex items-center rounded-full bg-info-bg px-2 py-0.5 text-xs font-medium text-info-text">
             -{Math.round(savings.calories_saved)} kcal
           </span>
         )}
         {savings.sugar_saved_g > 0 && (
-          <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+          <span className="inline-flex items-center rounded-full bg-warning-bg px-2 py-0.5 text-xs font-medium text-warning-text">
             -{savings.sugar_saved_g.toFixed(1)}g sugar
           </span>
         )}
         {savings.sat_fat_saved_g > 0 && (
-          <span className="inline-flex items-center rounded-full bg-orange-50 px-2 py-0.5 text-xs font-medium text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+          <span className="inline-flex items-center rounded-full bg-warning-bg px-2 py-0.5 text-xs font-medium text-warning-text">
             -{savings.sat_fat_saved_g.toFixed(1)}g sat fat
           </span>
         )}
         {savings.salt_saved_g > 0 && (
-          <span className="inline-flex items-center rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-300">
+          <span className="inline-flex items-center rounded-full bg-error-bg px-2 py-0.5 text-xs font-medium text-error-text">
             -{savings.salt_saved_g.toFixed(1)}g salt
           </span>
         )}

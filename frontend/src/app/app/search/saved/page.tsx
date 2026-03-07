@@ -2,20 +2,20 @@
 
 // ─── Saved Searches page — CRUD for authenticated users ─────────────────────
 
-import { useState, useCallback } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { getSavedSearches, deleteSavedSearch } from "@/lib/api";
-import { EmptyState } from "@/components/common/EmptyState";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
-import { ALLERGEN_TAGS } from "@/lib/constants";
-import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { EmptyState } from "@/components/common/EmptyState";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { deleteSavedSearch, getSavedSearches } from "@/lib/api";
+import { ALLERGEN_TAGS } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
-import { ClipboardList, Save, Trash2 } from "lucide-react";
+import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { createClient } from "@/lib/supabase/client";
 import type { SavedSearch, SearchFilters } from "@/lib/types";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ClipboardList, Save, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 
 export default function SavedSearchesPage() {
   const supabase = createClient();
@@ -152,7 +152,7 @@ export default function SavedSearchesPage() {
                     onClick={() => setConfirmDeleteId(search.id)}
                     disabled={deleteMutation.isPending}
                     aria-label={t("common.delete")}
-                    className="rounded-lg px-2 py-1.5 text-xs text-foreground-muted transition-colors hover:bg-red-50 hover:text-red-500"
+                    className="rounded-lg px-2 py-1.5 text-xs text-foreground-muted transition-colors hover:bg-error-bg hover:text-error-text"
                   >
                     <Trash2 size={14} aria-hidden="true" />
                   </button>

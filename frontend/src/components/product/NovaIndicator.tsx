@@ -9,10 +9,10 @@
 import { useTranslation } from "@/lib/i18n";
 
 const NOVA_GROUPS = [
-  { group: "1", color: "bg-green-500", label: "novaGroup1" },
-  { group: "2", color: "bg-lime-500", label: "novaGroup2" },
-  { group: "3", color: "bg-amber-500", label: "novaGroup3" },
-  { group: "4", color: "bg-red-500", label: "novaGroup4" },
+  { group: "1", color: "bg-nova-1", label: "novaGroup1" },
+  { group: "2", color: "bg-nova-2", label: "novaGroup2" },
+  { group: "3", color: "bg-nova-3", label: "novaGroup3" },
+  { group: "4", color: "bg-nova-4", label: "novaGroup4" },
 ] as const;
 
 interface NovaIndicatorProps {

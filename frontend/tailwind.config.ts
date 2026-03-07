@@ -115,10 +115,30 @@ const config: Config = {
         },
 
         // ── Semantic Feedback ──
-        success: "var(--color-success)",
-        warning: "var(--color-warning)",
-        error: "var(--color-error)",
-        info: "var(--color-info)",
+        success: {
+          DEFAULT: "var(--color-success)",
+          bg: "var(--color-success-bg)",
+          text: "var(--color-success-text)",
+          border: "var(--color-success-border)",
+        },
+        warning: {
+          DEFAULT: "var(--color-warning)",
+          bg: "var(--color-warning-bg)",
+          text: "var(--color-warning-text)",
+          border: "var(--color-warning-border)",
+        },
+        error: {
+          DEFAULT: "var(--color-error)",
+          bg: "var(--color-danger-bg)",
+          text: "var(--color-danger-text)",
+          border: "var(--color-danger-border)",
+        },
+        info: {
+          DEFAULT: "var(--color-info)",
+          bg: "var(--color-info-bg)",
+          text: "var(--color-info-text)",
+          border: "var(--color-info-border)",
+        },
       },
 
       // ── Border colors ──

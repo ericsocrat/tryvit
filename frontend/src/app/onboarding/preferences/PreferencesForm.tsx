@@ -2,14 +2,14 @@
 
 // ─── Onboarding Step 2: Dietary preferences (optional, skippable) ───────────
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { showToast } from "@/lib/toast";
-import { createClient } from "@/lib/supabase/client";
-import { setUserPreferences } from "@/lib/api";
-import { DIET_OPTIONS, ALLERGEN_TAGS } from "@/lib/constants";
 import { useAnalytics } from "@/hooks/use-analytics";
+import { setUserPreferences } from "@/lib/api";
+import { ALLERGEN_TAGS, DIET_OPTIONS } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
+import { createClient } from "@/lib/supabase/client";
+import { showToast } from "@/lib/toast";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export function PreferencesForm() {
   const router = useRouter();
@@ -125,7 +125,7 @@ export function PreferencesForm() {
               onClick={() => toggleAllergen(a.tag)}
               className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
                 allergens.includes(a.tag)
-                  ? "border-red-300 bg-red-50 text-red-700"
+                  ? "border-error-border bg-error-bg text-error-text"
                   : "border text-foreground-secondary hover:border-strong"
               }`}
             >

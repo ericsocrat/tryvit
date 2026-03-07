@@ -151,7 +151,7 @@ function SaveSearchDialogInner({
         </div>
 
         {mutation.isError && (
-          <p className="mt-2 text-center text-xs text-red-500" role="alert">
+          <p className="mt-2 text-center text-xs text-error-text" role="alert">
             {mutation.error.message}
           </p>
         )}

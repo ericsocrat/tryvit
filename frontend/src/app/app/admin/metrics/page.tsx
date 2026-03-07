@@ -7,29 +7,29 @@
 // Data fetched via api_admin_get_business_metrics RPC.
 // Protected by middleware (ADMIN_EMAILS allow-list).
 
-import { useState, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import { createClient } from "@/lib/supabase/client";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { getBusinessMetrics } from "@/lib/api";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
-import {
-  BarChart3,
-  Users,
-  Search,
-  ScanLine,
-  AlertTriangle,
-  ShoppingBag,
-  Shield,
-  Layers,
-  GitBranch,
-  FolderOpen,
-  Download,
-  RefreshCw,
-  XCircle,
-} from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import type { BusinessMetricsResponse } from "@/lib/types";
+import { useQuery } from "@tanstack/react-query";
+import {
+    AlertTriangle,
+    BarChart3,
+    Download,
+    FolderOpen,
+    GitBranch,
+    Layers,
+    RefreshCw,
+    ScanLine,
+    Search,
+    Shield,
+    ShoppingBag,
+    Users,
+    XCircle,
+} from "lucide-react";
+import { useCallback, useState } from "react";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -371,12 +371,12 @@ export default function AdminMetricsPage() {
       {/* Error state */}
       {error && !data && (
         <div
-          className="mt-8 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
+          className="mt-8 rounded-lg border border-error-border bg-error-bg p-4"
           data-testid="error-state"
         >
           <div className="flex items-center gap-2">
-            <XCircle className="h-5 w-5 text-red-600" />
-            <p className="font-medium text-red-800 dark:text-red-200">
+            <XCircle className="h-5 w-5 text-error-text" />
+            <p className="font-medium text-error-text">
               Failed to load metrics. Check your connection and admin access.
             </p>
           </div>

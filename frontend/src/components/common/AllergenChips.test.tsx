@@ -1,7 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { render, screen } from "@testing-library/react";
-import { AllergenChips } from "./AllergenChips";
 import type { AllergenWarning } from "@/lib/allergen-matching";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import { AllergenChips } from "./AllergenChips";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -72,16 +72,16 @@ describe("AllergenChips", () => {
     render(<AllergenChips warnings={[makeWarning({ type: "contains" })]} />);
 
     const chip = screen.getByTestId("allergen-chip");
-    expect(chip.className).toContain("bg-red-50");
-    expect(chip.className).toContain("text-red-700");
+    expect(chip.className).toContain("bg-error-bg");
+    expect(chip.className).toContain("text-error-text");
   });
 
   it("applies amber styling for 'traces' type chips", () => {
     render(<AllergenChips warnings={[makeWarning({ type: "traces" })]} />);
 
     const chip = screen.getByTestId("allergen-chip");
-    expect(chip.className).toContain("bg-amber-50");
-    expect(chip.className).toContain("text-amber-700");
+    expect(chip.className).toContain("bg-warning-bg");
+    expect(chip.className).toContain("text-warning-text");
   });
 
   // ── Tooltip text ──────────────────────────────────────────────────────

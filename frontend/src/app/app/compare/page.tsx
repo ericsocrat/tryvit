@@ -5,24 +5,24 @@
 // Works with 2-4 product IDs from URL params.
 // Authenticated users can save comparisons and see avoid badges.
 
-import { useMemo, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { eventBus } from "@/lib/events";
-import Link from "next/link";
-import { useCompareProducts } from "@/hooks/use-compare";
+import { EmptyState } from "@/components/common/EmptyState";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import { PrintButton } from "@/components/common/PrintButton";
+import { ComparisonGridSkeleton } from "@/components/common/skeletons";
 import { ComparisonGrid } from "@/components/compare/ComparisonGrid";
 import { ShareComparison } from "@/components/compare/ShareComparison";
 import { ExportButton } from "@/components/export/ExportButton";
-import { ComparisonGridSkeleton } from "@/components/common/skeletons";
-import { EmptyState } from "@/components/common/EmptyState";
-import { useCompareStore } from "@/stores/compare-store";
-import { useAnalytics } from "@/hooks/use-analytics";
-import { useTranslation } from "@/lib/i18n";
-import { ErrorBoundary } from "@/components/common/ErrorBoundary";
-import { PrintButton } from "@/components/common/PrintButton";
-import { Scale, FolderOpen, AlertTriangle } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { useAnalytics } from "@/hooks/use-analytics";
+import { useCompareProducts } from "@/hooks/use-compare";
+import { eventBus } from "@/lib/events";
 import type { ExportableProduct } from "@/lib/export";
+import { useTranslation } from "@/lib/i18n";
+import { useCompareStore } from "@/stores/compare-store";
+import { AlertTriangle, FolderOpen, Scale } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo } from "react";
 
 export default function ComparePage() {
   const searchParams = useSearchParams();
@@ -169,8 +169,8 @@ export default function ComparePage() {
 
       {/* Partial results — some products not found */}
       {data && data.products.length < productIds.length && (
-        <div className="card border-amber-200 bg-amber-50">
-          <p className="flex items-center gap-1 text-sm text-amber-700">
+        <div className="card border-warning-border bg-warning-bg">
+          <p className="flex items-center gap-1 text-sm text-warning-text">
             <AlertTriangle size={16} aria-hidden="true" />{" "}
             {t("compare.productsNotFound", {
               count: productIds.length - data.products.length,

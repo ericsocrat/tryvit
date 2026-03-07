@@ -136,8 +136,8 @@ describe("TryVitScorePage", () => {
       "learn.tryvitScore.factorNutrientDensity",
     );
     const card = bonusText.closest("div.rounded-lg");
-    expect(card?.className).toContain("border-green-200");
-    expect(card?.className).toContain("bg-green-50");
+    expect(card?.className).toContain("border-success-border");
+    expect(card?.className).toContain("bg-success-bg");
   });
 
   it("renders all 5 score band cards", () => {

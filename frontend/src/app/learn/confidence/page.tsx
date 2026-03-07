@@ -18,18 +18,18 @@ export default function ConfidencePage() {
     {
       key: "levelVerified",
       color:
-        "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800",
+        "bg-success-bg border-success-border",
       icon: BadgeCheck,
     },
     {
       key: "levelEstimated",
       color:
-        "bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800",
+        "bg-warning-bg border-warning-border",
       icon: Ruler,
     },
     {
       key: "levelLow",
-      color: "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800",
+      color: "bg-error-bg border-error-border",
       icon: AlertTriangle,
     },
   ];

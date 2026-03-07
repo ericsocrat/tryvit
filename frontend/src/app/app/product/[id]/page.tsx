@@ -15,8 +15,8 @@ import { AvoidBadge } from "@/components/product/AvoidBadge";
 import { DVLegend } from "@/components/product/DVLegend";
 import { DVReferenceBadge } from "@/components/product/DVReferenceBadge";
 import {
-    HealthWarningBadge,
-    HealthWarningsCard,
+  HealthWarningBadge,
+  HealthWarningsCard,
 } from "@/components/product/HealthWarningsCard";
 import { IngredientList } from "@/components/product/IngredientList";
 import { NovaIndicator } from "@/components/product/NovaIndicator";
@@ -38,10 +38,10 @@ import { useOnlineStatus } from "@/hooks/use-online-status";
 import { getProductProfile, recordProductView } from "@/lib/api";
 import { cacheProduct, getCachedProduct } from "@/lib/cache-manager";
 import {
-    FEATURES,
-    getScoreInterpretation,
-    SCORE_BANDS,
-    scoreBandFromScore,
+  FEATURES,
+  getScoreInterpretation,
+  SCORE_BANDS,
+  scoreBandFromScore,
 } from "@/lib/constants";
 import { eventBus } from "@/lib/events";
 import { useTranslation } from "@/lib/i18n";
@@ -50,9 +50,9 @@ import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { toTryVitScore } from "@/lib/score-utils";
 import { createClient } from "@/lib/supabase/client";
 import type {
-    DataConfidence,
-    ProductProfile,
-    ProfileAlternative,
+  DataConfidence,
+  ProductProfile,
+  ProfileAlternative,
 } from "@/lib/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronUp, Globe, Info } from "lucide-react";
@@ -164,8 +164,8 @@ export default function ProductDetailPage() {
             { labelKey: "nav.search", href: "/app/search" },
           ]}
         />
-        <div className="card border-red-200 bg-red-50 py-8 text-center">
-          <p className="mb-3 text-sm text-red-600">{t("product.loadFailed")}</p>
+        <div className="card border-error-border bg-error-bg py-8 text-center">
+          <p className="mb-3 text-sm text-error-text">{t("product.loadFailed")}</p>
           <button
             type="button"
             className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
@@ -529,7 +529,7 @@ function FlagWithExplanation({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1 rounded bg-red-50 px-2 py-0.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-100"
+        className="inline-flex items-center gap-1 rounded bg-error-bg px-2 py-0.5 text-xs font-medium text-error-text transition-colors hover:bg-error-bg"
       >
         {label}
         <svg
@@ -619,13 +619,13 @@ function OverviewTab({ profile }: Readonly<{ profile: ProductProfile }>) {
           <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-foreground-secondary lg:text-base">
             <Globe size={16} aria-hidden="true" /> {t("product.ecoScoreTitle")}
           </h3>
-          <div className="flex items-center gap-2 rounded-lg border border-dashed border-blue-200 bg-blue-50/50 px-3 py-3">
+          <div className="flex items-center gap-2 rounded-lg border border-dashed border-info-border bg-info-bg/50 px-3 py-3">
             <Info
               size={18}
-              className="flex-shrink-0 text-blue-600"
+              className="flex-shrink-0 text-info-text"
               aria-hidden="true"
             />
-            <p className="text-sm text-blue-700">
+            <p className="text-sm text-info-text">
               {t("product.ecoScoreComingSoon")}
             </p>
           </div>
@@ -821,7 +821,7 @@ function NutritionTab({ profile }: Readonly<{ profile: ProductProfile }>) {
       {dv && dv.reference_type !== "none" && <DVLegend />}
 
       {/* Sodium / Salt context note */}
-      <div className="mt-3 rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-700">
+      <div className="mt-3 rounded-lg bg-info-bg px-3 py-2 text-xs text-info-text">
         <span className="font-medium">{t("product.sodiumNote")}</span>{" "}
         {t("product.sodiumValue", { mg: sodiumMg })}
       </div>
@@ -849,24 +849,24 @@ function GlycemicIndexIndicator({ gi }: Readonly<{ gi: number }>) {
 
   const config = {
     low: {
-      bg: "bg-green-50",
-      border: "border-green-200",
-      text: "text-green-700",
-      badge: "bg-green-100 text-green-800",
+      bg: "bg-success-bg",
+      border: "border-success-border",
+      text: "text-success-text",
+      badge: "bg-success-bg text-success-text",
       label: t("product.gi.low"),
     },
     medium: {
-      bg: "bg-amber-50",
-      border: "border-amber-200",
-      text: "text-amber-700",
-      badge: "bg-amber-100 text-amber-800",
+      bg: "bg-warning-bg",
+      border: "border-warning-border",
+      text: "text-warning-text",
+      badge: "bg-warning-bg text-warning-text",
       label: t("product.gi.medium"),
     },
     high: {
-      bg: "bg-red-50",
-      border: "border-red-200",
-      text: "text-red-700",
-      badge: "bg-red-100 text-red-800",
+      bg: "bg-error-bg",
+      border: "border-error-border",
+      text: "text-error-text",
+      badge: "bg-error-bg text-error-text",
       label: t("product.gi.high"),
     },
   };
@@ -905,9 +905,9 @@ function DataQualityCard({ quality }: Readonly<{ quality: DataConfidence }>) {
     string,
     { bg: string; fill: string; label: string }
   > = {
-    high: { bg: "bg-green-100", fill: "bg-green-500", label: "✓" },
-    medium: { bg: "bg-amber-100", fill: "bg-amber-500", label: "~" },
-    low: { bg: "bg-red-100", fill: "bg-red-400", label: "!" },
+    high: { bg: "bg-success-bg", fill: "bg-success", label: "✓" },
+    medium: { bg: "bg-warning-bg", fill: "bg-warning", label: "~" },
+    low: { bg: "bg-error-bg", fill: "bg-error", label: "!" },
     unknown: { bg: "bg-gray-100", fill: "bg-gray-400", label: "?" },
   };
 
@@ -1100,11 +1100,11 @@ function ScoringTab({ profile }: Readonly<{ profile: ProductProfile }>) {
 
       {/* Warnings */}
       {profile.warnings.length > 0 && (
-        <div className="card border-amber-200 bg-amber-50">
-          <h3 className="mb-2 text-sm font-semibold text-amber-800 lg:text-base">
+        <div className="card border-warning-border bg-warning-bg">
+          <h3 className="mb-2 text-sm font-semibold text-warning-text lg:text-base">
             {t("product.warnings")}
           </h3>
-          <ul className="list-inside list-disc space-y-1 text-sm text-amber-700">
+          <ul className="list-inside list-disc space-y-1 text-sm text-warning-text/80">
             {profile.warnings.map((w) => (
               <li key={w.type}>{w.message}</li>
             ))}

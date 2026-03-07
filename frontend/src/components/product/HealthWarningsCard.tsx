@@ -141,20 +141,20 @@ export function HealthWarningsCard({
   if (!warningsData || warningsData.warning_count === 0) {
     return (
       <div
-        className="card border-green-200 bg-green-50"
+        className="card border-success-border bg-success-bg"
         data-testid="health-warnings-card"
       >
         <div className="flex items-center gap-2">
           <CheckCircle
             size={20}
-            className="text-green-600"
+            className="text-success-text"
             aria-hidden="true"
           />
           <div>
-            <p className="text-sm font-medium text-green-800">
+            <p className="text-sm font-medium text-success-text">
               {t("healthWarnings.withinLimits")}
             </p>
-            <p className="text-xs text-green-600">
+            <p className="text-xs text-success-text/80">
               {t("healthWarnings.noWarningsFor", {
                 name: profileData.profile?.profile_name ?? "",
               })}

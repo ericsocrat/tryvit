@@ -329,17 +329,17 @@ function ProductRow({
           </p>
           <div className="mt-1 flex flex-wrap gap-1">
             {product.high_sugar_flag && (
-              <span className="rounded bg-red-50 px-1.5 py-0.5 text-xs text-red-600">
+              <span className="rounded bg-error-bg px-1.5 py-0.5 text-xs text-error-text">
                 {t("product.highSugar")}
               </span>
             )}
             {product.high_salt_flag && (
-              <span className="rounded bg-red-50 px-1.5 py-0.5 text-xs text-red-600">
+              <span className="rounded bg-error-bg px-1.5 py-0.5 text-xs text-error-text">
                 {t("product.highSalt")}
               </span>
             )}
             {product.high_sat_fat_flag && (
-              <span className="rounded bg-red-50 px-1.5 py-0.5 text-xs text-red-600">
+              <span className="rounded bg-error-bg px-1.5 py-0.5 text-xs text-error-text">
                 {t("product.highSatFat")}
               </span>
             )}

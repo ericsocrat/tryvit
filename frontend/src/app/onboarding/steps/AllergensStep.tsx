@@ -32,7 +32,7 @@ export function AllergensStep({ data, onChange, onNext, onBack }: StepProps) {
             onClick={() => toggleAllergen(a.tag)}
             className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
               data.allergens.includes(a.tag)
-                ? "border-red-300 bg-red-50 text-red-700"
+                ? "border-error-border bg-error-bg text-error-text"
                 : "border text-foreground-secondary hover:border-strong"
             }`}
             data-testid={`allergen-${a.tag}`}

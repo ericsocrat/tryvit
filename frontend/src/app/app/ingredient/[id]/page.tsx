@@ -4,19 +4,19 @@
 // Deep-dive into a single ingredient: concern tier, EFSA guidance, products
 // containing it, and co-occurring ingredients.
 
-import { useParams } from "next/navigation";
-import { CheckCircle, XCircle, AlertTriangle } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import { createClient } from "@/lib/supabase/client";
-import { getIngredientProfile } from "@/lib/api";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ConcernBadge } from "@/components/ingredient/ConcernBadge";
 import { IngredientUsageStats } from "@/components/ingredient/IngredientUsageStats";
 import { ProductsContainingList } from "@/components/ingredient/ProductsContainingList";
 import { RelatedIngredientsList } from "@/components/ingredient/RelatedIngredientsList";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { getIngredientProfile } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
+import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { createClient } from "@/lib/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { useParams } from "next/navigation";
 
 export default function IngredientProfilePage() {
   const params = useParams<{ id: string }>();
@@ -136,11 +136,11 @@ export default function IngredientProfilePage() {
             </p>
           )}
           {ing.efsa_guidance && (
-            <div className="mt-3 rounded-lg bg-blue-50 p-3">
-              <p className="text-xs font-medium text-blue-700">
+            <div className="mt-3 rounded-lg bg-info-bg p-3">
+              <p className="text-xs font-medium text-info-text">
                 {t("ingredient.efsaGuidance")}
               </p>
-              <p className="mt-1 text-xs text-blue-600">{ing.efsa_guidance}</p>
+              <p className="mt-1 text-xs text-info-text">{ing.efsa_guidance}</p>
             </div>
           )}
           {ing.score_impact && (

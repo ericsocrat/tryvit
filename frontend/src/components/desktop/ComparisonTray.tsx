@@ -4,11 +4,11 @@
 // Shows selected products with names. Collapse/expand. Navigate to compare page.
 // Desktop only (hidden below lg via CSS). Replaces CompareFloatingButton on lg+.
 
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { Scale, ChevronDown, ChevronUp, X } from "lucide-react";
-import { useCompareStore } from "@/stores/compare-store";
 import { useTranslation } from "@/lib/i18n";
+import { useCompareStore } from "@/stores/compare-store";
+import { ChevronDown, ChevronUp, Scale, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useState } from "react";
 
 export function ComparisonTray() {
   const { t } = useTranslation();
@@ -67,7 +67,7 @@ export function ComparisonTray() {
           <button
             type="button"
             onClick={clear}
-            className="flex h-7 w-7 cursor-pointer items-center justify-center rounded text-foreground-secondary transition-colors hover:bg-red-50 hover:text-red-600"
+            className="flex h-7 w-7 cursor-pointer items-center justify-center rounded text-foreground-secondary transition-colors hover:bg-error-bg hover:text-error-text"
             aria-label={t("compare.clearSelection")}
           >
             <X size={14} aria-hidden="true" />
@@ -90,7 +90,7 @@ export function ComparisonTray() {
                 <button
                   type="button"
                   onClick={() => remove(id)}
-                  className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded text-foreground-secondary/60 transition-colors hover:bg-red-50 hover:text-red-600"
+                  className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded text-foreground-secondary/60 transition-colors hover:bg-error-bg hover:text-error-text"
                   aria-label={t("compare.removeFromComparison")}
                 >
                   <X size={12} aria-hidden="true" />

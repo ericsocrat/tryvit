@@ -1256,7 +1256,7 @@ describe("ProductDetailPage", () => {
 
     // AllergenMatrix renders contains allergens with red styling in a <table>
     const glutenCell = screen.getByText("Gluten");
-    expect(glutenCell.closest("td")).toHaveClass("bg-red-50");
+    expect(glutenCell.closest("td")).toHaveClass("bg-error-bg");
   });
 
   it("renders allergen 'May contain traces' label in matrix legend", async () => {
@@ -1272,7 +1272,7 @@ describe("ProductDetailPage", () => {
 
     // AllergenMatrix renders traces allergens with amber styling in a <table>
     const soyCell = screen.getByText("Soy");
-    expect(soyCell.closest("td")).toHaveClass("bg-amber-50");
+    expect(soyCell.closest("td")).toHaveClass("bg-warning-bg");
   });
 
   // ── Desktop split layout ─────────────────────────────────────────────────

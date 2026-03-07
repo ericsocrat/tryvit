@@ -2,25 +2,25 @@
 
 // ─── Health profile management section for Settings page ────────────────────
 
-import { useState } from "react";
-import { Pause, Play, Pencil, Trash2 } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { showToast } from "@/lib/toast";
-import { createClient } from "@/lib/supabase/client";
 import {
-  listHealthProfiles,
-  createHealthProfile,
-  updateHealthProfile,
-  deleteHealthProfile,
+    createHealthProfile,
+    deleteHealthProfile,
+    listHealthProfiles,
+    updateHealthProfile,
 } from "@/lib/api";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { HEALTH_CONDITIONS } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
+import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { createClient } from "@/lib/supabase/client";
+import { showToast } from "@/lib/toast";
 import type {
-  HealthCondition,
-  HealthProfile,
-  FormSubmitEvent,
+    FormSubmitEvent,
+    HealthCondition,
+    HealthProfile,
 } from "@/lib/types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Pause, Pencil, Play, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 // ─── Sub-component: Create/Edit form ────────────────────────────────────────
 
@@ -447,7 +447,7 @@ export function HealthProfileSection() {
                   </button>
                   <button
                     onClick={() => handleDelete(profile.profile_id)}
-                    className="touch-target rounded px-2 py-2 text-sm text-error hover:bg-red-50"
+                    className="touch-target rounded px-2 py-2 text-sm text-error hover:bg-error-bg"
                     aria-label={t("common.delete")}
                   >
                     <Trash2 size={16} aria-hidden="true" />
