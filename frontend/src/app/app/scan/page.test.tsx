@@ -7,10 +7,13 @@ import ScanPage from "./page";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
-const { mockPush, mockRecordScan, mockShowToast } = vi.hoisted(() => ({
+const { mockPush, mockRecordScan, mockShowToast, mockListDevices, mockDecode, mockReaderReset } = vi.hoisted(() => ({
   mockPush: vi.fn(),
   mockRecordScan: vi.fn(),
   mockShowToast: vi.fn(),
+  mockListDevices: vi.fn(),
+  mockDecode: vi.fn(),
+  mockReaderReset: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -56,20 +59,24 @@ vi.mock("@/lib/toast", () => ({
 }));
 
 // Mock ZXing library — prevent actual camera access
-vi.mock("@zxing/library", () => ({
-  BrowserMultiFormatReader: vi.fn().mockImplementation(() => ({
-    listVideoInputDevices: vi.fn().mockResolvedValue([]),
-    decodeFromVideoDevice: vi.fn(),
-    reset: vi.fn(),
-  })),
-  DecodeHintType: { POSSIBLE_FORMATS: 0 },
-  BarcodeFormat: {
-    EAN_13: 0,
-    EAN_8: 1,
-    UPC_A: 2,
-    UPC_E: 3,
-  },
-}));
+// NOTE: must use a regular function (not arrow), so `new` works with dynamic imports.
+vi.mock("@zxing/library", () => {
+  class MockBrowserMultiFormatReader {
+    listVideoInputDevices = mockListDevices;
+    decodeFromVideoDevice = mockDecode;
+    reset = mockReaderReset;
+  }
+  return {
+    BrowserMultiFormatReader: MockBrowserMultiFormatReader,
+    DecodeHintType: { POSSIBLE_FORMATS: 0 },
+    BarcodeFormat: {
+      EAN_13: 0,
+      EAN_8: 1,
+      UPC_A: 2,
+      UPC_E: 3,
+    },
+  };
+});
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -119,6 +126,8 @@ const mockNotFoundResponse = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  // Default: no camera devices available
+  mockListDevices.mockResolvedValue([]);
 });
 
 describe("ScanPage", () => {
@@ -642,6 +651,99 @@ describe("ScanPage", () => {
       expect(
         screen.getByText(/Something went wrong|error|try again/i),
       ).toBeInTheDocument();
+    });
+  });
+
+  // ─── Camera Recovery & Feedback ─────────────────────────────────────────────
+
+  it("shows no-camera error card when no devices found", async () => {
+    // mockListDevices already returns [] by default from beforeEach
+    render(<ScanPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("No Camera Available")).toBeInTheDocument();
+    });
+    expect(
+      screen.getByText(
+        "This device does not have a camera. Use manual entry to look up products.",
+      ),
+    ).toBeInTheDocument();
+    // No retry button for no-camera
+    expect(screen.queryByText("Retry Camera")).not.toBeInTheDocument();
+  });
+
+  it("shows permission-denied error card with retry button", async () => {
+    mockListDevices.mockResolvedValue([
+      { deviceId: "cam1", label: "Front Camera" },
+    ]);
+    mockDecode.mockImplementation(() => {
+      throw new DOMException("Permission denied", "NotAllowedError");
+    });
+
+    render(<ScanPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Camera Access Blocked")).toBeInTheDocument();
+    });
+    expect(
+      screen.getByText(/allow camera access in your browser/),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Retry Camera")).toBeInTheDocument();
+  });
+
+  it("retry camera button restarts scanner", async () => {
+    mockListDevices.mockResolvedValue([
+      { deviceId: "cam1", label: "Front Camera" },
+    ]);
+    mockDecode.mockImplementation(() => {
+      throw new DOMException("Permission denied", "NotAllowedError");
+    });
+
+    const user = userEvent.setup();
+    render(<ScanPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Retry Camera")).toBeInTheDocument();
+    });
+
+    const callsBefore = mockListDevices.mock.calls.length;
+    await user.click(screen.getByText("Retry Camera"));
+
+    await waitFor(() => {
+      expect(mockListDevices.mock.calls.length).toBeGreaterThan(callsBefore);
+    });
+  });
+
+  it("triggers haptic feedback on successful scan", async () => {
+    const vibrateSpy = vi.fn();
+    Object.defineProperty(navigator, "vibrate", {
+      value: vibrateSpy,
+      writable: true,
+      configurable: true,
+    });
+
+    mockRecordScan.mockResolvedValue({
+      ok: true,
+      data: {
+        found: true,
+        product_id: 42,
+        product_name: "Vibrate Test",
+        brand: "TestBrand",
+        nutri_score: "B",
+      },
+    });
+    const user = userEvent.setup();
+
+    render(<ScanPage />, { wrapper: createWrapper() });
+    await user.click(screen.getByText("Manual"));
+    await user.type(
+      screen.getByPlaceholderText("Enter EAN barcode (8 or 13 digits)"),
+      "5901234123457",
+    );
+    await user.click(screen.getByText("Look up"));
+
+    await waitFor(() => {
+      expect(vibrateSpy).toHaveBeenCalledWith(100);
     });
   });
 });

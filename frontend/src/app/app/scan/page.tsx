@@ -27,8 +27,10 @@ import {
   FileText,
   ClipboardList,
   Camera,
+  CameraOff,
   Keyboard,
   Flashlight,
+  ShieldAlert,
 } from "lucide-react";
 import type {
   RecordScanResponse,
@@ -37,6 +39,7 @@ import type {
 } from "@/lib/types";
 
 type ScanState = "idle" | "looking-up" | "found" | "not-found" | "error";
+type CameraErrorKind = "permission-denied" | "no-camera" | "generic";
 
 /** Torch extensions not yet in the standard MediaTrack types. */
 interface TorchCapabilities extends MediaTrackCapabilities {
@@ -76,7 +79,7 @@ export default function ScanPage() {
   const [ean, setEan] = useState("");
   const [manualEan, setManualEan] = useState("");
   const [mode, setMode] = useState<"camera" | "manual">("camera");
-  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [cameraError, setCameraError] = useState<CameraErrorKind | null>(null);
   const [torchOn, setTorchOn] = useState(false);
   const [scanState, setScanState] = useState<ScanState>("idle");
   const [scanResult, setScanResult] = useState<RecordScanResponse | null>(null);
@@ -104,6 +107,10 @@ export default function ScanPage() {
         type: "product.scanned",
         payload: { ean: scanEan },
       });
+      // Haptic feedback on successful scan
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate(100);
+      }
       // Invalidate scan history
       queryClient.invalidateQueries({
         queryKey: ["scan-history"],
@@ -170,8 +177,7 @@ export default function ScanPage() {
 
       const devices = await reader.listVideoInputDevices();
       if (devices.length === 0) {
-        setCameraError(t("scan.noCamera"));
-        setMode("manual");
+        setCameraError("no-camera");
         return;
       }
 
@@ -213,12 +219,11 @@ export default function ScanPage() {
         errName === "NotAllowedError" ||
         errName === "PermissionDeniedError"
       ) {
-        setCameraError(t("scan.permissionDenied"));
+        setCameraError("permission-denied");
         showToast({ type: "error", messageKey: "scan.permissionDenied" });
       } else {
-        setCameraError(t("scan.cameraError"));
+        setCameraError("generic");
       }
-      setMode("manual");
     }
   }, [stopScanner, t]);
 
@@ -469,7 +474,50 @@ export default function ScanPage() {
         <div className="space-y-3">
           {cameraError ? (
             <div className="card border-amber-200 bg-amber-50 text-center">
-              <p className="text-sm text-amber-700">{cameraError}</p>
+              <div className="mb-2 flex justify-center">
+                {cameraError === "permission-denied" ? (
+                  <ShieldAlert
+                    size={36}
+                    className="text-amber-500"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <CameraOff
+                    size={36}
+                    className="text-amber-500"
+                    aria-hidden="true"
+                  />
+                )}
+              </div>
+              <p className="text-sm font-semibold text-amber-800">
+                {cameraError === "no-camera"
+                  ? t("scan.noCameraTitle")
+                  : cameraError === "permission-denied"
+                    ? t("scan.cameraBlocked")
+                    : t("scan.cameraError")}
+              </p>
+              <p className="mt-1 text-xs text-amber-700">
+                {cameraError === "no-camera"
+                  ? t("scan.noCameraHint")
+                  : cameraError === "permission-denied"
+                    ? t("scan.cameraBlockedHint")
+                    : t("scan.cameraError")}
+              </p>
+              {cameraError !== "no-camera" && (
+                <button
+                  onClick={() => {
+                    setCameraError(null);
+                    setMode("camera");
+                    startScanner();
+                  }}
+                  className="btn-secondary mt-3"
+                >
+                  <span className="inline-flex items-center gap-1">
+                    <RefreshCw size={16} aria-hidden="true" />{" "}
+                    {t("scan.retryCamera")}
+                  </span>
+                </button>
+              )}
             </div>
           ) : (
             <>
@@ -496,7 +544,7 @@ export default function ScanPage() {
                 {/* Batch mode indicator */}
                 {batchMode && (
                   <div className="absolute left-3 top-3 rounded-full bg-brand px-2 py-0.5 text-xs font-medium text-white">
-                    Batch: {batchResults.length} scanned
+                    {t("scan.scannedCount", { count: batchResults.length })}
                   </div>
                 )}
               </div>
