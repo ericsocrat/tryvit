@@ -8,7 +8,7 @@
  * @see https://github.com/ericsocrat/tryvit/issues/177
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { getLighthouseRoutes } from "./routes";
 
 /* ── Load configs ────────────────────────────────────────────────────────── */
@@ -51,7 +51,7 @@ describe("Lighthouse CI Configuration", () => {
 
     it("uses puppeteer auth script", () => {
       expect(mobileConfig.ci.collect.puppeteerScript).toBe(
-        "./tests/quality/lighthouse-auth.js"
+        "./frontend/tests/quality/lighthouse-auth.js"
       );
     });
 
@@ -88,7 +88,7 @@ describe("Lighthouse CI Configuration", () => {
 
     it("uses puppeteer auth script", () => {
       expect(desktopConfig.ci.collect.puppeteerScript).toBe(
-        "./tests/quality/lighthouse-auth.js"
+        "./frontend/tests/quality/lighthouse-auth.js"
       );
     });
 

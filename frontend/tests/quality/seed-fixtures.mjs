@@ -357,10 +357,10 @@ async function main() {
 
   // ── Upsert allergens for product 3 ─────────────────────────────────────
   const allergens = [
-    { product_id: productAllergensId, tag: "en:milk", type: "contains" },
-    { product_id: productAllergensId, tag: "en:eggs", type: "contains" },
-    { product_id: productAllergensId, tag: "en:gluten", type: "contains" },
-    { product_id: productAllergensId, tag: "en:nuts", type: "traces" },
+    { product_id: productAllergensId, tag: "milk", type: "contains" },
+    { product_id: productAllergensId, tag: "eggs", type: "contains" },
+    { product_id: productAllergensId, tag: "gluten", type: "contains" },
+    { product_id: productAllergensId, tag: "tree-nuts", type: "traces" },
   ];
 
   for (const allergen of allergens) {
@@ -370,7 +370,7 @@ async function main() {
 
   // ── Also add allergens to product 1 (QA_PRODUCT_WITH_ALLERGENS = full) ─
   const fullAllergens = [
-    { product_id: productFullId, tag: "en:milk", type: "contains" },
+    { product_id: productFullId, tag: "milk", type: "contains" },
   ];
   for (const allergen of fullAllergens) {
     await upsertAllergen(allergen);
