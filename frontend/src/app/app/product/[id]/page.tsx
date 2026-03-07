@@ -908,7 +908,7 @@ function DataQualityCard({ quality }: Readonly<{ quality: DataConfidence }>) {
     high: { bg: "bg-green-100", fill: "bg-green-500", label: "✓" },
     medium: { bg: "bg-amber-100", fill: "bg-amber-500", label: "~" },
     low: { bg: "bg-red-100", fill: "bg-red-400", label: "!" },
-    unknown: { bg: "bg-gray-100", fill: "bg-gray-400", label: "?" },
+    unknown: { bg: "bg-surface-muted", fill: "bg-neutral-400", label: "?" },
   };
 
   const cfg = bandConfig[band] ?? bandConfig.unknown;
