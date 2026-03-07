@@ -28,9 +28,9 @@ export interface RecipeScoreBadgeProps {
 // ─── Confidence styling ─────────────────────────────────────────────────────
 
 const CONFIDENCE_STYLE: Record<string, { label: string; className: string }> = {
-  high: { label: "High confidence", className: "text-emerald-600 dark:text-emerald-400" },
-  medium: { label: "Medium confidence", className: "text-amber-600 dark:text-amber-400" },
-  low: { label: "Low confidence", className: "text-red-500 dark:text-red-400" },
+  high: { label: "High confidence", className: "text-success-text" },
+  medium: { label: "Medium confidence", className: "text-warning-text" },
+  low: { label: "Low confidence", className: "text-error-text" },
 };
 
 // ─── Component ──────────────────────────────────────────────────────────────

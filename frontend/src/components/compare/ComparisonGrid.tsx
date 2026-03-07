@@ -190,7 +190,7 @@ function DesktopGrid({
                 <th
                   key={p.product_id}
                   className={`px-3 py-3 text-center ${
-                    i === winnerIdx ? "bg-green-50" : ""
+                    i === winnerIdx ? "bg-success-bg" : ""
                   }`}
                   style={{
                     width: `${(100 - 20) / colCount}%`,
@@ -198,7 +198,7 @@ function DesktopGrid({
                 >
                   <div className="space-y-1">
                     {i === winnerIdx && (
-                      <span className="inline-block rounded-full bg-green-100 px-2 py-0.5 text-xs font-bold text-green-700">
+                      <span className="inline-block rounded-full bg-success-bg px-2 py-0.5 text-xs font-bold text-success-text">
                         <Trophy
                           size={12}
                           aria-hidden="true"
@@ -334,14 +334,14 @@ function DesktopGrid({
                       {flags.map((f) => (
                         <span
                           key={f.key}
-                          className="rounded bg-orange-50 px-1 py-0.5 text-orange-600"
+                          className="rounded bg-warning-bg px-1 py-0.5 text-warning-text"
                         >
                           {f.label}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <span className="text-green-600">
+                    <span className="text-success-text">
                       {t("compare.noWarnings")}
                     </span>
                   )}
@@ -479,7 +479,7 @@ function MobileSwipeView({
                   {t("product.novaGroup", { group: product.nova_group ?? "?" })}
                 </span>
                 {activeIdx === winnerIdx && (
-                  <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-xs font-bold text-green-700">
+                  <span className="rounded-full bg-success-bg px-1.5 py-0.5 text-xs font-bold text-success-text">
                     <Trophy size={12} aria-hidden="true" className="inline" />{" "}
                     {t("compare.best")}
                   </span>
@@ -510,9 +510,9 @@ function MobileSwipeView({
               let indicator = "";
               if (ranking) {
                 if (activeIdx === ranking.bestIdx)
-                  indicator = "text-green-600 font-semibold";
+                  indicator = "text-success-text font-semibold";
                 else if (activeIdx === ranking.worstIdx)
-                  indicator = "text-red-600";
+                  indicator = "text-error-text";
               }
 
               return (
@@ -528,14 +528,14 @@ function MobileSwipeView({
                     {ranking?.bestIdx === activeIdx && (
                       <Check
                         size={14}
-                        className="inline ml-1 text-green-600"
+                        className="inline ml-1 text-success-text"
                         aria-hidden="true"
                       />
                     )}
                     {ranking?.worstIdx === activeIdx && (
                       <XIcon
                         size={14}
-                        className="inline ml-1 text-red-600"
+                        className="inline ml-1 text-error-text"
                         aria-hidden="true"
                       />
                     )}
@@ -568,22 +568,22 @@ function MobileSwipeView({
             </p>
             <div className="flex flex-wrap gap-1">
               {product.high_salt && (
-                <span className="rounded bg-orange-50 px-2 py-0.5 text-xs text-orange-600">
+                <span className="rounded bg-warning-bg px-2 py-0.5 text-xs text-warning-text">
                   🧂 {t("product.highSalt")}
                 </span>
               )}
               {product.high_sugar && (
-                <span className="rounded bg-orange-50 px-2 py-0.5 text-xs text-orange-600">
+                <span className="rounded bg-warning-bg px-2 py-0.5 text-xs text-warning-text">
                   🍬 {t("product.highSugar")}
                 </span>
               )}
               {product.high_sat_fat && (
-                <span className="rounded bg-orange-50 px-2 py-0.5 text-xs text-orange-600">
+                <span className="rounded bg-warning-bg px-2 py-0.5 text-xs text-warning-text">
                   🧈 {t("product.highSatFat")}
                 </span>
               )}
               {product.high_additive_load && (
-                <span className="rounded bg-orange-50 px-2 py-0.5 text-xs text-orange-600">
+                <span className="rounded bg-warning-bg px-2 py-0.5 text-xs text-warning-text">
                   ⚗️ {t("product.manyAdditives")}
                 </span>
               )}
@@ -591,7 +591,7 @@ function MobileSwipeView({
                 !product.high_sugar &&
                 !product.high_sat_fat &&
                 !product.high_additive_load && (
-                  <span className="text-sm text-green-600">
+                  <span className="text-sm text-success-text">
                     {t("compare.noWarnings")}
                   </span>
                 )}

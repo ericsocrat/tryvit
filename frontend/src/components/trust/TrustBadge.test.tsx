@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TrustBadge } from "./TrustBadge";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -76,15 +76,15 @@ describe("TrustBadge", () => {
   it("uses green classes for high trust", () => {
     render(<TrustBadge trustScore={0.9} />);
     const badge = screen.getByRole("status");
-    expect(badge.className).toContain("text-green-700");
-    expect(badge.className).toContain("bg-green-100");
+    expect(badge.className).toContain("text-success-text");
+    expect(badge.className).toContain("bg-success-bg");
   });
 
   it("uses amber classes for moderate trust", () => {
     render(<TrustBadge trustScore={0.6} />);
     const badge = screen.getByRole("status");
-    expect(badge.className).toContain("text-amber-700");
-    expect(badge.className).toContain("bg-amber-100");
+    expect(badge.className).toContain("text-warning-text");
+    expect(badge.className).toContain("bg-warning-bg");
   });
 
   it("uses gray classes for low trust (not red)", () => {

@@ -5,8 +5,8 @@
 // EU FIC Regulation 1169/2011-aligned grid with color-coded badges.
 
 import { useTranslation } from "@/lib/i18n";
-import { AlertTriangle, Check, Minus } from "lucide-react";
 import type { ProfileAllergens } from "@/lib/types";
+import { AlertTriangle, Check, Minus } from "lucide-react";
 
 /**
  * EU FIC Regulation 1169/2011 mandates declaration of these 14 allergens.
@@ -102,21 +102,21 @@ const STATUS_CONFIG: Record<
   { bg: string; border: string; text: string; label: string }
 > = {
   contains: {
-    bg: "bg-red-50",
-    border: "border-red-200",
-    text: "text-red-700",
+    bg: "bg-error-bg",
+    border: "border-error-border",
+    text: "text-error-text",
     label: "allergenMatrix.contains",
   },
   traces: {
-    bg: "bg-amber-50",
-    border: "border-amber-200",
-    text: "text-amber-700",
+    bg: "bg-warning-bg",
+    border: "border-warning-border",
+    text: "text-warning-text",
     label: "allergenMatrix.traces",
   },
   free: {
-    bg: "bg-green-50",
-    border: "border-green-200",
-    text: "text-green-700",
+    bg: "bg-success-bg",
+    border: "border-success-border",
+    text: "text-success-text",
     label: "allergenMatrix.free",
   },
 };
@@ -125,12 +125,12 @@ function StatusIcon({ status }: Readonly<{ status: AllergenStatus }>) {
   switch (status) {
     case "contains":
       return (
-        <AlertTriangle size={12} className="text-red-600" aria-hidden="true" />
+        <AlertTriangle size={12} className="text-error-text" aria-hidden="true" />
       );
     case "traces":
-      return <Minus size={12} className="text-amber-600" aria-hidden="true" />;
+      return <Minus size={12} className="text-warning-text" aria-hidden="true" />;
     case "free":
-      return <Check size={12} className="text-green-600" aria-hidden="true" />;
+      return <Check size={12} className="text-success-text" aria-hidden="true" />;
   }
 }
 
@@ -156,7 +156,7 @@ export function AllergenMatrix({ allergens }: AllergenMatrixProps) {
 
   if (!hasAny) {
     return (
-      <p className="flex items-center gap-1 text-sm text-green-600">
+      <p className="flex items-center gap-1 text-sm text-success-text">
         <Check size={14} aria-hidden="true" /> {t("product.noKnownAllergens")}
       </p>
     );
@@ -193,17 +193,17 @@ export function AllergenMatrix({ allergens }: AllergenMatrixProps) {
         <span className="flex items-center gap-1">
           <AlertTriangle
             size={10}
-            className="text-red-500"
+            className="text-error"
             aria-hidden="true"
           />{" "}
           {t("allergenMatrix.contains")}
         </span>
         <span className="flex items-center gap-1">
-          <Minus size={10} className="text-amber-500" aria-hidden="true" />{" "}
+          <Minus size={10} className="text-warning" aria-hidden="true" />{" "}
           {t("allergenMatrix.traces")}
         </span>
         <span className="flex items-center gap-1">
-          <Check size={10} className="text-green-500" aria-hidden="true" />{" "}
+          <Check size={10} className="text-success" aria-hidden="true" />{" "}
           {t("allergenMatrix.free")}
         </span>
       </div>

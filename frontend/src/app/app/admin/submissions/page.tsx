@@ -220,7 +220,7 @@ export default function AdminSubmissionsPage() {
             <p className="text-xs text-foreground-secondary">Last 7d</p>
           </div>
           <div className="card p-3 text-center">
-            <p className="text-2xl font-bold text-red-600">
+            <p className="text-2xl font-bold text-error">
               {velocityData.auto_rejected_24h}
             </p>
             <p className="text-xs text-foreground-secondary">
@@ -267,11 +267,11 @@ export default function AdminSubmissionsPage() {
 
       {/* Error */}
       {error && (
-        <div className="card border-red-200 bg-red-50 text-center">
-          <p className="mb-2 text-sm text-red-600">{t("admin.loadFailed")}</p>
+        <div className="card border-error-border bg-error-bg text-center">
+          <p className="mb-2 text-sm text-error-text">{t("admin.loadFailed")}</p>
           <button
             onClick={handleRetry}
-            className="text-sm font-medium text-red-700"
+            className="text-sm font-medium text-error-text"
           >
             <RefreshCw size={14} aria-hidden="true" className="inline" />{" "}
             {t("common.retry")}
@@ -347,21 +347,21 @@ export default function AdminSubmissionsPage() {
 function statusBadgeClass(status: string): string {
   switch (status) {
     case "pending":
-      return "bg-amber-100 text-amber-700";
+      return "bg-warning-bg text-warning-text";
     case "approved":
-      return "bg-green-100 text-green-700";
+      return "bg-success-bg text-success-text";
     case "rejected":
-      return "bg-red-100 text-red-700";
+      return "bg-error-bg text-error-text";
     default:
-      return "bg-blue-100 text-blue-700";
+      return "bg-info-bg text-info-text";
   }
 }
 
 function trustBadgeClass(score: number | null): string {
   if (score === null) return "bg-surface-muted text-foreground-secondary";
-  if (score >= 80) return "bg-green-100 text-green-700";
-  if (score < 20) return "bg-red-100 text-red-700";
-  if (score < 40) return "bg-amber-100 text-amber-700";
+  if (score >= 80) return "bg-success-bg text-success-text";
+  if (score < 20) return "bg-error-bg text-error-text";
+  if (score < 40) return "bg-warning-bg text-warning-text";
   return "bg-surface-muted text-foreground-secondary";
 }
 
@@ -393,7 +393,7 @@ function AdminSubmissionCard({
                 <ShieldAlert
                   size={14}
                   aria-label="Flagged user"
-                  className="ml-1 inline text-red-500"
+                  className="ml-1 inline text-error"
                 />
               )}
             </p>
@@ -427,14 +427,14 @@ function AdminSubmissionCard({
         )}
 
         {submission.existing_product_match && (
-          <p className="text-xs text-amber-700">
+          <p className="text-xs text-warning-text">
             ⚠ Possible duplicate — existing product #{submission.existing_product_match.product_id}{" "}
             ({submission.existing_product_match.product_name})
           </p>
         )}
 
         {submission.review_notes && (
-          <p className="rounded-md bg-amber-50 p-2 text-xs text-amber-800">
+          <p className="rounded-md bg-warning-bg p-2 text-xs text-warning-text">
             <ShieldAlert size={14} aria-hidden="true" className="mr-1 inline" />
             {submission.review_notes}
           </p>
@@ -467,21 +467,21 @@ function AdminSubmissionCard({
             <button
               onClick={onApprove}
               disabled={isPending}
-              className="flex-1 rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-100 disabled:opacity-50"
+              className="flex-1 rounded-lg bg-success-bg px-3 py-2 text-sm font-medium text-success-text hover:bg-success-bg disabled:opacity-50"
             >
               {t("admin.approve")}
             </button>
             <button
               onClick={onReject}
               disabled={isPending}
-              className="flex-1 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
+              className="flex-1 rounded-lg bg-error-bg px-3 py-2 text-sm font-medium text-error-text hover:bg-error-bg disabled:opacity-50"
             >
               {t("admin.reject")}
             </button>
             <button
               onClick={onBatchReject}
               disabled={isPending}
-              className="rounded-lg bg-red-100 px-3 py-2 text-sm font-medium text-red-800 hover:bg-red-200 disabled:opacity-50"
+              className="rounded-lg bg-error-bg px-3 py-2 text-sm font-medium text-error-text hover:bg-error-bg disabled:opacity-50"
               title="Reject all pending submissions from this user and flag account"
             >
               <Ban size={14} aria-hidden="true" className="mr-1 inline" />

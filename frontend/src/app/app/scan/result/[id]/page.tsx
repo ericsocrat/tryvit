@@ -82,15 +82,15 @@ export default function ScanResultPage() {
             { labelKey: "nav.scan", href: "/app/scan" },
           ]}
         />
-        <div className="card border-red-200 bg-red-50 py-8 text-center">
+        <div className="card border-error-border bg-error-bg py-8 text-center">
           <div className="mb-2 flex justify-center">
             <AlertTriangle
               size={40}
-              className="text-red-500"
+              className="text-error"
               aria-hidden="true"
             />
           </div>
-          <p className="text-sm text-red-600">{t("product.loadFailed")}</p>
+          <p className="text-sm text-error-text">{t("product.loadFailed")}</p>
         </div>
         <Link href="/app/scan" className="btn-primary block w-full text-center">
           ← {t("common.back")}
@@ -223,7 +223,7 @@ export default function ScanResultPage() {
             {t("product.healthierAlternatives")}
           </h2>
           {hasAlternatives && (
-            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+            <span className="rounded-full bg-success-bg px-2 py-0.5 text-xs font-medium text-success-text">
               {t("product.found", {
                 count: alternativesData?.alternatives_count ?? 0,
               })}
@@ -322,7 +322,7 @@ function HealthFlags({ product }: Readonly<{ product: ProductDetail }>) {
       {activeFlags.map((flag) => (
         <span
           key={flag.label}
-          className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700"
+          className="rounded-full bg-error-bg px-2 py-0.5 text-xs font-medium text-error-text"
         >
           {flag.emoji} {flag.label}
         </span>

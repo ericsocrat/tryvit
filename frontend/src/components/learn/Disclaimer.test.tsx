@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { Disclaimer } from "./Disclaimer";
 
 vi.mock("@/lib/i18n", () => ({
@@ -42,8 +42,8 @@ describe("Disclaimer", () => {
   it("uses amber styling", () => {
     render(<Disclaimer />);
     const aside = screen.getByRole("note");
-    expect(aside.className).toContain("border-amber-200");
-    expect(aside.className).toContain("bg-amber-50");
+    expect(aside.className).toContain("border-warning-border");
+    expect(aside.className).toContain("bg-warning-bg");
   });
 
   it("renders warning icon as decorative", () => {

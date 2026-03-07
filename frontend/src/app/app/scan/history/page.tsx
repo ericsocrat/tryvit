@@ -2,20 +2,20 @@
 
 // ─── Scan History page — paginated list of past scans ───────────────────────
 
-import { useState, useCallback } from "react";
+import { EmptyState } from "@/components/common/EmptyState";
+import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { getScanHistory } from "@/lib/api";
+import { NUTRI_COLORS } from "@/lib/constants";
+import { useTranslation } from "@/lib/i18n";
+import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { createClient } from "@/lib/supabase/client";
+import type { ScanHistoryItem } from "@/lib/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Camera, ClipboardList } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { getScanHistory } from "@/lib/api";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
-import { NUTRI_COLORS } from "@/lib/constants";
-import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import { EmptyState } from "@/components/common/EmptyState";
-import { useTranslation } from "@/lib/i18n";
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import { ClipboardList, Camera } from "lucide-react";
-import type { ScanHistoryItem } from "@/lib/types";
+import { useCallback, useState } from "react";
 
 const FILTERS = [
   { value: "all", labelKey: "scanHistory.all" },
@@ -215,9 +215,9 @@ function ScanRow({
 
   // Not found scan
   return (
-    <li className="card border-amber-100 bg-amber-50/50">
+    <li className="card border-warning-border bg-warning-bg/50">
       <div className="flex items-center gap-3">
-        <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded bg-amber-200 text-sm">
+        <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded bg-warning text-sm">
           ❓
         </span>
         <div className="min-w-0 flex-1">

@@ -35,7 +35,7 @@ export function InstallAppSection() {
         {t("pwa.installDescription")}
       </p>
       {isIOS ? (
-        <div className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+        <div className="flex items-start gap-2 rounded-lg bg-warning-bg p-3 text-sm text-warning-text">
           <Share
             size={16}
             className="mt-0.5 flex-shrink-0"

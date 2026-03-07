@@ -60,19 +60,19 @@ const FRESHNESS_CONFIG: Record<
 > = {
   fresh: {
     icon: Clock,
-    colorClass: "text-green-600 dark:text-green-400",
+    colorClass: "text-success-text",
     ringColor: "var(--color-confidence-high, #22c55e)",
     labelKey: "trust.freshness.fresh",
   },
   aging: {
     icon: AlertTriangle,
-    colorClass: "text-amber-600 dark:text-amber-400",
+    colorClass: "text-warning-text",
     ringColor: "var(--color-confidence-medium, #f59e0b)",
     labelKey: "trust.freshness.aging",
   },
   stale: {
     icon: AlertCircle,
-    colorClass: "text-red-600 dark:text-red-400",
+    colorClass: "text-error-text",
     ringColor: "var(--color-confidence-low, #ef4444)",
     labelKey: "trust.freshness.stale",
   },

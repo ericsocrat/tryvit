@@ -30,9 +30,10 @@ vi.mock("@/lib/supabase/client", () => ({
 
 vi.mock("@/lib/constants", () => ({
   SCORE_BANDS: {
-    good: { bg: "bg-green-100", color: "text-green-800" },
-    mid: { bg: "bg-yellow-100", color: "text-yellow-800" },
-    bad: { bg: "bg-red-100", color: "text-red-800" },
+    low: { label: "Excellent", color: "text-score-green-text", bg: "bg-score-green/10" },
+    moderate: { label: "Good", color: "text-score-yellow-text", bg: "bg-score-yellow/10" },
+    high: { label: "Moderate", color: "text-score-orange-text", bg: "bg-score-orange/10" },
+    very_high: { label: "Poor", color: "text-score-red-text", bg: "bg-score-red/10" },
   },
   NUTRI_COLORS: {
     A: "bg-nutri-A text-foreground-inverse",
@@ -54,7 +55,7 @@ const SUGGESTIONS = [
     brand: "Lay's",
     category: "Chips",
     unhealthiness_score: 65,
-    score_band: "mid" as const,
+    score_band: "high" as const,
     nutri_score: "C" as const,
   },
   {
@@ -65,7 +66,7 @@ const SUGGESTIONS = [
     brand: "Pringles",
     category: "Chips",
     unhealthiness_score: 72,
-    score_band: "bad" as const,
+    score_band: "high" as const,
     nutri_score: "D" as const,
   },
 ];

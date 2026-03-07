@@ -120,6 +120,20 @@
     --color-error: #ef4444;
     --color-info: #3b82f6;
 
+    /* ── Semantic Feedback Surfaces (bg / text / border) ── */
+    --color-success-bg: #f0fdf4;
+    --color-success-text: #15803d;
+    --color-success-border: #bbf7d0;
+    --color-warning-bg: #fffbeb;
+    --color-warning-text: #b45309;
+    --color-warning-border: #fde68a;
+    --color-danger-bg: #fef2f2;
+    --color-danger-text: #b91c1c;
+    --color-danger-border: #fecaca;
+    --color-info-bg: #eff6ff;
+    --color-info-text: #1d4ed8;
+    --color-info-border: #bfdbfe;
+
     /* ── Toast (feedback overlays) ── */
     --toast-success: #16a34a;
     --toast-error: #dc2626;
@@ -296,6 +310,20 @@
     --color-error: #f87171;
     --color-info: #60a5fa;
 
+    /* ── Semantic Feedback Surfaces (dark) ── */
+    --color-success-bg: #052e16;
+    --color-success-text: #4ade80;
+    --color-success-border: #166534;
+    --color-warning-bg: #451a03;
+    --color-warning-text: #fbbf24;
+    --color-warning-border: #92400e;
+    --color-danger-bg: #450a0a;
+    --color-danger-text: #f87171;
+    --color-danger-border: #991b1b;
+    --color-info-bg: #172554;
+    --color-info-text: #60a5fa;
+    --color-info-border: #1e40af;
+
     --toast-success: #4ade80;
     --toast-error: #f87171;
     --toast-warning: #fbbf24;
@@ -381,6 +409,19 @@
       --color-warning: #fbbf24;
       --color-error: #f87171;
       --color-info: #60a5fa;
+
+      --color-success-bg: #052e16;
+      --color-success-text: #4ade80;
+      --color-success-border: #166534;
+      --color-warning-bg: #451a03;
+      --color-warning-text: #fbbf24;
+      --color-warning-border: #92400e;
+      --color-danger-bg: #450a0a;
+      --color-danger-text: #f87171;
+      --color-danger-border: #991b1b;
+      --color-info-bg: #172554;
+      --color-info-text: #60a5fa;
+      --color-info-border: #1e40af;
 
       --toast-success: #4ade80;
       --toast-error: #f87171;

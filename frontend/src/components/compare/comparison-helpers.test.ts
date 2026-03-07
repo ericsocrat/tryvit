@@ -1,14 +1,14 @@
-import { describe, expect, it } from "vitest";
 import type { CompareProduct } from "@/lib/types";
+import { describe, expect, it } from "vitest";
 import {
-  fmtUnit,
-  fmtStr,
-  filterNumericEntries,
-  findExtreme,
-  getWinnerIndex,
-  getBestWorst,
-  getProductWarnings,
-  getCellHighlightClass,
+    filterNumericEntries,
+    findExtreme,
+    fmtStr,
+    fmtUnit,
+    getBestWorst,
+    getCellHighlightClass,
+    getProductWarnings,
+    getWinnerIndex,
 } from "./comparison-helpers";
 
 // ─── Stub factory ───────────────────────────────────────────────────────────
@@ -298,18 +298,18 @@ describe("getCellHighlightClass", () => {
 
   it("returns best class for best index", () => {
     expect(getCellHighlightClass(1, ranking, 0)).toBe(
-      "bg-green-50 text-green-700 font-semibold",
+      "bg-success-bg text-success-text font-semibold",
     );
   });
 
   it("returns worst class for worst index", () => {
     expect(getCellHighlightClass(2, ranking, 0)).toBe(
-      "bg-red-50 text-red-600",
+      "bg-error-bg text-error-text",
     );
   });
 
   it("returns winner class when index matches winner", () => {
-    expect(getCellHighlightClass(0, ranking, 0)).toBe("bg-green-50/30");
+    expect(getCellHighlightClass(0, ranking, 0)).toBe("bg-success-bg/30");
   });
 
   it("returns empty string for non-special index", () => {
@@ -317,7 +317,7 @@ describe("getCellHighlightClass", () => {
   });
 
   it("returns winner class when ranking is null", () => {
-    expect(getCellHighlightClass(0, null, 0)).toBe("bg-green-50/30");
+    expect(getCellHighlightClass(0, null, 0)).toBe("bg-success-bg/30");
   });
 
   it("returns empty string when ranking is null and not winner", () => {
@@ -327,7 +327,7 @@ describe("getCellHighlightClass", () => {
   it("best takes priority over winner", () => {
     // Index 1 is both best and winner → should get best class
     expect(getCellHighlightClass(1, ranking, 1)).toBe(
-      "bg-green-50 text-green-700 font-semibold",
+      "bg-success-bg text-success-text font-semibold",
     );
   });
 });

@@ -5,36 +5,36 @@
 // Enhancements: records scans to history, batch mode, submission CTA,
 // scan history link.
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { showToast } from "@/lib/toast";
-import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
-import { recordScan } from "@/lib/api";
-import { isValidEan, stripNonDigits } from "@/lib/validation";
-import { NUTRI_COLORS } from "@/lib/constants";
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { useAnalytics } from "@/hooks/use-analytics";
-import { useTranslation } from "@/lib/i18n";
+import { recordScan } from "@/lib/api";
+import { NUTRI_COLORS } from "@/lib/constants";
 import { eventBus } from "@/lib/events";
-import {
-  AlertTriangle,
-  RefreshCw,
-  Search,
-  Clock,
-  FileText,
-  ClipboardList,
-  Camera,
-  Keyboard,
-  Flashlight,
-} from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
+import { createClient } from "@/lib/supabase/client";
+import { showToast } from "@/lib/toast";
 import type {
-  RecordScanResponse,
-  RecordScanFoundResponse,
-  FormSubmitEvent,
+    FormSubmitEvent,
+    RecordScanFoundResponse,
+    RecordScanResponse,
 } from "@/lib/types";
+import { isValidEan, stripNonDigits } from "@/lib/validation";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+    AlertTriangle,
+    Camera,
+    ClipboardList,
+    Clock,
+    FileText,
+    Flashlight,
+    Keyboard,
+    RefreshCw,
+    Search,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type ScanState = "idle" | "looking-up" | "found" | "not-found" | "error";
 
@@ -277,11 +277,11 @@ export default function ScanPage() {
   if (scanState === "error") {
     return (
       <div className="space-y-4">
-        <div className="card border-red-200 bg-red-50 text-center">
+        <div className="card border-error-border bg-error-bg text-center">
           <div className="mb-2 flex justify-center">
             <AlertTriangle
               size={40}
-              className="text-red-500"
+              className="text-error"
               aria-hidden="true"
             />
           </div>
@@ -335,8 +335,8 @@ export default function ScanPage() {
         </div>
 
         {hasPending ? (
-          <div className="card border-amber-200 bg-amber-50">
-            <p className="text-sm text-amber-700">
+          <div className="card border-warning-border bg-warning-bg">
+            <p className="text-sm text-warning-text">
               <span className="inline-flex items-center gap-1">
                 <Clock size={16} aria-hidden="true" />{" "}
                 {t("scan.alreadySubmitted")}
@@ -468,8 +468,8 @@ export default function ScanPage() {
       {mode === "camera" ? (
         <div className="space-y-3">
           {cameraError ? (
-            <div className="card border-amber-200 bg-amber-50 text-center">
-              <p className="text-sm text-amber-700">{cameraError}</p>
+            <div className="card border-warning-border bg-warning-bg text-center">
+              <p className="text-sm text-warning-text">{cameraError}</p>
             </div>
           ) : (
             <>

@@ -19,7 +19,7 @@ export function Disclaimer({ className = "" }: DisclaimerProps) {
     <aside
       role="note"
       aria-label={t("learn.disclaimerLabel")}
-      className={`rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200 ${className}`}
+      className={`rounded-lg border border-warning-border bg-warning-bg p-4 text-sm text-warning-text ${className}`}
     >
       <p className="flex items-start gap-2">
         <AlertTriangle

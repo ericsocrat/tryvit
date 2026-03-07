@@ -34,7 +34,7 @@ function SharedComparisonContent() {
           >
             <Logo variant="lockup" size={28} />
           </Link>
-          <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+          <span className="rounded-full bg-info-bg px-3 py-1 text-xs font-medium text-info-text">
             {t("shared.sharedComparison")}
           </span>
         </div>
@@ -50,13 +50,13 @@ function SharedComparisonContent() {
 
         {/* Error / not found */}
         {error && (
-          <div className="card border-red-200 bg-red-50 py-8 text-center">
+          <div className="card border-error-border bg-error-bg py-8 text-center">
             <Link2
               size={40}
               aria-hidden="true"
               className="mx-auto mb-2 text-foreground-muted"
             />
-            <p className="mb-1 text-sm text-red-600">
+            <p className="mb-1 text-sm text-error-text">
               {t("shared.comparisonInvalid")}
             </p>
             <Link href="/" className="mt-3 btn-primary inline-block text-sm">

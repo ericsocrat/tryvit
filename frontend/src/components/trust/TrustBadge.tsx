@@ -14,8 +14,8 @@
 
 "use client";
 
-import { ShieldCheck, ShieldAlert, ShieldQuestion } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
+import { ShieldAlert, ShieldCheck, ShieldQuestion } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -50,16 +50,16 @@ const TRUST_CONFIG: Record<
 > = {
   high: {
     icon: ShieldCheck,
-    colorClass: "text-green-700 dark:text-green-400",
-    bgClass: "bg-green-100 dark:bg-green-900/30",
+    colorClass: "text-success-text",
+    bgClass: "bg-success-bg",
     labelKey: "trust.badge.high",
     tooltipKey: "trust.badge.highTooltip",
     iconAnimation: "animate-trust-verified",
   },
   moderate: {
     icon: ShieldAlert,
-    colorClass: "text-amber-700 dark:text-amber-400",
-    bgClass: "bg-amber-100 dark:bg-amber-900/30",
+    colorClass: "text-warning-text",
+    bgClass: "bg-warning-bg",
     labelKey: "trust.badge.moderate",
     tooltipKey: "trust.badge.moderateTooltip",
   },

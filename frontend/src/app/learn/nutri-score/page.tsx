@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { Header } from "@/components/layout/Header";
 import { SkipLink } from "@/components/common/SkipLink";
 import { Footer } from "@/components/layout/Footer";
-import { LearnSidebar } from "@/components/learn/LearnSidebar";
+import { Header } from "@/components/layout/Header";
 import { Disclaimer } from "@/components/learn/Disclaimer";
+import { LearnSidebar } from "@/components/learn/LearnSidebar";
 import { SourceCitation } from "@/components/learn/SourceCitation";
 import { useTranslation } from "@/lib/i18n";
 import { Award } from "lucide-react";
+import Link from "next/link";
 
 // ─── Nutri-Score topic page ─────────────────────────────────────────────────
 
@@ -55,19 +55,19 @@ export default function NutriScorePage() {
             <p>{t("learn.nutriScore.howItWorksText")}</p>
 
             <div className="not-prose grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border bg-red-50 p-4 dark:bg-red-950/20">
-                <p className="text-sm font-medium text-red-800 dark:text-red-300">
+              <div className="rounded-lg border bg-error-bg p-4">
+                <p className="text-sm font-medium text-error-text">
                   {t("learn.nutriScore.negativeLabel")}
                 </p>
-                <p className="mt-1 text-sm text-red-700 dark:text-red-400">
+                <p className="mt-1 text-sm text-error-text/80">
                   {t("learn.nutriScore.negativeItems")}
                 </p>
               </div>
-              <div className="rounded-lg border bg-green-50 p-4 dark:bg-green-950/20">
-                <p className="text-sm font-medium text-green-800 dark:text-green-300">
+              <div className="rounded-lg border bg-success-bg p-4">
+                <p className="text-sm font-medium text-success-text">
                   {t("learn.nutriScore.positiveLabel")}
                 </p>
-                <p className="mt-1 text-sm text-green-700 dark:text-green-400">
+                <p className="mt-1 text-sm text-success-text/80">
                   {t("learn.nutriScore.positiveItems")}
                 </p>
               </div>
