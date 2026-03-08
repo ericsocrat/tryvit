@@ -904,6 +904,7 @@
     "skipAll": "Skip — go to app",
     "back": "Back",
     "next": "Next",
+    "finish": "Finish",
     "stepOf": "Step {current} of {total}",
     "regionTitle": "Where are you located?",
     "languageLabel": "Preferred language",
