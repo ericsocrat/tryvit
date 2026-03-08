@@ -1,10 +1,10 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import type { RecipeDetail } from "@/lib/types";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import RecipeDetailPage from "./page";
-import type { RecipeDetail } from "@/lib/types";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -387,6 +387,98 @@ describe("RecipeDetailPage", () => {
 
     await waitFor(() => {
       expect(screen.getAllByTestId("ingredient-product-list")).toHaveLength(1);
+    });
+  });
+
+  // ─── Share ──────────────────────────────────────────────────────────────
+
+  it("renders share button", async () => {
+    render(<RecipeDetailPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("share-recipe-button")).toBeInTheDocument();
+    });
+  });
+
+  it("calls navigator.share when available", async () => {
+    const originalShare = navigator.share;
+    const shareSpy = vi.fn().mockResolvedValue(undefined);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (navigator as any).share = shareSpy;
+
+    render(<RecipeDetailPage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    await waitFor(() => {
+      expect(screen.getByTestId("share-recipe-button")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId("share-recipe-button"));
+
+    await waitFor(() => {
+      expect(shareSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: expect.any(String),
+          url: expect.any(String),
+        }),
+      );
+    });
+
+    // cleanup
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (navigator as any).share = originalShare;
+  });
+
+  it("falls back to clipboard when navigator.share is unavailable", async () => {
+    // userEvent.setup() installs its own clipboard stub on navigator.clipboard,
+    // so we verify the side-effect (copied toast) instead of spying on writeText.
+    const shareDescriptor = Object.getOwnPropertyDescriptor(navigator, "share") ??
+      Object.getOwnPropertyDescriptor(Object.getPrototypeOf(navigator), "share");
+
+    // Remove share API so handleShare falls through to clipboard branch
+    Object.defineProperty(navigator, "share", {
+      value: undefined,
+      configurable: true,
+    });
+
+    render(<RecipeDetailPage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    await waitFor(() => {
+      expect(screen.getByTestId("share-recipe-button")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId("share-recipe-button"));
+
+    // Verify the clipboard branch was taken via the "copied" toast
+    await waitFor(() => {
+      expect(screen.getByText("Link copied to clipboard")).toBeInTheDocument();
+    });
+    expect(screen.getByRole("status")).toBeInTheDocument();
+
+    // Restore original descriptor
+    if (shareDescriptor) {
+      Object.defineProperty(navigator, "share", shareDescriptor);
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete (navigator as Record<string, unknown>)["share"];
+    }
+  });
+
+  it("uses text-error class on error message", async () => {
+    mockGetRecipeDetail.mockResolvedValue({
+      ok: false,
+      error: { message: "Server error" },
+    });
+
+    render(<RecipeDetailPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      const errorMsg = screen.getByText(
+        "Could not load recipes. Please try again.",
+      );
+      expect(errorMsg.className).toContain("text-error");
+      expect(errorMsg.className).not.toContain("text-red-500");
     });
   });
 });

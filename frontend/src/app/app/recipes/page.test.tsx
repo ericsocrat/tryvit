@@ -1,6 +1,6 @@
 import type { RecipeSummary } from "@/lib/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -297,5 +297,144 @@ describe("RecipesBrowsePage", () => {
 
     const homeLink = screen.getByText("Dashboard").closest("a");
     expect(homeLink).toHaveAttribute("href", "/app");
+  });
+
+  // ─── Search ─────────────────────────────────────────────────────────────
+
+  it("renders search input", async () => {
+    render(<RecipesBrowsePage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Search recipes…")).toBeInTheDocument();
+    });
+  });
+
+  it("filters recipes client-side by title when searching", async () => {
+    render(<RecipesBrowsePage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Overnight Oats with Yogurt & Berries"),
+      ).toBeInTheDocument();
+    });
+
+    const searchInput = screen.getByPlaceholderText("Search recipes…");
+    await user.type(searchInput, "Tomato");
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText("Overnight Oats with Yogurt & Berries"),
+      ).not.toBeInTheDocument();
+    });
+    expect(screen.getByText("Tomato Soup (Zupa Pomidorowa)")).toBeInTheDocument();
+  });
+
+  it("shows empty state when search matches nothing", async () => {
+    render(<RecipesBrowsePage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Overnight Oats with Yogurt & Berries"),
+      ).toBeInTheDocument();
+    });
+
+    const searchInput = screen.getByPlaceholderText("Search recipes…");
+    await user.type(searchInput, "xyznonexistent");
+
+    await waitFor(() => {
+      expect(screen.getByText("No recipes found")).toBeInTheDocument();
+    });
+  });
+
+  it("shows clear button when search has text", async () => {
+    render(<RecipesBrowsePage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Search recipes…")).toBeInTheDocument();
+    });
+
+    const searchInput = screen.getByPlaceholderText("Search recipes…");
+    await user.type(searchInput, "test");
+
+    expect(screen.getByLabelText("Clear search")).toBeInTheDocument();
+  });
+
+  // ─── Filter chips ──────────────────────────────────────────────────────
+
+  it("shows filter chips when a category is selected", async () => {
+    render(<RecipesBrowsePage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("combobox", { name: /Filter by category/i }),
+      ).toBeInTheDocument();
+    });
+
+    const categorySelect = screen.getByRole("combobox", {
+      name: /Filter by category/i,
+    });
+    await user.selectOptions(categorySelect, "breakfast");
+
+    await waitFor(() => {
+      expect(screen.getByTestId("active-filter-chips")).toBeInTheDocument();
+    });
+    const chipsArea = within(screen.getByTestId("active-filter-chips"));
+    expect(chipsArea.getByText("Breakfast")).toBeInTheDocument();
+  });
+
+  it("removes category chip when its remove button is clicked", async () => {
+    render(<RecipesBrowsePage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("combobox", { name: /Filter by category/i }),
+      ).toBeInTheDocument();
+    });
+
+    const categorySelect = screen.getByRole("combobox", {
+      name: /Filter by category/i,
+    });
+    await user.selectOptions(categorySelect, "breakfast");
+
+    await waitFor(() => {
+      expect(screen.getByTestId("active-filter-chips")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByLabelText("Remove Breakfast"));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("active-filter-chips")).not.toBeInTheDocument();
+    });
+  });
+
+  it("clears all filters when Clear all is clicked", async () => {
+    render(<RecipesBrowsePage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("combobox", { name: /Filter by category/i }),
+      ).toBeInTheDocument();
+    });
+
+    const categorySelect = screen.getByRole("combobox", {
+      name: /Filter by category/i,
+    });
+    await user.selectOptions(categorySelect, "breakfast");
+
+    await waitFor(() => {
+      expect(screen.getByText("Clear all")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByText("Clear all"));
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("active-filter-chips")).not.toBeInTheDocument();
+    });
   });
 });
