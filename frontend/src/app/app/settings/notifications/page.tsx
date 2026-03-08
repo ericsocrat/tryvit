@@ -218,7 +218,7 @@ export default function NotificationSettingsPage() {
               disabled={togglingPush}
               className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                 pushEnabled
-                  ? "border-red-200 text-red-600 hover:bg-red-50"
+                  ? "border-error-border text-error-text hover:bg-error-bg"
                   : "border-brand/30 text-brand hover:bg-brand-subtle"
               }`}
               data-testid="push-toggle-button"

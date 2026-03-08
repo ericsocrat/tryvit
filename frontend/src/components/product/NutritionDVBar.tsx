@@ -1,11 +1,11 @@
-import type { NutrientDV, DVLevel } from "@/lib/types";
 import { useTranslation } from "@/lib/i18n";
+import type { DVLevel, NutrientDV } from "@/lib/types";
 import { TrafficLightChip, type TrafficLight } from "./TrafficLightChip";
 
 const LEVEL_COLORS: Record<DVLevel, { bar: string; text: string }> = {
-  low: { bar: "bg-green-500", text: "text-green-700" },
-  moderate: { bar: "bg-amber-500", text: "text-amber-700" },
-  high: { bar: "bg-red-500", text: "text-red-700" },
+  low: { bar: "bg-nutrient-low", text: "text-success-text" },
+  moderate: { bar: "bg-nutrient-medium", text: "text-warning-text" },
+  high: { bar: "bg-nutrient-high", text: "text-error-text" },
 };
 
 /**
@@ -14,9 +14,9 @@ const LEVEL_COLORS: Record<DVLevel, { bar: string; text: string }> = {
  */
 const BENEFICIAL_LEVEL_COLORS: Record<DVLevel, { bar: string; text: string }> =
   {
-    low: { bar: "bg-red-500", text: "text-red-700" },
-    moderate: { bar: "bg-amber-500", text: "text-amber-700" },
-    high: { bar: "bg-green-500", text: "text-green-700" },
+    low: { bar: "bg-nutrient-high", text: "text-error-text" },
+    moderate: { bar: "bg-nutrient-medium", text: "text-warning-text" },
+    high: { bar: "bg-nutrient-low", text: "text-success-text" },
   };
 
 interface NutritionDVBarProps {

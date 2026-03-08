@@ -44,7 +44,7 @@ describe("DVReferenceBadge", () => {
     );
     const badge = screen.getByText(/health profile/);
     expect(badge).toBeInTheDocument();
-    expect(badge.closest("span")).toHaveClass("bg-blue-100");
+    expect(badge.closest("span")).toHaveClass("bg-info-bg");
   });
 
   it("renders standard badge with gray styling", () => {

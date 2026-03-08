@@ -222,11 +222,11 @@ export const CONCERN_TIER_LABEL_KEYS: Record<number, string> = {
  * Used for the expandable "What does this score mean?" section on product detail.
  */
 export const SCORE_INTERPRETATION_BANDS = [
-  { min: 80, max: 100, key: "scoreInterpretation.green", color: "text-green-700", bg: "bg-green-50" },
-  { min: 60, max: 79, key: "scoreInterpretation.yellow", color: "text-yellow-700", bg: "bg-yellow-50" },
-  { min: 40, max: 59, key: "scoreInterpretation.orange", color: "text-orange-700", bg: "bg-orange-50" },
-  { min: 20, max: 39, key: "scoreInterpretation.red", color: "text-red-700", bg: "bg-red-50" },
-  { min: 0, max: 19, key: "scoreInterpretation.darkRed", color: "text-red-900", bg: "bg-red-100" },
+  { min: 80, max: 100, key: "scoreInterpretation.green", color: "text-score-green-text", bg: "bg-score-green/10" },
+  { min: 60, max: 79, key: "scoreInterpretation.yellow", color: "text-score-yellow-text", bg: "bg-score-yellow/10" },
+  { min: 40, max: 59, key: "scoreInterpretation.orange", color: "text-score-orange-text", bg: "bg-score-orange/10" },
+  { min: 20, max: 39, key: "scoreInterpretation.red", color: "text-score-red-text", bg: "bg-score-red/10" },
+  { min: 0, max: 19, key: "scoreInterpretation.darkRed", color: "text-score-darkred-text", bg: "bg-score-darkred/10" },
 ] as const;
 
 /** Get the score interpretation band for a given TryVit Score (0-100, higher = healthier). */

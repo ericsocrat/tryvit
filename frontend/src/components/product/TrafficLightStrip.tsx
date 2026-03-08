@@ -15,9 +15,9 @@ interface NutritionValues {
 }
 
 const TL_DOT_STYLES: Record<TrafficLight, string> = {
-  green: "bg-green-500",
-  amber: "bg-amber-500",
-  red: "bg-red-500",
+  green: "bg-nutrient-low",
+  amber: "bg-nutrient-medium",
+  red: "bg-nutrient-high",
 };
 
 interface TrafficLightStripProps {

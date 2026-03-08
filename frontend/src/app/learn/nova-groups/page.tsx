@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { Header } from "@/components/layout/Header";
 import { SkipLink } from "@/components/common/SkipLink";
 import { Footer } from "@/components/layout/Footer";
-import { LearnSidebar } from "@/components/learn/LearnSidebar";
+import { Header } from "@/components/layout/Header";
 import { Disclaimer } from "@/components/learn/Disclaimer";
+import { LearnSidebar } from "@/components/learn/LearnSidebar";
 import { SourceCitation } from "@/components/learn/SourceCitation";
 import { useTranslation } from "@/lib/i18n";
 import { Factory } from "lucide-react";
+import Link from "next/link";
 
 // ─── NOVA Groups topic page ────────────────────────────────────────────────
 
@@ -54,10 +54,10 @@ export default function NovaGroupsPage() {
             <div className="not-prose space-y-3">
               {(["1", "2", "3", "4"] as const).map((n) => {
                 const colorMap: Record<string, string> = {
-                  "1": "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20",
-                  "2": "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/20",
-                  "3": "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/20",
-                  "4": "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950/20",
+                  "1": "border-success-border bg-success-bg",
+                  "2": "border-info-border bg-info-bg",
+                  "3": "border-warning-border bg-warning-bg",
+                  "4": "border-error-border bg-error-bg",
                 };
                 return (
                   <div

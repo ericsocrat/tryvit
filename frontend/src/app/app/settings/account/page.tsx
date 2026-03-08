@@ -156,7 +156,7 @@ export default function AccountSettingsPage() {
 
         <button
           onClick={handleLogout}
-          className="w-full rounded-lg border border-red-200 px-4 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+          className="w-full rounded-lg border border-error-border px-4 py-2 text-sm font-medium text-error-text transition-colors hover:bg-error-bg"
         >
           {t("settings.signOut")}
         </button>

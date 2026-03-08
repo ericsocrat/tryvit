@@ -99,8 +99,8 @@ export function getCellHighlightClass(
   winnerIdx: number,
 ): string {
   if (idx === ranking?.bestIdx)
-    return "bg-green-50 text-green-700 font-semibold";
-  if (idx === ranking?.worstIdx) return "bg-red-50 text-red-600";
-  if (idx === winnerIdx) return "bg-green-50/30";
+    return "bg-success-bg text-success-text font-semibold";
+  if (idx === ranking?.worstIdx) return "bg-error-bg text-error-text";
+  if (idx === winnerIdx) return "bg-success-bg/30";
   return "";
 }

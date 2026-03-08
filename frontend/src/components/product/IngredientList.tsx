@@ -50,11 +50,11 @@ export function IngredientList({ ingredients }: IngredientListProps) {
 
   if (!hasData) {
     return (
-      <div className="rounded-lg border border-dashed border-amber-300 bg-amber-50/50 px-3 py-4 text-center">
-        <p className="text-sm text-amber-700">
+      <div className="rounded-lg border border-dashed border-warning-border bg-warning-bg/50 px-3 py-4 text-center">
+        <p className="text-sm text-warning-text">
           {t("product.noIngredientData")}
         </p>
-        <p className="mt-1 text-xs text-amber-600/70">
+        <p className="mt-1 text-xs text-warning-text/70">
           {t("product.noIngredientDataHint")}
         </p>
       </div>
@@ -85,7 +85,7 @@ export function IngredientList({ ingredients }: IngredientListProps) {
         </p>
         {ingredients.vegan_contradiction && (
           <p
-            className="text-xs font-medium text-amber-600"
+            className="text-xs font-medium text-warning-text"
             role="alert"
           >
             ⚠ {t("product.veganContradiction")}
@@ -98,7 +98,7 @@ export function IngredientList({ ingredients }: IngredientListProps) {
         </p>
         {ingredients.vegetarian_contradiction && (
           <p
-            className="text-xs font-medium text-amber-600"
+            className="text-xs font-medium text-warning-text"
             role="alert"
           >
             ⚠ {t("product.vegetarianContradiction")}

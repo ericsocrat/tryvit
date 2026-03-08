@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { NovaIndicator } from "./NovaIndicator";
 
 vi.mock("@/lib/i18n", () => ({
@@ -51,7 +51,7 @@ describe("NovaIndicator", () => {
     if (!bars) return;
     // First bar (group 1) should be active
     expect(bars[0].className).toContain("opacity-100");
-    expect(bars[0].className).toContain("bg-green-500");
+    expect(bars[0].className).toContain("bg-nova-1");
     // Other bars should be dim
     expect(bars[1].className).toContain("opacity-25");
     expect(bars[2].className).toContain("opacity-25");
@@ -63,10 +63,10 @@ describe("NovaIndicator", () => {
     const bars = container.querySelector(".flex-col")?.children;
     expect(bars).toBeTruthy();
     if (!bars) return;
-    expect(bars[0].className).toContain("bg-green-500");
-    expect(bars[1].className).toContain("bg-lime-500");
-    expect(bars[2].className).toContain("bg-amber-500");
-    expect(bars[3].className).toContain("bg-red-500");
+    expect(bars[0].className).toContain("bg-nova-1");
+    expect(bars[1].className).toContain("bg-nova-2");
+    expect(bars[2].className).toContain("bg-nova-3");
+    expect(bars[3].className).toContain("bg-nova-4");
   });
 
   it.each(["1", "2", "3", "4"])(

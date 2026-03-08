@@ -28,26 +28,26 @@ const STATUS_STYLES: Record<
   { bg: string; text: string; icon: LucideIcon; labelKey: string }
 > = {
   pending: {
-    bg: "bg-amber-100",
-    text: "text-amber-700",
+    bg: "bg-warning-bg",
+    text: "text-warning-text",
     icon: Clock,
     labelKey: "scan.statusPending",
   },
   approved: {
-    bg: "bg-green-100",
-    text: "text-green-700",
+    bg: "bg-success-bg",
+    text: "text-success-text",
     icon: CheckCircle,
     labelKey: "scan.statusApproved",
   },
   rejected: {
-    bg: "bg-red-100",
-    text: "text-red-700",
+    bg: "bg-error-bg",
+    text: "text-error-text",
     icon: XCircle,
     labelKey: "scan.statusRejected",
   },
   merged: {
-    bg: "bg-blue-100",
-    text: "text-blue-700",
+    bg: "bg-info-bg",
+    text: "text-info-text",
     icon: Link2,
     labelKey: "scan.statusMerged",
   },
@@ -113,13 +113,13 @@ export default function MySubmissionsPage() {
 
       {/* Error */}
       {error && (
-        <div className="card border-red-200 bg-red-50 text-center">
-          <p className="mb-2 text-sm text-red-600">
+        <div className="card border-error-border bg-error-bg text-center">
+          <p className="mb-2 text-sm text-error-text">
             {t("scan.submissionsLoadFailed")}
           </p>
           <button
             onClick={handleRetry}
-            className="text-sm font-medium text-red-700 hover:text-red-800"
+            className="text-sm font-medium text-error-text hover:text-error-text"
           >
             <RefreshCw size={14} aria-hidden="true" className="inline" />{" "}
             {t("common.retry")}

@@ -64,7 +64,7 @@ export default function PrivacySettingsPage() {
           type="button"
           onClick={handleClearCache}
           disabled={clearingCache || cachedCount === 0}
-          className="inline-flex items-center gap-2 rounded-lg border border-amber-200 px-4 py-2 text-sm font-medium text-amber-700 transition-colors hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-2 rounded-lg border border-warning-border px-4 py-2 text-sm font-medium text-warning-text transition-colors hover:bg-warning-bg disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Trash2 size={14} aria-hidden="true" />
           {clearingCache ? t("common.loading") : t("settings.clearCache")}

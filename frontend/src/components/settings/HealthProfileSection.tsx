@@ -447,7 +447,7 @@ export function HealthProfileSection() {
                   </button>
                   <button
                     onClick={() => handleDelete(profile.profile_id)}
-                    className="touch-target rounded px-2 py-2 text-sm text-error hover:bg-red-50"
+                    className="touch-target rounded px-2 py-2 text-sm text-error hover:bg-error-bg"
                     aria-label={t("common.delete")}
                   >
                     <Trash2 size={16} aria-hidden="true" />

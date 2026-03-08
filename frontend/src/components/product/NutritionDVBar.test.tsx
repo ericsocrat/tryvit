@@ -1,6 +1,6 @@
+import type { NutrientDV } from "@/lib/types";
 import { render, screen } from "@testing-library/react";
 import { NutritionDVBar } from "./NutritionDVBar";
-import type { NutrientDV } from "@/lib/types";
 
 describe("NutritionDVBar", () => {
   const lowDV: NutrientDV = {
@@ -67,7 +67,7 @@ describe("NutritionDVBar", () => {
         </tbody>
       </table>,
     );
-    expect(screen.getByText("3.3%")).toHaveClass("text-green-700");
+    expect(screen.getByText("3.3%")).toHaveClass("text-success-text");
   });
 
   it("uses amber color for moderate level", () => {
@@ -78,7 +78,7 @@ describe("NutritionDVBar", () => {
         </tbody>
       </table>,
     );
-    expect(screen.getByText("20%")).toHaveClass("text-amber-700");
+    expect(screen.getByText("20%")).toHaveClass("text-warning-text");
   });
 
   it("uses red color for high level", () => {
@@ -89,7 +89,7 @@ describe("NutritionDVBar", () => {
         </tbody>
       </table>,
     );
-    expect(screen.getByText("47.1%")).toHaveClass("text-red-700");
+    expect(screen.getByText("47.1%")).toHaveClass("text-error-text");
   });
 
   it("renders without progress bar when dv is null", () => {
@@ -137,7 +137,7 @@ describe("NutritionDVBar", () => {
         </tbody>
       </table>,
     );
-    expect(screen.getByText("47.1%")).toHaveClass("text-green-700");
+    expect(screen.getByText("47.1%")).toHaveClass("text-success-text");
   });
 
   it("uses red color for low level when beneficial", () => {
@@ -148,7 +148,7 @@ describe("NutritionDVBar", () => {
         </tbody>
       </table>,
     );
-    expect(screen.getByText("3.3%")).toHaveClass("text-red-700");
+    expect(screen.getByText("3.3%")).toHaveClass("text-error-text");
   });
 
   it("uses amber color for moderate level when beneficial", () => {
@@ -164,6 +164,6 @@ describe("NutritionDVBar", () => {
         </tbody>
       </table>,
     );
-    expect(screen.getByText("20%")).toHaveClass("text-amber-700");
+    expect(screen.getByText("20%")).toHaveClass("text-warning-text");
   });
 });

@@ -172,10 +172,10 @@ function BreakdownContent({
       {/* Nutrient density bonus (v3.3) */}
       {bonus && bonus.weighted < 0 && (
         <div
-          className="rounded-md border border-green-200 bg-green-50 px-3 py-2 dark:border-green-800 dark:bg-green-950/20"
+          className="rounded-md border border-success-border bg-success-bg px-3 py-2"
           data-testid="nutrient-bonus"
         >
-          <div className="flex items-center gap-1.5 text-xs font-medium text-green-700 dark:text-green-400">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-success-text">
             <Leaf size={14} aria-hidden="true" />
             <span>{t("tooltip.scoreBreakdown.nutrientBonus")}</span>
             <span className="ml-auto tabular-nums">
@@ -183,7 +183,7 @@ function BreakdownContent({
             </span>
           </div>
           {bonus.components && (
-            <div className="mt-1 flex gap-3 text-xs text-green-600 dark:text-green-500">
+            <div className="mt-1 flex gap-3 text-xs text-success-text/80">
               {bonus.components.protein_bonus > 0 && (
                 <span>
                   {t("tooltip.scoreBreakdown.proteinBonus", {

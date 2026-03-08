@@ -31,11 +31,11 @@ export default function TryVitScorePage() {
 
   const bands = ["band1", "band2", "band3", "band4", "band5"] as const;
   const bandColors = [
-    "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800",
+    "bg-success-bg border-success-border",
     "bg-lime-50 border-lime-200 dark:bg-lime-950/20 dark:border-lime-800",
-    "bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800",
+    "bg-warning-bg border-warning-border",
     "bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-800",
-    "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800",
+    "bg-error-bg border-error-border",
   ];
 
   return (
@@ -107,7 +107,7 @@ export default function TryVitScorePage() {
 
             <h3>{t("learn.tryvitScore.bonusTitle")}</h3>
             <div className="not-prose">
-              <div className="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-950/20">
+              <div className="rounded-lg border border-success-border bg-success-bg p-3">
                 <div className="flex items-start gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-foreground">
@@ -117,13 +117,13 @@ export default function TryVitScorePage() {
                   <div className="flex w-28 shrink-0 items-center gap-2">
                     <div className="relative h-2 flex-1 rounded-full bg-[var(--color-border)]">
                       <div
-                        className="absolute left-0 top-0 h-full rounded-full bg-green-500"
+                        className="absolute left-0 top-0 h-full rounded-full bg-success"
                         style={{
                           width: `${(bonusFactor.weight / 17) * 100}%`,
                         }}
                       />
                     </div>
-                    <span className="w-8 text-right text-xs font-medium text-green-700 dark:text-green-400">
+                    <span className="w-8 text-right text-xs font-medium text-success-text">
                       −{bonusFactor.weight}%
                     </span>
                   </div>

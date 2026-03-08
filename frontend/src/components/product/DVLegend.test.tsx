@@ -19,8 +19,8 @@ describe("DVLegend", () => {
 
   it("renders colored dots", () => {
     const { container } = render(<DVLegend />);
-    expect(container.querySelector(".bg-green-500")).toBeInTheDocument();
-    expect(container.querySelector(".bg-amber-500")).toBeInTheDocument();
-    expect(container.querySelector(".bg-red-500")).toBeInTheDocument();
+    expect(container.querySelector(".bg-nutrient-low")).toBeInTheDocument();
+    expect(container.querySelector(".bg-nutrient-medium")).toBeInTheDocument();
+    expect(container.querySelector(".bg-nutrient-high")).toBeInTheDocument();
   });
 });

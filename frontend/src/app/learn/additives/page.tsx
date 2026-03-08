@@ -1,14 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { Header } from "@/components/layout/Header";
 import { SkipLink } from "@/components/common/SkipLink";
 import { Footer } from "@/components/layout/Footer";
-import { LearnSidebar } from "@/components/learn/LearnSidebar";
+import { Header } from "@/components/layout/Header";
 import { Disclaimer } from "@/components/learn/Disclaimer";
+import { LearnSidebar } from "@/components/learn/LearnSidebar";
 import { SourceCitation } from "@/components/learn/SourceCitation";
 import { useTranslation } from "@/lib/i18n";
 import { FlaskConical } from "lucide-react";
+import Link from "next/link";
 
 // ─── Additives topic page ──────────────────────────────────────────────────
 
@@ -22,10 +22,10 @@ export default function AdditivesPage() {
     "concernTier3",
   ] as const;
   const tierColors = [
-    "bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800",
-    "bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800",
-    "bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:border-amber-800",
-    "bg-red-50 border-red-200 dark:bg-red-950/20 dark:border-red-800",
+    "bg-success-bg border-success-border",
+    "bg-info-bg border-info-border",
+    "bg-warning-bg border-warning-border",
+    "bg-error-bg border-error-border",
   ];
 
   return (

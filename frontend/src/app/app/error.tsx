@@ -34,7 +34,7 @@ export default function AppError({
       <AlertTriangle
         size={40}
         aria-hidden="true"
-        className="mb-3 text-amber-500"
+        className="mb-3 text-warning"
       />
       <h2
         className="mb-2 text-xl font-bold"

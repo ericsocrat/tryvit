@@ -11,10 +11,10 @@ const MAX_VISIBLE = 3;
 const CHIP_STYLES = {
   /** "Contains" — red/danger */
   contains:
-    "bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300 border-red-200 dark:border-red-800",
+    "bg-error-bg text-error-text border-error-border",
   /** "Traces" — amber/warning */
   traces:
-    "bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300 border-amber-200 dark:border-amber-800",
+    "bg-warning-bg text-warning-text border-warning-border",
 } as const;
 
 // ─── Single chip ────────────────────────────────────────────────────────────

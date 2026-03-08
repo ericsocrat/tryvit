@@ -5,21 +5,21 @@
 // connectivity status. Auto-refreshes every 60 seconds.
 // Protected by existing middleware (auth required).
 
-import { useQuery } from "@tanstack/react-query";
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import type { HealthCheckResponse } from "@/app/api/health/route";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { useTranslation } from "@/lib/i18n";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { useQuery } from "@tanstack/react-query";
 import {
-  Activity,
-  Database,
-  RefreshCw,
-  CheckCircle,
-  AlertTriangle,
-  XCircle,
-  Clock,
+    Activity,
+    AlertTriangle,
+    CheckCircle,
+    Clock,
+    Database,
+    RefreshCw,
+    XCircle,
 } from "lucide-react";
-import type { HealthCheckResponse } from "@/app/api/health/route";
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -30,11 +30,11 @@ const REFETCH_INTERVAL_MS = 60_000;
 function statusColor(status: string): string {
   switch (status) {
     case "healthy":
-      return "text-green-600 dark:text-green-400";
+      return "text-success-text";
     case "degraded":
-      return "text-yellow-600 dark:text-yellow-400";
+      return "text-warning-text";
     case "unhealthy":
-      return "text-red-600 dark:text-red-400";
+      return "text-error-text";
     default:
       return "text-foreground-secondary";
   }
@@ -43,11 +43,11 @@ function statusColor(status: string): string {
 function statusBg(status: string): string {
   switch (status) {
     case "healthy":
-      return "bg-green-100 dark:bg-green-900/30";
+      return "bg-success-bg";
     case "degraded":
-      return "bg-yellow-100 dark:bg-yellow-900/30";
+      return "bg-warning-bg";
     case "unhealthy":
-      return "bg-red-100 dark:bg-red-900/30";
+      return "bg-error-bg";
     default:
       return "bg-surface-muted";
   }
@@ -56,11 +56,11 @@ function statusBg(status: string): string {
 function StatusIcon({ status }: Readonly<{ status: string }>) {
   switch (status) {
     case "healthy":
-      return <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />;
+      return <CheckCircle className="h-5 w-5 text-success-text" />;
     case "degraded":
-      return <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />;
+      return <AlertTriangle className="h-5 w-5 text-warning-text" />;
     case "unhealthy":
-      return <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />;
+      return <XCircle className="h-5 w-5 text-error-text" />;
     default:
       return <Clock className="h-5 w-5 text-foreground-secondary" />;
   }
@@ -135,7 +135,7 @@ function MvStalenessCard({
         </div>
         <div className="flex justify-between">
           <span className="text-foreground-secondary">Stale</span>
-          <span className={stale ? "text-yellow-600 font-bold" : "text-green-600"}>
+          <span className={stale ? "text-warning-text font-bold" : "text-success-text"}>
             {stale ? "Yes" : "No"}
           </span>
         </div>
@@ -184,7 +184,7 @@ function RowCountCard({
         <div className="relative h-3 w-full rounded-full bg-surface-muted">
           <div
             className={`absolute left-0 top-0 h-3 rounded-full ${
-              { unhealthy: "bg-red-500", degraded: "bg-yellow-500", healthy: "bg-green-500" }[status]
+              { unhealthy: "bg-error", degraded: "bg-warning", healthy: "bg-success" }[status]
             }`}
             style={{ width: `${barWidth}%` }}
           />
@@ -239,12 +239,12 @@ export default function AdminMonitoringPage() {
       {/* Error state */}
       {error && !data && (
         <div
-          className="mt-8 rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20"
+          className="mt-8 rounded-lg border border-error-border bg-error-bg p-4"
           data-testid="error-state"
         >
           <div className="flex items-center gap-2">
-            <XCircle className="h-5 w-5 text-red-600" />
-            <p className="font-medium text-red-800 dark:text-red-200">
+            <XCircle className="h-5 w-5 text-error-text" />
+            <p className="font-medium text-error-text">
               {t("monitoring.loadFailed")}
             </p>
           </div>

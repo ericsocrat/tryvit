@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { CachedTimestamp } from "./CachedTimestamp";
 
 vi.mock("@/lib/cache-manager", () => ({
@@ -22,7 +22,7 @@ describe("CachedTimestamp", () => {
   it("has amber styling classes", () => {
     render(<CachedTimestamp cachedAt={Date.now()} />);
     const badge = screen.getByRole("status");
-    expect(badge.className).toContain("bg-amber-100");
-    expect(badge.className).toContain("text-amber-700");
+    expect(badge.className).toContain("bg-warning-bg");
+    expect(badge.className).toContain("text-warning-text");
   });
 });
