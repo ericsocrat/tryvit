@@ -210,7 +210,12 @@ describe("SearchPage", () => {
     render(<SearchPage />, { wrapper: createWrapper() });
     expect(screen.getByPlaceholderText("Search products…")).toBeInTheDocument();
   });
-
+  it("renders an sr-only h1 heading for accessibility", () => {
+    render(<SearchPage />, { wrapper: createWrapper() });
+    const heading = screen.getByRole("heading", { level: 1 });
+    expect(heading).toBeInTheDocument();
+    expect(heading).toHaveClass("sr-only");
+  });
   it("renders search button", () => {
     render(<SearchPage />, { wrapper: createWrapper() });
     expect(screen.getByRole("button", { name: "Search" })).toBeInTheDocument();

@@ -249,10 +249,10 @@ export default function ProductDetailPage() {
               <div className="min-w-0 flex-1">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="text-lg font-bold text-foreground lg:text-xl">
+                    <h1 className="text-lg font-bold text-foreground lg:text-xl">
                       {profile.product.product_name_display ??
                         profile.product.product_name}
-                    </p>
+                    </h1>
                     {profile.product.product_name_en &&
                       profile.product.product_name_display !==
                         profile.product.product_name && (
@@ -474,9 +474,9 @@ function QuickSummary({
     <div className="space-y-4" data-testid="quick-summary">
       {/* Score interpretation */}
       <div className={`card ${interp.bg}`}>
-        <h3 className="mb-1 text-sm font-semibold text-foreground-secondary">
+        <h2 className="mb-1 text-sm font-semibold text-foreground-secondary">
           {t("product.quickSummary")}
-        </h3>
+        </h2>
         <p className={`text-sm ${interp.color}`}>{t(interp.key)}</p>
       </div>
 
@@ -488,9 +488,9 @@ function QuickSummary({
       {/* Top alternatives preview */}
       {topAlts.length > 0 && (
         <div className="card" data-testid="quick-summary-alternatives">
-          <h3 className="mb-2 text-sm font-semibold text-foreground-secondary">
+          <h2 className="mb-2 text-sm font-semibold text-foreground-secondary">
             {t("product.topAlternatives")}
-          </h3>
+          </h2>
           <div className="space-y-2">
             {topAlts.map((alt) => (
               <AlternativeCard key={alt.product_id} alt={alt} />
@@ -603,17 +603,17 @@ function OverviewTab({ profile }: Readonly<{ profile: ProductProfile }>) {
     <div className="space-y-4 lg:space-y-6">
       {/* Ingredients */}
       <div className="card">
-        <h3 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
+        <h2 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
           {t("product.ingredients")}
-        </h3>
+        </h2>
         <IngredientList ingredients={profile.ingredients} />
       </div>
 
       {/* Allergens */}
       <div className="card">
-        <h3 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
+        <h2 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
           {t("product.allergens")}
-        </h3>
+        </h2>
         <AllergenMatrix allergens={profile.allergens} />
       </div>
 
@@ -623,9 +623,9 @@ function OverviewTab({ profile }: Readonly<{ profile: ProductProfile }>) {
       {/* Eco-Score placeholder – hidden until FEATURES.ECO_SCORE is enabled */}
       {FEATURES.ECO_SCORE && (
         <div className="card">
-          <h3 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-foreground-secondary lg:text-base">
+          <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-foreground-secondary lg:text-base">
             <Globe size={16} aria-hidden="true" /> {t("product.ecoScoreTitle")}
-          </h3>
+          </h2>
           <div className="flex items-center gap-2 rounded-lg border border-dashed border-blue-200 bg-blue-50/50 px-3 py-3">
             <Info
               size={18}
@@ -732,13 +732,13 @@ function NutritionTab({ profile }: Readonly<{ profile: ProductProfile }>) {
   return (
     <div className="card">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground-secondary lg:text-base">
+        <h2 className="text-sm font-semibold text-foreground-secondary lg:text-base">
           {view === "perServing" && profile.nutrition.per_serving
             ? t("product.nutritionPerServing", {
                 size: profile.nutrition.per_serving.serving_size,
               })
             : t("product.nutritionPer100g")}
-        </h3>
+        </h2>
         <div className="flex items-center gap-2">
           {hasServing && (
             <div
@@ -922,9 +922,9 @@ function DataQualityCard({ quality }: Readonly<{ quality: DataConfidence }>) {
 
   return (
     <div className="card">
-      <h3 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
+      <h2 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
         {t("product.dataQuality")}
-      </h3>
+      </h2>
       <div className="flex items-center gap-3">
         <span
           className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${cfg.bg}`}
@@ -1047,9 +1047,9 @@ function ScoringTab({ profile }: Readonly<{ profile: ProductProfile }>) {
     <div className="space-y-4 lg:space-y-6">
       {/* Summary */}
       <div className="card">
-        <h3 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
+        <h2 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
           {t("product.summary")}
-        </h3>
+        </h2>
         <p className="text-sm text-foreground-secondary">{scores.headline}</p>
       </div>
 
@@ -1057,9 +1057,9 @@ function ScoringTab({ profile }: Readonly<{ profile: ProductProfile }>) {
       {Array.isArray(scores.score_breakdown) &&
         scores.score_breakdown.length > 0 && (
           <div className="card">
-            <h3 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
+            <h2 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
               {t("product.scoreBreakdown")}
-            </h3>
+            </h2>
             <ScoreRadarChart breakdown={scores.score_breakdown} />
           </div>
         )}
@@ -1074,9 +1074,9 @@ function ScoringTab({ profile }: Readonly<{ profile: ProductProfile }>) {
       {/* NOVA processing indicator */}
       {scores.nova_group && (
         <div className="card">
-          <h3 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
+          <h2 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
             {t("product.processingLevel")}
-          </h3>
+          </h2>
           <NovaIndicator novaGroup={scores.nova_group} />
         </div>
       )}
@@ -1084,9 +1084,9 @@ function ScoringTab({ profile }: Readonly<{ profile: ProductProfile }>) {
       {/* Score breakdown factors */}
       {topFactors.length > 0 && (
         <div className="card">
-          <h3 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
+          <h2 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
             {t("product.topScoreFactors")}
-          </h3>
+          </h2>
           <div className="space-y-2">
             {topFactors.map((f) => (
               <div
@@ -1108,9 +1108,9 @@ function ScoringTab({ profile }: Readonly<{ profile: ProductProfile }>) {
       {/* Warnings */}
       {profile.warnings.length > 0 && (
         <div className="card border-amber-200 bg-amber-50">
-          <h3 className="mb-2 text-sm font-semibold text-amber-800 lg:text-base">
+          <h2 className="mb-2 text-sm font-semibold text-amber-800 lg:text-base">
             {t("product.warnings")}
-          </h3>
+          </h2>
           <ul className="list-inside list-disc space-y-1 text-sm text-amber-700">
             {profile.warnings.map((w) => (
               <li key={w.type}>{w.message}</li>
@@ -1121,9 +1121,9 @@ function ScoringTab({ profile }: Readonly<{ profile: ProductProfile }>) {
 
       {/* Category context */}
       <div className="card">
-        <h3 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
+        <h2 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
           {t("product.categoryContext")}
-        </h3>
+        </h2>
         <div className="text-sm text-foreground-secondary">
           <div className="flex items-center gap-2">
             <p>
