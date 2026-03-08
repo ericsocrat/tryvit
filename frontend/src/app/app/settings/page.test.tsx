@@ -6,7 +6,28 @@ import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ProfileSettingsPage from "./page";
 
+// ─── Polyfills ──────────────────────────────────────────────────────────────
+
+HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) {
+  this.setAttribute("open", "");
+};
+HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
+  this.removeAttribute("open");
+};
+
 // ─── Mocks ──────────────────────────────────────────────────────────────────
+
+const mockConfirmNav = vi.fn();
+const mockCancelNav = vi.fn();
+let mockShowDialog = false;
+
+vi.mock("@/hooks/use-unsaved-changes", () => ({
+  useUnsavedChanges: () => ({
+    showConfirmDialog: mockShowDialog,
+    confirmNavigation: mockConfirmNav,
+    cancelNavigation: mockCancelNav,
+  }),
+}));
 
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
@@ -62,6 +83,7 @@ beforeEach(() => {
   useLanguageStore.getState().reset();
   localStorage.clear();
   mockGetPrefs.mockResolvedValue({ ok: true, data: mockPrefsData });
+  mockShowDialog = false;
 });
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
@@ -264,10 +286,9 @@ describe("ProfileSettingsPage", () => {
     expect(stickyBar).toHaveClass("backdrop-blur");
   });
 
-  // ─── Beforeunload Guard ───────────────────────────────────────────────────
+  // ─── Unsaved changes integration ────────────────────────────────────────
 
-  it("adds beforeunload listener when dirty", async () => {
-    const addSpy = vi.spyOn(window, "addEventListener");
+  it("shows unsaved changes indicator when dirty", async () => {
     render(<ProfileSettingsPage />, { wrapper: createWrapper() });
     const user = userEvent.setup();
 
@@ -277,42 +298,29 @@ describe("ProfileSettingsPage", () => {
 
     await user.click(screen.getByText("Deutschland"));
 
-    await waitFor(() => {
-      expect(addSpy).toHaveBeenCalledWith(
-        "beforeunload",
-        expect.any(Function),
-      );
-    });
-
-    addSpy.mockRestore();
+    expect(screen.getByText("Unsaved changes")).toBeInTheDocument();
   });
 
-  it("removes beforeunload listener after save", async () => {
-    mockSetPrefs.mockResolvedValue({ ok: true });
-    const removeSpy = vi.spyOn(window, "removeEventListener");
+  it("does not show unsaved indicator when clean", async () => {
     render(<ProfileSettingsPage />, { wrapper: createWrapper() });
-    const user = userEvent.setup();
 
-    await waitFor(() => {
-      expect(screen.getByText("Deutschland")).toBeInTheDocument();
-    });
-
-    await user.click(screen.getByText("Deutschland"));
-    await user.click(screen.getByRole("button", { name: "Save changes" }));
-
-    // After save, dirty becomes false — effect re-runs and re-attaches a no-op handler
     await waitFor(() => {
       expect(
-        screen.queryByRole("button", { name: "Save changes" }),
-      ).not.toBeInTheDocument();
+        screen.getByRole("heading", { name: /Profile & Preferences/i }),
+      ).toBeInTheDocument();
     });
 
-    // The beforeunload listener was removed and re-added (dirty changed)
-    expect(removeSpy).toHaveBeenCalledWith(
-      "beforeunload",
-      expect.any(Function),
-    );
+    expect(screen.queryByText("Unsaved changes")).not.toBeInTheDocument();
+  });
 
-    removeSpy.mockRestore();
+  it("shows discard confirmation dialog when showConfirmDialog is true", async () => {
+    mockShowDialog = true;
+    render(<ProfileSettingsPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Unsaved changes", { selector: "h3" }),
+      ).toBeInTheDocument();
+    });
   });
 });

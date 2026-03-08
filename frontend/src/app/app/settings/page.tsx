@@ -3,9 +3,11 @@
 // ─── Settings — Profile & Preferences (Country, Language, Theme) ────────────
 
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ThemeToggle } from "@/components/settings/ThemeToggle";
 import { useAnalytics } from "@/hooks/use-analytics";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { getUserPreferences, setUserPreferences } from "@/lib/api";
 import {
     COUNTRIES,
@@ -44,6 +46,9 @@ export default function ProfileSettingsPage() {
   const [language, setLanguage] = useState<SupportedLanguage>("en");
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+
+  const { showConfirmDialog, confirmNavigation, cancelNavigation } =
+    useUnsavedChanges(dirty);
 
   // Populate from fetched prefs
   useEffect(() => {
@@ -199,6 +204,9 @@ export default function ProfileSettingsPage() {
       {/* Save button — sticky bar at bottom when dirty */}
       {dirty && (
         <div className="sticky bottom-0 z-30 -mx-4 animate-slide-in-up border-t border-border bg-surface/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+          <p className="mb-2 text-center text-xs font-medium text-warning">
+            {t("settings.unsavedIndicator")}
+          </p>
           <button
             onClick={handleSave}
             disabled={saving}
@@ -208,6 +216,17 @@ export default function ProfileSettingsPage() {
           </button>
         </div>
       )}
+
+      {/* Discard changes confirmation dialog */}
+      <ConfirmDialog
+        open={showConfirmDialog}
+        title={t("settings.unsavedTitle")}
+        description={t("settings.unsavedDescription")}
+        confirmLabel={t("settings.unsavedDiscard")}
+        variant="danger"
+        onConfirm={confirmNavigation}
+        onCancel={cancelNavigation}
+      />
     </div>
   );
 }
