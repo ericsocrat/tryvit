@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 // ─── Extended smoke tests: deeper coverage of public pages ──────────────────
 // All tests are public-page only — no Supabase auth dependency.

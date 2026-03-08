@@ -27,6 +27,12 @@ vi.mock("@/hooks/use-lists", () => ({
   useLists: () => mockUseLists(),
 }));
 
+const mockCompareCount = vi.fn().mockReturnValue(0);
+vi.mock("@/stores/compare-store", () => ({
+  useCompareStore: (selector: (state: Record<string, unknown>) => unknown) =>
+    selector({ count: mockCompareCount }),
+}));
+
 describe("Navigation", () => {
   it("renders all 5 nav items", () => {
     render(<Navigation />);
@@ -175,5 +181,27 @@ describe("Navigation", () => {
     render(<Navigation />);
     const moreBtn = screen.getByText("More").closest("button");
     expect(moreBtn?.className).toContain("text-brand");
+  });
+
+  // ── Compare badge on More button ──────────────────────────────────────
+
+  it("shows compare badge on More button when products are selected", () => {
+    mockCompareCount.mockReturnValue(3);
+    render(<Navigation />);
+    const badge = screen.getByTestId("nav-badge-compare");
+    expect(badge).toHaveTextContent("3");
+  });
+
+  it("hides compare badge when no products are selected", () => {
+    mockCompareCount.mockReturnValue(0);
+    render(<Navigation />);
+    expect(screen.queryByTestId("nav-badge-compare")).not.toBeInTheDocument();
+  });
+
+  it("caps compare badge at 9+", () => {
+    mockCompareCount.mockReturnValue(10);
+    render(<Navigation />);
+    const badge = screen.getByTestId("nav-badge-compare");
+    expect(badge).toHaveTextContent("9+");
   });
 });

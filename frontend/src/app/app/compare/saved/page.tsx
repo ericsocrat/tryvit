@@ -3,14 +3,14 @@
 // ─── Saved Comparisons — list of user's saved comparisons ───────────────────
 // URL: /app/compare/saved
 
-import Link from "next/link";
-import { Trash2, FolderOpen, Link2 } from "lucide-react";
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import { useSavedComparisons, useDeleteComparison } from "@/hooks/use-compare";
-import { SavedItemsSkeleton } from "@/components/common/skeletons";
 import { EmptyState } from "@/components/common/EmptyState";
+import { SavedItemsSkeleton } from "@/components/common/skeletons";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { useDeleteComparison, useSavedComparisons } from "@/hooks/use-compare";
 import { useTranslation } from "@/lib/i18n";
 import type { SavedComparison } from "@/lib/types";
+import { FolderOpen, Link2, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 export default function SavedComparisonsPage() {
   const { data, isLoading, error } = useSavedComparisons();

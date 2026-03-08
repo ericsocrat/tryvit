@@ -8,6 +8,7 @@ import { MoreDrawer } from "@/components/layout/MoreDrawer";
 import { useActiveRoute, type PrimaryRouteKey } from "@/hooks/use-active-route";
 import { useLists } from "@/hooks/use-lists";
 import { useTranslation } from "@/lib/i18n";
+import { useCompareStore } from "@/stores/compare-store";
 import { Camera, ClipboardList, Home, MoreHorizontal, Search, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useState } from "react";
@@ -49,6 +50,7 @@ export function Navigation() {
   const activeRoute = useActiveRoute();
   const { t } = useTranslation();
   const { data: lists } = useLists();
+  const compareCount = useCompareStore((s) => s.count());
   const [moreOpen, setMoreOpen] = useState(false);
 
   const openMore = useCallback(() => setMoreOpen(true), []);
@@ -131,7 +133,18 @@ export function Navigation() {
                 aria-hidden="true"
               />
             )}
-            <Icon icon={MoreHorizontal} size="md" />
+            <span className="relative">
+              <Icon icon={MoreHorizontal} size="md" />
+              {compareCount > 0 && (
+                <span
+                  className="absolute -right-2 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-brand px-1 text-xxs font-bold leading-none text-white"
+                  data-testid="nav-badge-compare"
+                  aria-label={`${compareCount}`}
+                >
+                  {compareCount > 9 ? "9+" : compareCount}
+                </span>
+              )}
+            </span>
             <span>{t("nav.more")}</span>
           </button>
         </div>
