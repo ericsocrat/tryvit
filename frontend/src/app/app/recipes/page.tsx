@@ -2,8 +2,10 @@
 
 // ─── Recipes browse — grid of curated recipe cards with filters ─────────────
 // Issue #53 — Recipes v0
+// Issue #705 — Search, active filter chips, share
 
 import { Button } from "@/components/common/Button";
+import { Chip } from "@/components/common/Chip";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PullToRefresh } from "@/components/common/PullToRefresh";
 import { RecipeGridSkeleton } from "@/components/common/skeletons";
@@ -15,7 +17,8 @@ import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { createClient } from "@/lib/supabase/client";
 import type { BrowseRecipesFilters, RecipeCategory, RecipeDifficulty } from "@/lib/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
+import { Search, X } from "lucide-react";
+import { useCallback, useDeferredValue, useMemo, useState } from "react";
 
 /* ── Filter options (keys map to i18n) ───────────────────────────────────── */
 
@@ -34,6 +37,8 @@ export default function RecipesBrowsePage() {
 
   const [category, setCategory] = useState<RecipeCategory | "">("");
   const [difficulty, setDifficulty] = useState<RecipeDifficulty | "">("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearch = useDeferredValue(searchQuery);
 
   const filters = useMemo<BrowseRecipesFilters>(
     () => ({
@@ -53,6 +58,19 @@ export default function RecipesBrowsePage() {
     staleTime: staleTimes.recipes,
   });
 
+  /* ── Client-side search filtering ──────────────────────────────── */
+  const filteredData = useMemo(() => {
+    if (!data || !deferredSearch.trim()) return data;
+    const q = deferredSearch.toLowerCase().trim();
+    return data.filter((recipe) => {
+      const title = t(recipe.title_key).toLowerCase();
+      const desc = t(recipe.description_key).toLowerCase();
+      return title.includes(q) || desc.includes(q);
+    });
+  }, [data, deferredSearch, t]);
+
+  const hasActiveFilters = category !== "" || difficulty !== "";
+
   const handleRetry = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: queryKeys.recipes(filters as Record<string, unknown>) });
   }, [queryClient, filters]);
@@ -60,6 +78,12 @@ export default function RecipesBrowsePage() {
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.recipes(filters as Record<string, unknown>) });
   }, [queryClient, filters]);
+
+  const handleClearAll = useCallback(() => {
+    setCategory("");
+    setDifficulty("");
+    setSearchQuery("");
+  }, []);
 
   if (isLoading) return <RecipeGridSkeleton />;
 
@@ -88,8 +112,30 @@ export default function RecipesBrowsePage() {
         {t("recipes.title")}
       </h1>
 
-      {/* ── Filters ──────────────────────────────────────────────────── */}
+      {/* ── Search + Filters ─────────────────────────────────────── */}
       <div className="mb-4 flex flex-wrap gap-2" data-testid="recipe-filter">
+        <div className="relative w-full sm:w-auto sm:min-w-[220px]">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-secondary" aria-hidden="true" />
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder={t("recipes.searchPlaceholder")}
+            className="input w-full rounded-lg py-2 pl-9 pr-8 text-sm"
+            aria-label={t("recipes.searchPlaceholder")}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-foreground-secondary hover:text-foreground transition-colors"
+              aria-label="Clear search"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value as RecipeCategory | "")}
@@ -119,10 +165,41 @@ export default function RecipesBrowsePage() {
         </select>
       </div>
 
-      {/* ── Grid ─────────────────────────────────────────────────────── */}
-      {data && data.length > 0 ? (
+      {/* ── Active filter chips ──────────────────────────────────── */}
+      {hasActiveFilters && (
+        <div className="mb-4 flex flex-wrap items-center gap-2" data-testid="active-filter-chips">
+          {category && (
+            <Chip
+              variant="primary"
+              onRemove={() => setCategory("")}
+              removeLabel={`Remove ${t(`recipes.category.${category}`)}`}
+            >
+              {t(`recipes.category.${category}`)}
+            </Chip>
+          )}
+          {difficulty && (
+            <Chip
+              variant="primary"
+              onRemove={() => setDifficulty("")}
+              removeLabel={`Remove ${t(`recipes.difficulty.${difficulty}`)}`}
+            >
+              {t(`recipes.difficulty.${difficulty}`)}
+            </Chip>
+          )}
+          <button
+            type="button"
+            onClick={handleClearAll}
+            className="text-xs font-medium text-brand hover:underline"
+          >
+            {t("recipes.clearFilters")}
+          </button>
+        </div>
+      )}
+
+      {/* ── Grid ─────────────────────────────────────────────────── */}
+      {filteredData && filteredData.length > 0 ? (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
-          {data.map((recipe) => (
+          {filteredData.map((recipe) => (
             <RecipeCard key={recipe.id} recipe={recipe} />
           ))}
         </div>

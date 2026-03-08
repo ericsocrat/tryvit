@@ -3,6 +3,7 @@
 // ─── Recipe detail page — full ingredients, steps, and metadata ─────────────
 // Issue #53 — Recipes v0
 // Issue #616 — Aggregate recipe score badge
+// Issue #705 — Share, filter chips, search
 
 import { Card, Chip } from "@/components/common";
 import { Button } from "@/components/common/Button";
@@ -15,8 +16,9 @@ import { useTranslation } from "@/lib/i18n";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { createClient } from "@/lib/supabase/client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChefHat, Clock, Timer, Users } from "lucide-react";
+import { ChefHat, Clock, Share2, Timer, Users } from "lucide-react";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 
 /* ── Difficulty styling ──────────────────────────────────────────────────── */
 
@@ -34,6 +36,7 @@ export default function RecipeDetailPage() {
   const supabase = createClient();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
+  const [copied, setCopied] = useState(false);
 
   const { data: recipe, isLoading, error } = useQuery({
     queryKey: queryKeys.recipe(slug),
@@ -63,7 +66,7 @@ export default function RecipeDetailPage() {
   if (error || !recipe) {
     return (
       <div className="py-12 text-center">
-        <p className="mb-3 text-sm text-red-500">{t("recipes.loadFailed")}</p>
+        <p className="mb-3 text-sm text-error">{t("recipes.loadFailed")}</p>
         <Button
           onClick={() =>
             queryClient.invalidateQueries({ queryKey: queryKeys.recipe(slug) })
@@ -77,6 +80,28 @@ export default function RecipeDetailPage() {
 
   const totalTime = recipe.prep_time_min + recipe.cook_time_min;
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = t(recipe.title_key);
+
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title, url });
+        return;
+      } catch {
+        /* User cancelled or share failed — fall through to clipboard */
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* Clipboard not available — silent fail */
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Breadcrumbs */}
@@ -89,14 +114,32 @@ export default function RecipeDetailPage() {
       />
 
       {/* ── Header ─────────────────────────────────────────────────── */}
-      <div>
-        <h1 className="text-xl font-bold text-foreground lg:text-2xl">
-          {t(recipe.title_key)}
-        </h1>
-        <p className="mt-1 text-sm text-foreground-secondary">
-          {t(recipe.description_key)}
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-bold text-foreground lg:text-2xl">
+            {t(recipe.title_key)}
+          </h1>
+          <p className="mt-1 text-sm text-foreground-secondary">
+            {t(recipe.description_key)}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={handleShare}
+          className="shrink-0 rounded-lg p-2 text-foreground-secondary hover:bg-hover hover:text-foreground transition-colors"
+          aria-label={t("recipes.share")}
+          data-testid="share-recipe-button"
+        >
+          <Share2 className="h-5 w-5" />
+        </button>
       </div>
+
+      {/* ── Link copied toast ──────────────────────────────────────── */}
+      {copied && (
+        <p className="text-xs font-medium text-success" role="status">
+          {t("recipes.linkCopied")}
+        </p>
+      )}
 
       {/* ── Meta strip ─────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-4 text-sm text-foreground-secondary">
