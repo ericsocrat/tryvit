@@ -5,8 +5,8 @@
 
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { NutriScoreBadge } from "@/components/common/NutriScoreBadge";
-import { PullToRefresh } from "@/components/common/PullToRefresh";
 import { PrintButton } from "@/components/common/PrintButton";
+import { PullToRefresh } from "@/components/common/PullToRefresh";
 import { ProductProfileSkeleton } from "@/components/common/skeletons";
 import { CompareCheckbox } from "@/components/compare/CompareCheckbox";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
@@ -152,6 +152,10 @@ export default function ProductDetailPage() {
     }
   }, [error, isOnline, productId, profile, queryClient]);
 
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.productProfile(productId) });
+  }, [queryClient, productId]);
+
   if (isLoading) {
     return <ProductProfileSkeleton />;
   }
@@ -200,10 +204,6 @@ export default function ProductDetailPage() {
   }
 
   const band = SCORE_BANDS[profile.scores.score_band];
-
-  const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: queryKeys.productProfile(productId) });
-  }, [queryClient, productId]);
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "overview", label: t("product.overview") },

@@ -379,6 +379,10 @@ export default function DashboardPage() {
   );
   const allergenMap = useProductAllergenWarnings(allProductIds);
 
+  const handleRefresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+  }, [queryClient]);
+
   if (isLoading) {
     return <DashboardSkeleton />;
   }
@@ -406,10 +410,6 @@ export default function DashboardPage() {
     dashboard.recently_viewed.length > 0 ||
     dashboard.stats.total_viewed > 0 ||
     dashboard.stats.total_scanned > 0;
-
-  const handleRefresh = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
-  }, [queryClient]);
 
   if (!hasContent) {
     return <EmptyDashboard />;

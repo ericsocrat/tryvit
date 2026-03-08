@@ -88,6 +88,8 @@ export function PullToRefresh({
 
       try {
         await onRefresh();
+      } catch {
+        // Callers handle their own errors (e.g. TanStack Query)
       } finally {
         setPullState("idle");
         setPullDistance(0);
