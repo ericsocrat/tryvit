@@ -8,6 +8,7 @@
 // See PR #92.
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { Button } from "@/components/common/Button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Save } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -134,20 +135,20 @@ function SaveSearchDialogInner({
         />
 
         <div className="flex gap-2">
-          <button
-            type="button"
+          <Button
+            variant="secondary"
             onClick={onClose}
-            className="btn-secondary flex-1 py-2 text-sm"
+            className="flex-1"
           >
             {t("common.cancel")}
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
             disabled={name.trim().length === 0 || mutation.isPending}
-            className="btn-primary flex-1 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex-1"
           >
             {mutation.isPending ? `${t("common.saving")}` : t("common.save")}
-          </button>
+          </Button>
         </div>
 
         {mutation.isError && (

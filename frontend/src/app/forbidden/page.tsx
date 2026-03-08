@@ -8,7 +8,7 @@
 
 import { useTranslation } from "@/lib/i18n";
 import { ShieldOff } from "lucide-react";
-import Link from "next/link";
+import { ButtonLink } from "@/components/common/Button";
 
 export default function ForbiddenPage() {
   const { t } = useTranslation();
@@ -28,9 +28,9 @@ export default function ForbiddenPage() {
       <p className="mb-6 text-lg text-foreground-secondary">
         {t("error.forbiddenMessage")}
       </p>
-      <Link href="/app" className="btn-primary px-6 py-3">
+      <ButtonLink href="/app" size="lg">
         {t("error.goToDashboard")}
-      </Link>
+      </ButtonLink>
     </div>
   );
 }

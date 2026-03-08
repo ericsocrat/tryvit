@@ -7,6 +7,7 @@
 import { useEffect } from "react";
 import * as Sentry from "@sentry/nextjs";
 import { AlertTriangle } from "lucide-react";
+import { Button } from "@/components/common/Button";
 import { useTranslation } from "@/lib/i18n";
 
 export default function ErrorPage({
@@ -35,9 +36,9 @@ export default function ErrorPage({
         {t("error.somethingWrong")}
       </h1>
       <p className="mb-6 text-foreground-secondary">{t("error.unexpected")}</p>
-      <button onClick={reset} className="btn-primary px-6 py-3">
+      <Button onClick={reset} size="lg">
         {t("common.tryAgain")}
-      </button>
+      </Button>
     </div>
   );
 }

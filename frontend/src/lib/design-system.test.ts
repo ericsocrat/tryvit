@@ -414,20 +414,21 @@ describe("Design System — Nutrition Traffic Light Tokens", () => {
 
 describe("Design System — Component Classes Use Tokens", () => {
   const css = readSource("src/styles/globals.css");
+  const buttonSrc = readSource("src/components/common/Button.tsx");
 
-  it("btn-primary uses bg-brand (not hardcoded brand-600)", () => {
-    // Should contain bg-brand but not bg-brand-600 in the btn-primary block
-    const btnPrimary = css.match(/\.btn-primary\s*\{([^}]+)\}/s);
-    expect(btnPrimary).toBeTruthy();
-    expect(btnPrimary![1]).toContain("bg-brand");
-    expect(btnPrimary![1]).not.toContain("bg-brand-600");
+  it("Button primary variant uses bg-brand (not hardcoded brand-600)", () => {
+    expect(buttonSrc).toContain("bg-brand");
+    expect(buttonSrc).not.toContain("bg-brand-600");
   });
 
-  it("btn-secondary uses bg-surface (not bg-white)", () => {
-    const btnSecondary = css.match(/\.btn-secondary\s*\{([^}]+)\}/s);
-    expect(btnSecondary).toBeTruthy();
-    expect(btnSecondary![1]).toContain("bg-surface");
-    expect(btnSecondary![1]).not.toContain("bg-white");
+  it("Button secondary variant uses bg-surface (not bg-white)", () => {
+    expect(buttonSrc).toContain("bg-surface");
+    expect(buttonSrc).not.toContain("bg-white");
+  });
+
+  it("globals.css no longer contains legacy .btn-primary / .btn-secondary", () => {
+    expect(css).not.toMatch(/\.btn-primary/);
+    expect(css).not.toMatch(/\.btn-secondary/);
   });
 
   it("input-field uses bg-surface (not bg-white)", () => {

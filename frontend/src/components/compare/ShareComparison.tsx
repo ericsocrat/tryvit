@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { useSaveComparison } from "@/hooks/use-compare";
 import { useTranslation } from "@/lib/i18n";
+import { Button } from "@/components/common/Button";
 import { ClipboardCopy, Save, Link2, Check } from "lucide-react";
 
 interface ShareComparisonProps {
@@ -58,10 +59,9 @@ export function ShareComparison({
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Copy URL button */}
-      <button
-        type="button"
+      <Button
+        variant="secondary"
         onClick={handleCopyUrl}
-        className="btn-secondary text-sm"
       >
         {copied && !shareToken ? (
           <span className="inline-flex items-center gap-1"><Check size={14} aria-hidden="true" /> Copied!</span>
@@ -71,15 +71,13 @@ export function ShareComparison({
             {t("compare.copyUrl")}
           </span>
         )}
-      </button>
+      </Button>
 
       {/* Save comparison */}
       {!shareToken && (
-        <button
-          type="button"
+        <Button
           onClick={handleSave}
           disabled={isPending}
-          className="btn-primary text-sm disabled:opacity-50"
         >
           {isPending ? (
             `${t("common.saving")}`
@@ -89,15 +87,13 @@ export function ShareComparison({
               {t("compare.saveComparison")}
             </>
           )}
-        </button>
+        </Button>
       )}
 
       {/* Share link (after saving) */}
       {shareToken && (
-        <button
-          type="button"
+        <Button
           onClick={handleCopyShareLink}
-          className="btn-primary text-sm"
         >
           {copied ? (
             <span className="inline-flex items-center gap-1"><Check size={14} aria-hidden="true" /> Copied!</span>
@@ -107,7 +103,7 @@ export function ShareComparison({
               {t("compare.copyShareLink")}
             </>
           )}
-        </button>
+        </Button>
       )}
     </div>
   );

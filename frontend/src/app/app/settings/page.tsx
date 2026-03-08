@@ -2,6 +2,7 @@
 
 // ─── Settings — Profile & Preferences (Country, Language, Theme) ────────────
 
+import { Button } from "@/components/common/Button";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
@@ -207,13 +208,13 @@ export default function ProfileSettingsPage() {
           <p className="mb-2 text-center text-xs font-medium text-warning">
             {t("settings.unsavedIndicator")}
           </p>
-          <button
+          <Button
             onClick={handleSave}
             disabled={saving}
-            className="btn-primary w-full"
+            fullWidth
           >
             {saving ? t("common.saving") : t("settings.saveChanges")}
-          </button>
+          </Button>
         </div>
       )}
 

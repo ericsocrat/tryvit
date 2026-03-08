@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/common/Button";
 import { showToast } from "@/lib/toast";
 import { createClient } from "@/lib/supabase/client";
 import { setUserPreferences } from "@/lib/api";
@@ -74,13 +75,14 @@ export function RegionForm() {
         ))}
       </div>
 
-      <button
+      <Button
         onClick={handleContinue}
         disabled={!selected || loading}
-        className="btn-primary mt-8 w-full"
+        fullWidth
+        className="mt-8"
       >
         {loading ? t("common.saving") : t("onboarding.continue")}
-      </button>
+      </Button>
     </div>
   );
 }

@@ -7,6 +7,7 @@
  */
 
 import { useState } from "react";
+import { ButtonLink } from "@/components/common/Button";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Eye, ChevronLeft, ChevronRight } from "lucide-react";
@@ -152,9 +153,9 @@ export default function WatchlistPage() {
           <p className="max-w-md text-sm text-foreground-secondary">
             {t("watchlist.emptyDescription")}
           </p>
-          <Link href="/app/search" className="btn-primary mt-2 text-sm">
+          <ButtonLink href="/app/search" className="mt-2" size="sm">
             {t("watchlist.browseProducts")}
-          </Link>
+          </ButtonLink>
         </div>
       )}
 

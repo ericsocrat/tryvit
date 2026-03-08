@@ -2,7 +2,7 @@
 
 "use client";
 
-import Link from "next/link";
+import { ButtonLink } from "@/components/common/Button";
 import { FileQuestion } from "lucide-react";
 import { useTranslation } from "@/lib/i18n";
 
@@ -20,9 +20,9 @@ export default function NotFound() {
       <p className="mb-6 text-lg text-foreground-secondary">
         {t("error.notFoundMessage")}
       </p>
-      <Link href="/" className="btn-primary px-6 py-3">
+      <ButtonLink href="/" size="lg">
         {t("error.goHome")}
-      </Link>
+      </ButtonLink>
     </div>
   );
 }
