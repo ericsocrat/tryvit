@@ -5,8 +5,8 @@
 // Shows read-only view of a shared list with product details.
 
 import { ButtonLink } from "@/components/common/Button";
-import { ListDetailSkeleton } from "@/components/common/skeletons";
 import { Logo } from "@/components/common/Logo";
+import { ListDetailSkeleton } from "@/components/common/skeletons";
 import { SkipLink } from "@/components/common/SkipLink";
 import { useSharedList } from "@/hooks/use-lists";
 import { NUTRI_COLORS, SCORE_BANDS, scoreBandFromScore } from "@/lib/constants";

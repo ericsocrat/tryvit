@@ -30,22 +30,26 @@ describe("CompareFloatingButton", () => {
     mockGetIds.mockReturnValue([1, 2, 3]);
   });
 
-  it("renders nothing when fewer than 2 selected", () => {
-    mockCount.mockReturnValue(1);
-    const { container } = render(<CompareFloatingButton />);
-    expect(container.innerHTML).toBe("");
-  });
-
   it("renders nothing when 0 selected", () => {
     mockCount.mockReturnValue(0);
     const { container } = render(<CompareFloatingButton />);
     expect(container.innerHTML).toBe("");
   });
 
-  it("renders compare button when 2+ selected", () => {
+  it("renders disabled button when 1 selected", () => {
+    mockCount.mockReturnValue(1);
+    render(<CompareFloatingButton />);
+    expect(screen.getByText("Compare 1")).toBeTruthy();
+    const compareBtn = screen.getByText("Compare 1").closest("button")!;
+    expect(compareBtn).toBeDisabled();
+  });
+
+  it("renders enabled compare button when 2+ selected", () => {
     mockCount.mockReturnValue(2);
     render(<CompareFloatingButton />);
     expect(screen.getByText("Compare 2")).toBeTruthy();
+    const compareBtn = screen.getByText("Compare 2").closest("button")!;
+    expect(compareBtn).toBeEnabled();
   });
 
   it("navigates to compare page with sorted IDs on click", () => {
@@ -80,5 +84,18 @@ describe("CompareFloatingButton", () => {
     const { container } = render(<CompareFloatingButton />);
     const wrapper = container.firstElementChild!;
     expect(wrapper.className).toContain("lg:hidden");
+  });
+
+  it("has data-testid for floating badge", () => {
+    mockCount.mockReturnValue(2);
+    render(<CompareFloatingButton />);
+    expect(screen.getByTestId("compare-floating-badge")).toBeInTheDocument();
+  });
+
+  it("does not navigate when disabled (1 selected)", () => {
+    mockCount.mockReturnValue(1);
+    render(<CompareFloatingButton />);
+    fireEvent.click(screen.getByText("Compare 1"));
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

@@ -6,8 +6,8 @@
 // No avoid badges or save features — read-only public view.
 
 import { ButtonLink } from "@/components/common/Button";
-import { ComparisonGridSkeleton } from "@/components/common/skeletons";
 import { Logo } from "@/components/common/Logo";
+import { ComparisonGridSkeleton } from "@/components/common/skeletons";
 import { ComparisonGrid } from "@/components/compare/ComparisonGrid";
 import { useSharedComparison } from "@/hooks/use-compare";
 import { useTranslation } from "@/lib/i18n";

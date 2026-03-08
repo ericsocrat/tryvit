@@ -800,12 +800,10 @@ function ProductRow({
           <HealthWarningBadge productId={product.product_id} />
           <AvoidBadge productId={product.product_id} />
           <AddToListMenu productId={product.product_id} compact />
-          <span className="hidden sm:inline-flex">
-            <CompareCheckbox
-              productId={product.product_id}
-              productName={product.product_name_display ?? product.product_name}
-            />
-          </span>
+          <CompareCheckbox
+            productId={product.product_id}
+            productName={product.product_name_display ?? product.product_name}
+          />
         </div>
       </li>
     );
@@ -877,13 +875,11 @@ function ProductRow({
           <AddToListMenu productId={product.product_id} compact />
         </span>
 
-        {/* Compare checkbox — hidden on small screens */}
-        <span className="hidden sm:inline-flex">
-          <CompareCheckbox
-            productId={product.product_id}
-            productName={product.product_name_display ?? product.product_name}
-          />
-        </span>
+        {/* Compare checkbox */}
+        <CompareCheckbox
+          productId={product.product_id}
+          productName={product.product_name_display ?? product.product_name}
+        />
 
         {/* NOVA processing badge — hidden on xs screens */}
         {product.nova_group && (
