@@ -13,6 +13,12 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+_No unreleased changes._
+
+---
+
+## [0.2.0] — 2026-03-09
+
 ### Fixed
 
 - Fix enrichment SQL generator portability: replace hardcoded `ingredient_id`
@@ -740,5 +746,6 @@ Changes that **MUST** be flagged as breaking in commits and changelog:
 
 ---
 
-[Unreleased]: https://github.com/ericsocrat/tryvit/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/ericsocrat/tryvit/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/ericsocrat/tryvit/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/ericsocrat/tryvit/releases/tag/v0.1.0
