@@ -71,10 +71,11 @@
       }
     },
     {
-      // Logger utility — intentional console usage
+      // Logger & metrics utilities — intentional console usage
       "files": [
         "**/logger.ts",
-        "**/monitoring/**"
+        "**/monitoring/**",
+        "**/web-vitals.ts"
       ],
       "rules": {
         "no-console": "off"

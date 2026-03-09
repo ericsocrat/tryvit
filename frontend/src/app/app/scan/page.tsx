@@ -227,7 +227,7 @@ export default function ScanPage() {
         setCameraError("generic");
       }
     }
-  }, [stopScanner, t]);
+  }, [stopScanner]);
 
   async function toggleTorch() {
     if (!streamRef.current) return;
