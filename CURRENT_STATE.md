@@ -8,8 +8,8 @@
 ## Active Branch & PR
 
 - **Branch:** `data/717-coverage-thresholds` (feature branch for #717)
-- **Latest SHA (main):** `eee3a94`
-- **Open PRs:** #771 (#721 QA count reconciliation, auto-merge pending CI)
+- **Latest SHA (main):** `fbfe57f` (PR #771 merged — #721 QA count reconciliation)
+- **Open PRs:** #772 (#717 coverage thresholds, auto-merge pending conflict resolution)
 
 ## Production Deployment (2026-03-06)
 
@@ -72,21 +72,19 @@ All 26 open PRs merged into main in a single session:
 | ------------ | ------ | ----------------------------------------------------- |
 | pr-gate      | ✅      | Typecheck, lint, unit tests, build, Playwright smoke  |
 | main-gate    | ✅      | Last runs all success                                 |
-| qa.yml       | ✅      | 735/735 checks passing                                |
+| qa.yml       | ✅      | 752/752 checks passing                                |
 | dep-audit    | ✅      | 0 high/critical vulnerabilities                       |
 | python-lint  | ✅      | 0 ruff errors                                         |
 | quality-gate | ✅      | All checks passing (fixed in #679)                    |
 | nightly      | ✅      | Data audit fix shipped (#560)                         |
 
-## Open Issues (18 total)
+## Open Issues (16 total)
 
 | Issue | Priority | Summary                                                              |
 | ----- | -------- | -------------------------------------------------------------------- |
-| #715  | P1       | Increase ingredient coverage — enrichment applied, QA passing        |
-| #714  | P1       | Increase allergen coverage — enrichment applied, QA passing          |
 | #713  | P1       | Create DE Oils & Vinegars + Spreads & Dips pipelines for DE parity   |
 | #722  | P2       | Comprehensive CI/CD workflow audit and quality gate tightening        |
-| #721  | P2       | Test suite reconciliation — pgTAP, QA counts, negative tests         |
+| #721  | P2       | Test suite reconciliation — **IN PROGRESS** (QA counts reconciled)   |
 | #720  | P2       | Update stale docs — README, CHANGELOG, copilot-instructions          |
 | #717  | P2       | Automated data coverage thresholds and regression detection           |
 | #712  | P2       | Dark mode visual audit — every page at 320px and 1280px              |
@@ -106,7 +104,9 @@ All 26 open PRs merged into main in a single session:
 
 ## Next Planned Work
 
-- [x] Implement #717 — automated data coverage thresholds (PR pending)
+- [x] PR #770 merged — enrichment for #714/#715 (eee3a94)
+- [x] #721 — Test suite reconciliation (PR #771 merged)
+- [x] Implement #717 — automated data coverage thresholds (PR #772 pending)
 - [ ] Deploy 26-PR changes to production (staging validation first)
 - [ ] Merge PR #771 (#721 QA count reconciliation)
 
@@ -114,7 +114,7 @@ All 26 open PRs merged into main in a single session:
 
 - **Products (production):** 2,438 active (1,332 PL + 1,102 DE across 22 PL + 21 DE categories)
 - **Deprecated products:** 286 (229 PL + 57 DE)
-- **QA checks:** 753/753 passing (48 suites) — local DB (will be 756 after PR #771 merges)
+- **QA checks:** 756/756 passing (48 suites) — local DB
 - **Negative tests:** 23/23 caught
 - **EAN coverage:** 2,261/2,264 with EAN (99.9%) — local DB
 - **Ingredient refs:** 5,882 (local, post-enrichment)
@@ -126,7 +126,7 @@ All 26 open PRs merged into main in a single session:
 - **Nutrition coverage (production):** 2,438/2,438 (100%)
 - **Frontend test coverage:** ~88% lines (SonarCloud Quality Gate passing)
 - **ESLint warnings:** 0
-- **Open issues:** 18 | **Open PRs:** 0
+- **Open issues:** 16 | **Open PRs:** 0 (PR pending for #721)
 - **Vitest:** 5,324 tests passing (29 skipped) across 318 test files
 - **DB migrations:** 202 append-only (75 applied to production, 4 skipped)
 - **Ruff lint:** 0 errors
