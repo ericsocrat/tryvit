@@ -334,7 +334,7 @@ tryvit/
 │   ├── pr-gate.yml                  # Lint → Typecheck → Build → Playwright E2E
 │   ├── pr-title-lint.yml            # PR title conventional-commit validation (all PRs)
 │   ├── main-gate.yml                # Build → Unit tests + coverage → SonarCloud
-│   ├── qa.yml                       # Schema → Pipelines → QA (699) → Sanity
+│   ├── qa.yml                       # Schema → Pipelines → QA (747) → Sanity
 │   ├── nightly.yml                  # Full Playwright (all projects) + Data Integrity Audit
 │   ├── deploy.yml                   # Manual trigger → Schema diff → Approval → db push
 │   ├── sync-cloud-db.yml            # Remote DB sync

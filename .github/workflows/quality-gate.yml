@@ -21,7 +21,7 @@ on:
       - "frontend/**"
       - ".github/workflows/quality-gate.yml"
   schedule:
-    - cron: "0 3 * * *" # Nightly at 03:00 UTC
+    - cron: "0 4 * * *" # Nightly at 04:00 UTC (staggered from nightly 02:00 + api-contract 03:30)
   workflow_dispatch:
     inputs:
       mode:
