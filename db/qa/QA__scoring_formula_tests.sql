@@ -605,19 +605,18 @@ WHERE p.product_name = 'Wildlachsfilet'
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- Test 40: DE regression anchor — Instant-Nudeln Beef (Instant & Frozen)
---          Instant noodles, not yet enriched (0 ingredients) → score ≈45
---          Without enrichment data: no additive/concern/palm oil penalties.
+--          Instant noodles, enriched with 10 additives, concern_score 0.
 --          v3.3: protein 10g (bonus 15), fibre 0g → density 15 → -1 pt
---          Score will increase once DE enrichment covers this product (#715).
---          Issue #602.
+--          Post-enrichment score ≈55 (higher due to additives penalty).
+--          Issues #602, #715.
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT p.product_id, p.brand, p.product_name,
        p.unhealthiness_score,
        'REGRESSION: Instant-Nudeln Beef (DE) score changed' AS issue,
-       CONCAT('Expected 43-47, got ', p.unhealthiness_score) AS detail
+       CONCAT('Expected 53-57, got ', p.unhealthiness_score) AS detail
 FROM products p
 WHERE p.product_name = 'Instant-Nudeln Beef'
   AND p.brand = 'Asia Green Garden'
   AND p.country = 'DE'
   AND p.is_deprecated IS NOT TRUE
-  AND p.unhealthiness_score::int NOT BETWEEN 43 AND 47;
+  AND p.unhealthiness_score::int NOT BETWEEN 53 AND 57;
