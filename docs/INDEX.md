@@ -62,7 +62,7 @@
 | [erd-core-dark.mmd](diagrams/erd-core-dark.mmd)                               | Mermaid source for core ERD (dark mode)                                | [#428](https://github.com/ericsocrat/tryvit/issues/428) | 2026-03-13   |
 | [pipeline-flow.svg](diagrams/pipeline-flow.svg)                               | Pipeline flow — OFF API to SQL generation to DB execution              | [#429](https://github.com/ericsocrat/tryvit/issues/429) | 2026-03-13   |
 | [ci-cd-pipeline.svg](diagrams/ci-cd-pipeline.svg)                             | CI/CD pipeline — 19 workflows, gates, triggers, artifact flow          | [#429](https://github.com/ericsocrat/tryvit/issues/429) | 2026-03-13   |
-| [qa-overview.svg](diagrams/qa-overview.svg)                                   | QA overview — 47 suites, 733 checks organized by domain                | [#429](https://github.com/ericsocrat/tryvit/issues/429) | 2026-03-13   |
+| [qa-overview.svg](diagrams/qa-overview.svg)                                   | QA overview — 48 suites, 747 checks organized by domain                | [#429](https://github.com/ericsocrat/tryvit/issues/429) | 2026-03-13   |
 | [confidence-model.svg](diagrams/confidence-model.svg)                         | Confidence scoring — 6 components, composite 0-100, band assignment    | [#429](https://github.com/ericsocrat/tryvit/issues/429) | 2026-03-13   |
 | [concern-tiers.svg](diagrams/concern-tiers.svg)                               | EFSA concern tiers — 4-tier additive classification with examples      | [#429](https://github.com/ericsocrat/tryvit/issues/429) | 2026-03-13   |
 | [country-expansion.svg](diagrams/country-expansion.svg)                       | Country expansion — PL primary + DE micro-pilot architecture           | [#429](https://github.com/ericsocrat/tryvit/issues/429) | 2026-03-13   |
@@ -128,13 +128,13 @@
 | [API_VERSIONING.md](API_VERSIONING.md)     | API deprecation & versioning policy — function-name versioning, sunset timelines | [#234](https://github.com/ericsocrat/tryvit/issues/234) | 2026-02-24   |
 | [FRONTEND_API_MAP.md](FRONTEND_API_MAP.md) | Frontend-to-API mapping reference — which pages call which RPCs                  | [#197](https://github.com/ericsocrat/tryvit/issues/197) | 2026-02-13   |
 | [CONTRACT_TESTING.md](CONTRACT_TESTING.md) | API contract testing strategy — pgTAP patterns, response shape validation        | [#197](https://github.com/ericsocrat/tryvit/issues/197) | 2026-02-24   |
-| [api-registry.yaml](api-registry.yaml)     | Structured registry of all 109 API functions (YAML machine-readable)             | [#197](https://github.com/ericsocrat/tryvit/issues/197) | 2026-02-24   |
+| [api-registry.yaml](api-registry.yaml)     | Structured registry of all 191 API functions (YAML machine-readable)             | [#197](https://github.com/ericsocrat/tryvit/issues/197) | 2026-02-24   |
 
 ## Scoring
 
 | Document                                         | Purpose                                                               | Owner Issue                                             | Last Updated |
 | ------------------------------------------------ | --------------------------------------------------------------------- | ------------------------------------------------------- | ------------ |
-| [SCORING_METHODOLOGY.md](SCORING_METHODOLOGY.md) | v3.2 scoring formula — 9 factors, weights, ceilings, bands            | [#189](https://github.com/ericsocrat/tryvit/issues/189) | 2026-02-12   |
+| [SCORING_METHODOLOGY.md](SCORING_METHODOLOGY.md) | v3.3 scoring formula — 9 factors, weights, ceilings, bands, nutrient density bonus | [#189](https://github.com/ericsocrat/tryvit/issues/189) | 2026-02-12   |
 | [SCORING_ENGINE.md](SCORING_ENGINE.md)           | Scoring engine architecture — function versioning, regression testing | [#189](https://github.com/ericsocrat/tryvit/issues/189) | 2026-02-24   |
 
 > **Relationship:** SCORING_METHODOLOGY.md defines the **formula** (what is computed). SCORING_ENGINE.md defines the **architecture** (how it is maintained, versioned, and tested). No redundancy — they serve different audiences.
