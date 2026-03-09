@@ -19,6 +19,22 @@ Adheres to [Semantic Versioning](https://semver.org/).
   `formula_source_hashes` seeding so pgcrypto works in CI's bare `postgres:17`
   containers where `extensions` is not in `search_path`. Migration
   `20260316000500_fix_digest_extensions_schema.sql` (#773)
+- Fix CI `DB Integrity` check — add `ALTER DATABASE postgres SET search_path TO
+  public, extensions;` before migration loop in `qa.yml` so `pgcrypto` functions
+  resolve correctly in CI's bare postgres container (#773)
+
+### Changed
+
+- Bump 9 frontend dependencies to latest minor/patch: `@sentry/nextjs` 10.40→10.42,
+  `@supabase/supabase-js` 2.98→2.99, `@supabase/ssr` 0.8→0.9,
+  `lucide-react` 0.574→0.577, `react-hook-form` 7.71.1→7.71.2,
+  `@upstash/redis` 1.36.2→1.36.4, `autoprefixer` 10.4.24→10.4.27,
+  `postcss` 8.5.6→8.5.8, `@types/node` 22.19.11→22.19.15 (#775)
+
+### Documentation
+
+- Reconcile `CURRENT_STATE.md` with live data — product counts, issue inventory,
+  milestones M29–M34, CI status, key metrics (#774)
 
 ---
 
