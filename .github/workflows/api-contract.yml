@@ -38,8 +38,8 @@ on:
       - "frontend/src/lib/rpc-contracts/**"
       - ".github/workflows/api-contract.yml"
   schedule:
-    # Nightly 03:00 UTC — detect drift from manual DB changes
-    - cron: "0 3 * * *"
+    # Nightly 03:30 UTC — detect drift from manual DB changes (staggered from quality-gate)
+    - cron: "30 3 * * *"
   workflow_dispatch: {}
 
 permissions:

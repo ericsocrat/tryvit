@@ -135,7 +135,7 @@ jobs:
               ['lines','branches','functions','statements'].forEach(k => console.log(fmt(k)));
             " >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "Thresholds: lines ≥ 87%, branches ≥ 82%, functions ≥ 84%, statements ≥ 86%" >> "$GITHUB_STEP_SUMMARY"
+            echo "Thresholds: lines ≥ 92%, branches ≥ 85%, functions ≥ 88%, statements ≥ 90%" >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload coverage for SonarCloud
