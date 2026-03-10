@@ -46,7 +46,7 @@ async function stabilizePage(page: Page) {
       transition-delay: 0s !important;
     }`,
   });
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(2000);
 }
 
 async function capture(
@@ -62,7 +62,7 @@ async function capture(
   console.log(`  📸 ${filepath}`);
 }
 
-async function waitFor(page: Page, selector: string, timeout = 8000) {
+async function waitFor(page: Page, selector: string, timeout = 15000) {
   try {
     await page.waitForSelector(selector, { timeout });
   } catch {
@@ -460,6 +460,51 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await capture(page, DESKTOP_DIR, "A08-product-detail-chips.png");
   });
 
+  // ── Product Tabs — E. Wedel Czekolada Tiramisu (44 ingredients, richly detailed) ──
+
+  test("A08a — Product Tabs — Overview (E. Wedel)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    await capture(page, DESKTOP_DIR, "A08a-product-overview-wedel.png");
+  });
+
+  test("A08b — Product Tabs — Nutrition (E. Wedel)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-nutrition");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await capture(page, DESKTOP_DIR, "A08b-product-nutrition-wedel.png");
+  });
+
+  test("A08c — Product Tabs — Alternatives (E. Wedel)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-alternatives");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await capture(page, DESKTOP_DIR, "A08c-product-alternatives-wedel.png");
+  });
+
+  test("A08d — Product Tabs — Scoring (E. Wedel)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-scoring");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await capture(page, DESKTOP_DIR, "A08d-product-scoring-wedel.png");
+  });
+
   // ── Search ──
 
   test("A09 — Search empty (/app/search)", async ({ page }) => {
@@ -652,6 +697,51 @@ test.describe("AUTHENTICATED pages — Mobile", () => {
     await waitFor(page, '[data-testid="product-profile"]');
     await stabilizePage(page);
     await capture(page, MOBILE_DIR, "A08-product-detail-chips-mobile.png");
+  });
+
+  // ── Product Tabs — E. Wedel (mobile) ──
+
+  test("M08a — Product Tabs — Overview (E. Wedel mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    await capture(page, MOBILE_DIR, "A08a-product-overview-wedel-mobile.png");
+  });
+
+  test("M08b — Product Tabs — Nutrition (E. Wedel mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-nutrition");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await capture(page, MOBILE_DIR, "A08b-product-nutrition-wedel-mobile.png");
+  });
+
+  test("M08c — Product Tabs — Alternatives (E. Wedel mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-alternatives");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await capture(page, MOBILE_DIR, "A08c-product-alternatives-wedel-mobile.png");
+  });
+
+  test("M08d — Product Tabs — Scoring (E. Wedel mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-scoring");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await capture(page, MOBILE_DIR, "A08d-product-scoring-wedel-mobile.png");
   });
 
   test("M09 — Search empty (mobile)", async ({ page }) => {
@@ -1052,6 +1142,51 @@ test.describe("AUTHENTICATED pages — Dark Desktop", () => {
     await capture(page, DARK_DESKTOP_DIR, "A08-product-detail-chips-dark.png");
   });
 
+  // ── Product Tabs — E. Wedel (dark) ──
+
+  test("D08a — Product Tabs — Overview (E. Wedel dark)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    await capture(page, DARK_DESKTOP_DIR, "A08a-product-overview-wedel-dark.png");
+  });
+
+  test("D08b — Product Tabs — Nutrition (E. Wedel dark)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-nutrition");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await capture(page, DARK_DESKTOP_DIR, "A08b-product-nutrition-wedel-dark.png");
+  });
+
+  test("D08c — Product Tabs — Alternatives (E. Wedel dark)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-alternatives");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await capture(page, DARK_DESKTOP_DIR, "A08c-product-alternatives-wedel-dark.png");
+  });
+
+  test("D08d — Product Tabs — Scoring (E. Wedel dark)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-scoring");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await capture(page, DARK_DESKTOP_DIR, "A08d-product-scoring-wedel-dark.png");
+  });
+
   test("D09 — Search empty (dark)", async ({ page }) => {
     await page.goto("/app/search");
     await waitFor(page, '[data-testid="search-input"]');
@@ -1232,6 +1367,51 @@ test.describe("AUTHENTICATED pages — Dark Mobile", () => {
     await waitFor(page, '[data-testid="product-profile"]');
     await stabilizePage(page);
     await capture(page, DARK_MOBILE_DIR, "A08-product-detail-chips-dark-mobile.png");
+  });
+
+  // ── Product Tabs — E. Wedel (dark mobile) ──
+
+  test("DM08a — Product Tabs — Overview (E. Wedel dark mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    await capture(page, DARK_MOBILE_DIR, "A08a-product-overview-wedel-dark-mobile.png");
+  });
+
+  test("DM08b — Product Tabs — Nutrition (E. Wedel dark mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-nutrition");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await capture(page, DARK_MOBILE_DIR, "A08b-product-nutrition-wedel-dark-mobile.png");
+  });
+
+  test("DM08c — Product Tabs — Alternatives (E. Wedel dark mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-alternatives");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await capture(page, DARK_MOBILE_DIR, "A08c-product-alternatives-wedel-dark-mobile.png");
+  });
+
+  test("DM08d — Product Tabs — Scoring (E. Wedel dark mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitFor(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-scoring");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await capture(page, DARK_MOBILE_DIR, "A08d-product-scoring-wedel-dark-mobile.png");
   });
 
   test("DM09 — Search empty (dark mobile)", async ({ page }) => {

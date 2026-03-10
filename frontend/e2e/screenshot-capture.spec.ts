@@ -14,7 +14,7 @@
 //
 // Output: docs/screenshots/{desktop,mobile,dark-mode}/
 //
-// Total: 12 desktop + 12 mobile + 12 dark desktop + 12 dark mobile = 48 screenshots
+// Total: 16 desktop + 16 mobile + 16 dark desktop + 16 dark mobile = 64 screenshots
 
 import { test, type Page } from "@playwright/test";
 import fs from "node:fs";
@@ -60,8 +60,8 @@ async function stabilizePage(page: Page) {
       }
     `,
   });
-  // Brief pause for layout stabilization
-  await page.waitForTimeout(500);
+  // Pause for layout stabilization (data-driven pages need time to hydrate)
+  await page.waitForTimeout(2000);
 }
 
 /**
@@ -244,7 +244,7 @@ async function cleanupTestUser() {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
-   §1  DESKTOP SCREENSHOTS (12) — Issue #430
+   §1  DESKTOP SCREENSHOTS (16) — Issue #430, #794
    ════════════════════════════════════════════════════════════════════════ */
 
 test.describe("Desktop screenshots (1440×900)", () => {
@@ -303,6 +303,51 @@ test.describe("Desktop screenshots (1440×900)", () => {
     await captureScreenshot(page, DESKTOP_DIR, "05-score-explanation.png");
   });
 
+  // ── Product Tabs — E. Wedel Czekolada Tiramisu (44 ingredients, richly detailed) ──
+
+  test("05a — Product Tabs — Overview (E. Wedel)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DESKTOP_DIR, "05a-product-overview-wedel.png");
+  });
+
+  test("05b — Product Tabs — Nutrition (E. Wedel)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-nutrition");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await captureScreenshot(page, DESKTOP_DIR, "05b-product-nutrition-wedel.png");
+  });
+
+  test("05c — Product Tabs — Alternatives (E. Wedel)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-alternatives");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await captureScreenshot(page, DESKTOP_DIR, "05c-product-alternatives-wedel.png");
+  });
+
+  test("05d — Product Tabs — Scoring (E. Wedel)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-scoring");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await captureScreenshot(page, DESKTOP_DIR, "05d-product-scoring-wedel.png");
+  });
+
   test("06 — Search Results", async ({ page }) => {
     await page.goto("/app/search?q=jogurt");
     await waitForOptional(page, '[data-testid="search-results"]');
@@ -354,7 +399,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
 });
 
 /* ════════════════════════════════════════════════════════════════════════════
-   §2  MOBILE SCREENSHOTS (12) — Issue #431, #794
+   §2  MOBILE SCREENSHOTS (16) — Issue #431, #794
    ════════════════════════════════════════════════════════════════════════ */
 
 test.describe("Mobile screenshots (390×844)", () => {
@@ -410,6 +455,51 @@ test.describe("Mobile screenshots (390×844)", () => {
     await captureScreenshot(page, MOBILE_DIR, "05-score-explanation-mobile.png");
   });
 
+  // ── Product Tabs — E. Wedel (mobile) ──
+
+  test("05a — Product Tabs — Overview (E. Wedel mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, MOBILE_DIR, "05a-product-overview-wedel-mobile.png");
+  });
+
+  test("05b — Product Tabs — Nutrition (E. Wedel mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-nutrition");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await captureScreenshot(page, MOBILE_DIR, "05b-product-nutrition-wedel-mobile.png");
+  });
+
+  test("05c — Product Tabs — Alternatives (E. Wedel mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-alternatives");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await captureScreenshot(page, MOBILE_DIR, "05c-product-alternatives-wedel-mobile.png");
+  });
+
+  test("05d — Product Tabs — Scoring (E. Wedel mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-scoring");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await captureScreenshot(page, MOBILE_DIR, "05d-product-scoring-wedel-mobile.png");
+  });
+
   test("06 — Search Results (mobile)", async ({ page }) => {
     await page.goto("/app/search?q=jogurt");
     await waitForOptional(page, '[data-testid="search-results"]');
@@ -461,7 +551,7 @@ test.describe("Mobile screenshots (390×844)", () => {
 });
 
 /* ════════════════════════════════════════════════════════════════════════════
-   §3  DARK MODE DESKTOP SCREENSHOTS (12) — Issue #431, #794
+   §3  DARK MODE DESKTOP SCREENSHOTS (16) — Issue #431, #794
    ════════════════════════════════════════════════════════════════════════ */
 
 test.describe("Dark mode screenshots (1440×900)", () => {
@@ -517,6 +607,51 @@ test.describe("Dark mode screenshots (1440×900)", () => {
     await captureScreenshot(page, DARK_MODE_DIR, "05-score-explanation-dark.png");
   });
 
+  // ── Product Tabs — E. Wedel (dark) ──
+
+  test("05a — Product Tabs — Overview (E. Wedel dark)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MODE_DIR, "05a-product-overview-wedel-dark.png");
+  });
+
+  test("05b — Product Tabs — Nutrition (E. Wedel dark)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-nutrition");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await captureScreenshot(page, DARK_MODE_DIR, "05b-product-nutrition-wedel-dark.png");
+  });
+
+  test("05c — Product Tabs — Alternatives (E. Wedel dark)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-alternatives");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await captureScreenshot(page, DARK_MODE_DIR, "05c-product-alternatives-wedel-dark.png");
+  });
+
+  test("05d — Product Tabs — Scoring (E. Wedel dark)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-scoring");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await captureScreenshot(page, DARK_MODE_DIR, "05d-product-scoring-wedel-dark.png");
+  });
+
   test("06 — Search Results (dark)", async ({ page }) => {
     await page.goto("/app/search?q=jogurt");
     await waitForOptional(page, '[data-testid="search-results"]');
@@ -568,7 +703,7 @@ test.describe("Dark mode screenshots (1440×900)", () => {
 });
 
 /* ════════════════════════════════════════════════════════════════════════════
-   §4  DARK MODE MOBILE SCREENSHOTS (12) — Issue #794
+   §4  DARK MODE MOBILE SCREENSHOTS (16) — Issue #794
    ════════════════════════════════════════════════════════════════════════ */
 
 test.describe("Dark mode mobile screenshots (390×844)", () => {
@@ -622,6 +757,51 @@ test.describe("Dark mode mobile screenshots (390×844)", () => {
       await page.waitForTimeout(500);
     }
     await captureScreenshot(page, DARK_MOBILE_DIR, "05-score-explanation-dark-mobile.png");
+  });
+
+  // ── Product Tabs — E. Wedel (dark mobile) ──
+
+  test("05a — Product Tabs — Overview (E. Wedel dark mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MOBILE_DIR, "05a-product-overview-wedel-dark-mobile.png");
+  });
+
+  test("05b — Product Tabs — Nutrition (E. Wedel dark mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-nutrition");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await captureScreenshot(page, DARK_MOBILE_DIR, "05b-product-nutrition-wedel-dark-mobile.png");
+  });
+
+  test("05c — Product Tabs — Alternatives (E. Wedel dark mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-alternatives");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await captureScreenshot(page, DARK_MOBILE_DIR, "05c-product-alternatives-wedel-dark-mobile.png");
+  });
+
+  test("05d — Product Tabs — Scoring (E. Wedel dark mobile)", async ({ page }) => {
+    await page.goto("/app/product/5901588017617");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const tab = page.locator("#tab-scoring");
+    if (await tab.isVisible().catch(() => false)) {
+      await tab.click();
+      await page.waitForTimeout(1000);
+    }
+    await captureScreenshot(page, DARK_MOBILE_DIR, "05d-product-scoring-wedel-dark-mobile.png");
   });
 
   test("06 — Search Results (dark mobile)", async ({ page }) => {
