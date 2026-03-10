@@ -13,6 +13,13 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Standardize skeleton loading screens — rewrite `ProductProfileSkeleton` to
+  match current 2-column grid layout with progressive disclosure, replace all
+  `animate-pulse` Tailwind classes with unified `.skeleton` CSS shimmer in
+  `ProductHeroImage` and `HealthWarningsCard`, add grid layout test (#789)
+
 ### Fixed
 
 - Fix QA CI broken on main — qualify `digest()` as `extensions.digest()` in

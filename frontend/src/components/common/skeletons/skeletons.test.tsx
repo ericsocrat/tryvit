@@ -76,7 +76,17 @@ describe("ProductProfileSkeleton", () => {
   it("renders shimmer blocks for content areas", () => {
     const { container } = render(<ProductProfileSkeleton />);
     const blocks = container.querySelectorAll(".skeleton");
-    expect(blocks.length).toBeGreaterThan(5);
+    expect(blocks.length).toBeGreaterThan(10);
+  });
+
+  it("renders 2-column grid layout", () => {
+    const { container } = render(<ProductProfileSkeleton />);
+    const grid = container.querySelector(".lg\\:grid-cols-12");
+    expect(grid).toBeTruthy();
+    const leftCol = grid?.querySelector(".lg\\:col-span-5");
+    const rightCol = grid?.querySelector(".lg\\:col-span-7");
+    expect(leftCol).toBeTruthy();
+    expect(rightCol).toBeTruthy();
   });
 });
 
