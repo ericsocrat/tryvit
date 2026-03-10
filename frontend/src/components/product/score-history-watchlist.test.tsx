@@ -622,7 +622,7 @@ describe("WatchlistPage", () => {
     render(<WatchlistPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByTestId("watchlist-empty")).toBeInTheDocument();
+      expect(screen.getByTestId("empty-state")).toBeInTheDocument();
       expect(screen.getByText("watchlist.emptyTitle")).toBeInTheDocument();
     });
   });
