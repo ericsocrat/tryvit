@@ -5,6 +5,7 @@
 import { AllergenChips } from "@/components/common/AllergenChips";
 import { Button } from "@/components/common/Button";
 import { EmptyState } from "@/components/common/EmptyState";
+import { EmptyStateIllustration } from "@/components/common/EmptyStateIllustration";
 import { LiveRegion } from "@/components/common/LiveRegion";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { NovaBadge } from "@/components/common/NovaBadge";
@@ -41,7 +42,6 @@ import {
     LayoutGrid,
     LayoutList,
     Save,
-    Search,
     SlidersHorizontal,
 } from "lucide-react";
 import Link from "next/link";
@@ -468,9 +468,8 @@ export default function SearchPage() {
 
           {/* Empty state — no search or filters active */}
           {!isSearchActive && recentSearches.length === 0 && (
-            <EmptyState
-              variant="no-data"
-              icon={<Search size={40} />}
+            <EmptyStateIllustration
+              type="no-results"
               titleKey="search.emptyState"
             />
           )}
@@ -525,8 +524,8 @@ export default function SearchPage() {
 
               {data.results.length === 0 ? (
                 <div className="space-y-4" data-testid="zero-results">
-                  <EmptyState
-                    variant="no-results"
+                  <EmptyStateIllustration
+                    type="no-results"
                     titleKey={
                       data.query
                         ? "search.noMatchSearch"
