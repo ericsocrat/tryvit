@@ -6,7 +6,7 @@
 
 import { Button } from "@/components/common/Button";
 import { Chip } from "@/components/common/Chip";
-import { EmptyState } from "@/components/common/EmptyState";
+import { EmptyStateIllustration } from "@/components/common/EmptyStateIllustration";
 import { PullToRefresh } from "@/components/common/PullToRefresh";
 import { RecipeGridSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
@@ -204,8 +204,8 @@ export default function RecipesBrowsePage() {
           ))}
         </div>
       ) : (
-        <EmptyState
-          variant="no-results"
+        <EmptyStateIllustration
+          type="no-results"
           titleKey="recipes.emptyTitle"
           descriptionKey="recipes.emptyDescription"
         />

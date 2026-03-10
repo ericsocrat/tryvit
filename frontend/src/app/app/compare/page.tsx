@@ -6,6 +6,7 @@
 // Authenticated users can save comparisons and see avoid badges.
 
 import { EmptyState } from "@/components/common/EmptyState";
+import { EmptyStateIllustration } from "@/components/common/EmptyStateIllustration";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { PrintButton } from "@/components/common/PrintButton";
 import { ComparisonGridSkeleton } from "@/components/common/skeletons";
@@ -87,9 +88,8 @@ export default function ComparePage() {
         <h1 className="flex items-center gap-2 text-xl font-bold text-foreground">
           <Scale size={22} aria-hidden="true" /> {t("compare.title")}
         </h1>
-        <EmptyState
-          variant="no-data"
-          icon={<Scale size={48} className="text-foreground-muted" />}
+        <EmptyStateIllustration
+          type="no-comparisons"
           titleKey="compare.selectPrompt"
           descriptionKey="compare.useCheckbox"
           action={{ labelKey: "compare.searchProducts", href: "/app/search" }}
