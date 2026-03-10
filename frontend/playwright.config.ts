@@ -74,7 +74,7 @@ const screenshotsProject = {
     ...devices["Desktop Chrome"],
     bypassCSP: true,
     actionTimeout: 15_000,
-    navigationTimeout: 20_000,
+    navigationTimeout: 45_000,
   },
 };
 

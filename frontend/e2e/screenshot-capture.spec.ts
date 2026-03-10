@@ -2,7 +2,7 @@
 // Captures polished screenshots of all major app sections for documentation,
 // README, and marketing materials.
 //
-// Issues: #404 (Epic), #430 (Desktop), #431 (Mobile + Dark Mode)
+// Issues: #404 (Epic), #430 (Desktop), #431 (Mobile + Dark Mode), #794 (Expansion)
 //
 // Self-contained auth: creates a test user and signs in via the UI, bypassing
 // CSP restrictions (local Supabase URLs blocked by production CSP headers).
@@ -14,11 +14,11 @@
 //
 // Output: docs/screenshots/{desktop,mobile,dark-mode}/
 //
-// Total: 12 desktop + 4 mobile + 3 dark mode = 19 screenshots
+// Total: 12 desktop + 12 mobile + 12 dark desktop + 12 dark mobile = 48 screenshots
 
 import { test, type Page } from "@playwright/test";
-import path from "node:path";
 import fs from "node:fs";
+import path from "node:path";
 
 /* ── Constants ───────────────────────────────────────────────────────────── */
 
@@ -27,6 +27,7 @@ const SCREENSHOT_ROOT = path.resolve(__dirname, "../../docs/screenshots");
 const DESKTOP_DIR = path.join(SCREENSHOT_ROOT, "desktop");
 const MOBILE_DIR = path.join(SCREENSHOT_ROOT, "mobile");
 const DARK_MODE_DIR = path.join(SCREENSHOT_ROOT, "dark-mode");
+const DARK_MOBILE_DIR = path.join(SCREENSHOT_ROOT, "dark-mode-mobile");
 
 const DESKTOP_VIEWPORT = { width: 1440, height: 900 };
 const MOBILE_VIEWPORT = { width: 390, height: 844 };
@@ -353,7 +354,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
 });
 
 /* ════════════════════════════════════════════════════════════════════════════
-   §2  MOBILE SCREENSHOTS (4) — Issue #431
+   §2  MOBILE SCREENSHOTS (12) — Issue #431, #794
    ════════════════════════════════════════════════════════════════════════ */
 
 test.describe("Mobile screenshots (390×844)", () => {
@@ -367,37 +368,100 @@ test.describe("Mobile screenshots (390×844)", () => {
     await signInViaUI(page);
   });
 
-  test("01 — Product Detail (mobile)", async ({ page }) => {
-    await page.goto("/app/product/5900820002176");
-    await waitForOptional(page, '[data-testid="product-profile"]');
+  test("01 — Dashboard (mobile)", async ({ page }) => {
+    await page.goto("/app");
+    await waitForOptional(page, '[data-testid="dashboard"]');
     await stabilizePage(page);
-    await captureScreenshot(page, MOBILE_DIR, "01-product-detail-mobile.png");
+    await captureScreenshot(page, MOBILE_DIR, "01-dashboard-mobile.png");
   });
 
-  test("02 — Search (mobile)", async ({ page }) => {
-    await page.goto("/app/search?q=mleko");
-    await waitForOptional(page, '[data-testid="search-results"]');
-    await stabilizePage(page);
-    await captureScreenshot(page, MOBILE_DIR, "02-search-mobile.png");
-  });
-
-  test("03 — Barcode Scanner (mobile)", async ({ page }) => {
-    await page.goto("/app/scan");
-    await waitForOptional(page, '[data-testid="scan-page"]');
-    await stabilizePage(page);
-    await captureScreenshot(page, MOBILE_DIR, "03-scan-mobile.png");
-  });
-
-  test("04 — Category Listing (mobile)", async ({ page }) => {
+  test("02 — Category Grid (mobile)", async ({ page }) => {
     await page.goto("/app/categories");
     await waitForOptional(page, '[data-testid="category-grid"]');
     await stabilizePage(page);
-    await captureScreenshot(page, MOBILE_DIR, "04-category-mobile.png");
+    await captureScreenshot(page, MOBILE_DIR, "02-category-grid-mobile.png");
+  });
+
+  test("03 — Category Detail (mobile)", async ({ page }) => {
+    await page.goto("/app/categories/dairy");
+    await waitForOptional(page, '[data-testid="product-list"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, MOBILE_DIR, "03-category-detail-mobile.png");
+  });
+
+  test("04 — Product Detail (mobile)", async ({ page }) => {
+    await page.goto("/app/product/5900820002176");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, MOBILE_DIR, "04-product-detail-mobile.png");
+  });
+
+  test("05 — Score Explanation (mobile)", async ({ page }) => {
+    await page.goto("/app/product/5900617043375");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const scoreTab = page.locator(
+      '[data-testid="tab-score"], [role="tab"]:has-text("Score")',
+    );
+    if (await scoreTab.isVisible().catch(() => false)) {
+      await scoreTab.click();
+      await page.waitForTimeout(500);
+    }
+    await captureScreenshot(page, MOBILE_DIR, "05-score-explanation-mobile.png");
+  });
+
+  test("06 — Search Results (mobile)", async ({ page }) => {
+    await page.goto("/app/search?q=jogurt");
+    await waitForOptional(page, '[data-testid="search-results"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, MOBILE_DIR, "06-search-results-mobile.png");
+  });
+
+  test("07 — Comparison Grid (mobile)", async ({ page }) => {
+    await page.goto("/app/compare");
+    await waitForOptional(page, '[data-testid="comparison-grid"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, MOBILE_DIR, "07-comparison-grid-mobile.png");
+  });
+
+  test("08 — Scan History (mobile)", async ({ page }) => {
+    await page.goto("/app/scan");
+    await waitForOptional(page, '[data-testid="scan-page"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, MOBILE_DIR, "08-scan-history-mobile.png");
+  });
+
+  test("09 — Product Lists (mobile)", async ({ page }) => {
+    await page.goto("/app/lists");
+    await waitForOptional(page, '[data-testid="lists-page"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, MOBILE_DIR, "09-product-lists-mobile.png");
+  });
+
+  test("10 — Settings & Health Profile (mobile)", async ({ page }) => {
+    await page.goto("/app/settings");
+    await waitForOptional(page, '[data-testid="settings-page"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, MOBILE_DIR, "10-settings-health-mobile.png");
+  });
+
+  test("11 — Onboarding (mobile)", async ({ page }) => {
+    await page.goto("/onboarding");
+    await page.waitForTimeout(2000);
+    await stabilizePage(page);
+    await captureScreenshot(page, MOBILE_DIR, "11-onboarding-mobile.png");
+  });
+
+  test("12 — Admin Submissions (mobile)", async ({ page }) => {
+    await page.goto("/app/admin");
+    await waitForOptional(page, '[data-testid="admin-panel"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, MOBILE_DIR, "12-admin-submissions-mobile.png");
   });
 });
 
 /* ════════════════════════════════════════════════════════════════════════════
-   §3  DARK MODE SCREENSHOTS (3) — Issue #431
+   §3  DARK MODE DESKTOP SCREENSHOTS (12) — Issue #431, #794
    ════════════════════════════════════════════════════════════════════════ */
 
 test.describe("Dark mode screenshots (1440×900)", () => {
@@ -418,21 +482,194 @@ test.describe("Dark mode screenshots (1440×900)", () => {
     await captureScreenshot(page, DARK_MODE_DIR, "01-dashboard-dark.png");
   });
 
-  test("02 — Product Detail (dark)", async ({ page }) => {
+  test("02 — Category Grid (dark)", async ({ page }) => {
+    await page.goto("/app/categories");
+    await waitForOptional(page, '[data-testid="category-grid"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MODE_DIR, "02-category-grid-dark.png");
+  });
+
+  test("03 — Category Detail (dark)", async ({ page }) => {
+    await page.goto("/app/categories/dairy");
+    await waitForOptional(page, '[data-testid="product-list"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MODE_DIR, "03-category-detail-dark.png");
+  });
+
+  test("04 — Product Detail (dark)", async ({ page }) => {
     await page.goto("/app/product/5900820002176");
     await waitForOptional(page, '[data-testid="product-profile"]');
     await stabilizePage(page);
-    await captureScreenshot(
-      page,
-      DARK_MODE_DIR,
-      "02-product-detail-dark.png",
-    );
+    await captureScreenshot(page, DARK_MODE_DIR, "04-product-detail-dark.png");
   });
 
-  test("03 — Comparison Grid (dark)", async ({ page }) => {
+  test("05 — Score Explanation (dark)", async ({ page }) => {
+    await page.goto("/app/product/5900617043375");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const scoreTab = page.locator(
+      '[data-testid="tab-score"], [role="tab"]:has-text("Score")',
+    );
+    if (await scoreTab.isVisible().catch(() => false)) {
+      await scoreTab.click();
+      await page.waitForTimeout(500);
+    }
+    await captureScreenshot(page, DARK_MODE_DIR, "05-score-explanation-dark.png");
+  });
+
+  test("06 — Search Results (dark)", async ({ page }) => {
+    await page.goto("/app/search?q=jogurt");
+    await waitForOptional(page, '[data-testid="search-results"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MODE_DIR, "06-search-results-dark.png");
+  });
+
+  test("07 — Comparison Grid (dark)", async ({ page }) => {
     await page.goto("/app/compare");
     await waitForOptional(page, '[data-testid="comparison-grid"]');
     await stabilizePage(page);
-    await captureScreenshot(page, DARK_MODE_DIR, "03-comparison-dark.png");
+    await captureScreenshot(page, DARK_MODE_DIR, "07-comparison-dark.png");
+  });
+
+  test("08 — Scan History (dark)", async ({ page }) => {
+    await page.goto("/app/scan");
+    await waitForOptional(page, '[data-testid="scan-page"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MODE_DIR, "08-scan-history-dark.png");
+  });
+
+  test("09 — Product Lists (dark)", async ({ page }) => {
+    await page.goto("/app/lists");
+    await waitForOptional(page, '[data-testid="lists-page"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MODE_DIR, "09-product-lists-dark.png");
+  });
+
+  test("10 — Settings & Health Profile (dark)", async ({ page }) => {
+    await page.goto("/app/settings");
+    await waitForOptional(page, '[data-testid="settings-page"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MODE_DIR, "10-settings-health-dark.png");
+  });
+
+  test("11 — Onboarding (dark)", async ({ page }) => {
+    await page.goto("/onboarding");
+    await page.waitForTimeout(2000);
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MODE_DIR, "11-onboarding-dark.png");
+  });
+
+  test("12 — Admin Submissions (dark)", async ({ page }) => {
+    await page.goto("/app/admin");
+    await waitForOptional(page, '[data-testid="admin-panel"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MODE_DIR, "12-admin-submissions-dark.png");
+  });
+});
+
+/* ════════════════════════════════════════════════════════════════════════════
+   §4  DARK MODE MOBILE SCREENSHOTS (12) — Issue #794
+   ════════════════════════════════════════════════════════════════════════ */
+
+test.describe("Dark mode mobile screenshots (390×844)", () => {
+  test.beforeEach(async ({ page }) => {
+    await provisionTestUser();
+    await page.setViewportSize(MOBILE_VIEWPORT);
+    await page.emulateMedia({
+      colorScheme: "dark",
+      reducedMotion: "reduce",
+    });
+    await signInViaUI(page);
+  });
+
+  test("01 — Dashboard (dark mobile)", async ({ page }) => {
+    await page.goto("/app");
+    await waitForOptional(page, '[data-testid="dashboard"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MOBILE_DIR, "01-dashboard-dark-mobile.png");
+  });
+
+  test("02 — Category Grid (dark mobile)", async ({ page }) => {
+    await page.goto("/app/categories");
+    await waitForOptional(page, '[data-testid="category-grid"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MOBILE_DIR, "02-category-grid-dark-mobile.png");
+  });
+
+  test("03 — Category Detail (dark mobile)", async ({ page }) => {
+    await page.goto("/app/categories/dairy");
+    await waitForOptional(page, '[data-testid="product-list"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MOBILE_DIR, "03-category-detail-dark-mobile.png");
+  });
+
+  test("04 — Product Detail (dark mobile)", async ({ page }) => {
+    await page.goto("/app/product/5900820002176");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MOBILE_DIR, "04-product-detail-dark-mobile.png");
+  });
+
+  test("05 — Score Explanation (dark mobile)", async ({ page }) => {
+    await page.goto("/app/product/5900617043375");
+    await waitForOptional(page, '[data-testid="product-profile"]');
+    await stabilizePage(page);
+    const scoreTab = page.locator(
+      '[data-testid="tab-score"], [role="tab"]:has-text("Score")',
+    );
+    if (await scoreTab.isVisible().catch(() => false)) {
+      await scoreTab.click();
+      await page.waitForTimeout(500);
+    }
+    await captureScreenshot(page, DARK_MOBILE_DIR, "05-score-explanation-dark-mobile.png");
+  });
+
+  test("06 — Search Results (dark mobile)", async ({ page }) => {
+    await page.goto("/app/search?q=jogurt");
+    await waitForOptional(page, '[data-testid="search-results"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MOBILE_DIR, "06-search-results-dark-mobile.png");
+  });
+
+  test("07 — Comparison Grid (dark mobile)", async ({ page }) => {
+    await page.goto("/app/compare");
+    await waitForOptional(page, '[data-testid="comparison-grid"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MOBILE_DIR, "07-comparison-dark-mobile.png");
+  });
+
+  test("08 — Scan History (dark mobile)", async ({ page }) => {
+    await page.goto("/app/scan");
+    await waitForOptional(page, '[data-testid="scan-page"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MOBILE_DIR, "08-scan-history-dark-mobile.png");
+  });
+
+  test("09 — Product Lists (dark mobile)", async ({ page }) => {
+    await page.goto("/app/lists");
+    await waitForOptional(page, '[data-testid="lists-page"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MOBILE_DIR, "09-product-lists-dark-mobile.png");
+  });
+
+  test("10 — Settings & Health Profile (dark mobile)", async ({ page }) => {
+    await page.goto("/app/settings");
+    await waitForOptional(page, '[data-testid="settings-page"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MOBILE_DIR, "10-settings-health-dark-mobile.png");
+  });
+
+  test("11 — Onboarding (dark mobile)", async ({ page }) => {
+    await page.goto("/onboarding");
+    await page.waitForTimeout(2000);
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MOBILE_DIR, "11-onboarding-dark-mobile.png");
+  });
+
+  test("12 — Admin Submissions (dark mobile)", async ({ page }) => {
+    await page.goto("/app/admin");
+    await waitForOptional(page, '[data-testid="admin-panel"]');
+    await stabilizePage(page);
+    await captureScreenshot(page, DARK_MOBILE_DIR, "12-admin-submissions-dark-mobile.png");
   });
 });
