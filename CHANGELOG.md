@@ -13,6 +13,10 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Mobile-first product detail redesign with `ProductScoreHero`, `NutritionHighlights`, and `AllergenQuickBadges` components. Restructured left column into multi-card layout with score verdict, traffic-light nutrition bars, and allergen pill badges (#781)
+
 ### Fixed
 
 - Fix QA CI broken on main — qualify `digest()` as `extensions.digest()` in
