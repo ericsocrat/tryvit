@@ -13,6 +13,13 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+
+- Better alternatives visual comparison cards with score delta bars, verdict
+  labels, and ingredient overlap badges. New `ScoreComparisonBar`,
+  `AlternativeProductCard`, and `AlternativesSection` components replace inline
+  alternatives rendering on the product detail page (#782)
+
 ### Fixed
 
 - Fix QA CI broken on main — qualify `digest()` as `extensions.digest()` in
