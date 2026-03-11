@@ -56,7 +56,6 @@ import type {
 } from "@/lib/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronUp, Globe, Info } from "lucide-react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
