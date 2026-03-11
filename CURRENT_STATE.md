@@ -1,15 +1,15 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-03-09 by GitHub Copilot (session 36)
+> **Last updated:** 2026-03-10 by GitHub Copilot (session 37)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
 
 ## Active Branch & PR
 
-- **Branch:** `data/778-expand-de-categories`
-- **Latest SHA (main):** `a7c7f01` (deps bumps + #717 coverage thresholds)
-- **Open PRs:** PR pending for #778 (expand DE categories)
+- **Branch:** `score/779-band-distribution`
+- **Latest SHA (main):** `b353ab5` (feat(compare): mobile-optimized comparison #783 #821)
+- **Open PRs:** PR pending for #779 (scoring band calibration investigation)
 
 ## Production Deployment (2026-03-06)
 
@@ -107,17 +107,16 @@ All 26 open PRs merged into main in a single session:
 - [x] PR #770 merged — enrichment for #714/#715 (eee3a94)
 - [x] #721 — Test suite reconciliation (PR #771 merged)
 - [x] Implement #717 — automated data coverage thresholds (PR #772 pending)
-- [x] #778 — Expand DE categories (Plant-Based 19, Snacks 29, Cereals 36 — OFF API ceiling)
 - [ ] Deploy 26-PR changes to production (staging validation first)
-- [ ] Implement remaining open issues (#796, #722, #720, etc.)
+- [ ] Merge PR #771 (#721 QA count reconciliation)
 
 ## Key Metrics Snapshot
 
-- **Products (local):** 2,602 active (1,380 PL + 1,222 DE across 22 PL + 21 DE categories)
+- **Products (production):** 2,438 active (1,332 PL + 1,102 DE across 22 PL + 21 DE categories)
 - **Deprecated products:** 286 (229 PL + 57 DE)
 - **QA checks:** 756/756 passing (48 suites) — local DB
 - **Negative tests:** 23/23 caught
-- **EAN coverage:** 2,595/2,595 with EAN (100%) — local DB
+- **EAN coverage:** 2,261/2,264 with EAN (99.9%) — local DB
 - **Ingredient refs:** 5,882 (local, post-enrichment)
 - **Product-ingredient links:** 31,680 (local, post-enrichment)
 - **Allergen contains:** 2,977 (local, post-enrichment)
