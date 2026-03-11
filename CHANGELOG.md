@@ -13,18 +13,12 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-### Added
+### Documentation
 
-- Error classification utility (`classifyError()`) — categorizes errors into
-  network, auth, server, and unknown categories for user-friendly error
-  messages with appropriate illustrations and actions (#791)
-- `SectionError` standalone component — inline error card for TanStack Query
-  error states with category-aware icons, i18n messages, and retry button (#791)
-- ErrorBoundary now shows context-appropriate messages per error category:
-  network errors show "Connection problem" with offline illustration, auth
-  errors show "Session expired" with Sign in link, server errors show
-  "Server error" with Go home link (#791)
-- i18n keys for all error categories in en/pl/de dictionaries (#791)
+- Scoring band distribution investigation (ADR-009): confirmed formula is correct,
+  empty Red/Dark Red bands reflect catalog composition not calibration deficiency.
+  Added SCORING_METHODOLOGY.md § 2.10 with observed distribution data. No formula
+  or band changes needed (#779)
 
 ### Changed
 
