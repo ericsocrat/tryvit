@@ -6,7 +6,7 @@
 // Issue #50 — A11y CI Gate
 // Named smoke-* to match the "smoke" Playwright project pattern.
 
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { assertNoA11yViolations, auditA11y } from "./helpers/a11y";
 
 /* ── Page routes to audit ────────────────────────────────────────────────── */
