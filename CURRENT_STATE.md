@@ -1,20 +1,22 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-03-11 by GitHub Copilot (session 38)
+> **Last updated:** 2026-03-12 by GitHub Copilot (session 39)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
 
 ## Active Branch & PR
 
-- **Branch:** `fix/playwright-smoke-timeout` (4 uncommitted files: main-gate.yml, smoke-a11y.spec.ts, CURRENT_STATE.md, copilot-instructions.md)
-- **Latest SHA (main):** `d80543a` (fix(ci): resolve SonarCloud, Playwright, and Sentry CI failures #827)
+- **Branch:** `main` (clean working tree)
+- **Latest SHA (main):** `553a36f` (fix(ci): Playwright timeout fix + documentation reconciliation #829)
 - **Open PRs:** 0
 
-## Recently Shipped (Sessions 37-38)
+## Recently Shipped (Sessions 37-39)
 
 | PR   | Summary                                                                                     |
 | ---- | ------------------------------------------------------------------------------------------- |
+| #829 | fix(ci): Playwright timeout fix + documentation reconciliation                              |
+| #828 | fix(ci): increase Playwright step timeout and fix dark mode a11y flakiness                  |
 | #827 | fix(ci): resolve SonarCloud, Playwright, and Sentry CI failures                             |
 | #826 | fix(frontend): remove /80 opacity modifiers failing WCAG AA contrast                        |
 | #822 | fix(qa): tighten calorie back-calculation to EU FIC ±20% tolerance (#780)                   |
@@ -36,7 +38,7 @@
 | Gate         | Status | Notes                                                |
 | ------------ | ------ | ---------------------------------------------------- |
 | pr-gate      | ✅      | Typecheck, lint, unit tests, build, Playwright smoke |
-| main-gate    | ✅      | All passing (d80543a)                                |
+| main-gate    | ✅      | All passing (553a36f)                                |
 | qa.yml       | ✅      | 756/756 checks passing (48 suites)                   |
 | dep-audit    | ✅      | 0 high/critical vulnerabilities                      |
 | python-lint  | ✅      | 0 ruff errors                                        |
@@ -58,8 +60,9 @@ All other previously-tracked issues (#683–#722) have been closed.
 
 ## Next Planned Work
 
-- [ ] Commit & PR Playwright timeout fix (2 uncommitted files on `fix/playwright-smoke-timeout`)
-- [ ] Clean up 135+ stale remote branches
+- [x] Playwright timeout fix + docs reconciliation (PR #829 merged)
+- [x] Clean up 133 stale remote branches + 43 stale local branches (pruned)
+- [x] Clean up 37 tmp-* files from repo root
 - [ ] Deploy latest changes to production (staging validation first)
 
 ## Key Metrics Snapshot
@@ -79,7 +82,7 @@ All other previously-tracked issues (#683–#722) have been closed.
 - **Frontend test coverage:** ~92% lines (SonarCloud Quality Gate passing)
 - **ESLint warnings:** 0
 - **Open issues:** 1 | **Open PRs:** 0
-- **Vitest:** 5,611 tests passing (29 skipped) across 343 test files
+- **Vitest:** 5,612 tests passing (29 skipped) across 343 test files
 - **DB migrations:** 203 append-only (75 applied to production, 4 skipped)
 - **pgTAP test files:** 17
 - **Ruff lint:** 0 errors
