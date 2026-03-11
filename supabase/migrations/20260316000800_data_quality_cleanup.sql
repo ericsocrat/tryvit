@@ -6,8 +6,33 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- 1. Fix HTML entities in product names and brands
 --    Affected: product 11, 1020 (product_name), 1876, 2398 (brand)
+--    Safety: deprecate HTML-encoded duplicates before renaming to avoid
+--            unique constraint violations on (country, brand, product_name)
 -- ═══════════════════════════════════════════════════════════════════════════
 
+-- 1a. Deprecate HTML-encoded products whose decoded name collides with
+--     an existing clean product (same country + brand + decoded name)
+UPDATE products AS p1
+SET is_deprecated = true,
+    deprecated_reason = 'Duplicate after HTML entity decode — clean version already exists'
+WHERE p1.product_name ~ '&(amp|lt|gt|quot|#\d+);'
+  AND p1.is_deprecated IS NOT TRUE
+  AND EXISTS (
+    SELECT 1 FROM products p2
+    WHERE p2.country = p1.country
+      AND p2.brand = p1.brand
+      AND p2.product_name = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+          p1.product_name,
+          '&quot;', '"'),
+          '&amp;', '&'),
+          '&lt;', '<'),
+          '&gt;', '>'),
+          '&#39;', '''')
+      AND p2.product_id <> p1.product_id
+      AND p2.is_deprecated IS NOT TRUE
+  );
+
+-- 1b. Fix HTML entities in remaining (non-deprecated, non-colliding) product names
 UPDATE products
 SET product_name = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
     product_name,
@@ -16,8 +41,10 @@ SET product_name = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
     '&lt;', '<'),
     '&gt;', '>'),
     '&#39;', '''')
-WHERE product_name ~ '&(amp|lt|gt|quot|#\d+);';
+WHERE product_name ~ '&(amp|lt|gt|quot|#\d+);'
+  AND is_deprecated IS NOT TRUE;
 
+-- 1c. Fix HTML entities in brands (no unique constraint on brand alone)
 UPDATE products
 SET brand = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
     brand,
@@ -51,7 +78,24 @@ SET is_deprecated = true,
 WHERE product_id = 514
   AND is_deprecated IS NOT TRUE;
 
--- Strip trailing periods from remaining products
+-- Deprecate any product whose period-stripped name would collide
+UPDATE products AS p1
+SET is_deprecated = true,
+    deprecated_reason = 'Duplicate after trailing period removal — clean version already exists'
+WHERE p1.is_deprecated IS NOT TRUE
+  AND p1.product_name ~ '\.\s*$'
+  AND p1.product_id NOT IN (1948)
+  AND LENGTH(RTRIM(p1.product_name, '. ')) > 0
+  AND EXISTS (
+    SELECT 1 FROM products p2
+    WHERE p2.country = p1.country
+      AND p2.brand = p1.brand
+      AND p2.product_name = RTRIM(p1.product_name, '. ')
+      AND p2.product_id <> p1.product_id
+      AND p2.is_deprecated IS NOT TRUE
+  );
+
+-- Strip trailing periods from remaining non-deprecated products
 -- (After HTML entity fix, products 11 and 1020 no longer end with ';')
 UPDATE products
 SET product_name = RTRIM(product_name, '. ')
