@@ -15,6 +15,11 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
+- Reconcile CURRENT_STATE.md with live data: update branch, SHA, open issues
+  (16→1), recently shipped PRs, CI gate status, key metrics snapshot
+- Reconcile copilot-instructions.md counts: QA checks 752→756 (15 locations),
+  migrations 199→203 (2 locations), pgTAP table 10→17 entries, §3 tree updated
+
 - Scoring band distribution investigation (ADR-009): confirmed formula is correct,
   empty Red/Dark Red bands reflect catalog composition not calibration deficiency.
   Added SCORING_METHODOLOGY.md § 2.10 with observed distribution data. No formula
