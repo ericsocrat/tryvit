@@ -1,16 +1,16 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
-  isAuthError,
-  isRateLimitError,
-  callRpc,
-  normalizeRpcError,
-  extractBusinessError,
-  AUTH_CODES,
-  AUTH_MESSAGES,
-  RATE_LIMIT_CODE,
-  RATE_LIMIT_MESSAGES,
-  RPC_SLOW_THRESHOLD_MS,
+    AUTH_CODES,
+    AUTH_MESSAGES,
+    callRpc,
+    extractBusinessError,
+    isAuthError,
+    isRateLimitError,
+    normalizeRpcError,
+    RATE_LIMIT_CODE,
+    RATE_LIMIT_MESSAGES,
+    RPC_SLOW_THRESHOLD_MS,
 } from "@/lib/rpc";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ─── AUTH constants ─────────────────────────────────────────────────────────
 

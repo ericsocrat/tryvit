@@ -2,10 +2,10 @@
 
 // ─── Privacy policy ──────────────────────────────────────────────────────────
 
-import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { Header } from "@/components/layout/Header";
 import { useTranslation } from "@/lib/i18n";
-import { Camera, ShieldCheck, Smartphone, Trash2, Eye } from "lucide-react";
+import { Camera, Eye, ShieldCheck, Smartphone, Trash2 } from "lucide-react";
 
 export default function PrivacyPage() {
   const { t } = useTranslation();
