@@ -5,7 +5,6 @@
 
 import type { Metadata } from "next";
 
-import { SkipLink } from "@/components/common/SkipLink";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 
@@ -56,7 +55,6 @@ export default function HomePage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <SkipLink />
       <Header />
 
       <main id="main-content" className="flex-1">

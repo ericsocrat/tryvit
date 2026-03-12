@@ -4,7 +4,6 @@
 
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { SkipLink } from "@/components/common/SkipLink";
 import { useTranslation } from "@/lib/i18n";
 import { Camera, ShieldCheck, Smartphone, Trash2, Eye } from "lucide-react";
 
@@ -12,7 +11,6 @@ export default function PrivacyPage() {
   const { t } = useTranslation();
   return (
     <div className="flex min-h-screen flex-col">
-      <SkipLink />
       <Header />
 
       <main

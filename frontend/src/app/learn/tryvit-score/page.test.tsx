@@ -22,10 +22,6 @@ vi.mock("@/components/layout/Footer", () => ({
   Footer: () => <footer data-testid="footer" />,
 }));
 
-vi.mock("@/components/common/SkipLink", () => ({
-  SkipLink: () => <div data-testid="skip-link" />,
-}));
-
 vi.mock("@/components/learn/LearnSidebar", () => ({
   LearnSidebar: () => <nav data-testid="learn-sidebar" />,
 }));

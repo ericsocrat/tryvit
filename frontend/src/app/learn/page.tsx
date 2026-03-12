@@ -1,6 +1,5 @@
 "use client";
 
-import { SkipLink } from "@/components/common/SkipLink";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Disclaimer } from "@/components/learn/Disclaimer";
@@ -87,7 +86,6 @@ export default function LearnHubPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <SkipLink />
       <Header />
 
       <main id="main-content" className="flex-1 px-4 py-12">
