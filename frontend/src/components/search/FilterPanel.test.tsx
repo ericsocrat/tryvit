@@ -318,20 +318,20 @@ describe("FilterPanel", () => {
     expect(onChange).toHaveBeenCalledWith({});
   });
 
-  it("renders max health score slider", async () => {
+  it("renders min health score slider", async () => {
     renderPanel();
     await waitFor(() => {
       expect(
-        screen.getAllByText("Max TryVit Score").length,
+        screen.getAllByText("Min TryVit Score").length,
       ).toBeGreaterThanOrEqual(1);
     });
     expect(screen.getAllByText("Any").length).toBeGreaterThanOrEqual(1);
   });
 
-  it("shows current max score value when set", async () => {
+  it("shows current min score value when set", async () => {
     renderPanel({ filters: { max_unhealthiness: 50 } });
     await waitFor(() => {
-      expect(screen.getAllByText("≤ 50").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("≥ 50").length).toBeGreaterThanOrEqual(1);
     });
   });
 

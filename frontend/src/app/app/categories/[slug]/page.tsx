@@ -2,6 +2,7 @@
 
 // ─── Category listing — paginated product list for a single category ────────
 
+import { CategoryScoreBar } from "@/components/category/CategoryScoreBar";
 import { AllergenChips } from "@/components/common/AllergenChips";
 import { Button } from "@/components/common/Button";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -9,7 +10,6 @@ import { NutriScoreBadge } from "@/components/common/NutriScoreBadge";
 import { ProductThumbnail } from "@/components/common/ProductThumbnail";
 import { PullToRefresh } from "@/components/common/PullToRefresh";
 import { CategoryListingSkeleton } from "@/components/common/skeletons";
-import { CategoryScoreBar } from "@/components/category/CategoryScoreBar";
 import { CompareCheckbox } from "@/components/compare/CompareCheckbox";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { AddToListMenu } from "@/components/product/AddToListMenu";
@@ -412,7 +412,7 @@ function CategoryStatsCard({
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="text-center">
           <p className="text-lg font-bold text-foreground">
-            {Math.round(stats.avg_score)}
+            {toTryVitScore(Math.round(stats.avg_score))}
           </p>
           <p className="text-xs text-foreground-secondary">
             {t("categories.statAvgScore")}
@@ -420,7 +420,7 @@ function CategoryStatsCard({
         </div>
         <div className="text-center">
           <p className="text-lg font-bold text-foreground">
-            {stats.min_score}–{stats.max_score}
+            {toTryVitScore(stats.max_score)}–{toTryVitScore(stats.min_score)}
           </p>
           <p className="text-xs text-foreground-secondary">
             {t("categories.scoreRange")}
