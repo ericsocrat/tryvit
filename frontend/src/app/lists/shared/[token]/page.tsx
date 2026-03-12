@@ -7,7 +7,6 @@
 import { ButtonLink } from "@/components/common/Button";
 import { Logo } from "@/components/common/Logo";
 import { ListDetailSkeleton } from "@/components/common/skeletons";
-import { SkipLink } from "@/components/common/SkipLink";
 import { useSharedList } from "@/hooks/use-lists";
 import { NUTRI_COLORS, SCORE_BANDS, scoreBandFromScore } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
@@ -48,7 +47,6 @@ export default function SharedListPage() {
 
   return (
     <div className="min-h-screen bg-surface-subtle">
-      <SkipLink />
       {/* Header */}
       <header className="border-b border bg-surface backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">

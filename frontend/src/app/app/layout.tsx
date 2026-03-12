@@ -7,7 +7,6 @@
 import { buttonClasses } from "@/components/common/Button";
 import { CountryChip } from "@/components/common/CountryChip";
 import { Logo } from "@/components/common/Logo";
-import { SkipLink } from "@/components/common/SkipLink";
 import { CompareFloatingButton } from "@/components/compare/CompareFloatingButton";
 import { ComparisonTray } from "@/components/desktop/ComparisonTray";
 import { LanguageHydrator } from "@/components/i18n/LanguageHydrator";
@@ -92,7 +91,6 @@ export default async function AppLayout({
 
   return (
     <div className="flex min-h-screen flex-col xl:flex-row">
-      <SkipLink />
       <div className="no-print">
         <OfflineIndicator />
       </div>

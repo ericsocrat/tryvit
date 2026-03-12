@@ -1,6 +1,5 @@
 "use client";
 
-import { SkipLink } from "@/components/common/SkipLink";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Disclaimer } from "@/components/learn/Disclaimer";
@@ -18,7 +17,6 @@ export default function NutriScorePage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <SkipLink />
       <Header />
 
       <div className="mx-auto flex w-full max-w-5xl flex-1 gap-8 px-4 py-8">

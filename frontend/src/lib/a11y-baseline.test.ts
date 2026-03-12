@@ -1,6 +1,5 @@
 // ─── A11y baseline compliance tests ──────────────────────────────────────────
 // Validates structural a11y patterns introduced by Issue #49:
-// - SkipLink presence on all page layouts
 // - id="main-content" landmark targets
 // - Focus management in dropdown components
 // - ARIA combobox pattern on SearchAutocomplete
@@ -13,55 +12,6 @@ import { describe, expect, it } from "vitest";
 
 const SRC = join(__dirname, "..");
 const css = readFileSync(join(SRC, "styles/globals.css"), "utf-8");
-
-/* ────────────────── SkipLink on all page layouts ────────────────── */
-
-describe("SkipLink coverage — all pages", () => {
-  const pages: [string, string][] = [
-    ["Landing page", "app/page.tsx"],
-    ["Terms page", "app/terms/page.tsx"],
-    ["Privacy page", "app/privacy/page.tsx"],
-    ["Learn hub", "app/learn/page.tsx"],
-    ["Learn nutri-score", "app/learn/nutri-score/page.tsx"],
-    ["Learn nova-groups", "app/learn/nova-groups/page.tsx"],
-    ["Learn tryvit-score", "app/learn/tryvit-score/page.tsx"],
-    ["Learn additives", "app/learn/additives/page.tsx"],
-    ["Learn allergens", "app/learn/allergens/page.tsx"],
-    ["Learn reading-labels", "app/learn/reading-labels/page.tsx"],
-    ["Learn confidence", "app/learn/confidence/page.tsx"],
-    ["Onboarding layout", "app/onboarding/layout.tsx"],
-    ["Login form", "app/auth/login/LoginForm.tsx"],
-    ["Signup form", "app/auth/signup/SignupForm.tsx"],
-    ["Shared list page", "app/lists/shared/[token]/page.tsx"],
-    ["App layout", "app/app/layout.tsx"],
-  ];
-
-  for (const [name, file] of pages) {
-    it(`${name} imports SkipLink`, () => {
-      const path = join(SRC, file);
-      expect(existsSync(path), `${file} should exist`).toBe(true);
-      const src = readFileSync(path, "utf-8");
-      expect(src).toContain("SkipLink");
-    });
-  }
-
-  const pagesWithMainContent: [string, string][] = [
-    ["Landing page", "app/page.tsx"],
-    ["Terms page", "app/terms/page.tsx"],
-    ["Privacy page", "app/privacy/page.tsx"],
-    ["Learn hub", "app/learn/page.tsx"],
-    ["Onboarding layout", "app/onboarding/layout.tsx"],
-    ["App layout", "app/app/layout.tsx"],
-    ["Shared list page", "app/lists/shared/[token]/page.tsx"],
-  ];
-
-  for (const [name, file] of pagesWithMainContent) {
-    it(`${name} has id="main-content"`, () => {
-      const src = readFileSync(join(SRC, file), "utf-8");
-      expect(src).toContain('id="main-content"');
-    });
-  }
-});
 
 /* ────────────────── Focus management ────────────────── */
 

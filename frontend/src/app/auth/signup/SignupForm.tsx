@@ -3,7 +3,6 @@
 import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
 import { Button } from "@/components/common/Button";
 import { Logo } from "@/components/common/Logo";
-import { SkipLink } from "@/components/common/SkipLink";
 import { TurnstileWidget } from "@/components/common/TurnstileWidget";
 import { useTranslation } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
@@ -75,7 +74,6 @@ export function SignupForm() {
 
   return (
     <>
-      <SkipLink />
       <div id="main-content" className="w-full max-w-sm">
         <div className="mb-2 flex justify-center lg:hidden">
           <Logo variant="lockup" size={36} />

@@ -1,15 +1,14 @@
 "use client";
 
-import Link from "next/link";
-import { Header } from "@/components/layout/Header";
-import { SkipLink } from "@/components/common/SkipLink";
 import { Footer } from "@/components/layout/Footer";
-import { LearnSidebar } from "@/components/learn/LearnSidebar";
+import { Header } from "@/components/layout/Header";
 import { Disclaimer } from "@/components/learn/Disclaimer";
+import { LearnSidebar } from "@/components/learn/LearnSidebar";
 import { LearnTopicNav } from "@/components/learn/LearnTopicNav";
 import { SourceCitation } from "@/components/learn/SourceCitation";
 import { useTranslation } from "@/lib/i18n";
 import { Tag } from "lucide-react";
+import Link from "next/link";
 
 // ─── Reading Labels topic page ─────────────────────────────────────────────
 
@@ -24,7 +23,6 @@ export default function ReadingLabelsPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <SkipLink />
       <Header />
 
       <div className="mx-auto flex w-full max-w-5xl flex-1 gap-8 px-4 py-8">

@@ -73,10 +73,6 @@ vi.mock("@/components/common/Logo", () => ({
   ),
 }));
 
-vi.mock("@/components/common/SkipLink", () => ({
-  SkipLink: () => null,
-}));
-
 vi.mock("@/components/layout/Header", () => ({
   Header: () => <header data-testid="header">Header</header>,
 }));

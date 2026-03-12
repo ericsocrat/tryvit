@@ -1,5 +1,4 @@
 ﻿import { Providers } from "@/components/Providers";
-import { SkipLink } from "@/components/common/SkipLink";
 import { ThemeScript } from "@/components/ThemeScript";
 import { IS_QA_MODE } from "@/lib/qa-mode";
 import "@/styles/globals.css";
@@ -159,7 +158,6 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <SkipLink />
         <Providers>{children}</Providers>
         {!IS_QA_MODE && <SpeedInsights />}
       </body>
