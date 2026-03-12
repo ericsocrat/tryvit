@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { ActiveFilterChips } from "./ActiveFilterChips";
 import type { SearchFilters } from "@/lib/types";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { ActiveFilterChips } from "./ActiveFilterChips";
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
@@ -157,26 +157,26 @@ describe("ActiveFilterChips", () => {
     expect(screen.getByText("mystery-free")).toBeTruthy();
   });
 
-  // ─── Max unhealthiness chip ─────────────────────────────────────────
+  // ─── Min TryVit Score chip ──────────────────────────────────────────
 
-  it("renders max unhealthiness chip", () => {
+  it("renders min TryVit Score chip", () => {
     render(
       <ActiveFilterChips
         filters={{ max_unhealthiness: 50 }}
         onChange={onChange}
       />,
     );
-    expect(screen.getByText("Score ≤ 50")).toBeTruthy();
+    expect(screen.getByText("TryVit Score ≥ 50")).toBeTruthy();
   });
 
-  it("removes max unhealthiness chip on click", () => {
+  it("removes min TryVit Score chip on click", () => {
     render(
       <ActiveFilterChips
         filters={{ max_unhealthiness: 50 }}
         onChange={onChange}
       />,
     );
-    fireEvent.click(screen.getByLabelText("Remove Score ≤ 50 filter"));
+    fireEvent.click(screen.getByLabelText("Remove TryVit Score ≥ 50 filter"));
     expect(onChange).toHaveBeenCalledWith({
       max_unhealthiness: undefined,
     });

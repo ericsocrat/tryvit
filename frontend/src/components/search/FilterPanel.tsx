@@ -10,6 +10,7 @@ import { ALLERGEN_TAGS, NUTRI_COLORS } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 import { nutriScoreLabel } from "@/lib/nutri-label";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { toTryVitScore } from "@/lib/score-utils";
 import { createClient } from "@/lib/supabase/client";
 import type { SearchFilters } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
@@ -313,10 +314,10 @@ export function FilterPanel({
             </div>
           )}
 
-          {/* Max Unhealthiness Slider */}
+          {/* Min TryVit Score Slider */}
           <div>
             <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground-secondary">
-              {t("filters.maxHealthScore")}
+              {t("filters.minHealthScore")}
             </h3>
             <div className="px-1">
               <input
@@ -324,12 +325,16 @@ export function FilterPanel({
                 min={0}
                 max={100}
                 step={5}
-                value={filters.max_unhealthiness ?? 100}
+                value={
+                  filters.max_unhealthiness !== undefined
+                    ? 100 - filters.max_unhealthiness
+                    : 0
+                }
                 onChange={(e) => {
                   const val = Number.parseInt(e.target.value);
-                  setMaxScore(val >= 100 ? undefined : val);
+                  setMaxScore(val <= 0 ? undefined : 100 - val);
                 }}
-                aria-label={t("filters.maxHealthScore")}
+                aria-label={t("filters.minHealthScore")}
                 className="w-full accent-brand"
               />
               <div className="flex justify-between text-xs text-foreground-muted">
@@ -337,7 +342,7 @@ export function FilterPanel({
                 <span className="font-medium text-foreground-secondary">
                   {filters.max_unhealthiness === undefined
                     ? t("filters.any")
-                    : `≤ ${filters.max_unhealthiness}`}
+                    : `≥ ${toTryVitScore(filters.max_unhealthiness)}`}
                 </span>
                 <span>100</span>
               </div>

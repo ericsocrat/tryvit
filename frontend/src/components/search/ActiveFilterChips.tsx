@@ -5,6 +5,7 @@
 import { ALLERGEN_TAGS } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 import { nutriScoreLabel } from "@/lib/nutri-label";
+import { toTryVitScore } from "@/lib/score-utils";
 import type { SearchFilters } from "@/lib/types";
 
 interface ActiveFilterChipsProps {
@@ -90,7 +91,7 @@ export function ActiveFilterChips({
   if (filters.max_unhealthiness !== undefined) {
     chips.push({
       key: "max-score",
-      label: t("chips.scoreMax", { value: filters.max_unhealthiness }),
+      label: t("chips.scoreMin", { value: toTryVitScore(filters.max_unhealthiness ?? 0) }),
       onRemove: () => onChange({ ...filters, max_unhealthiness: undefined }),
     });
   }

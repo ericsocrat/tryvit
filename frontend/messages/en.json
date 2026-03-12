@@ -281,7 +281,7 @@
     "nova2": "2 — Processed ingredients",
     "nova3": "3 — Processed",
     "nova4": "4 — Ultra-processed",
-    "maxHealthScore": "Max TryVit Score",
+    "minHealthScore": "Min TryVit Score",
     "any": "Any",
     "clearAll": "Clear all",
     "closeFilters": "Close filters",
@@ -583,8 +583,8 @@
     "toggleViewMode": "Toggle view mode",
     "compactView": "Compact",
     "detailedView": "Detailed",
-    "statAvgScore": "Avg. Score",
-    "scoreRange": "Score Range",
+    "statAvgScore": "Avg. TryVit Score",
+    "scoreRange": "TryVit Score Range",
     "nutriAB": "Nutri-Score A–B",
     "nova4Pct": "NOVA 4",
     "bestInCategory": "★ Best in category"
@@ -1090,7 +1090,7 @@
     "nutri": "Nutri {value}",
     "nova_group": "NOVA {value}",
     "allergenFree": "{label}-free",
-    "scoreMax": "Score ≤ {value}",
+    "scoreMin": "TryVit Score ≥ {value}",
     "sortLabel": "Sort: {label}",
     "removeFilter": "Remove {label} filter"
   },
