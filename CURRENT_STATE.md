@@ -1,6 +1,6 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-03-12 by GitHub Copilot (session 44)
+> **Last updated:** 2026-03-13 by GitHub Copilot (session 45)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
@@ -8,21 +8,28 @@
 ## Active Branch & PR
 
 - **Branch:** `main` (clean working tree)
-- **Latest SHA (main):** `fb9b442` (fix(schema): fix 7 broken production functions #854)
+- **Latest SHA (main):** `88897e7` (chore(state): mark PRODUCTION_URL secret as configured #856)
 - **Open PRs:** 0
+
+## Recently Shipped (Session 45 — Infrastructure)
+
+| PR   | Summary                                                                                |
+| ---- | -------------------------------------------------------------------------------------- |
+| #855 | chore(state): update CURRENT_STATE.md — session 44, PR #854 merged, 207 migrations     |
+| #856 | chore(state): mark PRODUCTION_URL secret as configured                                 |
 
 ## Recently Shipped (Session 44 — Production Fix)
 
-| PR   | Summary                                                                                       |
-| ---- | --------------------------------------------------------------------------------------------- |
-| #854 | fix(schema): fix 7 broken production functions — STABLE→VOLATILE + watchlist SQL alias        |
+| PR   | Summary                                                                                |
+| ---- | -------------------------------------------------------------------------------------- |
+| #854 | fix(schema): fix 7 broken production functions — STABLE→VOLATILE + watchlist SQL alias |
 
 ## Recently Shipped (Session 43 — UX Audit)
 
 | PR   | Summary                                                                                       |
 | ---- | --------------------------------------------------------------------------------------------- |
 | #853 | fix(ci): skip orphan cleanup migration in CI to prevent enrichment FK violation               |
-| #852 | fix(frontend): UX polish round 2 — SkipLink removal, camera fix, recipe slugs                |
+| #852 | fix(frontend): UX polish round 2 — SkipLink removal, camera fix, recipe slugs                 |
 | #851 | fix(frontend): SonarCloud reliability + maintainability fixes, auth-aware Header              |
 | #849 | fix(frontend): visual polish — filter skeleton loader, grid cleanup (#845, P3)                |
 | #848 | fix(frontend): UX improvements — flags, scanner default, QuickWin, 403 page (#844, P2)        |
@@ -74,7 +81,18 @@ All UX audit issues (#842–#845) have been closed. All other previously-tracked
 - [x] P3 fix: Filter skeleton loader, category grid cleanup (PR #849)
 - [x] Fix 7 broken production functions — STABLE→VOLATILE + watchlist alias (PR #854)
 - [x] Configure PRODUCTION_URL secret for health endpoint verification
-- [ ] Set up staging environment for pre-production validation
+- [x] Set up staging environment — project `rxtaicdpnaqigowdbmsb` (eu-west-1), 207 migrations, seeded, secrets configured
+
+## Staging Environment
+
+- **Project:** `rxtaicdpnaqigowdbmsb` (`tryvit-staging`, eu-west-1)
+- **Status:** ACTIVE_HEALTHY — schema deployed, reference data seeded, no product data
+- **URL:** `https://rxtaicdpnaqigowdbmsb.supabase.co`
+- **Schema:** 74 tables, 20 views, 4 materialized views, 257 functions, 128 RLS policies, 33 triggers
+- **Reference data:** 2 countries, 22 categories, 7 nutri_score, 4 concern_tiers
+- **GitHub secrets:** `SUPABASE_STAGING_PROJECT_REF`, `SUPABASE_URL_STAGING`, `SUPABASE_ANON_KEY_STAGING`, `SUPABASE_SERVICE_ROLE_KEY_STAGING`, `STAGING_URL`
+- **GitHub variable:** `STAGING_ENABLED=true`
+- **CLI note:** When running `supabase db push` against staging, set `$env:SUPABASE_DB_PASSWORD` to the staging password first — the `--password` flag does NOT override the env var.
 
 ## Key Metrics Snapshot
 
