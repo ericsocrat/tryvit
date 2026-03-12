@@ -75,11 +75,11 @@ WHERE  brand        = 'Mlekovita'
   AND  category = 'Baby'
   AND  is_deprecated IS NOT TRUE;
 
--- Deprecate products with extreme calorie back-calculation deviation (>35%)
--- These have unreliable OFF API nutrition data.
+-- Deprecate products with calorie back-calculation deviation >20%
+-- QA check 2 (nutrition ranges) uses 20% threshold per EU FIC Regulation.
 UPDATE products
 SET    is_deprecated    = true,
-       deprecated_reason = 'OFF API data error: calorie back-calculation >35% deviation'
+       deprecated_reason = 'OFF API data error: calorie back-calculation >20% deviation'
 WHERE  is_deprecated IS NOT TRUE
   AND  product_id IN (
     SELECT p.product_id
@@ -90,7 +90,7 @@ WHERE  is_deprecated IS NOT TRUE
       AND  nf.protein_g IS NOT NULL AND nf.carbs_g IS NOT NULL AND nf.total_fat_g IS NOT NULL
       AND  p.category NOT IN ('Alcohol', 'Drinks', 'Condiments', 'Sauces')
       AND  ABS(nf.calories - (nf.protein_g * 4 + nf.carbs_g * 4 + nf.total_fat_g * 9))
-           > nf.calories * 0.35
+           > nf.calories * 0.20
   );
 
 -- ─── 3c. Clean product names from OFF API artifacts ─────────────────────
@@ -104,17 +104,20 @@ SET    is_deprecated    = true,
 WHERE  product_name = '.'
   AND  is_deprecated IS NOT TRUE;
 
--- Deprecate products with HTML &quot; entities (clean-name versions exist)
+-- Deprecate products with HTML entities or encoding artifacts
+-- QA check 11 (naming conventions) rejects any &amp; &lt; &gt; &quot; &#NNN; or UTF-8 mojibake.
 UPDATE products
 SET    is_deprecated    = true,
-       deprecated_reason = 'Duplicate with HTML-encoded name from OFF API'
-WHERE  product_name LIKE '%&quot;%'
-  AND  is_deprecated IS NOT TRUE;
+       deprecated_reason = 'OFF API data error: HTML entities in product name'
+WHERE  is_deprecated IS NOT TRUE
+  AND  (product_name ~ '&(amp|lt|gt|quot|#[0-9]+);'
+    OR  product_name ~ 'Ã[©¶¼]');
 
--- Fix HTML &quot; entities in brand names (no conflict expected)
+-- Fix HTML entities in brand names
 UPDATE products
-SET    brand = replace(brand, '&quot;', '"')
-WHERE  brand LIKE '%&quot;%'
+SET    brand = replace(replace(replace(replace(brand,
+               '&quot;', '"'), '&amp;', '&'), '&lt;', '<'), '&gt;', '>')
+WHERE  brand ~ '&(amp|lt|gt|quot);'
   AND  is_deprecated IS NOT TRUE;
 
 -- Deprecate trailing-period products that conflict with existing clean names
@@ -476,11 +479,52 @@ WHERE p.brand = bp.minority
       AND p2.product_name = p.product_name
   );
 
+-- Step 6c-ii-b: Also rename deprecated products to canonical brand
+-- (deprecated products still reference minority brand_ref entries,
+-- preventing orphan deletion in step 6c-iii)
+WITH brand_pairs AS (
+  SELECT b1.brand_name AS minority, b2.brand_name AS canonical
+  FROM brand_ref b1
+  JOIN brand_ref b2
+    ON LOWER(b1.brand_name) = LOWER(b2.brand_name)
+   AND b1.brand_name <> b2.brand_name
+  WHERE (SELECT COUNT(*) FROM products p WHERE p.brand = b1.brand_name AND p.is_deprecated IS NOT TRUE)
+      < (SELECT COUNT(*) FROM products p WHERE p.brand = b2.brand_name AND p.is_deprecated IS NOT TRUE)
+)
+UPDATE products p
+SET brand = bp.canonical
+FROM brand_pairs bp
+WHERE p.brand = bp.minority
+  AND p.is_deprecated = true
+  AND NOT EXISTS (
+    SELECT 1 FROM products p2
+    WHERE p2.country = p.country
+      AND p2.brand = bp.canonical
+      AND p2.product_name = p.product_name
+  );
+
 -- Step 6c-iii: Delete orphan brand_ref entries (no products reference them)
 DELETE FROM brand_ref br
 WHERE NOT EXISTS (
   SELECT 1 FROM products p WHERE p.brand = br.brand_name
 );
+
+-- ─── 6d. Deduplicate ingredient positions ────────────────────────────────
+-- Enrichment data may insert product_ingredient rows at positions that
+-- already exist (e.g., case-variant ingredient names like ROGGENflocken vs
+-- Roggenflocken). Keep the entry with the lower ingredient_id.
+
+WITH dupes AS (
+    SELECT product_id, position, MIN(ingredient_id) AS keep_id
+    FROM product_ingredient
+    GROUP BY product_id, position
+    HAVING COUNT(*) > 1
+)
+DELETE FROM product_ingredient pi
+USING dupes d
+WHERE pi.product_id = d.product_id
+  AND pi.position = d.position
+  AND pi.ingredient_id != d.keep_id;
 
 -- ─── 7. Final re-scoring pass ─────────────────────────────────────────────
 -- Earlier steps deprecate products, fix nutrition data, reclassify Żabka,
@@ -505,18 +549,37 @@ CALL score_category('Frozen & Prepared');
 CALL score_category('Instant & Frozen');
 CALL score_category('Meat');
 CALL score_category('Nuts, Seeds & Legumes');
+CALL score_category('Oils & Vinegars');
 CALL score_category('Plant-Based & Alternatives');
 CALL score_category('Sauces');
 CALL score_category('Seafood & Fish');
 CALL score_category('Snacks');
+CALL score_category('Spreads & Dips');
 CALL score_category('Sweets');
+CALL score_category('Żabka');
 
--- DE categories (micro-pilot)
-CALL score_category('Chips',    p_country := 'DE');
-CALL score_category('Bread',    p_country := 'DE');
-CALL score_category('Dairy',    p_country := 'DE');
-CALL score_category('Drinks',   p_country := 'DE');
-CALL score_category('Sweets',   p_country := 'DE');
+-- DE categories (all 21)
+CALL score_category('Alcohol',                    p_country := 'DE');
+CALL score_category('Baby',                       p_country := 'DE');
+CALL score_category('Bread',                      p_country := 'DE');
+CALL score_category('Breakfast & Grain-Based',     p_country := 'DE');
+CALL score_category('Canned Goods',               p_country := 'DE');
+CALL score_category('Cereals',                    p_country := 'DE');
+CALL score_category('Chips',                      p_country := 'DE');
+CALL score_category('Condiments',                 p_country := 'DE');
+CALL score_category('Dairy',                      p_country := 'DE');
+CALL score_category('Drinks',                     p_country := 'DE');
+CALL score_category('Frozen & Prepared',          p_country := 'DE');
+CALL score_category('Instant & Frozen',           p_country := 'DE');
+CALL score_category('Meat',                       p_country := 'DE');
+CALL score_category('Nuts, Seeds & Legumes',      p_country := 'DE');
+CALL score_category('Oils & Vinegars',            p_country := 'DE');
+CALL score_category('Plant-Based & Alternatives', p_country := 'DE');
+CALL score_category('Sauces',                     p_country := 'DE');
+CALL score_category('Seafood & Fish',             p_country := 'DE');
+CALL score_category('Snacks',                     p_country := 'DE');
+CALL score_category('Spreads & Dips',             p_country := 'DE');
+CALL score_category('Sweets',                     p_country := 'DE');
 
 COMMIT;
 
