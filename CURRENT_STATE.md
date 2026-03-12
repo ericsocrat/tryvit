@@ -1,6 +1,6 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-03-11 by GitHub Copilot (session 42)
+> **Last updated:** 2026-03-17 by GitHub Copilot (session 43)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
@@ -8,8 +8,17 @@
 ## Active Branch & PR
 
 - **Branch:** `main` (clean working tree)
-- **Latest SHA (main):** `585098f` (fix(ci): make deploy health check non-blocking #840)
+- **Latest SHA (main):** `aa2d80a` (fix(frontend): visual polish — filter skeleton loader, grid cleanup #849)
 - **Open PRs:** 0
+
+## Recently Shipped (Session 43 — UX Audit)
+
+| PR   | Summary                                                                                     |
+| ---- | ------------------------------------------------------------------------------------------- |
+| #849 | fix(frontend): visual polish — filter skeleton loader, grid cleanup (#845, P3)               |
+| #848 | fix(frontend): UX improvements — flags, scanner default, QuickWin, 403 page (#844, P2)      |
+| #847 | fix(ui): category truncation, product not-found empty state, settings tab overflow (#843, P1)|
+| #846 | fix(scoring): invert filter slider & category stats to TryVit Score (#842, P0)              |
 
 ## Recently Shipped (Sessions 41-42)
 
@@ -43,7 +52,7 @@
 | ----- | -------- | ----------------------------------------- |
 | #212  | Deferred | Infrastructure Cost Attribution Framework |
 
-All other previously-tracked issues (#683–#722) have been closed.
+All UX audit issues (#842–#845) have been closed. All other previously-tracked issues (#683–#722) were closed in earlier sessions.
 
 ## Milestones Completed
 
@@ -62,6 +71,11 @@ All other previously-tracked issues (#683–#722) have been closed.
 - [x] Ship enrichment fix as PR (PR #833)
 - [x] Fix 4 pre-existing QA failures — Suites 7, 10, 11, 12 (PR #834 — 47/48 pass)
 - [x] Deploy latest changes to production — 205 migrations applied (PRs #835-#840)
+- [x] UX Audit — 74 Playwright screenshots + 20 user screenshots analyzed → 4 issues created (#842-#845)
+- [x] P0 fix: Score display consistency — TryVit Score (100−unhealthiness) for filters/stats (PR #846)
+- [x] P1 fix: Category truncation, product not-found empty state, settings tab overflow (PR #847)
+- [x] P2 fix: Language flags removed, scanner default to manual, QuickWin null guard, 403 page enhanced (PR #848)
+- [x] P3 fix: Filter skeleton loader, category grid cleanup (PR #849)
 - [ ] Configure PRODUCTION_URL secret for health endpoint verification
 - [ ] Set up staging environment for pre-production validation
 
@@ -82,7 +96,7 @@ All other previously-tracked issues (#683–#722) have been closed.
 - **Frontend test coverage:** ~92% lines (SonarCloud Quality Gate passing)
 - **ESLint warnings:** 0
 - **Open issues:** 1 | **Open PRs:** 0
-- **Vitest:** 5,612 tests passing (29 skipped) across 343 test files
+- **Vitest:** 5,614 tests passing (29 skipped) across 343 test files
 - **DB migrations:** 205 append-only (all applied to production)
 - **pgTAP test files:** 17
 - **Ruff lint:** 0 errors
