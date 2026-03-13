@@ -15,6 +15,11 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- Batch SQL generation for 10K scale: pipeline splits large category runs
+  (>batch_size products) into multiple batch files per step (01, 03) with
+  independent transactions, stale file cleanup, batch progress headers.
+  `--batch-size` CLI flag, backward compatible (≤100 products → single file).
+  Includes 26-test pytest suite and structure checker support (#864)
 - CSV bulk import tool (`pipeline/csv_importer.py` + `pipeline/csv_import.py`)
   for multi-source 10K expansion: validates EAN checksums, nutrition caps,
   cross-field constraints, formula injection defense, deduplication by name and

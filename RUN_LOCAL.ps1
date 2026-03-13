@@ -154,7 +154,15 @@ $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 foreach ($file in $allFiles) {
     $relativePath = $file.FullName.Replace($PSScriptRoot, "").TrimStart("\", "/")
-    Write-Host "  RUN  $relativePath" -ForegroundColor Yellow -NoNewline
+    # Show batch progress for batched pipeline files
+    $batchLabel = ""
+    if ($file.Name -match '_batch_(\d{3})_') {
+        $batchNum = $Matches[1]
+        $stepPrefix = ($file.Name -split '_batch_')[0]
+        $totalBatches = @($allFiles | Where-Object { $_.Name -like "$stepPrefix*_batch_*" }).Count
+        $batchLabel = "  [batch $batchNum/$totalBatches]"
+    }
+    Write-Host "  RUN  $relativePath$batchLabel" -ForegroundColor Yellow -NoNewline
 
     $sqlContent = Get-Content $file.FullName -Raw
     $output = $sqlContent | docker exec -i $CONTAINER psql -U $DB_USER -d $DB_NAME --single-transaction -v ON_ERROR_STOP=1 2>&1

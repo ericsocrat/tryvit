@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import math
 import re
 import sys
 from pathlib import Path
@@ -18,7 +19,7 @@ from tqdm import tqdm
 
 from pipeline.categories import CATEGORY_SEARCH_TERMS, resolve_category
 from pipeline.off_client import extract_product_data, market_score, search_products
-from pipeline.sql_generator import generate_pipeline
+from pipeline.sql_generator import BATCH_SIZE, generate_pipeline
 from pipeline.utils import slug as _slug
 from pipeline.validator import validate_product
 
@@ -180,6 +181,7 @@ def run_pipeline(
     min_completeness: float = 0.0,
     max_warnings: int = 3,
     country: str = "PL",
+    batch_size: int = BATCH_SIZE,
 ) -> None:
     """Execute the full pipeline for a single category.
 
@@ -287,7 +289,7 @@ def run_pipeline(
     print()
 
     # 5. Generate SQL
-    _generate_sql_output(category, unique, output_dir, dry_run, country)
+    _generate_sql_output(category, unique, output_dir, dry_run, country, batch_size)
 
 
 def _generate_sql_output(
@@ -296,24 +298,35 @@ def _generate_sql_output(
     output_dir: str,
     dry_run: bool,
     country: str = "PL",
+    batch_size: int = BATCH_SIZE,
 ) -> None:
     """Phase 5: generate SQL files or print dry-run summary."""
     slug = _slug(category)
+    use_batching = batch_size > 0 and len(products) > batch_size
+
     if dry_run:
-        print("[DRY RUN] Would generate SQL files in:", output_dir)
-        print(f"  PIPELINE__{slug}__01_insert_products.sql ({len(products)} products)")
-        print(f"  PIPELINE__{slug}__03_add_nutrition.sql ({len(products)} nutrition rows)")
+        if use_batching:
+            n_batches = math.ceil(len(products) / batch_size)
+            print(f"[DRY RUN] Would generate batched SQL ({n_batches} batches of {batch_size}) in: {output_dir}")
+            for i in range(1, n_batches + 1):
+                print(f"  PIPELINE__{slug}__01_batch_{i:03d}_insert_products.sql")
+            for i in range(1, n_batches + 1):
+                print(f"  PIPELINE__{slug}__03_batch_{i:03d}_add_nutrition.sql")
+        else:
+            print("[DRY RUN] Would generate SQL files in:", output_dir)
+            print(f"  PIPELINE__{slug}__01_insert_products.sql ({len(products)} products)")
+            print(f"  PIPELINE__{slug}__03_add_nutrition.sql ({len(products)} nutrition rows)")
         print(f"  PIPELINE__{slug}__04_scoring.sql")
         print(f"  PIPELINE__{slug}__05_source_provenance.sql")
         print(f"  PIPELINE__{slug}__06_add_images.sql")
         return
 
     print("Generating SQL files...")
-    files = generate_pipeline(category, products, output_dir, country=country)
+    files = generate_pipeline(category, products, output_dir, country=country, batch_size=batch_size)
     for f in files:
         size_label = ""
-        if "01_insert" in f.name:
-            size_label = f" ({len(products)} products)"
+        if "01_insert" in f.name or "01_batch" in f.name:
+            size_label = f" ({len(products)} products)" if "01_insert" in f.name else ""
         elif "03_add_nutrition" in f.name:
             size_label = f" ({len(products)} nutrition rows)"
         print(f"  OK {f.name}{size_label}")
@@ -371,6 +384,12 @@ def main() -> None:
         default="PL",
         help="ISO 3166-1 alpha-2 country code (default: PL). Supported: PL, DE",
     )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=BATCH_SIZE,
+        help=f"Max products per batch SQL file (default: {BATCH_SIZE}). 0 = no batching.",
+    )
 
     args = parser.parse_args()
 
@@ -387,6 +406,7 @@ def main() -> None:
         min_completeness=args.min_completeness,
         max_warnings=args.max_warnings,
         country=args.country.upper(),
+        batch_size=args.batch_size,
     )
 
 
