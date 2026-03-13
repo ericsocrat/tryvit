@@ -620,14 +620,23 @@ WHERE NOT EXISTS (
 );
 
 -- Resolve remaining case-duplicate brand_ref entries after INITCAP
--- Step 1: reassign ALL products from minority brand to majority brand
+-- Step 1a: deprecate loser-brand products that would collide on UNIQUE (country, brand, product_name)
 UPDATE products p
-SET brand = keeper.brand_name
+SET is_deprecated = true,
+    deprecated_reason = 'case-duplicate brand merge'
 FROM brand_ref loser
 JOIN brand_ref keeper
   ON LOWER(loser.brand_name) = LOWER(keeper.brand_name)
   AND loser.brand_name <> keeper.brand_name
 WHERE p.brand = loser.brand_name
+  AND p.is_deprecated IS NOT TRUE
+  AND EXISTS (
+    SELECT 1 FROM products p2
+    WHERE p2.country = p.country
+      AND p2.brand = keeper.brand_name
+      AND p2.product_name = p.product_name
+      AND p2.product_id <> p.product_id
+  )
   AND (
     (SELECT COUNT(*) FROM products WHERE brand = loser.brand_name AND is_deprecated IS NOT TRUE)
     < (SELECT COUNT(*) FROM products WHERE brand = keeper.brand_name AND is_deprecated IS NOT TRUE)
@@ -638,10 +647,49 @@ WHERE p.brand = loser.brand_name
     )
   );
 
--- Step 2: delete now-orphaned minority brand_ref entries
+-- Step 1b: reassign remaining loser-brand products (no UNIQUE collision)
+UPDATE products p
+SET brand = keeper.brand_name
+FROM brand_ref loser
+JOIN brand_ref keeper
+  ON LOWER(loser.brand_name) = LOWER(keeper.brand_name)
+  AND loser.brand_name <> keeper.brand_name
+WHERE p.brand = loser.brand_name
+  AND NOT EXISTS (
+    SELECT 1 FROM products p2
+    WHERE p2.country = p.country
+      AND p2.brand = keeper.brand_name
+      AND p2.product_name = p.product_name
+      AND p2.product_id <> p.product_id
+  )
+  AND (
+    (SELECT COUNT(*) FROM products WHERE brand = loser.brand_name AND is_deprecated IS NOT TRUE)
+    < (SELECT COUNT(*) FROM products WHERE brand = keeper.brand_name AND is_deprecated IS NOT TRUE)
+    OR (
+      (SELECT COUNT(*) FROM products WHERE brand = loser.brand_name AND is_deprecated IS NOT TRUE)
+      = (SELECT COUNT(*) FROM products WHERE brand = keeper.brand_name AND is_deprecated IS NOT TRUE)
+      AND loser.brand_name > keeper.brand_name
+    )
+  );
+
+-- Step 2: delete orphaned brand_ref entries (no product references at all)
 DELETE FROM brand_ref br
 WHERE NOT EXISTS (
   SELECT 1 FROM products p WHERE p.brand = br.brand_name
+);
+
+-- Step 3: force-delete case-duplicate brand_ref entries not referenced by active products
+-- (deprecated products may still reference them, but no FK enforced)
+DELETE FROM brand_ref b1
+WHERE EXISTS (
+  SELECT 1 FROM brand_ref b2
+  WHERE LOWER(b1.brand_name) = LOWER(b2.brand_name)
+    AND b1.brand_name <> b2.brand_name
+)
+AND NOT EXISTS (
+  SELECT 1 FROM products p
+  WHERE p.brand = b1.brand_name
+    AND p.is_deprecated IS NOT TRUE
 );
 
 -- ─── 6f. Null invalid EANs ──────────────────────────────────────────────
