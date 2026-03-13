@@ -44,10 +44,7 @@ class BiedronkaScraper(BaseScraper):
 
     def get_category_urls(self) -> list[str]:
         """Return category listing URLs for food products."""
-        return [
-            f"{self.BASE_URL}/kategoria/{slug}"
-            for slug in BFRISCO_CATEGORIES
-        ]
+        return [f"{self.BASE_URL}/kategoria/{slug}" for slug in BFRISCO_CATEGORIES]
 
     def parse_product_list(self, html: str, url: str) -> list[str]:
         """Extract product detail page URLs from a category listing page."""
@@ -171,9 +168,7 @@ class BiedronkaScraper(BaseScraper):
             label = cells[0].get_text(strip=True).lower()
             value_text = cells[1].get_text(strip=True)
 
-            for pl_name, csv_key in sorted(
-                nutrient_map.items(), key=lambda x: len(x[0]), reverse=True
-            ):
+            for pl_name, csv_key in sorted(nutrient_map.items(), key=lambda x: len(x[0]), reverse=True):
                 if pl_name in label:
                     val = _parse_numeric(value_text)
                     if val is not None:
