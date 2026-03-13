@@ -77,7 +77,12 @@ tryvit/
 │   ├── test_validator.py            # Validator unit tests
 │   ├── utils.py                     # Shared utility helpers
 │   ├── image_importer.py            # Product image import utility
-│   └── categories.py               # 20 category definitions + OFF tag mappings
+│   ├── csv_importer.py              # CSV bulk import → SQL generator (10K expansion)
+│   ├── csv_import.py                # CLI for CSV bulk import
+│   ├── test_csv_importer.py         # CSV importer pytest suite (25 tests)
+│   ├── templates/                   # Import templates
+│   │   └── product_import_template.csv  # CSV template (21 columns)
+│   └── categories.py               # 28 category definitions + OFF tag mappings
 ├── db/
 │   ├── pipelines/                   # 43 category folders (22 PL + 21 DE), 4-5 SQL files each
 │   │   ├── chips-pl/                # Reference PL implementation (copy for new categories)

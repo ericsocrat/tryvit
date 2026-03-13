@@ -15,6 +15,11 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 
+- CSV bulk import tool (`pipeline/csv_importer.py` + `pipeline/csv_import.py`)
+  for multi-source 10K expansion: validates EAN checksums, nutrition caps,
+  cross-field constraints, formula injection defense, deduplication by name and
+  EAN, groups by (category, country), generates standard pipeline SQL via
+  `generate_pipeline()`. Includes CSV template and 25-test pytest suite (#862)
 - Raise scale guardrails for 10K+ products per country: products 15K→25K,
   nutrition_facts 15K→25K, product_ingredient 200K→250K, ingredient_ref
   10K→15K, product_allergen_info 50K→75K, source_nutrition 30K→50K,
