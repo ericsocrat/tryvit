@@ -409,7 +409,46 @@ Always verify that the returned product page shows a **Polish label image** befo
 
 ---
 
-## 13. Data Update Policy
+## 13. CSV Bulk Import
+
+For scaling beyond the OFF API pipeline, a CSV bulk import tool ingests products from spreadsheet sources (retailer exports, research datasets, manual curation batches).
+
+### 13.1 Usage
+
+```powershell
+$env:PYTHONIOENCODING="utf-8"
+
+# Validate and generate SQL from a CSV file
+.\.venv\Scripts\python.exe pipeline/csv_import.py --file data/products.csv
+
+# Dry run — validate only, generate no SQL
+.\.venv\Scripts\python.exe pipeline/csv_import.py --file data/products.csv --dry-run
+
+# Custom output directory
+.\.venv\Scripts\python.exe pipeline/csv_import.py --file data/products.csv --output-dir db/pipelines
+```
+
+### 13.2 CSV Format
+
+Use `pipeline/templates/product_import_template.csv` as the starting template. Required columns: `ean`, `brand`, `product_name`, `category`, `country`. All 21 columns are documented in the template header.
+
+### 13.3 Validation Rules
+
+- **EAN:** Must pass GS1 modulo-10 checksum (EAN-8 or EAN-13)
+- **Category:** Must match one of the 28 defined categories in `pipeline/categories.py`
+- **Country:** Must be `PL` or `DE`
+- **Nutrition:** Values capped at `ABSOLUTE_CAPS` from `pipeline/validator.py`; cross-field checks enforce `sugars ≤ carbs` and `sat_fat ≤ total_fat`
+- **Formula injection:** Cells starting with `=`, `+`, `-`, `@`, `\t`, or `\r` are rejected (negative numbers in nutrition columns are allowed)
+- **Duplicates:** Detected by `(country, brand, product_name)` and by EAN; first occurrence wins
+- **Hard cap:** 10,000 rows per file
+
+### 13.4 Output
+
+The tool groups valid rows by `(category, country)` and calls `generate_pipeline()` for each group, producing the standard 4-file pipeline SQL (01_insert_products, 03_add_nutrition, 04_scoring, 05_source_provenance). Files are written to `db/pipelines/<slug>/`. Source type is set to `csv_import`.
+
+---
+
+## 14. Data Update Policy
 
 - **Labels change.** Manufacturers reformulate products (e.g., sugar reduction initiatives). Re-verify data at least annually.
 - **Seasonal products** (e.g., holiday-edition chips) should be flagged and re-checked for availability.
