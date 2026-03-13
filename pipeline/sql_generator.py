@@ -534,6 +534,205 @@ ON CONFLICT (product_id, store_id) DO NOTHING;
 
 
 # ---------------------------------------------------------------------------
+# Batching support
+# ---------------------------------------------------------------------------
+
+BATCH_SIZE = 100
+
+
+def _chunk(items: list, size: int) -> list[list]:
+    """Split *items* into chunks of at most *size* elements."""
+    return [items[i:i + size] for i in range(0, len(items), size)]
+
+
+def _gen_01_batch(
+    category: str,
+    batch_products: list[dict],
+    all_products: list[dict],
+    today: str,
+    country: str,
+    batch_num: int,
+    total_batches: int,
+    batch_start: int,
+    batch_end: int,
+) -> str:
+    """Generate one batch file for step 01 (insert products).
+
+    Batch 1 includes preamble (deprecation, EAN release, cross-category).
+    Last batch includes postscript (deprecate removed products).
+    All batches include an INSERT with ON CONFLICT.
+    """
+    parts: list[str] = [
+        f"-- PIPELINE ({category}): insert products",
+        f"-- Batch {batch_num}/{total_batches}: products {batch_start}-{batch_end}",
+        "-- Source: Open Food Facts API (automated pipeline)",
+        f"-- Generated: {today}",
+    ]
+
+    # ── Preamble (first batch only) ──────────────────────────────────────
+    if batch_num == 1:
+        parts.append(f"""
+-- 0a. DEPRECATE old products in this category & release their EANs
+update products
+set is_deprecated = true, deprecated_reason = 'Replaced by pipeline refresh', ean = null
+where country = {_sql_text(country)}
+  and category = {_sql_text(category)}
+  and is_deprecated is not true;""")
+
+        eans = [p.get("ean", "") for p in all_products if p.get("ean")]
+        if eans:
+            ean_literals = ", ".join(_sql_text(e) for e in eans)
+            parts.append(f"""
+-- 0b. Release EANs across ALL categories to prevent unique constraint conflicts
+update products set ean = null
+where ean in ({ean_literals})
+  and ean is not null;""")
+
+        keys = sorted({_identity_key(p["brand"], p["product_name"]) for p in all_products})
+        key_literals = ", ".join(_sql_text(k) for k in keys)
+        parts.append(f"""
+-- 0c. Deprecate cross-category products whose identity_key collides with this batch
+update products
+set is_deprecated = true,
+    deprecated_reason = 'Reassigned to {category} by pipeline',
+    ean = null
+where country = {_sql_text(country)}
+  and category != {_sql_text(category)}
+  and identity_key in ({key_literals})
+  and is_deprecated is not true;""")
+
+    # ── INSERT block ─────────────────────────────────────────────────────
+    lines: list[str] = []
+    for i, p in enumerate(batch_products):
+        brand = _sql_text(p["brand"])
+        name = _sql_text(p["product_name"])
+        ean = _sql_text(p.get("ean") or "")
+        product_type = _sql_text(p.get("product_type", "Grocery"))
+        prep = _sql_null_or_text(p.get("prep_method"))
+        store = _sql_null_or_text(_normalize_store(p.get("store_availability")))
+        controversies = _sql_text(p.get("controversies", "none"))
+        comma = "," if i < len(batch_products) - 1 else ""
+        lines.append(
+            f"  ({_sql_text(country)}, {brand}, {product_type}, {_sql_text(category)}, "
+            f"{name}, {prep}, {store}, {controversies}, {ean}){comma}"
+        )
+    values_block = "\n".join(lines)
+
+    parts.append(f"""
+-- 1. INSERT products (batch {batch_num}/{total_batches})
+insert into products (country, brand, product_type, category, product_name, prep_method, store_availability, controversies, ean)
+values
+{values_block}
+on conflict (country, brand, product_name) do update set
+  category = excluded.category,
+  ean = excluded.ean,
+  product_type = excluded.product_type,
+  store_availability = excluded.store_availability,
+  controversies = excluded.controversies,
+  prep_method = excluded.prep_method,
+  is_deprecated = false;""")
+
+    # ── Postscript (last batch only) ─────────────────────────────────────
+    if batch_num == total_batches:
+        name_literals = ", ".join(_sql_text(p["product_name"]) for p in all_products)
+        parts.append(f"""
+-- 2. DEPRECATE removed products
+update products
+set is_deprecated = true, deprecated_reason = 'Removed from pipeline batch'
+where country = {_sql_text(country)} and category = {_sql_text(category)}
+  and is_deprecated is not true
+  and product_name not in ({name_literals});""")
+
+    parts.append("")  # trailing newline
+    return "\n".join(parts)
+
+
+def _gen_03_batch(
+    category: str,
+    batch_products: list[dict],
+    country: str,
+    batch_num: int,
+    total_batches: int,
+    batch_start: int,
+    batch_end: int,
+) -> str:
+    """Generate one batch file for step 03 (add nutrition).
+
+    Batch 1 includes the DELETE (clean existing rows).
+    All batches include an INSERT with ON CONFLICT.
+    """
+    nutrition_lines: list[str] = []
+    for i, p in enumerate(batch_products):
+        brand = _sql_text(p["brand"])
+        name = _sql_text(p["product_name"])
+        vals = ", ".join(
+            _sql_num(p[k])
+            for k in (
+                "calories",
+                "total_fat_g",
+                "saturated_fat_g",
+                "trans_fat_g",
+                "carbs_g",
+                "sugars_g",
+                "fibre_g",
+                "protein_g",
+                "salt_g",
+            )
+        )
+        comma = "," if i < len(batch_products) - 1 else ""
+        nutrition_lines.append(f"    ({brand}, {name}, {vals}){comma}")
+    nutrition_block = "\n".join(nutrition_lines)
+
+    parts: list[str] = [
+        f"-- PIPELINE ({category}): add nutrition facts",
+        f"-- Batch {batch_num}/{total_batches}: products {batch_start}-{batch_end}",
+        "-- Source: Open Food Facts verified per-100g data",
+    ]
+
+    # DELETE existing — only in first batch
+    if batch_num == 1:
+        parts.append(f"""
+-- 1) Remove existing
+delete from nutrition_facts
+where product_id in (
+  select p.product_id
+  from products p
+  where p.country = {_sql_text(country)} and p.category = {_sql_text(category)}
+    and p.is_deprecated is not true
+);""")
+
+    parts.append(f"""
+-- 2) Insert (batch {batch_num}/{total_batches})
+insert into nutrition_facts
+  (product_id, calories, total_fat_g, saturated_fat_g, trans_fat_g,
+   carbs_g, sugars_g, fibre_g, protein_g, salt_g)
+select
+  p.product_id,
+  d.calories, d.total_fat_g, d.saturated_fat_g, d.trans_fat_g,
+  d.carbs_g, d.sugars_g, d.fibre_g, d.protein_g, d.salt_g
+from (
+  values
+{nutrition_block}
+) as d(brand, product_name, calories, total_fat_g, saturated_fat_g, trans_fat_g,
+       carbs_g, sugars_g, fibre_g, protein_g, salt_g)
+join products p on p.country = {_sql_text(country)} and p.brand = d.brand and p.product_name = d.product_name
+  and p.category = {_sql_text(category)} and p.is_deprecated is not true
+on conflict (product_id) do update set
+  calories = excluded.calories,
+  total_fat_g = excluded.total_fat_g,
+  saturated_fat_g = excluded.saturated_fat_g,
+  trans_fat_g = excluded.trans_fat_g,
+  carbs_g = excluded.carbs_g,
+  sugars_g = excluded.sugars_g,
+  fibre_g = excluded.fibre_g,
+  protein_g = excluded.protein_g,
+  salt_g = excluded.salt_g;""")
+
+    parts.append("")  # trailing newline
+    return "\n".join(parts)
+
+
+# ---------------------------------------------------------------------------
 # Public entry point
 # ---------------------------------------------------------------------------
 
@@ -543,8 +742,12 @@ def generate_pipeline(
     products: list[dict],
     output_dir: str,
     country: str = "PL",
+    batch_size: int = BATCH_SIZE,
 ) -> list[Path]:
-    """Generate 6 SQL pipeline files for *category* in *country*.
+    """Generate SQL pipeline files for *category* in *country*.
+
+    When ``len(products) > batch_size``, steps 01 and 03 are split into
+    multiple batch files.  Steps 04--07 always produce a single file.
 
     Parameters
     ----------
@@ -556,11 +759,14 @@ def generate_pipeline(
         Directory to write the SQL files into.
     country:
         ISO 3166-1 alpha-2 country code (default ``"PL"``).
+    batch_size:
+        Maximum products per batch file (default ``BATCH_SIZE``).
+        Set to ``0`` to disable batching.
 
     Returns
     -------
     list[Path]
-        Paths of the six generated files.
+        Paths of the generated files.
     """
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -572,33 +778,86 @@ def generate_pipeline(
     today = datetime.date.today().isoformat()
 
     files: list[Path] = []
+    use_batching = batch_size > 0 and len(products) > batch_size
 
-    # 01 — insert products
-    path01 = out / f"PIPELINE__{slug}__01_insert_products.sql"
-    path01.write_text(_gen_01_insert_products(category, products, today, country), encoding="utf-8")
-    files.append(path01)
+    if use_batching:
+        chunks = _chunk(products, batch_size)
+        total_batches = len(chunks)
 
-    # 03 — add nutrition
-    path03 = out / f"PIPELINE__{slug}__03_add_nutrition.sql"
-    path03.write_text(_gen_03_add_nutrition(category, products, country), encoding="utf-8")
-    files.append(path03)
+        # Clean up stale single-file or old batch versions
+        for old in out.glob(f"PIPELINE__{slug}__01_insert_products.sql"):
+            old.unlink()
+        for old in out.glob(f"PIPELINE__{slug}__01_batch_*_insert_products.sql"):
+            old.unlink()
+        for old in out.glob(f"PIPELINE__{slug}__03_add_nutrition.sql"):
+            old.unlink()
+        for old in out.glob(f"PIPELINE__{slug}__03_batch_*_add_nutrition.sql"):
+            old.unlink()
 
-    # 04 — scoring
+        # 01 — batched insert products
+        offset = 0
+        for batch_num, chunk in enumerate(chunks, 1):
+            batch_start = offset + 1
+            batch_end = offset + len(chunk)
+            offset += len(chunk)
+            path = out / f"PIPELINE__{slug}__01_batch_{batch_num:03d}_insert_products.sql"
+            path.write_text(
+                _gen_01_batch(
+                    category, chunk, products, today, country,
+                    batch_num, total_batches, batch_start, batch_end,
+                ),
+                encoding="utf-8",
+            )
+            files.append(path)
+
+        # 03 — batched add nutrition
+        offset = 0
+        for batch_num, chunk in enumerate(chunks, 1):
+            batch_start = offset + 1
+            batch_end = offset + len(chunk)
+            offset += len(chunk)
+            path = out / f"PIPELINE__{slug}__03_batch_{batch_num:03d}_add_nutrition.sql"
+            path.write_text(
+                _gen_03_batch(
+                    category, chunk, country,
+                    batch_num, total_batches, batch_start, batch_end,
+                ),
+                encoding="utf-8",
+            )
+            files.append(path)
+    else:
+        # Clean up stale batch files from previous runs
+        for old in out.glob(f"PIPELINE__{slug}__01_batch_*_insert_products.sql"):
+            old.unlink()
+        for old in out.glob(f"PIPELINE__{slug}__03_batch_*_add_nutrition.sql"):
+            old.unlink()
+
+        # 01 — single insert products
+        path01 = out / f"PIPELINE__{slug}__01_insert_products.sql"
+        path01.write_text(_gen_01_insert_products(category, products, today, country), encoding="utf-8")
+        files.append(path01)
+
+        # 03 — single add nutrition
+        path03 = out / f"PIPELINE__{slug}__03_add_nutrition.sql"
+        path03.write_text(_gen_03_add_nutrition(category, products, country), encoding="utf-8")
+        files.append(path03)
+
+    # 04 — scoring (always single file)
     path04 = out / f"PIPELINE__{slug}__04_scoring.sql"
     path04.write_text(_gen_04_scoring(category, products, today, country), encoding="utf-8")
     files.append(path04)
 
-    # 05 — source provenance
+    # 05 — source provenance (always single file)
     path05 = out / f"PIPELINE__{slug}__05_source_provenance.sql"
     path05.write_text(_gen_05_source_provenance(category, products, today, country), encoding="utf-8")
     files.append(path05)
 
-    # 06 — add images
+    # 06 — add images (always single file)
     path06 = out / f"PIPELINE__{slug}__06_add_images.sql"
     path06.write_text(_gen_06_add_images(category, products, today, country), encoding="utf-8")
     files.append(path06)
 
-    # 07 — store availability
+    # 07 — store availability (always single file)
     path07 = out / f"PIPELINE__{slug}__07_store_availability.sql"
     path07.write_text(_gen_07_store_availability(category, products, today, country), encoding="utf-8")
     files.append(path07)

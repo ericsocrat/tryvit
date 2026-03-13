@@ -60,15 +60,24 @@ STEP_04_SCORE_CALL = re.compile(
     re.IGNORECASE,
 )
 
+# Batch file step pattern: 01_batch_001_insert_products → base step "01_insert_products"
+_BATCH_STEP_RE = re.compile(r"^(\d{2})_batch_\d{3}_(.+)$")
+
 
 def _check_required_files(category: str, folder: Path) -> list[str]:
     """Check that all required step files exist for a category."""
     violations: list[str] = []
     sql_files = {f.name for f in folder.glob("PIPELINE__*.sql")}
     for step in REQUIRED_STEPS:
-        pattern = f"PIPELINE__{category}__{step}.sql"
-        if pattern not in sql_files:
-            violations.append(f"[{category}] Missing: {pattern}")
+        single = f"PIPELINE__{category}__{step}.sql"
+        if single in sql_files:
+            continue
+        # Accept batch pattern: PIPELINE__{cat}__{prefix}_batch_001_{rest}.sql
+        prefix, rest = step.split("_", 1)
+        batch = f"PIPELINE__{category}__{prefix}_batch_001_{rest}.sql"
+        if batch in sql_files:
+            continue
+        violations.append(f"[{category}] Missing: {single}")
     return violations
 
 
@@ -139,9 +148,11 @@ def check_category(folder: Path) -> list[str]:
         content = sql_file.read_text(encoding="utf-8", errors="replace")
         fname = sql_file.name
 
-        # Extract step identifier
+        # Extract step identifier (handle batch infix)
         parts = fname.replace(".sql", "").split("__")
-        step = parts[-1] if len(parts) >= 3 else ""
+        raw_step = parts[-1] if len(parts) >= 3 else ""
+        m = _BATCH_STEP_RE.match(raw_step)
+        step = f"{m.group(1)}_{m.group(2)}" if m else raw_step
 
         # Check for hardcoded product_id integers in step 01 and 03
         if step in ("01_insert_products", "03_add_nutrition"):
