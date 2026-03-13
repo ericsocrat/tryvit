@@ -45,10 +45,7 @@ class REWEScraper(BaseScraper):
 
     def get_category_urls(self) -> list[str]:
         """Return category listing URLs for food products."""
-        return [
-            f"{self.BASE_URL}/c/{slug}/"
-            for slug in REWE_CATEGORIES
-        ]
+        return [f"{self.BASE_URL}/c/{slug}/" for slug in REWE_CATEGORIES]
 
     def parse_product_list(self, html: str, url: str) -> list[str]:
         """Extract product URLs from a REWE category listing page."""
@@ -171,9 +168,7 @@ class REWEScraper(BaseScraper):
             label = cells[0].get_text(strip=True).lower()
             value_text = cells[1].get_text(strip=True)
 
-            for de_name, csv_key in sorted(
-                nutrient_map.items(), key=lambda x: len(x[0]), reverse=True
-            ):
+            for de_name, csv_key in sorted(nutrient_map.items(), key=lambda x: len(x[0]), reverse=True):
                 if de_name in label:
                     val = _parse_de_numeric(value_text)
                     if val is not None:

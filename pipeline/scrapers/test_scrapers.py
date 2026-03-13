@@ -235,9 +235,9 @@ class TestBiedronkaScraper:
         assert p["product_name"] == "Jogurt Naturalny 400g"
         assert p["brand"] == "Piątnica"
         assert p["ean"] == "5900820000123"
-        assert p["calories_kcal"] == 63.0
-        assert p["total_fat_g"] == 3.2
-        assert p["protein_g"] == 5.5
+        assert p["calories_kcal"] == pytest.approx(63.0)
+        assert p["total_fat_g"] == pytest.approx(3.2)
+        assert p["protein_g"] == pytest.approx(5.5)
 
     def test_parse_product_page_no_ean_returns_none(self) -> None:
         html = """
@@ -252,13 +252,13 @@ class TestBiedronkaScraper:
 
 class TestParseNumeric:
     def test_plain_number(self) -> None:
-        assert _parse_numeric("12.5") == 12.5
+        assert _parse_numeric("12.5") == pytest.approx(12.5)
 
     def test_polish_decimal(self) -> None:
-        assert _parse_numeric("3,2 g") == 3.2
+        assert _parse_numeric("3,2 g") == pytest.approx(3.2)
 
     def test_kcal_slash(self) -> None:
-        assert _parse_numeric("263 kJ / 63 kcal") == 63.0
+        assert _parse_numeric("263 kJ / 63 kcal") == pytest.approx(63.0)
 
     def test_invalid(self) -> None:
         assert _parse_numeric("N/A") is None
@@ -306,21 +306,21 @@ class TestREWEScraper:
         assert p["product_name"] == "REWE Bio Vollmilch 3,5%"
         assert p["brand"] == "REWE Bio"
         assert p["ean"] == "4388860123456"
-        assert p["calories_kcal"] == 66.0
-        assert p["total_fat_g"] == 3.5
-        assert p["saturated_fat_g"] == 2.3
-        assert p["protein_g"] == 3.3
+        assert p["calories_kcal"] == pytest.approx(66.0)
+        assert p["total_fat_g"] == pytest.approx(3.5)
+        assert p["saturated_fat_g"] == pytest.approx(2.3)
+        assert p["protein_g"] == pytest.approx(3.3)
 
 
 class TestParseDeNumeric:
     def test_german_decimal(self) -> None:
-        assert _parse_de_numeric("3,5 g") == 3.5
+        assert _parse_de_numeric("3,5 g") == pytest.approx(3.5)
 
     def test_kcal_slash(self) -> None:
-        assert _parse_de_numeric("276 kJ / 66 kcal") == 66.0
+        assert _parse_de_numeric("276 kJ / 66 kcal") == pytest.approx(66.0)
 
     def test_less_than(self) -> None:
-        assert _parse_de_numeric("<0,1 g") == 0.1
+        assert _parse_de_numeric("<0,1 g") == pytest.approx(0.1)
 
     def test_invalid(self) -> None:
         assert _parse_de_numeric("k.A.") is None

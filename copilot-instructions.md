@@ -48,6 +48,7 @@ $env:PYTHONIOENCODING="utf-8"
 ````
 
 **Orchestrated refresh (all categories):**
+
 ```powershell
 $env:PYTHONIOENCODING="utf-8"
 .\.venv\Scripts\python.exe -m pipeline.orchestrate --country PL --max-products 100 --dry-run
@@ -402,7 +403,7 @@ tryvit/
 | `product_ingredient`        | Product ↔ ingredient junction                   | `(product_id, ingredient_id, position)` | ~13,858 rows across 913 products; tracks percent, percent_estimate, sub-ingredients, position order                                                                                                                                |
 | `product_allergen_info`     | Allergens + traces per product (unified)        | `(product_id, tag, type)`               | ~2,630 rows (1,269 allergens + 1,361 traces) across 655 products; type IN ('contains','traces'); source: OFF allergens_tags / traces_tags                                                                                          |
 | `country_ref`               | ISO 3166-1 alpha-2 country codes                | `country_code` (text PK)                | 2 rows (PL, DE); is_active flag, nutri_score_official boolean; FK from products.country                                                                                                                                            |
-| `category_ref`              | Product category master list                    | `category` (text PK)                    | 29 rows (22 PL + 7 new); FK from products.category; display_name, description, icon_emoji, sort_order                                                                                                                             |
+| `category_ref`              | Product category master list                    | `category` (text PK)                    | 29 rows (22 PL + 7 new); FK from products.category; display_name, description, icon_emoji, sort_order                                                                                                                              |
 | `nutri_score_ref`           | Nutri-Score label definitions                   | `label` (text PK)                       | 7 rows (A–E + UNKNOWN + NOT-APPLICABLE); FK from scores.nutri_score_label; color_hex, description                                                                                                                                  |
 | `concern_tier_ref`          | EFSA ingredient concern tiers                   | `tier` (integer PK)                     | 4 rows (0–3); FK from ingredient_ref.concern_tier; score_impact, examples, EFSA guidance                                                                                                                                           |
 | `product_type_ref`          | Product sub-type taxonomy per category          | `product_type` (text PK)                | ~137 rows across 29 categories; FK from products.product_type; display_name, icon_emoji, sort_order. Issue #354.                                                                                                                   |
@@ -564,41 +565,41 @@ All categories have **variable product counts** (28–95 active products). Categ
 
 ### DE Categories (21)
 
-| Category                   | Folder slug                       |
-| -------------------------- | --------------------------------- |
-| Alcohol (DE)               | `alcohol-de/`                     |
-| Baby (DE)                  | `baby-de/`                        |
-| Bread (DE)                 | `bread-de/`                       |
-| Breakfast & Grain-Based (DE) | `breakfast-grain-based-de/`     |
-| Canned Goods (DE)          | `canned-goods-de/`                |
-| Cereals (DE)               | `cereals-de/`                     |
-| Chips (DE)                 | `chips-de/`                       |
-| Condiments (DE)            | `condiments-de/`                  |
-| Dairy (DE)                 | `dairy-de/`                       |
-| Drinks (DE)                | `drinks-de/`                      |
-| Frozen & Prepared (DE)     | `frozen-prepared-de/`             |
-| Instant & Frozen (DE)      | `instant-frozen-de/`              |
-| Meat (DE)                  | `meat-de/`                        |
-| Nuts, Seeds & Legumes (DE) | `nuts-seeds-legumes-de/`          |
-| Oils & Vinegars (DE)       | `oils-vinegars-de/`               |
+| Category                        | Folder slug                    |
+| ------------------------------- | ------------------------------ |
+| Alcohol (DE)                    | `alcohol-de/`                  |
+| Baby (DE)                       | `baby-de/`                     |
+| Bread (DE)                      | `bread-de/`                    |
+| Breakfast & Grain-Based (DE)    | `breakfast-grain-based-de/`    |
+| Canned Goods (DE)               | `canned-goods-de/`             |
+| Cereals (DE)                    | `cereals-de/`                  |
+| Chips (DE)                      | `chips-de/`                    |
+| Condiments (DE)                 | `condiments-de/`               |
+| Dairy (DE)                      | `dairy-de/`                    |
+| Drinks (DE)                     | `drinks-de/`                   |
+| Frozen & Prepared (DE)          | `frozen-prepared-de/`          |
+| Instant & Frozen (DE)           | `instant-frozen-de/`           |
+| Meat (DE)                       | `meat-de/`                     |
+| Nuts, Seeds & Legumes (DE)      | `nuts-seeds-legumes-de/`       |
+| Oils & Vinegars (DE)            | `oils-vinegars-de/`            |
 | Plant-Based & Alternatives (DE) | `plant-based-alternatives-de/` |
-| Sauces (DE)                | `sauces-de/`                      |
-| Seafood & Fish (DE)        | `seafood-fish-de/`                |
-| Snacks (DE)                | `snacks-de/`                      |
-| Spreads & Dips (DE)        | `spreads-dips-de/`                |
-| Sweets (DE)                | `sweets-de/`                      |
+| Sauces (DE)                     | `sauces-de/`                   |
+| Seafood & Fish (DE)             | `seafood-fish-de/`             |
+| Snacks (DE)                     | `snacks-de/`                   |
+| Spreads & Dips (DE)             | `spreads-dips-de/`             |
+| Sweets (DE)                     | `sweets-de/`                   |
 
 ### New Categories (7, not yet populated — Issue #858)
 
-| Category               | Slug                  |
-| ---------------------- | --------------------- |
-| Pasta & Rice           | `pasta-rice`          |
-| Soups                  | `soups`               |
-| Coffee & Tea           | `coffee-tea`          |
-| Frozen Vegetables      | `frozen-vegetables`   |
-| Ready Meals            | `ready-meals`         |
-| Desserts & Ice Cream   | `desserts-ice-cream`  |
-| Spices & Seasonings    | `spices-seasonings`   |
+| Category             | Slug                 |
+| -------------------- | -------------------- |
+| Pasta & Rice         | `pasta-rice`         |
+| Soups                | `soups`              |
+| Coffee & Tea         | `coffee-tea`         |
+| Frozen Vegetables    | `frozen-vegetables`  |
+| Ready Meals          | `ready-meals`        |
+| Desserts & Ice Cream | `desserts-ice-cream` |
+| Spices & Seasonings  | `spices-seasonings`  |
 
 **43 pipeline folders** (22 PL + 21 DE). Category-to-OFF tag mappings live in `pipeline/categories.py`. Each category has multiple OFF tags and search terms for comprehensive coverage. 7 new categories defined in `category_ref` but not yet added to the pipeline (see Issue #859).
 
@@ -1054,25 +1055,25 @@ If you **modify, rename, or add** any SQL function or view used by the app API (
 
 **Current test files:**
 
-| File                            | Covers                                                                                                                       |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `scanner_functions.test.sql`    | `api_record_scan`, `api_get_scan_history`                                                                                    |
-| `product_functions.test.sql`    | `api_product_detail_by_ean`, `api_product_detail`, `api_better_alternatives`, `api_score_explanation`, `api_data_confidence` |
-| `category_functions.test.sql`   | `api_category_overview`, `api_category_listing`                                                                              |
-| `search_functions.test.sql`     | `api_search_products`, `api_search_autocomplete`, `api_get_filter_options`                                                   |
-| `comparison_functions.test.sql` | `api_get_products_for_compare`, `api_save_comparison`, `api_get_shared_comparison`                                           |
-| `telemetry_functions.test.sql`  | `api_track_event`, `api_admin_get_event_summary`, `api_admin_get_top_events`, `api_admin_get_funnel`                         |
-| `dashboard_functions.test.sql`  | `api_record_product_view`, `api_get_recently_viewed`, `api_get_dashboard_data`                                               |
-| `user_functions.test.sql`       | Auth-error branches for all `authenticated`-only functions                                                                   |
-| `schema_contracts.test.sql`     | Table/view/function existence checks                                                                                         |
-| `recipe_functions.test.sql`     | `api_get_recipes`, `api_get_recipe_detail`, `api_get_recipe_nutrition`                                                       |
-| `achievement_functions.test.sql` | Achievement/gamification function tests                                                                                     |
-| `admin_dashboard_functions.test.sql` | Admin dashboard function tests                                                                                          |
-| `business_metrics_functions.test.sql` | Business metrics function tests                                                                                        |
-| `localization_functions.test.sql` | Localization/i18n function tests                                                                                           |
-| `push_notification_functions.test.sql` | Push notification function tests                                                                                      |
-| `score_history_functions.test.sql` | Score history function tests                                                                                              |
-| `scoring_bands.test.sql`        | Scoring band tests                                                                                                           |
+| File                                   | Covers                                                                                                                       |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `scanner_functions.test.sql`           | `api_record_scan`, `api_get_scan_history`                                                                                    |
+| `product_functions.test.sql`           | `api_product_detail_by_ean`, `api_product_detail`, `api_better_alternatives`, `api_score_explanation`, `api_data_confidence` |
+| `category_functions.test.sql`          | `api_category_overview`, `api_category_listing`                                                                              |
+| `search_functions.test.sql`            | `api_search_products`, `api_search_autocomplete`, `api_get_filter_options`                                                   |
+| `comparison_functions.test.sql`        | `api_get_products_for_compare`, `api_save_comparison`, `api_get_shared_comparison`                                           |
+| `telemetry_functions.test.sql`         | `api_track_event`, `api_admin_get_event_summary`, `api_admin_get_top_events`, `api_admin_get_funnel`                         |
+| `dashboard_functions.test.sql`         | `api_record_product_view`, `api_get_recently_viewed`, `api_get_dashboard_data`                                               |
+| `user_functions.test.sql`              | Auth-error branches for all `authenticated`-only functions                                                                   |
+| `schema_contracts.test.sql`            | Table/view/function existence checks                                                                                         |
+| `recipe_functions.test.sql`            | `api_get_recipes`, `api_get_recipe_detail`, `api_get_recipe_nutrition`                                                       |
+| `achievement_functions.test.sql`       | Achievement/gamification function tests                                                                                      |
+| `admin_dashboard_functions.test.sql`   | Admin dashboard function tests                                                                                               |
+| `business_metrics_functions.test.sql`  | Business metrics function tests                                                                                              |
+| `localization_functions.test.sql`      | Localization/i18n function tests                                                                                             |
+| `push_notification_functions.test.sql` | Push notification function tests                                                                                             |
+| `score_history_functions.test.sql`     | Score history function tests                                                                                                 |
+| `scoring_bands.test.sql`               | Scoring band tests                                                                                                           |
 
 **Rules:**
 
@@ -2226,16 +2227,16 @@ Then execute §19 (Canonical Execution Discipline Protocol v2) in full.
 
 ### 18.9 Architecture Decision Records
 
-| Decision                                              | Status   | Summary                                                                  |
-| ----------------------------------------------------- | -------- | ------------------------------------------------------------------------ |
-| `docs/decisions/001-postgresql-only-stack.md`         | Accepted | No ORM, no Redis cluster, PostgreSQL as sole data store                  |
-| `docs/decisions/002-weighted-scoring-formula.md`      | Accepted | 9-factor weighted model, science-backed, EFSA-aligned                    |
-| `docs/decisions/003-country-scoped-isolation.md`      | Accepted | All queries country-filtered, no cross-contamination                     |
-| `docs/decisions/004-pipeline-generates-sql.md`        | Accepted | Python pipeline generates idempotent SQL, no runtime inserts             |
-| `docs/decisions/005-api-function-name-versioning.md`  | Accepted | Additive versioning via suffix (`_v2`), never rename                     |
-| `docs/decisions/006-append-only-migrations.md`        | Accepted | Never modify committed migrations; forward-only schema evolution         |
-| `docs/decisions/007-english-canonical-ingredients.md` | Accepted | `name_en` is canonical; translations stored in `ingredient_translations` |
-| `docs/decisions/008-nutrient-density-bonus.md`        | Accepted | Nutrient density bonus (protein + fibre) as subtracted 10th factor in v3.3 |
+| Decision                                              | Status   | Summary                                                                        |
+| ----------------------------------------------------- | -------- | ------------------------------------------------------------------------------ |
+| `docs/decisions/001-postgresql-only-stack.md`         | Accepted | No ORM, no Redis cluster, PostgreSQL as sole data store                        |
+| `docs/decisions/002-weighted-scoring-formula.md`      | Accepted | 9-factor weighted model, science-backed, EFSA-aligned                          |
+| `docs/decisions/003-country-scoped-isolation.md`      | Accepted | All queries country-filtered, no cross-contamination                           |
+| `docs/decisions/004-pipeline-generates-sql.md`        | Accepted | Python pipeline generates idempotent SQL, no runtime inserts                   |
+| `docs/decisions/005-api-function-name-versioning.md`  | Accepted | Additive versioning via suffix (`_v2`), never rename                           |
+| `docs/decisions/006-append-only-migrations.md`        | Accepted | Never modify committed migrations; forward-only schema evolution               |
+| `docs/decisions/007-english-canonical-ingredients.md` | Accepted | `name_en` is canonical; translations stored in `ingredient_translations`       |
+| `docs/decisions/008-nutrient-density-bonus.md`        | Accepted | Nutrient density bonus (protein + fibre) as subtracted 10th factor in v3.3     |
 | `docs/decisions/009-scoring-band-calibration.md`      | Accepted | Scoring band calibration — catalog limited, formula correct, no changes needed |
 
 ---

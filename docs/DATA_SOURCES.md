@@ -143,15 +143,15 @@ Manufacturer websites are **Priority 2** sources. They often publish full per-10
 
 ### 4.2 Using Manufacturer Data
 
-| Step | Action                                                     |
-| ---- | ---------------------------------------------------------- |
-| 1    | Navigate to the manufacturer's PL website                  |
-| 2    | Find the specific product page (match pack size + variant) |
-| 3    | Confirm nutrition table is per 100g (not per serving)      |
-| 4    | Extract all available fields (EU-7 + voluntary)            |
-| 5    | Cross-validate against OFF and/or label if available       |
+| Step | Action                                                                    |
+| ---- | ------------------------------------------------------------------------- |
+| 1    | Navigate to the manufacturer's PL website                                 |
+| 2    | Find the specific product page (match pack size + variant)                |
+| 3    | Confirm nutrition table is per 100g (not per serving)                     |
+| 4    | Extract all available fields (EU-7 + voluntary)                           |
+| 5    | Cross-validate against OFF and/or label if available                      |
 | 6    | Record URL + access date in `products` table (`source_url`, `source_ean`) |
-| 7    | Set `source_type = 'off_api'` on the `products` row        |
+| 7    | Set `source_type = 'off_api'` on the `products` row                       |
 
 ---
 
@@ -361,11 +361,11 @@ The following sources are **excluded** and must never be used:
 
 Source provenance is tracked directly on the `products` table via dedicated columns:
 
-| Column        | Purpose                                                       |
-| ------------- | ------------------------------------------------------------- |
-| `source_type` | Currently `'off_api'` only                                    |
-| `source_url`  | URL to the specific product page (e.g., OFF product page)     |
-| `source_ean`  | EAN used to look up this product                              |
+| Column        | Purpose                                                   |
+| ------------- | --------------------------------------------------------- |
+| `source_type` | Currently `'off_api'` only                                |
+| `source_url`  | URL to the specific product page (e.g., OFF product page) |
+| `source_ean`  | EAN used to look up this product                          |
 
 **Rule:** When adding a new product, set `source_type = 'off_api'`, `source_url`, and `source_ean` on the product row. All products currently use Open Food Facts as the single source.
 
