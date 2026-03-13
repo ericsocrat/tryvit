@@ -619,22 +619,29 @@ WHERE NOT EXISTS (
   SELECT 1 FROM products p WHERE p.brand = br.brand_name
 );
 
--- Force-delete minority case-duplicate brand_ref entries
--- (deprecated products may still reference old ALL CAPS brand, preventing orphan cleanup)
-DELETE FROM brand_ref b1
-WHERE EXISTS (
-  SELECT 1 FROM brand_ref b2
-  WHERE LOWER(b1.brand_name) = LOWER(b2.brand_name)
-    AND b1.brand_name <> b2.brand_name
-    AND (
-      (SELECT COUNT(*) FROM products p WHERE p.brand = b1.brand_name AND p.is_deprecated IS NOT TRUE)
-      < (SELECT COUNT(*) FROM products p WHERE p.brand = b2.brand_name AND p.is_deprecated IS NOT TRUE)
-      OR (
-        (SELECT COUNT(*) FROM products p WHERE p.brand = b1.brand_name AND p.is_deprecated IS NOT TRUE)
-        = (SELECT COUNT(*) FROM products p WHERE p.brand = b2.brand_name AND p.is_deprecated IS NOT TRUE)
-        AND b1.brand_name > b2.brand_name
-      )
+-- Resolve remaining case-duplicate brand_ref entries after INITCAP
+-- Step 1: reassign ALL products from minority brand to majority brand
+UPDATE products p
+SET brand = keeper.brand_name
+FROM brand_ref loser
+JOIN brand_ref keeper
+  ON LOWER(loser.brand_name) = LOWER(keeper.brand_name)
+  AND loser.brand_name <> keeper.brand_name
+WHERE p.brand = loser.brand_name
+  AND (
+    (SELECT COUNT(*) FROM products WHERE brand = loser.brand_name AND is_deprecated IS NOT TRUE)
+    < (SELECT COUNT(*) FROM products WHERE brand = keeper.brand_name AND is_deprecated IS NOT TRUE)
+    OR (
+      (SELECT COUNT(*) FROM products WHERE brand = loser.brand_name AND is_deprecated IS NOT TRUE)
+      = (SELECT COUNT(*) FROM products WHERE brand = keeper.brand_name AND is_deprecated IS NOT TRUE)
+      AND loser.brand_name > keeper.brand_name
     )
+  );
+
+-- Step 2: delete now-orphaned minority brand_ref entries
+DELETE FROM brand_ref br
+WHERE NOT EXISTS (
+  SELECT 1 FROM products p WHERE p.brand = br.brand_name
 );
 
 -- ─── 6f. Null invalid EANs ──────────────────────────────────────────────
