@@ -179,8 +179,10 @@ WHERE  product_id = (
   AND  salt_g = 13.0;
 
 -- Fix zero-calorie macros: water branded products with corrupt OFF carb data
+-- Must zero both carbs AND sugars to preserve chk_nutrition_sugars_le_carbs
 UPDATE nutrition_facts
-SET    carbs_g = 0
+SET    carbs_g = 0,
+       sugars_g = 0
 WHERE  product_id IN (
          SELECT p.product_id FROM products p
          JOIN   nutrition_facts nf ON nf.product_id = p.product_id
