@@ -1,4 +1,4 @@
--- QA: Scoring Formula Tests (v3.3) — 40 checks
+-- QA: Scoring Formula Tests (v3.3) — 41 checks
 -- Validates that the scoring formula produces expected results for known test cases.
 -- Each test includes a product with controlled nutrition values and expected score.
 -- Run after pipelines to verify scoring algorithm correctness.
@@ -621,3 +621,25 @@ WHERE p.product_name = 'Instant-Nudeln Beef'
   AND p.country = 'DE'
   AND p.is_deprecated IS NOT TRUE
   AND p.unhealthiness_score::int NOT BETWEEN 43 AND 47;
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- Test 41: Signal-conflict detection — api_score_explanation returns
+--          'conflicts' and 'qualified_headline' keys in summary.
+--          Samples 10 products across scoring range to avoid calling
+--          the function for all ~2,600 products (each call ~15 ms).
+--          Verifies LATERAL conflict rules (#885) produce valid output.
+-- ═══════════════════════════════════════════════════════════════════════════
+SELECT p.product_id, p.product_name,
+       'MISSING: api_score_explanation summary lacks conflicts or qualified_headline key' AS issue,
+       CONCAT('product_id=', p.product_id) AS detail
+FROM (
+    SELECT product_id, product_name
+    FROM products
+    WHERE is_deprecated IS NOT TRUE
+      AND unhealthiness_score IS NOT NULL
+    ORDER BY unhealthiness_score, product_id
+    LIMIT 10
+) p
+WHERE
+    NOT ((api_score_explanation(p.product_id))->'summary') ? 'conflicts'
+    OR NOT ((api_score_explanation(p.product_id))->'summary') ? 'qualified_headline';

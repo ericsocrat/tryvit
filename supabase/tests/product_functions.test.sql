@@ -8,7 +8,7 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 
 BEGIN;
-SELECT plan(137);
+SELECT plan(155);
 
 -- ─── Fixtures ───────────────────────────────────────────────────────────────
 
@@ -90,6 +90,22 @@ INSERT INTO public.products (
 INSERT INTO public.product_links (product_id_a, product_id_b, link_type, confidence, notes)
 VALUES (999989, 999997, 'identical', 'ean_match', 'pgTAP test: EAN match')
 ON CONFLICT (product_id_a, product_id_b) DO NOTHING;
+
+-- Contradictory product for signal-conflict detection (#885):
+-- Low unhealthiness (headline='very_well') but bad signals (NOVA 4, Nutri-Score E, high sugar)
+INSERT INTO public.products (
+  product_id, ean, product_name, brand, category, country,
+  unhealthiness_score, nutri_score_label, nutri_score_source, nova_classification,
+  high_salt_flag, high_sugar_flag, high_sat_fat_flag
+) VALUES (
+  999988, '5901234123471', 'pgTAP Conflict Product', 'Conflict Brand',
+  'pgtap-prod-cat', 'XX', 12, 'E', 'off_computed', '4',
+  'NO', 'YES', 'NO'
+) ON CONFLICT (product_id) DO NOTHING;
+
+INSERT INTO public.nutrition_facts (product_id, calories, total_fat_g, saturated_fat_g, carbs_g, sugars_g, protein_g, salt_g)
+VALUES (999988, '150', '3.0', '1.0', '25.0', '18.0', '6.0', '0.5')
+ON CONFLICT (product_id) DO NOTHING;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- 1. api_product_detail_by_ean — known EAN
@@ -530,6 +546,82 @@ SELECT is(
   ((public.api_score_explanation(999997))->'summary'->>'nutri_score_official_in_country'),
   'false',
   'score explanation: nutri_score_official_in_country is false for XX (#353)'
+);
+
+-- ─── 6b. Signal-conflict detection (#885) ───────────────────────────────
+
+-- 6b.1 summary has conflicts key
+SELECT ok(
+  ((public.api_score_explanation(999997))->'summary') ? 'conflicts',
+  'score explanation summary has conflicts key (#885)'
+);
+
+-- 6b.2 summary has qualified_headline key
+SELECT ok(
+  ((public.api_score_explanation(999997))->'summary') ? 'qualified_headline',
+  'score explanation summary has qualified_headline key (#885)'
+);
+
+-- 6b.3 product 999997 (unhealthiness=55, headline=significant, nutri=C, nova=3)
+--      should have zero conflicts — no rules fire
+SELECT is(
+  ((public.api_score_explanation(999997))->'summary'->'conflicts'),
+  '[]'::jsonb,
+  'score explanation: no conflicts for product with significant headline (#885)'
+);
+
+-- 6b.4 qualified_headline equals headline when no conflicts
+SELECT is(
+  ((public.api_score_explanation(999997))->'summary'->>'qualified_headline'),
+  ((public.api_score_explanation(999997))->'summary'->>'headline'),
+  'score explanation: qualified_headline equals headline when clean (#885)'
+);
+
+-- 6b.5 contradictory product 999988 (unhealthiness=12, headline=very_well,
+--       but NOVA=4, Nutri-Score=E, high_sugar=YES) should have conflicts
+SELECT ok(
+  jsonb_array_length((public.api_score_explanation(999988))->'summary'->'conflicts') > 0,
+  'score explanation: conflicts detected for contradictory product (#885)'
+);
+
+-- 6b.6 expects at least 3 conflicts (M1=nova, M2=nutri_score, M3=high_sugar)
+SELECT ok(
+  jsonb_array_length((public.api_score_explanation(999988))->'summary'->'conflicts') >= 3,
+  'score explanation: at least 3 conflicts for NOVA4+NutriE+HighSugar (#885)'
+);
+
+-- 6b.7 M1 conflict (nova_ultra_processed) is present
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM jsonb_array_elements((public.api_score_explanation(999988))->'summary'->'conflicts') AS c
+    WHERE c->>'key' = 'nova_ultra_processed'
+  ),
+  'score explanation: M1 nova_ultra_processed conflict detected (#885)'
+);
+
+-- 6b.8 M2 conflict (nutri_score_poor) is present
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM jsonb_array_elements((public.api_score_explanation(999988))->'summary'->'conflicts') AS c
+    WHERE c->>'key' = 'nutri_score_poor'
+  ),
+  'score explanation: M2 nutri_score_poor conflict detected (#885)'
+);
+
+-- 6b.9 M3 conflict (high_sugar_flag) is present
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM jsonb_array_elements((public.api_score_explanation(999988))->'summary'->'conflicts') AS c
+    WHERE c->>'key' = 'high_sugar_flag'
+  ),
+  'score explanation: M3 high_sugar_flag conflict detected (#885)'
+);
+
+-- 6b.10 qualified_headline differs from headline when conflicts exist
+SELECT ok(
+  ((public.api_score_explanation(999988))->'summary'->>'qualified_headline')
+  <> ((public.api_score_explanation(999988))->'summary'->>'headline'),
+  'score explanation: qualified_headline differs from headline with conflicts (#885)'
 );
 
 -- ═══════════════════════════════════════════════════════════════════════════
