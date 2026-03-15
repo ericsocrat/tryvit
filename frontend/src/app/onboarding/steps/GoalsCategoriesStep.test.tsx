@@ -46,7 +46,7 @@ describe("GoalsCategoriesStep", () => {
     renderStep();
     expect(screen.getByText("Diabetes management")).toBeInTheDocument();
     expect(
-      screen.getByText(/Track sugar content/),
+      screen.getByText(/Warns you when sugar exceeds your limit/),
     ).toBeInTheDocument();
   });
 
