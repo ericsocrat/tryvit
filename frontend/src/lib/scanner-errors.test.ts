@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ScannerErrorType } from "@/lib/scanner-errors";
 import {
+    type ScannerErrorType,
     classifyScannerError,
     getBrowserSummary,
     getErrorMessageKey,
