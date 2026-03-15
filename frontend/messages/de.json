@@ -688,6 +688,15 @@
     "unsavedStay": "Auf Seite bleiben",
     "unsavedIndicator": "Ungespeicherte Änderungen"
   },
+  "healthCondition": {
+    "diabetes": "Diabetes",
+    "hypertension": "Bluthochdruck",
+    "heartDisease": "Herzerkrankung",
+    "celiacDisease": "Zöliakie",
+    "gout": "Gicht",
+    "kidneyDisease": "Nierenerkrankung",
+    "ibs": "Reizdarmsyndrom"
+  },
   "healthProfile": {
     "title": "Gesundheitsprofile",
     "newProfile": "+ Neues Profil",
@@ -834,7 +843,7 @@
   },
   "allergens": {
     "gluten": "Gluten",
-    "milk": "Milch / Milchprodukte",
+    "milk": "Milch",
     "eggs": "Eier",
     "nuts": "Schalenfrüchte",
     "peanuts": "Erdnüsse",
@@ -846,7 +855,16 @@
     "sesame": "Sesam",
     "sulphites": "Sulfite",
     "lupin": "Lupinen",
-    "molluscs": "Weichtiere"
+    "molluscs": "Weichtiere",
+    "soybeans": "Soja",
+    "tree-nuts": "Schalenfrüchte"
+  },
+  "scoreBand": {
+    "excellent": "Ausgezeichnet",
+    "good": "Gut",
+    "moderate": "Mäßig",
+    "poor": "Schlecht",
+    "bad": "Sehr schlecht"
   },
   "scoreBands": {
     "low": "Niedrig",
@@ -1141,6 +1159,11 @@
     "tierLow": "Geringes Bedenken",
     "tierModerate": "Moderates Bedenken",
     "tierHigh": "Hohes Bedenken"
+  },
+  "warningSeverity": {
+    "critical": "Kritisch",
+    "high": "Hoch",
+    "moderate": "Moderat"
   },
   "validation": {
     "email_invalid": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",

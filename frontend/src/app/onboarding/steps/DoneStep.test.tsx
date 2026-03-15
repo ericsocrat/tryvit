@@ -44,7 +44,7 @@ describe("DoneStep", () => {
 
   it("shows allergen labels in summary", () => {
     renderStep({ allergens: ["gluten", "milk"] });
-    expect(screen.getByText("Gluten, Milk / Dairy")).toBeInTheDocument();
+    expect(screen.getByText("Gluten, Milk")).toBeInTheDocument();
   });
 
   it('shows "None selected" when no allergens', () => {

@@ -24,11 +24,13 @@ interface AllergenChipProps {
 }
 
 function AllergenChip({ warning }: AllergenChipProps) {
+  const { t } = useTranslation();
+  const name = t(warning.labelKey);
   const style = CHIP_STYLES[warning.type];
   const tooltip =
     warning.type === "contains"
-      ? `Contains: ${warning.label}`
-      : `May contain traces: ${warning.label}`;
+      ? `Contains: ${name}`
+      : `May contain traces: ${name}`;
 
   return (
     <span
@@ -37,7 +39,7 @@ function AllergenChip({ warning }: AllergenChipProps) {
       data-testid="allergen-chip"
     >
       <span aria-hidden="true">{warning.icon}</span>
-      <span className="max-w-16 truncate">{warning.label}</span>
+      <span className="max-w-16 truncate">{name}</span>
     </span>
   );
 }
@@ -79,7 +81,7 @@ export function AllergenChips({ warnings }: AllergenChipsProps) {
           className="inline-flex items-center rounded-full bg-surface-muted px-1.5 py-0.5 text-xxs font-medium text-foreground-muted"
           title={warnings
             .slice(MAX_VISIBLE)
-            .map((w) => w.label)
+            .map((w) => t(w.labelKey))
             .join(", ")}
           data-testid="allergen-overflow"
         >

@@ -3,6 +3,8 @@
 // ─── Product detail page ────────────────────────────────────────────────────
 // Uses the composite api_get_product_profile() endpoint for a single round-trip.
 
+import { AlternativeProductCard } from "@/components/alternatives/AlternativeProductCard";
+import { AlternativesSection } from "@/components/alternatives/AlternativesSection";
 import { Button } from "@/components/common/Button";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
@@ -12,8 +14,6 @@ import { PullToRefresh } from "@/components/common/PullToRefresh";
 import { ProductProfileSkeleton } from "@/components/common/skeletons";
 import { CompareCheckbox } from "@/components/compare/CompareCheckbox";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import { AlternativeProductCard } from "@/components/alternatives/AlternativeProductCard";
-import { AlternativesSection } from "@/components/alternatives/AlternativesSection";
 import { ActionOverflowMenu } from "@/components/product/ActionOverflowMenu";
 import { AddToListMenu } from "@/components/product/AddToListMenu";
 import { AllergenMatrix } from "@/components/product/AllergenMatrix";
@@ -338,7 +338,7 @@ export default function ProductDetailPage() {
               <span
                 className={`rounded-full px-2 py-0.5 text-xs font-medium ${band.bg} ${band.color}`}
               >
-                {band.label}
+                {t(band.labelKey)}
               </span>
               <PercentileBadge
                 rank={profile.scores.category_context?.rank}
@@ -1069,7 +1069,7 @@ function ScoringTab({ profile }: Readonly<{ profile: ProductProfile }>) {
       <ScoreBreakdownPanel
         productId={profile.product.product_id}
         score={toTryVitScore(scores.unhealthiness_score)}
-        scoreBand={SCORE_BANDS[scores.score_band]?.label ?? scores.score_band}
+        scoreBand={SCORE_BANDS[scores.score_band] ? t(SCORE_BANDS[scores.score_band].labelKey) : scores.score_band}
       />
 
       {/* NOVA processing indicator */}

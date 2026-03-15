@@ -21,8 +21,8 @@ export type ProductAllergenMap = Readonly<
 export interface AllergenWarning {
   /** Tag identifier, e.g. "milk" */
   readonly tag: string;
-  /** Human-readable short label, e.g. "Milk / Dairy" */
-  readonly label: string;
+  /** i18n key for display label, e.g. "allergens.milk" */
+  readonly labelKey: string;
   /** Emoji icon for compact display */
   readonly icon: string;
   /** Whether the product "contains" or has "traces" of this allergen */
@@ -49,9 +49,9 @@ export const ALLERGEN_ICONS: Readonly<Record<string, string>> = {
   "molluscs": "🐚",
 };
 
-/** Build a label lookup from ALLERGEN_TAGS constant */
-const LABEL_MAP = new Map<string, string>(
-  ALLERGEN_TAGS.map((a) => [a.tag, a.label]),
+/** Build a labelKey lookup from ALLERGEN_TAGS constant */
+const LABEL_KEY_MAP = new Map<string, string>(
+  ALLERGEN_TAGS.map((a) => [a.tag, a.labelKey]),
 );
 
 // ─── Core matching function ─────────────────────────────────────────────────
@@ -79,7 +79,7 @@ export function matchProductAllergens(
     if (avoidSet.has(tag)) {
       warnings.push({
         tag,
-        label: LABEL_MAP.get(tag) ?? formatTagFallback(tag),
+        labelKey: LABEL_KEY_MAP.get(tag) ?? `allergens.${tag}`,
         icon: ALLERGEN_ICONS[tag] ?? "⚠️",
         type: "contains",
       });
@@ -93,7 +93,7 @@ export function matchProductAllergens(
       if (avoidSet.has(tag) && !warnings.some((w) => w.tag === tag)) {
         warnings.push({
           tag,
-          label: LABEL_MAP.get(tag) ?? formatTagFallback(tag),
+          labelKey: LABEL_KEY_MAP.get(tag) ?? `allergens.${tag}`,
           icon: ALLERGEN_ICONS[tag] ?? "⚠️",
           type: "traces",
         });
@@ -108,12 +108,4 @@ export function matchProductAllergens(
   });
 }
 
-// ─── Utility ────────────────────────────────────────────────────────────────
 
-/** Convert a "some-tag" to "Some Tag" as a fallback label */
-function formatTagFallback(tag: string): string {
-  return tag
-    .split("-")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-}

@@ -8,8 +8,8 @@
 import { ButtonLink } from "@/components/common/Button";
 import { NutriScoreBadge } from "@/components/common/NutriScoreBadge";
 import {
-  ProductCardSkeleton,
-  ProductProfileSkeleton,
+    ProductCardSkeleton,
+    ProductProfileSkeleton,
 } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { HealthWarningsCard } from "@/components/product/HealthWarningsCard";
@@ -22,11 +22,11 @@ import { createClient } from "@/lib/supabase/client";
 import type { Alternative, ProductDetail } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
 import {
-  AlertTriangle,
-  Camera,
-  ClipboardList,
-  Salad,
-  Trophy,
+    AlertTriangle,
+    Camera,
+    ClipboardList,
+    Salad,
+    Trophy,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -156,7 +156,7 @@ export default function ScanResultPage() {
               <span
                 className={`rounded-full px-2 py-0.5 text-xs font-medium ${band.bg} ${band.color}`}
               >
-                {band.label}
+                {t(band.labelKey)}
               </span>
             </div>
           </div>

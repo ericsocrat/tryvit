@@ -688,6 +688,15 @@
     "unsavedStay": "Stay on page",
     "unsavedIndicator": "Unsaved changes"
   },
+  "healthCondition": {
+    "diabetes": "Diabetes",
+    "hypertension": "Hypertension",
+    "heartDisease": "Heart Disease",
+    "celiacDisease": "Celiac Disease",
+    "gout": "Gout",
+    "kidneyDisease": "Kidney Disease",
+    "ibs": "IBS"
+  },
   "healthProfile": {
     "title": "Health Profiles",
     "newProfile": "+ New Profile",
@@ -834,7 +843,7 @@
   },
   "allergens": {
     "gluten": "Gluten",
-    "milk": "Milk / Dairy",
+    "milk": "Milk",
     "eggs": "Eggs",
     "nuts": "Tree Nuts",
     "peanuts": "Peanuts",
@@ -846,7 +855,16 @@
     "sesame": "Sesame",
     "sulphites": "Sulphites",
     "lupin": "Lupin",
-    "molluscs": "Molluscs"
+    "molluscs": "Molluscs",
+    "soybeans": "Soy",
+    "tree-nuts": "Tree Nuts"
+  },
+  "scoreBand": {
+    "excellent": "Excellent",
+    "good": "Good",
+    "moderate": "Moderate",
+    "poor": "Poor",
+    "bad": "Bad"
   },
   "scoreBands": {
     "low": "Low",
@@ -1141,6 +1159,11 @@
     "tierLow": "Low concern",
     "tierModerate": "Moderate concern",
     "tierHigh": "High concern"
+  },
+  "warningSeverity": {
+    "critical": "Critical",
+    "high": "High",
+    "moderate": "Moderate"
   },
   "validation": {
     "email_invalid": "Please enter a valid email address.",

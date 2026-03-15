@@ -38,7 +38,7 @@ export function AllergensStep({ data, onChange, onNext, onBack }: StepProps) {
             }`}
             data-testid={`allergen-${a.tag}`}
           >
-            {a.label}
+            {t(a.labelKey)}
           </button>
         ))}
       </div>

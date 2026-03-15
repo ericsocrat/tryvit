@@ -10,7 +10,7 @@ function makeWarning(
 ): AllergenWarning {
   return {
     tag: "milk",
-    label: "Milk / Dairy",
+    labelKey: "allergens.milk",
     icon: "🥛",
     type: "contains",
     ...overrides,
@@ -34,7 +34,7 @@ describe("AllergenChips", () => {
 
     const chip = screen.getByTestId("allergen-chip");
     expect(chip).toBeTruthy();
-    expect(chip.textContent).toContain("Milk / Dairy");
+    expect(chip.textContent).toContain("Milk");
     expect(chip.textContent).toContain("🥛");
   });
 
@@ -50,7 +50,7 @@ describe("AllergenChips", () => {
       <AllergenChips
         warnings={[
           makeWarning({ tag: "milk" }),
-          makeWarning({ tag: "eggs", label: "Eggs", icon: "🥚" }),
+          makeWarning({ tag: "eggs", labelKey: "allergens.eggs", icon: "🥚" }),
         ]}
       />,
     );
@@ -90,14 +90,14 @@ describe("AllergenChips", () => {
     render(<AllergenChips warnings={[makeWarning({ type: "contains" })]} />);
 
     const chip = screen.getByTestId("allergen-chip");
-    expect(chip.getAttribute("title")).toBe("Contains: Milk / Dairy");
+    expect(chip.getAttribute("title")).toBe("Contains: Milk");
   });
 
   it("shows 'May contain traces: ...' tooltip for traces type", () => {
     render(<AllergenChips warnings={[makeWarning({ type: "traces" })]} />);
 
     const chip = screen.getByTestId("allergen-chip");
-    expect(chip.getAttribute("title")).toBe("May contain traces: Milk / Dairy");
+    expect(chip.getAttribute("title")).toBe("May contain traces: Milk");
   });
 
   // ── Max visible / overflow ────────────────────────────────────────────
@@ -105,8 +105,8 @@ describe("AllergenChips", () => {
   it("renders up to 3 visible chips without overflow", () => {
     const warnings = [
       makeWarning({ tag: "milk" }),
-      makeWarning({ tag: "eggs", label: "Eggs", icon: "🥚" }),
-      makeWarning({ tag: "gluten", label: "Gluten", icon: "🌾" }),
+      makeWarning({ tag: "eggs", labelKey: "allergens.eggs", icon: "🥚" }),
+      makeWarning({ tag: "gluten", labelKey: "allergens.gluten", icon: "🌾" }),
     ];
     render(<AllergenChips warnings={warnings} />);
 
@@ -118,9 +118,9 @@ describe("AllergenChips", () => {
   it("renders overflow badge when more than 3 warnings", () => {
     const warnings = [
       makeWarning({ tag: "milk" }),
-      makeWarning({ tag: "eggs", label: "Eggs", icon: "🥚" }),
-      makeWarning({ tag: "gluten", label: "Gluten", icon: "🌾" }),
-      makeWarning({ tag: "peanuts", label: "Peanuts", icon: "🥜" }),
+      makeWarning({ tag: "eggs", labelKey: "allergens.eggs", icon: "🥚" }),
+      makeWarning({ tag: "gluten", labelKey: "allergens.gluten", icon: "🌾" }),
+      makeWarning({ tag: "peanuts", labelKey: "allergens.peanuts", icon: "🥜" }),
     ];
     render(<AllergenChips warnings={warnings} />);
 
@@ -135,11 +135,11 @@ describe("AllergenChips", () => {
   it("overflow badge shows correct count for many extras", () => {
     const warnings = [
       makeWarning({ tag: "milk" }),
-      makeWarning({ tag: "eggs", label: "Eggs" }),
-      makeWarning({ tag: "gluten", label: "Gluten" }),
-      makeWarning({ tag: "peanuts", label: "Peanuts" }),
-      makeWarning({ tag: "fish", label: "Fish" }),
-      makeWarning({ tag: "celery", label: "Celery" }),
+      makeWarning({ tag: "eggs", labelKey: "allergens.eggs" }),
+      makeWarning({ tag: "gluten", labelKey: "allergens.gluten" }),
+      makeWarning({ tag: "peanuts", labelKey: "allergens.peanuts" }),
+      makeWarning({ tag: "fish", labelKey: "allergens.fish" }),
+      makeWarning({ tag: "celery", labelKey: "allergens.celery" }),
     ];
     render(<AllergenChips warnings={warnings} />);
 
@@ -149,10 +149,10 @@ describe("AllergenChips", () => {
 
   it("overflow badge has tooltip listing hidden allergens", () => {
     const warnings = [
-      makeWarning({ tag: "milk", label: "Milk / Dairy" }),
-      makeWarning({ tag: "eggs", label: "Eggs" }),
-      makeWarning({ tag: "gluten", label: "Gluten" }),
-      makeWarning({ tag: "peanuts", label: "Peanuts" }),
+      makeWarning({ tag: "milk", labelKey: "allergens.milk" }),
+      makeWarning({ tag: "eggs", labelKey: "allergens.eggs" }),
+      makeWarning({ tag: "gluten", labelKey: "allergens.gluten" }),
+      makeWarning({ tag: "peanuts", labelKey: "allergens.peanuts" }),
     ];
     render(<AllergenChips warnings={warnings} />);
 

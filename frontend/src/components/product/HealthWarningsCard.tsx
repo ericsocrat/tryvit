@@ -213,13 +213,14 @@ export function HealthWarningsCard({
 // ─── Warning Row ────────────────────────────────────────────────────────────
 
 function WarningRow({ warning }: Readonly<{ warning: HealthWarning }>) {
+  const { t } = useTranslation();
   const style = WARNING_SEVERITY[warning.severity];
   const SeverityIcon = SEVERITY_ICON[warning.severity];
   const conditionIcon = getConditionIcon(warning.condition);
 
   return (
     <li className="flex items-start gap-2">
-      <span className="mt-0.5 shrink-0" title={style.label}>
+      <span className="mt-0.5 shrink-0" title={t(style.labelKey)}>
         <SeverityIcon size={16} aria-hidden="true" />
       </span>
       <div className="min-w-0 flex-1">

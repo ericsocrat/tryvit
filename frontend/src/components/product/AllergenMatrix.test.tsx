@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
 import type { ProfileAllergens } from "@/lib/types";
+import { render, screen, within } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -57,13 +57,13 @@ describe("AllergenMatrix", () => {
       (r) => within(r).getByRole("cell").textContent ?? "",
     );
 
-    // contains (gluten, milk) should come first
-    const glutenIdx = cells.findIndex((c) => c.includes("Gluten"));
-    const milkIdx = cells.findIndex((c) => c.includes("Milk"));
-    const eggsIdx = cells.findIndex((c) => c.includes("Eggs"));
-    const soyIdx = cells.findIndex((c) => c.includes("Soy"));
+    // Mock t() returns keys as-is, so match on i18n keys
+    const glutenIdx = cells.findIndex((c) => c.includes("allergens.gluten"));
+    const milkIdx = cells.findIndex((c) => c.includes("allergens.milk"));
+    const eggsIdx = cells.findIndex((c) => c.includes("allergens.eggs"));
+    const soyIdx = cells.findIndex((c) => c.includes("allergens.soybeans"));
     // The first "free" EU allergen (e.g., Crustaceans or Peanuts)
-    const freeIdx = cells.findIndex((c) => c.includes("Peanuts"));
+    const freeIdx = cells.findIndex((c) => c.includes("allergens.peanuts"));
 
     // contains before traces
     expect(glutenIdx).toBeLessThan(eggsIdx);
@@ -83,11 +83,11 @@ describe("AllergenMatrix", () => {
         })}
       />,
     );
-    // Should show "Gluten" (title-cased via normaliser)
+    // Mock t() returns keys — check for the i18n key
     const table = screen.getByRole("table");
     const cells = within(table).getAllByRole("cell");
     const textValues = cells.map((c) => c.textContent);
-    expect(textValues).toContain("Gluten");
+    expect(textValues).toContain("allergens.gluten");
   });
 
   it("includes all 14 EU mandatory allergens even if not in data", () => {
@@ -118,8 +118,8 @@ describe("AllergenMatrix", () => {
       />,
     );
     const table = screen.getByRole("table");
-    expect(within(table).getByText("Sesame")).toBeInTheDocument();
-    expect(within(table).getByText("Sulphites")).toBeInTheDocument();
+    expect(within(table).getByText("allergens.sesame")).toBeInTheDocument();
+    expect(within(table).getByText("allergens.sulphites")).toBeInTheDocument();
   });
 
   it("renders the legend with all three statuses", () => {
@@ -146,7 +146,7 @@ describe("AllergenMatrix", () => {
       />,
     );
     const table = screen.getByRole("table");
-    expect(within(table).getByText("Buckwheat")).toBeInTheDocument();
+    expect(within(table).getByText("allergens.buckwheat")).toBeInTheDocument();
     // Total rows should be > 14 (14 EU + 1 extra)
     const rows = screen.getAllByRole("row");
     expect(rows.length).toBe(15);

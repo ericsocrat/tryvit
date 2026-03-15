@@ -68,11 +68,11 @@ vi.mock("@/lib/toast", () => ({
 vi.mock("@/lib/score-utils", () => ({
   toTryVitScore: (u: number) => 100 - u,
   getScoreBand: (u: number) => {
-    if (u >= 1 && u <= 20) return { band: "green", label: "Excellent", color: "#22c55e", bgColor: "#dcfce7", textColor: "#166534" };
-    if (u >= 21 && u <= 40) return { band: "yellow", label: "Good", color: "#eab308", bgColor: "#fef9c3", textColor: "#854d0e" };
-    if (u >= 41 && u <= 60) return { band: "orange", label: "Moderate", color: "#f97316", bgColor: "#fff7ed", textColor: "#9a3412" };
-    if (u >= 61 && u <= 80) return { band: "red", label: "Poor", color: "#ef4444", bgColor: "#fef2f2", textColor: "#991b1b" };
-    if (u >= 81 && u <= 100) return { band: "darkred", label: "Bad", color: "#991b1b", bgColor: "#fef2f2", textColor: "#7f1d1d" };
+    if (u >= 1 && u <= 20) return { band: "green", labelKey: "scoreBand.excellent", color: "#22c55e", bgColor: "#dcfce7", textColor: "#166534" };
+    if (u >= 21 && u <= 40) return { band: "yellow", labelKey: "scoreBand.good", color: "#eab308", bgColor: "#fef9c3", textColor: "#854d0e" };
+    if (u >= 41 && u <= 60) return { band: "orange", labelKey: "scoreBand.moderate", color: "#f97316", bgColor: "#fff7ed", textColor: "#9a3412" };
+    if (u >= 61 && u <= 80) return { band: "red", labelKey: "scoreBand.poor", color: "#ef4444", bgColor: "#fef2f2", textColor: "#991b1b" };
+    if (u >= 81 && u <= 100) return { band: "darkred", labelKey: "scoreBand.bad", color: "#991b1b", bgColor: "#fef2f2", textColor: "#7f1d1d" };
     return null;
   },
 }));

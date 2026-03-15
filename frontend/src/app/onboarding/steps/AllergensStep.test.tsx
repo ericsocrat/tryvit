@@ -45,7 +45,7 @@ describe("AllergensStep", () => {
   it("renders allergen labels", () => {
     renderStep();
     expect(screen.getByText("Gluten")).toBeInTheDocument();
-    expect(screen.getByText("Milk / Dairy")).toBeInTheDocument();
+    expect(screen.getByText("Milk")).toBeInTheDocument();
     expect(screen.getByText("Peanuts")).toBeInTheDocument();
   });
 

@@ -31,7 +31,7 @@ export function DietStep({ data, onChange, onNext, onBack }: StepProps) {
             }`}
             data-testid={`diet-${opt.value}`}
           >
-            {opt.label}
+            {t(opt.labelKey)}
           </button>
         ))}
       </div>
