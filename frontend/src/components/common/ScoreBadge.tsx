@@ -13,6 +13,7 @@
  *   lg  → 80×80 circular SVG ring with animated fill arc
  */
 
+import { useTranslation } from "@/lib/i18n";
 import { getScoreBand, toTryVitScore } from "@/lib/score-utils";
 import React from "react";
 import { InfoTooltip } from "./InfoTooltip";
@@ -61,12 +62,13 @@ export const ScoreBadge = React.memo(function ScoreBadge({
   animated = true,
   className = "",
 }: Readonly<ScoreBadgeProps>) {
+  const { t } = useTranslation();
   const band = getScoreBand(score);
   const isValid = band !== null;
   const tryVitScore = isValid ? toTryVitScore(score as number) : 0;
   const displayText = isValid ? String(tryVitScore) : "N/A";
   const tooltipKey = isValid ? `tooltip.score.${band.band}` : undefined;
-  const bandLabel = isValid ? band.label : "N/A";
+  const bandLabel = isValid ? t(band.labelKey) : "N/A";
   const bgClass = isValid ? band.bgColor : "bg-surface-muted";
   const textClass = isValid ? band.textColor : "text-foreground-muted";
 

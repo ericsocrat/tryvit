@@ -1,9 +1,9 @@
 import {
-  SCORE_BAND_HEX,
-  getAllBands,
-  getScoreBand,
-  getScoreHex,
-  toTryVitScore,
+    SCORE_BAND_HEX,
+    getAllBands,
+    getScoreBand,
+    getScoreHex,
+    toTryVitScore,
 } from "@/lib/score-utils";
 import { describe, expect, it } from "vitest";
 
@@ -61,7 +61,7 @@ describe("getScoreBand", () => {
     const result = getScoreBand(1);
     expect(result).toEqual({
       band: "green",
-      label: "Excellent",
+      labelKey: "scoreBand.excellent",
       color: "var(--color-score-green)",
       bgColor: "bg-score-green/10",
       textColor: "text-score-green-text",
@@ -74,14 +74,14 @@ describe("getScoreBand", () => {
 
   it("maps score 20 to green band (upper boundary)", () => {
     expect(getScoreBand(20)?.band).toBe("green");
-    expect(getScoreBand(20)?.label).toBe("Excellent");
+    expect(getScoreBand(20)?.labelKey).toBe("scoreBand.excellent");
   });
 
   // ─── Yellow band (21–40) ────────────────────────────────────────────────
 
   it("maps score 21 to yellow band (lower boundary)", () => {
     expect(getScoreBand(21)?.band).toBe("yellow");
-    expect(getScoreBand(21)?.label).toBe("Good");
+    expect(getScoreBand(21)?.labelKey).toBe("scoreBand.good");
   });
 
   it("maps score 30 to yellow band", () => {
@@ -96,7 +96,7 @@ describe("getScoreBand", () => {
 
   it("maps score 41 to orange band (lower boundary)", () => {
     expect(getScoreBand(41)?.band).toBe("orange");
-    expect(getScoreBand(41)?.label).toBe("Moderate");
+    expect(getScoreBand(41)?.labelKey).toBe("scoreBand.moderate");
   });
 
   it("maps score 50 to orange band", () => {
@@ -111,7 +111,7 @@ describe("getScoreBand", () => {
 
   it("maps score 61 to red band (lower boundary)", () => {
     expect(getScoreBand(61)?.band).toBe("red");
-    expect(getScoreBand(61)?.label).toBe("Poor");
+    expect(getScoreBand(61)?.labelKey).toBe("scoreBand.poor");
   });
 
   it("maps score 70 to red band", () => {
@@ -126,7 +126,7 @@ describe("getScoreBand", () => {
 
   it("maps score 81 to darkred band (lower boundary)", () => {
     expect(getScoreBand(81)?.band).toBe("darkred");
-    expect(getScoreBand(81)?.label).toBe("Bad");
+    expect(getScoreBand(81)?.labelKey).toBe("scoreBand.bad");
   });
 
   it("maps score 90 to darkred band", () => {
@@ -172,7 +172,7 @@ describe("getScoreBand", () => {
   it("returns all required keys", () => {
     const result = getScoreBand(50);
     expect(result).toHaveProperty("band");
-    expect(result).toHaveProperty("label");
+    expect(result).toHaveProperty("labelKey");
     expect(result).toHaveProperty("color");
     expect(result).toHaveProperty("bgColor");
     expect(result).toHaveProperty("textColor");
@@ -209,7 +209,7 @@ describe("getAllBands", () => {
   it("each band has all required keys", () => {
     for (const band of getAllBands()) {
       expect(band).toHaveProperty("band");
-      expect(band).toHaveProperty("label");
+      expect(band).toHaveProperty("labelKey");
       expect(band).toHaveProperty("color");
       expect(band).toHaveProperty("bgColor");
       expect(band).toHaveProperty("textColor");

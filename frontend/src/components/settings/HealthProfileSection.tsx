@@ -151,7 +151,7 @@ function ProfileForm({
                   : "border text-foreground-secondary hover:border-strong"
               }`}
             >
-              {c.icon} {c.label}
+              {c.icon} {t(c.labelKey)}
             </button>
           ))}
         </div>
@@ -417,7 +417,7 @@ export function HealthProfileSection() {
                         .map(
                           (c) =>
                             HEALTH_CONDITIONS.find((hc) => hc.value === c)
-                              ?.label ?? c,
+                              ? t(HEALTH_CONDITIONS.find((hc) => hc.value === c)!.labelKey) : c,
                         )
                         .join(", ")}
                     </p>

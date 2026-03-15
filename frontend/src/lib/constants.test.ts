@@ -38,11 +38,11 @@ describe("ALLERGEN_TAGS", () => {
     expect(ALLERGEN_TAGS).toHaveLength(14);
   });
 
-  it("each allergen has tag and label", () => {
+  it("each allergen has tag and labelKey", () => {
     for (const allergen of ALLERGEN_TAGS) {
       expect(allergen.tag).toBeTruthy();
       expect(allergen.tag).not.toMatch(/^en:/);
-      expect(allergen.label.length).toBeGreaterThan(0);
+      expect(allergen.labelKey).toMatch(/^allergens\./);
     }
   });
 });
@@ -99,9 +99,9 @@ describe("SCORE_BANDS", () => {
     ]);
   });
 
-  it("each band has label, color, and bg", () => {
+  it("each band has labelKey, color, and bg", () => {
     for (const band of Object.values(SCORE_BANDS)) {
-      expect(band.label).toBeTruthy();
+      expect(band.labelKey).toMatch(/^scoreBand\./);
       expect(band.color).toMatch(/^text-/);
       expect(band.bg).toMatch(/^bg-/);
     }
@@ -158,10 +158,10 @@ describe("HEALTH_CONDITIONS", () => {
     expect(HEALTH_CONDITIONS).toHaveLength(7);
   });
 
-  it("each condition has value, label, and icon", () => {
+  it("each condition has value, labelKey, and icon", () => {
     for (const condition of HEALTH_CONDITIONS) {
       expect(condition.value).toBeTruthy();
-      expect(condition.label).toBeTruthy();
+      expect(condition.labelKey).toMatch(/^healthCondition\./);
       expect(condition.icon).toBeTruthy();
     }
   });
@@ -178,9 +178,9 @@ describe("WARNING_SEVERITY", () => {
     expect(Object.keys(WARNING_SEVERITY)).toEqual(["critical", "high", "moderate"]);
   });
 
-  it("each level has label, color, bg, and border", () => {
+  it("each level has labelKey, color, bg, and border", () => {
     for (const level of Object.values(WARNING_SEVERITY)) {
-      expect(level.label).toBeTruthy();
+      expect(level.labelKey).toMatch(/^warningSeverity\./);
       expect(level.color).toMatch(/^text-/);
       expect(level.bg).toMatch(/^bg-/);
       expect(level.border).toMatch(/^border-/);

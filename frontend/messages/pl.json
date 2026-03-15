@@ -688,6 +688,15 @@
     "unsavedStay": "Pozostań na stronie",
     "unsavedIndicator": "Niezapisane zmiany"
   },
+  "healthCondition": {
+    "diabetes": "Cukrzyca",
+    "hypertension": "Nadciśnienie",
+    "heartDisease": "Choroba serca",
+    "celiacDisease": "Celiakia",
+    "gout": "Dna moczanowa",
+    "kidneyDisease": "Choroba nerek",
+    "ibs": "Zespół jelita drażliwego"
+  },
   "healthProfile": {
     "title": "Profile zdrowotne",
     "newProfile": "+ Nowy profil",
@@ -846,7 +855,16 @@
     "sesame": "Sezam",
     "sulphites": "Siarczyny",
     "lupin": "Łubin",
-    "molluscs": "Mięczaki"
+    "molluscs": "Mięczaki",
+    "soybeans": "Soja",
+    "tree-nuts": "Orzechy"
+  },
+  "scoreBand": {
+    "excellent": "Doskonały",
+    "good": "Dobry",
+    "moderate": "Umiarkowany",
+    "poor": "Słaby",
+    "bad": "Zły"
   },
   "scoreBands": {
     "low": "Niski",
@@ -1141,6 +1159,11 @@
     "tierLow": "Niskie ryzyko",
     "tierModerate": "Umiarkowane ryzyko",
     "tierHigh": "Wysokie ryzyko"
+  },
+  "warningSeverity": {
+    "critical": "Krytyczny",
+    "high": "Wysoki",
+    "moderate": "Umiarkowany"
   },
   "validation": {
     "email_invalid": "Proszę podać prawidłowy adres e-mail.",

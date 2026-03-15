@@ -30,23 +30,7 @@ const EU_14_ALLERGENS = [
   "molluscs",
 ] as const;
 
-/** Friendly display names matching ALLERGEN_TAGS labels in constants.ts */
-const DISPLAY_NAMES: Record<string, string> = {
-  gluten: "Gluten",
-  crustaceans: "Crustaceans",
-  eggs: "Eggs",
-  fish: "Fish",
-  peanuts: "Peanuts",
-  soybeans: "Soy",
-  milk: "Milk",
-  "tree-nuts": "Tree Nuts",
-  celery: "Celery",
-  mustard: "Mustard",
-  sesame: "Sesame",
-  sulphites: "Sulphites",
-  lupin: "Lupin",
-  molluscs: "Molluscs",
-};
+
 
 /** Normalise an allergen tag: trim, lowercase, and strip legacy "en:" prefix if present. */
 function normaliseTag(tag: string): string {
@@ -134,16 +118,7 @@ function StatusIcon({ status }: Readonly<{ status: AllergenStatus }>) {
   }
 }
 
-/** Pretty-print allergen name using DISPLAY_NAMES map, with Title Case fallback. */
-function formatAllergenName(name: string): string {
-  return (
-    DISPLAY_NAMES[name] ??
-    name
-      .split("-")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ")
-  );
-}
+
 
 interface AllergenMatrixProps {
   readonly allergens: ProfileAllergens;
@@ -179,7 +154,7 @@ export function AllergenMatrix({ allergens }: AllergenMatrixProps) {
                 >
                   <StatusIcon status={row.status} />
                   <span className={`text-xs font-medium ${cfg.text}`}>
-                    {formatAllergenName(row.name)}
+                    {t(`allergens.${row.name}`)}
                   </span>
                 </td>
               </tr>

@@ -212,7 +212,7 @@ function DesktopGrid({
                       className={`mx-auto flex h-12 w-12 items-center justify-center rounded-lg text-lg font-bold ${band.bg} ${band.color}`}
                     >
                       {toTryVitScore(p.unhealthiness_score)}
-                      <span className="sr-only">{band.label}</span>
+                      <span className="sr-only">{t(band.labelKey)}</span>
                     </div>
                     <p className="text-sm font-semibold text-foreground line-clamp-2">
                       {p.product_name}
@@ -460,7 +460,7 @@ function MobileSwipeView({
                   className={`mx-auto flex h-12 w-12 items-center justify-center rounded-lg text-lg font-bold ${band.bg} ${band.color}`}
                 >
                   {toTryVitScore(p.unhealthiness_score)}
-                  <span className="sr-only">{band.label}</span>
+                  <span className="sr-only">{t(band.labelKey)}</span>
                 </div>
                 <p className="mt-1 text-xs font-semibold text-foreground line-clamp-2">
                   {p.product_name}

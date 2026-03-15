@@ -19,9 +19,14 @@ export function DoneStep({ data, loading, onComplete }: DoneStepProps) {
   const countryName =
     COUNTRIES.find((c) => c.code === data.country)?.name ?? data.country;
   const dietLabel =
-    DIET_OPTIONS.find((d) => d.value === data.diet)?.label ?? data.diet;
+    DIET_OPTIONS.find((d) => d.value === data.diet)
+      ? t(DIET_OPTIONS.find((d) => d.value === data.diet)!.labelKey)
+      : data.diet;
   const allergenLabels = data.allergens
-    .map((tag) => ALLERGEN_TAGS.find((a) => a.tag === tag)?.label ?? tag)
+    .map((tag) => {
+      const found = ALLERGEN_TAGS.find((a) => a.tag === tag);
+      return found ? t(found.labelKey) : tag;
+    })
     .join(", ");
 
   function summaryRow(label: string, value: string) {

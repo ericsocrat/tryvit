@@ -97,7 +97,7 @@ export function HealthSummary({ products }: Readonly<HealthSummaryProps>) {
         role="img"
         aria-label={distribution
           .filter((d) => d.count > 0)
-          .map((d) => `${d.label}: ${d.count}`)
+          .map((d) => `${t(d.labelKey)}: ${d.count}`)
           .join(", ")}
       >
         {distribution.map((d) =>

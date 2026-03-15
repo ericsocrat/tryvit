@@ -10,9 +10,10 @@
 
 "use client";
 
-import React from "react";
+import { useTranslation } from "@/lib/i18n";
 import { getScoreBand } from "@/lib/score-utils";
 import type { RecipeScore } from "@/lib/types";
+import React from "react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -80,6 +81,8 @@ export const RecipeScoreBadge = React.memo(function RecipeScoreBadge({
   showNutrition = false,
   className = "",
 }: Readonly<RecipeScoreBadgeProps>) {
+  const { t } = useTranslation();
+
   // ─── No data state ──────────────────────────────────────────────────────
 
   if (!score) {
@@ -117,7 +120,7 @@ export const RecipeScoreBadge = React.memo(function RecipeScoreBadge({
   const band = getScoreBand(score.aggregate_score);
   const bgClass = band?.bgColor ?? "bg-surface-muted";
   const textClass = band?.textColor ?? "text-foreground-muted";
-  const bandLabel = band?.label ?? "N/A";
+  const bandLabel = band ? t(band.labelKey) : "N/A";
   const conf = CONFIDENCE_STYLE[score.confidence] ?? CONFIDENCE_STYLE.low;
 
   return (

@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
-  matchProductAllergens,
-  ALLERGEN_ICONS,
-  type ProductAllergenData,
+    ALLERGEN_ICONS,
+    matchProductAllergens,
+    type ProductAllergenData,
 } from "./allergen-matching";
 
 // ─── matchProductAllergens ──────────────────────────────────────────────────
@@ -42,7 +42,7 @@ describe("matchProductAllergens", () => {
     expect(result).toHaveLength(1);
     expect(result[0]).toEqual({
       tag: "milk",
-      label: "Milk / Dairy",
+      labelKey: "allergens.milk",
       icon: "🥛",
       type: "contains",
     });
@@ -86,7 +86,7 @@ describe("matchProductAllergens", () => {
     expect(result).toHaveLength(1);
     expect(result[0]).toEqual({
       tag: "milk",
-      label: "Milk / Dairy",
+      labelKey: "allergens.milk",
       icon: "🥛",
       type: "traces",
     });
@@ -155,7 +155,7 @@ describe("matchProductAllergens", () => {
     );
 
     expect(result).toHaveLength(1);
-    expect(result[0].label).toBe("Some Unknown Allergen");
+    expect(result[0].labelKey).toBe("allergens.some-unknown-allergen");
     expect(result[0].icon).toBe("⚠️");
   });
 

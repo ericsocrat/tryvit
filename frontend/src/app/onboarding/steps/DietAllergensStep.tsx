@@ -46,7 +46,7 @@ export function DietAllergensStep({
             }`}
             data-testid={`diet-${opt.value}`}
           >
-            {opt.label}
+            {t(opt.labelKey)}
           </button>
         ))}
       </div>
@@ -86,7 +86,7 @@ export function DietAllergensStep({
               }`}
               data-testid={`allergen-${a.tag}`}
             >
-              {a.label}
+              {t(a.labelKey)}
             </button>
           ))}
         </div>

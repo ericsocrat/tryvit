@@ -442,7 +442,7 @@ export default function ScanPage() {
                 {tryVitScore}
               </span>
               <span className="text-sm text-foreground-secondary">
-                {band.label}
+                {t(band.labelKey)}
               </span>
             </div>
           )}

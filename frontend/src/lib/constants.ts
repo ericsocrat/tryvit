@@ -31,20 +31,20 @@ export function getLanguagesForCountry(countryCode: string) {
 }
 
 export const ALLERGEN_TAGS = [
-  { tag: "gluten", label: "Gluten" },
-  { tag: "milk", label: "Milk / Dairy" },
-  { tag: "eggs", label: "Eggs" },
-  { tag: "tree-nuts", label: "Tree Nuts" },
-  { tag: "peanuts", label: "Peanuts" },
-  { tag: "soybeans", label: "Soy" },
-  { tag: "fish", label: "Fish" },
-  { tag: "crustaceans", label: "Crustaceans" },
-  { tag: "celery", label: "Celery" },
-  { tag: "mustard", label: "Mustard" },
-  { tag: "sesame", label: "Sesame" },
-  { tag: "sulphites", label: "Sulphites" },
-  { tag: "lupin", label: "Lupin" },
-  { tag: "molluscs", label: "Molluscs" },
+  { tag: "gluten", labelKey: "allergens.gluten" },
+  { tag: "milk", labelKey: "allergens.milk" },
+  { tag: "eggs", labelKey: "allergens.eggs" },
+  { tag: "tree-nuts", labelKey: "allergens.tree-nuts" },
+  { tag: "peanuts", labelKey: "allergens.peanuts" },
+  { tag: "soybeans", labelKey: "allergens.soybeans" },
+  { tag: "fish", labelKey: "allergens.fish" },
+  { tag: "crustaceans", labelKey: "allergens.crustaceans" },
+  { tag: "celery", labelKey: "allergens.celery" },
+  { tag: "mustard", labelKey: "allergens.mustard" },
+  { tag: "sesame", labelKey: "allergens.sesame" },
+  { tag: "sulphites", labelKey: "allergens.sulphites" },
+  { tag: "lupin", labelKey: "allergens.lupin" },
+  { tag: "molluscs", labelKey: "allergens.molluscs" },
 ] as const;
 
 /**
@@ -75,9 +75,9 @@ export const ALLERGEN_PRESETS = [
 ] as const;
 
 export const DIET_OPTIONS = [
-  { value: "none", label: "No restriction" },
-  { value: "vegetarian", label: "Vegetarian" },
-  { value: "vegan", label: "Vegan" },
+  { value: "none", labelKey: "diet.none" },
+  { value: "vegetarian", labelKey: "diet.vegetarian" },
+  { value: "vegan", labelKey: "diet.vegan" },
 ] as const;
 
 export const HEALTH_GOALS = [
@@ -110,10 +110,10 @@ export const FOOD_CATEGORIES = [
 
 // Score band display config
 export const SCORE_BANDS = {
-  low: { label: "Excellent", color: "text-score-green-text", bg: "bg-score-green/10" },
-  moderate: { label: "Good", color: "text-score-yellow-text", bg: "bg-score-yellow/10" },
-  high: { label: "Moderate", color: "text-score-orange-text", bg: "bg-score-orange/10" },
-  very_high: { label: "Poor", color: "text-score-red-text", bg: "bg-score-red/10" },
+  low: { labelKey: "scoreBand.excellent", color: "text-score-green-text", bg: "bg-score-green/10" },
+  moderate: { labelKey: "scoreBand.good", color: "text-score-yellow-text", bg: "bg-score-yellow/10" },
+  high: { labelKey: "scoreBand.moderate", color: "text-score-orange-text", bg: "bg-score-orange/10" },
+  very_high: { labelKey: "scoreBand.poor", color: "text-score-red-text", bg: "bg-score-red/10" },
 } as const;
 
 /** Map a 0-100 unhealthiness score to a score band key. */
@@ -164,31 +164,31 @@ export const NUTRI_COLORS: Record<string, string> = {
 
 // Health conditions for personal health profiles
 export const HEALTH_CONDITIONS = [
-  { value: "diabetes", label: "Diabetes", icon: "🩸" },
-  { value: "hypertension", label: "Hypertension", icon: "💓" },
-  { value: "heart_disease", label: "Heart Disease", icon: "❤️" },
-  { value: "celiac_disease", label: "Celiac Disease", icon: "🌾" },
-  { value: "gout", label: "Gout", icon: "🦴" },
-  { value: "kidney_disease", label: "Kidney Disease", icon: "🫘" },
-  { value: "ibs", label: "IBS", icon: "🫃" },
+  { value: "diabetes", labelKey: "healthCondition.diabetes", icon: "🩸" },
+  { value: "hypertension", labelKey: "healthCondition.hypertension", icon: "💓" },
+  { value: "heart_disease", labelKey: "healthCondition.heartDisease", icon: "❤️" },
+  { value: "celiac_disease", labelKey: "healthCondition.celiacDisease", icon: "🌾" },
+  { value: "gout", labelKey: "healthCondition.gout", icon: "🦴" },
+  { value: "kidney_disease", labelKey: "healthCondition.kidneyDisease", icon: "🫘" },
+  { value: "ibs", labelKey: "healthCondition.ibs", icon: "🫃" },
 ] as const;
 
 // Warning severity display config
 export const WARNING_SEVERITY = {
   critical: {
-    label: "Critical",
+    labelKey: "warningSeverity.critical",
     color: "text-error",
     bg: "bg-error/10",
     border: "border-error/30",
   },
   high: {
-    label: "High",
+    labelKey: "warningSeverity.high",
     color: "text-warning",
     bg: "bg-warning/10",
     border: "border-warning/30",
   },
   moderate: {
-    label: "Moderate",
+    labelKey: "warningSeverity.moderate",
     color: "text-warning",
     bg: "bg-warning/10",
     border: "border-warning/30",

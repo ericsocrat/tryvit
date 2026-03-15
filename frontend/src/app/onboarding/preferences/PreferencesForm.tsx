@@ -93,7 +93,7 @@ export function PreferencesForm() {
                   : "border text-foreground-secondary hover:border-strong"
               }`}
             >
-              {opt.label}
+              {t(opt.labelKey)}
             </button>
           ))}
         </div>
@@ -130,7 +130,7 @@ export function PreferencesForm() {
                   : "border text-foreground-secondary hover:border-strong"
               }`}
             >
-              {a.label}
+              {t(a.labelKey)}
             </button>
           ))}
         </div>

@@ -23,8 +23,8 @@ import type { ScoreColorBand } from "@/lib/constants";
 export interface ScoreBand {
   /** Band key: "green" | "yellow" | "orange" | "red" | "darkred". */
   readonly band: ScoreColorBand;
-  /** Consumer-facing label: "Excellent", "Good", "Moderate", "Poor", "Bad". */
-  readonly label: string;
+  /** i18n key for the consumer-facing label (e.g. "scoreBand.excellent"). */
+  readonly labelKey: string;
   /** CSS variable reference for the band's primary color. */
   readonly color: string;
   /** Tailwind background class (10% opacity). */
@@ -37,31 +37,31 @@ export interface ScoreBand {
 
 const BAND_CONFIG: Record<ScoreColorBand, Omit<ScoreBand, "band">> = {
   green: {
-    label: "Excellent",
+    labelKey: "scoreBand.excellent",
     color: "var(--color-score-green)",
     bgColor: "bg-score-green/10",
     textColor: "text-score-green-text",
   },
   yellow: {
-    label: "Good",
+    labelKey: "scoreBand.good",
     color: "var(--color-score-yellow)",
     bgColor: "bg-score-yellow/10",
     textColor: "text-score-yellow-text",
   },
   orange: {
-    label: "Moderate",
+    labelKey: "scoreBand.moderate",
     color: "var(--color-score-orange)",
     bgColor: "bg-score-orange/10",
     textColor: "text-score-orange-text",
   },
   red: {
-    label: "Poor",
+    labelKey: "scoreBand.poor",
     color: "var(--color-score-red)",
     bgColor: "bg-score-red/10",
     textColor: "text-score-red-text",
   },
   darkred: {
-    label: "Bad",
+    labelKey: "scoreBand.bad",
     color: "var(--color-score-darkred)",
     bgColor: "bg-score-darkred/10",
     textColor: "text-score-darkred-text",
