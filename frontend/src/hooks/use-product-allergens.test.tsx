@@ -49,14 +49,14 @@ function createWrapper() {
 
 const milkWarning = {
   tag: "milk",
-  label: "Milk / Dairy",
+  labelKey: "allergens.milk",
   icon: "🥛",
   type: "contains" as const,
 };
 
 const glutenWarning = {
   tag: "gluten",
-  label: "Gluten",
+  labelKey: "allergens.gluten",
   icon: "🌾",
   type: "traces" as const,
 };

@@ -39,7 +39,7 @@ describe("PreferencesForm", () => {
   it("renders allergen tags", () => {
     render(<PreferencesForm />);
     expect(screen.getByText("Gluten")).toBeInTheDocument();
-    expect(screen.getByText("Milk / Dairy")).toBeInTheDocument();
+    expect(screen.getByText("Milk")).toBeInTheDocument();
     expect(screen.getByText("Eggs")).toBeInTheDocument();
     expect(screen.getByText("Peanuts")).toBeInTheDocument();
   });
@@ -208,7 +208,7 @@ describe("PreferencesForm", () => {
     await user.click(screen.getByLabelText(/strict mode/i));
 
     // Select allergen + enable strict allergen + may contain
-    await user.click(screen.getByText("Milk / Dairy"));
+    await user.click(screen.getByText("Milk"));
     await user.click(screen.getByLabelText("Strict allergen matching"));
     await user.click(screen.getByLabelText(/may contain/i));
 

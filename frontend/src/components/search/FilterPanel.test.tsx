@@ -164,7 +164,7 @@ describe("FilterPanel", () => {
       );
     });
     expect(
-      screen.getAllByText("Milk / Dairy-free").length,
+      screen.getAllByText("Milk-free").length,
     ).toBeGreaterThanOrEqual(1);
   });
 

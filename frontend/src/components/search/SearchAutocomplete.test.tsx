@@ -30,10 +30,10 @@ vi.mock("@/lib/supabase/client", () => ({
 
 vi.mock("@/lib/constants", () => ({
   SCORE_BANDS: {
-    low: { label: "Excellent", color: "text-score-green-text", bg: "bg-score-green/10" },
-    moderate: { label: "Good", color: "text-score-yellow-text", bg: "bg-score-yellow/10" },
-    high: { label: "Moderate", color: "text-score-orange-text", bg: "bg-score-orange/10" },
-    very_high: { label: "Poor", color: "text-score-red-text", bg: "bg-score-red/10" },
+    low: { labelKey: "scoreBand.excellent", color: "text-score-green-text", bg: "bg-score-green/10" },
+    moderate: { labelKey: "scoreBand.good", color: "text-score-yellow-text", bg: "bg-score-yellow/10" },
+    high: { labelKey: "scoreBand.moderate", color: "text-score-orange-text", bg: "bg-score-orange/10" },
+    very_high: { labelKey: "scoreBand.poor", color: "text-score-red-text", bg: "bg-score-red/10" },
   },
   NUTRI_COLORS: {
     A: "bg-nutri-A text-foreground-inverse",

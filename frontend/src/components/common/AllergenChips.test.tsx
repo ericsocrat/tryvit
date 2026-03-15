@@ -34,7 +34,7 @@ describe("AllergenChips", () => {
 
     const chip = screen.getByTestId("allergen-chip");
     expect(chip).toBeTruthy();
-    expect(chip.textContent).toContain("Milk / Dairy");
+    expect(chip.textContent).toContain("Milk");
     expect(chip.textContent).toContain("🥛");
   });
 
@@ -90,14 +90,14 @@ describe("AllergenChips", () => {
     render(<AllergenChips warnings={[makeWarning({ type: "contains" })]} />);
 
     const chip = screen.getByTestId("allergen-chip");
-    expect(chip.getAttribute("title")).toBe("Contains: Milk / Dairy");
+    expect(chip.getAttribute("title")).toBe("Contains: Milk");
   });
 
   it("shows 'May contain traces: ...' tooltip for traces type", () => {
     render(<AllergenChips warnings={[makeWarning({ type: "traces" })]} />);
 
     const chip = screen.getByTestId("allergen-chip");
-    expect(chip.getAttribute("title")).toBe("May contain traces: Milk / Dairy");
+    expect(chip.getAttribute("title")).toBe("May contain traces: Milk");
   });
 
   // ── Max visible / overflow ────────────────────────────────────────────
