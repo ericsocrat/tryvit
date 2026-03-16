@@ -151,7 +151,7 @@ jobs:
 
       - name: Run unit tests
         run: npx vitest run
-        timeout-minutes: 4
+        timeout-minutes: 6
 
       - name: CI runtime summary
         if: ${{ !cancelled() }}

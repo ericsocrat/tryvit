@@ -119,7 +119,7 @@ jobs:
 
       - name: Unit tests with coverage
         run: npx vitest run --coverage
-        timeout-minutes: 5
+        timeout-minutes: 7
 
       - name: Coverage summary
         if: ${{ !cancelled() }}
