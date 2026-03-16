@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 // ─── Smoke tests: verify pages load without crashes ─────────────────────────
 // All tests are public-page only — no Supabase dependency in CI.
@@ -77,13 +77,13 @@ test.describe("Navigation links", () => {
   test("landing page sign-in navigates to login", async ({ page }) => {
     await page.goto("/");
     await page.locator('a[href="/auth/login"]').first().click();
-    await expect(page.locator("text=Welcome back")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
   });
 
   test("landing page get-started navigates to signup", async ({ page }) => {
     await page.goto("/");
     await page.locator('a[href="/auth/signup"]').first().click();
-    await expect(page.locator("text=Create your account")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
   });
 
   test("login page has link to signup", async ({ page }) => {
