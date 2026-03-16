@@ -2,7 +2,7 @@
 
 > **Last updated:** 2026-03-02
 > **Status:** Active — update when adding, renaming, or archiving docs
-> **Total documents:** 50 in `docs/` + 9 in `docs/decisions/` + 17 in `docs/assets/logo/` + 5 in `docs/assets/banners/` + 7 elsewhere in repo
+> **Total documents:** 51 in `docs/` + 10 in `docs/decisions/` + 17 in `docs/assets/logo/` + 5 in `docs/assets/banners/` + 7 elsewhere in repo
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
 
 ---
@@ -11,7 +11,7 @@
 
 | Domain                                                   | Count | Documents                                                                                                                           |
 | -------------------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| [Architecture & Design](#architecture--design)           | 6     | Governance blueprint, domain boundaries, feature flags, scoring engine, search architecture, CI proposal                            |
+| [Architecture & Design](#architecture--design)           | 8     | Governance blueprint, domain boundaries, feature flags, scoring engine, search architecture, CI proposal, health-goal personalization |
 | [Diagrams](#diagrams)                                    | 13    | Architecture, ERDs, pipeline flow, QA overview, CI/CD, confidence, concern tiers, country expansion, scoring infographic + headers  |
 | [Brand Assets](#brand-assets)                            | 17    | Logomark SVG variants + PNG exports, wordmark, lockup variants (horizontal + stacked, light + dark)                                 |
 | [Banners](#banners)                                      | 5     | Social preview, README hero banner (SVG + PNG), badges reference                                                                    |
@@ -24,7 +24,7 @@
 | [Frontend & UX](#frontend--ux)                           | 6     | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README                                  |
 | [Process & Workflow](#process--workflow)                 | 7     | Agent workflow reference, research workflow, viewing & testing, backfill standard, migration conventions, labels, country expansion |
 | [Governance & Policy](#governance--policy)               | 6     | Feature sunsetting, performance report, performance guardrails, doc governance, repo governance, this index                         |
-| [Architecture Decisions](#architecture-decisions-adrs)   | 9     | MADR template + 8 ADRs (stack, scoring, country isolation, pipeline, API versioning, migrations, ingredients, nutrient density)     |
+| [Architecture Decisions](#architecture-decisions-adrs)   | 10    | MADR template + 9 ADRs (stack, scoring, country isolation, pipeline, API versioning, migrations, ingredients, nutrient density, ingredient language model) |
 
 ---
 
@@ -39,6 +39,7 @@
 | [DRIFT_DETECTION.md](DRIFT_DETECTION.md)                   | Automated drift detection — 8-check catalog, severity levels, CI integration plan, doc freshness, migration ordering | [#199](https://github.com/ericsocrat/tryvit/issues/199)                                                          | 2026-03-01   |
 | [SEARCH_ARCHITECTURE.md](SEARCH_ARCHITECTURE.md)           | Search architecture — pg_trgm, tsvector, ranking, synonym management                                                 | [#192](https://github.com/ericsocrat/tryvit/issues/192)                                                          | 2026-02-24   |
 | [CI_ARCHITECTURE_PROPOSAL.md](CI_ARCHITECTURE_PROPOSAL.md) | CI pipeline design proposal                                                                                          | —                                                                                                                | 2026-02-23   |
+| [HEALTH_GOAL_PERSONALIZATION.md](HEALTH_GOAL_PERSONALIZATION.md) | Health-goal personalization design — goal taxonomy, personalization model, MVP scope, privacy, copy safety            | [#892](https://github.com/ericsocrat/tryvit/issues/892)                                                          | 2026-03-16   |
 
 ## Diagrams
 
