@@ -7,10 +7,10 @@
 
 ## Active Branch & PR
 
-- **Branch:** `fix/889-scanner-black-feed` → PR #916
-- **Latest SHA (main):** `beb31a4b` (chore(deps): bump next and eslint-config-next to 16.1.6 #904)
-- **Open PRs:** 1 (#916 — scanner black camera fix)
-- **Mode:** 🟢 Active — PR #916 in CI review
+- **Branch:** `main`
+- **Latest SHA (main):** `d44072ca` (fix(scanner): resolve black camera feed with event-driven stream readiness #916)
+- **Open PRs:** 0
+- **Mode:** 🟢 Active — PR #916 merged, awaiting real-device verification
 
 ## Recently Shipped (Session 49 — Next.js 16 Upgrade)
 
@@ -111,10 +111,10 @@
 
 | Issue | Priority | Summary                                                                                                     |
 | ----- | -------- | ----------------------------------------------------------------------------------------------------------- |
-| #889  | P1       | Scanner error taxonomy — black camera fix PR #916 submitted, observation continues                          |
+| #889  | P1       | Scanner error taxonomy — PR #916 merged (`d44072ca`), awaiting real-device verification                     |
 | #212  | Deferred | Infrastructure Cost Attribution Framework                                                                   |
 
-Sprint issues #885–#895 have been shipped and closed. #889 black camera fix submitted as PR #916.
+Sprint issues #885–#895 have been shipped and closed. #889 black camera fix merged (PR #916 → `d44072ca`), awaiting real-device verification before closing.
 **#889 observation window:** Start 2026-03-16T08:24:26Z, checkpoint 2026-03-30, threshold ≥50 `scanner_init_start` events.
 
 ## Milestones Completed
