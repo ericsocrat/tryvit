@@ -245,6 +245,7 @@ tryvit/
 │   ├── FEATURE_SUNSETTING.md        # Feature retirement criteria & cleanup policy
 │   ├── FRONTEND_API_MAP.md          # Frontend ↔ API mapping reference
 │   ├── GOVERNANCE_BLUEPRINT.md      # Execution governance blueprint (master GOV plan)
+│   ├── HEALTH_GOAL_PERSONALIZATION.md # Health-goal personalization design — goal taxonomy, personalization model, MVP scope, privacy, copy safety
 │   ├── INCIDENT_RESPONSE.md         # Incident response playbook (severity, escalation, runbooks)
 │   ├── INDEX.md                     # Canonical documentation map (45 docs, domain-classified)
 │   ├── LABELS.md                    # Labeling conventions
@@ -2145,6 +2146,7 @@ Then execute §19 (Canonical Execution Discipline Protocol v2) in full.
 | `docs/DEPLOYMENT.md`            | Deployment procedures, rollback playbook, emergency checklist                                          | Any production deployment                      |
 | `docs/DISASTER_DRILL_REPORT.md` | DR drill findings and follow-up actions                                                                | Incident prep, DR automation                   |
 | `docs/PRODUCTION_DATA.md`       | Production data management rules — no PII, retention policies                                          | Any migration touching prod                    |
+| `docs/HEALTH_GOAL_PERSONALIZATION.md` | Health-goal personalization design — goal taxonomy, personalization model, MVP scope, privacy, copy safety | Health profile, personalization, onboarding goals |
 
 ### 18.2 API & Frontend
 

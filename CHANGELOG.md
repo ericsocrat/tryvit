@@ -15,6 +15,11 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
+- Health-goal personalization design spec (`docs/HEALTH_GOAL_PERSONALIZATION.md`) —
+  goal taxonomy (3-tier: condition-driven safety, goal-driven preference, generic
+  wellness), personalization model comparison, recommended threshold-warnings +
+  highlight-layer model, MVP scope, privacy & GDPR Art.9, copy safety guidelines,
+  phased implementation plan, 15 follow-up issues identified (#892)
 - ADR-010: Ingredient Language Model — English canonical identity reaffirmed,
   `ingredient_translations` fallback chain documented, source-language text
   trade-offs acknowledged, 5 follow-up issues identified (#890)
