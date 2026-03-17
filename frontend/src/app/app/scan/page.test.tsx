@@ -805,6 +805,7 @@ describe("ScanPage", () => {
       expect(mockRecordScan).toHaveBeenCalledWith(
         expect.anything(),
         "5901234123457",
+        undefined,
       );
     });
   });
