@@ -5,10 +5,12 @@
 // that bypass RLS. In production, restrict route via middleware or auth check.
 
 import { Button } from "@/components/common/Button";
+import { CountryChip } from "@/components/common/CountryChip";
 import { EmptyStateIllustration } from "@/components/common/EmptyStateIllustration";
 import { SubmissionsSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { useTranslation } from "@/lib/i18n";
+import { COUNTRIES } from "@/lib/constants";
 import { callRpc } from "@/lib/rpc";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
@@ -56,11 +58,12 @@ export default function AdminSubmissionsPage() {
   const supabase = createClient();
   const queryClient = useQueryClient();
   const [statusFilter, setStatusFilter] = useState("pending");
+  const [countryFilter, setCountryFilter] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
   const queryKey = useMemo(
-    () => ["admin-submissions", statusFilter, page],
-    [statusFilter, page],
+    () => ["admin-submissions", statusFilter, countryFilter, page],
+    [statusFilter, countryFilter, page],
   );
 
   const { data, isLoading, error } = useQuery({
@@ -74,6 +77,7 @@ export default function AdminSubmissionsPage() {
             p_status: statusFilter,
             p_page: page,
             p_page_size: 20,
+            p_country: countryFilter,
           },
         );
       if (!result.ok) throw new Error(result.error.message);
@@ -260,6 +264,29 @@ export default function AdminSubmissionsPage() {
         ))}
       </div>
 
+      {/* Country filter */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-foreground-secondary">
+          {t("admin.countryLabel")}
+        </span>
+        <select
+          value={countryFilter ?? ""}
+          onChange={(e) => {
+            setCountryFilter(e.target.value || null);
+            setPage(1);
+          }}
+          className="rounded-lg border bg-surface px-2 py-1 text-sm text-foreground"
+          data-testid="country-filter"
+        >
+          <option value="">{t("admin.allCountries")}</option>
+          {COUNTRIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.code}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Loading */}
       {isLoading && <SubmissionsSkeleton />}
 
@@ -404,6 +431,12 @@ function AdminSubmissionCard({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <CountryChip
+              country={
+                submission.suggested_country ?? submission.scan_country
+              }
+              size="sm"
+            />
             {submission.user_trust_score !== null &&
               submission.user_trust_score !== undefined && (
                 <span

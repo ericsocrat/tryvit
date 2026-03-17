@@ -1090,7 +1090,9 @@
     "submittedLabel": "Submitted:",
     "reviewedLabel": "Reviewed:",
     "approve": "Approve",
-    "reject": "Reject"
+    "reject": "Reject",
+    "countryLabel": "Country:",
+    "allCountries": "All countries"
   },
   "monitoring": {
     "title": "System Monitoring",

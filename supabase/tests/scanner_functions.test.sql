@@ -7,7 +7,7 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 
 BEGIN;
-SELECT plan(70);
+SELECT plan(72);
 
 -- ─── Fixtures ───────────────────────────────────────────────────────────────
 
@@ -455,6 +455,18 @@ SELECT has_function(
 SELECT lives_ok(
   $$SELECT public.api_admin_get_submissions('all', 1, 5)$$,
   'api_admin_get_submissions lives_ok with trust enrichment'
+);
+
+-- api_admin_get_submissions response envelope contains country_filter key (#925)
+SELECT ok(
+  public.api_admin_get_submissions('all', 1, 5) ? 'country_filter',
+  'api_admin_get_submissions response has country_filter key'
+);
+
+-- api_admin_get_submissions accepts p_country filter (#925)
+SELECT lives_ok(
+  $$SELECT public.api_admin_get_submissions('all', 1, 5, 'PL')$$,
+  'api_admin_get_submissions lives_ok with country filter'
 );
 
 -- api_admin_submission_velocity returns expected keys
