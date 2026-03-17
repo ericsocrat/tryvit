@@ -7,7 +7,7 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 
 BEGIN;
-SELECT plan(92);
+SELECT plan(101);
 
 -- ─── Fixtures ───────────────────────────────────────────────────────────────
 
@@ -737,6 +737,116 @@ SELECT is(
 SELECT ok(
   (public.gs1_country_hint('9990000000000')) ? 'prefix',
   'gs1_country_hint: unknown result includes prefix field (#928)'
+);
+
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- Country-scoped pending submission uniqueness (#930)
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Disable triggers for direct submission inserts (quality triage auto-resolves known EANs)
+ALTER TABLE public.product_submissions DISABLE TRIGGER trg_trust_score_adjustment;
+ALTER TABLE public.product_submissions DISABLE TRIGGER trg_submission_quality_triage;
+
+-- Clean up any leftover test submissions from prior runs
+DELETE FROM public.product_submissions WHERE ean = '9780000000002' AND product_name LIKE 'pgTAP 930%';
+
+-- 1. Insert pending submission for EAN in PL → succeeds
+INSERT INTO public.product_submissions (ean, product_name, status, suggested_country)
+VALUES ('9780000000002', 'pgTAP 930 PL', 'pending', 'PL');
+
+SELECT ok(
+  EXISTS (SELECT 1 FROM public.product_submissions WHERE ean = '9780000000002' AND suggested_country = 'PL' AND status = 'pending' AND product_name = 'pgTAP 930 PL'),
+  'pending submission for EAN in PL inserted successfully (#930)'
+);
+
+-- 2. Same EAN + different country (DE) → also succeeds (country-scoped uniqueness)
+INSERT INTO public.product_submissions (ean, product_name, status, suggested_country)
+VALUES ('9780000000002', 'pgTAP 930 DE', 'pending', 'DE');
+
+SELECT ok(
+  EXISTS (SELECT 1 FROM public.product_submissions WHERE ean = '9780000000002' AND suggested_country = 'DE' AND status = 'pending' AND product_name = 'pgTAP 930 DE'),
+  'same EAN pending in DE allowed when PL already pending (#930)'
+);
+
+-- 3. Same EAN + same country (PL again) → blocked by unique index
+SELECT throws_ok(
+  $$INSERT INTO public.product_submissions (ean, product_name, status, suggested_country) VALUES ('9780000000002', 'pgTAP 930 PL dup', 'pending', 'PL')$$,
+  '23505',
+  NULL,
+  'duplicate EAN+country pending blocked by idx_ps_ean_country_pending (#930)'
+);
+
+-- 4. NULL suggested_country inserts are allowed (NULLs excluded from unique index)
+INSERT INTO public.product_submissions (ean, product_name, status, suggested_country)
+VALUES ('9780000000002', 'pgTAP 930 NULL country', 'pending', NULL);
+
+SELECT ok(
+  EXISTS (SELECT 1 FROM public.product_submissions WHERE ean = '9780000000002' AND suggested_country IS NULL AND status = 'pending' AND product_name = 'pgTAP 930 NULL country'),
+  'pending submission with NULL country allowed alongside PL/DE (#930)'
+);
+
+-- Clean up test submissions
+DELETE FROM public.product_submissions WHERE ean = '9780000000002' AND product_name LIKE 'pgTAP 930%';
+
+-- Re-enable triggers
+ALTER TABLE public.product_submissions ENABLE TRIGGER trg_trust_score_adjustment;
+ALTER TABLE public.product_submissions ENABLE TRIGGER trg_submission_quality_triage;
+
+-- ─── api_record_scan has_pending_submission is country-scoped (#930) ─────────
+
+-- Insert one pending submission for PL only
+ALTER TABLE public.product_submissions DISABLE TRIGGER trg_trust_score_adjustment;
+ALTER TABLE public.product_submissions DISABLE TRIGGER trg_submission_quality_triage;
+
+INSERT INTO public.product_submissions (ean, product_name, status, suggested_country)
+VALUES ('4006381333931', 'pgTAP 930 Scan PL', 'pending', 'PL');
+
+-- 5. Scan with PL country → has_pending_submission = true
+SELECT is(
+  (public.api_record_scan('4006381333931', 'PL'))->>'has_pending_submission',
+  'true',
+  'api_record_scan: has_pending_submission true for PL where PL pending exists (#930)'
+);
+
+-- 6. Scan with DE country → has_pending_submission = false (only PL is pending)
+SELECT is(
+  (public.api_record_scan('4006381333931', 'DE'))->>'has_pending_submission',
+  'false',
+  'api_record_scan: has_pending_submission false for DE when only PL pending (#930)'
+);
+
+-- 7. Scan with NULL country → has_pending_submission = true (global fallback finds PL pending)
+SELECT is(
+  (public.api_record_scan('4006381333931'))->>'has_pending_submission',
+  'true',
+  'api_record_scan: has_pending_submission true for NULL country — global fallback (#930)'
+);
+
+-- Clean up
+DELETE FROM public.product_submissions WHERE ean = '4006381333931' AND product_name LIKE 'pgTAP 930%';
+
+ALTER TABLE public.product_submissions ENABLE TRIGGER trg_trust_score_adjustment;
+ALTER TABLE public.product_submissions ENABLE TRIGGER trg_submission_quality_triage;
+
+-- ─── Verify index exists ─────────────────────────────────────────────────────
+
+-- 8. Old global index should not exist
+SELECT ok(
+  NOT EXISTS (
+    SELECT 1 FROM pg_class c JOIN pg_namespace n ON c.relnamespace = n.oid
+    WHERE n.nspname = 'public' AND c.relname = 'idx_ps_ean_pending'
+  ),
+  'old global idx_ps_ean_pending no longer exists (#930)'
+);
+
+-- 9. New country-scoped index should exist
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_class c JOIN pg_namespace n ON c.relnamespace = n.oid
+    WHERE n.nspname = 'public' AND c.relname = 'idx_ps_ean_country_pending'
+  ),
+  'new idx_ps_ean_country_pending exists (#930)'
 );
 
 
