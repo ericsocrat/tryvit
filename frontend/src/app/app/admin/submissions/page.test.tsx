@@ -25,6 +25,11 @@ vi.mock("@/components/common/skeletons", () => ({
   SubmissionsSkeleton: () => <div data-testid="skeleton" role="status" aria-label="Loading submissions" />,
 }));
 
+vi.mock("@/components/common/CountryChip", () => ({
+  CountryChip: ({ country }: { country: string | null }) =>
+    country ? <span data-testid="country-chip">{country}</span> : null,
+}));
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -61,6 +66,8 @@ const makeSubmission = (overrides: Record<string, unknown> = {}) => ({
   user_flagged: false,
   review_notes: null,
   existing_product_match: null,
+  scan_country: "PL",
+  suggested_country: null,
   ...overrides,
 });
 
@@ -526,6 +533,103 @@ describe("AdminSubmissionsPage", () => {
           type: "success",
           message: expect.stringContaining("3"),
         }),
+      );
+    });
+  });
+
+  // ─── Country Context Tests (#925) ──────────────────────────────────────
+
+  it("shows country chip when scan_country is present", async () => {
+    render(<AdminSubmissionsPage />, { wrapper: createWrapper() });
+    await waitFor(() => {
+      expect(screen.getByText("Test Chips")).toBeInTheDocument();
+    });
+    // All 3 subs have scan_country: "PL"
+    const chips = screen.getAllByTestId("country-chip");
+    expect(chips.length).toBe(3);
+    expect(chips[0]).toHaveTextContent("PL");
+  });
+
+  it("prefers suggested_country over scan_country", async () => {
+    mockCallRpc.mockImplementation((_client: unknown, fnName: string) => {
+      if (fnName === "api_admin_get_submissions") {
+        return Promise.resolve({
+          ok: true,
+          data: {
+            submissions: [
+              makeSubmission({
+                scan_country: "PL",
+                suggested_country: "DE",
+                product_name: "German Chips",
+              }),
+            ],
+            page: 1,
+            pages: 1,
+            total: 1,
+          },
+        });
+      }
+      return Promise.resolve({ ok: true, data: {} });
+    });
+    render(<AdminSubmissionsPage />, { wrapper: createWrapper() });
+    await waitFor(() => {
+      expect(screen.getByText("German Chips")).toBeInTheDocument();
+    });
+    const chip = screen.getByTestId("country-chip");
+    expect(chip).toHaveTextContent("DE");
+  });
+
+  it("does not render country chip when both countries are null", async () => {
+    mockCallRpc.mockImplementation((_client: unknown, fnName: string) => {
+      if (fnName === "api_admin_get_submissions") {
+        return Promise.resolve({
+          ok: true,
+          data: {
+            submissions: [
+              makeSubmission({
+                scan_country: null,
+                suggested_country: null,
+                product_name: "Unknown Origin",
+              }),
+            ],
+            page: 1,
+            pages: 1,
+            total: 1,
+          },
+        });
+      }
+      return Promise.resolve({ ok: true, data: {} });
+    });
+    render(<AdminSubmissionsPage />, { wrapper: createWrapper() });
+    await waitFor(() => {
+      expect(screen.getByText("Unknown Origin")).toBeInTheDocument();
+    });
+    expect(screen.queryByTestId("country-chip")).not.toBeInTheDocument();
+  });
+
+  it("renders country filter dropdown", async () => {
+    render(<AdminSubmissionsPage />, { wrapper: createWrapper() });
+    await waitFor(() => {
+      expect(screen.getByTestId("country-filter")).toBeInTheDocument();
+    });
+    expect(screen.getByText("All countries")).toBeInTheDocument();
+  });
+
+  it("sends p_country when country filter is selected", async () => {
+    render(<AdminSubmissionsPage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    await waitFor(() => {
+      expect(screen.getByTestId("country-filter")).toBeInTheDocument();
+    });
+
+    await user.selectOptions(screen.getByTestId("country-filter"), "PL");
+
+    await waitFor(() => {
+      expect(mockCallRpc).toHaveBeenCalledWith(
+        expect.anything(),
+        "api_admin_get_submissions",
+        expect.objectContaining({ p_country: "PL" }),
       );
     });
   });

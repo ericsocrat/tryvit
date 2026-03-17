@@ -1155,6 +1155,9 @@ export interface AdminSubmission extends Submission {
   notes: string | null;
   user_id: string;
   reviewed_at: string | null;
+  // Country context (#925)
+  scan_country: string | null;
+  suggested_country: string | null;
   // Trust enrichment (#474)
   user_trust_score: number;
   user_total_submissions: number;
@@ -1174,6 +1177,7 @@ export interface AdminSubmissionsResponse {
   pages: number;
   page_size: number;
   status_filter: string;
+  country_filter: string | null;
   submissions: AdminSubmission[];
 }
 

@@ -1090,7 +1090,9 @@
     "submittedLabel": "Eingereicht:",
     "reviewedLabel": "Überprüft:",
     "approve": "Genehmigen",
-    "reject": "Ablehnen"
+    "reject": "Ablehnen",
+    "countryLabel": "Land:",
+    "allCountries": "Alle Länder"
   },
   "monitoring": {
     "title": "Systemüberwachung",

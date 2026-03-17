@@ -1090,7 +1090,9 @@
     "submittedLabel": "Zgłoszono:",
     "reviewedLabel": "Zweryfikowano:",
     "approve": "✅ Zatwierdź",
-    "reject": "❌ Odrzuć"
+    "reject": "❌ Odrzuć",
+    "countryLabel": "Kraj:",
+    "allCountries": "Wszystkie kraje"
   },
   "monitoring": {
     "title": "Monitoring systemu",
