@@ -15,6 +15,7 @@ const {
   mockGetFacing,
   mockShowToast,
   mockIsValidEan,
+  mockGetUserMedia,
 } = vi.hoisted(() => ({
   mockListDevices: vi.fn(),
   mockDecodeFromDevice: vi.fn(),
@@ -24,6 +25,7 @@ const {
   mockGetFacing: vi.fn(),
   mockShowToast: vi.fn(),
   mockIsValidEan: vi.fn(),
+  mockGetUserMedia: vi.fn(),
 }));
 
 // ─── Module mocks ───────────────────────────────────────────────────────────
@@ -70,6 +72,13 @@ if (typeof globalThis.MediaStream === "undefined") {
   } as unknown as typeof MediaStream;
 }
 
+// Pre-flight getUserMedia stub — delegates to hoisted mock
+Object.defineProperty(navigator, "mediaDevices", {
+  value: { getUserMedia: (...a: unknown[]) => mockGetUserMedia(...a) },
+  writable: true,
+  configurable: true,
+});
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function makeOptions(overrides: Partial<Parameters<typeof useBarcodeScanner>[0]> = {}) {
@@ -98,6 +107,9 @@ beforeEach(() => {
   mockGetBrowser.mockReturnValue("Chrome/120");
   mockGetFacing.mockReturnValue("environment");
   mockIsValidEan.mockReturnValue(true);
+  mockGetUserMedia.mockResolvedValue({
+    getTracks: () => [{ stop: vi.fn() }],
+  });
 });
 
 afterEach(() => {
@@ -382,7 +394,7 @@ describe("useBarcodeScanner", () => {
 
   describe("permission errors", () => {
     it("sets permission-denied when permissions.query returns denied", async () => {
-      mockListDevices.mockRejectedValue(new DOMException("NotAllowedError", "NotAllowedError"));
+      mockGetUserMedia.mockRejectedValue(new DOMException("NotAllowedError", "NotAllowedError"));
       mockClassify.mockReturnValue("permission-denied");
 
       // Mock permissions API
@@ -406,7 +418,7 @@ describe("useBarcodeScanner", () => {
     });
 
     it("sets permission-prompt when permissions.query returns prompt", async () => {
-      mockListDevices.mockRejectedValue(new DOMException("NotAllowedError", "NotAllowedError"));
+      mockGetUserMedia.mockRejectedValue(new DOMException("NotAllowedError", "NotAllowedError"));
       mockClassify.mockReturnValue("permission-denied");
 
       Object.defineProperty(navigator, "permissions", {
@@ -429,7 +441,7 @@ describe("useBarcodeScanner", () => {
     });
 
     it("sets permission-unknown when permissions API unavailable", async () => {
-      mockListDevices.mockRejectedValue(new DOMException("NotAllowedError", "NotAllowedError"));
+      mockGetUserMedia.mockRejectedValue(new DOMException("NotAllowedError", "NotAllowedError"));
       mockClassify.mockReturnValue("permission-denied");
 
       Object.defineProperty(navigator, "permissions", {
@@ -482,12 +494,15 @@ describe("useBarcodeScanner", () => {
       }));
     });
 
-    it("auto-retries when permissions.query returns granted (transient SPA error)", async () => {
-      // First attempt fails with NotAllowedError
-      mockListDevices.mockRejectedValueOnce(
-        new DOMException("NotAllowedError", "NotAllowedError"),
-      );
-      mockClassify.mockReturnValue("permission-denied");
+    it("pre-flight retries getUserMedia on transient SPA error (permission granted)", async () => {
+      // First getUserMedia call fails, second succeeds
+      mockGetUserMedia
+        .mockRejectedValueOnce(
+          new DOMException("NotAllowedError", "NotAllowedError"),
+        )
+        .mockResolvedValueOnce({ getTracks: () => [{ stop: vi.fn() }] });
+
+      mockListDevices.mockResolvedValue([makeDevice("cam1")]);
 
       Object.defineProperty(navigator, "permissions", {
         value: {
@@ -502,21 +517,15 @@ describe("useBarcodeScanner", () => {
       );
 
       await act(async () => {
-        await result.current.startScanner();
+        const promise = result.current.startScanner();
+        // Advance past the first pre-flight retry delay (250ms)
+        await vi.advanceTimersByTimeAsync(300);
+        await promise;
       });
 
-      // No error yet — retry is scheduled
+      // Scanner recovered via pre-flight — no error shown
       expect(result.current.cameraError).toBeNull();
-
-      // Retry succeeds (mockRejectedValueOnce only rejects once)
-      mockListDevices.mockResolvedValue([makeDevice("cam1")]);
-
-      await act(async () => {
-        await vi.advanceTimersByTimeAsync(700);
-      });
-
-      // Scanner recovered
-      expect(result.current.cameraError).toBeNull();
+      expect(mockGetUserMedia).toHaveBeenCalledTimes(2);
     });
   });
 

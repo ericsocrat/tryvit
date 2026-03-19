@@ -82,6 +82,48 @@ interface UseBarcodeOptions {
   track: (event: AnalyticsEventName, data?: Record<string, unknown>) => void;
 }
 
+// ─── Pre-flight camera access ───────────────────────────────────────────────
+// On Android Chrome, SPA navigation can cause getUserMedia() to throw a
+// transient NotAllowedError even when the permission is already granted.
+// This helper retries the lightweight getUserMedia call with exponential
+// backoff before we start the heavy ZXing initialization.
+// ────────────────────────────────────────────────────────────────────────────
+
+const PREFLIGHT_MAX_RETRIES = 5;
+const PREFLIGHT_BASE_DELAY_MS = 250;
+
+async function ensureCameraAccess(): Promise<void> {
+  for (let attempt = 0; attempt <= PREFLIGHT_MAX_RETRIES; attempt++) {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((t) => t.stop());
+      return;
+    } catch (err) {
+      if (attempt === PREFLIGHT_MAX_RETRIES) throw err;
+
+      // Only retry when the Permissions API confirms the user already
+      // granted camera access — the failure is a transient browser bug.
+      let permGranted = false;
+      try {
+        if (navigator.permissions?.query) {
+          const ps = await navigator.permissions.query({
+            name: "camera" as PermissionName,
+          });
+          permGranted = ps.state === "granted";
+        }
+      } catch {
+        /* Permissions API unavailable */
+      }
+
+      if (!permGranted) throw err;
+
+      await new Promise<void>((r) =>
+        setTimeout(r, PREFLIGHT_BASE_DELAY_MS * 2 ** attempt),
+      );
+    }
+  }
+}
+
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
 export function useBarcodeScanner({
@@ -120,13 +162,17 @@ export function useBarcodeScanner({
     streamReadyFiredRef.current = false;
   }, []);
 
-  const startScanner = useCallback(async (retryAttempt = 0) => {
+  const startScanner = useCallback(async () => {
     const thisStartId = ++startIdRef.current;
     setCameraError(null);
     initStartTimeRef.current = Date.now();
-    track("scanner_init_start", { browser: getBrowserSummary(), retry_attempt: retryAttempt });
+    track("scanner_init_start", { browser: getBrowserSummary() });
 
     try {
+      // Pre-flight: ensure camera is accessible before heavy ZXing init.
+      // Handles transient NotAllowedError on Android Chrome SPA navigation.
+      await ensureCameraAccess();
+
       const { BrowserMultiFormatReader, DecodeHintType, BarcodeFormat } =
         await import("@zxing/library");
 
@@ -221,11 +267,10 @@ export function useBarcodeScanner({
       track("scanner_init_error", {
         error_type: errorType,
         browser: getBrowserSummary(),
-        retry_attempt: retryAttempt,
       });
 
       if (errorType === "permission-denied") {
-        // Best-effort permission state detection
+        // Best-effort permission state detection for UI classification
         let permState: string | null = null;
         try {
           if (navigator.permissions?.query) {
@@ -236,18 +281,6 @@ export function useBarcodeScanner({
           }
         } catch {
           // Permissions API unavailable or 'camera' not supported
-        }
-
-        // Auto-retry only when the Permissions API confirms "granted" —
-        // the NotAllowedError is a transient SPA-navigation artifact
-        // on mobile browsers (especially Android Chrome).
-        if (permState === "granted" && retryAttempt < 2) {
-          setTimeout(() => {
-            if (thisStartId === startIdRef.current && isMountedRef.current) {
-              startScanner(retryAttempt + 1);
-            }
-          }, 600 * (retryAttempt + 1));
-          return;
         }
 
         setCameraError(
@@ -261,7 +294,7 @@ export function useBarcodeScanner({
         setCameraError("generic");
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- track is fire-and-forget; self-ref in retry is stable
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- track is fire-and-forget
   }, [stopScanner]);
 
   // ─── Torch ──────────────────────────────────────────────────────────────
