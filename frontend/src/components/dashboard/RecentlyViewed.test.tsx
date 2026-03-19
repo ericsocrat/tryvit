@@ -11,7 +11,7 @@ vi.mock("@/lib/i18n", () => ({
       const map: Record<string, string> = {
         "dashboard.recentlyViewedCompact": "Recently Viewed",
         "dashboard.viewAll": "View all",
-        "dashboard.viewHistory": "View history →",
+        "dashboard.viewHistory": "View history",
       };
       return map[key] ?? key;
     },
@@ -131,6 +131,15 @@ describe("RecentlyViewed", () => {
 
     const link = screen.getByRole("link", { name: /View history/ });
     expect(link).toHaveAttribute("href", "/app/search");
+  });
+
+  it("renders a single arrow icon in View history link (no text arrow)", () => {
+    const products = [makeProduct(1)];
+    render(<RecentlyViewed products={products} />);
+
+    const link = screen.getByRole("link", { name: /View history/ });
+    expect(link.querySelector("svg")).toBeInTheDocument();
+    expect(link.textContent).not.toContain("\u2192");
   });
 
   it("has section aria-label", () => {

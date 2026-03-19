@@ -10,6 +10,7 @@ import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { createClient } from "@/lib/supabase/client";
 import type { CategoryOverviewItem } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 function CategoryChip({
@@ -68,9 +69,10 @@ export function CategoriesBrowse() {
         </h2>
         <Link
           href="/app/categories"
-          className="text-sm font-medium text-brand transition-colors hover:text-brand-hover"
+          className="inline-flex items-center gap-1 text-sm font-medium text-brand transition-colors hover:text-brand-hover"
         >
           {t("dashboard.viewAll")}
+          <ArrowRight className="h-3 w-3" aria-hidden="true" />
         </Link>
       </div>
 

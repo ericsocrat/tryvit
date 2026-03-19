@@ -146,6 +146,22 @@ describe("CategoriesBrowse", () => {
     });
   });
 
+  it("View All link includes an arrow icon (no text arrow)", async () => {
+    mockGetCategoryOverview.mockResolvedValue({
+      ok: true,
+      data: MOCK_CATEGORIES,
+    });
+    render(<CategoriesBrowse />, { wrapper: createWrapper() });
+    await vi.waitFor(() => {
+      const viewAll = screen.getAllByRole("link").find(
+        (l) => l.getAttribute("href") === "/app/categories",
+      );
+      expect(viewAll).toBeDefined();
+      expect(viewAll!.querySelector("svg")).toBeInTheDocument();
+      expect(viewAll!.textContent).not.toContain("\u2192");
+    });
+  });
+
   it("renders category icons for each chip", async () => {
     mockGetCategoryOverview.mockResolvedValue({
       ok: true,
