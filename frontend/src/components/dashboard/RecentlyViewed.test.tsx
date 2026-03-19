@@ -11,10 +11,16 @@ vi.mock("@/lib/i18n", () => ({
       const map: Record<string, string> = {
         "dashboard.recentlyViewedCompact": "Recently Viewed",
         "dashboard.viewAll": "View all",
+        "dashboard.viewHistory": "View history →",
       };
       return map[key] ?? key;
     },
   }),
+}));
+
+vi.mock("next/image", () => ({
+  // eslint-disable-next-line @next/next/no-img-element
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />,
 }));
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -119,11 +125,11 @@ describe("RecentlyViewed", () => {
     expect(link).toHaveAttribute("href", "/app/product/42");
   });
 
-  it("shows View all link", () => {
+  it("shows View history link", () => {
     const products = [makeProduct(1)];
     render(<RecentlyViewed products={products} />);
 
-    const link = screen.getByRole("link", { name: /View all/ });
+    const link = screen.getByRole("link", { name: /View history/ });
     expect(link).toHaveAttribute("href", "/app/search");
   });
 
@@ -139,5 +145,74 @@ describe("RecentlyViewed", () => {
 
     expect(screen.getByText("Product 1")).toBeInTheDocument();
     expect(screen.queryByText("Brand 1")).not.toBeInTheDocument();
+  });
+
+  // ─── Image / badge / animation enrichment tests ─────────────────────────
+
+  it("renders product image when image_thumb_url is provided", () => {
+    const products = [
+      makeProduct(1, {
+        image_thumb_url: "https://images.openfoodfacts.org/images/products/test.jpg",
+      }),
+    ];
+    render(<RecentlyViewed products={products} />);
+
+    const img = screen.getByAltText("Product 1");
+    expect(img).toBeInTheDocument();
+    expect(img.tagName).toBe("IMG");
+    expect(img).toHaveAttribute(
+      "src",
+      "https://images.openfoodfacts.org/images/products/test.jpg",
+    );
+  });
+
+  it("renders initial fallback when no image", () => {
+    const products = [makeProduct(1, { image_thumb_url: null })];
+    render(<RecentlyViewed products={products} />);
+
+    // Score circle shows TryVit score (unhealthiness 40 → TryVit 60)
+    const item = screen.getByTestId("recently-viewed-item");
+    expect(item.textContent).toContain("60");
+    // No <img> with product alt text
+    expect(screen.queryByAltText("Product 1")).not.toBeInTheDocument();
+  });
+
+  it("renders NutriScoreBadge when nutri_score_label is present", () => {
+    const products = [makeProduct(1, { nutri_score_label: "C" })];
+    render(<RecentlyViewed products={products} />);
+
+    expect(screen.getByLabelText("Nutri-Score C")).toBeInTheDocument();
+  });
+
+  it("omits NutriScoreBadge when nutri_score_label is null", () => {
+    const products = [makeProduct(1, { nutri_score_label: null })];
+    render(<RecentlyViewed products={products} />);
+
+    expect(screen.queryByLabelText(/Nutri-Score/)).not.toBeInTheDocument();
+  });
+
+  it("renders time as styled pill", () => {
+    const products = [makeProduct(1)];
+    render(<RecentlyViewed products={products} />);
+
+    const timePill = screen.getByText("now");
+    expect(timePill).toBeInTheDocument();
+    expect(timePill.className).toContain("rounded-full");
+    expect(timePill.className).toContain("bg-surface-secondary");
+  });
+
+  it("applies staggered slide-in-right animation delays", () => {
+    const products = [makeProduct(1), makeProduct(2), makeProduct(3)];
+    render(<RecentlyViewed products={products} />);
+
+    const items = screen.getAllByTestId("recently-viewed-item");
+    expect(items).toHaveLength(3);
+
+    items.forEach((link, i) => {
+      // The animated wrapper is the parent <div> of the <a> link
+      const wrapper = link.parentElement as HTMLElement;
+      expect(wrapper.className).toContain("animate-slide-in-right");
+      expect(wrapper.style.animationDelay).toBe(`${i * 30}ms`);
+    });
   });
 });
