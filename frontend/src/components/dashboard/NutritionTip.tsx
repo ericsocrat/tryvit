@@ -2,9 +2,10 @@
 
 // ─── NutritionTip — cycling daily health tip card ───────────────────────────
 
-import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 import { qaStable } from "@/lib/qa-mode";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 /** Total number of tips available in i18n files (dashboard.tip.0 … tip.N-1). */
 const TIP_COUNT = 14;
@@ -67,9 +68,10 @@ export function NutritionTip() {
           {learnHref && (
             <Link
               href={learnHref}
-              className="mt-1.5 inline-block text-xs font-medium text-brand hover:text-brand-hover transition-colors"
+              className="mt-1.5 inline-flex items-center gap-1 text-xs font-medium text-brand hover:text-brand-hover transition-colors"
             >
-              {t("dashboard.tipLearnMore")} →
+              {t("dashboard.tipLearnMore")}
+              <ArrowRight className="h-3 w-3" aria-hidden="true" />
             </Link>
           )}
         </div>

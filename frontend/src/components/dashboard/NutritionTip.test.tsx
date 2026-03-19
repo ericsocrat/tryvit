@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { NutritionTip } from "./NutritionTip";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -50,6 +50,13 @@ describe("NutritionTip", () => {
     expect(link).toBeInTheDocument();
     expect(link.tagName).toBe("A");
     expect(link.getAttribute("href")).toMatch(/^\/learn\//);
+  });
+
+  it("learn more link uses icon arrow instead of text arrow", () => {
+    render(<NutritionTip />);
+    const link = screen.getByText(/Learn more/);
+    expect(link.querySelector("svg")).toBeInTheDocument();
+    expect(link.textContent).not.toContain("\u2192");
   });
 
   it("learn more link points to a valid learn path", () => {
