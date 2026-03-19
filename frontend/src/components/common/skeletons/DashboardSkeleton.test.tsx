@@ -44,4 +44,29 @@ describe("DashboardSkeleton", () => {
     expect(grid).toBeInTheDocument();
     expect(grid?.children.length).toBe(4);
   });
+
+  it("renders health insights skeleton with 3 rounded-xl blocks", () => {
+    render(<DashboardSkeleton />);
+    const container = screen.getByRole("status");
+    // Insights section: 3rd child (after greeting and health summary)
+    const insightsSection = container.children[2];
+    expect(insightsSection).toBeInTheDocument();
+    const blocks = insightsSection.querySelectorAll('[class*="rounded-xl"]');
+    expect(blocks.length).toBe(3);
+  });
+
+  it("renders nutrition tip skeleton with bordered card", () => {
+    render(<DashboardSkeleton />);
+    const container = screen.getByRole("status");
+    const tipCard = container.querySelector(".rounded-xl.border.bg-surface");
+    expect(tipCard).toBeInTheDocument();
+  });
+
+  it("renders categories browse skeleton with 6 chip placeholders", () => {
+    render(<DashboardSkeleton />);
+    const container = screen.getByRole("status");
+    const chipContainer = container.querySelector(".flex.gap-3.overflow-hidden");
+    expect(chipContainer).toBeInTheDocument();
+    expect(chipContainer?.children.length).toBe(6);
+  });
 });

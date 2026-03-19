@@ -30,6 +30,13 @@ export function DashboardSkeleton() {
         </div>
       </div>
 
+      {/* Health insights panel */}
+      <div className="space-y-3">
+        <Skeleton variant="rect" width="100%" height={80} className="rounded-xl!" />
+        <Skeleton variant="rect" width="100%" height={112} className="rounded-xl!" />
+        <Skeleton variant="rect" width="100%" height={40} className="rounded-xl!" />
+      </div>
+
       {/* Quick win card */}
       <div className="card space-y-3">
         <Skeleton variant="text" width="8rem" height={18} />
@@ -39,6 +46,18 @@ export function DashboardSkeleton() {
           <Skeleton variant="rect" width={32} height={32} className="rounded-full!" />
         </div>
         <Skeleton variant="text" width="12rem" height={14} />
+      </div>
+
+      {/* Nutrition tip */}
+      <div className="rounded-xl border bg-surface p-4 space-y-2">
+        <div className="flex items-start gap-3">
+          <Skeleton variant="rect" width={28} height={28} className="rounded-md!" />
+          <div className="flex-1 space-y-1.5">
+            <Skeleton variant="text" width="6rem" height={14} />
+            <Skeleton variant="text" width="90%" height={12} />
+            <Skeleton variant="text" width="60%" height={12} />
+          </div>
+        </div>
       </div>
 
       {/* Recently viewed */}
@@ -53,6 +72,23 @@ export function DashboardSkeleton() {
                 <Skeleton variant="text" width="40%" height={12} />
               </div>
               <Skeleton variant="rect" width={32} height={32} className="rounded-full!" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Categories browse */}
+      <div className="space-y-2">
+        <Skeleton variant="text" width="10rem" height={18} />
+        <div className="flex gap-3 overflow-hidden">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div
+              key={i}
+              className="flex shrink-0 flex-col items-center gap-1.5 rounded-xl border bg-surface px-3 py-3"
+              style={{ minWidth: "5rem" }}
+            >
+              <Skeleton variant="rect" width={32} height={32} />
+              <Skeleton variant="text" width="3.5rem" height={12} />
             </div>
           ))}
         </div>
