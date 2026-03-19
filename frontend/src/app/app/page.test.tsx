@@ -1,4 +1,4 @@
-import type { DashboardData } from "@/lib/types";
+import type { DashboardData, DashboardInsights } from "@/lib/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import { useState } from "react";
@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockGetDashboardData = vi.fn();
 const mockGetCategoryOverview = vi.fn();
+const mockGetDashboardInsights = vi.fn();
 
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
@@ -27,10 +28,11 @@ vi.mock("@/lib/supabase/client", () => ({
 vi.mock("@/lib/api", () => ({
   getDashboardData: (...args: unknown[]) => mockGetDashboardData(...args),
   getCategoryOverview: (...args: unknown[]) => mockGetCategoryOverview(...args),
+  getDashboardInsights: (...args: unknown[]) => mockGetDashboardInsights(...args),
 }));
 
 vi.mock("next/link", () => ({
-   
+
   default: ({ href, children, className, ...rest }: any) => (
     <a href={href} className={className} {...rest}>
       {children}
@@ -150,6 +152,16 @@ const mockDashboard: DashboardData = {
 
 // ─── Import page after mocks ────────────────────────────────────────────────
 
+const mockInsights: DashboardInsights = {
+  api_version: "1.0",
+  avg_score: 42,
+  score_trend: "improving",
+  nova_distribution: { "1": 2, "2": 3, "3": 4, "4": 1 },
+  category_diversity: { explored: 5, total: 20 },
+  allergen_alerts: { count: 0, products: [] },
+  recent_comparisons: [],
+};
+
 import DashboardPage from "./page";
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
@@ -159,6 +171,7 @@ describe("DashboardPage", () => {
     vi.clearAllMocks();
     mockGetDashboardData.mockResolvedValue({ ok: true, data: mockDashboard });
     mockGetCategoryOverview.mockResolvedValue({ ok: true, data: [] });
+    mockGetDashboardInsights.mockResolvedValue({ ok: true, data: mockInsights });
   });
 
   it("shows skeleton loading state initially", () => {
@@ -305,6 +318,51 @@ describe("DashboardPage", () => {
     });
   });
 
+  it("renders HealthInsightsPanel when insights data is available", async () => {
+    render(<DashboardPage />, { wrapper: createWrapper() });
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("health-insights-panel"),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("renders NutritionTip section", async () => {
+    render(<DashboardPage />, { wrapper: createWrapper() });
+    await waitFor(() => {
+      expect(screen.getByText("💡")).toBeInTheDocument();
+    });
+  });
+
+  it("renders CategoriesBrowse section", async () => {
+    mockGetCategoryOverview.mockResolvedValue({
+      ok: true,
+      data: [
+        {
+          category: "Dairy",
+          display_name: "Dairy",
+          product_count: 10,
+          avg_score: 25,
+          min_score: 5,
+          max_score: 50,
+        },
+      ],
+    });
+    render(<DashboardPage />, { wrapper: createWrapper() });
+    await waitFor(() => {
+      expect(screen.getByText("Dairy")).toBeInTheDocument();
+    });
+  });
+
+  it("still renders other sections when HealthInsightsPanel fails", async () => {
+    mockGetDashboardInsights.mockRejectedValue(new Error("fail"));
+    render(<DashboardPage />, { wrapper: createWrapper() });
+    await waitFor(() => {
+      expect(screen.getByTestId("health-summary")).toBeInTheDocument();
+    });
+    expect(screen.getByTestId("quick-actions")).toBeInTheDocument();
+  });
+
   it("applies staggered fade-in-up animations to dashboard sections", async () => {
     const { container } = render(<DashboardPage />, {
       wrapper: createWrapper(),
@@ -313,7 +371,7 @@ describe("DashboardPage", () => {
       expect(screen.getByTestId("health-summary")).toBeInTheDocument();
     });
     const animated = container.querySelectorAll(".animate-fade-in-up");
-    expect(animated.length).toBeGreaterThanOrEqual(5);
+    expect(animated.length).toBeGreaterThanOrEqual(8);
     // First section (greeting) has no delay; subsequent have staggered delays
     const delays = Array.from(animated).map(
       (el) => (el as HTMLElement).style.animationDelay,
@@ -323,5 +381,8 @@ describe("DashboardPage", () => {
     expect(delays[2]).toBe("100ms");
     expect(delays[3]).toBe("150ms");
     expect(delays[4]).toBe("200ms");
+    expect(delays[5]).toBe("250ms");
+    expect(delays[6]).toBe("300ms");
+    expect(delays[7]).toBe("350ms");
   });
 });
