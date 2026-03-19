@@ -2,10 +2,12 @@
 
 // ─── RecentlyViewed — compact recently viewed product list ──────────────────
 
+import { NutriScoreBadge } from "@/components/common/NutriScoreBadge";
 import { useTranslation } from "@/lib/i18n";
 import { getScoreBand, toTryVitScore } from "@/lib/score-utils";
 import type { RecentlyViewedProduct } from "@/lib/types";
 import { ArrowRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -54,13 +56,13 @@ export function RecentlyViewed({ products }: Readonly<RecentlyViewedProps>) {
           href="/app/search"
           className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
         >
-          {t("dashboard.viewAll")}
+          {t("dashboard.viewHistory")}
           <ArrowRight className="h-3 w-3" aria-hidden="true" />
         </Link>
       </div>
 
       <div className="space-y-2">
-        {items.map((product) => {
+        {items.map((product, index) => {
           const tryVit =
             product.unhealthiness_score != null
               ? toTryVitScore(product.unhealthiness_score)
@@ -72,38 +74,59 @@ export function RecentlyViewed({ products }: Readonly<RecentlyViewedProps>) {
           const timeAgo = relativeTimeAgo(product.viewed_at);
 
           return (
-            <Link
+            <div
               key={product.product_id}
-              href={`/app/product/${product.product_id}`}
-              data-testid="recently-viewed-item"
-              className="card hover-lift-press flex items-center gap-3 px-3 py-2.5 transition-shadow hover:shadow-md"
+              className="animate-slide-in-right"
+              style={{ animationDelay: `${index * 30}ms`, animationFillMode: "both" }}
             >
-              {/* Score circle */}
-              <div
-                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${band?.bgColor ?? "bg-muted"}`}
+              <Link
+                href={`/app/product/${product.product_id}`}
+                data-testid="recently-viewed-item"
+                className="card hover-lift-press flex items-center gap-3 px-3 py-2.5 transition-shadow hover:shadow-md"
               >
-                <span
-                  className={`text-xs font-bold tabular-nums ${band?.textColor ?? "text-foreground-secondary"}`}
-                >
-                  {tryVit ?? "–"}
-                </span>
-              </div>
-
-              {/* Name + brand */}
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{product.product_name}</p>
-                {product.brand && (
-                  <p className="truncate text-xs text-foreground-secondary">
-                    {product.brand}
-                  </p>
+                {/* Product thumbnail or score circle fallback */}
+                {product.image_thumb_url ? (
+                  <Image
+                    src={product.image_thumb_url}
+                    alt={product.product_name}
+                    width={36}
+                    height={36}
+                    className="h-9 w-9 shrink-0 rounded-lg object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${band?.bgColor ?? "bg-muted"}`}
+                  >
+                    <span
+                      className={`text-xs font-bold tabular-nums ${band?.textColor ?? "text-foreground-secondary"}`}
+                    >
+                      {tryVit ?? "–"}
+                    </span>
+                  </div>
                 )}
-              </div>
 
-              {/* Relative time */}
-              <span className="shrink-0 text-xs tabular-nums text-foreground-secondary">
-                {timeAgo}
-              </span>
-            </Link>
+                {/* Name + brand */}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{product.product_name}</p>
+                  {product.brand && (
+                    <p className="truncate text-xs text-foreground-secondary">
+                      {product.brand}
+                    </p>
+                  )}
+                </div>
+
+                {/* NutriScore badge */}
+                {product.nutri_score_label && (
+                  <NutriScoreBadge grade={product.nutri_score_label} size="sm" />
+                )}
+
+                {/* Relative time pill */}
+                <span className="shrink-0 rounded-full bg-surface-secondary px-2 py-0.5 text-xs tabular-nums text-foreground-secondary">
+                  {timeAgo}
+                </span>
+              </Link>
+            </div>
           );
         })}
       </div>
