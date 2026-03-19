@@ -18,6 +18,13 @@ if (typeof globalThis.MediaStream === "undefined") {
   } as unknown as typeof MediaStream;
 }
 
+// Pre-flight getUserMedia stub — delegates to hoisted mock
+Object.defineProperty(navigator, "mediaDevices", {
+  value: { getUserMedia: (...a: unknown[]) => mockGetUserMedia(...a) },
+  writable: true,
+  configurable: true,
+});
+
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
 const {
@@ -27,6 +34,7 @@ const {
   mockListDevices,
   mockDecodeFromDevice,
   mockResetReader,
+  mockGetUserMedia,
 } = vi.hoisted(() => ({
   mockPush: vi.fn(),
   mockRecordScan: vi.fn(),
@@ -34,6 +42,7 @@ const {
   mockListDevices: vi.fn(),
   mockDecodeFromDevice: vi.fn(),
   mockResetReader: vi.fn(),
+  mockGetUserMedia: vi.fn(),
 }));
 
 vi.mock("@/hooks/use-reduced-motion", () => ({
@@ -163,6 +172,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   // Re-establish ZXing defaults (clearAllMocks strips implementations)
   mockListDevices.mockResolvedValue([]);
+  // Pre-flight getUserMedia — resolve by default so camera-mode tests pass
+  mockGetUserMedia.mockResolvedValue({
+    getTracks: () => [{ stop: vi.fn() }],
+  });
 });
 
 describe("ScanPage", () => {
