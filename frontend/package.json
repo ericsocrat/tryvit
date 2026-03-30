@@ -63,7 +63,7 @@
     "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/container-queries": "^0.1.1",
-    "@tailwindcss/postcss": "^4.2.1",
+    "@tailwindcss/postcss": "^4.2.2",
     "@tailwindcss/typography": "^0.5.19",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -71,7 +71,7 @@
     "@types/node": "^22.19.15",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "^5.1.4",
+    "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "^4.1.2",
     "axe-core": "^4.11.1",
     "eslint": "^9.39.4",
@@ -82,7 +82,7 @@
     "sharp": "^0.34.5",
     "svgo": "^4.0.1",
     "tailwindcss": "^4.2.1",
-    "typescript": "^5.7.0",
+    "typescript": "^6.0.2",
     "vitest": "^4.0.18",
     "vitest-axe": "^0.1.0"
   }
