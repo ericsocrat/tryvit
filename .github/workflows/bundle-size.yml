@@ -66,7 +66,7 @@ jobs:
       - run: npm ci
 
       - name: Cache Next.js build (main)
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: frontend/.next/cache
           key: next-baseline-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
@@ -160,7 +160,7 @@ jobs:
       - run: npm ci
 
       - name: Cache Next.js build (PR)
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: frontend/.next/cache
           key: next-pr-${{ github.event.pull_request.number }}-${{ hashFiles('frontend/package-lock.json') }}-${{ hashFiles('frontend/src/**') }}
