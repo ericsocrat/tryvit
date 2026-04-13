@@ -66,7 +66,7 @@ jobs:
       - run: npm ci
 
       - name: Cache Next.js build (main)
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: frontend/.next/cache
           key: next-baseline-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
@@ -127,7 +127,7 @@ jobs:
           "
 
       - name: Upload baseline
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: bundle-baseline
           path: baseline-sizes.json
@@ -160,7 +160,7 @@ jobs:
       - run: npm ci
 
       - name: Cache Next.js build (PR)
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        uses: actions/cache@668228422ae6a00e4ad889ee87cd7109ec5666a7 # v5.0.4
         with:
           path: frontend/.next/cache
           key: next-pr-${{ github.event.pull_request.number }}-${{ hashFiles('frontend/package-lock.json') }}-${{ hashFiles('frontend/src/**') }}
@@ -268,7 +268,7 @@ jobs:
 
       - name: Post PR comment
         if: ${{ !cancelled() && github.event.pull_request.head.repo.fork != true }}
-        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const fs = require('fs');
