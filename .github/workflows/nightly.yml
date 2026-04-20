@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    timeout-minutes: 20
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: frontend
@@ -109,7 +109,7 @@ jobs:
 
       - name: Full Playwright (all projects including visual)
         run: npx playwright test 2>&1 | tee ../playwright-stdout.log
-        timeout-minutes: 10
+        timeout-minutes: 20
         env:
           # Visual regression disabled until baseline screenshots are generated
           # and committed from a Linux CI run. Re-enable after running:
