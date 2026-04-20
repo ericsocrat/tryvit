@@ -137,8 +137,8 @@ supabase db reset                        # Full rebuild (migrations + seed)
 .\RUN_SEED.ps1                           # Seed reference data only
 
 # ── Testing ──
-.\RUN_QA.ps1                             # 759 QA checks across 48 suites
-.\RUN_NEGATIVE_TESTS.ps1                 # 23 constraint violation tests
+.\RUN_QA.ps1                             # 776 QA checks across 49 suites
+.\RUN_NEGATIVE_TESTS.ps1                 # 20 constraint violation tests
 .\RUN_SANITY.ps1 -Env local              # Row-count + schema assertions
 python validate_eans.py                  # EAN checksum validation
 python check_pipeline_structure.py       # Pipeline folder/file structure
@@ -168,7 +168,7 @@ echo "SELECT * FROM v_master LIMIT 5;" | docker exec -i supabase_db_tryvit psql 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────────────┐
 │  Open Food Facts │────▶│  Python Pipeline │────▶│  PostgreSQL (Supabase)  │
-│  API v2          │     │  sql_generator   │     │  227 migrations         │
+│  API v2          │     │  sql_generator   │     │  228 migrations         │
 │  (category tags, │     │  validator       │     │  43 pipeline folders    │
 │   countries=PL,DE│     │  off_client      │     │  products + nutrition   │
 └─────────────────┘     └──────────────────┘     │  + ingredients + scores │
@@ -296,11 +296,11 @@ tryvit/
 │   │   ├── chips-pl/                # Reference PL implementation
 │   │   ├── chips-de/                # DE Chips (51 products)
 │   │   └── ... (21 more PL + 20 DE) # Variable product counts per category
-│   ├── qa/                          # 48 test suites (759 checks)
+│   ├── qa/                          # 49 test suites (776 checks)
 │   └── views/                       # Reference view definitions
 │
 ├── supabase/
-│   ├── migrations/                  # 227 append-only schema migrations
+│   ├── migrations/                  # 228 append-only schema migrations
 │   ├── seed/                        # Reference data seeds
 │   ├── tests/                       # pgTAP integration tests
 │   └── functions/                   # Edge Functions (API gateway, push notifications, CAPTCHA)
@@ -327,8 +327,8 @@ tryvit/
 ├── monitoring/                      # Alert definitions
 │
 ├── RUN_LOCAL.ps1                    # Pipeline runner (idempotent)
-├── RUN_QA.ps1                       # QA test runner (759 checks)
-├── RUN_NEGATIVE_TESTS.ps1           # Negative test runner (23 tests)
+├── RUN_QA.ps1                       # QA test runner (776 checks)
+├── RUN_NEGATIVE_TESTS.ps1           # Negative test runner (20 tests)
 ├── RUN_SANITY.ps1                   # Sanity checks
 ├── CHANGELOG.md                     # Structured changelog
 ├── DEPLOYMENT.md                    # Deployment procedures & rollback
@@ -343,7 +343,7 @@ tryvit/
 
 ## 🧪 Testing
 
-Every change is validated against **747 automated checks** across 48 QA suites plus 23 negative validation tests. No data enters the database without verification.
+Every change is validated against **776 automated checks** across 49 QA suites plus 20 negative validation tests. No data enters the database without verification.
 
 <table>
   <tr>
