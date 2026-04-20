@@ -132,6 +132,10 @@ MIGRATION_PATTERNS = [
 # Minimum migration count to consider (skip per-category/per-date sub-counts)
 MIN_MIGRATION_TOTAL = 50
 
+# Minimum QA check total to consider a real total (skip per-function/per-suite sub-counts
+# like "8 checks across scoring, search, naming conventions" inside function docs).
+MIN_QA_CHECK_TOTAL = 100
+
 QA_SUITE_PATTERN = re.compile(r"(\d+)\s+(?:QA\s+)?suites?", re.I)
 
 QA_CHECK_PATTERN = re.compile(r"(\d+)\s+(?:automated\s+)?checks?\s+across", re.I)
@@ -194,15 +198,17 @@ def scan_file(relpath: str) -> list[CountTarget]:
             # QA check totals
             m = QA_CHECK_PATTERN.search(line)
             if m:
-                targets.append(
-                    CountTarget(
-                        relpath,
-                        lineno,
-                        m.group(0).strip(),
-                        "qa_check_total",
-                        int(m.group(1)),
+                val = int(m.group(1))
+                if val >= MIN_QA_CHECK_TOTAL:
+                    targets.append(
+                        CountTarget(
+                            relpath,
+                            lineno,
+                            m.group(0).strip(),
+                            "qa_check_total",
+                            val,
+                        )
                     )
-                )
             # Negative test counts
             m = NEGATIVE_TEST_PATTERN.search(line)
             if m:
