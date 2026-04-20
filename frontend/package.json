@@ -56,7 +56,7 @@
     "serialize-javascript": ">=7.0.3"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.1",
+    "@axe-core/playwright": "^4.11.2",
     "@eslint/compat": "^2.0.3",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^9.39.4",
@@ -72,12 +72,12 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.1.4",
-    "@vitest/coverage-v8": "^4.1.2",
+    "@vitest/coverage-v8": "^4.1.4",
     "axe-core": "^4.11.2",
     "eslint": "^9.39.4",
     "eslint-config-next": "16.2.4",
     "fake-indexeddb": "^6.2.5",
-    "jsdom": "^29.0.1",
+    "jsdom": "^29.0.2",
     "postcss": "^8.5.8",
     "sharp": "^0.34.5",
     "svgo": "^4.0.1",
