@@ -258,7 +258,8 @@ WHERE n.nspname = 'public'
     'api_health_check',                 -- monitoring (service_role only)
     'api_get_pending_notifications',    -- push queue (service_role only)
     'api_mark_notifications_sent',      -- push queue (service_role only)
-    'api_cleanup_push_subscriptions'    -- push cleanup (service_role only)
+    'api_cleanup_push_subscriptions',   -- push cleanup (service_role only)
+    'api_admin_get_submissions'         -- admin submissions review (service_role only)
   )
   AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE');
 
