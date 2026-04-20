@@ -1,6 +1,6 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-03-21 by GitHub Copilot (epic #920 closeout)
+> **Last updated:** 2026-04-20 by GitHub Copilot (doc-count-drift workstream close)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
@@ -8,9 +8,22 @@
 ## Active Branch & PR
 
 - **Branch:** `main`
-- **Latest SHA (main):** `dbe06364` (feat(scanner): cross-country analytics views (#932) (#945))
-- **Open PRs:** 1 (Dependabot #941 — Next.js 16.1.6→16.1.7 security patch, 5 CVEs)
+- **Latest SHA (main):** `fe5dfd3e` (ci(repo-verify): enforce check_doc_counts.py --strict as a gate (#1024))
+- **Open PRs:** 0
+- **Open issues:** 1 (#212 — GOV-G1 Infrastructure Cost Attribution, deferred)
 - **Mode:** 🟢 Clean — no active work
+
+## Recently Shipped (Doc-Count-Drift Hardening Workstream)
+
+End-to-end: reconcile → tighten detector → enforce in CI.
+
+| PR    | Summary                                                                              |
+| ----- | ------------------------------------------------------------------------------------ |
+| #1024 | ci(repo-verify): enforce check_doc_counts.py --strict as a gate                      |
+| #1023 | chore(scripts): tighten QA check regex (`MIN_QA_CHECK_TOTAL = 100`)                  |
+| #1022 | docs: reconcile count drift (49 suites, 776 checks, 20 neg tests, 228 migrations)    |
+| #1021 | security(rls): revoke PUBLIC EXECUTE from api_submit_product + api_admin_get_submissions |
+| #1020 | ci(nightly): bump playwright step timeout 10m→20m                                    |
 
 ## Recently Shipped (Epic #920 — Country-Aware Scanner & Submission Pipeline)
 

@@ -13,6 +13,27 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### CI
+
+- Enforce `scripts/check_doc_counts.py --strict` as a CI gate in the
+  **Repo Hygiene Verify** workflow so future doc count drift fails the build
+  (#1024)
+- Tighten `check_doc_counts.py` QA check regex with a `MIN_QA_CHECK_TOTAL = 100`
+  threshold to skip per-function sub-counts (e.g., `governance_drift_check`'s
+  "8 checks across…"), eliminating false positives (#1023)
+
+### Security
+
+- Revoke `PUBLIC EXECUTE` from `api_submit_product` and
+  `api_admin_get_submissions` — write-path + admin functions now require
+  `authenticated` or `service_role` (#1021)
+
+### Documentation
+
+- Reconcile count drift across repo — 49 QA suites, 776 QA checks, 20 negative
+  tests, 228 migrations aligned between filesystem, `copilot-instructions.md`,
+  `CURRENT_STATE.md`, `RUN_QA.ps1`, and `qa.yml` (#1022)
+
 ### Added
 
 - Epic #920 — Country-Aware Scanner & Submission Pipeline: 12 issues (#921–#932),
