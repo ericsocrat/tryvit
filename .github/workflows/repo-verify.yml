@@ -16,6 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          # Need full history for pull_request diff against base ref.
+          fetch-depth: 0
       - name: Run repo_verify.ps1
         shell: pwsh
         run: ./scripts/repo_verify.ps1
@@ -27,3 +30,17 @@ jobs:
         run: python scripts/check_doc_counts.py --strict
       - name: Check migration ordering
         run: python scripts/check_migration_order.py
+      - name: Check migration conventions (changed files only)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          changed=$(git diff --name-only --diff-filter=AM "$base_sha"...HEAD -- 'supabase/migrations/*.sql' || true)
+          if [ -z "$changed" ]; then
+            echo "No migration files changed in this PR."
+            exit 0
+          fi
+          echo "Changed migration files:"
+          echo "$changed"
+          # shellcheck disable=SC2086
+          python scripts/check_migration_conventions.py --files $changed
