@@ -141,14 +141,41 @@ def main() -> None:
     strict = "--strict" in sys.argv
     report_only = "--report" in sys.argv
 
+    # --files FILE1 FILE2 ... restricts the check to an explicit list of paths.
+    # Used by CI to enforce conventions only on migrations added/modified in a PR,
+    # without requiring mass-backfill of legacy headers.
+    files_mode = "--files" in sys.argv
+    explicit_files: list[Path] = []
+    if files_mode:
+        idx = sys.argv.index("--files")
+        for raw in sys.argv[idx + 1 :]:
+            if raw.startswith("--"):
+                break
+            p = Path(raw)
+            # Only check .sql files under supabase/migrations/
+            if p.suffix != ".sql":
+                continue
+            if "supabase/migrations" not in p.as_posix():
+                continue
+            if p.name in SKIP_FILES:
+                continue
+            explicit_files.append(p)
+
     if not MIGRATIONS_ROOT.is_dir():
         print(f"ERROR: Migrations directory not found: {MIGRATIONS_ROOT}")
         sys.exit(1)
 
-    sql_files = sorted(MIGRATIONS_ROOT.glob("*.sql"))
-    sql_files = [f for f in sql_files if f.name not in SKIP_FILES]
+    if files_mode:
+        sql_files = sorted(explicit_files)
+    else:
+        sql_files = sorted(MIGRATIONS_ROOT.glob("*.sql"))
+        sql_files = [f for f in sql_files if f.name not in SKIP_FILES]
 
     if not sql_files:
+        if files_mode:
+            # No migration files in the PR's changeset — treat as clean pass.
+            print("No migration files to check.")
+            sys.exit(0)
         print("ERROR: No migration files found.")
         sys.exit(1)
 
