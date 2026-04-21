@@ -15,6 +15,16 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### CI
 
+- Wire `scripts/check_doc_drift.py` (90-day freshness threshold) into
+  **Repo Hygiene Verify** for `push`, `schedule`, and `workflow_dispatch`
+  events (skipped on `pull_request` — age-based drift is cron-scoped) (#1028)
+- Wire `scripts/check_migration_conventions.py` into **Repo Hygiene Verify**
+  in forward-only mode: new `--files` flag restricts the check to migrations
+  added/modified in the PR diff, avoiding a mass-backfill of ~163 legacy
+  headers (#1027)
+- Wire `scripts/check_migration_order.py` into **Repo Hygiene Verify** and
+  skip `_TEMPLATE.sql` so the template is no longer flagged as an
+  ordering violation (#1026)
 - Enforce `scripts/check_doc_counts.py --strict` as a CI gate in the
   **Repo Hygiene Verify** workflow so future doc count drift fails the build
   (#1024)
