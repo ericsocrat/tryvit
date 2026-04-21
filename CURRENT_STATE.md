@@ -1,6 +1,6 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-04-20 by GitHub Copilot (doc-count-drift workstream close)
+> **Last updated:** 2026-04-21 by GitHub Copilot (hygiene-script CI wiring workstream close)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
@@ -8,10 +8,21 @@
 ## Active Branch & PR
 
 - **Branch:** `main`
-- **Latest SHA (main):** `fe5dfd3e` (ci(repo-verify): enforce check_doc_counts.py --strict as a gate (#1024))
+- **Latest SHA (main):** `c1f26343` (ci(repo-verify): wire check_doc_drift.py into push/schedule runs (#1028))
 - **Open PRs:** 0
 - **Open issues:** 1 (#212 — GOV-G1 Infrastructure Cost Attribution, deferred)
 - **Mode:** 🟢 Clean — no active work
+
+## Recently Shipped (Hygiene-Script CI Wiring Workstream)
+
+Wired all four scripts in `scripts/` that validate repo hygiene into the `Repo Hygiene Verify` workflow. Forward-only enforcement for legacy-noisy checks (migration conventions) via PR-diff scope; appropriate-event scoping for age-based checks (doc freshness).
+
+| PR    | Script                               | Trigger                      |
+| ----- | ------------------------------------ | ---------------------------- |
+| #1028 | `check_doc_drift.py`                 | push + schedule + dispatch   |
+| #1027 | `check_migration_conventions.py --files <diff>` | pull_request only  |
+| #1026 | `check_migration_order.py` + skip `_TEMPLATE.sql` | all events       |
+| #1024 | `check_doc_counts.py --strict`       | all events                   |
 
 ## Recently Shipped (Doc-Count-Drift Hardening Workstream)
 
