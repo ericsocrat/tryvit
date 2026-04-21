@@ -25,3 +25,5 @@ jobs:
           python-version: '3.12'
       - name: Check doc count drift (strict)
         run: python scripts/check_doc_counts.py --strict
+      - name: Check migration ordering
+        run: python scripts/check_migration_order.py

@@ -35,7 +35,10 @@ def check_migration_ordering(migrations_dir: str = "supabase/migrations") -> lis
         violations.append(f"Directory not found: {migrations_dir}")
         return violations
 
-    files = sorted(f for f in os.listdir(migrations_dir) if f.endswith(".sql"))
+    files = sorted(
+        f for f in os.listdir(migrations_dir)
+        if f.endswith(".sql") and not f.startswith("_")
+    )
 
     if not files:
         violations.append(f"No .sql files found in {migrations_dir}")
