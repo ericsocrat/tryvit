@@ -1,6 +1,6 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-04-21 by GitHub Copilot (hygiene-script CI wiring workstream close)
+> **Last updated:** 2026-04-21 by GitHub Copilot (Dependabot alert #3 / tmp CVE closure)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
@@ -8,33 +8,41 @@
 ## Active Branch & PR
 
 - **Branch:** `main`
-- **Latest SHA (main):** `c1f26343` (ci(repo-verify): wire check_doc_drift.py into push/schedule runs (#1028))
+- **Latest SHA (main):** `5659c13a` (security(deps): force tmp>=0.2.4 via overrides to close Dependabot alert #3 (#1030))
 - **Open PRs:** 0
 - **Open issues:** 1 (#212 — GOV-G1 Infrastructure Cost Attribution, deferred)
 - **Mode:** 🟢 Clean — no active work
+
+## Recently Shipped (Dependabot Alert #3 Closure)
+
+Forced `tmp` package to patched version (>=0.2.4, resolved to 0.2.5) via npm `overrides` block in `frontend/package.json`, closing CVE-2025-54798 / GHSA-52f5-9888-hmc6 (low-severity symlink temp write). Transitively reached only via `@lhci/cli@0.15.1` (devDep, already latest). `npm audit` now clean (was 4 low). Also repaired cross-platform lockfile: Windows-local `npm install` pruned Linux-only `@emnapi/*` optional deps required by `@rolldown/binding-wasm32-wasi`, breaking Linux CI `npm ci` — restored via manual nested entries with registry-verified integrity hashes.
+
+| PR    | Change                                                                     |
+| ----- | -------------------------------------------------------------------------- |
+| #1030 | `overrides.tmp = ">=0.2.4"` + nested `@emnapi` entries in `package-lock.json` |
 
 ## Recently Shipped (Hygiene-Script CI Wiring Workstream)
 
 Wired all four scripts in `scripts/` that validate repo hygiene into the `Repo Hygiene Verify` workflow. Forward-only enforcement for legacy-noisy checks (migration conventions) via PR-diff scope; appropriate-event scoping for age-based checks (doc freshness).
 
-| PR    | Script                               | Trigger                      |
-| ----- | ------------------------------------ | ---------------------------- |
-| #1028 | `check_doc_drift.py`                 | push + schedule + dispatch   |
-| #1027 | `check_migration_conventions.py --files <diff>` | pull_request only  |
-| #1026 | `check_migration_order.py` + skip `_TEMPLATE.sql` | all events       |
-| #1024 | `check_doc_counts.py --strict`       | all events                   |
+| PR    | Script                                            | Trigger                    |
+| ----- | ------------------------------------------------- | -------------------------- |
+| #1028 | `check_doc_drift.py`                              | push + schedule + dispatch |
+| #1027 | `check_migration_conventions.py --files <diff>`   | pull_request only          |
+| #1026 | `check_migration_order.py` + skip `_TEMPLATE.sql` | all events                 |
+| #1024 | `check_doc_counts.py --strict`                    | all events                 |
 
 ## Recently Shipped (Doc-Count-Drift Hardening Workstream)
 
 End-to-end: reconcile → tighten detector → enforce in CI.
 
-| PR    | Summary                                                                              |
-| ----- | ------------------------------------------------------------------------------------ |
-| #1024 | ci(repo-verify): enforce check_doc_counts.py --strict as a gate                      |
-| #1023 | chore(scripts): tighten QA check regex (`MIN_QA_CHECK_TOTAL = 100`)                  |
-| #1022 | docs: reconcile count drift (49 suites, 776 checks, 20 neg tests, 228 migrations)    |
+| PR    | Summary                                                                                  |
+| ----- | ---------------------------------------------------------------------------------------- |
+| #1024 | ci(repo-verify): enforce check_doc_counts.py --strict as a gate                          |
+| #1023 | chore(scripts): tighten QA check regex (`MIN_QA_CHECK_TOTAL = 100`)                      |
+| #1022 | docs: reconcile count drift (49 suites, 776 checks, 20 neg tests, 228 migrations)        |
 | #1021 | security(rls): revoke PUBLIC EXECUTE from api_submit_product + api_admin_get_submissions |
-| #1020 | ci(nightly): bump playwright step timeout 10m→20m                                    |
+| #1020 | ci(nightly): bump playwright step timeout 10m→20m                                        |
 
 ## Recently Shipped (Epic #920 — Country-Aware Scanner & Submission Pipeline)
 
