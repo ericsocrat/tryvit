@@ -6,9 +6,23 @@
 // globals.css; this hook enables JS-driven animations (e.g., Framer Motion,
 // scroll-into-view, requestAnimationFrame) to also respect the preference.
 
-import { useState, useEffect } from "react";
+import { useSyncExternalStore } from "react";
 
 const QUERY = "(prefers-reduced-motion: reduce)";
+
+function subscribe(callback: () => void): () => void {
+  const mql = globalThis.matchMedia(QUERY);
+  mql.addEventListener("change", callback);
+  return () => mql.removeEventListener("change", callback);
+}
+
+function getSnapshot(): boolean {
+  return globalThis.matchMedia(QUERY).matches;
+}
+
+function getServerSnapshot(): boolean {
+  return false;
+}
 
 /**
  * React hook that tracks the user's `prefers-reduced-motion` media query.
@@ -17,19 +31,5 @@ const QUERY = "(prefers-reduced-motion: reduce)";
  * Safe for SSR — defaults to `false` on the server.
  */
 export function useReducedMotion(): boolean {
-  const [prefersReduced, setPrefersReduced] = useState(false);
-
-  useEffect(() => {
-    const mql = globalThis.matchMedia(QUERY);
-    setPrefersReduced(mql.matches);
-
-    function onChange(e: MediaQueryListEvent) {
-      setPrefersReduced(e.matches);
-    }
-
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
-
-  return prefersReduced;
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }

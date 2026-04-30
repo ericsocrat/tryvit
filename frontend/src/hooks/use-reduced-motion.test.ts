@@ -50,6 +50,7 @@ describe("useReducedMotion", () => {
 
     // Simulate user changing preference
     act(() => {
+      matches = true;
       const onChange = listeners.get("change");
       onChange?.({ matches: true } as MediaQueryListEvent);
     });
