@@ -18,10 +18,8 @@ export function DoneStep({ data, loading, onComplete }: DoneStepProps) {
 
   const countryName =
     COUNTRIES.find((c) => c.code === data.country)?.name ?? data.country;
-  const dietLabel =
-    DIET_OPTIONS.find((d) => d.value === data.diet)
-      ? t(DIET_OPTIONS.find((d) => d.value === data.diet)!.labelKey)
-      : data.diet;
+  const dietOption = DIET_OPTIONS.find((d) => d.value === data.diet);
+  const dietLabel = dietOption ? t(dietOption.labelKey) : data.diet;
   const allergenLabels = data.allergens
     .map((tag) => {
       const found = ALLERGEN_TAGS.find((a) => a.tag === tag);
