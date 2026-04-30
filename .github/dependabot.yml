@@ -42,6 +42,9 @@ updates:
       prefix: "deps(frontend)"
       include: "scope"
     # ── Grouped updates to minimise PR flood ──
+    # Groups are restricted to minor+patch updates so each major bump
+    # arrives as its own PR for individual triage (breaking changes
+    # cannot be safely batched — see PR #1038 post-mortem).
     groups:
       # Framework core — next + react should upgrade together
       framework:
@@ -50,14 +53,23 @@ updates:
           - "react"
           - "react-dom"
           - "eslint-config-next"
+        update-types:
+          - "minor"
+          - "patch"
       # Sentry SDKs — tightly coupled, upgrade together
       sentry:
         patterns:
           - "@sentry/*"
+        update-types:
+          - "minor"
+          - "patch"
       # Supabase client libs
       supabase:
         patterns:
           - "@supabase/*"
+        update-types:
+          - "minor"
+          - "patch"
       # Testing toolchain
       testing:
         patterns:
@@ -70,6 +82,9 @@ updates:
           - "jsdom"
           - "fake-indexeddb"
           - "vitest-axe"
+        update-types:
+          - "minor"
+          - "patch"
       # Build toolchain
       build-tooling:
         patterns:
@@ -80,10 +95,16 @@ updates:
           - "@tailwindcss/*"
           - "sharp"
           - "@vitejs/*"
-      # Everything else — catch-all for remaining deps
+        update-types:
+          - "minor"
+          - "patch"
+      # Everything else — catch-all for remaining deps (minor/patch only)
       npm-rest:
         patterns:
           - "*"
+        update-types:
+          - "minor"
+          - "patch"
         exclude-patterns:
           - "next"
           - "react"
@@ -143,16 +164,22 @@ updates:
       time: "06:00"
       timezone: "Europe/Warsaw"
     groups:
-      # Official GitHub actions — upgrade together
+      # Official GitHub actions — upgrade together (minor/patch only)
       github-official:
         patterns:
           - "actions/*"
           - "github/*"
-      # Third-party actions (Supabase, Sonar, etc.)
+        update-types:
+          - "minor"
+          - "patch"
+      # Third-party actions (Supabase, Sonar, etc.) — minor/patch only
       third-party:
         patterns:
           - "supabase/*"
           - "SonarSource/*"
+        update-types:
+          - "minor"
+          - "patch"
     open-pull-requests-limit: 5
     reviewers:
       - "ericsocrat"
