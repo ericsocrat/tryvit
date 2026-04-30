@@ -19,7 +19,7 @@ vi.mock("@/lib/i18n", () => ({
 }));
 
 vi.mock("next/image", () => ({
-  // eslint-disable-next-line @next/next/no-img-element
+  // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text -- alt is forwarded via {...props}
   default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />,
 }));
 
