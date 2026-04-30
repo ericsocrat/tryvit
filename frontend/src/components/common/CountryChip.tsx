@@ -109,7 +109,7 @@ export function CountryChip({
     return (
       <span
         role="img"
-        aria-label={nullLabel!}
+        aria-label={nullLabel ?? ""}
         className={`inline-flex items-center ${cfg.gap} rounded-full border border-border bg-surface-muted ${cfg.px} ${cfg.text} font-medium text-foreground-muted ${className}`}
       >
         <FallbackFlag size={cfg.flag} />

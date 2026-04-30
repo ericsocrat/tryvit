@@ -414,11 +414,10 @@ export function HealthProfileSection() {
                   {profile.health_conditions.length > 0 && (
                     <p className="mt-1 text-xs text-foreground-secondary">
                       {profile.health_conditions
-                        .map(
-                          (c) =>
-                            HEALTH_CONDITIONS.find((hc) => hc.value === c)
-                              ? t(HEALTH_CONDITIONS.find((hc) => hc.value === c)!.labelKey) : c,
-                        )
+                        .map((c) => {
+                          const hc = HEALTH_CONDITIONS.find((h) => h.value === c);
+                          return hc ? t(hc.labelKey) : c;
+                        })
                         .join(", ")}
                     </p>
                   )}
