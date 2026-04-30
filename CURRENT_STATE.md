@@ -1,6 +1,6 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-04-21 by GitHub Copilot (Dependabot alert #3 / tmp CVE closure)
+> **Last updated:** 2026-04-21 by GitHub Copilot (Dependabot grouping post-mortem of #1038)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
@@ -8,10 +8,25 @@
 ## Active Branch & PR
 
 - **Branch:** `main`
-- **Latest SHA (main):** `5659c13a` (security(deps): force tmp>=0.2.4 via overrides to close Dependabot alert #3 (#1030))
+- **Latest SHA (main):** `29aa5795` (ci(deps): restrict Dependabot groups to minor+patch only (#1039))
 - **Open PRs:** 0
-- **Open issues:** 1 (#212 — GOV-G1 Infrastructure Cost Attribution, deferred)
+- **Open issues:** 0
 - **Mode:** 🟢 Clean — no active work
+
+## Recently Shipped (Dependabot Grouping Hardening)
+
+PR #1038 grouped 13 npm updates including 6 incompatible majors (`@eslint/js` 9→10, `@vercel/speed-insights` 1→2, `lucide-react` 0.577→1.11, `sonner` 1→2, `tesseract.js` 5→7, `@types/node` 22→25) — all 10 gates failed and breakages could not be isolated atomically. Closed in favour of #1039: added `update-types: [minor, patch]` to all groups in `.github/dependabot.yml` (npm framework/sentry/supabase/testing/build-tooling/npm-rest + actions github-official/third-party). Major bumps now arrive as individual PRs for proper triage.
+
+| PR    | Change                                                                                  |
+| ----- | --------------------------------------------------------------------------------------- |
+| #1039 | `update-types: [minor, patch]` constraint added to all 8 Dependabot groups              |
+| #1038 | **Closed** (superseded) — 13-package grouped bundle with 6 breaking majors              |
+
+## Recently Shipped (Supabase CLI v2 Upgrade)
+
+| PR    | Change                                                              |
+| ----- | ------------------------------------------------------------------- |
+| #1035 | `ci(deps): bump supabase/setup-cli from 1.6.0 to 2.0.0` (Dependabot) |
 
 ## Recently Shipped (Dependabot Alert #3 Closure)
 
