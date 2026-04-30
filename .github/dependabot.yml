@@ -39,8 +39,12 @@ updates:
       - "dependencies"
       - "frontend"
     commit-message:
-      prefix: "deps(frontend)"
-      include: "scope"
+      # NOTE: 'deps' is not in .commitlintrc.json type-enum; using 'chore' as the
+      # type and 'deps' as the scope produces titles that pass pr-title-lint.yml.
+      # 'include: scope' is omitted because Dependabot would append the dependency
+      # type (deps/deps-dev) as a second scope, producing 'chore(deps)(deps):' —
+      # which is malformed Conventional Commits.
+      prefix: "chore(deps)"
     # ── Grouped updates to minimise PR flood ──
     # Groups are restricted to minor+patch updates so each major bump
     # arrives as its own PR for individual triage (breaking changes
@@ -151,8 +155,7 @@ updates:
       - "dependencies"
       - "python"
     commit-message:
-      prefix: "deps(python)"
-      include: "scope"
+      prefix: "chore(deps)"
 
   # ── GitHub Actions ────────────────────────────────────────────
   - package-ecosystem: "github-actions"
@@ -189,5 +192,4 @@ updates:
       - "dependencies"
       - "ci"
     commit-message:
-      prefix: "deps(actions)"
-      include: "scope"
+      prefix: "ci(deps)"
