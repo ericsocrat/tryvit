@@ -8,10 +8,20 @@
 ## Active Branch & PR
 
 - **Branch:** `main`
-- **Latest SHA (main):** `0bd3420a` (chore(deps): bump lucide-react from 0.577.0 to 1.14.0 in /frontend (#1050))
+- **Latest SHA (main):** `b25fb4aa` (chore(deps): remove unused @eslint/eslintrc and @eslint/js devDependencies (#1053))
 - **Open PRs:** 0
 - **Open issues:** 0
 - **Mode:** 🟢 Clean — no active work
+
+## Recently Shipped (Next.js 16 Dependency Cleanup)
+
+Removed `@eslint/eslintrc` and `@eslint/js` from `frontend/package.json` devDependencies + overrides block. Both were holdovers from the `FlatCompat` bridge that was removed in PR #904 (Next.js 16 upgrade) when `eslint-config-next` started exporting native flat config. Verified `eslint.config.mjs` imports `eslint-config-next/core-web-vitals` and `eslint-config-next/typescript` directly with no FlatCompat usage. Local lint clean (0 errors / 29 pre-existing warnings unchanged).
+
+First push hit the documented Windows-npm cross-platform lockfile fragility (per PR #1030 note): `npm uninstall` on Windows pruned the Linux-only `@emnapi/core@1.9.2` and `@emnapi/runtime@1.9.2` nested entries under `node_modules/@rolldown/binding-wasm32-wasi/node_modules/`, breaking Linux CI `npm ci`. Restored manually via registry-verified integrity hashes (29-line lockfile addition) — same fix pattern as PR #1030.
+
+| PR    | Change                                                                                       |
+| ----- | -------------------------------------------------------------------------------------------- |
+| #1053 | `chore(deps): remove unused @eslint/eslintrc and @eslint/js devDependencies` (+ lockfile fix) |
 
 ## Recently Shipped (Dependabot Major-Bump Drain)
 
@@ -240,7 +250,7 @@ Epic #920 fully resolved and closed — all 12/12 issues shipped.
 These are documented follow-ups, not active work items. Address opportunistically or when opening next sprint.
 
 1. **React Compiler lint warnings cleanup** — 20 locations across 5 rules (`set-state-in-effect` ×17, `preserve-manual-memoization` ×1, `purity` ×1, `refs` ×1, `static-components` ×1). Currently downgraded to `"warn"` in `eslint.config.mjs`. Dedicated cleanup pass when convenient — no urgency.
-2. **Remove `@eslint/eslintrc` and `@eslint/js` from devDependencies** — These packages were used by the `FlatCompat` bridge which was removed in the Next 16 upgrade. They may now be unused. Verify with `npx depcheck` before removing.
+2. ~~**Remove `@eslint/eslintrc` and `@eslint/js` from devDependencies**~~ — ✅ Done in PR #1053 (2026-04-30). Restored Linux-only `@emnapi/*` nested lockfile entries to fix cross-platform CI break.
 3. **`middleware.ts` → `proxy.ts` migration** — Next.js 16 deprecated the `middleware.ts` convention in favor of `proxy.ts`. Currently backward-compatible (warning only). Address when Next.js drops support or in next major framework review.
 
 ## Staging Environment
