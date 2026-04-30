@@ -1,6 +1,6 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-04-21 by GitHub Copilot (Dependabot grouping post-mortem of #1038)
+> **Last updated:** 2026-04-21 by GitHub Copilot (Dependabot major-bump drain — 9 PRs)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
@@ -8,10 +8,29 @@
 ## Active Branch & PR
 
 - **Branch:** `main`
-- **Latest SHA (main):** `29aa5795` (ci(deps): restrict Dependabot groups to minor+patch only (#1039))
+- **Latest SHA (main):** `0bd3420a` (chore(deps): bump lucide-react from 0.577.0 to 1.14.0 in /frontend (#1050))
 - **Open PRs:** 0
 - **Open issues:** 0
 - **Mode:** 🟢 Clean — no active work
+
+## Recently Shipped (Dependabot Major-Bump Drain)
+
+After #1039 split groups into minor+patch only, Dependabot re-opened the held majors as individual PRs. All 9 were triaged sequentially: 6 merged (Tier 1 safe + Tier 2 verified-green), 3 closed for incompatible peers or unsupported ecosystem moves. quality_gate failures (workflow config bug — non-blocking) and Vercel "Canceled from dashboard" treated as acceptable per branch protection (4 required: Unit Tests, Playwright Smoke, Typecheck & Lint, Build).
+
+| PR    | Change                                                                                                |
+| ----- | ----------------------------------------------------------------------------------------------------- |
+| #1050 | `chore(deps): bump lucide-react from 0.577.0 to 1.14.0` (20+ icon usages — all 4 required gates pass) |
+| #1048 | `chore(deps): bump @vercel/speed-insights 1→2` (single layout.tsx import)                             |
+| #1047 | `chore(deps): bump @types/node 22→25`                                                                 |
+| #1045 | `ci(deps): bump SonarSource/sonarqube-scan-action v7→v8`                                              |
+| #1044 | `chore(deps): bump @sentry/nextjs minor` (auto-merged ahead of #1043)                                 |
+| #1043 | `chore(deps): bump testing group` (auto-merged after #1042)                                           |
+| #1042 | `chore(deps): bump build-tooling group`                                                               |
+| #1051 | `chore(deps): bump npm-rest group`                                                                    |
+| #1040 | `chore(deps): bump framework group`                                                                   |
+| #1049 | **Closed** — `@eslint/js` 9→10 requires eslint 10 (project on eslint 9)                               |
+| #1046 | **Closed** — `@zxing/library` 0.22→0.23 incompatible with `@zxing/browser@^0.2.0` peer (^0.22.0)      |
+| #1038 | **Closed** earlier (superseded by #1039 grouping fix)                                                 |
 
 ## Recently Shipped (Dependabot Grouping Hardening)
 
