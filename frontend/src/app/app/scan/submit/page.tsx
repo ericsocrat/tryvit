@@ -305,6 +305,8 @@ export default function SubmitProductPage() {
             </label>
             {photoPreview && photoPreview.startsWith("blob:") ? (
               <div className="relative inline-block animate-scale-in">
+                {/* blob: URL preview is not eligible for next/image optimization (local memory reference) */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photoPreview}
                   alt=""
