@@ -57,7 +57,7 @@
     "tmp": ">=0.2.4"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.11.2",
+    "@axe-core/playwright": "^4.11.3",
     "@eslint/compat": "^2.0.3",
     "@eslint/eslintrc": "^3.3.5",
     "@eslint/js": "^9.39.4",
@@ -78,7 +78,7 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "16.2.4",
     "fake-indexeddb": "^6.2.5",
-    "jsdom": "^29.1.0",
+    "jsdom": "^29.1.1",
     "postcss": "^8.5.12",
     "sharp": "^0.34.5",
     "svgo": "^4.0.1",
