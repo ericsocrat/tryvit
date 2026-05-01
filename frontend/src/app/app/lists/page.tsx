@@ -178,16 +178,10 @@ export default function ListsPage() {
 
 // ─── ListCard ───────────────────────────────────────────────────────────────
 
-function listTypeIcon(type: string): LucideIcon {
-  switch (type) {
-    case "favorites":
-      return Heart;
-    case "avoid":
-      return Ban;
-    default:
-      return FileText;
-  }
-}
+const LIST_TYPE_ICONS: Record<string, LucideIcon> = {
+  favorites: Heart,
+  avoid: Ban,
+};
 
 const LIST_TYPE_ICON_COLORS: Record<string, string> = {
   favorites: "text-red-500",
@@ -202,7 +196,7 @@ function ListCard({
   onDelete?: () => void;
 }>) {
   const { t } = useTranslation();
-  const TypeIcon = listTypeIcon(list.list_type);
+  const TypeIcon = LIST_TYPE_ICONS[list.list_type] ?? FileText;
   const { data: previewData } = useListPreview(list.id, list.item_count);
 
   const previewItems: ListItem[] = previewData?.items ?? [];

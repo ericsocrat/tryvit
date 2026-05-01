@@ -249,7 +249,7 @@ Epic #920 fully resolved and closed — all 12/12 issues shipped.
 
 These are documented follow-ups, not active work items. Address opportunistically or when opening next sprint.
 
-1. **React Compiler lint warnings cleanup** — 20 locations across 5 rules (`set-state-in-effect` ×17, `preserve-manual-memoization` ×1, `purity` ×1, `refs` ×1, `static-components` ×1). Currently downgraded to `"warn"` in `eslint.config.mjs`. Dedicated cleanup pass when convenient — no urgency.
+1. **React Compiler lint warnings cleanup** — Phase 1 done in PR #1063 (resolved 6 violations: 1× `static-components`, 1× `purity`, 1× `preserve-manual-memoization`, 3× `refs`; promoted 4 of 5 rules from `warn` to default `error`). Phase 2: 17 remaining `set-state-in-effect` violations still at `warn` — dedicated cleanup pass when convenient, no urgency.
 2. ~~**Remove `@eslint/eslintrc` and `@eslint/js` from devDependencies**~~ — ✅ Done in PR #1053 (2026-04-30). Restored Linux-only `@emnapi/*` nested lockfile entries to fix cross-platform CI break.
 3. ~~**`middleware.ts` → `proxy.ts` migration**~~ — ✅ Done in #1062. File renamed via `git mv`; exported function renamed `middleware` → `proxy`; deprecation warning eliminated.
 

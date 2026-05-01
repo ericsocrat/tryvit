@@ -6,19 +6,14 @@
 // then passed as a prop — the email list is never exposed to the client.
 
 import { useAdminStore } from "@/stores/admin-store";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 export function AdminHydrator({ isAdmin }: Readonly<{ isAdmin: boolean }>) {
   const setIsAdmin = useAdminStore((s) => s.setIsAdmin);
-  const hydrated = useRef(false);
 
-  // Immediate hydration on first render (before paint)
-  if (!hydrated.current) {
-    hydrated.current = true;
-    setIsAdmin(isAdmin);
-  }
-
-  // Re-sync if prop changes (e.g. session refresh)
+  // Hydrate on mount and re-sync if prop changes (e.g. session refresh).
+  // The store is consumed by client components that already gate on hydration
+  // via Zustand's persist middleware, so a one-frame delay is acceptable.
   useEffect(() => {
     setIsAdmin(isAdmin);
   }, [isAdmin, setIsAdmin]);

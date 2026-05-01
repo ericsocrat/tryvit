@@ -48,6 +48,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 type ScanState = "idle" | "looking-up" | "found" | "not-found" | "error";
 
+// Module-scope helper keeps Date.now() out of the React render scope so
+// react-hooks/purity does not flag the elapsed-time computation in onSuccess.
+function elapsedMsSince(startTime: number | null): number | undefined {
+  return startTime ? Date.now() - startTime : undefined;
+}
+
 export default function ScanPage() {
   const router = useRouter();
   const supabase = createClient();
@@ -86,9 +92,7 @@ export default function ScanPage() {
       track(data.found ? "scanner_scan_success" : "scanner_scan_not_found", {
         ean: scanEan,
         found: data.found,
-        time_to_scan_ms: streamReadyTimeRef.current
-          ? Date.now() - streamReadyTimeRef.current
-          : undefined,
+        time_to_scan_ms: elapsedMsSince(streamReadyTimeRef.current),
       });
       void eventBus.emit({
         type: "product.scanned",
@@ -123,7 +127,9 @@ export default function ScanPage() {
 
   // Stable ref for mutation — avoids stale closure in ZXing callback
   const scanMutateRef = useRef(scanMutation.mutate);
-  scanMutateRef.current = scanMutation.mutate;
+  useEffect(() => {
+    scanMutateRef.current = scanMutation.mutate;
+  }, [scanMutation.mutate]);
 
   // ─── Barcode scanner hook ─────────────────────────────────────────────────
 
@@ -139,7 +145,9 @@ export default function ScanPage() {
     enabled: mode === "camera" && scanState === "idle",
     track,
   });
-  streamReadyTimeRef.current = streamReadyTime;
+  useEffect(() => {
+    streamReadyTimeRef.current = streamReadyTime;
+  }, [streamReadyTime]);
 
   // ─── Scan timeout — "Having trouble?" after 15 seconds ──────────────────
   useEffect(() => {
