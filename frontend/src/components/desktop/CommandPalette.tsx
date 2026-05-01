@@ -189,27 +189,39 @@ export function CommandPalette({
     return items;
   }, [query, navItems, recentItems, t]);
 
-  // Reset state when opening/closing
+  // Reset query/activeIndex when the dialog transitions from closed to open.
+  // State adjustments happen during render (avoids react-hooks/set-state-in-effect);
+  // the imperative <dialog> open/close + focus stays in useEffect below.
+  // See https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      setQuery("");
+      setActiveIndex(0);
+    }
+  }
+
+  // Imperative <dialog> sync — DOM-only, no setState.
   useEffect(() => {
     const el = dialogRef.current;
     if (!el) return;
     if (open && !el.open) {
-      setQuery("");
-      setActiveIndex(0);
       el.showModal();
-      // Focus input after dialog opens
       requestAnimationFrame(() => inputRef.current?.focus());
     } else if (!open && el.open) {
       el.close();
     }
   }, [open]);
 
-  // Keep active index in bounds
-  useEffect(() => {
+  // Keep active index in bounds — derive during render.
+  const [prevFilteredLen, setPrevFilteredLen] = useState(filteredItems.length);
+  if (filteredItems.length !== prevFilteredLen) {
+    setPrevFilteredLen(filteredItems.length);
     if (activeIndex >= filteredItems.length) {
       setActiveIndex(Math.max(0, filteredItems.length - 1));
     }
-  }, [filteredItems.length, activeIndex]);
+  }
 
   // Scroll active item into view
   useEffect(() => {
