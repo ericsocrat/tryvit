@@ -13,6 +13,17 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Fixed
+
+- Resolve 6 React Compiler violations (Phase 1 of 2): `static-components`
+  in `lists/page.tsx`, `purity` in `scan/page.tsx`,
+  `preserve-manual-memoization` in `settings/account/page.tsx`, and
+  `refs` violations in `scan/submit/page.tsx`, `AdminHydrator.tsx`, and
+  `scan/page.tsx` (×2). Promote 4 of 5 React Compiler lint rules from
+  `warn` to default `error` level. The remaining `set-state-in-effect`
+  rule (17 pre-existing violations) stays at `warn` and is tracked for
+  Phase 2 cleanup. (#1063)
+
 ### Changed
 
 - Rename `frontend/src/middleware.ts` → `frontend/src/proxy.ts` and

@@ -7,13 +7,10 @@ const eslintConfig = [
   {
     rules: {
       // ── React Compiler rules (new in Next.js 16) ────────────────────
-      // Downgraded to warn — existing code predates these rules.
-      // Address in a dedicated cleanup pass.
+      // set-state-in-effect remains at warn — 17 pre-existing violations
+      // tracked for Phase 2 cleanup. Other 4 rules cleaned up in Phase 1
+      // (PR #1063) and enforced at error level.
       "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/preserve-manual-memoization": "warn",
-      "react-hooks/purity": "warn",
-      "react-hooks/refs": "warn",
-      "react-hooks/static-components": "warn",
 
       // ── TypeScript strictness ───────────────────────────────────────
       "@typescript-eslint/no-unused-vars": [

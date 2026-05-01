@@ -44,8 +44,12 @@ export default function SubmitProductPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const { t } = useTranslation();
   const gs1Hint = ean.length >= 8 ? gs1CountryHint(ean) : null;
-  const photoPreviewRef = useRef(photoPreview);
-  photoPreviewRef.current = photoPreview;
+  const photoPreviewRef = useRef<string | null>(photoPreview);
+
+  // Keep ref in sync with state so unmount cleanup sees the latest URL
+  useEffect(() => {
+    photoPreviewRef.current = photoPreview;
+  }, [photoPreview]);
 
   // Revoke blob URL on unmount to prevent memory leaks
   useEffect(() => {

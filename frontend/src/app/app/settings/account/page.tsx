@@ -17,7 +17,7 @@ import { showToast } from "@/lib/toast";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronDown, Copy } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function AccountSettingsPage() {
   const router = useRouter();
@@ -49,13 +49,14 @@ export default function AccountSettingsPage() {
     });
   }, [supabase]);
 
-  const handleCopyUserId = useCallback(async () => {
+  // React Compiler memoizes automatically — no manual useCallback needed
+  async function handleCopyUserId() {
     if (!prefs?.user_id) return;
     await navigator.clipboard.writeText(prefs.user_id);
     setCopied(true);
     showToast({ type: "success", messageKey: "settings.copiedToClipboard" });
     setTimeout(() => setCopied(false), 2000);
-  }, [prefs?.user_id]);
+  }
 
   async function handleLogout() {
     await supabase.auth.signOut();
