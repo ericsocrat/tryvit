@@ -51,13 +51,17 @@ export default function ProfileSettingsPage() {
   const { showConfirmDialog, confirmNavigation, cancelNavigation } =
     useUnsavedChanges(dirty);
 
-  // Populate from fetched prefs
-  useEffect(() => {
+  // Populate from fetched prefs — adjust state during render when the
+  // upstream query result changes (avoids react-hooks/set-state-in-effect).
+  // See https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prevPrefs, setPrevPrefs] = useState(prefs);
+  if (prefs !== prevPrefs) {
+    setPrevPrefs(prefs);
     if (prefs) {
       setCountry(prefs.country ?? "");
       setLanguage((prefs.preferred_language ?? "en") as SupportedLanguage);
     }
-  }, [prefs]);
+  }
 
   function markDirty() {
     setDirty(true);
