@@ -135,12 +135,18 @@ export function SearchAutocomplete({
   const debouncedQuery = useDebounce(query, 200);
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() =>
+    show ? getRecentSearches() : [],
+  );
 
-  // Load recent searches when dropdown opens
-  useEffect(() => {
+  // Refresh recent searches each time the dropdown transitions from closed → open.
+  // Adjusted during render (avoids react-hooks/set-state-in-effect):
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prevShow, setPrevShow] = useState(show);
+  if (show !== prevShow) {
+    setPrevShow(show);
     if (show) setRecentSearches(getRecentSearches());
-  }, [show]);
+  }
 
   const { data, isFetching } = useQuery({
     queryKey: queryKeys.autocomplete(debouncedQuery),
@@ -174,10 +180,14 @@ export function SearchAutocomplete({
   const getOptionId = (index: number) =>
     index >= 0 ? `search-autocomplete-option-${index}` : undefined;
 
-  // Reset active index when suggestions change
-  useEffect(() => {
+  // Reset active index when suggestions or query mode change.
+  // Adjusted during render to avoid react-hooks/set-state-in-effect.
+  const resetKey = `${suggestions.length}|${debouncedQuery}|${isQueryMode}`;
+  const [prevResetKey, setPrevResetKey] = useState(resetKey);
+  if (resetKey !== prevResetKey) {
+    setPrevResetKey(resetKey);
     setActiveIndex(-1);
-  }, [suggestions.length, debouncedQuery, isQueryMode]);
+  }
 
   // Report active ID to parent for aria-activedescendant
   useEffect(() => {
