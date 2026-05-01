@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
     FreshnessIndicator,
     getDaysSince,
@@ -24,11 +24,14 @@ vi.mock("@/lib/i18n", () => ({
 }));
 
 // ─── Helper: create ISO date N days ago ─────────────────────────────────────
+//
+// Uses millisecond arithmetic (not setDate) so the offset is exactly N×86400000ms
+// and stays in lock-step with getDaysSince()'s Math.floor(diff/86400000) logic.
+// setDate-based offsets cross DST boundaries and produce off-by-one results
+// (60 calendar days back ≠ 60 × 86400000 ms) — see issue #1058.
 
 function daysAgo(n: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - n);
-  return d.toISOString();
+  return new Date(Date.now() - n * 24 * 60 * 60 * 1000).toISOString();
 }
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
@@ -228,5 +231,31 @@ describe("getFreshnessStatus", () => {
     expect(getFreshnessStatus(5, 3, 10)).toBe("aging");
     expect(getFreshnessStatus(2, 3, 10)).toBe("fresh");
     expect(getFreshnessStatus(15, 3, 10)).toBe("stale");
+  });
+});
+
+// ─── DST regression — issue #1058 ────────────────────────────────────────────
+//
+// Before the fix, daysAgo() used setDate() which subtracts calendar days. When
+// the resulting window crossed a DST transition, the wall-clock representation
+// shifted by ±1 hour and getDaysSince()'s ms-floor returned N-1 instead of N.
+// We pin the system clock to the day after US spring-forward (2026-03-09) so
+// any 60d / 50d window unconditionally crosses the transition.
+
+describe("FreshnessIndicator — DST boundary (#1058)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-03-09T12:00:00Z"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("getDaysSince returns N exactly across spring-forward (60d window)", () => {
+    expect(getDaysSince(daysAgo(60))).toBe(60);
+  });
+
+  it("getDaysSince returns N exactly across spring-forward (50d window)", () => {
+    expect(getDaysSince(daysAgo(50))).toBe(50);
   });
 });
