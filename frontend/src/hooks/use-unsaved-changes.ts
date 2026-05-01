@@ -30,13 +30,21 @@ export interface UnsavedChangesResult {
  */
 export function useUnsavedChanges(isDirty: boolean): UnsavedChangesResult {
   const [pendingHref, setPendingHref] = useState<string | null>(null);
+  const [prevIsDirty, setPrevIsDirty] = useState(isDirty);
   const guardRef = useRef(false);
 
   // Keep ref in sync so event handlers always see the latest value.
   useEffect(() => {
     guardRef.current = isDirty;
-    if (!isDirty) setPendingHref(null);
   }, [isDirty]);
+
+  // Clear any pending navigation when the form transitions back to clean.
+  // Adjusts state during render rather than in an effect — see
+  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  if (isDirty !== prevIsDirty) {
+    setPrevIsDirty(isDirty);
+    if (!isDirty) setPendingHref(null);
+  }
 
   // ─── beforeunload: browser / tab close guard ────────────────────────
   useEffect(() => {
