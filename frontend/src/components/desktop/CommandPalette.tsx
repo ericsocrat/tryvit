@@ -189,28 +189,39 @@ export function CommandPalette({
     return items;
   }, [query, navItems, recentItems, t]);
 
-  // Clamp activeIndex during render so it never points past the filtered list.
-  // (Replaces a prior useEffect that called setActiveIndex(...) on shrink —
-  // forbidden by react-hooks/set-state-in-effect. Issue #1063.)
-  const safeActiveIndex =
-    filteredItems.length === 0
-      ? 0
-      : Math.min(activeIndex, filteredItems.length - 1);
+  // Reset query/activeIndex when the dialog transitions from closed to open.
+  // State adjustments happen during render (avoids react-hooks/set-state-in-effect);
+  // the imperative <dialog> open/close + focus stays in useEffect below.
+  // See https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) {
+      setQuery("");
+      setActiveIndex(0);
+    }
+  }
 
-  // Reset state when opening/closing
+  // Imperative <dialog> sync — DOM-only, no setState.
   useEffect(() => {
     const el = dialogRef.current;
     if (!el) return;
     if (open && !el.open) {
-      setQuery("");
-      setActiveIndex(0);
       el.showModal();
-      // Focus input after dialog opens
       requestAnimationFrame(() => inputRef.current?.focus());
     } else if (!open && el.open) {
       el.close();
     }
   }, [open]);
+
+  // Keep active index in bounds — derive during render.
+  const [prevFilteredLen, setPrevFilteredLen] = useState(filteredItems.length);
+  if (filteredItems.length !== prevFilteredLen) {
+    setPrevFilteredLen(filteredItems.length);
+    if (activeIndex >= filteredItems.length) {
+      setActiveIndex(Math.max(0, filteredItems.length - 1));
+    }
+  }
 
   // Scroll active item into view
   useEffect(() => {
@@ -218,7 +229,7 @@ export function CommandPalette({
     if (!list) return;
     const activeEl = list.querySelector("[data-active='true']");
     activeEl?.scrollIntoView({ block: "nearest" });
-  }, [safeActiveIndex]);
+  }, [activeIndex]);
 
   // Handle native dialog cancel (Escape)
   const handleCancel = useCallback(() => {
@@ -255,13 +266,13 @@ export function CommandPalette({
           break;
         case "Enter":
           e.preventDefault();
-          if (filteredItems[safeActiveIndex]) {
-            selectItem(filteredItems[safeActiveIndex]);
+          if (filteredItems[activeIndex]) {
+            selectItem(filteredItems[activeIndex]);
           }
           break;
       }
     },
-    [filteredItems, safeActiveIndex, selectItem],
+    [filteredItems, activeIndex, selectItem],
   );
 
   // Click on backdrop closes
@@ -340,7 +351,7 @@ export function CommandPalette({
 
         {filteredItems.map((item, index) => {
           const sectionLabel = getSectionLabel(item, index);
-          const isActive = index === safeActiveIndex;
+          const isActive = index === activeIndex;
 
           return (
             <div key={item.id}>
