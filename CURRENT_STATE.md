@@ -196,7 +196,7 @@ End-to-end: reconcile → tighten detector → enforce in CI.
 | ------------ | ------ | --------------------------------------------------------------------- |
 | pr-gate      | ✅      | Typecheck, lint, unit tests, build, Playwright smoke                  |
 | main-gate    | ✅      | All passing                                                           |
-| qa.yml       | ✅      | 759/759 checks passing (48 suites)                                    |
+| qa.yml       | ✅      | 776/776 checks passing (49 suites)                                    |
 | deploy.yml   | ⚠️      | 209/227 migrations on production — 18 pending deploy (epic #920)      |
 | dep-audit    | ✅      | 0 high/critical vulnerabilities                                       |
 | python-lint  | ✅      | 0 ruff errors                                                         |
@@ -268,8 +268,8 @@ These are documented follow-ups, not active work items. Address opportunisticall
 
 - **Products (local DB):** 2,602 active (1,380 PL + 1,222 DE across 21 active + 1 deactivated category)
 - **Deprecated products:** 58
-- **QA checks:** 759 total (48 suites) — view_consistency +3 checks for cross-country analytics views
-- **Negative tests:** 23/23 caught
+- **QA checks:** 776 total (49 suites) — view_consistency +3 checks for cross-country analytics views
+- **Negative tests:** 20/20 caught
 - **EAN coverage:** 2,261/2,264 with EAN (99.9%) — local DB
 - **Ingredient refs:** 3,100 (local, after orphan cleanup from 6,279)
 - **Product-ingredient links:** 14,166 (restored from 0)

@@ -357,7 +357,7 @@ tryvit/
 │   ├── pr-gate.yml                  # Lint → Typecheck → Build → Playwright E2E
 │   ├── pr-title-lint.yml            # PR title conventional-commit validation (all PRs)
 │   ├── main-gate.yml                # Build → Unit tests + coverage → SonarCloud
-│   ├── qa.yml                       # Schema → Pipelines → QA (759) → Sanity
+│   ├── qa.yml                       # Schema → Pipelines → QA (776) → Sanity
 │   ├── nightly.yml                  # Full Playwright (all projects) + Data Integrity Audit
 │   ├── deploy.yml                   # Manual trigger → Schema diff → Approval → db push
 │   ├── sync-cloud-db.yml            # Remote DB sync
@@ -1021,7 +1021,7 @@ At the end of every PR-like change, include a **Verification** section:
 | Function Security Audit   | `QA__function_security_audit.sql`   |      6 | Yes       |
 | Recipe Integrity          | `QA__recipe_integrity.sql`          |      6 | Yes       |
 | Scoring Band Distribution | `QA__scoring_distribution.sql`      |     12 | No        |
-| **Negative Validation**   | `TEST__negative_checks.sql`         |     23 | Yes       |
+| **Negative Validation**   | `TEST__negative_checks.sql`         |     20 | Yes       |
 
 **Run:** `.\RUN_QA.ps1` — expects **776/776 checks passing** (+ EAN validation).
 **Run:** `.\RUN_NEGATIVE_TESTS.ps1` — expects **20/20 caught**.
@@ -1181,7 +1181,7 @@ security(rls): lock down product_submissions to authenticated users
 
 **Pre-commit checklist:**
 
-1. `.\RUN_QA.ps1` — 759/759 pass
+1. `.\RUN_QA.ps1` — 776/776 pass
 2. No credentials in committed files
 3. No modifications to existing `supabase/migrations/`
 4. Docs updated if schema or methodology changed
@@ -1555,7 +1555,7 @@ Before a feature is considered complete, verify against all CI gates:
 | Gate                | Command                               | Expected                        |
 | ------------------- | ------------------------------------- | ------------------------------- |
 | Pipeline structure  | `python check_pipeline_structure.py`  | 0 errors                        |
-| DB QA               | `.\RUN_QA.ps1`                        | All checks pass (currently 759) |
+| DB QA               | `.\RUN_QA.ps1`                        | All checks pass (currently 776) |
 | Negative tests      | `.\RUN_NEGATIVE_TESTS.ps1`            | All caught (currently 23)       |
 | pgTAP tests         | `supabase test db`                    | All pass                        |
 | TypeScript          | `cd frontend && npx tsc --noEmit`     | 0 errors                        |
@@ -1701,7 +1701,7 @@ Produce **exactly this structure** — fill every section with real data:
 | Metric                    | Current Value   | Target / Baseline       | Status   |
 | ------------------------- | --------------- | ----------------------- | -------- |
 | Active products (PL+DE)   | ~X,XXX          | ≥2,602                  | ✅/⚠️/❌ |
-| QA checks passing         | XXX/759         | 759/759                 | ✅/⚠️/❌ |
+| QA checks passing         | XXX/776         | 776/776                 | ✅/⚠️/❌ |
 | Negative tests passing    | 23/23           | 23/23                   | ✅/⚠️/❌ |
 | Migrations committed      | XXX             | ≥227                    | ✅/⚠️/❌ |
 | Vitest coverage (lines)   | XX%             | ≥88%                    | ✅/⚠️/❌ |
@@ -2517,7 +2517,7 @@ After implementation, update ALL of these that apply (per §18.1):
 ```powershell
 supabase test db                  → XX/XX pgTAP tests pass
 .\RUN_QA.ps1                      → 776/776 checks pass (0 failures)
-.\RUN_NEGATIVE_TESTS.ps1          → 23/23 caught
+.\RUN_NEGATIVE_TESTS.ps1          → 20/20 caught
 npx tsc --noEmit                  → 0 errors
 npx vitest run                    → XXX/XXX tests pass
 npx vitest run --coverage         → Lines: XX% (baseline: 88%, delta: +X.X%)

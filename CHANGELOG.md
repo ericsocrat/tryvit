@@ -13,6 +13,12 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Documentation
+
+- Reconcile QA suite/check count drift in `CURRENT_STATE.md` and
+  `copilot-instructions.md` to match `RUN_QA.ps1` registry ground truth:
+  **49 suites / 776 checks / 20 negative tests** (#1061)
+
 ### CI
 
 - Wire `scripts/check_doc_drift.py` (90-day freshness threshold) into
