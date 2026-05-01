@@ -15,7 +15,7 @@ import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
 import { useLanguageStore } from "@/stores/language-store";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function NutritionSettingsPage() {
   const supabase = createClient();
@@ -42,8 +42,12 @@ export default function NutritionSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
 
-  // Populate from fetched prefs
-  useEffect(() => {
+  // Populate from fetched prefs — adjust state during render when the
+  // upstream query result changes (avoids react-hooks/set-state-in-effect).
+  // See https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
+  const [prevPrefs, setPrevPrefs] = useState(prefs);
+  if (prefs !== prevPrefs) {
+    setPrevPrefs(prefs);
     if (prefs) {
       setDiet(prefs.diet_preference ?? "none");
       setAllergens(prefs.avoid_allergens ?? []);
@@ -51,7 +55,7 @@ export default function NutritionSettingsPage() {
       setStrictAllergen(prefs.strict_allergen);
       setTreatMayContain(prefs.treat_may_contain_as_unsafe);
     }
-  }, [prefs]);
+  }
 
   function markDirty() {
     setDirty(true);
