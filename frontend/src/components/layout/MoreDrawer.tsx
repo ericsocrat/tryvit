@@ -92,16 +92,25 @@ export function MoreDrawer({ open, onClose }: Readonly<MoreDrawerProps>) {
   const isAdmin = useAdminStore((s) => s.isAdmin);
   const drawerRef = useRef<HTMLDialogElement>(null);
   const [animating, setAnimating] = useState(false);
+  const [prevOpen, setPrevOpen] = useState(open);
   const touchStartY = useRef(0);
   const touchDeltaY = useRef(0);
 
-  // Track mount animation
+  // Reset animation immediately when the drawer closes — done during render
+  // (https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)
+  // rather than in an effect to satisfy react-hooks/set-state-in-effect.
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (!open) setAnimating(false);
+  }
+
+  // Defer enabling the animation class to the next frame so CSS transitions
+  // run from the closed state. setState inside requestAnimationFrame is
+  // asynchronous, so it does not violate set-state-in-effect.
   useEffect(() => {
-    if (open) {
-      requestAnimationFrame(() => setAnimating(true));
-    } else {
-      setAnimating(false);
-    }
+    if (!open) return;
+    const id = requestAnimationFrame(() => setAnimating(true));
+    return () => cancelAnimationFrame(id);
   }, [open]);
 
   // Close on Escape
