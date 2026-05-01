@@ -66,7 +66,7 @@ src/
 │   ├── types.ts              # TypeScript interfaces for API responses
 │   └── constants.ts          # Countries, diet options, allergen tags
 ├── styles/globals.css        # Tailwind base + utility classes
-└── middleware.ts             # Auth-only gate (no onboarding logic here)
+└── proxy.ts                  # Auth-only gate (no onboarding logic here)
 ```
 
 ## Architecture Decisions

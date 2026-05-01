@@ -13,6 +13,15 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Rename `frontend/src/middleware.ts` → `frontend/src/proxy.ts` and
+  exported function `middleware()` → `proxy()` per Next.js 16 deprecation.
+  Eliminates the `middleware.ts` deprecation warning at build time.
+  Behavior is identical; matcher unchanged. The unrelated Supabase SSR
+  helper at `frontend/src/lib/supabase/middleware.ts` is **not** affected
+  (it is a separate `@supabase/ssr` client factory). (#1062)
+
 ### CI
 
 - Wire `scripts/check_doc_drift.py` (90-day freshness threshold) into
