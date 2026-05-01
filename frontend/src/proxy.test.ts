@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { middleware } from "./middleware";
+import { proxy } from "./proxy";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -42,54 +42,54 @@ function createRequest(pathname: string, origin = "http://localhost:3000") {
   return new NextRequest(new URL(pathname, origin));
 }
 
-describe("middleware", () => {
+describe("proxy", () => {
   describe("public paths", () => {
     it("allows unauthenticated access to /", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await middleware(createRequest("/"));
+      const response = await proxy(createRequest("/"));
       // Should NOT redirect (status 200)
       expect(response.status).not.toBe(307);
     });
 
     it("allows unauthenticated access to /contact", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await middleware(createRequest("/contact"));
+      const response = await proxy(createRequest("/contact"));
       expect(response.status).not.toBe(307);
     });
 
     it("allows unauthenticated access to /privacy", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await middleware(createRequest("/privacy"));
+      const response = await proxy(createRequest("/privacy"));
       expect(response.status).not.toBe(307);
     });
 
     it("allows unauthenticated access to /terms", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await middleware(createRequest("/terms"));
+      const response = await proxy(createRequest("/terms"));
       expect(response.status).not.toBe(307);
     });
 
     it("allows unauthenticated access to /auth/login", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await middleware(createRequest("/auth/login"));
+      const response = await proxy(createRequest("/auth/login"));
       expect(response.status).not.toBe(307);
     });
 
     it("allows unauthenticated access to /auth/signup", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await middleware(createRequest("/auth/signup"));
+      const response = await proxy(createRequest("/auth/signup"));
       expect(response.status).not.toBe(307);
     });
 
     it("allows unauthenticated access to /learn", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await middleware(createRequest("/learn"));
+      const response = await proxy(createRequest("/learn"));
       expect(response.status).not.toBe(307);
     });
 
     it("allows unauthenticated access to /learn/nutri-score", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await middleware(createRequest("/learn/nutri-score"));
+      const response = await proxy(createRequest("/learn/nutri-score"));
       expect(response.status).not.toBe(307);
     });
   });
@@ -99,7 +99,7 @@ describe("middleware", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1" } },
       });
-      const response = await middleware(createRequest("/auth/login"));
+      const response = await proxy(createRequest("/auth/login"));
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe(
         "http://localhost:3000/app/search",
@@ -110,7 +110,7 @@ describe("middleware", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1" } },
       });
-      const response = await middleware(createRequest("/auth/signup"));
+      const response = await proxy(createRequest("/auth/signup"));
       expect(response.status).toBe(307);
       expect(response.headers.get("location")).toBe(
         "http://localhost:3000/app/search",
@@ -121,7 +121,7 @@ describe("middleware", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1" } },
       });
-      const response = await middleware(createRequest("/"));
+      const response = await proxy(createRequest("/"));
       expect(response.status).not.toBe(307);
     });
   });
@@ -129,7 +129,7 @@ describe("middleware", () => {
   describe("protected routes", () => {
     it("redirects unauthenticated user from /app/search to login", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await middleware(createRequest("/app/search"));
+      const response = await proxy(createRequest("/app/search"));
       expect(response.status).toBe(307);
       const location = response.headers.get("location") ?? "";
       expect(location).toContain("/auth/login");
@@ -138,7 +138,7 @@ describe("middleware", () => {
 
     it("redirects unauthenticated user from /app/settings to login", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await middleware(createRequest("/app/settings"));
+      const response = await proxy(createRequest("/app/settings"));
       expect(response.status).toBe(307);
       const location = response.headers.get("location") ?? "";
       expect(location).toContain("/auth/login");
@@ -146,7 +146,7 @@ describe("middleware", () => {
 
     it("preserves query string in redirect parameter", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await middleware(
+      const response = await proxy(
         createRequest("/app/search?q=test&page=2"),
       );
       expect(response.status).toBe(307);
@@ -160,7 +160,7 @@ describe("middleware", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1" } },
       });
-      const response = await middleware(createRequest("/app/search"));
+      const response = await proxy(createRequest("/app/search"));
       expect(response.status).not.toBe(307);
     });
   });
@@ -169,7 +169,7 @@ describe("middleware", () => {
 
   describe("rate limiting — API routes", () => {
     it("returns 200 with rate limit headers when under limit", async () => {
-      const response = await middleware(createRequest("/api/health"));
+      const response = await proxy(createRequest("/api/health"));
       expect(response.status).toBe(200);
       expect(response.headers.get("X-RateLimit-Limit")).toBe("60");
       expect(response.headers.get("X-RateLimit-Remaining")).toBe("59");
@@ -184,7 +184,7 @@ describe("middleware", () => {
         reset: Date.now() + 30_000,
       });
 
-      const response = await middleware(createRequest("/api/health"));
+      const response = await proxy(createRequest("/api/health"));
       expect(response.status).toBe(429);
 
       const body = await response.json();
@@ -195,7 +195,7 @@ describe("middleware", () => {
     });
 
     it("does not call Supabase auth for API routes", async () => {
-      await middleware(createRequest("/api/health"));
+      await proxy(createRequest("/api/health"));
       expect(mockGetUser).not.toHaveBeenCalled();
     });
 
@@ -207,13 +207,13 @@ describe("middleware", () => {
         reset: Date.now() + 60_000,
       });
 
-      const response = await middleware(createRequest("/api/health"));
+      const response = await proxy(createRequest("/api/health"));
       expect(response.status).toBe(429);
       expect(response.headers.get("x-request-id")).toBeTruthy();
     });
 
     it("passes through with rate limit headers on success", async () => {
-      const response = await middleware(createRequest("/api/some-endpoint"));
+      const response = await proxy(createRequest("/api/some-endpoint"));
       expect(response.status).toBe(200);
       expect(response.headers.get("X-RateLimit-Limit")).toBeTruthy();
     });
@@ -236,7 +236,7 @@ describe("middleware", () => {
           headers: { "x-rate-limit-bypass": "test-bypass-secret" },
         },
       );
-      const response = await middleware(req);
+      const response = await proxy(req);
       // Should NOT be 429 because bypass token is valid
       expect(response.status).toBe(200);
 
@@ -260,7 +260,7 @@ describe("middleware", () => {
           headers: { "x-rate-limit-bypass": "wrong-secret" },
         },
       );
-      const response = await middleware(req);
+      const response = await proxy(req);
       expect(response.status).toBe(429);
 
       process.env.RATE_LIMIT_BYPASS_TOKEN = originalEnv;
@@ -274,7 +274,7 @@ describe("middleware", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1", email: "user@example.com" } },
       });
-      const response = await middleware(
+      const response = await proxy(
         createRequest("/app/admin/submissions"),
       );
       expect(response.status).toBe(303);
@@ -286,7 +286,7 @@ describe("middleware", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1", email: "user@example.com" } },
       });
-      const response = await middleware(
+      const response = await proxy(
         createRequest("/app/admin/monitoring"),
       );
       expect(response.status).toBe(303);
@@ -301,7 +301,7 @@ describe("middleware", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1", email: "admin@example.com" } },
       });
-      const response = await middleware(
+      const response = await proxy(
         createRequest("/app/admin/submissions"),
       );
       expect(response.status).toBe(303);
@@ -318,7 +318,7 @@ describe("middleware", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1", email: "admin@example.com" } },
       });
-      const response = await middleware(
+      const response = await proxy(
         createRequest("/app/admin/submissions"),
       );
       expect(response.status).not.toBe(303);
@@ -334,7 +334,7 @@ describe("middleware", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1", email: "admin@example.com" } },
       });
-      const response = await middleware(
+      const response = await proxy(
         createRequest("/app/admin/monitoring"),
       );
       expect(response.status).not.toBe(303);
@@ -349,7 +349,7 @@ describe("middleware", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1" } },
       });
-      const response = await middleware(
+      const response = await proxy(
         createRequest("/app/admin/submissions"),
       );
       expect(response.status).toBe(303);
@@ -361,7 +361,7 @@ describe("middleware", () => {
 
     it("redirects unauthenticated user from admin route to login", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await middleware(
+      const response = await proxy(
         createRequest("/app/admin/submissions"),
       );
       expect(response.status).toBe(307);
@@ -373,7 +373,7 @@ describe("middleware", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1", email: "user@example.com" } },
       });
-      const response = await middleware(
+      const response = await proxy(
         createRequest("/app/admin/submissions"),
       );
       expect(response.status).toBe(303);
@@ -387,12 +387,12 @@ describe("middleware", () => {
   describe("request ID", () => {
     it("generates x-request-id for page requests", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await middleware(createRequest("/"));
+      const response = await proxy(createRequest("/"));
       expect(response.headers.get("x-request-id")).toBeTruthy();
     });
 
     it("generates x-request-id for API requests", async () => {
-      const response = await middleware(createRequest("/api/health"));
+      const response = await proxy(createRequest("/api/health"));
       expect(response.headers.get("x-request-id")).toBeTruthy();
     });
 
@@ -401,7 +401,7 @@ describe("middleware", () => {
       const req = new NextRequest(new URL("/", "http://localhost:3000"), {
         headers: { "x-request-id": "existing-id-123" },
       });
-      const response = await middleware(req);
+      const response = await proxy(req);
       expect(response.headers.get("x-request-id")).toBe("existing-id-123");
     });
   });
