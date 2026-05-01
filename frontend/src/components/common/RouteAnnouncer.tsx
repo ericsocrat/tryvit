@@ -9,7 +9,7 @@
  */
 
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 /** Map pathname segments to human-readable page names. */
 function pageTitle(pathname: string): string {
@@ -50,18 +50,19 @@ function pageTitle(pathname: string): string {
 export function RouteAnnouncer() {
   const pathname = usePathname();
   const [announcement, setAnnouncement] = useState("");
-  const isFirstRender = useRef(true);
+  // Track the last announced pathname. Initialised to the current pathname so
+  // the very first render produces no announcement (the browser already
+  // announces initial page load).
+  const [lastPathname, setLastPathname] = useState(pathname);
 
-  useEffect(() => {
-    // Don't announce the initial page load — the browser already handles that.
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-
-    const title = pageTitle(pathname);
-    setAnnouncement(`Navigated to ${title}`);
-  }, [pathname]);
+  // Adjusting state during render — React's recommended pattern for reacting
+  // to prop changes without an effect. React schedules an immediate re-render
+  // without committing the discarded one. Compatible with React Compiler
+  // (no `set-state-in-effect` violation).
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname);
+    setAnnouncement(`Navigated to ${pageTitle(pathname)}`);
+  }
 
   return (
     <div
