@@ -33,6 +33,12 @@ Adheres to [Semantic Versioning](https://semver.org/).
   helper at `frontend/src/lib/supabase/middleware.ts` is **not** affected
   (it is a separate `@supabase/ssr` client factory). (#1062)
 
+### Documentation
+
+- Reconcile QA suite/check count drift in `CURRENT_STATE.md` and
+  `copilot-instructions.md` to match `RUN_QA.ps1` registry ground truth:
+  **49 suites / 776 checks / 20 negative tests** (#1061)
+
 ### CI
 
 - Wire `scripts/check_doc_drift.py` (90-day freshness threshold) into
