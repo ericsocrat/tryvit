@@ -1,6 +1,6 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-04-21 by GitHub Copilot (Dependabot major-bump drain — 9 PRs)
+> **Last updated:** 2026-05-01 by GitHub Copilot (autonomous quality drain — 7 PRs since #1054)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
@@ -8,10 +8,24 @@
 ## Active Branch & PR
 
 - **Branch:** `main`
-- **Latest SHA (main):** `b25fb4aa` (chore(deps): remove unused @eslint/eslintrc and @eslint/js devDependencies (#1053))
+- **Latest SHA (main):** `1eca1509` (fix(frontend): resolve React Compiler violations (Phase 1, #1063) (#1067))
 - **Open PRs:** 0
-- **Open issues:** 0
+- **Open issues:** 2 (#1059 production deploy — blocked on user authorization; #1060 npm audit moderates close-as-monitor — blocked on user authorization)
 - **Mode:** 🟢 Clean — no active work
+
+## Recently Shipped (Autonomous Quality Drain — 7 PRs)
+
+Sequential merge of seven small-but-load-bearing PRs that closed lint debt, hardened tests, and split the React Compiler cleanup into a safe Phase 1 (errors fixed, 4 of 5 rules promoted to default error) with Phase 2 (`set-state-in-effect`, 19 violations across 14 files) explicitly deferred. Each violation is a sync-prop-to-state anti-pattern requiring per-component architectural review (key-based reset, lift state up, derive during render, or uncontrolled refs) and was deemed unsafe to bulk-fix.
+
+| PR    | Change                                                                              |
+| ----- | ----------------------------------------------------------------------------------- |
+| #1067 | `fix(frontend): resolve React Compiler violations (Phase 1, #1063)` — 4 rules → error |
+| #1066 | `chore(framework): rename middleware.ts to proxy.ts (Next.js 16 deprecation, #1062)` |
+| #1065 | `docs: reconcile QA suite/check counts to RUN_QA.ps1 ground truth (#1061)`          |
+| #1064 | `fix(test): make FreshnessIndicator tests DST-safe (#1058)`                         |
+| #1057 | `refactor(hooks): use useSyncExternalStore in useReducedMotion`                     |
+| #1056 | `chore(lint): replace 3 non-null assertions with safe local-variable pattern`       |
+| #1055 | `chore(lint): silence 2 spurious a11y warnings with justification comments`         |
 
 ## Recently Shipped (Next.js 16 Dependency Cleanup)
 
@@ -249,7 +263,7 @@ Epic #920 fully resolved and closed — all 12/12 issues shipped.
 
 These are documented follow-ups, not active work items. Address opportunistically or when opening next sprint.
 
-1. **React Compiler lint warnings cleanup** — Phase 1 done in PR #1063 (resolved 6 violations: 1× `static-components`, 1× `purity`, 1× `preserve-manual-memoization`, 3× `refs`; promoted 4 of 5 rules from `warn` to default `error`). Phase 2: 17 remaining `set-state-in-effect` violations still at `warn` — dedicated cleanup pass when convenient, no urgency.
+1. **React Compiler lint warnings cleanup** — Phase 1 done in PR #1067 (closes #1063 — resolved 6 violations: 1× `static-components`, 1× `purity`, 1× `preserve-manual-memoization`, 3× `refs`; promoted 4 of 5 rules from `warn` to default `error`). Phase 2: 19 remaining `set-state-in-effect` violations across 14 files still at `warn` — each requires per-component architectural review (key-based reset, lift state up, derive during render, or uncontrolled refs); recommend per-file PRs rather than bulk fix.
 2. ~~**Remove `@eslint/eslintrc` and `@eslint/js` from devDependencies**~~ — ✅ Done in PR #1053 (2026-04-30). Restored Linux-only `@emnapi/*` nested lockfile entries to fix cross-platform CI break.
 3. ~~**`middleware.ts` → `proxy.ts` migration**~~ — ✅ Done in #1062. File renamed via `git mv`; exported function renamed `middleware` → `proxy`; deprecation warning eliminated.
 
