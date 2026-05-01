@@ -104,15 +104,16 @@ export default function SearchPage() {
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [filters, setFilters] = useState<SearchFilters>({});
   const [page, setPage] = useState(1);
-  const [showAvoided, setShowAvoided] = useState(false);
+  const [showAvoided, setShowAvoided] = useState(getShowAvoided);
   const [showAutocomplete, setShowAutocomplete] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [autocompleteActiveId, setAutocompleteActiveId] = useState<
     string | undefined
   >(undefined);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [recentSearches, setRecentSearches] =
+    useState<string[]>(getRecentSearches);
+  const [viewMode, setViewMode] = useState<ViewMode>(getViewMode);
 
   // Debounced query for instant as-you-type search (300ms delay)
   const debouncedQuery = useDebounce(query, 300);
@@ -120,27 +121,28 @@ export default function SearchPage() {
   // The active search query (submitted or debounced)
   const activeQuery = submittedQuery || undefined;
 
-  // Load localStorage prefs on mount
-  useEffect(() => {
-    setRecentSearches(getRecentSearches());
-    setShowAvoided(getShowAvoided());
-    setViewMode(getViewMode());
-  }, []);
-
-  // Auto-trigger search as the user types (instant search)
-  useEffect(() => {
+  // Auto-trigger search as the user types (instant search) — render-phase
+  // tracker (#1063): adjust submittedQuery during render when debouncedQuery
+  // or filters change.
+  const submitKey = `${debouncedQuery}|${JSON.stringify(filters)}`;
+  const [prevSubmitKey, setPrevSubmitKey] = useState(submitKey);
+  if (submitKey !== prevSubmitKey) {
+    setPrevSubmitKey(submitKey);
     const trimmed = debouncedQuery.trim();
     if (trimmed.length >= 2) {
       setSubmittedQuery(trimmed);
     } else if (trimmed.length === 0 && !hasActiveFilters(filters)) {
       setSubmittedQuery("");
     }
-  }, [debouncedQuery, filters]);
+  }
 
-  // Reset page when filters or query change
-  useEffect(() => {
+  // Reset page when filters or query change — render-phase tracker (#1063).
+  const pageResetKey = `${submittedQuery}|${JSON.stringify(filters)}`;
+  const [prevPageResetKey, setPrevPageResetKey] = useState(pageResetKey);
+  if (pageResetKey !== prevPageResetKey) {
+    setPrevPageResetKey(pageResetKey);
     setPage(1);
-  }, [submittedQuery, filters]);
+  }
 
   // Search query
   const { data, isLoading, isFetching, error } = useQuery({
