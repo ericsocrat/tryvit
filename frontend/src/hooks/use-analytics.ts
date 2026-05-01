@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useEffect, useState } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { trackEvent } from "@/lib/api";
 import { IS_QA_MODE } from "@/lib/qa-mode";
@@ -44,11 +44,14 @@ function getOrCreateSessionId(): string {
 export function useAnalytics() {
   const supabaseRef = useRef(createClient());
   const sessionIdRef = useRef<string>("");
-  const [deviceType, setDeviceType] = useState<DeviceType>("desktop");
+  // Stored as a ref (not state): device type is read inside the fire-and-forget
+  // track() callback, never rendered. Using a ref keeps the callback stable
+  // across renders and avoids react-hooks/set-state-in-effect.
+  const deviceTypeRef = useRef<DeviceType>("desktop");
 
   useEffect(() => {
     sessionIdRef.current = getOrCreateSessionId();
-    setDeviceType(detectDeviceType());
+    deviceTypeRef.current = detectDeviceType();
   }, []);
 
   const track = useCallback(
@@ -60,12 +63,12 @@ export function useAnalytics() {
         eventName,
         eventData,
         sessionId: sessionIdRef.current,
-        deviceType,
+        deviceType: deviceTypeRef.current,
       }).catch(() => {
         // Silently swallow — analytics must never break the app
       });
     },
-    [deviceType],
+    [],
   );
 
   return { track };
