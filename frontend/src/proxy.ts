@@ -1,4 +1,8 @@
-// ─── Middleware: auth enforcement + rate limiting ────────────────────────────
+// ─── Proxy: auth enforcement + rate limiting ─────────────────────────────────
+// Renamed from `middleware.ts` in Next.js 16 (the `middleware.ts` filename and
+// `middleware` function name were deprecated; `proxy.ts` + `proxy` is the new
+// convention). Behavior is identical to the prior middleware.
+//
 // Auth: checks if user is logged in. Does NOT check onboarding_complete.
 //       Onboarding redirect happens in /app/layout.tsx (server component).
 //       Public routes: /, /contact, /privacy, /terms, /auth/*
@@ -118,9 +122,9 @@ async function applyRateLimit(
   return response;
 }
 
-// ─── Main Middleware ─────────────────────────────────────────────────────────
+// ─── Main Proxy ──────────────────────────────────────────────────────────────
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const response = NextResponse.next({ request });
 
   // ── Request ID correlation (#183) ─────────────────────────────────────────

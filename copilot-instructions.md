@@ -295,7 +295,7 @@ tryvit/
 ├── fetch_off_category.py            # OFF API → pipeline SQL generator (standalone)
 ├── frontend/
 │   ├── src/
-│   │   ├── middleware.ts                # Next.js middleware (auth redirects)
+│   │   ├── proxy.ts                 # Next.js proxy (auth redirects, was middleware.ts pre-Next.js 16)
 │   │   ├── lib/                     # Shared utilities, API clients, types
 │   │   │   ├── supabase/            # Supabase client (client.ts, server.ts, middleware.ts)
 │   │   │   ├── *.ts                 # Source modules (api, rpc, types, constants, validation, query-keys)

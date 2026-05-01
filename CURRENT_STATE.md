@@ -251,7 +251,7 @@ These are documented follow-ups, not active work items. Address opportunisticall
 
 1. **React Compiler lint warnings cleanup** — 20 locations across 5 rules (`set-state-in-effect` ×17, `preserve-manual-memoization` ×1, `purity` ×1, `refs` ×1, `static-components` ×1). Currently downgraded to `"warn"` in `eslint.config.mjs`. Dedicated cleanup pass when convenient — no urgency.
 2. ~~**Remove `@eslint/eslintrc` and `@eslint/js` from devDependencies**~~ — ✅ Done in PR #1053 (2026-04-30). Restored Linux-only `@emnapi/*` nested lockfile entries to fix cross-platform CI break.
-3. **`middleware.ts` → `proxy.ts` migration** — Next.js 16 deprecated the `middleware.ts` convention in favor of `proxy.ts`. Currently backward-compatible (warning only). Address when Next.js drops support or in next major framework review.
+3. ~~**`middleware.ts` → `proxy.ts` migration**~~ — ✅ Done in #1062. File renamed via `git mv`; exported function renamed `middleware` → `proxy`; deprecation warning eliminated.
 
 ## Staging Environment
 
