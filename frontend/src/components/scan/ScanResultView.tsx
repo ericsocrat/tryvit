@@ -31,7 +31,13 @@ export function FadeSlideIn({
 }: Readonly<{ children: React.ReactNode; delay?: number }>) {
   const prefersReduced = useReducedMotion();
   const [visible, setVisible] = useState(false);
-  useEffect(() => { setVisible(true); }, []);
+  // setState inside requestAnimationFrame is asynchronous, so it does not
+  // violate react-hooks/set-state-in-effect while still triggering the
+  // mount-time fade-in transition.
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
 
   if (prefersReduced) return <>{children}</>;
 
@@ -213,8 +219,10 @@ export function ScanFoundView({
   // Animated score count-up
   useEffect(() => {
     if (prefersReduced || tryVitScore === 0) {
-      setDisplayScore(tryVitScore);
-      return;
+      // Defer to next frame so the setState is asynchronous (see
+      // react-hooks/set-state-in-effect). Visual outcome is unchanged.
+      const id = requestAnimationFrame(() => setDisplayScore(tryVitScore));
+      return () => cancelAnimationFrame(id);
     }
     let frame: number;
     const start = performance.now();
