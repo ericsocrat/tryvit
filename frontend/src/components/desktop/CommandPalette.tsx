@@ -189,6 +189,14 @@ export function CommandPalette({
     return items;
   }, [query, navItems, recentItems, t]);
 
+  // Clamp activeIndex during render so it never points past the filtered list.
+  // (Replaces a prior useEffect that called setActiveIndex(...) on shrink —
+  // forbidden by react-hooks/set-state-in-effect. Issue #1063.)
+  const safeActiveIndex =
+    filteredItems.length === 0
+      ? 0
+      : Math.min(activeIndex, filteredItems.length - 1);
+
   // Reset state when opening/closing
   useEffect(() => {
     const el = dialogRef.current;
@@ -204,20 +212,13 @@ export function CommandPalette({
     }
   }, [open]);
 
-  // Keep active index in bounds
-  useEffect(() => {
-    if (activeIndex >= filteredItems.length) {
-      setActiveIndex(Math.max(0, filteredItems.length - 1));
-    }
-  }, [filteredItems.length, activeIndex]);
-
   // Scroll active item into view
   useEffect(() => {
     const list = listRef.current;
     if (!list) return;
     const activeEl = list.querySelector("[data-active='true']");
     activeEl?.scrollIntoView({ block: "nearest" });
-  }, [activeIndex]);
+  }, [safeActiveIndex]);
 
   // Handle native dialog cancel (Escape)
   const handleCancel = useCallback(() => {
@@ -254,13 +255,13 @@ export function CommandPalette({
           break;
         case "Enter":
           e.preventDefault();
-          if (filteredItems[activeIndex]) {
-            selectItem(filteredItems[activeIndex]);
+          if (filteredItems[safeActiveIndex]) {
+            selectItem(filteredItems[safeActiveIndex]);
           }
           break;
       }
     },
-    [filteredItems, activeIndex, selectItem],
+    [filteredItems, safeActiveIndex, selectItem],
   );
 
   // Click on backdrop closes
@@ -339,7 +340,7 @@ export function CommandPalette({
 
         {filteredItems.map((item, index) => {
           const sectionLabel = getSectionLabel(item, index);
-          const isActive = index === activeIndex;
+          const isActive = index === safeActiveIndex;
 
           return (
             <div key={item.id}>
