@@ -31,7 +31,13 @@ export function FadeSlideIn({
 }: Readonly<{ children: React.ReactNode; delay?: number }>) {
   const prefersReduced = useReducedMotion();
   const [visible, setVisible] = useState(false);
-  useEffect(() => { setVisible(true); }, []);
+  useEffect(() => {
+    // Defer setState to next frame so the browser paints the initial
+    // opacity:0 state before the transition runs. Async callback satisfies
+    // react-hooks/set-state-in-effect.
+    const raf = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   if (prefersReduced) return <>{children}</>;
 
@@ -208,25 +214,26 @@ export function ScanFoundView({
   const prefersReduced = useReducedMotion();
   const band = getScoreBand(product.unhealthiness_score);
   const tryVitScore = toTryVitScore(product.unhealthiness_score);
-  const [displayScore, setDisplayScore] = useState(0);
+  const [animatedScore, setAnimatedScore] = useState(0);
+  // Derive: when motion is reduced or score is zero, skip animation entirely
+  // and render the final value. Otherwise show the rAF-driven count-up.
+  const showImmediate = prefersReduced || tryVitScore === 0;
+  const displayScore = showImmediate ? tryVitScore : animatedScore;
 
-  // Animated score count-up
+  // Animated score count-up (rAF-only setState, no sync setState in effect)
   useEffect(() => {
-    if (prefersReduced || tryVitScore === 0) {
-      setDisplayScore(tryVitScore);
-      return;
-    }
+    if (showImmediate) return;
     let frame: number;
     const start = performance.now();
     const duration = 600; // ms
     function tick(now: number) {
       const progress = Math.min((now - start) / duration, 1);
-      setDisplayScore(Math.round(progress * tryVitScore));
+      setAnimatedScore(Math.round(progress * tryVitScore));
       if (progress < 1) frame = requestAnimationFrame(tick);
     }
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [tryVitScore, prefersReduced]);
+  }, [tryVitScore, showImmediate]);
 
   return (
     <FadeSlideIn>
