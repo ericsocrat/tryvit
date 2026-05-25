@@ -145,7 +145,7 @@ export function SignupForm() {
           {t("auth.hasAccount")}{" "}
           <Link
             href="/auth/login"
-            className="font-medium text-brand hover:text-brand-hover"
+            className="rounded-sm font-semibold text-brand underline-offset-4 transition-colors hover:text-brand-hover hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
           >
             {t("auth.signIn")}
           </Link>
