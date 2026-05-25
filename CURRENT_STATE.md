@@ -1,6 +1,6 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-05-01 by GitHub Copilot (autonomous quality drain — 7 PRs since #1054)
+> **Last updated:** 2026-05-25 by GitHub Copilot (audit + Phase 2 React Compiler drain reconcile)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
@@ -8,24 +8,41 @@
 ## Active Branch & PR
 
 - **Branch:** `main`
-- **Latest SHA (main):** `1eca1509` (fix(frontend): resolve React Compiler violations (Phase 1, #1063) (#1067))
-- **Open PRs:** 0
-- **Open issues:** 2 (#1059 production deploy — blocked on user authorization; #1060 npm audit moderates close-as-monitor — blocked on user authorization)
-- **Mode:** 🟢 Clean — no active work
+- **Latest SHA (main):** `688de9e0` (fix(frontend): derive ScanResultView animation state (#1063) (#1106))
+- **Open PRs:** 2 — #1095 (Dependabot pip idna 3.11→3.15, awaiting auto-merge), #1076 (CommandPalette set-state-in-effect Phase 2 follow-up, needs rebase against #1104)
+- **Open issues:** 2 (#1059 production deploy — blocked on user authorization; #1060 npm audit moderates close-as-monitor — blocked on user authorization, now also tracks 1 HIGH `ws` GHSA-58qx-3vcg-4xpx via @lhci/cli dev-only)
+- **Mode:** 🟢 Clean — React Compiler Phase 2 mostly complete (5 violations drained); only Phase 2 tail (CommandPalette line-197 reset) and routine Dependabot remain.
+
+## Recently Shipped (Phase 2 React Compiler Drain + Dependabot — 10 PRs since 1eca1509)
+
+Five Phase-2 React Compiler `set-state-in-effect` violations converted to `useSyncExternalStore` or render-time derivation (per ADR pattern). Plus routine Dependabot bumps. Branch `chore/react-compiler-command-palette` (#1076) addresses the explicitly-deferred line-197 reset in CommandPalette but predates #1104's clamped-index refactor of the same file — needs rebase.
+
+| PR    | Commit     | Change                                                                                  |
+| ----- | ---------- | --------------------------------------------------------------------------------------- |
+| #1106 | `688de9e0` | `fix(frontend): derive ScanResultView animation state (#1063)`                          |
+| #1080 | `3e65df36` | `ci(deps): bump github/codeql-action`                                                   |
+| #1071 | `72ba423f` | `fix(frontend): use useSyncExternalStore for deviceType in useAnalytics (#1063)`        |
+| #1105 | `4d3cb97e` | `fix(frontend): derive offLoading/offUrl from fetched state in ProductHeroImage (#1063)`|
+| #1104 | `8898cb84` | `fix(frontend): derive clamped activeIndex in CommandPalette (#1063)`                   |
+| #1103 | `d1c1c46d` | `fix(frontend): use useSyncExternalStore for install-prompt mount state (#1063)`        |
+| #1102 | `fbdc357d` | `fix(frontend): use useSyncExternalStore for camera support detection (#1063)`          |
+| #1101 | `7376a4df` | `chore(deps): bump the testing group (2 updates)`                                       |
+| #1099 | `e1affc92` | `chore(deps): bump @supabase/supabase-js`                                               |
+| #1097 | `15227fba` | `chore(deps): bump qs`                                                                  |
 
 ## Recently Shipped (Autonomous Quality Drain — 7 PRs)
 
 Sequential merge of seven small-but-load-bearing PRs that closed lint debt, hardened tests, and split the React Compiler cleanup into a safe Phase 1 (errors fixed, 4 of 5 rules promoted to default error) with Phase 2 (`set-state-in-effect`, 19 violations across 14 files) explicitly deferred. Each violation is a sync-prop-to-state anti-pattern requiring per-component architectural review (key-based reset, lift state up, derive during render, or uncontrolled refs) and was deemed unsafe to bulk-fix.
 
-| PR    | Change                                                                              |
-| ----- | ----------------------------------------------------------------------------------- |
+| PR    | Change                                                                                |
+| ----- | ------------------------------------------------------------------------------------- |
 | #1067 | `fix(frontend): resolve React Compiler violations (Phase 1, #1063)` — 4 rules → error |
-| #1066 | `chore(framework): rename middleware.ts to proxy.ts (Next.js 16 deprecation, #1062)` |
-| #1065 | `docs: reconcile QA suite/check counts to RUN_QA.ps1 ground truth (#1061)`          |
-| #1064 | `fix(test): make FreshnessIndicator tests DST-safe (#1058)`                         |
-| #1057 | `refactor(hooks): use useSyncExternalStore in useReducedMotion`                     |
-| #1056 | `chore(lint): replace 3 non-null assertions with safe local-variable pattern`       |
-| #1055 | `chore(lint): silence 2 spurious a11y warnings with justification comments`         |
+| #1066 | `chore(framework): rename middleware.ts to proxy.ts (Next.js 16 deprecation, #1062)`  |
+| #1065 | `docs: reconcile QA suite/check counts to RUN_QA.ps1 ground truth (#1061)`            |
+| #1064 | `fix(test): make FreshnessIndicator tests DST-safe (#1058)`                           |
+| #1057 | `refactor(hooks): use useSyncExternalStore in useReducedMotion`                       |
+| #1056 | `chore(lint): replace 3 non-null assertions with safe local-variable pattern`         |
+| #1055 | `chore(lint): silence 2 spurious a11y warnings with justification comments`           |
 
 ## Recently Shipped (Next.js 16 Dependency Cleanup)
 
@@ -33,8 +50,8 @@ Removed `@eslint/eslintrc` and `@eslint/js` from `frontend/package.json` devDepe
 
 First push hit the documented Windows-npm cross-platform lockfile fragility (per PR #1030 note): `npm uninstall` on Windows pruned the Linux-only `@emnapi/core@1.9.2` and `@emnapi/runtime@1.9.2` nested entries under `node_modules/@rolldown/binding-wasm32-wasi/node_modules/`, breaking Linux CI `npm ci`. Restored manually via registry-verified integrity hashes (29-line lockfile addition) — same fix pattern as PR #1030.
 
-| PR    | Change                                                                                       |
-| ----- | -------------------------------------------------------------------------------------------- |
+| PR    | Change                                                                                        |
+| ----- | --------------------------------------------------------------------------------------------- |
 | #1053 | `chore(deps): remove unused @eslint/eslintrc and @eslint/js devDependencies` (+ lockfile fix) |
 
 ## Recently Shipped (Dependabot Major-Bump Drain)
@@ -60,23 +77,23 @@ After #1039 split groups into minor+patch only, Dependabot re-opened the held ma
 
 PR #1038 grouped 13 npm updates including 6 incompatible majors (`@eslint/js` 9→10, `@vercel/speed-insights` 1→2, `lucide-react` 0.577→1.11, `sonner` 1→2, `tesseract.js` 5→7, `@types/node` 22→25) — all 10 gates failed and breakages could not be isolated atomically. Closed in favour of #1039: added `update-types: [minor, patch]` to all groups in `.github/dependabot.yml` (npm framework/sentry/supabase/testing/build-tooling/npm-rest + actions github-official/third-party). Major bumps now arrive as individual PRs for proper triage.
 
-| PR    | Change                                                                                  |
-| ----- | --------------------------------------------------------------------------------------- |
-| #1039 | `update-types: [minor, patch]` constraint added to all 8 Dependabot groups              |
-| #1038 | **Closed** (superseded) — 13-package grouped bundle with 6 breaking majors              |
+| PR    | Change                                                                     |
+| ----- | -------------------------------------------------------------------------- |
+| #1039 | `update-types: [minor, patch]` constraint added to all 8 Dependabot groups |
+| #1038 | **Closed** (superseded) — 13-package grouped bundle with 6 breaking majors |
 
 ## Recently Shipped (Supabase CLI v2 Upgrade)
 
-| PR    | Change                                                              |
-| ----- | ------------------------------------------------------------------- |
+| PR    | Change                                                               |
+| ----- | -------------------------------------------------------------------- |
 | #1035 | `ci(deps): bump supabase/setup-cli from 1.6.0 to 2.0.0` (Dependabot) |
 
 ## Recently Shipped (Dependabot Alert #3 Closure)
 
 Forced `tmp` package to patched version (>=0.2.4, resolved to 0.2.5) via npm `overrides` block in `frontend/package.json`, closing CVE-2025-54798 / GHSA-52f5-9888-hmc6 (low-severity symlink temp write). Transitively reached only via `@lhci/cli@0.15.1` (devDep, already latest). `npm audit` now clean (was 4 low). Also repaired cross-platform lockfile: Windows-local `npm install` pruned Linux-only `@emnapi/*` optional deps required by `@rolldown/binding-wasm32-wasi`, breaking Linux CI `npm ci` — restored via manual nested entries with registry-verified integrity hashes.
 
-| PR    | Change                                                                     |
-| ----- | -------------------------------------------------------------------------- |
+| PR    | Change                                                                        |
+| ----- | ----------------------------------------------------------------------------- |
 | #1030 | `overrides.tmp = ">=0.2.4"` + nested `@emnapi` entries in `package-lock.json` |
 
 ## Recently Shipped (Hygiene-Script CI Wiring Workstream)
