@@ -113,7 +113,6 @@ jobs:
           diff_output=$(timeout 180s supabase db diff --linked 2>&1)
           diff_exit=$?
           set -e
-
           if [ "$diff_exit" -eq 124 ]; then
             echo "has_pending=true" >> "$GITHUB_OUTPUT"
             echo "⚠️ Schema diff timed out after 180s; continuing deploy with conservative assumption of pending changes." >> "$GITHUB_STEP_SUMMARY"
