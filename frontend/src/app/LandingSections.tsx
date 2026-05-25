@@ -173,18 +173,31 @@ function DataStatsSection() {
     { icon: Shield, value: t("landing.statCountriesValue"), label: t("landing.statCountries") },
   ];
   return (
-    <section aria-labelledby="stats-heading" className="py-16 sm:py-20">
+    <section aria-labelledby="stats-heading" className="relative isolate overflow-hidden py-16 sm:py-20">
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute -left-6 bottom-6 h-36 w-36 rounded-full bg-brand/10 blur-3xl" />
+        <div className="absolute -right-6 top-8 h-44 w-44 rounded-full bg-brand/8 blur-3xl" />
+      </div>
+
       <div className="mx-auto max-w-5xl px-4">
-        <h2 id="stats-heading" className="mb-10 text-center text-2xl font-bold text-foreground sm:text-3xl">
+        <h2 id="stats-heading" className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl">
           {t("landing.statsHeading")}
         </h2>
-        <div className="grid grid-cols-2 gap-6 sm:grid-cols-4">
+        <p className="mx-auto mb-10 max-w-2xl text-center text-sm text-foreground-secondary sm:text-base">
+          Transparent data scale across products, categories, and scoring factors.
+        </p>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
           {stats.map((s) => (
-            <div key={s.label} className="card flex flex-col items-center py-6 text-center">
-              <s.icon size={24} aria-hidden="true" className="mb-2 text-brand" />
-              <span className="text-3xl font-extrabold text-foreground">{s.value}</span>
-              <span className="mt-1 text-sm text-foreground-secondary">{s.label}</span>
-            </div>
+            <article
+              key={s.label}
+              className="group rounded-2xl border border-strong/50 bg-surface px-4 py-5 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-lg sm:px-5 sm:py-6"
+            >
+              <div className="mx-auto mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-brand/25 bg-brand/12 text-brand transition-colors duration-300 group-hover:bg-brand/18">
+                <s.icon size={22} aria-hidden="true" />
+              </div>
+              <span className="block text-3xl font-extrabold leading-none text-foreground sm:text-4xl">{s.value}</span>
+              <span className="mt-2 block text-xs font-medium uppercase tracking-[0.06em] text-foreground-secondary sm:text-sm">{s.label}</span>
+            </article>
           ))}
         </div>
       </div>
@@ -197,22 +210,28 @@ function DataStatsSection() {
 function CtaRepeatSection() {
   const { t } = useTranslation();
   return (
-    <section className="bg-brand/5 py-16 sm:py-20">
-      <div className="mx-auto max-w-2xl px-4 text-center">
+    <section className="relative isolate overflow-hidden bg-linear-to-b from-brand/8 to-surface py-16 sm:py-20">
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="absolute left-1/2 top-1/2 h-48 w-48 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand/12 blur-3xl" />
+      </div>
+
+      <div className="mx-auto max-w-3xl px-4 text-center">
+        <div className="rounded-3xl border border-strong/50 bg-surface/85 px-6 py-10 shadow-lg backdrop-blur sm:px-10 sm:py-12">
         <h2 className="mb-4 text-2xl font-bold text-foreground sm:text-3xl">
           {t("landing.ctaHeading")}
         </h2>
-        <p className="mb-8 text-foreground-secondary">
+        <p className="mx-auto mb-8 max-w-xl text-foreground-secondary">
           {t("landing.ctaDescription")}
         </p>
         <ButtonLink
           href="/auth/signup"
           size="lg"
-          className="px-10"
+          className="w-full px-10 sm:w-auto"
           iconRight={<ChevronRight size={18} aria-hidden="true" />}
         >
           {t("landing.getStarted")}
         </ButtonLink>
+        </div>
       </div>
     </section>
   );
