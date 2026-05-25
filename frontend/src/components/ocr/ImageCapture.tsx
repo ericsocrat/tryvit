@@ -16,7 +16,21 @@ import { Button } from "@/components/common/Button";
 import { Icon } from "@/components/common/Icon";
 import { useTranslation } from "@/lib/i18n";
 import { Camera, SwitchCamera, Upload, X } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
+
+// Camera support is a static browser capability — no subscription needed.
+// useSyncExternalStore with a noop subscribe is the React-19 hydration-safe
+// pattern for one-time client-only feature detection (#1063).
+const emptySubscribe = () => () => {};
+const getCameraSupportSnapshot = () =>
+  typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia;
+const getCameraSupportServerSnapshot = () => false;
 
 interface ImageCaptureProps {
   /** Called when user has selected/captured an image. */
@@ -32,17 +46,13 @@ export function ImageCapture({ onCapture, processing }: ImageCaptureProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [cameraActive, setCameraActive] = useState(false);
-  const [cameraSupported, setCameraSupported] = useState(false);
+  const cameraSupported = useSyncExternalStore(
+    emptySubscribe,
+    getCameraSupportSnapshot,
+    getCameraSupportServerSnapshot,
+  );
   const [cameraError, setCameraError] = useState<string | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-
-  // Check camera support on mount
-  useEffect(() => {
-    const supported =
-      typeof navigator !== "undefined" &&
-      !!navigator.mediaDevices?.getUserMedia;
-    setCameraSupported(supported);
-  }, []);
 
   // Cleanup camera stream on unmount
   useEffect(() => {
