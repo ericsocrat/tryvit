@@ -97,14 +97,17 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           set +e
-          diff_output=$(supabase db diff --linked 2>&1)
+          diff_output=$(timeout 180s supabase db diff --linked 2>&1)
           diff_exit=$?
           set -e
 
           echo "## Schema Diff (${{ github.event.inputs.environment }})" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
-          if [ -z "$diff_output" ] || echo "$diff_output" | grep -q "No changes found"; then
+          if [ "$diff_exit" -eq 124 ]; then
+            echo "has_pending=true" >> "$GITHUB_OUTPUT"
+            echo "⚠️ Schema diff timed out after 180s; continuing deploy with conservative assumption of pending changes." >> "$GITHUB_STEP_SUMMARY"
+          elif [ -z "$diff_output" ] || echo "$diff_output" | grep -q "No changes found"; then
             echo "has_pending=false" >> "$GITHUB_OUTPUT"
             echo "✅ No schema drift detected — remote matches migration state." >> "$GITHUB_STEP_SUMMARY"
           else
