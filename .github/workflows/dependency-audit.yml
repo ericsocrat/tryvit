@@ -72,6 +72,9 @@ jobs:
           audit_exit=$?
           set -e
 
+          # Keep full output visible in raw workflow logs for debugging.
+          echo "$audit_output"
+
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           echo "$audit_output" >> "$GITHUB_STEP_SUMMARY"
           echo '```' >> "$GITHUB_STEP_SUMMARY"
@@ -119,6 +122,9 @@ jobs:
           audit_output=$(pip-audit -r requirements.txt --desc 2>&1)
           audit_exit=$?
           set -e
+
+          # Keep full output visible in raw workflow logs for debugging.
+          echo "$audit_output"
 
           echo '```' >> "$GITHUB_STEP_SUMMARY"
           echo "$audit_output" >> "$GITHUB_STEP_SUMMARY"
