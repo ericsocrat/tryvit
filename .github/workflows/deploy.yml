@@ -170,6 +170,7 @@ jobs:
       - name: Link project
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: supabase link --project-ref "${{ steps.env.outputs.project_ref }}"
 
       # ── Pre-deploy backup ─────────────────────────────────────────────
@@ -177,6 +178,7 @@ jobs:
         id: backup
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           set -euo pipefail
           mkdir -p backups
@@ -204,6 +206,7 @@ jobs:
       - name: Push migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           set -euo pipefail
           echo "Pushing pending migrations to ${{ github.event.inputs.environment }}..."
