@@ -47,19 +47,24 @@ export function ProductHeroImage({
   ean,
 }: ProductHeroImageProps) {
   // ── OFF API fallback state ──────────────────────────────────────────────
+  // Store the fetched result keyed by EAN; derive `offLoading` and `offUrl`
+  // from it so we never call setState synchronously inside the effect
+  // (react-hooks/set-state-in-effect compliance, #1063).
   const needsFallback = !images.has_image || !images.primary;
-  const [offUrl, setOffUrl] = useState<string | null>(null);
-  const [offLoading, setOffLoading] = useState(false);
+  const [fetched, setFetched] = useState<{
+    ean: string | null;
+    url: string | null;
+  }>({ ean: null, url: null });
+  const offLoading = needsFallback && !!ean && fetched.ean !== ean;
+  const offUrl = fetched.ean === ean ? fetched.url : null;
   const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     if (!needsFallback || !ean) return;
     let cancelled = false;
-    setOffLoading(true);
     fetchOffImageUrl(ean).then((url) => {
       if (!cancelled) {
-        setOffUrl(url);
-        setOffLoading(false);
+        setFetched({ ean, url });
       }
     });
     return () => {
