@@ -96,15 +96,28 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
-          set +e
-          diff_output=$(supabase db diff --linked 2>&1)
-          diff_exit=$?
-          set -e
-
           echo "## Schema Diff (${{ github.event.inputs.environment }})" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
-          if [ -z "$diff_output" ] || echo "$diff_output" | grep -q "No changes found"; then
+          if [ "${{ github.event.inputs.dry_run }}" != "true" ]; then
+            echo "has_pending=true" >> "$GITHUB_OUTPUT"
+            echo "ℹ️ Skipping schema diff for live deploy to avoid long-running shadow DB operations." >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "**Dry run:** ${{ github.event.inputs.dry_run }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "**Environment:** ${{ github.event.inputs.environment }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "**Triggered by:** @${{ github.actor }}" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          set +e
+          diff_output=$(timeout 180s supabase db diff --linked 2>&1)
+          diff_exit=$?
+          set -e
+
+          if [ "$diff_exit" -eq 124 ]; then
+            echo "has_pending=true" >> "$GITHUB_OUTPUT"
+            echo "⚠️ Schema diff timed out after 180s; continuing deploy with conservative assumption of pending changes." >> "$GITHUB_STEP_SUMMARY"
+          elif [ -z "$diff_output" ] || echo "$diff_output" | grep -q "No changes found"; then
             echo "has_pending=false" >> "$GITHUB_OUTPUT"
             echo "✅ No schema drift detected — remote matches migration state." >> "$GITHUB_STEP_SUMMARY"
           else
@@ -170,6 +183,7 @@ jobs:
       - name: Link project
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: supabase link --project-ref "${{ steps.env.outputs.project_ref }}"
 
       # ── Pre-deploy backup ─────────────────────────────────────────────
@@ -177,6 +191,7 @@ jobs:
         id: backup
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           set -euo pipefail
           mkdir -p backups
@@ -204,6 +219,7 @@ jobs:
       - name: Push migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           set -euo pipefail
           echo "Pushing pending migrations to ${{ github.event.inputs.environment }}..."
