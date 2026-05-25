@@ -1,6 +1,6 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-05-25 by GitHub Copilot (audit + Phase 2 React Compiler drain reconcile)
+> **Last updated:** 2026-05-25 by GitHub Copilot (post-#1109 doc-freshness reconcile)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
@@ -8,10 +8,10 @@
 ## Active Branch & PR
 
 - **Branch:** `main`
-- **Latest SHA (main):** `688de9e0` (fix(frontend): derive ScanResultView animation state (#1063) (#1106))
-- **Open PRs:** 2 — #1095 (Dependabot pip idna 3.11→3.15, awaiting auto-merge), #1076 (CommandPalette set-state-in-effect Phase 2 follow-up, needs rebase against #1104)
-- **Open issues:** 2 (#1059 production deploy — blocked on user authorization; #1060 npm audit moderates close-as-monitor — blocked on user authorization, now also tracks 1 HIGH `ws` GHSA-58qx-3vcg-4xpx via @lhci/cli dev-only)
-- **Mode:** 🟢 Clean — React Compiler Phase 2 mostly complete (5 violations drained); only Phase 2 tail (CommandPalette line-197 reset) and routine Dependabot remain.
+- **Latest SHA (main):** `6782a99e` (docs(governance): refresh stale docs metadata for drift gate (#1109))
+- **Open PRs:** 0
+- **Open issues:** 1 (#1060 npm audit moderates close-as-monitor — blocked on user authorization; tracks 1 HIGH `ws` GHSA-58qx-3vcg-4xpx via @lhci/cli dev-only). Issue #1059 closed.
+- **Mode:** 🟢 Clean — main fully green. Recent #1108 (deploy backup path) and #1109 (doc-freshness frontmatter) merged. Scheduled `Dependency Audit` failure at 08:32 UTC was stale (idna 3.15 PR #1095 merged at 10:15 UTC; subsequent runs at 10:11 success).
 
 ## Recently Shipped (Phase 2 React Compiler Drain + Dependabot — 10 PRs since 1eca1509)
 
