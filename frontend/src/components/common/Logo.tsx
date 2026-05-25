@@ -3,7 +3,7 @@
 // Renders both light and dark variants; CSS hides the inactive one.
 //
 // Variants:
-//   "icon"   — shield-leaf logomark only (1:1 aspect ratio)
+//   "icon"   — leaf-squircle logomark only (1:1 aspect ratio)
 //   "lockup" — logomark + wordmark side-by-side (200:48 aspect ratio)
 //
 // Issue #566 — Add real logomark SVG throughout the app

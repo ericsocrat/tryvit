@@ -1,57 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="TryVit logomark">
   <title>TryVit</title>
-  <desc>Shield-leaf logomark representing food quality analysis, data science, and consumer trust. The shape combines a protective shield (trust) with a leaf (food/health), with interior vein lines suggesting data structure (science).</desc>
-
+  <desc>Rounded-squircle logomark with a stylized leaf and accent dot. Adapts to prefers-color-scheme.</desc>
   <defs>
-    <!-- Primary brand gradient — deeper teal at base for grounded feel -->
-    <linearGradient id="brand-fill" x1="0" y1="0" x2="0" y2="1">
+    <linearGradient id="g-light" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#1DB954"/>
       <stop offset="100%" stop-color="#0A2E1A"/>
     </linearGradient>
-    <!-- Subtle inner shadow for depth -->
-    <linearGradient id="inner-shadow" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.12"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.08"/>
+    <linearGradient id="g-dark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00E676"/>
+      <stop offset="100%" stop-color="#1DB954"/>
     </linearGradient>
+    <style>
+      .bg { fill: url(#g-light); }
+      .leaf { fill: #ffffff; fill-opacity: 0.96; }
+      .midrib { stroke: #0A2E1A; opacity: 0.16; }
+      .dot { fill: #00E676; }
+      @media (prefers-color-scheme: dark) {
+        .bg { fill: url(#g-dark); }
+        .leaf { fill: #F0FAF4; }
+        .midrib { opacity: 0.20; }
+        .dot { fill: #0A2E1A; opacity: 0.85; }
+      }
+    </style>
   </defs>
-
-  <!-- ═══ Shield-leaf silhouette ═══ -->
-  <!-- Pointed top (leaf tip) + bulging sides (shield breadth) + pointed bottom (shield point / leaf base) -->
-  <path d="
-    M 256 28
-    C 364 64, 444 168, 444 272
-    C 444 376, 336 456, 256 488
-    C 176 456, 68 376, 68 272
-    C 68 168, 148 64, 256 28
-    Z
-  " fill="url(#brand-fill)"/>
-
-  <!-- Depth overlay — subtle light-to-dark veil -->
-  <path d="
-    M 256 28
-    C 364 64, 444 168, 444 272
-    C 444 376, 336 456, 256 488
-    C 176 456, 68 376, 68 272
-    C 68 168, 148 64, 256 28
-    Z
-  " fill="url(#inner-shadow)"/>
-
-  <!-- ═══ Interior vein structure ═══ -->
-  <!-- Central vein — the leaf's midrib / data spine -->
-  <line x1="256" y1="84" x2="256" y2="440" stroke="#ffffff" stroke-width="3.5" opacity="0.30" stroke-linecap="round"/>
-
-  <!-- Side veins — 3 symmetric pairs, suggesting data branches / leaf venation -->
-  <!-- Pair 1 (upper) -->
-  <line x1="256" y1="176" x2="172" y2="236" stroke="#ffffff" stroke-width="2.5" opacity="0.22" stroke-linecap="round"/>
-  <line x1="256" y1="176" x2="340" y2="236" stroke="#ffffff" stroke-width="2.5" opacity="0.22" stroke-linecap="round"/>
-  <!-- Pair 2 (middle) -->
-  <line x1="256" y1="256" x2="180" y2="312" stroke="#ffffff" stroke-width="2.5" opacity="0.22" stroke-linecap="round"/>
-  <line x1="256" y1="256" x2="332" y2="312" stroke="#ffffff" stroke-width="2.5" opacity="0.22" stroke-linecap="round"/>
-  <!-- Pair 3 (lower) -->
-  <line x1="256" y1="336" x2="200" y2="380" stroke="#ffffff" stroke-width="2.5" opacity="0.22" stroke-linecap="round"/>
-  <line x1="256" y1="336" x2="312" y2="380" stroke="#ffffff" stroke-width="2.5" opacity="0.22" stroke-linecap="round"/>
-
-  <!-- ═══ Gold accent — score indicator dot ═══ -->
-  <!-- Small circle at the leaf tip, evoking a data point / quality score marker -->
-  <circle cx="256" cy="64" r="10" fill="#00E676" opacity="0.85"/>
+  <rect class="bg" x="0" y="0" width="512" height="512" rx="120" ry="120"/>
+  <path class="leaf" d="M 132 388 C 132 244, 244 144, 388 124 C 388 124, 380 252, 312 320 C 248 384, 176 388, 132 388 Z"/>
+  <path class="midrib" d="M 132 388 C 200 320, 280 244, 388 124" stroke-width="14" stroke-linecap="round" fill="none"/>
+  <circle class="dot" cx="388" cy="124" r="16"/>
 </svg>

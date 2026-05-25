@@ -11,7 +11,10 @@
 
   <!-- ═══ Logomark (dark mode, centered, 200×200) ═══ -->
   <svg x="60" y="20" width="200" height="200" viewBox="0 0 512 512">
-    <path d="M 256 28 C 364 64, 444 168, 444 272 C 444 376, 336 456, 256 488 C 176 456, 68 376, 68 272 C 68 168, 148 64, 256 28 Z" fill="url(#brand-fill-dark)"/>
+    <rect x="0" y="0" width="512" height="512" rx="120" ry="120" fill="url(#brand-fill-dark)"/>
+<path d="M 132 388 C 132 244, 244 144, 388 124 C 388 124, 380 252, 312 320 C 248 384, 176 388, 132 388 Z" fill="#ffffff" fill-opacity="0.96"/>
+<path d="M 132 388 C 200 320, 280 244, 388 124" stroke="#0A2E1A" stroke-width="14" stroke-linecap="round" fill="none" opacity="0.18"/>
+<circle cx="388" cy="124" r="16" fill="#00E676" opacity="0.90"/>
     <line x1="256" y1="84" x2="256" y2="440" stroke="#0f172a" stroke-width="3.5" opacity="0.25" stroke-linecap="round"/>
     <line x1="256" y1="176" x2="172" y2="236" stroke="#0f172a" stroke-width="2.5" opacity="0.18" stroke-linecap="round"/>
     <line x1="256" y1="176" x2="340" y2="236" stroke="#0f172a" stroke-width="2.5" opacity="0.18" stroke-linecap="round"/>
