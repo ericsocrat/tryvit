@@ -1,5 +1,6 @@
 # CI Architecture Audit & Redesign Proposal
 
+> **Last updated**: 2026-05-25
 > **Status**: PROPOSAL — awaiting approval before implementation
 > **Author**: Staff+ DevOps Engineer audit
 > **Date**: 2026-02-22

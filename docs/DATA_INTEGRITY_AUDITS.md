@@ -1,5 +1,9 @@
 # Data Integrity Audits
 
+> **Last updated:** 2026-05-25
+> **Status:** Active
+> **Owner issue:** [#184](https://github.com/ericsocrat/tryvit/issues/184)
+
 > Automated nightly audits to detect data quality issues, contradictions, and integrity violations across 2,500+ products.
 
 ## Overview

@@ -1,5 +1,9 @@
 # Label Taxonomy
 
+> **Last updated:** 2026-05-25
+> **Status:** Active
+> **Owner issue:** —
+
 Canonical label set for issue and PR triage. Managed via the GitHub UI —
 this document is the source of truth for naming, colors, and intended usage.
 
