@@ -42,9 +42,9 @@ export interface ButtonProps extends Omit<
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
-    "bg-brand text-foreground-inverse shadow-sm hover:bg-brand-hover focus-visible:outline-brand",
+    "bg-brand text-foreground-inverse shadow-sm hover:bg-brand-hover focus-visible:outline-brand dark:shadow-[0_6px_16px_rgba(34,197,94,0.18)]",
   secondary:
-    "border border-strong bg-surface text-foreground-secondary shadow-sm hover:bg-surface-subtle focus-visible:outline-brand",
+    "border border-strong bg-surface text-foreground-secondary shadow-sm hover:bg-surface-subtle focus-visible:outline-brand dark:border-white/20 dark:bg-white/[0.02] dark:text-foreground dark:hover:bg-white/10",
   ghost:
     "text-foreground-secondary hover:bg-surface-subtle focus-visible:outline-brand",
   danger:

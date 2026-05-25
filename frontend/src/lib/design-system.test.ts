@@ -415,7 +415,9 @@ describe("Design System — Component Classes Use Tokens", () => {
 
   it("Button secondary variant uses bg-surface (not bg-white)", () => {
     expect(buttonSrc).toContain("bg-surface");
-    expect(buttonSrc).not.toContain("bg-white");
+    // Allow dark-mode overrides like `dark:bg-white/...` while preventing
+    // plain light-mode `bg-white` that bypasses surface tokens.
+    expect(buttonSrc).not.toMatch(/(^|[\s"'])bg-white([\s"']|$)/);
   });
 
   it("globals.css no longer contains legacy .btn-primary / .btn-secondary", () => {

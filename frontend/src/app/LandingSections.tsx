@@ -32,7 +32,7 @@ function HeroSection() {
       </div>
 
       <div className="mx-auto max-w-5xl px-4">
-        <div className="mx-auto max-w-3xl rounded-3xl border border-strong/40 bg-surface/85 px-6 py-10 text-center shadow-lg backdrop-blur sm:px-10 sm:py-12">
+        <div className="mx-auto max-w-3xl rounded-3xl border border-strong/40 bg-surface/85 px-6 py-10 text-center shadow-lg backdrop-blur sm:px-10 sm:py-12 dark:border-white/15 dark:bg-white/[0.03] dark:shadow-[0_12px_36px_rgba(0,0,0,0.35)]">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-strong/60 bg-surface-subtle px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-foreground-secondary">
             <span className="h-1.5 w-1.5 rounded-full bg-brand" />
             Food Health Scanner
@@ -100,7 +100,7 @@ function FeaturesSection() {
           {features.map((f) => (
             <article
               key={f.title}
-              className="group relative overflow-hidden rounded-2xl border border-strong/50 bg-surface px-5 py-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-lg"
+              className="group relative overflow-hidden rounded-2xl border border-strong/50 bg-surface px-5 py-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-lg dark:border-white/15 dark:bg-white/[0.03] dark:hover:border-brand/55"
             >
               <div className="pointer-events-none absolute inset-x-5 top-0 h-px bg-linear-to-r from-transparent via-brand/35 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl border border-brand/30 bg-brand/12 transition-colors duration-300 group-hover:bg-brand/18">
@@ -143,7 +143,7 @@ function HowItWorksSection() {
           {steps.map((s) => (
             <article
               key={s.num}
-              className="group relative flex flex-col items-center rounded-2xl border border-strong/50 bg-surface px-5 py-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-lg"
+              className="group relative flex flex-col items-center rounded-2xl border border-strong/50 bg-surface px-5 py-6 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-lg dark:border-white/15 dark:bg-white/[0.03] dark:hover:border-brand/55"
             >
               <div className="pointer-events-none absolute left-1/2 top-0 hidden h-px w-[70%] -translate-x-1/2 bg-linear-to-r from-transparent via-brand/40 to-transparent sm:block" />
               <div className="relative mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-brand/25 bg-brand/12 text-brand transition-colors duration-300 group-hover:bg-brand/18">
@@ -190,7 +190,7 @@ function DataStatsSection() {
           {stats.map((s) => (
             <article
               key={s.label}
-              className="group rounded-2xl border border-strong/50 bg-surface px-4 py-5 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-lg sm:px-5 sm:py-6"
+              className="group rounded-2xl border border-strong/50 bg-surface px-4 py-5 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-lg sm:px-5 sm:py-6 dark:border-white/15 dark:bg-white/[0.03] dark:hover:border-brand/55"
             >
               <div className="mx-auto mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-brand/25 bg-brand/12 text-brand transition-colors duration-300 group-hover:bg-brand/18">
                 <s.icon size={22} aria-hidden="true" />
@@ -216,7 +216,7 @@ function CtaRepeatSection() {
       </div>
 
       <div className="mx-auto max-w-3xl px-4 text-center">
-        <div className="rounded-3xl border border-strong/50 bg-surface/85 px-6 py-10 shadow-lg backdrop-blur sm:px-10 sm:py-12">
+        <div className="rounded-3xl border border-strong/50 bg-surface/85 px-6 py-10 shadow-lg backdrop-blur sm:px-10 sm:py-12 dark:border-white/15 dark:bg-white/[0.03] dark:shadow-[0_12px_36px_rgba(0,0,0,0.35)]">
         <h2 className="mb-4 text-2xl font-bold text-foreground sm:text-3xl">
           {t("landing.ctaHeading")}
         </h2>
