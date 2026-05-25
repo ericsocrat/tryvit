@@ -12,7 +12,13 @@
  *  - Track `appinstalled` event
  */
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 /* ── Public type re-export ─────────────────────────────────────────────────── */
 export interface BeforeInstallPromptEvent extends Event {
@@ -94,6 +100,91 @@ export function markDismissed(): void {
   }
 }
 
+/* ── useSyncExternalStore helpers for `isInstalled` ────────────────────────
+   `isInstalled` is derived from two SSR-unsafe sources (matchMedia +
+   localStorage). Using `useSyncExternalStore` avoids the React-Compiler
+   `set-state-in-effect` violation and is hydration-safe: `getServerSnapshot`
+   returns `false`, matching the initial client snapshot when the page is
+   neither standalone nor previously installed.
+*/
+function subscribeInstalled(notify: () => void): () => void {
+  if (typeof globalThis.addEventListener !== "function") return () => {};
+  const handler = () => {
+    // Persist the installed flag *before* React re-reads the snapshot so
+    // `getInstalledSnapshot` returns `true` on the next render.
+    markInstalled();
+    notify();
+  };
+  globalThis.addEventListener("appinstalled", handler);
+  return () => globalThis.removeEventListener("appinstalled", handler);
+}
+
+function getInstalledSnapshot(): boolean {
+  if (isStandalone()) return true;
+  try {
+    return (
+      typeof localStorage !== "undefined" &&
+      !!localStorage.getItem(STORAGE_KEY_INSTALLED)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function getInstalledServerSnapshot(): boolean {
+  return false;
+}
+
+/* ── Module-level emitters for `dismissed` + `enoughVisits` ───────────────
+   These pieces of state derive from localStorage and transition only via
+   in-hook side-effects (mount visit-increment and the `dismiss()` callback).
+   A lightweight EventTarget lets `useSyncExternalStore` re-snapshot when those
+   side-effects fire, avoiding `set-state-in-effect`.
+*/
+const dismissEmitter =
+  typeof EventTarget !== "undefined" ? new EventTarget() : null;
+const visitsEmitter =
+  typeof EventTarget !== "undefined" ? new EventTarget() : null;
+
+function notifyDismissed(): void {
+  dismissEmitter?.dispatchEvent(new Event("change"));
+}
+function notifyVisits(): void {
+  visitsEmitter?.dispatchEvent(new Event("change"));
+}
+
+function subscribeDismissed(cb: () => void): () => void {
+  if (!dismissEmitter) return () => {};
+  dismissEmitter.addEventListener("change", cb);
+  return () => dismissEmitter.removeEventListener("change", cb);
+}
+function getDismissedSnapshot(): boolean {
+  return isDismissCooldownActive();
+}
+function getDismissedServerSnapshot(): boolean {
+  return false;
+}
+
+function subscribeVisits(cb: () => void): () => void {
+  if (!visitsEmitter) return () => {};
+  visitsEmitter.addEventListener("change", cb);
+  return () => visitsEmitter.removeEventListener("change", cb);
+}
+function getEnoughVisitsSnapshot(): boolean {
+  return getVisitCount() >= MIN_VISITS_FOR_BANNER;
+}
+function getEnoughVisitsServerSnapshot(): boolean {
+  return false;
+}
+
+const emptySubscribe = (): (() => void) => () => {};
+function getIOSSnapshot(): boolean {
+  return isIOSDevice();
+}
+function getIOSServerSnapshot(): boolean {
+  return false;
+}
+
 /* ── Hook return type ──────────────────────────────────────────────────────── */
 export interface UseInstallPromptReturn {
   /** The deferred browser prompt — null when not available. */
@@ -115,31 +206,42 @@ export interface UseInstallPromptReturn {
 export function useInstallPrompt(): UseInstallPromptReturn {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [isIOS, setIsIOS] = useState(false);
-  const [isInstalled, setIsInstalled] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-  const [enoughVisits, setEnoughVisits] = useState(false);
   const promptRef = useRef<BeforeInstallPromptEvent | null>(null);
 
+  // All four mount-derived booleans are sourced from external stores. This
+  // avoids `set-state-in-effect` and is hydration-safe — every server
+  // snapshot returns `false`, matching the initial client snapshot before any
+  // side-effects run.
+  const isInstalled = useSyncExternalStore(
+    subscribeInstalled,
+    getInstalledSnapshot,
+    getInstalledServerSnapshot,
+  );
+  const dismissed = useSyncExternalStore(
+    subscribeDismissed,
+    getDismissedSnapshot,
+    getDismissedServerSnapshot,
+  );
+  const enoughVisits = useSyncExternalStore(
+    subscribeVisits,
+    getEnoughVisitsSnapshot,
+    getEnoughVisitsServerSnapshot,
+  );
+  const isIOS = useSyncExternalStore(
+    emptySubscribe,
+    getIOSSnapshot,
+    getIOSServerSnapshot,
+  );
+
   useEffect(() => {
-    // Already installed
-    if (isStandalone()) {
-      setIsInstalled(true);
-      return;
-    }
+    // Already installed or cooldown active — no listeners or visit-tracking.
+    if (getInstalledSnapshot()) return;
+    if (isDismissCooldownActive()) return;
 
-    // Dismiss cooldown active
-    if (isDismissCooldownActive()) {
-      setDismissed(true);
-      return;
-    }
-
-    // Increment visit count on mount, check threshold
-    const count = incrementVisitCount();
-    setEnoughVisits(count >= MIN_VISITS_FOR_BANNER);
-
-    // iOS detection
-    setIsIOS(isIOSDevice());
+    // Increment visit count on mount, then notify subscribers so the
+    // `enoughVisits` snapshot reflects the new count.
+    incrementVisitCount();
+    notifyVisits();
 
     // Listen for beforeinstallprompt (Chromium browsers)
     const bipHandler = (e: Event) => {
@@ -150,10 +252,9 @@ export function useInstallPrompt(): UseInstallPromptReturn {
     };
     globalThis.addEventListener("beforeinstallprompt", bipHandler);
 
-    // Listen for appinstalled
+    // Clear the deferred prompt when the PWA is installed. The store
+    // subscriber handles `markInstalled()` + the `isInstalled` update.
     const installedHandler = () => {
-      setIsInstalled(true);
-      markInstalled();
       setDeferredPrompt(null);
       promptRef.current = null;
     };
@@ -180,10 +281,10 @@ export function useInstallPrompt(): UseInstallPromptReturn {
   }, []);
 
   const dismiss = useCallback(() => {
-    setDismissed(true);
+    markDismissed();
+    notifyDismissed();
     setDeferredPrompt(null);
     promptRef.current = null;
-    markDismissed();
   }, []);
 
   const canShowBanner =
