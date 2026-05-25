@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useEffect, useState } from "react";
+import { useRef, useCallback, useEffect, useSyncExternalStore } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { trackEvent } from "@/lib/api";
 import { IS_QA_MODE } from "@/lib/qa-mode";
@@ -26,6 +26,36 @@ function detectDeviceType(): DeviceType {
   return "desktop";
 }
 
+// ─── Device type external store (avoids set-state-in-effect) ───────────────
+
+// Cached snapshot keeps the return value referentially stable across renders
+// when the underlying viewport size has not changed. `useSyncExternalStore`
+// requires `getSnapshot` to return the same reference for the same logical
+// state, otherwise React schedules infinite re-renders.
+let cachedDeviceType: DeviceType | null = null;
+
+function getDeviceTypeSnapshot(): DeviceType {
+  const next = detectDeviceType();
+  if (cachedDeviceType !== next) cachedDeviceType = next;
+  return cachedDeviceType;
+}
+
+function getDeviceTypeServerSnapshot(): DeviceType {
+  return "desktop";
+}
+
+function subscribeDeviceType(callback: () => void): () => void {
+  if (globalThis.window === undefined) return () => {};
+  const handler = () => {
+    cachedDeviceType = null; // invalidate so next getSnapshot recomputes
+    callback();
+  };
+  globalThis.addEventListener("resize", handler);
+  return () => {
+    globalThis.removeEventListener("resize", handler);
+  };
+}
+
 // ─── Session persistence ────────────────────────────────────────────────────
 
 const SESSION_KEY = "analytics_session_id";
@@ -44,11 +74,14 @@ function getOrCreateSessionId(): string {
 export function useAnalytics() {
   const supabaseRef = useRef(createClient());
   const sessionIdRef = useRef<string>("");
-  const [deviceType, setDeviceType] = useState<DeviceType>("desktop");
+  const deviceType = useSyncExternalStore(
+    subscribeDeviceType,
+    getDeviceTypeSnapshot,
+    getDeviceTypeServerSnapshot,
+  );
 
   useEffect(() => {
     sessionIdRef.current = getOrCreateSessionId();
-    setDeviceType(detectDeviceType());
   }, []);
 
   const track = useCallback(
