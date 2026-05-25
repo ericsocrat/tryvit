@@ -30,21 +30,21 @@ export function Header() {
   }
 
   return (
-    <header className="border-b bg-surface">
-      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
+    <header className="sticky top-0 z-40 border-b border-strong/40 bg-surface/90 backdrop-blur supports-[backdrop-filter]:bg-surface/75">
+      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
         <Link href="/" aria-label="TryVit">
           <Logo variant="lockup" size={28} />
         </Link>
-        <nav className="flex items-center gap-4">
+        <nav className="flex items-center gap-3 sm:gap-4">
           <Link
             href="/contact"
-            className="touch-target text-sm text-foreground-secondary hover:text-foreground lg:text-base"
+            className="touch-target rounded-md px-2 text-sm text-foreground-secondary transition-colors hover:text-brand lg:text-base"
           >
             {t("layout.contact")}
           </Link>
           <button
             onClick={toggleTheme}
-            className="touch-target rounded-md p-2 text-foreground-secondary hover:bg-surface-muted hover:text-foreground transition-colors"
+            className="touch-target rounded-md border border-transparent p-2 text-foreground-secondary transition-colors hover:border-strong hover:bg-surface-muted hover:text-foreground focus-visible:border-brand focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/40"
             aria-label={
               resolved === "dark" ? t("theme.light") : t("theme.dark")
             }
