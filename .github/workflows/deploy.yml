@@ -96,13 +96,23 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
+          echo "## Schema Diff (${{ github.event.inputs.environment }})" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${{ github.event.inputs.dry_run }}" != "true" ]; then
+            echo "has_pending=true" >> "$GITHUB_OUTPUT"
+            echo "ℹ️ Skipping schema diff for live deploy to avoid long-running shadow DB operations." >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "**Dry run:** ${{ github.event.inputs.dry_run }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "**Environment:** ${{ github.event.inputs.environment }}" >> "$GITHUB_STEP_SUMMARY"
+            echo "**Triggered by:** @${{ github.actor }}" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
           set +e
           diff_output=$(timeout 180s supabase db diff --linked 2>&1)
           diff_exit=$?
           set -e
-
-          echo "## Schema Diff (${{ github.event.inputs.environment }})" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
 
           if [ "$diff_exit" -eq 124 ]; then
             echo "has_pending=true" >> "$GITHUB_OUTPUT"
