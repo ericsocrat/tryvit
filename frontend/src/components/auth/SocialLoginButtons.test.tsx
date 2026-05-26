@@ -84,7 +84,9 @@ describe("SocialLoginButtons", () => {
     await user.click(screen.getByRole("button", { name: /google/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: "…" })).toBeDisabled();
+      expect(
+        screen.getByRole("button", { name: /redirecting/i }),
+      ).toBeDisabled();
       expect(screen.getByRole("button", { name: /apple/i })).toBeDisabled();
     });
   });
@@ -134,7 +136,9 @@ describe("SocialLoginButtons", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /google/i })).toBeDisabled();
-      expect(screen.getByRole("button", { name: "…" })).toBeDisabled();
+      expect(
+        screen.getByRole("button", { name: /redirecting/i }),
+      ).toBeDisabled();
     });
   });
 

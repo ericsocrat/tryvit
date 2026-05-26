@@ -33,7 +33,7 @@ export function GoalsCategoriesStep({
   }
 
   return (
-    <div>
+    <div className="space-y-8">
       {/* ── Health Goals section ── */}
       <h1 className="mb-2 text-2xl font-bold text-foreground">
         {t("onboarding.healthGoalsTitle")}
@@ -42,12 +42,14 @@ export function GoalsCategoriesStep({
         {t("onboarding.healthGoalsSubtitle")}
       </p>
 
-      <div className="space-y-3">
+      <section className="space-y-3 rounded-2xl border border-border bg-surface-subtle/60 p-4 sm:p-5">
         {HEALTH_GOALS.map((goal) => (
           <button
+            type="button"
             key={goal.value}
             onClick={() => toggleGoal(goal.value)}
-            className={`flex w-full flex-col rounded-xl border-2 p-4 text-left transition-colors ${
+            aria-pressed={data.healthGoals.includes(goal.value)}
+            className={`flex w-full flex-col rounded-xl border-2 p-4 text-left transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45 ${
               data.healthGoals.includes(goal.value)
                 ? "border-brand bg-brand-subtle"
                 : "border bg-surface hover:border-strong"
@@ -62,10 +64,10 @@ export function GoalsCategoriesStep({
             </span>
           </button>
         ))}
-      </div>
+      </section>
 
       {/* ── Categories section ── */}
-      <div className="mt-8 border-t border-border pt-6">
+      <section className="rounded-2xl border border-border bg-surface-subtle/60 p-4 sm:p-5">
         <h2 className="mb-2 text-lg font-semibold text-foreground">
           {t("onboarding.categoriesTitle")}
         </h2>
@@ -76,8 +78,10 @@ export function GoalsCategoriesStep({
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {FOOD_CATEGORIES.map((cat) => (
             <button
+              type="button"
               key={cat.slug}
               onClick={() => toggleCategory(cat.slug)}
+              aria-pressed={data.favoriteCategories.includes(cat.slug)}
               className={`flex items-center gap-2 rounded-lg border-2 px-3 py-2.5 text-sm transition-colors ${
                 data.favoriteCategories.includes(cat.slug)
                   ? "border-brand bg-brand-subtle font-medium text-brand"
@@ -90,13 +94,14 @@ export function GoalsCategoriesStep({
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
       <div className="mt-8 flex gap-3">
-        <Button variant="secondary" onClick={onBack} className="flex-1">
+        <Button type="button" variant="secondary" onClick={onBack} className="flex-1">
           {t("onboarding.back")}
         </Button>
         <Button
+          type="button"
           onClick={onNext}
           className="flex-1"
           data-testid="onboarding-complete"

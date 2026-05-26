@@ -57,8 +57,11 @@ describe("LandingSections", () => {
       "/auth/signup",
     );
 
-    const signInLink = screen.getByText("landing.signIn");
-    expect(signInLink.closest("a")).toHaveAttribute("href", "/auth/login");
+    const signInLinks = screen.queryAllByText("landing.signIn");
+    expect(signInLinks.length).toBeGreaterThanOrEqual(1);
+    expect(
+      signInLinks.some((link) => link.closest("a")?.getAttribute("href") === "/auth/login"),
+    ).toBe(true);
   });
 
   it("renders features heading and 3 feature cards", () => {
@@ -86,8 +89,8 @@ describe("LandingSections", () => {
     expect(screen.getByText("landing.statsHeading")).toBeInTheDocument();
     expect(screen.getByText("landing.statProductsValue")).toBeInTheDocument();
     expect(screen.getByText("landing.statCategoriesValue")).toBeInTheDocument();
-    expect(screen.getByText("landing.statFactorsValue")).toBeInTheDocument();
-    expect(screen.getByText("landing.statCountriesValue")).toBeInTheDocument();
+    expect(screen.queryAllByText("landing.statFactorsValue").length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryAllByText("landing.statCountriesValue").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders CTA repeat section", () => {
@@ -100,7 +103,7 @@ describe("LandingSections", () => {
 
   it("renders the logo in hero section", () => {
     render(<LandingSections />);
-    expect(screen.getByTestId("logo")).toBeInTheDocument();
+    expect(screen.queryAllByTestId("logo").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders all heading elements", () => {

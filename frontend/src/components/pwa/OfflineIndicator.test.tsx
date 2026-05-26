@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { OfflineIndicator } from "./OfflineIndicator";
 
 // Mock cache-manager to avoid IndexedDB issues in component tests
@@ -53,7 +53,7 @@ describe("OfflineIndicator", () => {
     expect(screen.getByRole("status")).toHaveAttribute("aria-live", "polite");
   });
 
-  it("shows banner on offline event", () => {
+  it("shows banner on offline event", async () => {
     Object.defineProperty(navigator, "onLine", {
       value: true,
       writable: true,
@@ -62,18 +62,19 @@ describe("OfflineIndicator", () => {
     render(<OfflineIndicator />);
     expect(screen.queryByRole("status")).toBeNull();
 
-    act(() => {
+    await act(async () => {
       Object.defineProperty(navigator, "onLine", {
         value: false,
         writable: true,
         configurable: true,
       });
       window.dispatchEvent(new Event("offline"));
+      await Promise.resolve();
     });
     expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
-  it("hides banner on online event", () => {
+  it("hides banner on online event", async () => {
     Object.defineProperty(navigator, "onLine", {
       value: false,
       writable: true,
@@ -82,13 +83,14 @@ describe("OfflineIndicator", () => {
     render(<OfflineIndicator />);
     expect(screen.getByRole("status")).toBeInTheDocument();
 
-    act(() => {
+    await act(async () => {
       Object.defineProperty(navigator, "onLine", {
         value: true,
         writable: true,
         configurable: true,
       });
       window.dispatchEvent(new Event("online"));
+      await Promise.resolve();
     });
     expect(screen.queryByRole("status")).toBeNull();
   });

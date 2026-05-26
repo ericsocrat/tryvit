@@ -152,7 +152,6 @@ export default function ScanPage() {
   // ─── Scan timeout — "Having trouble?" after 15 seconds ──────────────────
   useEffect(() => {
     if (mode === "camera" && scanState === "idle" && !cameraError && feedActive) {
-      setScanTimeout(false);
       timeoutRef.current = setTimeout(() => setScanTimeout(true), 15_000);
       return () => {
         if (timeoutRef.current) {
@@ -161,7 +160,6 @@ export default function ScanPage() {
         }
       };
     }
-    setScanTimeout(false);
   }, [mode, scanState, cameraError, feedActive]);
 
   function handleManualSubmit(e: FormSubmitEvent) {

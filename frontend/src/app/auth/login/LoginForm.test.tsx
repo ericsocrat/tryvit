@@ -65,6 +65,8 @@ vi.mock("@/lib/i18n", () => ({
           "Your session has expired. Please sign in again.",
         "auth.sessionExpiredBanner":
           "Your session has expired. Please sign in again.",
+        "auth.checkEmail": "Check your email to confirm your account.",
+        "auth.passwordUpdated": "Password updated successfully.",
         "landing.tagline": "tagline",
       };
       return map[key] ?? key;
@@ -118,6 +120,22 @@ describe("LoginForm", () => {
   it("does not show banner when no reason", () => {
     render(<LoginForm />);
     expect(screen.queryByText(/session has expired/i)).not.toBeInTheDocument();
+  });
+
+  it("shows check-email banner when msg=check-email", () => {
+    mockSearchParams.set("msg", "check-email");
+    render(<LoginForm />);
+    expect(
+      screen.getByText("Check your email to confirm your account."),
+    ).toBeInTheDocument();
+  });
+
+  it("shows password-updated banner when msg=password-updated", () => {
+    mockSearchParams.set("msg", "password-updated");
+    render(<LoginForm />);
+    expect(
+      screen.getByText("Password updated successfully."),
+    ).toBeInTheDocument();
   });
 
   it("calls signInWithPassword on submit", async () => {

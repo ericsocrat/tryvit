@@ -14,7 +14,7 @@ import { useState } from "react";
 
 // ─── Provider brand SVGs ────────────────────────────────────────────────────
 
-function GoogleIcon({ className }: { className?: string }) {
+function GoogleIcon({ className }: { readonly className?: string }) {
   return (
     <svg
       className={className}
@@ -43,7 +43,7 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
-function AppleIcon({ className }: { className?: string }) {
+function AppleIcon({ className }: { readonly className?: string }) {
   return (
     <svg
       className={className}
@@ -102,7 +102,7 @@ export function SocialLoginButtons() {
         >
           <GoogleIcon />
           {loadingProvider === "google"
-            ? "…"
+            ? t("auth.redirecting")
             : t("auth.continueWithGoogle")}
         </button>
 
@@ -114,7 +114,7 @@ export function SocialLoginButtons() {
         >
           <AppleIcon className="text-foreground-inverse" />
           {loadingProvider === "apple"
-            ? "…"
+            ? t("auth.redirecting")
             : t("auth.continueWithApple")}
         </button>
       </div>

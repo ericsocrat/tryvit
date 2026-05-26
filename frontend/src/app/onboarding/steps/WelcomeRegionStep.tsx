@@ -32,7 +32,7 @@ export function WelcomeRegionStep({
   }
 
   return (
-    <div>
+    <div className="space-y-8">
       <div className="mb-4 text-center text-5xl">🍎</div>
 
       <h1 className="mb-2 text-center text-2xl font-bold text-foreground">
@@ -43,50 +43,56 @@ export function WelcomeRegionStep({
       </p>
 
       {/* Region title */}
-      <h2 className="mb-4 text-lg font-semibold text-foreground">
-        {t("onboarding.regionTitle")}
-      </h2>
+      <section className="rounded-2xl border border-border bg-surface-subtle/60 p-4 sm:p-5">
+        <h2 className="mb-4 text-lg font-semibold text-foreground">
+          {t("onboarding.regionTitle")}
+        </h2>
 
-      <div className="space-y-3">
-        {COUNTRIES.map((country) => (
-          <button
-            key={country.code}
-            onClick={() => handleCountrySelect(country.code)}
-            className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-colors ${
-              data.country === country.code
-                ? "border-brand bg-brand-subtle"
-                : "border bg-surface hover:border-strong"
-            }`}
-            data-testid={`country-${country.code}`}
-          >
-            <span className="text-3xl">{country.flag}</span>
-            <div>
-              <p className="font-semibold text-foreground">{country.name}</p>
-              <p className="text-sm text-foreground-secondary">
-                {country.native}
-              </p>
-            </div>
-            {data.country === country.code && (
-              <span className="ml-auto text-brand">
-                <Check size={20} />
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+        <div className="space-y-3">
+          {COUNTRIES.map((country) => (
+            <button
+              type="button"
+              key={country.code}
+              onClick={() => handleCountrySelect(country.code)}
+              aria-pressed={data.country === country.code}
+              className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45 ${
+                data.country === country.code
+                  ? "border-brand bg-brand-subtle"
+                  : "border bg-surface hover:border-strong"
+              }`}
+              data-testid={`country-${country.code}`}
+            >
+              <span className="text-3xl">{country.flag}</span>
+              <div>
+                <p className="font-semibold text-foreground">{country.name}</p>
+                <p className="text-sm text-foreground-secondary">
+                  {country.native}
+                </p>
+              </div>
+              {data.country === country.code && (
+                <span className="ml-auto text-brand">
+                  <Check size={20} />
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      </section>
 
       {/* Language selector */}
       {data.country && availableLanguages.length > 0 && (
-        <section className="mt-6">
+        <section className="rounded-2xl border border-border bg-surface-subtle/60 p-4 sm:p-5">
           <h2 className="mb-3 text-sm font-semibold text-foreground-secondary">
             {t("onboarding.languageLabel")}
           </h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {availableLanguages.map((lang) => (
               <button
+                type="button"
                 key={lang.code}
                 onClick={() => onChange({ language: lang.code })}
-                className={`flex items-center gap-2 rounded-lg border-2 px-4 py-2 text-sm transition-colors ${
+                aria-pressed={data.language === lang.code}
+                className={`flex items-center gap-2 rounded-lg border-2 px-4 py-2 text-sm transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45 ${
                   data.language === lang.code
                     ? "border-brand bg-brand-subtle font-medium text-brand"
                     : "border text-foreground-secondary hover:border-strong"
@@ -101,6 +107,7 @@ export function WelcomeRegionStep({
 
       <div className="mt-8 flex gap-3">
         <Button
+          type="button"
           variant="secondary"
           onClick={onSkipAll}
           className="flex-1"
@@ -109,6 +116,7 @@ export function WelcomeRegionStep({
           {t("onboarding.skipAll")}
         </Button>
         <Button
+          type="button"
           onClick={onNext}
           disabled={!data.country}
           className="flex-1"

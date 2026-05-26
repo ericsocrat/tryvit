@@ -46,6 +46,7 @@ vi.mock("@/lib/i18n", () => ({
           "Enter your email and we\u2019ll send you a link to reset your password.",
         "auth.sendResetLink": "Send reset link",
         "auth.sendingResetLink": "Sending\u2026",
+        "auth.resetEmailFailed": "Could not send reset email. Please try again.",
         "auth.resetEmailSent":
           "If an account exists with that email, you\u2019ll receive a password reset link shortly.",
         "auth.backToLogin": "Back to login",
@@ -148,5 +149,30 @@ describe("ForgotPasswordForm", () => {
     await waitFor(() => {
       expect(screen.getByText("Sending…")).toBeInTheDocument();
     });
+  });
+
+  it("shows error toast and keeps form visible on reset failure", async () => {
+    const { showToast } = await import("@/lib/toast");
+    mockResetPassword.mockResolvedValue({
+      error: { message: "service unavailable" },
+    });
+    const user = userEvent.setup();
+
+    render(<ForgotPasswordForm />);
+    await user.type(screen.getByLabelText("Email"), "test@example.com");
+    await user.click(
+      screen.getByRole("button", { name: "Send reset link" }),
+    );
+
+    await waitFor(() => {
+      expect(showToast).toHaveBeenCalledWith({
+        type: "error",
+        messageKey: "auth.resetEmailFailed",
+      });
+    });
+
+    expect(
+      screen.getByRole("button", { name: "Send reset link" }),
+    ).toBeInTheDocument();
   });
 });

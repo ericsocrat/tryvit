@@ -668,7 +668,7 @@ export default function SearchPage() {
                       {generatePageNumbers(data.page, data.pages).map((p, i) =>
                         p === null ? (
                           <span
-                            key={`ellipsis-${i > 0 ? "end" : "start"}`}
+                            key={`ellipsis-${i}`}
                             className="px-1 text-foreground-muted"
                           >
                             …
