@@ -1,5 +1,9 @@
 # Contract Testing
 
+> **Last updated:** 2026-05-26
+> **Status:** Active
+> **Owner issue:** [#179](https://github.com/ericsocrat/tryvit/issues/179)
+
 > Issue #179 — Schema-to-UI Contract Validation (Quality Gate 9/9)
 
 ## Why
@@ -181,6 +185,21 @@ The Zod schemas in `rpc-contracts/` mirror the TypeScript interfaces in `types.t
 3. **Documentation** — schemas serve as machine-readable API documentation
 
 If a TypeScript type changes, the corresponding Zod schema should be updated to match.
+
+## Contract Maintenance Checklist
+
+Use this checklist whenever an `api_*` function contract changes:
+
+1. Keep response envelopes additive (`api_version` and error shape must remain stable).
+2. Add or update unit tests for happy path and missing-key/type-regression cases.
+3. Add or update integration tests for auth-required and anon-safe branches.
+4. Update `docs/API_CONTRACTS.md` and `docs/FRONTEND_API_MAP.md` if request/response semantics changed.
+5. Run local contract suites before push:
+
+```bash
+cd frontend && npx vitest run schema-validation
+cd frontend && INTEGRATION=1 npx vitest run rpc-contracts
+```
 
 ## Troubleshooting
 
