@@ -1,6 +1,6 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-05-25 by GitHub Copilot (post-#1109 doc-freshness reconcile)
+> **Last updated:** 2026-05-26 by GitHub Copilot (post-#1136 merge; #1138 CI in progress)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
@@ -8,10 +8,10 @@
 ## Active Branch & PR
 
 - **Branch:** `main`
-- **Latest SHA (main):** `6782a99e` (docs(governance): refresh stale docs metadata for drift gate (#1109))
-- **Open PRs:** 0
-- **Open issues:** 1 (#1060 npm audit moderates close-as-monitor — blocked on user authorization; tracks 1 HIGH `ws` GHSA-58qx-3vcg-4xpx via @lhci/cli dev-only). Issue #1059 closed.
-- **Mode:** 🟢 Clean — main fully green. Recent #1108 (deploy backup path) and #1109 (doc-freshness frontmatter) merged. Scheduled `Dependency Audit` failure at 08:32 UTC was stale (idna 3.15 PR #1095 merged at 10:15 UTC; subsequent runs at 10:11 success).
+- **Latest SHA (main):** `3dc97631` (docs(governance): refresh stale docs metadata for drift gate (#1135) (#1136))
+- **Open PRs:** 1 (#1138 docs index metadata refresh, auto-merge enabled, checks running)
+- **Open issues:** 3 (#1139 CURRENT_STATE refresh, #1137 docs index metadata, #1060 blocked npm audit monitor)
+- **Mode:** 🟡 In-flight — main healthy; #1138 is queued on required CI after branch update.
 
 ## Recently Shipped (Phase 2 React Compiler Drain + Dependabot — 10 PRs since 1eca1509)
 
