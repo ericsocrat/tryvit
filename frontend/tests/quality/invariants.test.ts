@@ -390,6 +390,30 @@ describe("checkProductInvariants", () => {
     ).rejects.toThrow();
   });
 
+  it("skips product checks when empty-state is rendered", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+    const page = createPageMock({
+      bodyText: "Product not found",
+      locatorOverrides: {
+        "toggle-analysis": { count: 0 },
+        "tab-bar": { count: 0 },
+        "empty-state": { count: 1 },
+        "product-thumbnail": { count: 0 },
+        "product-image": { count: 0 },
+      },
+    });
+
+    await expect(
+      checkProductInvariants(page as never, "/app/product/1")
+    ).resolves.toBeUndefined();
+
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("Skipping product invariants")
+    );
+    warnSpy.mockRestore();
+  });
+
   it("fails when 2 tab bars found (duplication bug)", async () => {
     const page = createPageMock({
       bodyText: "Product",
