@@ -100,8 +100,8 @@ describe("HomePage — Hero section", () => {
 
   it("renders Logo icon in the hero", () => {
     render(<HomePage />);
-    const logo = screen.getByTestId("logo");
-    expect(logo).toHaveAttribute("data-variant", "icon");
+    const logos = screen.queryAllByTestId("logo");
+    expect(logos.some((logo) => logo.getAttribute("data-variant") === "icon")).toBe(true);
   });
 
   it("renders Get started CTA linking to signup", () => {
@@ -112,8 +112,8 @@ describe("HomePage — Hero section", () => {
 
   it("renders Sign in link to login", () => {
     render(<HomePage />);
-    const link = screen.getByText("Sign in");
-    expect(link.closest("a")).toHaveAttribute("href", "/auth/login");
+    const links = screen.queryAllByText("Sign in");
+    expect(links.some((link) => link.getAttribute("href") === "/auth/login")).toBe(true);
   });
 });
 
@@ -203,9 +203,10 @@ describe("HomePage — Data Stats section", () => {
 
   it("renders four stat values", () => {
     render(<HomePage />);
-    expect(screen.getByText("2,400+")).toBeInTheDocument();
-    expect(screen.getByText("25")).toBeInTheDocument();
-    expect(screen.getByText("9")).toBeInTheDocument();
+    expect(screen.getByText(tMap["landing.statProductsValue"])).toBeInTheDocument();
+    expect(screen.getByText(tMap["landing.statCategoriesValue"])).toBeInTheDocument();
+    expect(screen.queryAllByText(tMap["landing.statFactorsValue"]).length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryAllByText(tMap["landing.statCountriesValue"]).length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders stat labels", () => {

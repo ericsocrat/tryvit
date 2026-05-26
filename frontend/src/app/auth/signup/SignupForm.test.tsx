@@ -54,9 +54,6 @@ vi.mock("@/components/common/TurnstileWidget", () => ({
   }: {
     onSuccess: (token: string) => void;
     onError?: () => void;
-    onExpire?: () => void;
-    action?: string;
-    className?: string;
   }) => {
     capturedOnSuccess = onSuccess;
     capturedOnError = onError;
@@ -98,6 +95,13 @@ describe("SignupForm", () => {
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
   });
 
+  it("renders password helper text", () => {
+    render(<SignupForm />);
+    expect(
+      screen.getByText("Use at least 6 characters. A longer password is stronger."),
+    ).toBeInTheDocument();
+  });
+
   it("renders sign up button", () => {
     render(<SignupForm />);
     expect(screen.getByRole("button", { name: "Sign Up" })).toBeInTheDocument();
@@ -122,6 +126,35 @@ describe("SignupForm", () => {
 
     const button = screen.getByRole("button", { name: "Sign Up" });
     expect(button).not.toBeDisabled();
+  });
+
+  it("toggles password visibility", async () => {
+    const user = userEvent.setup();
+    render(<SignupForm />);
+
+    const passwordInput = screen.getByLabelText("Password");
+    expect(passwordInput).toHaveAttribute("type", "password");
+
+    await user.click(screen.getByRole("button", { name: "Show password" }));
+    expect(passwordInput).toHaveAttribute("type", "text");
+
+    await user.click(screen.getByRole("button", { name: "Hide password" }));
+    expect(passwordInput).toHaveAttribute("type", "password");
+  });
+
+  it("shows captcha helper state before and after verification", async () => {
+    const user = userEvent.setup();
+    render(<SignupForm />);
+
+    expect(
+      screen.getByText("Complete the security check to enable sign up."),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByTestId("turnstile-trigger"));
+
+    expect(
+      screen.getByText("Security check complete. You can now create your account."),
+    ).toBeInTheDocument();
   });
 
   it("renders sign in link", () => {

@@ -1,6 +1,6 @@
 import {
-  INITIAL_ONBOARDING_DATA,
-  type OnboardingData,
+    INITIAL_ONBOARDING_DATA,
+    type OnboardingData,
 } from "@/app/onboarding/types";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -122,6 +122,30 @@ describe("WelcomeRegionStep", () => {
     renderStep({ country: "PL", language: "pl" });
     await user.click(screen.getByText("English"));
     expect(onChange).toHaveBeenCalledWith({ language: "en" });
+  });
+
+  it("marks selected country as pressed", () => {
+    renderStep({ country: "PL", language: "en" });
+    expect(screen.getByTestId("country-PL")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByTestId("country-DE")).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
+  it("marks selected language as pressed", () => {
+    renderStep({ country: "PL", language: "pl" });
+    expect(screen.getByRole("button", { name: "Polski" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "English" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
   });
 
   // ─── Navigation ───────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import {
-  INITIAL_ONBOARDING_DATA,
-  type OnboardingData,
+    INITIAL_ONBOARDING_DATA,
+    type OnboardingData,
 } from "@/app/onboarding/types";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -55,6 +55,18 @@ describe("DietAllergensStep", () => {
     expect(onChange).toHaveBeenCalledWith({ diet: "vegetarian" });
   });
 
+  it("marks selected diet option as pressed", () => {
+    renderStep({ diet: "vegan" });
+    expect(screen.getByTestId("diet-vegan")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByTestId("diet-none")).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
   it("does not show strict diet toggle when diet is none", () => {
     renderStep({ diet: "none" });
     expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
@@ -100,6 +112,18 @@ describe("DietAllergensStep", () => {
     renderStep({ allergens: ["gluten", "milk"] });
     await user.click(screen.getByTestId("allergen-gluten"));
     expect(onChange).toHaveBeenCalledWith({ allergens: ["milk"] });
+  });
+
+  it("marks selected allergen as pressed", () => {
+    renderStep({ allergens: ["gluten"] });
+    expect(screen.getByTestId("allergen-gluten")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByTestId("allergen-milk")).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
   });
 
   it("shows strict allergen toggles when allergens are selected", () => {

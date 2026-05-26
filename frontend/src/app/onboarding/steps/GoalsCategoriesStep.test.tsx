@@ -64,6 +64,18 @@ describe("GoalsCategoriesStep", () => {
     expect(onChange).toHaveBeenCalledWith({ healthGoals: ["low_sodium"] });
   });
 
+  it("marks selected goals as pressed", () => {
+    renderStep({ healthGoals: ["diabetes"] });
+    expect(screen.getByTestId("goal-diabetes")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByTestId("goal-low_sodium")).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
   // ─── Categories section ───────────────────────────────────────────────────
 
   it("renders categories title", () => {
@@ -96,6 +108,18 @@ describe("GoalsCategoriesStep", () => {
     expect(onChange).toHaveBeenCalledWith({
       favoriteCategories: ["dairy"],
     });
+  });
+
+  it("marks selected categories as pressed", () => {
+    renderStep({ favoriteCategories: ["bread"] });
+    expect(screen.getByTestId("category-bread")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByTestId("category-dairy")).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
   });
 
   // ─── Navigation ───────────────────────────────────────────────────────────

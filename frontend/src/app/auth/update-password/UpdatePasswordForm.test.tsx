@@ -133,7 +133,7 @@ describe("UpdatePasswordForm", () => {
         type: "success",
         messageKey: "auth.passwordUpdated",
       });
-      expect(mockPush).toHaveBeenCalledWith("/auth/login");
+      expect(mockPush).toHaveBeenCalledWith("/auth/login?msg=password-updated");
     });
   });
 
