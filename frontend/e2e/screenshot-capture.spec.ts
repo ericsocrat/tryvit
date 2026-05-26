@@ -16,9 +16,9 @@
 //
 // Total: 12 desktop + 4 mobile + 3 dark mode = 19 screenshots
 
-import { test, type Page } from "@playwright/test";
-import path from "node:path";
+import { expect, test, type Page } from "@playwright/test";
 import fs from "node:fs";
+import path from "node:path";
 
 /* ── Constants ───────────────────────────────────────────────────────────── */
 
@@ -261,6 +261,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
     await page.goto("/app");
     await waitForOptional(page, '[data-testid="dashboard"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DESKTOP_DIR, "01-dashboard.png");
   });
 
@@ -268,6 +269,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
     await page.goto("/app/categories");
     await waitForOptional(page, '[data-testid="category-grid"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DESKTOP_DIR, "02-category-listing.png");
   });
 
@@ -275,6 +277,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
     await page.goto("/app/categories/dairy");
     await waitForOptional(page, '[data-testid="product-list"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DESKTOP_DIR, "03-category-detail.png");
   });
 
@@ -282,6 +285,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
     await page.goto("/app/product/5900820002176");
     await waitForOptional(page, '[data-testid="product-profile"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DESKTOP_DIR, "04-product-detail.png");
   });
 
@@ -299,6 +303,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
       await page.waitForTimeout(500);
     }
 
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DESKTOP_DIR, "05-score-explanation.png");
   });
 
@@ -306,6 +311,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
     await page.goto("/app/search?q=jogurt");
     await waitForOptional(page, '[data-testid="search-results"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DESKTOP_DIR, "06-search-results.png");
   });
 
@@ -313,6 +319,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
     await page.goto("/app/compare");
     await waitForOptional(page, '[data-testid="comparison-grid"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DESKTOP_DIR, "07-comparison-grid.png");
   });
 
@@ -320,6 +327,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
     await page.goto("/app/scan");
     await waitForOptional(page, '[data-testid="scan-page"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DESKTOP_DIR, "08-scan-history.png");
   });
 
@@ -327,6 +335,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
     await page.goto("/app/lists");
     await waitForOptional(page, '[data-testid="lists-page"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DESKTOP_DIR, "09-product-lists.png");
   });
 
@@ -334,6 +343,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
     await page.goto("/app/settings");
     await waitForOptional(page, '[data-testid="settings-page"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DESKTOP_DIR, "10-settings-health.png");
   });
 
@@ -341,6 +351,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
     await page.goto("/onboarding");
     await page.waitForTimeout(2000);
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DESKTOP_DIR, "11-onboarding-country.png");
   });
 
@@ -348,6 +359,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
     await page.goto("/app/admin");
     await waitForOptional(page, '[data-testid="admin-panel"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DESKTOP_DIR, "12-admin-submissions.png");
   });
 });
@@ -371,6 +383,7 @@ test.describe("Mobile screenshots (390×844)", () => {
     await page.goto("/app/product/5900820002176");
     await waitForOptional(page, '[data-testid="product-profile"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, MOBILE_DIR, "01-product-detail-mobile.png");
   });
 
@@ -378,6 +391,7 @@ test.describe("Mobile screenshots (390×844)", () => {
     await page.goto("/app/search?q=mleko");
     await waitForOptional(page, '[data-testid="search-results"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, MOBILE_DIR, "02-search-mobile.png");
   });
 
@@ -385,6 +399,7 @@ test.describe("Mobile screenshots (390×844)", () => {
     await page.goto("/app/scan");
     await waitForOptional(page, '[data-testid="scan-page"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, MOBILE_DIR, "03-scan-mobile.png");
   });
 
@@ -392,6 +407,7 @@ test.describe("Mobile screenshots (390×844)", () => {
     await page.goto("/app/categories");
     await waitForOptional(page, '[data-testid="category-grid"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, MOBILE_DIR, "04-category-mobile.png");
   });
 });
@@ -415,6 +431,7 @@ test.describe("Dark mode screenshots (1440×900)", () => {
     await page.goto("/app");
     await waitForOptional(page, '[data-testid="dashboard"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DARK_MODE_DIR, "01-dashboard-dark.png");
   });
 
@@ -422,6 +439,7 @@ test.describe("Dark mode screenshots (1440×900)", () => {
     await page.goto("/app/product/5900820002176");
     await waitForOptional(page, '[data-testid="product-profile"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(
       page,
       DARK_MODE_DIR,
@@ -433,6 +451,7 @@ test.describe("Dark mode screenshots (1440×900)", () => {
     await page.goto("/app/compare");
     await waitForOptional(page, '[data-testid="comparison-grid"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await captureScreenshot(page, DARK_MODE_DIR, "03-comparison-dark.png");
   });
 });

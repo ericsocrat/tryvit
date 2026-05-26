@@ -35,6 +35,7 @@ test.describe("A11y audit — public pages", () => {
     test(`${name} (${path}) passes WCAG 2.1 AA audit`, async ({ page }) => {
       await page.goto(path);
       await page.waitForLoadState("networkidle");
+      await expect(page.locator("body")).toBeVisible();
       await assertNoA11yViolations(page);
     });
   }
@@ -48,6 +49,7 @@ test.describe("A11y audit — dark mode", () => {
     await page.goto("/");
     await page.waitForLoadState("networkidle");
     await page.waitForSelector("html[data-theme='dark']");
+    await expect(page.locator("body")).toBeVisible();
     await assertNoA11yViolations(page);
   });
 
@@ -56,6 +58,7 @@ test.describe("A11y audit — dark mode", () => {
     await page.goto("/auth/login");
     await page.waitForLoadState("networkidle");
     await page.waitForSelector("html[data-theme='dark']");
+    await expect(page.locator("body")).toBeVisible();
     await assertNoA11yViolations(page);
   });
 });
@@ -68,18 +71,21 @@ test.describe("A11y audit — mobile viewport", () => {
   test("landing page passes a11y on mobile", async ({ page }) => {
     await page.goto("/");
     await page.waitForLoadState("networkidle");
+    await expect(page.locator("body")).toBeVisible();
     await assertNoA11yViolations(page);
   });
 
   test("login page passes a11y on mobile", async ({ page }) => {
     await page.goto("/auth/login");
     await page.waitForLoadState("networkidle");
+    await expect(page.locator("body")).toBeVisible();
     await assertNoA11yViolations(page);
   });
 
   test("learn hub passes a11y on mobile", async ({ page }) => {
     await page.goto("/learn");
     await page.waitForLoadState("networkidle");
+    await expect(page.locator("body")).toBeVisible();
     await assertNoA11yViolations(page);
   });
 });
@@ -90,6 +96,7 @@ test.describe("A11y audit — result quality", () => {
   test("axe-core returns passes (sanity check)", async ({ page }) => {
     await page.goto("/");
     await page.waitForLoadState("networkidle");
+    await expect(page.locator("body")).toBeVisible();
     const result = await auditA11y(page);
     expect(result.passes).toBeGreaterThan(0);
   });
@@ -100,6 +107,7 @@ test.describe("A11y audit — result quality", () => {
     // Decrease the baseline as fixes are shipped.
     await page.goto("/");
     await page.waitForLoadState("networkidle");
+    await expect(page.locator("body")).toBeVisible();
     const result = await auditA11y(page);
 
     // Log current counts for visibility in CI
