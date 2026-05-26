@@ -1,6 +1,6 @@
 # Domain Boundary Enforcement & Ownership Mapping
 
-> **Last updated:** 2026-02-28
+> **Last updated:** 2026-05-26
 > **Owner:** Eric (sole maintainer)
 > **Scope:** All database objects, API functions, frontend modules
 > **Purpose:** Prevent implicit coupling between workstreams by defining explicit ownership and interaction contracts

@@ -1,7 +1,7 @@
 # Data Access Pattern Audit
 
-> **Last updated:** 2026-02-28
-> **Audit cadence:** Quarterly (next: 2026-06-01)
+> **Last updated:** 2026-05-26
+> **Audit cadence:** Quarterly (next: 2026-09-01)
 > **Current tables:** 51 public tables
 > **RLS-enabled tables:** All user-facing tables
 > **Last full audit:** 2026-02-28 (initial)
