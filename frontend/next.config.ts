@@ -11,30 +11,16 @@ const withSerwist = withSerwistInit({
 
 // ── Content Security Policy (#56) ───────────────────────────────────────────
 // Prevents accidental image uploads and restricts network destinations.
-// connect-src: Supabase (HTTPS + realtime WSS), Tesseract CDN, and Sentry ingest
+// connect-src: Supabase + Tesseract CDN only
 // worker-src:  Tesseract WASM workers
 // form-action: self only (no external form submissions)
 // img-src:     self + data URIs (display) + Open Food Facts CDN
-const connectSrcAllowlist = [
-  IMAGE_POLICY_CSP_DIRECTIVES.connectSrc,
-  // Supabase realtime websocket endpoint
-  "wss://*.supabase.co",
-  // Sentry global and regional ingest domains
-  "https://*.ingest.sentry.io",
-  "https://*.ingest.de.sentry.io",
-];
-
-if (process.env.NODE_ENV === "development") {
-  // Dev tooling (e.g., HMR/logging extensions) may open localhost websockets.
-  connectSrcAllowlist.push("ws://127.0.0.1:*", "ws://localhost:*");
-}
-
 const cspValue = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://va.vercel-scripts.com`,
+  `script-src 'self' 'unsafe-eval' 'unsafe-inline'`,
   `style-src 'self' 'unsafe-inline'`,
   `img-src ${IMAGE_POLICY_CSP_DIRECTIVES.imgSrc}`,
-  `connect-src ${connectSrcAllowlist.join(" ")}`,
+  `connect-src ${IMAGE_POLICY_CSP_DIRECTIVES.connectSrc} https://*.ingest.sentry.io`,
   `worker-src ${IMAGE_POLICY_CSP_DIRECTIVES.workerSrc}`,
   `form-action ${IMAGE_POLICY_CSP_DIRECTIVES.formAction}`,
   `frame-ancestors 'none'`,
