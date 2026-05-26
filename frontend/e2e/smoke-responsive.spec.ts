@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 // ─── Responsive layout e2e tests ────────────────────────────────────────────
 // Issue #59: Verify no horizontal overflow at key breakpoints.
@@ -14,6 +14,11 @@ const VIEWPORTS = [
 
 const PUBLIC_PAGES = ["/", "/auth/login", "/auth/signup", "/contact"];
 
+async function settlePublicPage(page: Page) {
+  await page.waitForLoadState("domcontentloaded");
+  await page.waitForLoadState("networkidle", { timeout: 3000 }).catch(() => {});
+}
+
 for (const viewport of VIEWPORTS) {
   test.describe(`No horizontal overflow at ${viewport.name}`, () => {
     test.use({ viewport: { width: viewport.width, height: viewport.height } });
@@ -21,6 +26,7 @@ for (const viewport of VIEWPORTS) {
     for (const path of PUBLIC_PAGES) {
       test(`${path} has no horizontal scroll`, async ({ page }) => {
         await page.goto(path, { waitUntil: "domcontentloaded" });
+        await settlePublicPage(page);
         const scrollWidth = await page.evaluate(
           () => document.documentElement.scrollWidth,
         );

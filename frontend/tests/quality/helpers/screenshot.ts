@@ -8,8 +8,8 @@
  */
 
 import type { Page } from "@playwright/test";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
 const BASE_DIR = path.join("qa_screenshots", "latest");
 

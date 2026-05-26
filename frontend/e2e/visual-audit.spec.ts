@@ -11,7 +11,7 @@
 //
 // Output: docs/screenshots/audit/{desktop,mobile}/
 
-import { test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -199,90 +199,105 @@ test.describe("PUBLIC pages — Desktop", () => {
   test("Landing page (/)", async ({ page }) => {
     await page.goto("/");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P01-landing.png");
   });
 
   test("Login (/auth/login)", async ({ page }) => {
     await page.goto("/auth/login");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P02-login.png");
   });
 
   test("Signup (/auth/signup)", async ({ page }) => {
     await page.goto("/auth/signup");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P03-signup.png");
   });
 
   test("Contact (/contact)", async ({ page }) => {
     await page.goto("/contact");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P04-contact.png");
   });
 
   test("Privacy (/privacy)", async ({ page }) => {
     await page.goto("/privacy");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P05-privacy.png");
   });
 
   test("Terms (/terms)", async ({ page }) => {
     await page.goto("/terms");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P06-terms.png");
   });
 
   test("Offline (/offline)", async ({ page }) => {
     await page.goto("/offline");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P07-offline.png");
   });
 
   test("Learn Hub (/learn)", async ({ page }) => {
     await page.goto("/learn");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P08-learn-hub.png");
   });
 
   test("Learn — TryVit Score", async ({ page }) => {
     await page.goto("/learn/tryvit-score");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P09-learn-tryvit-score.png");
   });
 
   test("Learn — Nutri-Score", async ({ page }) => {
     await page.goto("/learn/nutri-score");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P10-learn-nutriscore.png");
   });
 
   test("Learn — Confidence", async ({ page }) => {
     await page.goto("/learn/confidence");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P11-learn-confidence.png");
   });
 
   test("Learn — Allergens", async ({ page }) => {
     await page.goto("/learn/allergens");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P12-learn-allergens.png");
   });
 
   test("Learn — NOVA Groups", async ({ page }) => {
     await page.goto("/learn/nova-groups");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P13-learn-nova.png");
   });
 
   test("Learn — Additives", async ({ page }) => {
     await page.goto("/learn/additives");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P14-learn-additives.png");
   });
 
   test("Learn — Reading Labels", async ({ page }) => {
     await page.goto("/learn/reading-labels");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "P15-learn-reading-labels.png");
   });
 });
@@ -296,18 +311,21 @@ test.describe("PUBLIC pages — Mobile", () => {
   test("Landing page (mobile)", async ({ page }) => {
     await page.goto("/");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, MOBILE_DIR, "P01-landing-mobile.png");
   });
 
   test("Login (mobile)", async ({ page }) => {
     await page.goto("/auth/login");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, MOBILE_DIR, "P02-login-mobile.png");
   });
 
   test("Learn Hub (mobile)", async ({ page }) => {
     await page.goto("/learn");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, MOBILE_DIR, "P08-learn-hub-mobile.png");
   });
 });
@@ -330,12 +348,14 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await page.goto("/app");
     await waitFor(page, '[data-testid="dashboard"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A01-dashboard.png");
   });
 
   test("A02 — Onboarding (/onboarding)", async ({ page }) => {
     await page.goto("/onboarding");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A02-onboarding.png");
   });
 
@@ -345,6 +365,7 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await page.goto("/app/categories");
     await waitFor(page, '[data-testid="category-grid"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A03-categories.png");
   });
 
@@ -352,6 +373,7 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await page.goto("/app/categories/dairy");
     await waitFor(page, '[data-testid="product-list"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A04-category-dairy.png");
   });
 
@@ -359,6 +381,7 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await page.goto("/app/categories/chips");
     await waitFor(page, '[data-testid="product-list"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A05-category-chips.png");
   });
 
@@ -366,6 +389,7 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await page.goto("/app/categories/drinks");
     await waitFor(page, '[data-testid="product-list"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A06-category-drinks.png");
   });
 
@@ -375,6 +399,7 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await page.goto("/app/product/5900820002176");
     await waitFor(page, '[data-testid="product-profile"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A07-product-detail-dairy.png");
   });
 
@@ -382,6 +407,7 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await page.goto("/app/product/5900617043375");
     await waitFor(page, '[data-testid="product-profile"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A08-product-detail-chips.png");
   });
 
@@ -391,6 +417,7 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await page.goto("/app/search");
     await waitFor(page, '[data-testid="search-input"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A09-search-empty.png");
   });
 
@@ -398,12 +425,14 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await page.goto("/app/search?q=jogurt");
     await waitFor(page, '[data-testid="search-results"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A10-search-results.png");
   });
 
   test("A11 — Saved Searches (/app/search/saved)", async ({ page }) => {
     await page.goto("/app/search/saved");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A11-saved-searches.png");
   });
 
@@ -413,24 +442,28 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await page.goto("/app/scan");
     await waitFor(page, '[data-testid="scan-page"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A12-scan.png");
   });
 
   test("A13 — Scan History (/app/scan/history)", async ({ page }) => {
     await page.goto("/app/scan/history");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A13-scan-history.png");
   });
 
   test("A14 — Submit Product (/app/scan/submit)", async ({ page }) => {
     await page.goto("/app/scan/submit");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A14-scan-submit.png");
   });
 
   test("A15 — My Submissions (/app/scan/submissions)", async ({ page }) => {
     await page.goto("/app/scan/submissions");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A15-scan-submissions.png");
   });
 
@@ -440,6 +473,7 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await page.goto("/app/lists");
     await waitFor(page, '[data-testid="lists-page"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A16-lists.png");
   });
 
@@ -449,12 +483,14 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await page.goto("/app/compare");
     await waitFor(page, '[data-testid="comparison-grid"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A17-compare.png");
   });
 
   test("A18 — Saved Comparisons (/app/compare/saved)", async ({ page }) => {
     await page.goto("/app/compare/saved");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A18-compare-saved.png");
   });
 
@@ -463,6 +499,7 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
   test("A19 — Watchlist (/app/watchlist)", async ({ page }) => {
     await page.goto("/app/watchlist");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A19-watchlist.png");
   });
 
@@ -470,24 +507,28 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
     await page.goto("/app/settings");
     await waitFor(page, '[data-testid="settings-page"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A20-settings.png");
   });
 
   test("A21 — Achievements (/app/achievements)", async ({ page }) => {
     await page.goto("/app/achievements");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A21-achievements.png");
   });
 
   test("A22 — Recipes (/app/recipes)", async ({ page }) => {
     await page.goto("/app/recipes");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A22-recipes.png");
   });
 
   test("A23 — Image Search (/app/image-search)", async ({ page }) => {
     await page.goto("/app/image-search");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A23-image-search.png");
   });
 
@@ -496,18 +537,21 @@ test.describe("AUTHENTICATED pages — Desktop", () => {
   test("A24 — Admin Submissions (/app/admin/submissions)", async ({ page }) => {
     await page.goto("/app/admin/submissions");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A24-admin-submissions.png");
   });
 
   test("A25 — Admin Metrics (/app/admin/metrics)", async ({ page }) => {
     await page.goto("/app/admin/metrics");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A25-admin-metrics.png");
   });
 
   test("A26 — Admin Monitoring (/app/admin/monitoring)", async ({ page }) => {
     await page.goto("/app/admin/monitoring");
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, DESKTOP_DIR, "A26-admin-monitoring.png");
   });
 });
@@ -528,6 +572,7 @@ test.describe("AUTHENTICATED pages — Mobile", () => {
     await page.goto("/app");
     await waitFor(page, '[data-testid="dashboard"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, MOBILE_DIR, "A01-dashboard-mobile.png");
   });
 
@@ -535,6 +580,7 @@ test.describe("AUTHENTICATED pages — Mobile", () => {
     await page.goto("/app/categories");
     await waitFor(page, '[data-testid="category-grid"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, MOBILE_DIR, "A03-categories-mobile.png");
   });
 
@@ -542,6 +588,7 @@ test.describe("AUTHENTICATED pages — Mobile", () => {
     await page.goto("/app/categories/dairy");
     await waitFor(page, '[data-testid="product-list"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, MOBILE_DIR, "A04-category-dairy-mobile.png");
   });
 
@@ -549,6 +596,7 @@ test.describe("AUTHENTICATED pages — Mobile", () => {
     await page.goto("/app/product/5900820002176");
     await waitFor(page, '[data-testid="product-profile"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, MOBILE_DIR, "A07-product-detail-mobile.png");
   });
 
@@ -556,6 +604,7 @@ test.describe("AUTHENTICATED pages — Mobile", () => {
     await page.goto("/app/search?q=mleko");
     await waitFor(page, '[data-testid="search-results"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, MOBILE_DIR, "A10-search-results-mobile.png");
   });
 
@@ -563,6 +612,7 @@ test.describe("AUTHENTICATED pages — Mobile", () => {
     await page.goto("/app/scan");
     await waitFor(page, '[data-testid="scan-page"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, MOBILE_DIR, "A12-scan-mobile.png");
   });
 
@@ -570,6 +620,7 @@ test.describe("AUTHENTICATED pages — Mobile", () => {
     await page.goto("/app/lists");
     await waitFor(page, '[data-testid="lists-page"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, MOBILE_DIR, "A16-lists-mobile.png");
   });
 
@@ -577,6 +628,7 @@ test.describe("AUTHENTICATED pages — Mobile", () => {
     await page.goto("/app/compare");
     await waitFor(page, '[data-testid="comparison-grid"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, MOBILE_DIR, "A17-compare-mobile.png");
   });
 
@@ -584,6 +636,7 @@ test.describe("AUTHENTICATED pages — Mobile", () => {
     await page.goto("/app/settings");
     await waitFor(page, '[data-testid="settings-page"]');
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, MOBILE_DIR, "A20-settings-mobile.png");
   });
 
@@ -599,6 +652,7 @@ test.describe("AUTHENTICATED pages — Mobile", () => {
       await page.waitForTimeout(500);
     }
     await stabilizePage(page);
+    await expect(page.locator("body")).toBeVisible();
     await capture(page, MOBILE_DIR, "A27-nav-drawer-mobile.png");
   });
 });
@@ -609,6 +663,6 @@ test.describe("AUTHENTICATED pages — Mobile", () => {
 
 test.describe("Cleanup", () => {
   test("Remove test user", async () => {
-    await cleanupTestUser();
+    await expect(cleanupTestUser()).resolves.toBeUndefined();
   });
 });

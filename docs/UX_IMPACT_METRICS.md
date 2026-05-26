@@ -1,6 +1,6 @@
 # UX Impact Metrics Standard
 
-> **Last updated:** 2026-02-28
+> **Last updated:** 2026-05-26
 > **Issue:** #230 (GOV-H3)
 > **Parent:** #195 (Execution Governance Blueprint)
 > **Status:** Active — metric catalog defined; measurement pending #190 (Event Analytics)

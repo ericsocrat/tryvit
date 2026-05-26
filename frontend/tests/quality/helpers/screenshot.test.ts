@@ -6,12 +6,12 @@
  */
 
 import type { Page } from "@playwright/test";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock fs before importing the module under test
-vi.mock("fs", () => ({
+vi.mock("node:fs", () => ({
   default: {
     existsSync: vi.fn(),
     rmSync: vi.fn(),

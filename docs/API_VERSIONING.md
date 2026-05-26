@@ -1,6 +1,6 @@
 # API Deprecation & Versioning Policy
 
-> **Last updated:** 2026-02-28
+> **Last updated:** 2026-05-26
 > **Scope:** All public Supabase RPC functions and API views
 > **Current API version:** 1.0 (implicit — all existing functions are v1)
 > **Breaking changes to date:** 0
