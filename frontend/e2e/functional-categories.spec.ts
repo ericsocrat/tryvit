@@ -6,24 +6,41 @@
 // 9 tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+
+async function openCategoriesOverview(page: import("@playwright/test").Page) {
+  await page.goto("/app/categories");
+  await page.waitForLoadState("domcontentloaded");
+  await expect(page).toHaveURL(/\/app\/categories/);
+}
+
+async function getCategoryLinks(page: import("@playwright/test").Page) {
+  return page.locator('a[href^="/app/categories/"]:not([href="/app/categories"])');
+}
+
+async function openFirstCategoryListing(
+  page: import("@playwright/test").Page,
+) {
+  await openCategoriesOverview(page);
+  const categoryLinks = await getCategoryLinks(page);
+  await expect(categoryLinks.first()).toBeVisible({ timeout: 15_000 });
+  await categoryLinks.first().click();
+  await page.waitForURL(/\/app\/categories\/.+/, { timeout: 15_000 });
+}
 
 // ─── Category Overview Grid ────────────────────────────────────────────────
 
 test.describe("Categories: overview grid", () => {
   test("category grid loads with clickable cards", async ({ page }) => {
-    await page.goto("/app/categories");
-    await page.waitForLoadState("networkidle");
+    await openCategoriesOverview(page);
 
     // Should have category heading
     await expect(
-      page.getByRole("heading", { name: /categor/i }),
+      page.getByRole("heading", { name: /categories|kategor/i }),
     ).toBeVisible({ timeout: 10_000 });
 
     // Should have category card links
-    const categoryLinks = page.locator(
-      'a[href*="/app/categories/"]',
-    );
+    const categoryLinks = await getCategoryLinks(page);
     await expect(categoryLinks.first()).toBeVisible({ timeout: 15_000 });
 
     // Should have multiple categories
@@ -32,10 +49,9 @@ test.describe("Categories: overview grid", () => {
   });
 
   test("category cards display score information", async ({ page }) => {
-    await page.goto("/app/categories");
-    await page.waitForLoadState("networkidle");
+    await openCategoriesOverview(page);
 
-    const categoryLinks = page.locator('a[href*="/app/categories/"]');
+    const categoryLinks = await getCategoryLinks(page);
     await expect(categoryLinks.first()).toBeVisible({ timeout: 15_000 });
 
     // Cards should contain text content (category name, stats)
@@ -51,10 +67,9 @@ test.describe("Categories: click through to listing", () => {
   test("clicking a category card navigates to listing page", async ({
     page,
   }) => {
-    await page.goto("/app/categories");
-    await page.waitForLoadState("networkidle");
+    await openCategoriesOverview(page);
 
-    const categoryLinks = page.locator('a[href*="/app/categories/"]');
+    const categoryLinks = await getCategoryLinks(page);
     await expect(categoryLinks.first()).toBeVisible({ timeout: 15_000 });
 
     // Get the href of the first category
@@ -72,16 +87,10 @@ test.describe("Categories: click through to listing", () => {
   });
 
   test("category listing shows product list", async ({ page }) => {
-    await page.goto("/app/categories");
-    await page.waitForLoadState("networkidle");
-
-    const categoryLinks = page.locator('a[href*="/app/categories/"]');
-    await expect(categoryLinks.first()).toBeVisible({ timeout: 15_000 });
-    await categoryLinks.first().click();
-    await page.waitForURL(/\/app\/categories\//, { timeout: 15_000 });
+    await openFirstCategoryListing(page);
 
     // Should have products in the listing
-    const productLinks = page.locator('a[href*="/app/product/"]');
+    const productLinks = page.locator('li a[href^="/app/product/"]');
     await expect(productLinks.first()).toBeVisible({ timeout: 15_000 });
 
     // Should have product count text
@@ -98,12 +107,10 @@ test.describe("Categories: click through to listing", () => {
 
 test.describe("Categories: listing interactions", () => {
   test("sort dropdown changes product order", async ({ page }) => {
-    // Go directly to a category listing (chips is reliable)
-    await page.goto("/app/categories/chips");
-    await page.waitForLoadState("networkidle");
+    await openFirstCategoryListing(page);
 
     // Wait for products to load
-    const productLinks = page.locator('a[href*="/app/product/"]');
+    const productLinks = page.locator('li a[href^="/app/product/"]');
     await expect(productLinks.first()).toBeVisible({ timeout: 15_000 });
 
     // Get the first product name before sorting
@@ -126,10 +133,9 @@ test.describe("Categories: listing interactions", () => {
   });
 
   test("sort direction toggle reverses order", async ({ page }) => {
-    await page.goto("/app/categories/chips");
-    await page.waitForLoadState("networkidle");
+    await openFirstCategoryListing(page);
 
-    const productLinks = page.locator('a[href*="/app/product/"]');
+    const productLinks = page.locator('li a[href^="/app/product/"]');
     await expect(productLinks.first()).toBeVisible({ timeout: 15_000 });
 
     // Click the sort direction button (Asc ↔ Desc)
@@ -147,10 +153,9 @@ test.describe("Categories: listing interactions", () => {
   test("clicking a product from listing navigates to detail", async ({
     page,
   }) => {
-    await page.goto("/app/categories/chips");
-    await page.waitForLoadState("networkidle");
+    await openFirstCategoryListing(page);
 
-    const productLinks = page.locator('a[href*="/app/product/"]');
+    const productLinks = page.locator('li a[href^="/app/product/"]');
     await expect(productLinks.first()).toBeVisible({ timeout: 15_000 });
 
     // Click the first product
@@ -159,8 +164,8 @@ test.describe("Categories: listing interactions", () => {
     // Should navigate to product detail page
     await page.waitForURL(/\/app\/product\/\d+/, { timeout: 15_000 });
 
-    // Product page should render with tab bar
-    await expect(page.getByTestId("tab-bar")).toBeVisible({ timeout: 10_000 });
+    // Product page should render core content (tab bar appears after expanding analysis)
+    await expect(page.locator("h1, .card").first()).toBeVisible({ timeout: 10_000 });
   });
 });
 
@@ -168,11 +173,10 @@ test.describe("Categories: listing interactions", () => {
 
 test.describe("Categories: stats card", () => {
   test("category listing shows summary statistics", async ({ page }) => {
-    await page.goto("/app/categories/chips");
-    await page.waitForLoadState("networkidle");
+    await openFirstCategoryListing(page);
 
     // Wait for products to load (stats load from same data)
-    const productLinks = page.locator('a[href*="/app/product/"]');
+    const productLinks = page.locator('li a[href^="/app/product/"]');
     await expect(productLinks.first()).toBeVisible({ timeout: 15_000 });
 
     // Stats card should show score range (contains "–" between numbers)
@@ -181,8 +185,7 @@ test.describe("Categories: stats card", () => {
   });
 
   test("breadcrumbs allow navigation back to categories", async ({ page }) => {
-    await page.goto("/app/categories/chips");
-    await page.waitForLoadState("networkidle");
+    await openFirstCategoryListing(page);
 
     // Click the "Categories" breadcrumb
     const breadcrumbLink = page.locator(
@@ -194,3 +197,4 @@ test.describe("Categories: stats card", () => {
     }
   });
 });
+

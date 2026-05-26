@@ -5,7 +5,7 @@
 // Requires an authenticated user with a product available in the database.
 // Falls back to smoke-level checks if no product is reachable.
 
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 // ── Test IDs referenced in acceptance criteria ──────────────────────────────
 
@@ -24,7 +24,7 @@ test.describe("Product detail — no section duplication (desktop)", () => {
     page,
   }) => {
     // Navigate to a known product — adjust ID to match seeded data
-    await page.goto("/app/product/1", { waitUntil: "networkidle" });
+    await page.goto("/app/product/1", { waitUntil: "domcontentloaded" });
 
     // Wait for product content to load (tab bar is present)
     const tabBar = page.locator(TAB_BAR);
@@ -53,13 +53,13 @@ test.describe("Product detail — no section duplication (desktop)", () => {
   test("score interpretation is in left column, not tab content", async ({
     page,
   }) => {
-    await page.goto("/app/product/1", { waitUntil: "networkidle" });
+    await page.goto("/app/product/1", { waitUntil: "domcontentloaded" });
     await expect(page.locator(TAB_BAR)).toBeVisible({ timeout: 15_000 });
 
     // Score interpretation should be a sibling of (or within) the left column,
     // NOT inside the right column that holds tabs
-    const leftCol = page.locator(".lg\\:col-span-5");
-    const rightCol = page.locator(".lg\\:col-span-7");
+    const leftCol = page.locator(String.raw`.lg\:col-span-5`);
+    const rightCol = page.locator(String.raw`.lg\:col-span-7`);
 
     await expect(
       leftCol.locator('[data-testid="score-interpretation"]'),
@@ -78,7 +78,7 @@ test.describe("Product detail — no section duplication (mobile 375px)", () => 
   test("shared sections render exactly once on every tab (mobile)", async ({
     page,
   }) => {
-    await page.goto("/app/product/1", { waitUntil: "networkidle" });
+    await page.goto("/app/product/1", { waitUntil: "domcontentloaded" });
 
     const tabBar = page.locator(TAB_BAR);
     await expect(tabBar).toBeVisible({ timeout: 15_000 });

@@ -16,7 +16,7 @@ test.describe("Recipe nutrition: browse page", () => {
     page,
   }) => {
     await page.goto("/app/recipes");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Page heading
     await expect(
@@ -31,7 +31,7 @@ test.describe("Recipe nutrition: browse page", () => {
 
   test("recipe category filter dropdown is interactive", async ({ page }) => {
     await page.goto("/app/recipes");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Category select
     const categorySelect = page.locator(
@@ -46,7 +46,7 @@ test.describe("Recipe nutrition: browse page", () => {
 
     // Select second option (first is usually "All")
     await categorySelect.selectOption({ index: 1 });
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Page should not crash after filtering
     await expect(page.locator("body")).not.toContainText(/error/i);
@@ -54,7 +54,7 @@ test.describe("Recipe nutrition: browse page", () => {
 
   test("recipe difficulty filter dropdown is interactive", async ({ page }) => {
     await page.goto("/app/recipes");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Find select elements within recipe-filter
     const selects = page.getByTestId("recipe-filter").locator("select");
@@ -71,14 +71,14 @@ test.describe("Recipe nutrition: browse page", () => {
 
       // Select second option
       await difficultySelect.selectOption({ index: 1 });
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       await expect(page.locator("body")).not.toContainText(/error/i);
     }
   });
 
   test("recipe grid shows recipe cards or empty state", async ({ page }) => {
     await page.goto("/app/recipes");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await page.waitForTimeout(3_000);
 
@@ -104,7 +104,7 @@ test.describe("Recipe nutrition: detail page", () => {
     page: import("@playwright/test").Page,
   ): Promise<boolean> {
     await page.goto("/app/recipes");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(2_000);
 
     const firstRecipeLink = page
@@ -116,7 +116,7 @@ test.describe("Recipe nutrition: detail page", () => {
 
     if (hasRecipes) {
       await firstRecipeLink.click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       return true;
     }
     return false;
@@ -207,3 +207,4 @@ test.describe("Recipe nutrition: detail page", () => {
     }
   });
 });
+

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 // ─── Image Policy Compliance E2E Tests (#56) ────────────────────────────────
 // Verifies CSP headers, privacy page content, and image upload prevention.
@@ -36,6 +36,14 @@ test.describe("Image Policy — CSP Headers", () => {
 
     expect(csp).toContain("worker-src");
     expect(csp).toContain("blob:");
+  });
+
+  test("CSP allows Cloudflare Turnstile framing", async ({ page }) => {
+    const response = await page.goto("/auth/signup");
+    const csp = response?.headers()["content-security-policy"] ?? "";
+
+    expect(csp).toContain("frame-src");
+    expect(csp).toContain("https://challenges.cloudflare.com");
   });
 });
 

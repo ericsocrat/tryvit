@@ -5,10 +5,10 @@
  * Playwright browsers or a real filesystem.
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { Page } from "@playwright/test";
 import fs from "fs";
 import path from "path";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock fs before importing the module under test
 vi.mock("fs", () => ({
@@ -23,9 +23,9 @@ vi.mock("fs", () => ({
 }));
 
 import {
-  getTimestamp,
-  cleanScreenshotDir,
-  takeScreenshot,
+    cleanScreenshotDir,
+    getTimestamp,
+    takeScreenshot,
 } from "../helpers/screenshot";
 
 /* ── getTimestamp ─────────────────────────────────────────────────────────── */
@@ -58,7 +58,12 @@ describe("cleanScreenshotDir", () => {
     await cleanScreenshotDir("mobile");
 
     const dir = path.join("qa_screenshots", "latest", "mobile");
-    expect(fs.rmSync).toHaveBeenCalledWith(dir, { recursive: true });
+    expect(fs.rmSync).toHaveBeenCalledWith(dir, {
+      recursive: true,
+      force: true,
+      maxRetries: 5,
+      retryDelay: 100,
+    });
     expect(fs.mkdirSync).toHaveBeenCalledWith(dir, { recursive: true });
   });
 

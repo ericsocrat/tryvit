@@ -34,7 +34,7 @@ test.describe("A11y audit — public pages", () => {
   for (const { name, path } of PUBLIC_PAGES) {
     test(`${name} (${path}) passes WCAG 2.1 AA audit`, async ({ page }) => {
       await page.goto(path);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
       await assertNoA11yViolations(page);
     });
   }
@@ -46,7 +46,7 @@ test.describe("A11y audit — dark mode", () => {
   test("landing page passes a11y in dark mode", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await page.waitForSelector("html[data-theme='dark']");
     await assertNoA11yViolations(page);
   });
@@ -54,7 +54,7 @@ test.describe("A11y audit — dark mode", () => {
   test("login page passes a11y in dark mode", async ({ page }) => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/auth/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await page.waitForSelector("html[data-theme='dark']");
     await assertNoA11yViolations(page);
   });
@@ -67,19 +67,19 @@ test.describe("A11y audit — mobile viewport", () => {
 
   test("landing page passes a11y on mobile", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await assertNoA11yViolations(page);
   });
 
   test("login page passes a11y on mobile", async ({ page }) => {
     await page.goto("/auth/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await assertNoA11yViolations(page);
   });
 
   test("learn hub passes a11y on mobile", async ({ page }) => {
     await page.goto("/learn");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await assertNoA11yViolations(page);
   });
 });
@@ -89,7 +89,7 @@ test.describe("A11y audit — mobile viewport", () => {
 test.describe("A11y audit — result quality", () => {
   test("axe-core returns passes (sanity check)", async ({ page }) => {
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     const result = await auditA11y(page);
     expect(result.passes).toBeGreaterThan(0);
   });
@@ -99,7 +99,7 @@ test.describe("A11y audit — result quality", () => {
     // If this number increases, a new violation was introduced.
     // Decrease the baseline as fixes are shipped.
     await page.goto("/");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     const result = await auditA11y(page);
 
     // Log current counts for visibility in CI

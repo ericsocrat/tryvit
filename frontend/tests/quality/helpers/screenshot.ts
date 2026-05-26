@@ -29,7 +29,13 @@ export async function cleanScreenshotDir(
 ): Promise<void> {
   const dir = path.join(BASE_DIR, viewport);
   if (fs.existsSync(dir)) {
-    fs.rmSync(dir, { recursive: true });
+    // Windows can transiently lock screenshot files when tests run in parallel.
+    fs.rmSync(dir, {
+      recursive: true,
+      force: true,
+      maxRetries: 5,
+      retryDelay: 100,
+    });
   }
   fs.mkdirSync(dir, { recursive: true });
 }

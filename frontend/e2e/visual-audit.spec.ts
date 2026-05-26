@@ -34,7 +34,7 @@ function ensureDir(dir: string) {
 }
 
 async function stabilizePage(page: Page) {
-  await page.waitForLoadState("networkidle").catch(() => {});
+  await page.waitForLoadState("domcontentloaded").catch(() => {});
   await page.addStyleTag({
     content: `*, *::before, *::after {
       animation-duration: 0s !important;
@@ -55,7 +55,7 @@ async function capture(
   ensureDir(dir);
   const filepath = path.join(dir, filename);
   await page.screenshot({ path: filepath, fullPage, animations: "disabled" });
-  // eslint-disable-next-line no-console
+   
   console.log(`  📸 ${filepath}`);
 }
 
@@ -144,7 +144,7 @@ async function provisionTestUser(): Promise<string> {
 
 async function signInViaUI(page: Page) {
   await page.goto("/auth/login");
-  await page.waitForLoadState("networkidle").catch(() => {});
+  await page.waitForLoadState("domcontentloaded").catch(() => {});
   await page.getByLabel("Email").fill(TEST_EMAIL);
   await page.getByLabel("Password", { exact: true }).fill(TEST_PASSWORD);
   await page.getByRole("button", { name: "Sign In" }).click();

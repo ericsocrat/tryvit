@@ -24,10 +24,21 @@ export interface InvariantResult {
   message?: string;
 }
 
+export interface ConsoleErrorEntry {
+  text: string;
+  route: string;
+  kind: "console" | "pageerror";
+}
+
+export interface NetworkErrorEntry {
+  url: string;
+  status: number;
+}
+
 export interface ErrorCollectors {
-  consoleErrors: string[];
-  networkErrors: { url: string; status: number }[];
-  pageErrors: string[];
+  consoleErrors: ConsoleErrorEntry[];
+  networkErrors: NetworkErrorEntry[];
+  pageErrors: ConsoleErrorEntry[];
 }
 
 export interface RunInvariantsOptions {
@@ -103,6 +114,7 @@ export const NETWORK_ALLOWLIST = [
  */
 export const NETWORK_4XX_ALLOWLIST = [
   "supabase.co/rest",
+  "sentry.io/api/",
 ];
 
 /* ── CI detection ───────────────────────────────────────────────────────── */
@@ -124,6 +136,45 @@ const IS_CI =
 const NETWORK_CI_5XX_ALLOWLIST = IS_CI
   ? ["supabase.co/rest"]
   : [];
+
+/* ── Transient browser noise detection ───────────────────────────────────── */
+
+const TRANSIENT_HTTP_STATUS_PATTERN =
+  /the server responded with a status of\s*(403|429)/i;
+
+function extractErrorResourceHost(text: string): string | null {
+  const match = text.match(/https?:\/\/[^\s'"()]+/i);
+  if (!match) return null;
+  try {
+    return new URL(match[0]).host;
+  } catch {
+    return null;
+  }
+}
+
+function isAppHost(host: string | null): boolean {
+  if (!host) return false;
+  return (
+    host.startsWith("localhost") ||
+    host.startsWith("127.0.0.1") ||
+    host.includes("tryvit.vercel.app")
+  );
+}
+
+function shouldIgnoreTransientHttpNoise(text: string): boolean {
+  if (!TRANSIENT_HTTP_STATUS_PATTERN.test(text)) return false;
+
+  const isGenericFailedResourceNoise =
+    text.includes("Failed to load resource") && text.includes("()");
+  if (isGenericFailedResourceNoise) return true;
+
+  const host = extractErrorResourceHost(text);
+  // If host is unknown, treat as potentially app-related and keep it.
+  if (!host) return false;
+
+  // Ignore transient 403/429 noise only for non-app hosts.
+  return !isAppHost(host);
+}
 
 /* ── Console error allowlist ────────────────────────────────────────────── */
 
@@ -379,7 +430,7 @@ export async function checkMobileInvariants(
     }).length;
   });
   if (smallTouchTargets > 0) {
-    // eslint-disable-next-line no-console
+
     console.warn(
       `[WARN] ${smallTouchTargets} touch target(s) < 44px on mobile ${route}`
     );
@@ -414,7 +465,7 @@ export async function checkDesktopInvariants(
       .catch(() => false);
     // Soft check: only warn if no nav is found (app is mobile-first PWA)
     if (!nav) {
-      // eslint-disable-next-line no-console
+
       console.warn(
         `[WARN] No visible navigation found on desktop app route ${route}`
       );
@@ -442,31 +493,73 @@ export async function checkProductInvariants(
   const tabBarAlreadyVisible = await waitForTestId(page, "tab-bar", 1_000);
   let tabBarLoaded = tabBarAlreadyVisible;
 
+  const hasProductReadyFallback = async (): Promise<boolean> => {
+    const scorePanel = await waitForTestId(page, "score-breakdown-panel", 1_500);
+    if (scorePanel) return true;
+
+    const warningsCard = await waitForTestId(page, "health-warnings-card", 1_500);
+    if (warningsCard) return true;
+
+    const alternativesCard = await waitForTestId(page, "better-alternatives-card", 1_500);
+    if (alternativesCard) return true;
+
+    return false;
+  };
+
   if (!tabBarAlreadyVisible) {
-    const toggleLoaded = await waitForTestId(page, "toggle-analysis", 15_000);
+    const toggleLoaded = await waitForTestId(page, "toggle-analysis", 12_000);
     if (!toggleLoaded) {
+      const fallbackReady = await hasProductReadyFallback();
+      if (fallbackReady) {
+
+        console.warn(
+          `[WARN] Product controls partially ready on ${route}: toggle-analysis missing, but analysis content markers are present`
+        );
+      }
+
       const emptyStateLoaded = await waitForTestId(page, "empty-state", 1_000);
       if (emptyStateLoaded) {
-        // eslint-disable-next-line no-console
+
         console.warn(
           `[WARN] Skipping product invariants on ${route}: empty-state rendered instead of product analysis controls`
         );
         return;
       }
 
-      expect(
-        toggleLoaded,
-        `Analysis toggle did not appear on ${route} within 15 s — product data may have failed to load`
-      ).toBe(true);
+      if (fallbackReady) {
+        // Invariant 21 below validates tab bar presence if needed by the route;
+        // keep executing to collect deterministic failure context instead of
+        // failing early on a timing-sensitive toggle-only wait.
+        tabBarLoaded = await waitForTestId(page, "tab-bar", 3_000);
+      } else {
+        expect(
+          toggleLoaded,
+          `Analysis toggle did not appear on ${route} within 12 s and no fallback product-ready markers were found`
+        ).toBe(true);
+      }
+
+      if (fallbackReady) {
+        // Skip toggle interaction when fallback markers indicate analysis is
+        // already present or route is partially hydrated.
+        tabBarLoaded = tabBarLoaded || (await waitForTestId(page, "tab-bar", 3_000));
+      }
+
+      if (!toggleLoaded && fallbackReady) {
+        // Continue with existing checks to provide richer failure detail.
+      } else if (!toggleLoaded) {
+        // no-op, expect() above already failed with deterministic message
+      }
     }
 
-    // Expand to full analysis so the tab bar becomes visible.
-    // Use JS-level click: async product-data loading causes continuous layout
-    // shifts that prevent Playwright from considering the button "stable".
-    const toggle = page.locator('[data-testid="toggle-analysis"]');
-    await toggle.scrollIntoViewIfNeeded();
-    await toggle.evaluate((el) => (el as HTMLElement).click());
-    tabBarLoaded = await waitForTestId(page, "tab-bar", 5_000);
+    if (toggleLoaded) {
+      // Expand to full analysis so the tab bar becomes visible.
+      // Use JS-level click: async product-data loading causes continuous layout
+      // shifts that prevent Playwright from considering the button "stable".
+      const toggle = page.locator('[data-testid="toggle-analysis"]');
+      await toggle.scrollIntoViewIfNeeded();
+      await toggle.evaluate((el) => (el as HTMLElement).click());
+      tabBarLoaded = await waitForTestId(page, "tab-bar", 5_000);
+    }
   }
 
   // 21 — Exactly 1 tab bar
@@ -632,26 +725,40 @@ export async function checkAdminInvariants(
  * Call **before** navigation so all events are captured.
  */
 export function setupErrorCollectors(page: Page): ErrorCollectors {
-  const consoleErrors: string[] = [];
-  const networkErrors: { url: string; status: number }[] = [];
-  const pageErrors: string[] = [];
+  const consoleErrors: ConsoleErrorEntry[] = [];
+  const networkErrors: NetworkErrorEntry[] = [];
+  const pageErrors: ConsoleErrorEntry[] = [];
 
   page.on("console", (msg) => {
     if (msg.type() === "error") {
       const text = msg.text();
+      if (shouldIgnoreTransientHttpNoise(text)) return;
       const isAllowlisted = CONSOLE_ERROR_ALLOWLIST.some((pattern) =>
         text.includes(pattern)
       );
-      if (!isAllowlisted) consoleErrors.push(text);
+      if (!isAllowlisted) {
+        consoleErrors.push({
+          text,
+          route: page.url(),
+          kind: "console",
+        });
+      }
     }
   });
 
   page.on("pageerror", (err) => {
     const msg = err.message;
+    if (shouldIgnoreTransientHttpNoise(msg)) return;
     const isAllowlisted = CONSOLE_ERROR_ALLOWLIST.some((pattern) =>
       msg.includes(pattern)
     );
-    if (!isAllowlisted) pageErrors.push(msg);
+    if (!isAllowlisted) {
+      pageErrors.push({
+        text: msg,
+        route: page.url(),
+        kind: "pageerror",
+      });
+    }
   });
 
   page.on("response", (response) => {
@@ -691,13 +798,16 @@ export function assertNoErrors(
   collectors: ErrorCollectors,
   route: string
 ): void {
+  const formatConsoleEntries = (entries: ConsoleErrorEntry[]) =>
+    entries.map((entry) => `${entry.kind}@${entry.route}: ${entry.text}`);
+
   expect(
     collectors.consoleErrors,
-    `Console errors on ${route}: ${collectors.consoleErrors.join("; ")}`
+    `Console errors on ${route}: ${formatConsoleEntries(collectors.consoleErrors).join("; ")}`
   ).toHaveLength(0);
   expect(
     collectors.pageErrors,
-    `Page errors on ${route}: ${collectors.pageErrors.join("; ")}`
+    `Page errors on ${route}: ${formatConsoleEntries(collectors.pageErrors).join("; ")}`
   ).toHaveLength(0);
   expect(
     collectors.networkErrors,

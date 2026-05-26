@@ -7,20 +7,34 @@
 // 10 tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 // Helper: navigate to the first product in a category listing
 async function navigateToFirstProduct(
   page: import("@playwright/test").Page,
-  category = "chips",
 ) {
-  await page.goto(`/app/categories/${category}`);
-  await page.waitForLoadState("networkidle");
+  await page.goto("/app/categories");
+  await page.waitForLoadState("domcontentloaded");
 
-  const productLinks = page.locator('a[href*="/app/product/"]');
+  const categoryLinks = page.locator(
+    'a[href^="/app/categories/"]:not([href="/app/categories"])',
+  );
+  await expect(categoryLinks.first()).toBeVisible({ timeout: 15_000 });
+  await categoryLinks.first().click();
+  await page.waitForURL(/\/app\/categories\/.+/, { timeout: 15_000 });
+
+  const productLinks = page.locator('li a[href^="/app/product/"]');
   await expect(productLinks.first()).toBeVisible({ timeout: 15_000 });
   await productLinks.first().click();
   await page.waitForURL(/\/app\/product\/\d+/, { timeout: 15_000 });
+}
+
+async function ensureFullAnalysis(page: import("@playwright/test").Page) {
+  const tabBar = page.getByTestId("tab-bar");
+  if (!(await tabBar.isVisible().catch(() => false))) {
+    await page.getByTestId("toggle-analysis").click();
+    await expect(tabBar).toBeVisible({ timeout: 10_000 });
+  }
 }
 
 // ─── Product Detail: Core Display ──────────────────────────────────────────
@@ -30,6 +44,7 @@ test.describe("Product detail: core display", () => {
     page,
   }) => {
     await navigateToFirstProduct(page);
+    await ensureFullAnalysis(page);
 
     // Should have the tab bar
     await expect(page.getByTestId("tab-bar")).toBeVisible({ timeout: 10_000 });
@@ -81,6 +96,7 @@ test.describe("Product detail: core display", () => {
 test.describe("Product detail: tab navigation", () => {
   test("Overview tab shows ingredients and allergens", async ({ page }) => {
     await navigateToFirstProduct(page);
+    await ensureFullAnalysis(page);
 
     // Overview tab is selected by default
     const overviewTab = page.locator('[role="tab"][aria-selected="true"]');
@@ -103,6 +119,7 @@ test.describe("Product detail: tab navigation", () => {
 
   test("Nutrition tab shows nutrition table with values", async ({ page }) => {
     await navigateToFirstProduct(page);
+    await ensureFullAnalysis(page);
 
     // Click the Nutrition tab
     const nutritionTab = page.getByRole("tab", {
@@ -126,6 +143,7 @@ test.describe("Product detail: tab navigation", () => {
 
   test("Alternatives tab shows healthier substitutes", async ({ page }) => {
     await navigateToFirstProduct(page);
+    await ensureFullAnalysis(page);
 
     // Click the Alternatives tab
     const altTab = page.getByRole("tab", {
@@ -144,6 +162,7 @@ test.describe("Product detail: tab navigation", () => {
 
   test("Scoring tab shows score breakdown", async ({ page }) => {
     await navigateToFirstProduct(page);
+    await ensureFullAnalysis(page);
 
     // Click the Scoring tab
     const scoringTab = page.getByRole("tab", {
@@ -160,6 +179,7 @@ test.describe("Product detail: tab navigation", () => {
 
   test("switching between tabs preserves page state", async ({ page }) => {
     await navigateToFirstProduct(page);
+    await ensureFullAnalysis(page);
 
     // Click through all tabs in sequence
     const tabs = page.locator('[role="tab"]');
@@ -207,3 +227,4 @@ test.describe("Product detail: metadata", () => {
     }
   });
 });
+

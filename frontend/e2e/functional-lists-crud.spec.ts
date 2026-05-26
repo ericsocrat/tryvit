@@ -5,7 +5,7 @@
 // 8 tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 const UNIQUE_LIST_NAME = `E2E Test List ${Date.now()}`;
 
@@ -14,7 +14,7 @@ const UNIQUE_LIST_NAME = `E2E Test List ${Date.now()}`;
 test.describe("Product lists: creation", () => {
   test("lists page renders with My Lists heading", async ({ page }) => {
     await page.goto("/app/lists");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(
       page.getByRole("heading", { name: /My Lists/i }),
@@ -23,7 +23,7 @@ test.describe("Product lists: creation", () => {
 
   test("new list button toggles create form", async ({ page }) => {
     await page.goto("/app/lists");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Click "+ New List" to show the creation form
     const newListBtn = page.getByRole("button", { name: /New List/i });
@@ -43,7 +43,9 @@ test.describe("Product lists: creation", () => {
     await expect(createBtn).toBeVisible();
 
     // Cancel button should be visible
-    const cancelBtn = page.getByRole("button", { name: /Cancel/i });
+    const cancelBtn = page.locator("form").getByRole("button", {
+      name: /Cancel/i,
+    });
     await expect(cancelBtn).toBeVisible();
 
     // Clicking Cancel hides the form
@@ -53,7 +55,7 @@ test.describe("Product lists: creation", () => {
 
   test("creates a new list with name and description", async ({ page }) => {
     await page.goto("/app/lists");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Open create form
     const newListBtn = page.getByRole("button", { name: /New List/i });
@@ -87,7 +89,7 @@ test.describe("Product lists: creation", () => {
 test.describe("Product lists: detail view", () => {
   test("navigating to list detail shows list name", async ({ page }) => {
     await page.goto("/app/lists");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Click on the test list (or any custom list)
     const listLink = page
@@ -100,7 +102,7 @@ test.describe("Product lists: detail view", () => {
 
     if (testListVisible) {
       await listLink.click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Heading should show the list name
       await expect(
@@ -116,7 +118,7 @@ test.describe("Product lists: detail view", () => {
 
   test("list detail has edit and share buttons", async ({ page }) => {
     await page.goto("/app/lists");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const listLink = page
       .getByRole("link")
@@ -128,7 +130,7 @@ test.describe("Product lists: detail view", () => {
 
     if (testListVisible) {
       await listLink.click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Wait for page to load
       await expect(
@@ -160,7 +162,7 @@ test.describe("Product lists: detail view", () => {
 test.describe("Product lists: sharing", () => {
   test("share panel toggles and shows copy link button", async ({ page }) => {
     await page.goto("/app/lists");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const listLink = page
       .getByRole("link")
@@ -172,7 +174,7 @@ test.describe("Product lists: sharing", () => {
 
     if (testListVisible) {
       await listLink.click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Click share button to open share panel
       const shareBtn = page.getByRole("button", {
@@ -206,7 +208,7 @@ test.describe("Product lists: sharing", () => {
 test.describe("Product lists: deletion", () => {
   test("delete button opens confirm dialog", async ({ page }) => {
     await page.goto("/app/lists");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Find the delete button for the test list
     const deleteBtn = page.getByRole("button", {
@@ -232,7 +234,10 @@ test.describe("Product lists: deletion", () => {
       ).toBeVisible({ timeout: 5_000 });
 
       // Cancel should close dialog without deleting
-      const cancelBtn = page.getByRole("button", { name: /Cancel/i });
+      const cancelBtn = page
+        .getByRole("dialog")
+        .getByRole("button", { name: /Cancel/i })
+        .first();
       await expect(cancelBtn).toBeVisible();
       await cancelBtn.click();
 
@@ -245,7 +250,7 @@ test.describe("Product lists: deletion", () => {
 
   test("confirming delete removes the list", async ({ page }) => {
     await page.goto("/app/lists");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const deleteBtn = page.getByRole("button", {
       name: new RegExp(`Delete ${UNIQUE_LIST_NAME}`, "i"),
@@ -290,3 +295,4 @@ test.describe("Product lists: deletion", () => {
     }
   });
 });
+

@@ -19,19 +19,19 @@ import { describe, expect, it, vi } from "vitest";
  * ──────────────────────────────────────────────────────────────────────── */
 
 import {
-    assertNoErrors,
-    checkAdminInvariants,
-    checkDesktopInvariants,
-    checkGlobalInvariants,
-    checkMobileInvariants,
-    checkProductInvariants,
-    checkRecipesInvariants,
-    checkSettingsInvariants,
-    CONSOLE_ERROR_ALLOWLIST,
-    NETWORK_4XX_ALLOWLIST,
-    NETWORK_ALLOWLIST,
-    runInvariantsForRoute,
-    setupErrorCollectors,
+  assertNoErrors,
+  checkAdminInvariants,
+  checkDesktopInvariants,
+  checkGlobalInvariants,
+  checkMobileInvariants,
+  checkProductInvariants,
+  checkRecipesInvariants,
+  checkSettingsInvariants,
+  CONSOLE_ERROR_ALLOWLIST,
+  NETWORK_4XX_ALLOWLIST,
+  NETWORK_ALLOWLIST,
+  runInvariantsForRoute,
+  setupErrorCollectors,
 } from "./invariants";
 
 /* ── Page mock factory ───────────────────────────────────────────────────── */
@@ -97,6 +97,7 @@ function createPageMock(options: PageMockOptions = {}) {
 
   const page = {
     textContent: vi.fn(async () => bodyText),
+    url: vi.fn(() => "http://localhost:3000/test"),
     evaluate: vi.fn(async (fn: unknown) => {
       // getVisibleBodyText() clones body and strips script/style/noscript —
       // detect its callback by fingerprint and return the mock bodyText.
@@ -390,6 +391,26 @@ describe("checkProductInvariants", () => {
     ).rejects.toThrow();
   });
 
+  it("passes when toggle-analysis is missing but fallback content markers are present", async () => {
+    const page = createPageMock({
+      bodyText: "Product",
+      locatorOverrides: {
+        "toggle-analysis": { count: 0 },
+        "tab-bar": { count: 1 },
+        "score-breakdown-panel": { count: 1 },
+        "health-warnings-card": { count: 0 },
+        "better-alternatives-card": { count: 0 },
+        "h2:visible": { allTextContents: ["Nutrition", "Scoring"] },
+        "product-thumbnail": { count: 0 },
+        "product-image": { count: 0 },
+      },
+    });
+
+    await expect(
+      checkProductInvariants(page as never, "/app/product/1")
+    ).resolves.toBeUndefined();
+  });
+
   it("skips product checks when empty-state is rendered", async () => {
     const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
@@ -577,7 +598,8 @@ describe("setupErrorCollectors", () => {
     page._emit("console", { type: () => "error", text: () => "Test error" });
 
     expect(collectors.consoleErrors).toHaveLength(1);
-    expect(collectors.consoleErrors[0]).toBe("Test error");
+    expect(collectors.consoleErrors[0].text).toBe("Test error");
+    expect(collectors.consoleErrors[0].route).toBe("http://localhost:3000/test");
   });
 
   it("ignores non-error console messages", () => {
@@ -596,7 +618,8 @@ describe("setupErrorCollectors", () => {
     page._emit("pageerror", { message: "Unhandled rejection" });
 
     expect(collectors.pageErrors).toHaveLength(1);
-    expect(collectors.pageErrors[0]).toBe("Unhandled rejection");
+    expect(collectors.pageErrors[0].text).toBe("Unhandled rejection");
+    expect(collectors.pageErrors[0].route).toBe("http://localhost:3000/test");
   });
 
   it("does not collect allowlisted page errors (e.g. SW redirect)", () => {
@@ -680,7 +703,46 @@ describe("setupErrorCollectors", () => {
     });
 
     expect(collectors.consoleErrors).toHaveLength(1);
-    expect(collectors.consoleErrors[0]).toContain("TypeError");
+    expect(collectors.consoleErrors[0].text).toContain("TypeError");
+  });
+
+  it("ignores transient 403/429 console noise for non-app hosts", () => {
+    const page = createPageMock();
+    const collectors = setupErrorCollectors(page as never);
+
+    page._emit("console", {
+      type: () => "error",
+      text: () =>
+        "Failed to load resource: the server responded with a status of 429 (https://api.thirdparty.example/script.js)",
+    });
+
+    expect(collectors.consoleErrors).toHaveLength(0);
+  });
+
+  it("ignores generic 429 console resource noise when URL is unavailable", () => {
+    const page = createPageMock();
+    const collectors = setupErrorCollectors(page as never);
+
+    page._emit("console", {
+      type: () => "error",
+      text: () =>
+        "Failed to load resource: the server responded with a status of 429 ()",
+    });
+
+    expect(collectors.consoleErrors).toHaveLength(0);
+  });
+
+  it("does not ignore transient 403/429 console errors for app host", () => {
+    const page = createPageMock();
+    const collectors = setupErrorCollectors(page as never);
+
+    page._emit("console", {
+      type: () => "error",
+      text: () =>
+        "Failed to load resource: the server responded with a status of 403 (http://localhost:3000/app.js)",
+    });
+
+    expect(collectors.consoleErrors).toHaveLength(1);
   });
 
   it("ignores 4xx from supabase.co/rest", () => {
@@ -696,6 +758,19 @@ describe("setupErrorCollectors", () => {
     page._emit("response", {
       status: () => 403,
       url: () => "https://xyz.supabase.co/rest/v1/users",
+    });
+
+    expect(collectors.networkErrors).toHaveLength(0);
+  });
+
+  it("ignores 4xx from Sentry ingest API", () => {
+    const page = createPageMock();
+    const collectors = setupErrorCollectors(page as never);
+
+    page._emit("response", {
+      status: () => 429,
+      url: () =>
+        "https://o4510932826718208.ingest.de.sentry.io/api/4510932837531728/envelope/",
     });
 
     expect(collectors.networkErrors).toHaveLength(0);
@@ -733,6 +808,7 @@ describe("setupErrorCollectors", () => {
 
   it("NETWORK_4XX_ALLOWLIST contains supabase.co/rest", () => {
     expect(NETWORK_4XX_ALLOWLIST).toContain("supabase.co/rest");
+    expect(NETWORK_4XX_ALLOWLIST).toContain("sentry.io/api/");
   });
 
   it("NETWORK_ALLOWLIST does not include supabase.co/rest", () => {
@@ -743,9 +819,9 @@ describe("setupErrorCollectors", () => {
 describe("assertNoErrors", () => {
   it("passes when collectors are empty", () => {
     const collectors = {
-      consoleErrors: [] as string[],
+      consoleErrors: [] as Array<{ text: string; route: string; kind: "console" | "pageerror" }>,
       networkErrors: [] as { url: string; status: number }[],
-      pageErrors: [] as string[],
+      pageErrors: [] as Array<{ text: string; route: string; kind: "console" | "pageerror" }>,
     };
 
     expect(() => assertNoErrors(collectors, "/test")).not.toThrow();
@@ -753,9 +829,15 @@ describe("assertNoErrors", () => {
 
   it("throws when console errors exist", () => {
     const collectors = {
-      consoleErrors: ["Something broke"],
+      consoleErrors: [
+        {
+          text: "Something broke",
+          route: "http://localhost:3000/test",
+          kind: "console" as const,
+        },
+      ],
       networkErrors: [] as { url: string; status: number }[],
-      pageErrors: [] as string[],
+      pageErrors: [] as Array<{ text: string; route: string; kind: "console" | "pageerror" }>,
     };
 
     expect(() => assertNoErrors(collectors, "/test")).toThrow();
@@ -763,9 +845,9 @@ describe("assertNoErrors", () => {
 
   it("throws when network errors exist", () => {
     const collectors = {
-      consoleErrors: [] as string[],
+      consoleErrors: [] as Array<{ text: string; route: string; kind: "console" | "pageerror" }>,
       networkErrors: [{ url: "https://example.com/api", status: 500 }],
-      pageErrors: [] as string[],
+      pageErrors: [] as Array<{ text: string; route: string; kind: "console" | "pageerror" }>,
     };
 
     expect(() => assertNoErrors(collectors, "/test")).toThrow();
