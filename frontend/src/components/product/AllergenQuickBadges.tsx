@@ -22,7 +22,7 @@ export function AllergenQuickBadges({ allergens }: AllergenQuickBadgesProps) {
     return (
       <div className="card">
         <div className="flex items-center gap-2 text-sm text-score-green-text">
-          <ShieldCheck className="h-4 w-4 flex-shrink-0" aria-hidden />
+          <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden />
           <span>{t("product.noKnownAllergens")}</span>
         </div>
       </div>
