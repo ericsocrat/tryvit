@@ -79,7 +79,7 @@ async function captureScreenshot(
     fullPage: options.fullPage ?? false,
     animations: "disabled",
   });
-   
+
   console.log(`  ✅ Captured: ${filepath}`);
 }
 
@@ -92,7 +92,7 @@ async function waitForOptional(page: Page, selector: string, timeout = 10_000) {
     await page.waitForSelector(selector, { timeout });
   } catch {
     // Selector didn't appear — proceed with screenshot of current state
-     
+
     console.log(`  ⚠️ Selector not found (proceeding): ${selector}`);
   }
 }
