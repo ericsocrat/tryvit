@@ -1,6 +1,6 @@
 import type { CategoryOverviewItem } from "@/lib/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CategoriesBrowse } from "./CategoriesBrowse";
 
@@ -112,7 +112,7 @@ describe("CategoriesBrowse", () => {
       data: MOCK_CATEGORIES,
     });
     render(<CategoriesBrowse />, { wrapper: createWrapper() });
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByText("Dairy")).toBeInTheDocument();
       expect(screen.getByText("Chips")).toBeInTheDocument();
     });
@@ -124,7 +124,7 @@ describe("CategoriesBrowse", () => {
       data: MOCK_CATEGORIES,
     });
     render(<CategoriesBrowse />, { wrapper: createWrapper() });
-    await vi.waitFor(() => {
+    await waitFor(() => {
       const links = screen.getAllByRole("link");
       const hrefs = links.map((l) => l.getAttribute("href"));
       expect(hrefs).toContain("/app/categories/dairy");
@@ -138,7 +138,7 @@ describe("CategoriesBrowse", () => {
       data: MOCK_CATEGORIES,
     });
     render(<CategoriesBrowse />, { wrapper: createWrapper() });
-    await vi.waitFor(() => {
+    await waitFor(() => {
       const viewAll = screen.getAllByRole("link").find(
         (l) => l.getAttribute("href") === "/app/categories",
       );
@@ -152,7 +152,7 @@ describe("CategoriesBrowse", () => {
       data: MOCK_CATEGORIES,
     });
     render(<CategoriesBrowse />, { wrapper: createWrapper() });
-    await vi.waitFor(() => {
+    await waitFor(() => {
       const viewAll = screen.getAllByRole("link").find(
         (l) => l.getAttribute("href") === "/app/categories",
       );
@@ -168,7 +168,7 @@ describe("CategoriesBrowse", () => {
       data: MOCK_CATEGORIES,
     });
     render(<CategoriesBrowse />, { wrapper: createWrapper() });
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByTestId("cat-icon-dairy")).toBeInTheDocument();
       expect(screen.getByTestId("cat-icon-chips")).toBeInTheDocument();
     });
@@ -180,7 +180,7 @@ describe("CategoriesBrowse", () => {
       data: MOCK_CATEGORIES,
     });
     render(<CategoriesBrowse />, { wrapper: createWrapper() });
-    await vi.waitFor(() => {
+    await waitFor(() => {
       const list = screen.getByRole("list");
       expect(list.className).toMatch(/px-4/);
       expect(list.className).toMatch(/-mx-4/);

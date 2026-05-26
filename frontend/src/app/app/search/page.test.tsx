@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -1064,15 +1064,22 @@ describe("SearchPage", () => {
   });
 
   it("does not trigger instant search for single character", async () => {
-    const user = userEvent.setup();
+    vi.useFakeTimers();
+    try {
+      render(<SearchPage />, { wrapper: createWrapper() });
 
-    render(<SearchPage />, { wrapper: createWrapper() });
+      fireEvent.change(screen.getByPlaceholderText("Search products…"), {
+        target: { value: "c" },
+      });
 
-    await user.type(screen.getByPlaceholderText("Search products…"), "c");
+      // Advance past debounce in act() so React flushes queued updates.
+      await act(async () => {
+        vi.advanceTimersByTime(400);
+      });
 
-    // Wait a tick to ensure debounce would have fired
-    await new Promise((r) => setTimeout(r, 400));
-
-    expect(mockSearchProducts).not.toHaveBeenCalled();
+      expect(mockSearchProducts).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

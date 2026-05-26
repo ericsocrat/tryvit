@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HealthInsightsPanel } from "./HealthInsightsPanel";
 
@@ -95,7 +95,7 @@ describe("HealthInsightsPanel", () => {
       wrapper: createWrapper(),
     });
     // Wait for query to settle — panel should disappear
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(container.querySelector("[data-testid='health-insights-panel']")).not.toBeInTheDocument();
     });
   });
@@ -115,7 +115,7 @@ describe("HealthInsightsPanel", () => {
     const { container } = render(<HealthInsightsPanel />, {
       wrapper: createWrapper(),
     });
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(
         container.querySelector("[data-testid='health-insights-panel']"),
       ).not.toBeInTheDocument();
@@ -128,7 +128,7 @@ describe("HealthInsightsPanel", () => {
       data: MOCK_INSIGHTS,
     });
     render(<HealthInsightsPanel />, { wrapper: createWrapper() });
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByTestId("health-insights-panel")).toBeInTheDocument();
     });
   });
@@ -139,7 +139,7 @@ describe("HealthInsightsPanel", () => {
       data: MOCK_INSIGHTS,
     });
     render(<HealthInsightsPanel />, { wrapper: createWrapper() });
-    await vi.waitFor(() => {
+    await waitFor(() => {
       expect(screen.getByTestId("nova-distribution")).toBeInTheDocument();
     });
   });

@@ -450,7 +450,7 @@ describe("SearchAutocomplete", () => {
     return { key, preventDefault: vi.fn() };
   }
 
-  it("keyboard ArrowDown/Up navigates popular items", () => {
+  it("keyboard ArrowDown/Up navigates popular items", async () => {
     const onInputKeyDown = vi.fn();
     render(
       <SearchAutocomplete
@@ -464,10 +464,14 @@ describe("SearchAutocomplete", () => {
     expect(onInputKeyDown).toHaveBeenCalled();
 
     // ArrowDown to select first popular item
-    latestHandler(onInputKeyDown)(fakeKey("ArrowDown") as React.KeyboardEvent);
+    await act(async () => {
+      latestHandler(onInputKeyDown)(fakeKey("ArrowDown") as React.KeyboardEvent);
+    });
 
     // ArrowUp wraps back
-    latestHandler(onInputKeyDown)(fakeKey("ArrowUp") as React.KeyboardEvent);
+    await act(async () => {
+      latestHandler(onInputKeyDown)(fakeKey("ArrowUp") as React.KeyboardEvent);
+    });
   });
 
   it("keyboard Enter on popular item calls onQuerySubmit", async () => {
@@ -533,7 +537,7 @@ describe("SearchAutocomplete", () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it("keyboard Escape closes dropdown", () => {
+  it("keyboard Escape closes dropdown", async () => {
     const onInputKeyDown = vi.fn();
     const onClose = vi.fn();
     render(
@@ -546,7 +550,9 @@ describe("SearchAutocomplete", () => {
       { wrapper: createWrapper() },
     );
 
-    latestHandler(onInputKeyDown)(fakeKey("Escape") as React.KeyboardEvent);
+    await act(async () => {
+      latestHandler(onInputKeyDown)(fakeKey("Escape") as React.KeyboardEvent);
+    });
 
     expect(onClose).toHaveBeenCalled();
   });
@@ -615,7 +621,9 @@ describe("SearchAutocomplete", () => {
     );
 
     // Enter without ArrowDown (activeIndex = -1) — submits the query text
-    latestHandler(onInputKeyDown)(fakeKey("Enter") as React.KeyboardEvent);
+    await act(async () => {
+      latestHandler(onInputKeyDown)(fakeKey("Enter") as React.KeyboardEvent);
+    });
 
     expect(onQuerySubmit).toHaveBeenCalledWith("lay");
     expect(onClose).toHaveBeenCalled();

@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ShareComparison } from "./ShareComparison";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -52,7 +52,10 @@ describe("ShareComparison", () => {
 
   it("copies URL to clipboard on copy URL click", async () => {
     renderComponent();
-    fireEvent.click(screen.getByText("Copy URL"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("Copy URL"));
+      await Promise.resolve();
+    });
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
       expect.stringContaining("ids=1,2,3"),
     );
@@ -76,7 +79,10 @@ describe("ShareComparison", () => {
 
   it("copies share link on share link button click", async () => {
     renderComponent({ existingShareToken: "tok-abc" });
-    fireEvent.click(screen.getByText("Copy Share Link"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("Copy Share Link"));
+      await Promise.resolve();
+    });
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
       expect.stringContaining("/compare/shared/tok-abc"),
     );
@@ -84,7 +90,10 @@ describe("ShareComparison", () => {
 
   it("shows copied feedback after copy", async () => {
     renderComponent();
-    fireEvent.click(screen.getByText("Copy URL"));
+    await act(async () => {
+      fireEvent.click(screen.getByText("Copy URL"));
+      await Promise.resolve();
+    });
     await waitFor(() => {
       // Check icon + "Copied!" text (Lucide Check replaces ✓)
       expect(screen.getByText("Copied!")).toBeTruthy();

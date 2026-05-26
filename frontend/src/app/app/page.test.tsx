@@ -174,13 +174,15 @@ describe("DashboardPage", () => {
     mockGetDashboardInsights.mockResolvedValue({ ok: true, data: mockInsights });
   });
 
-  it("shows skeleton loading state initially", () => {
+  it("shows skeleton loading state initially", async () => {
     // Never resolve to keep loading state
     mockGetDashboardData.mockReturnValue(new Promise(() => {}));
     render(<DashboardPage />, { wrapper: createWrapper() });
-    const status = screen.getAllByRole("status");
-    expect(status.length).toBeGreaterThanOrEqual(1);
-    expect(status[0].getAttribute("aria-busy")).toBe("true");
+    await waitFor(() => {
+      const status = screen.getAllByRole("status");
+      expect(status.length).toBeGreaterThanOrEqual(1);
+      expect(status[0].getAttribute("aria-busy")).toBe("true");
+    });
   });
 
   it("renders a time-aware greeting", async () => {
