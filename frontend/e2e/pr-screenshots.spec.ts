@@ -21,10 +21,10 @@
 //
 // Output: frontend/pr-screenshots/{mobile,desktop}/
 
-import { test, type Page } from "@playwright/test";
-import path from "node:path";
+import { expect, test, type Page } from "@playwright/test";
 import fs from "node:fs";
-import { getChangedPages, type PageEntry } from "./helpers/page-map";
+import path from "node:path";
+import { getChangedPages } from "./helpers/page-map";
 
 /* ── Constants ───────────────────────────────────────────────────────────── */
 
@@ -226,6 +226,7 @@ if (publicPages.length > 0) {
         await page.setViewportSize(MOBILE_VIEWPORT);
         await page.goto(entry.url);
         await stabilizePage(page);
+        await expect(page.locator("body")).toBeVisible();
         await captureScreenshot(page, MOBILE_DIR, `${entry.label}.png`);
       });
 
@@ -233,6 +234,7 @@ if (publicPages.length > 0) {
         await page.setViewportSize(DESKTOP_VIEWPORT);
         await page.goto(entry.url);
         await stabilizePage(page);
+        await expect(page.locator("body")).toBeVisible();
         await captureScreenshot(page, DESKTOP_DIR, `${entry.label}.png`);
       });
     }
@@ -262,6 +264,7 @@ if (authPages.length > 0) {
         await page.setViewportSize(MOBILE_VIEWPORT);
         await page.goto(entry.url);
         await stabilizePage(page);
+        await expect(page.locator("body")).toBeVisible();
         await captureScreenshot(page, MOBILE_DIR, `${entry.label}.png`);
       });
 
@@ -269,6 +272,7 @@ if (authPages.length > 0) {
         await page.setViewportSize(DESKTOP_VIEWPORT);
         await page.goto(entry.url);
         await stabilizePage(page);
+        await expect(page.locator("body")).toBeVisible();
         await captureScreenshot(page, DESKTOP_DIR, `${entry.label}.png`);
       });
     }
@@ -281,5 +285,6 @@ if (changedPages.length === 0) {
   test("No pages to screenshot (no matching file changes detected)", () => {
     // eslint-disable-next-line no-console
     console.log("ℹ️  No changed files matched any page pattern. Nothing to capture.");
+    expect(changedPages).toHaveLength(0);
   });
 }
