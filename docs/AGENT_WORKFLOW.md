@@ -6,7 +6,7 @@
 > **Authority:** `copilot-instructions.md` is the primary source of truth.
 > This doc is a pointer and quick-reference supplement.
 > **Owner:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200)
-> **Last updated:** 2026-03-02
+> **Last updated:** 2026-05-26
 
 ---
 
