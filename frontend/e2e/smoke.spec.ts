@@ -55,21 +55,25 @@ test.describe("Auth-protected redirects", () => {
   test("settings redirects to login", async ({ page }) => {
     await page.goto("/app/settings");
     await page.waitForURL(/\/auth\/login/);
+    await expect(page.locator("text=Welcome back")).toBeVisible();
   });
 
   test("categories redirects to login", async ({ page }) => {
     await page.goto("/app/categories");
     await page.waitForURL(/\/auth\/login/);
+    await expect(page.locator("text=Welcome back")).toBeVisible();
   });
 
   test("scan redirects to login", async ({ page }) => {
     await page.goto("/app/scan");
     await page.waitForURL(/\/auth\/login/);
+    await expect(page.locator("text=Welcome back")).toBeVisible();
   });
 
   test("product detail redirects to login", async ({ page }) => {
     await page.goto("/app/product/1");
     await page.waitForURL(/\/auth\/login/);
+    await expect(page.locator("text=Welcome back")).toBeVisible();
   });
 });
 

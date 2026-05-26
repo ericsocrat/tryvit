@@ -9,7 +9,7 @@
 // Issue #50 — A11y CI Gate
 // Named authenticated-* to match the "authenticated" Playwright project pattern.
 
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import { assertNoA11yViolations, auditA11y } from "./helpers/a11y";
 
 /* ── Auth-required routes to audit ───────────────────────────────────────── */
@@ -29,6 +29,7 @@ test.describe("A11y audit — authenticated pages", () => {
     test(`${name} (${path}) passes WCAG 2.1 AA audit`, async ({ page }) => {
       await page.goto(path);
       await page.waitForLoadState("networkidle");
+      await expect(page.locator("body")).toBeVisible();
       await assertNoA11yViolations(page);
     });
   }
@@ -42,12 +43,14 @@ test.describe("A11y audit — authenticated mobile", () => {
   test("search page passes a11y on mobile", async ({ page }) => {
     await page.goto("/app/search");
     await page.waitForLoadState("networkidle");
+    await expect(page.locator("body")).toBeVisible();
     await assertNoA11yViolations(page);
   });
 
   test("dashboard passes a11y on mobile", async ({ page }) => {
     await page.goto("/app");
     await page.waitForLoadState("networkidle");
+    await expect(page.locator("body")).toBeVisible();
     await assertNoA11yViolations(page);
   });
 });
@@ -59,6 +62,7 @@ test.describe("A11y audit — authenticated dark mode", () => {
     await page.emulateMedia({ colorScheme: "dark" });
     await page.goto("/app/search");
     await page.waitForLoadState("networkidle");
+    await expect(page.locator("body")).toBeVisible();
     await assertNoA11yViolations(page);
   });
 });
@@ -69,6 +73,7 @@ test.describe("A11y audit — authenticated baseline", () => {
   test("search page zero blocking violations", async ({ page }) => {
     await page.goto("/app/search");
     await page.waitForLoadState("networkidle");
+    await expect(page.locator("body")).toBeVisible();
     const result = await auditA11y(page);
 
     console.log(
