@@ -9,9 +9,12 @@
 
 import { test, expect } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
+import type { WebSocketLikeConstructor } from "@supabase/realtime-js";
+import WebSocket from "ws";
 
 const ONBOARDING_EMAIL = "e2e-onboarding@test.tryvit.local";
 const ONBOARDING_PASSWORD = "OnboardingTest123!";
+const WebSocketTransport = WebSocket as unknown as WebSocketLikeConstructor;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -21,6 +24,7 @@ function getAdminClient() {
   if (!url || !key) throw new Error("Missing Supabase env vars");
   return createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
+    realtime: { transport: WebSocketTransport },
   });
 }
 

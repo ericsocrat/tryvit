@@ -70,6 +70,7 @@
     "@types/node": "^25.6.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^6.0.2",
     "@vitest/coverage-v8": "^4.1.7",
     "axe-core": "^4.11.2",
@@ -83,6 +84,7 @@
     "tailwindcss": "^4.2.1",
     "typescript": "^6.0.3",
     "vitest": "^4.0.18",
-    "vitest-axe": "^0.1.0"
+    "vitest-axe": "^0.1.0",
+    "ws": "^8.21.0"
   }
 }

@@ -3,9 +3,12 @@
 // Requires SUPABASE_SERVICE_ROLE_KEY to access the Admin API.
 
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { WebSocketLikeConstructor } from "@supabase/realtime-js";
+import WebSocket from "ws";
 
 export const TEST_EMAIL = "e2e-playwright@test.tryvit.local";
 export const TEST_PASSWORD = "PlaywrightTest123!";
+const WebSocketTransport = WebSocket as unknown as WebSocketLikeConstructor;
 
 function getAdminClient(): SupabaseClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -19,6 +22,9 @@ function getAdminClient(): SupabaseClient {
 
   return createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },
+    // Node <22 does not provide a native WebSocket for Supabase Realtime.
+    // Provide ws transport so CI auth setup can initialize the admin client.
+    realtime: { transport: WebSocketTransport },
   });
 }
 
