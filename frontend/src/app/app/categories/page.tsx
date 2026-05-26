@@ -96,7 +96,7 @@ function CategoryCard({
             </p>
           </div>
           <div
-            className={`flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold ${display.bg} ${display.color}`}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${display.bg} ${display.color}`}
           >
             {tryVitScore}
           </div>
