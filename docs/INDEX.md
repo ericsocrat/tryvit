@@ -1,8 +1,8 @@
 # Documentation Index
 
-> **Last updated:** 2026-03-02
+> **Last updated:** 2026-05-26
 > **Status:** Active — update when adding, renaming, or archiving docs
-> **Total documents:** 51 in `docs/` + 10 in `docs/decisions/` + 17 in `docs/assets/logo/` + 5 in `docs/assets/banners/` + 7 elsewhere in repo
+> **Total documents:** 65 in `docs/` + 11 in `docs/decisions/` + 25 in `docs/assets/logo/` + 7 in `docs/assets/banners/` + 7 elsewhere in repo
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
 
 ---
