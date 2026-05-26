@@ -1,14 +1,23 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Header } from "./Header";
 
 const mockGetUser = vi.fn();
+const mockSetMode = vi.fn();
+let mockResolvedTheme: "light" | "dark" = "light";
 
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
     auth: {
       getUser: () => mockGetUser(),
     },
+  }),
+}));
+
+vi.mock("@/hooks/use-theme", () => ({
+  useTheme: () => ({
+    resolved: mockResolvedTheme,
+    setMode: mockSetMode,
   }),
 }));
 
@@ -30,6 +39,7 @@ vi.mock("next/link", () => ({
 describe("Header", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockResolvedTheme = "light";
     mockGetUser.mockResolvedValue({ data: { user: null } });
   });
 
@@ -60,5 +70,17 @@ describe("Header", () => {
       "href",
       "/contact",
     );
+  });
+
+  it("renders a hydration-safe theme toggle button", async () => {
+    mockResolvedTheme = "dark";
+
+    render(<Header />);
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "Light" }),
+      ).toBeInTheDocument();
+    });
   });
 });

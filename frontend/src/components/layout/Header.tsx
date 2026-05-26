@@ -13,6 +13,7 @@ export function Header() {
   const { t } = useTranslation();
   const { resolved, setMode } = useTheme();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     try {
@@ -25,9 +26,19 @@ export function Header() {
     }
   }, []);
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   function toggleTheme() {
     setMode(resolved === "dark" ? "light" : "dark");
   }
+
+  const themeLabel = isMounted
+    ? resolved === "dark"
+      ? t("theme.light")
+      : t("theme.dark")
+    : "Toggle theme";
 
   return (
     <header className="sticky top-0 z-40 border-b border-strong/40 bg-surface/90 shadow-[0_1px_0_0_rgba(0,0,0,0.02)] backdrop-blur supports-[backdrop-filter]:bg-surface/75 dark:border-white/12 dark:bg-surface/92 dark:shadow-[0_1px_0_0_rgba(255,255,255,0.05)]">
@@ -45,12 +56,10 @@ export function Header() {
           <button
             onClick={toggleTheme}
             className="touch-target rounded-md border border-transparent p-2 text-foreground-secondary transition-colors hover:border-strong hover:bg-surface-muted hover:text-foreground focus-visible:border-brand focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/40 dark:text-foreground/90 dark:hover:border-white/20 dark:hover:bg-white/10"
-            aria-label={
-              resolved === "dark" ? t("theme.light") : t("theme.dark")
-            }
-            title={resolved === "dark" ? t("theme.light") : t("theme.dark")}
+            aria-label={themeLabel}
+            title={themeLabel}
           >
-            {resolved === "dark" ? (
+            {isMounted && resolved === "dark" ? (
               <Sun size={20} aria-hidden="true" />
             ) : (
               <Moon size={20} aria-hidden="true" />
