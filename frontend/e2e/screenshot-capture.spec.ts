@@ -188,7 +188,7 @@ async function provisionTestUser(): Promise<string> {
     }),
   });
 
-  return testUserId!;
+  return userData.id;
 }
 
 /**
