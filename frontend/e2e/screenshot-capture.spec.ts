@@ -47,7 +47,7 @@ function ensureDir(dir: string) {
  * Disables animations and waits for network idle.
  */
 async function stabilizePage(page: Page) {
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
   // Disable all CSS animations/transitions for clean screenshots
   await page.addStyleTag({
     content: `
@@ -79,7 +79,7 @@ async function captureScreenshot(
     fullPage: options.fullPage ?? false,
     animations: "disabled",
   });
-  // eslint-disable-next-line no-console
+
   console.log(`  ✅ Captured: ${filepath}`);
 }
 
@@ -92,7 +92,7 @@ async function waitForOptional(page: Page, selector: string, timeout = 10_000) {
     await page.waitForSelector(selector, { timeout });
   } catch {
     // Selector didn't appear — proceed with screenshot of current state
-    // eslint-disable-next-line no-console
+
     console.log(`  ⚠️ Selector not found (proceeding): ${selector}`);
   }
 }
@@ -197,7 +197,7 @@ async function provisionTestUser(): Promise<string> {
  */
 async function signInViaUI(page: Page) {
   await page.goto("/auth/login");
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
   await page.getByLabel("Email").fill(TEST_EMAIL);
   await page.getByLabel("Password", { exact: true }).fill(TEST_PASSWORD);
   await page.getByRole("button", { name: "Sign In" }).click();

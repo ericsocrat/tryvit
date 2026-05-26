@@ -18,7 +18,13 @@ const smokeProject = {
 
 const authSetupProject = {
   name: "auth-setup",
-  testMatch: /auth\.setup\.ts/,
+  testMatch: /(?:^|[\\/])auth\.setup\.ts$/,
+  use: { ...devices["Desktop Chrome"] },
+};
+
+const functionalAuthSetupProject = {
+  name: "functional-auth-setup",
+  testMatch: /(?:^|[\\/])functional\.auth\.setup\.ts$/,
   use: { ...devices["Desktop Chrome"] },
 };
 
@@ -35,10 +41,10 @@ const authenticatedProject = {
 const functionalProject = {
   name: "functional",
   testMatch: /functional.*\.spec\.ts/,
-  dependencies: ["auth-setup"],
+  dependencies: ["functional-auth-setup"],
   use: {
     ...devices["Desktop Chrome"],
-    storageState: "e2e/.auth/user.json",
+    storageState: "e2e/.auth/functional-user.json",
   },
 };
 
@@ -126,7 +132,7 @@ const qualityDesktopProject = {
 };
 
 const projects = [
-  ...(HAS_AUTH ? [authSetupProject] : []),
+  ...(HAS_AUTH ? [authSetupProject, functionalAuthSetupProject] : []),
   smokeProject,
   ...(HAS_AUTH ? [authenticatedProject, functionalProject] : []),
   ...(HAS_VISUAL ? [visualSmokeProject] : []),

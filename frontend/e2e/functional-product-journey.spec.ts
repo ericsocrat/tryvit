@@ -15,7 +15,7 @@ async function navigateToFirstProduct(
   category = "chips",
 ) {
   await page.goto(`/app/categories/${category}`);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("domcontentloaded");
 
   const productLinks = page.locator('a[href*="/app/product/"]');
   await expect(productLinks.first()).toBeVisible({ timeout: 15_000 });
@@ -247,3 +247,4 @@ test.describe("Product journey: user actions", () => {
     expect(contentText?.length).toBeGreaterThan(10);
   });
 });
+

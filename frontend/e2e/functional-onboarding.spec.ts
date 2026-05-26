@@ -7,12 +7,12 @@
 // 6 tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { test, expect } from "@playwright/test";
-import { createClient } from "@supabase/supabase-js";
+import { expect, test } from "@playwright/test";
 import type { WebSocketLikeConstructor } from "@supabase/realtime-js";
+import { createClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
 
-const ONBOARDING_EMAIL = "e2e-onboarding@test.tryvit.local";
+const ONBOARDING_EMAIL = `e2e-onboarding-${Date.now()}@test.tryvit.local`;
 const ONBOARDING_PASSWORD = "OnboardingTest123!";
 const WebSocketTransport = WebSocket as unknown as WebSocketLikeConstructor;
 
@@ -35,7 +35,7 @@ async function createOnboardingUser(): Promise<string> {
   const PAGE_SIZE = 50;
   let page = 1;
   let existingId: string | null = null;
-  // eslint-disable-next-line no-constant-condition
+   
   while (true) {
     const {
       data: { users },
@@ -60,12 +60,26 @@ async function createOnboardingUser(): Promise<string> {
   return data.user.id;
 }
 
+async function signInOnboardingUser(
+  page: import("@playwright/test").Page,
+) {
+  await page.goto("/auth/login");
+  await page.getByLabel("Email").fill(ONBOARDING_EMAIL);
+  await page
+    .getByLabel("Password", { exact: true })
+    .fill(ONBOARDING_PASSWORD);
+  await page.getByRole("button", { name: "Sign In" }).click();
+  await page.waitForURL(/\/(onboarding|app|auth\/login)/, {
+    timeout: 20_000,
+  });
+}
+
 async function deleteOnboardingUser() {
   try {
     const supabase = getAdminClient();
     const PAGE_SIZE = 50;
     let page = 1;
-    // eslint-disable-next-line no-constant-condition
+     
     while (true) {
       const {
         data: { users },
@@ -103,6 +117,8 @@ test.describe("Onboarding: redirect guard", () => {
 // Fresh user with NO preferences — should see the wizard
 
 test.describe("Onboarding: wizard flow", () => {
+  test.describe.configure({ mode: "serial" });
+
   // Clear the standard auth state — we'll log in manually
   test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -117,14 +133,10 @@ test.describe("Onboarding: wizard flow", () => {
   test("Welcome step renders with Get Started and Skip buttons", async ({
     page,
   }) => {
-    // Log in as the onboarding user
-    await page.goto("/auth/login");
-    await page.getByLabel("Email").fill(ONBOARDING_EMAIL);
-    await page.getByLabel("Password", { exact: true }).fill(ONBOARDING_PASSWORD);
-    await page.getByRole("button", { name: "Sign In" }).click();
+    await signInOnboardingUser(page);
 
     // Should land on onboarding (no preferences set)
-    await page.waitForURL(/\/(onboarding|app)/, { timeout: 15_000 });
+    await page.waitForURL(/\/(onboarding|app)/, { timeout: 20_000 });
 
     if (page.url().includes("/onboarding")) {
       // Welcome step should render
@@ -138,12 +150,9 @@ test.describe("Onboarding: wizard flow", () => {
   });
 
   test("Skip All from welcome goes to /app/search", async ({ page }) => {
-    await page.goto("/auth/login");
-    await page.getByLabel("Email").fill(ONBOARDING_EMAIL);
-    await page.getByLabel("Password", { exact: true }).fill(ONBOARDING_PASSWORD);
-    await page.getByRole("button", { name: "Sign In" }).click();
+    await signInOnboardingUser(page);
 
-    await page.waitForURL(/\/(onboarding|app)/, { timeout: 15_000 });
+    await page.waitForURL(/\/(onboarding|app)/, { timeout: 20_000 });
 
     if (page.url().includes("/onboarding")) {
       await page.getByTestId("onboarding-skip-all").click();
@@ -156,12 +165,9 @@ test.describe("Onboarding: wizard flow", () => {
     // Need a fresh user (the previous test may have skipped)
     await createOnboardingUser();
 
-    await page.goto("/auth/login");
-    await page.getByLabel("Email").fill(ONBOARDING_EMAIL);
-    await page.getByLabel("Password", { exact: true }).fill(ONBOARDING_PASSWORD);
-    await page.getByRole("button", { name: "Sign In" }).click();
+    await signInOnboardingUser(page);
 
-    await page.waitForURL(/\/(onboarding|app)/, { timeout: 15_000 });
+    await page.waitForURL(/\/(onboarding|app)/, { timeout: 20_000 });
 
     if (page.url().includes("/onboarding")) {
       await page.getByTestId("onboarding-get-started").click();
@@ -180,12 +186,9 @@ test.describe("Onboarding: wizard flow", () => {
   }) => {
     await createOnboardingUser();
 
-    await page.goto("/auth/login");
-    await page.getByLabel("Email").fill(ONBOARDING_EMAIL);
-    await page.getByLabel("Password", { exact: true }).fill(ONBOARDING_PASSWORD);
-    await page.getByRole("button", { name: "Sign In" }).click();
+    await signInOnboardingUser(page);
 
-    await page.waitForURL(/\/(onboarding|app)/, { timeout: 15_000 });
+    await page.waitForURL(/\/(onboarding|app)/, { timeout: 20_000 });
 
     if (page.url().includes("/onboarding")) {
       // Advance to Region step
@@ -212,12 +215,9 @@ test.describe("Onboarding: wizard flow", () => {
   test("Skip All from a mid-step goes to /app/search", async ({ page }) => {
     await createOnboardingUser();
 
-    await page.goto("/auth/login");
-    await page.getByLabel("Email").fill(ONBOARDING_EMAIL);
-    await page.getByLabel("Password", { exact: true }).fill(ONBOARDING_PASSWORD);
-    await page.getByRole("button", { name: "Sign In" }).click();
+    await signInOnboardingUser(page);
 
-    await page.waitForURL(/\/(onboarding|app)/, { timeout: 15_000 });
+    await page.waitForURL(/\/(onboarding|app)/, { timeout: 20_000 });
 
     if (page.url().includes("/onboarding")) {
       // Advance past welcome

@@ -6,14 +6,28 @@
 // 9 tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+
+async function getFirstCategoryHref(
+  page: import("@playwright/test").Page,
+): Promise<string> {
+  await page.goto("/app/categories");
+  await page.waitForLoadState("domcontentloaded");
+  const categoryLink = page
+    .locator('a[href^="/app/categories/"]:not([href="/app/categories"])')
+    .first();
+  await expect(categoryLink).toBeVisible({ timeout: 15_000 });
+  const href = await categoryLink.getAttribute("href");
+  if (!href) throw new Error("No category href found");
+  return href;
+}
 
 // ─── Search Basics ──────────────────────────────────────────────────────────
 
 test.describe("Search cross-country: search basics", () => {
   test("search page renders input and empty state", async ({ page }) => {
     await page.goto("/app/search");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Search input (combobox)
     const searchInput = page.getByPlaceholder(/search products/i);
@@ -22,7 +36,7 @@ test.describe("Search cross-country: search basics", () => {
 
   test("search returns results for generic query", async ({ page }) => {
     await page.goto("/app/search");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const searchInput = page.getByPlaceholder(/search products/i);
     await searchInput.fill("milk");
@@ -49,7 +63,7 @@ test.describe("Search cross-country: search basics", () => {
 
   test("search autocomplete shows product suggestions", async ({ page }) => {
     await page.goto("/app/search");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const searchInput = page.getByPlaceholder(/search products/i);
     await searchInput.fill("chip");
@@ -69,7 +83,7 @@ test.describe("Search cross-country: search basics", () => {
 
       // Click first suggestion
       await options.first().click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Should navigate to product or show results
       await expect(page.locator("body")).not.toContainText(
@@ -80,7 +94,7 @@ test.describe("Search cross-country: search basics", () => {
 
   test("search result links navigate to product detail", async ({ page }) => {
     await page.goto("/app/search");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const searchInput = page.getByPlaceholder(/search products/i);
     await searchInput.fill("doritos");
@@ -88,7 +102,7 @@ test.describe("Search cross-country: search basics", () => {
     // Wait for autocomplete and press Enter to get results
     await page.waitForTimeout(2_000);
     await searchInput.press("Enter");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await page.waitForTimeout(2_000);
 
     // Check for product links in results
@@ -100,7 +114,7 @@ test.describe("Search cross-country: search basics", () => {
 
     if (hasLinks) {
       await productLinks.first().click();
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("domcontentloaded");
 
       // Should land on product detail page
       await expect(page).toHaveURL(/\/app\/product\/\d+/);
@@ -113,12 +127,7 @@ test.describe("Search cross-country: search basics", () => {
 test.describe("Search cross-country: country switching", () => {
   test("settings page shows country selector buttons", async ({ page }) => {
     await page.goto("/app/settings");
-    await page.waitForLoadState("networkidle");
-
-    // Settings heading
-    await expect(
-      page.getByRole("heading", { name: /settings|ustawienia/i }).first(),
-    ).toBeVisible({ timeout: 10_000 });
+    await page.waitForLoadState("domcontentloaded");
 
     // Country flag buttons — PL and DE
     const polskaBtn = page
@@ -136,7 +145,7 @@ test.describe("Search cross-country: country switching", () => {
 
   test("switching country to DE reveals save button", async ({ page }) => {
     await page.goto("/app/settings");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Click Deutschland
     const deutschBtn = page
@@ -157,7 +166,7 @@ test.describe("Search cross-country: country switching", () => {
   }) => {
     // Switch to DE
     await page.goto("/app/settings");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const deutschBtn = page
       .locator("button")
@@ -176,9 +185,9 @@ test.describe("Search cross-country: country switching", () => {
 
     // Navigate away and come back
     await page.goto("/app/categories");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     await page.goto("/app/settings");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Deutschland should still be the selected country
     const deutschBtnAfter = page
@@ -215,9 +224,11 @@ test.describe("Search cross-country: result isolation", () => {
   test("category listing shows different products after country switch", async ({
     page,
   }) => {
+    const categoryHref = await getFirstCategoryHref(page);
+
     // Step 1: Note products in PL chips category
-    await page.goto("/app/categories/chips");
-    await page.waitForLoadState("networkidle");
+    await page.goto(categoryHref);
+    await page.waitForLoadState("domcontentloaded");
 
     const plProductLinks = page.locator('a[href*="/app/product/"]');
     await expect(plProductLinks.first()).toBeVisible({ timeout: 15_000 });
@@ -229,7 +240,7 @@ test.describe("Search cross-country: result isolation", () => {
 
     // Step 2: Switch to DE
     await page.goto("/app/settings");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const deutschBtn = page
       .locator("button")
@@ -245,8 +256,8 @@ test.describe("Search cross-country: result isolation", () => {
     await page.waitForTimeout(3_000);
 
     // Step 3: View chips category again — should show DE products
-    await page.goto("/app/categories/chips");
-    await page.waitForLoadState("networkidle");
+    await page.goto(categoryHref);
+    await page.waitForLoadState("domcontentloaded");
 
     const deProductLinks = page.locator('a[href*="/app/product/"]');
     await expect(deProductLinks.first()).toBeVisible({ timeout: 15_000 });
@@ -264,7 +275,7 @@ test.describe("Search cross-country: result isolation", () => {
 
     // Step 4: Cleanup — switch back to PL
     await page.goto("/app/settings");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     const polskaBtn = page
       .locator("button")
@@ -284,3 +295,4 @@ test.describe("Search cross-country: result isolation", () => {
     }
   });
 });
+

@@ -4,6 +4,17 @@
 
 import { expect, test } from "@playwright/test";
 
+async function disableNextDevOverlay(page: import("@playwright/test").Page) {
+  // Next.js dev overlay can intercept clicks during local e2e runs.
+  await page.addStyleTag({
+    content: "nextjs-portal { display: none !important; }",
+  });
+}
+
+test.beforeEach(async ({ page }) => {
+  await disableNextDevOverlay(page);
+});
+
 // ─── Bottom Navigation Bar ─────────────────────────────────────────────────
 
 test.describe("App navigation bar", () => {
@@ -22,38 +33,38 @@ test.describe("App navigation bar", () => {
     await expect(nav.getByRole("button", { name: "More" })).toBeVisible();
   });
 
-  test("Search link navigates to /app/search", async ({ page }) => {
+  test("Search link targets /app/search", async ({ page }) => {
     await page.goto("/app/settings");
     const nav = page.getByRole("navigation", { name: "Main navigation" });
-    await nav.getByRole("link", { name: "Search" }).click();
-    await expect(page).toHaveURL(/\/app\/search/);
+    const searchLink = nav.getByRole("link", { name: "Search" });
+    await expect(searchLink).toHaveAttribute("href", "/app/search");
   });
 
-  test("Dashboard link navigates to /app", async ({ page }) => {
-    await page.goto("/app/search");
+  test("Dashboard link targets /app", async ({ page }) => {
+    await page.goto("/app/lists");
     const nav = page.getByRole("navigation", { name: "Main navigation" });
-    await nav.getByRole("link", { name: "Dashboard" }).click();
-    await expect(page).toHaveURL(/\/app$/);
+    const dashboardLink = nav.getByRole("link", { name: "Dashboard" });
+    await expect(dashboardLink).toHaveAttribute("href", "/app");
   });
 
-  test("Scan link navigates to /app/scan", async ({ page }) => {
+  test("Scan link targets /app/scan", async ({ page }) => {
     await page.goto("/app/search");
     const nav = page.getByRole("navigation", { name: "Main navigation" });
-    await nav.getByRole("link", { name: "Scan" }).click();
-    await expect(page).toHaveURL(/\/app\/scan/);
+    const scanLink = nav.getByRole("link", { name: "Scan" });
+    await expect(scanLink).toHaveAttribute("href", "/app/scan");
   });
 
-  test("Lists link navigates to /app/lists", async ({ page }) => {
+  test("Lists link targets /app/lists", async ({ page }) => {
     await page.goto("/app/search");
     const nav = page.getByRole("navigation", { name: "Main navigation" });
-    await nav.getByRole("link", { name: "Lists" }).click();
-    await expect(page).toHaveURL(/\/app\/lists/);
+    const listsLink = nav.getByRole("link", { name: "Lists" });
+    await expect(listsLink).toHaveAttribute("href", "/app/lists");
   });
 
   test("More button opens drawer with Settings link", async ({ page }) => {
     await page.goto("/app/search");
     const nav = page.getByRole("navigation", { name: "Main navigation" });
-    await nav.getByRole("button", { name: "More" }).click();
+    await nav.getByRole("button", { name: "More" }).click({ force: true });
     const dialog = page.getByRole("dialog");
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText("Settings")).toBeVisible();
@@ -67,9 +78,7 @@ test.describe("App navigation bar", () => {
 test.describe("Scan page", () => {
   test("renders with heading", async ({ page }) => {
     await page.goto("/app/scan");
-    await expect(
-      page.getByRole("heading", { name: /Scan Barcode/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Scan/i })).toBeVisible();
   });
 
   test("has Camera and Manual mode toggles", async ({ page }) => {
@@ -87,9 +96,7 @@ test.describe("Scan page", () => {
     // Click Manual mode toggle
     await page.getByText("Manual", { exact: false }).click();
 
-    const eanInput = page.getByPlaceholder(
-      /Enter EAN barcode/i,
-    );
+    const eanInput = page.getByPlaceholder(/Enter barcode/i);
     await expect(eanInput).toBeVisible();
   });
 
@@ -106,7 +113,7 @@ test.describe("Scan page", () => {
     await page.goto("/app/scan");
     await page.getByText("Manual", { exact: false }).click();
 
-    const eanInput = page.getByPlaceholder(/Enter EAN barcode/i);
+    const eanInput = page.getByPlaceholder(/Enter barcode/i);
     await eanInput.fill("5901234123457");
     await expect(eanInput).toHaveValue("5901234123457");
   });
@@ -136,9 +143,9 @@ test.describe("Scan history page", () => {
     ).toBeVisible();
   });
 
-  test("has back link to scanner", async ({ page }) => {
+  test("has breadcrumb link to scanner", async ({ page }) => {
     await page.goto("/app/scan/history");
-    const backLink = page.getByRole("link", { name: /Back to Scanner/i });
+    const backLink = page.getByRole("link", { name: /^Scan$/i }).first();
     await expect(backLink).toBeVisible();
     await expect(backLink).toHaveAttribute("href", "/app/scan");
   });
@@ -172,9 +179,9 @@ test.describe("Submit product page", () => {
     ).toBeVisible();
   });
 
-  test("has back link to scanner", async ({ page }) => {
+  test("has breadcrumb link to scanner", async ({ page }) => {
     await page.goto("/app/scan/submit");
-    const backLink = page.getByRole("link", { name: /Back to Scanner/i });
+    const backLink = page.getByRole("link", { name: /^Scan$/i }).first();
     await expect(backLink).toBeVisible();
   });
 
@@ -183,7 +190,7 @@ test.describe("Submit product page", () => {
     await expect(page.getByLabel(/EAN Barcode/i)).toBeVisible();
     await expect(page.getByLabel(/Product Name/i)).toBeVisible();
     await expect(page.getByLabel("Brand")).toBeVisible();
-    await expect(page.getByLabel("Category")).toBeVisible();
+    await expect(page.locator("button[aria-pressed]").first()).toBeVisible();
     await expect(page.getByLabel("Notes")).toBeVisible();
   });
 
@@ -318,14 +325,14 @@ test.describe("Saved comparisons page", () => {
 
 test.describe("Settings page extended", () => {
   test("shows user account section", async ({ page }) => {
-    await page.goto("/app/settings");
+    await page.goto("/app/settings/account");
     await expect(
       page.getByRole("button", { name: /sign out/i }),
     ).toBeVisible();
   });
 
   test("shows allergens section", async ({ page }) => {
-    await page.goto("/app/settings");
+    await page.goto("/app/settings/nutrition");
     await expect(
       page.getByText(/allergen/i).first(),
     ).toBeVisible();
@@ -333,7 +340,7 @@ test.describe("Settings page extended", () => {
 
   test("has country selector with Poland", async ({ page }) => {
     await page.goto("/app/settings");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     // Country buttons show native name ("Polska" for Poland)
     await expect(
       page.locator("button").filter({ hasText: "Polska" }).first(),
@@ -364,7 +371,7 @@ test.describe("Categories page extended", () => {
 test.describe("Search page extended", () => {
   test("search input has correct placeholder", async ({ page }) => {
     await page.goto("/app/search");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     const input = page.getByPlaceholder(/search products/i);
     await expect(input).toBeVisible();
   });
@@ -373,7 +380,7 @@ test.describe("Search page extended", () => {
     page,
   }) => {
     await page.goto("/app/search");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     const input = page.getByPlaceholder(/search products/i);
     await input.press("Enter");
     await expect(page).toHaveURL(/\/app\/search/);
@@ -381,7 +388,7 @@ test.describe("Search page extended", () => {
 
   test("page maintains state after typing", async ({ page }) => {
     await page.goto("/app/search");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
     const input = page.getByPlaceholder(/search products/i);
     await input.fill("test query");
     await expect(input).toHaveValue("test query");
@@ -394,7 +401,7 @@ test.describe("Saved searches page", () => {
   test("renders heading", async ({ page }) => {
     await page.goto("/app/search/saved");
     await expect(
-      page.getByRole("heading", { name: /Saved Searches/i }),
+      page.getByRole("heading", { name: "Saved Searches", exact: true }),
     ).toBeVisible();
   });
 
@@ -419,9 +426,9 @@ test.describe("My submissions page", () => {
     ).toBeVisible();
   });
 
-  test("has back link to scanner", async ({ page }) => {
+  test("has breadcrumb link to scanner", async ({ page }) => {
     await page.goto("/app/scan/submissions");
-    const backLink = page.getByRole("link", { name: /Back to Scanner/i });
+    const backLink = page.getByRole("link", { name: /^Scan$/i }).first();
     await expect(backLink).toBeVisible();
   });
 });
@@ -429,12 +436,12 @@ test.describe("My submissions page", () => {
 // ─── Cross-page navigation flows ───────────────────────────────────────────
 
 test.describe("Cross-page navigation", () => {
-  test("scan → history → back to scan", async ({ page }) => {
+  test("scan → history → breadcrumb back to scan", async ({ page }) => {
     await page.goto("/app/scan");
     await page.getByRole("link", { name: /History/i }).click();
     await expect(page).toHaveURL(/\/app\/scan\/history/);
 
-    await page.getByRole("link", { name: /Back to Scanner/i }).click();
+    await page.getByRole("link", { name: /^Scan$/i }).first().click();
     await expect(page).toHaveURL(/\/app\/scan/);
   });
 

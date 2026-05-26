@@ -5,7 +5,7 @@
 // No camera dependency — all interactions are keyboard / click.
 // Deterministic — each run starts from a known auth + onboarding state.
 
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 // ─── Mobile viewport overflow guard ────────────────────────────────────────
 // Regression test for the mobile "zoomed out" bug fixed in PR #92.
@@ -29,7 +29,7 @@ for (const viewport of RESPONSIVE_VIEWPORTS) {
 
     for (const path of APP_PAGES) {
       test(`${path} has no horizontal scroll`, async ({ page }) => {
-        await page.goto(path, { waitUntil: "networkidle" });
+        await page.goto(path, { waitUntil: "domcontentloaded" });
         const scrollWidth = await page.evaluate(
           () => document.documentElement.scrollWidth,
         );
@@ -130,7 +130,7 @@ test.describe("Search page", () => {
       );
     });
     // Reload to pick up seeded data
-    await page.reload({ waitUntil: "networkidle" });
+    await page.reload({ waitUntil: "domcontentloaded" });
 
     const input = page.getByPlaceholder(/search products/i);
     // autoFocus may have focused the input before React hydrates,
@@ -173,16 +173,16 @@ test.describe("Product detail", () => {
 // ─── Authenticated: Settings ────────────────────────────────────────────────
 
 test.describe("Settings page", () => {
-  test("renders with Settings heading", async ({ page }) => {
+  test("renders profile settings heading", async ({ page }) => {
     await page.goto("/app/settings");
     await expect(
-      page.getByRole("heading", { name: /settings/i }),
+      page.getByRole("heading", { name: /Profile/i }),
     ).toBeVisible();
   });
 
   test("shows country preference", async ({ page }) => {
     await page.goto("/app/settings");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // We onboarded with Poland — button text shows native name "Polska"
     await expect(
@@ -190,12 +190,14 @@ test.describe("Settings page", () => {
     ).toBeVisible({ timeout: 10_000 });
   });
 
-  test("shows diet preference options", async ({ page }) => {
-    await page.goto("/app/settings");
-    await page.waitForLoadState("networkidle");
+  test("shows diet and allergen options on nutrition tab", async ({ page }) => {
+    await page.goto("/app/settings/nutrition");
+    await page.waitForLoadState("domcontentloaded");
 
-    // Diet section should be visible
     await expect(page.getByText(/diet/i).first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/allergen/i).first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });
 
@@ -203,8 +205,8 @@ test.describe("Settings page", () => {
 
 test.describe("Logout flow", () => {
   test("sign-out redirects to login page", async ({ page }) => {
-    await page.goto("/app/settings");
-    await page.waitForLoadState("networkidle");
+    await page.goto("/app/settings/account");
+    await page.waitForLoadState("domcontentloaded");
 
     const signOutBtn = page.getByRole("button", { name: /sign out/i });
     await expect(signOutBtn).toBeVisible({ timeout: 10_000 });
@@ -221,8 +223,8 @@ test.describe("Logout flow", () => {
     page,
   }) => {
     // Navigate to settings and sign out
-    await page.goto("/app/settings");
-    await page.waitForLoadState("networkidle");
+    await page.goto("/app/settings/account");
+    await page.waitForLoadState("domcontentloaded");
 
     // Page may have redirected to login if auth session expired
     if (page.url().includes("/auth/login")) {

@@ -2,13 +2,20 @@
 // Creates and tears down a Supabase Auth user for authenticated Playwright tests.
 // Requires SUPABASE_SERVICE_ROLE_KEY to access the Admin API.
 
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { WebSocketLikeConstructor } from "@supabase/realtime-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
 
-export const TEST_EMAIL = "e2e-playwright@test.tryvit.local";
+export const TEST_EMAIL = "e2e-playwright-auth@test.tryvit.local";
+export const FUNCTIONAL_TEST_EMAIL = "e2e-playwright-functional@test.tryvit.local";
 export const TEST_PASSWORD = "PlaywrightTest123!";
 const WebSocketTransport = WebSocket as unknown as WebSocketLikeConstructor;
+
+type TestUserScope = "authenticated" | "functional";
+
+function getScopeEmail(scope: TestUserScope): string {
+  return scope === "functional" ? FUNCTIONAL_TEST_EMAIL : TEST_EMAIL;
+}
 
 function getAdminClient(): SupabaseClient {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -34,17 +41,18 @@ function getAdminClient(): SupabaseClient {
  */
 async function findTestUserById(
   supabase: SupabaseClient,
+  email: string,
 ): Promise<string | null> {
   const PAGE_SIZE = 50;
   let page = 1;
 
-  // eslint-disable-next-line no-constant-condition
+   
   while (true) {
     const {
       data: { users },
     } = await supabase.auth.admin.listUsers({ page, perPage: PAGE_SIZE });
 
-    const match = users.find((u) => u.email === TEST_EMAIL);
+    const match = users.find((u) => u.email === email);
     if (match) return match.id;
 
     // No more pages
@@ -54,18 +62,21 @@ async function findTestUserById(
 }
 
 /** Delete any existing test user, then create a fresh auto-confirmed one. */
-export async function ensureTestUser(): Promise<string> {
+export async function ensureScopedTestUser(
+  scope: TestUserScope,
+): Promise<string> {
   const supabase = getAdminClient();
+  const email = getScopeEmail(scope);
 
   // Remove stale test user if present (idempotent) — paginated search
-  const existingId = await findTestUserById(supabase);
+  const existingId = await findTestUserById(supabase, email);
   if (existingId) {
     await supabase.auth.admin.deleteUser(existingId);
   }
 
   // Create fresh, pre-confirmed user
   const { data, error } = await supabase.auth.admin.createUser({
-    email: TEST_EMAIL,
+    email,
     password: TEST_PASSWORD,
     email_confirm: true,
   });
@@ -96,12 +107,33 @@ export async function ensureTestUser(): Promise<string> {
   return userId;
 }
 
-/** Delete the test user (best-effort cleanup). */
-export async function deleteTestUser(): Promise<void> {
-  const supabase = getAdminClient();
+/** Default user for authenticated project setup (backward compatible). */
+export async function ensureTestUser(): Promise<string> {
+  return ensureScopedTestUser("authenticated");
+}
 
-  const userId = await findTestUserById(supabase);
+/** Delete the test user (best-effort cleanup). */
+export async function deleteScopedTestUser(scope: TestUserScope): Promise<void> {
+  const supabase = getAdminClient();
+  const email = getScopeEmail(scope);
+
+  const userId = await findTestUserById(supabase, email);
   if (userId) {
     await supabase.auth.admin.deleteUser(userId);
   }
+}
+
+/** Delete default authenticated project user (backward compatible). */
+export async function deleteTestUser(): Promise<void> {
+  return deleteScopedTestUser("authenticated");
+}
+
+export function getScopedTestCredentials(scope: TestUserScope): {
+  email: string;
+  password: string;
+} {
+  return {
+    email: getScopeEmail(scope),
+    password: TEST_PASSWORD,
+  };
 }

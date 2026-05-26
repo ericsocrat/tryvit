@@ -15,7 +15,7 @@ test.describe("Error states: invalid routes", () => {
     page,
   }) => {
     await page.goto("/app/categories/nonexistent-fake-category-xyz");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Should not crash — shows error / empty state
     await expect(page.locator("body")).toBeVisible();
@@ -34,7 +34,7 @@ test.describe("Error states: invalid routes", () => {
 
   test("product ID 0 shows error state", async ({ page }) => {
     await page.goto("/app/product/0");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Should not crash
     await expect(page.locator("body")).toBeVisible();
@@ -43,7 +43,7 @@ test.describe("Error states: invalid routes", () => {
 
   test("negative product ID shows error state", async ({ page }) => {
     await page.goto("/app/product/-1");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page.locator("body")).toBeVisible();
     expect(page.url()).not.toMatch(/\/auth\/login/);
@@ -53,7 +53,7 @@ test.describe("Error states: invalid routes", () => {
     page,
   }) => {
     await page.goto("/app/product/99999999");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page.locator("body")).toBeVisible();
     expect(page.url()).not.toMatch(/\/auth\/login/);
@@ -74,7 +74,7 @@ test.describe("Error states: invalid routes", () => {
 test.describe("Error states: empty states", () => {
   test("scan history shows empty state for fresh user", async ({ page }) => {
     await page.goto("/app/scan/history");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(
       page.getByText(/no scans|brak skanów/i).first(),
@@ -83,7 +83,7 @@ test.describe("Error states: empty states", () => {
 
   test("saved searches shows empty state for fresh user", async ({ page }) => {
     await page.goto("/app/search/saved");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     // Should show empty state or "no saved searches" message
     await expect(page.locator("body")).toBeVisible();
@@ -94,7 +94,7 @@ test.describe("Error states: empty states", () => {
     page,
   }) => {
     await page.goto("/app/compare/saved");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(page.locator("body")).toBeVisible();
     expect(page.url()).toMatch(/\/app\/compare\/saved/);
@@ -104,10 +104,11 @@ test.describe("Error states: empty states", () => {
     page,
   }) => {
     await page.goto("/app/scan/submissions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("domcontentloaded");
 
     await expect(
       page.getByRole("heading", { name: /My Submissions/i }),
     ).toBeVisible({ timeout: 10_000 });
   });
 });
+

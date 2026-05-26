@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 // ─── Form Validation UX E2E Tests ──────────────────────────────────────────
 // Issue #69: Verify forms have proper structure, labels, required attributes,
@@ -70,6 +70,16 @@ test.describe("Login form validation UX", () => {
 test.describe("Signup form validation UX", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/auth/signup");
+  });
+
+  test("signup route CSP allows Cloudflare Turnstile framing", async ({
+    page,
+  }) => {
+    const response = await page.goto("/auth/signup");
+    const csp = response?.headers()["content-security-policy"] ?? "";
+
+    expect(csp).toContain("frame-src");
+    expect(csp).toContain("https://challenges.cloudflare.com");
   });
 
   test("has properly labeled email and password fields", async ({ page }) => {
