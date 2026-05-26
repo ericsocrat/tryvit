@@ -85,7 +85,7 @@ export function Navigation() {
                 href={item.href}
                 aria-label={label}
                 aria-current={isActive ? "page" : undefined}
-                className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 min-h-[48px] min-w-[64px] py-2 landscape:py-1 text-xs transition-colors ${
+                className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 min-w-16 py-2 landscape:py-1 text-xs transition-colors ${
                   isActive
                     ? "text-brand font-semibold"
                     : "text-foreground-secondary hover:text-foreground"
@@ -102,7 +102,7 @@ export function Navigation() {
                   <Icon icon={item.icon} size="md" />
                   {badge != null && badge > 0 && (
                     <span
-                      className="absolute -right-2 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-brand px-1 text-xxs font-bold leading-none text-white"
+                      className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-xxs font-bold leading-none text-white"
                       data-testid={`nav-badge-${item.routeKey}`}
                       aria-label={`${badge}`}
                     >
@@ -121,7 +121,7 @@ export function Navigation() {
             onClick={openMore}
             aria-expanded={moreOpen}
             aria-haspopup="dialog"
-            className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 min-h-[48px] min-w-[64px] py-2 landscape:py-1 text-xs transition-colors ${
+            className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 min-w-16 py-2 landscape:py-1 text-xs transition-colors ${
               isMoreActive
                 ? "text-brand font-semibold"
                 : "text-foreground-secondary hover:text-foreground"
@@ -137,7 +137,7 @@ export function Navigation() {
               <Icon icon={MoreHorizontal} size="md" />
               {compareCount > 0 && (
                 <span
-                  className="absolute -right-2 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-brand px-1 text-xxs font-bold leading-none text-white"
+                  className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-xxs font-bold leading-none text-white"
                   data-testid="nav-badge-compare"
                   aria-label={`${compareCount}`}
                 >
