@@ -157,7 +157,7 @@ async function provisionTestUser(): Promise<string> {
     }),
   });
 
-  return testUserId!;
+  return userData.id;
 }
 
 async function signInViaUI(page: Page) {
