@@ -2,9 +2,9 @@
 // Static validation of the a11y gate scaffold (Issue #50).
 // Ensures all files exist, follow correct patterns, and integrate properly.
 
-import { describe, it, expect } from "vitest";
-import { readFileSync, existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { describe, expect, it } from "vitest";
 
 const ROOT = join(__dirname, "../..");
 const SRC = join(ROOT, "src");
@@ -82,7 +82,7 @@ describe("A11y helper — e2e/helpers/a11y.ts", () => {
   });
 
   it("uses expect.soft for blocking violations", () => {
-    expect(src).toContain("expect\n");
+    expect(src).toMatch(/import\s*\{\s*expect\s*\}\s*from\s*"@playwright\/test"/);
     expect(src).toMatch(/expect\s*\.\s*soft/);
   });
 
