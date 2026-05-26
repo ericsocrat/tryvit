@@ -17,10 +17,10 @@ import { DietAllergensStep } from "./steps/DietAllergensStep";
 import { GoalsCategoriesStep } from "./steps/GoalsCategoriesStep";
 import { WelcomeRegionStep } from "./steps/WelcomeRegionStep";
 import {
-  INITIAL_ONBOARDING_DATA,
-  ONBOARDING_STORAGE_KEY,
-  TOTAL_STEPS,
-  type OnboardingData,
+    INITIAL_ONBOARDING_DATA,
+    ONBOARDING_STORAGE_KEY,
+    TOTAL_STEPS,
+    type OnboardingData,
 } from "./types";
 
 const STEP_NAMES = ["welcome_region", "diet_allergens", "goals_categories"] as const;
@@ -157,7 +157,10 @@ export function OnboardingWizard() {
   };
 
   return (
-    <div data-testid="onboarding-wizard">
+    <div
+      data-testid="onboarding-wizard"
+      className="rounded-2xl border border-border bg-surface px-4 py-5 shadow-sm sm:px-6 sm:py-6"
+    >
       {/* Progress bar (shown on all steps) */}
       <OnboardingProgress currentStep={step + 1} totalSteps={TOTAL_STEPS} />
 
@@ -172,12 +175,14 @@ export function OnboardingWizard() {
       {step > 0 && (
         <div className="mt-6 text-center">
           <button
+            type="button"
             onClick={handleSkipAll}
             disabled={loading}
-            className="text-sm text-foreground-secondary underline hover:text-foreground"
+            aria-live="polite"
+            className="rounded-sm text-sm text-foreground-secondary underline underline-offset-4 transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
             data-testid="onboarding-skip-all"
           >
-            {t("onboarding.skipForNow")}
+            {loading ? t("onboarding.saving") : t("onboarding.skipForNow")}
           </button>
         </div>
       )}

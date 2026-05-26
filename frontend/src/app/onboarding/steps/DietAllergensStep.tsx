@@ -25,7 +25,7 @@ export function DietAllergensStep({
   }
 
   return (
-    <div>
+    <div className="space-y-8">
       {/* ── Diet section ── */}
       <h1 className="mb-2 text-2xl font-bold text-foreground">
         {t("onboarding.dietTitle")}
@@ -34,12 +34,14 @@ export function DietAllergensStep({
         {t("onboarding.dietSubtitle")}
       </p>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border bg-surface-subtle/60 p-4 sm:p-5">
         {DIET_OPTIONS.map((opt) => (
           <button
+            type="button"
             key={opt.value}
             onClick={() => onChange({ diet: opt.value })}
-            className={`rounded-lg border-2 px-3 py-3 text-sm transition-colors ${
+            aria-pressed={data.diet === opt.value}
+            className={`rounded-lg border-2 px-3 py-3 text-sm transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45 ${
               data.diet === opt.value
                 ? "border-brand bg-brand-subtle font-medium text-brand"
                 : "border text-foreground-secondary hover:border-strong"
@@ -57,7 +59,7 @@ export function DietAllergensStep({
             type="checkbox"
             checked={data.strictDiet}
             onChange={(e) => onChange({ strictDiet: e.target.checked })}
-            className="h-4 w-4 rounded border-strong text-brand focus:ring-brand"
+            className="h-4 w-4 rounded border-strong text-brand focus-visible:ring-brand"
           />
           <span className="text-sm text-foreground-secondary">
             {t("onboarding.strictDiet")}
@@ -66,7 +68,7 @@ export function DietAllergensStep({
       )}
 
       {/* ── Allergens section ── */}
-      <div className="mt-8 border-t border-border pt-6">
+      <section className="rounded-2xl border border-border bg-surface-subtle/60 p-4 sm:p-5">
         <h2 className="mb-2 text-lg font-semibold text-foreground">
           {t("onboarding.allergenTitle")}
         </h2>
@@ -77,9 +79,11 @@ export function DietAllergensStep({
         <div className="flex flex-wrap gap-2">
           {ALLERGEN_TAGS.map((a) => (
             <button
+              type="button"
               key={a.tag}
               onClick={() => toggleAllergen(a.tag)}
-              className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+              aria-pressed={data.allergens.includes(a.tag)}
+              className={`rounded-full border px-3 py-1.5 text-sm transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45 ${
                 data.allergens.includes(a.tag)
                   ? "border-error-border bg-error-bg text-error-text"
                   : "border text-foreground-secondary hover:border-strong"
@@ -100,7 +104,7 @@ export function DietAllergensStep({
                 onChange={(e) =>
                   onChange({ strictAllergen: e.target.checked })
                 }
-                className="h-4 w-4 rounded border-strong text-brand focus:ring-brand"
+                className="h-4 w-4 rounded border-strong text-brand focus-visible:ring-brand"
               />
               <span className="text-sm text-foreground-secondary">
                 {t("onboarding.strictAllergen")}
@@ -113,7 +117,7 @@ export function DietAllergensStep({
                 onChange={(e) =>
                   onChange({ treatMayContain: e.target.checked })
                 }
-                className="h-4 w-4 rounded border-strong text-brand focus:ring-brand"
+                className="h-4 w-4 rounded border-strong text-brand focus-visible:ring-brand"
               />
               <span className="text-sm text-foreground-secondary">
                 {t("onboarding.treatMayContain")}
@@ -121,13 +125,13 @@ export function DietAllergensStep({
             </label>
           </div>
         )}
-      </div>
+      </section>
 
       <div className="mt-8 flex gap-3">
-        <Button variant="secondary" onClick={onBack} className="flex-1">
+        <Button type="button" variant="secondary" onClick={onBack} className="flex-1">
           {t("onboarding.back")}
         </Button>
-        <Button onClick={onNext} className="flex-1">
+        <Button type="button" onClick={onNext} className="flex-1">
           {t("onboarding.next")}
         </Button>
       </div>

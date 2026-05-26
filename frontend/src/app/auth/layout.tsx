@@ -1,11 +1,16 @@
+"use client";
+
 import { Logo } from "@/components/common/Logo";
+import { useTranslation } from "@/lib/i18n";
 import Image from "next/image";
 
 export default function AuthLayout({
   children,
 }: {
-  children: React.ReactNode;
+  readonly children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex min-h-screen">
       {/* ── Illustration panel (desktop only) ─────────────────────── */}
@@ -21,8 +26,7 @@ export default function AuthLayout({
           priority
         />
         <p className="max-w-xs text-center text-sm font-medium text-foreground-secondary">
-          Search, scan, and compare food products. Get instant health scores and
-          find healthier alternatives.
+          {t("auth.marketingBlurb")}
         </p>
       </div>
 

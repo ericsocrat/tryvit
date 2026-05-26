@@ -32,7 +32,14 @@ export function LoginForm() {
   const { t } = useTranslation();
 
   const reason = searchParams.get("reason");
+  const msg = searchParams.get("msg");
   const redirect = sanitizeRedirect(searchParams.get("redirect"));
+  let successBannerKey: string | null = null;
+  if (msg === "check-email") {
+    successBannerKey = "auth.checkEmail";
+  } else if (msg === "password-updated") {
+    successBannerKey = "auth.passwordUpdated";
+  }
 
   async function handleLogin(e: FormSubmitEvent) {
     e.preventDefault();
@@ -55,106 +62,124 @@ export function LoginForm() {
   }
 
   return (
-    <>
-      <div id="main-content" className="w-full max-w-sm">
-        <div className="mb-2 flex justify-center lg:hidden">
-          <Logo variant="lockup" size={36} />
-        </div>
-        <p className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-brand lg:hidden">
-          {t("landing.tagline")}
-        </p>
-        <h1 className="mb-2 text-center text-2xl font-bold text-foreground">
-          {t("auth.welcomeBack")}
-        </h1>
-        <p className="mb-8 text-center text-sm text-foreground-secondary">
-          {t("auth.signInSubtitle")}
-        </p>
-
-        {reason === "expired" && (
-          <div className="mb-4 rounded-lg border border-warning-border bg-warning-bg p-3 text-sm text-warning-text">
-            {t("auth.sessionExpiredBanner")}
-          </div>
-        )}
-
-        <SocialLoginButtons />
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="mb-1 block text-sm font-medium text-foreground-secondary"
-            >
-              {t("auth.email")}
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-field"
-              placeholder={t("auth.emailPlaceholder")}
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="mb-1 block text-sm font-medium text-foreground-secondary"
-            >
-              {t("auth.password")}
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-field pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-foreground-muted hover:text-foreground-secondary"
-                aria-label={
-                  showPassword
-                    ? t("auth.hidePassword")
-                    : t("auth.showPassword")
-                }
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
-              </button>
-            </div>
-            <div className="mt-1 text-right">
-              <Link
-                href="/auth/forgot-password"
-                className="rounded-sm text-xs font-semibold text-brand underline-offset-4 transition-colors hover:text-brand-hover hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
-              >
-                {t("auth.forgotPassword")}
-              </Link>
-            </div>
-          </div>
-
-          <Button type="submit" disabled={loading} fullWidth>
-            {loading ? t("auth.signingIn") : t("auth.signIn")}
-          </Button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-foreground-secondary">
-          {t("auth.noAccount")}{" "}
-          <Link
-            href="/auth/signup"
-            className="rounded-sm font-semibold text-brand underline-offset-4 transition-colors hover:text-brand-hover hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
-          >
-            {t("auth.signUp")}
-          </Link>
-        </p>
+    <div id="main-content" className="w-full max-w-sm">
+      <div className="mb-2 flex justify-center lg:hidden">
+        <Logo variant="lockup" size={36} />
       </div>
-    </>
+      <p className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-brand lg:hidden">
+        {t("landing.tagline")}
+      </p>
+      <h1 className="mb-2 text-center text-2xl font-bold text-foreground">
+        {t("auth.welcomeBack")}
+      </h1>
+      <p className="mb-8 text-center text-sm text-foreground-secondary">
+        {t("auth.signInSubtitle")}
+      </p>
+
+      {reason === "expired" && (
+        <div className="mb-4 rounded-lg border border-warning-border bg-warning-bg p-3 text-sm text-warning-text">
+          {t("auth.sessionExpiredBanner")}
+        </div>
+      )}
+
+      {successBannerKey && (
+        <div
+          className="mb-4 rounded-lg border border-success-border bg-success-bg p-3 text-sm text-success-text"
+          role="status"
+          aria-live="polite"
+        >
+          {t(successBannerKey)}
+        </div>
+      )}
+
+      <SocialLoginButtons />
+
+      <form onSubmit={handleLogin} className="space-y-4">
+        <div>
+          <label
+            htmlFor="email"
+            className="mb-1 block text-sm font-medium text-foreground-secondary"
+          >
+            {t("auth.email")}
+          </label>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            autoCapitalize="none"
+            spellCheck={false}
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="input-field"
+            placeholder={t("auth.emailPlaceholder")}
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="password"
+            className="mb-1 block text-sm font-medium text-foreground-secondary"
+          >
+            {t("auth.password")}
+          </label>
+          <div className="relative">
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
+              aria-describedby="login-password-help"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-field pr-10"
+              placeholder={t("auth.passwordPlaceholder")}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((prev) => !prev)}
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-foreground-muted hover:text-foreground-secondary"
+              aria-label={
+                showPassword
+                  ? t("auth.hidePassword")
+                  : t("auth.showPassword")
+              }
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+          <p id="login-password-help" className="mt-1 text-xs text-foreground-muted">
+            {t("auth.passwordHelp")}
+          </p>
+          <div className="mt-1 text-right">
+            <Link
+              href="/auth/forgot-password"
+              className="rounded-sm text-xs font-semibold text-brand underline-offset-4 transition-colors hover:text-brand-hover hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
+            >
+              {t("auth.forgotPassword")}
+            </Link>
+          </div>
+        </div>
+
+        <Button type="submit" disabled={loading} fullWidth>
+          {loading ? t("auth.signingIn") : t("auth.signIn")}
+        </Button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-foreground-secondary">
+        {t("auth.noAccount")}{" "}
+        <Link
+          href="/auth/signup"
+          className="rounded-sm font-semibold text-brand underline-offset-4 transition-colors hover:text-brand-hover hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
+        >
+          {t("auth.signUp")}
+        </Link>
+      </p>
+    </div>
   );
 }
