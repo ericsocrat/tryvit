@@ -65,8 +65,8 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         aria-label={label}
         disabled={disabled}
         className={[
-          "inline-flex items-center justify-center transition-colors",
-          "focus-visible:outline-2 focus-visible:outline-offset-2",
+          "inline-flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[border-color,box-shadow,background-color,color] motion-reduce:transition-none",
+          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/25",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           "touch-target-expanded",
           VARIANT_CLASSES[variant],

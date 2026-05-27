@@ -70,9 +70,11 @@ export const Chip = React.memo(function Chip({
       onKeyDown={interactive ? handleKeyDown : undefined}
       tabIndex={interactive ? 0 : undefined}
       className={[
-        "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors animate-chip-enter",
+        "inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[border-color,box-shadow,background-color,color] motion-reduce:transition-none animate-chip-enter",
         VARIANT_CLASSES[variant],
-        interactive ? "cursor-pointer hover:opacity-80" : "",
+        interactive
+          ? "cursor-pointer hover:brightness-95 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/25"
+          : "",
         className,
       ]
         .filter(Boolean)
@@ -87,7 +89,7 @@ export const Chip = React.memo(function Chip({
             onRemove();
           }}
           aria-label={removeLabel}
-          className="ml-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full hover:bg-chip-remove-hover transition-colors"
+          className="ml-0.5 inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors motion-reduce:transition-none hover:bg-chip-remove-hover focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/25"
         >
           <X size={10} aria-hidden="true" />
         </button>

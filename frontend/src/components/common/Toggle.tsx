@@ -68,17 +68,17 @@ export function Toggle({
         onClick={() => onChange(!checked)}
         onKeyDown={handleKeyDown}
         className={[
-          "relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors",
-          "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+          "relative inline-flex shrink-0 cursor-pointer rounded-full border transition-[border-color,box-shadow,background-color] motion-reduce:transition-none",
+          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/25 focus-visible:border-brand",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           TRACK_SIZES[size],
-          checked ? "bg-brand" : "bg-surface-muted",
+          checked ? "border-brand bg-brand" : "border-default bg-surface/95",
         ].join(" ")}
       >
         <span
           aria-hidden="true"
           className={[
-            "pointer-events-none inline-block transform rounded-full bg-surface shadow-sm ring-0 transition-transform",
+            "pointer-events-none inline-block transform rounded-full bg-surface shadow-[0_2px_8px_rgba(15,23,42,0.12)] ring-0 transition-transform motion-reduce:transition-none",
             THUMB_SIZES[size].size,
             checked ? THUMB_SIZES[size].translate : "translate-x-0",
           ].join(" ")}
@@ -86,7 +86,7 @@ export function Toggle({
       </button>
       <span
         id={labelId}
-        className={`text-sm ${disabled ? "text-foreground-muted" : "text-foreground"}`}
+        className={`text-sm ${disabled ? "text-foreground-muted" : "text-foreground-secondary"}`}
       >
         {label}
       </span>

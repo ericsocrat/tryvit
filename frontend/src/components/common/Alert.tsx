@@ -87,7 +87,7 @@ export function Alert({
     <div
       role="alert"
       className={[
-        "flex gap-3 rounded-lg border p-4",
+        "flex gap-3 rounded-xl border bg-surface/95 p-4 shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition-[border-color,box-shadow,background-color,color] motion-reduce:transition-none",
         config.bg,
         config.border,
         className,
@@ -112,7 +112,7 @@ export function Alert({
         <button
           type="button"
           onClick={() => setDismissed(true)}
-          className="shrink-0 text-foreground-muted hover:text-foreground transition-colors"
+          className="shrink-0 rounded-md text-foreground-muted transition-colors motion-reduce:transition-none hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/25"
           aria-label={t("a11y.dismiss")}
         >
           <X size={18} aria-hidden="true" />
