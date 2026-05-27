@@ -1,16 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ─── Web Vitals Tests (#621) ────────────────────────────────────────────────
 // Tests the web-vitals collection module: rateMetric classification,
 // reportWebVitals initialization, and handler invocation.
 
 import {
-  rateMetric,
-  reportWebVitals,
-  WEB_VITAL_THRESHOLDS,
-  defaultMetricHandler,
-  type MetricHandler,
-  type VitalRating,
+    defaultMetricHandler,
+    rateMetric,
+    reportWebVitals,
+    shouldCaptureWebVital,
+    WEB_VITAL_THRESHOLDS,
+    type MetricHandler,
 } from "./web-vitals";
 
 // ─── rateMetric classification ──────────────────────────────────────────────
@@ -126,6 +126,27 @@ describe("rateMetric", () => {
   });
 });
 
+// ─── shouldCaptureWebVital route filter ────────────────────────────────────
+
+describe("shouldCaptureWebVital", () => {
+  it("suppresses TTFB on the password update route", () => {
+    expect(shouldCaptureWebVital("/auth/update-password", "TTFB")).toBe(false);
+  });
+
+  it("suppresses FCP on the password update route", () => {
+    expect(shouldCaptureWebVital("/auth/update-password", "FCP")).toBe(false);
+  });
+
+  it("still allows other metrics on the password update route", () => {
+    expect(shouldCaptureWebVital("/auth/update-password", "LCP")).toBe(true);
+  });
+
+  it("still allows TTFB and FCP on other routes", () => {
+    expect(shouldCaptureWebVital("/auth/login", "TTFB")).toBe(true);
+    expect(shouldCaptureWebVital("/auth/login", "FCP")).toBe(true);
+  });
+});
+
 // ─── WEB_VITAL_THRESHOLDS ───────────────────────────────────────────────────
 
 describe("WEB_VITAL_THRESHOLDS", () => {
@@ -159,33 +180,27 @@ describe("reportWebVitals", () => {
 
   it("calls handler for each metric reported", async () => {
     const handler = vi.fn<MetricHandler>();
-    const metrics: Array<{ name: string; value: number; id: string }> = [];
 
     // Mock web-vitals module
     vi.doMock("web-vitals", () => ({
       onCLS: (cb: (m: { name: string; value: number; id: string }) => void) => {
         const m = { name: "CLS", value: 0.05, id: "cls-1" };
-        metrics.push(m);
         cb(m);
       },
       onINP: (cb: (m: { name: string; value: number; id: string }) => void) => {
         const m = { name: "INP", value: 150, id: "inp-1" };
-        metrics.push(m);
         cb(m);
       },
       onLCP: (cb: (m: { name: string; value: number; id: string }) => void) => {
         const m = { name: "LCP", value: 2000, id: "lcp-1" };
-        metrics.push(m);
         cb(m);
       },
       onTTFB: (cb: (m: { name: string; value: number; id: string }) => void) => {
         const m = { name: "TTFB", value: 500, id: "ttfb-1" };
-        metrics.push(m);
         cb(m);
       },
       onFCP: (cb: (m: { name: string; value: number; id: string }) => void) => {
         const m = { name: "FCP", value: 1200, id: "fcp-1" };
-        metrics.push(m);
         cb(m);
       },
     }));
@@ -248,7 +263,7 @@ describe("defaultMetricHandler", () => {
       name: "LCP",
       value: 2000,
       id: "lcp-test",
-      rating: "good" as VitalRating,
+      rating: "good",
     });
 
     expect(spy).toHaveBeenCalledWith(
