@@ -77,8 +77,8 @@ export function InfoTooltip({
           sideOffset={6}
           className={[
             "z-50 rounded-md px-3 py-2 text-xs leading-relaxed",
-            "bg-surface-subtle text-foreground border border-strong shadow-md",
-            "animate-in fade-in-0 zoom-in-95",
+            "border border-default bg-surface/95 text-foreground shadow-[0_10px_28px_rgba(15,23,42,0.18)]",
+            "animate-in fade-in-0 zoom-in-95 motion-reduce:animate-none",
             "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
             "data-[side=top]:slide-in-from-bottom-2",
             "data-[side=bottom]:slide-in-from-top-2",

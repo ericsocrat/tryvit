@@ -146,6 +146,7 @@ export function EmptyStateIllustration({
       width={240}
       height={200}
       priority={false}
+      className="h-auto w-auto max-w-full select-none drop-shadow-[0_8px_20px_rgba(15,23,42,0.12)]"
       data-illustration={type}
     />
   );

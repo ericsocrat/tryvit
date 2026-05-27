@@ -70,15 +70,15 @@ export function EmptyState({
 
   return (
     <div
-      className={`flex min-h-[180px] flex-col items-center justify-center py-12 text-center ${className}`}
+      className={`flex min-h-[180px] flex-col items-center justify-center rounded-xl border border-default bg-surface/95 px-4 py-12 text-center shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none ${className}`}
       data-testid="empty-state"
       data-variant={variant}
     >
-      <div className="mb-3" aria-hidden="true">
+      <div className="mb-3 text-foreground-muted" aria-hidden="true">
         {icon ??
           (() => {
             const DefaultIcon = DEFAULT_ICONS[variant];
-            return <DefaultIcon size={48} className="text-foreground-muted" />;
+            return <DefaultIcon size={48} className="drop-shadow-[0_2px_6px_rgba(15,23,42,0.12)]" />;
           })()}
       </div>
 
@@ -118,8 +118,8 @@ function ActionButton({
   const label = t(action.labelKey);
 
   const baseClasses = primary
-    ? "rounded-lg bg-brand px-4 py-2 text-xs font-medium text-foreground-inverse hover:bg-brand-hover transition-colors"
-    : "text-xs font-medium text-brand hover:text-brand-hover underline underline-offset-2 transition-colors";
+    ? "rounded-lg bg-brand px-4 py-2 text-xs font-medium text-foreground-inverse shadow-[0_4px_12px_rgba(15,23,42,0.14)] transition-[background-color,box-shadow,color] motion-reduce:transition-none hover:bg-brand-hover focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/25"
+    : "text-xs font-medium text-brand underline underline-offset-2 transition-[color] motion-reduce:transition-none hover:text-brand-hover focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/25";
 
   if (action.href) {
     return (
