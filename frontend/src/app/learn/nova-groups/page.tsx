@@ -3,6 +3,8 @@
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Disclaimer } from "@/components/learn/Disclaimer";
+import { LearnArticleShell } from "@/components/learn/LearnArticleShell";
+import { LearnSectionCard } from "@/components/learn/LearnSectionCard";
 import { LearnSidebar } from "@/components/learn/LearnSidebar";
 import { LearnTopicNav } from "@/components/learn/LearnTopicNav";
 import { SourceCitation } from "@/components/learn/SourceCitation";
@@ -30,63 +32,56 @@ export default function NovaGroupsPage() {
             {t("learn.backToHub")}
           </Link>
 
-          <article className="prose max-w-none">
-            <h1 className="flex items-center gap-2">
-              <Factory size={28} aria-hidden="true" className="inline-block" />{" "}
-              {t("learn.novaGroups.title")}
-            </h1>
+          <LearnArticleShell
+            icon={Factory}
+            title={t("learn.novaGroups.title")}
+            summary={t("learn.novaGroups.summary")}
+          >
+            <LearnSectionCard title={t("learn.novaGroups.whatIsTitle")}>
+              <p>{t("learn.novaGroups.whatIsText")}</p>
+            </LearnSectionCard>
 
-            <div className="rounded-lg bg-brand-subtle p-4 not-prose">
-              <p className="text-sm font-medium text-brand">
-                {t("learn.tldr")}
-              </p>
-              <p className="mt-1 text-sm text-brand">
-                {t("learn.novaGroups.summary")}
-              </p>
-            </div>
+            <LearnSectionCard title={t("learn.novaGroups.groupsTitle")}>
+              <div className="grid gap-3 md:grid-cols-2">
+                {(["1", "2", "3", "4"] as const).map((n) => {
+                  const colorMap: Record<string, string> = {
+                    "1": "border-success-border bg-success-bg",
+                    "2": "border-info-border bg-info-bg",
+                    "3": "border-warning-border bg-warning-bg",
+                    "4": "border-error-border bg-error-bg",
+                  };
+                  return (
+                    <div
+                      key={n}
+                      className={`rounded-lg border p-4 ${colorMap[n]}`}
+                    >
+                      <p className="text-sm font-semibold text-foreground">
+                        {t(`learn.novaGroups.group${n}Title`)}
+                      </p>
+                      <p className="mt-1 text-sm text-foreground-secondary">
+                        {t(`learn.novaGroups.group${n}Text`)}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </LearnSectionCard>
 
-            <h2>{t("learn.novaGroups.whatIsTitle")}</h2>
-            <p>{t("learn.novaGroups.whatIsText")}</p>
+            <LearnSectionCard title={t("learn.novaGroups.whyItMattersTitle")}>
+              <p>{t("learn.novaGroups.whyItMattersText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.novaGroups.groupsTitle")}</h2>
+            <LearnSectionCard title={t("learn.novaGroups.polishContextTitle")}>
+              <p>{t("learn.novaGroups.polishContextText")}</p>
+            </LearnSectionCard>
 
-            <div className="not-prose space-y-3">
-              {(["1", "2", "3", "4"] as const).map((n) => {
-                const colorMap: Record<string, string> = {
-                  "1": "border-success-border bg-success-bg",
-                  "2": "border-info-border bg-info-bg",
-                  "3": "border-warning-border bg-warning-bg",
-                  "4": "border-error-border bg-error-bg",
-                };
-                return (
-                  <div
-                    key={n}
-                    className={`rounded-lg border p-4 ${colorMap[n]}`}
-                  >
-                    <p className="text-sm font-semibold text-foreground">
-                      {t(`learn.novaGroups.group${n}Title`)}
-                    </p>
-                    <p className="mt-1 text-sm text-foreground-secondary">
-                      {t(`learn.novaGroups.group${n}Text`)}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
+            <LearnSectionCard title={t("learn.novaGroups.processingRiskTitle")}>
+              <p>{t("learn.novaGroups.processingRiskText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.novaGroups.whyItMattersTitle")}</h2>
-            <p>{t("learn.novaGroups.whyItMattersText")}</p>
+            <Disclaimer />
 
-            <h2>{t("learn.novaGroups.polishContextTitle")}</h2>
-            <p>{t("learn.novaGroups.polishContextText")}</p>
-
-            <h2>{t("learn.novaGroups.processingRiskTitle")}</h2>
-            <p>{t("learn.novaGroups.processingRiskText")}</p>
-
-            <Disclaimer className="mt-8" />
-
-            <h2>{t("learn.sourcesTitle")}</h2>
-            <div className="not-prose space-y-2">
+            <LearnSectionCard title={t("learn.sourcesTitle")}>
               <SourceCitation
                 author="Monteiro et al."
                 title="Ultra-processed foods: what they are and how to identify them"
@@ -105,10 +100,10 @@ export default function NovaGroupsPage() {
                 year={2018}
                 url="https://doi.org/10.1136/bmj.k322"
               />
-            </div>
+            </LearnSectionCard>
 
             <LearnTopicNav />
-          </article>
+          </LearnArticleShell>
         </main>
       </div>
 

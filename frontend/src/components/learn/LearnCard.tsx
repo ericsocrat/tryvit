@@ -29,9 +29,9 @@ export function LearnCard({
   return (
     <Link
       href={href}
-      className={`group block rounded-xl border bg-surface p-5 shadow-sm transition-interactive hover-lift ${className}`}
+      className={`group block rounded-2xl border border-border/70 bg-surface/95 p-6 shadow-sm transition-interactive hover-lift ${className}`}
     >
-      <div className="mb-3 flex items-center" aria-hidden="true">
+      <div className="mb-4 flex items-center" aria-hidden="true">
         {typeof icon === "function" ||
         (typeof icon === "object" &&
           icon !== null &&
@@ -39,10 +39,10 @@ export function LearnCard({
           ? React.createElement(icon as LucideIcon, { size: 32 })
           : icon}
       </div>
-      <h2 className="mb-1.5 text-lg font-semibold text-foreground group-hover:text-brand-hover transition-colors">
+      <h2 className="mb-2 text-lg font-semibold text-foreground transition-colors group-hover:text-brand-hover">
         {title}
       </h2>
-      <p className="text-sm leading-relaxed text-foreground-secondary">
+      <p className="text-sm leading-6 text-foreground-secondary">
         {description}
       </p>
     </Link>

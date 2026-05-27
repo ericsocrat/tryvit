@@ -7,16 +7,16 @@ import { LearnCard } from "@/components/learn/LearnCard";
 import { eventBus } from "@/lib/events";
 import { useTranslation } from "@/lib/i18n";
 import {
-    AlertTriangle,
-    Award,
-    BadgeCheck,
-    BarChart3,
-    BookOpen,
-    Factory,
-    FlaskConical,
-    Heart,
-    Tag,
-    type LucideIcon,
+  AlertTriangle,
+  Award,
+  BadgeCheck,
+  BarChart3,
+  BookOpen,
+  Factory,
+  FlaskConical,
+  Heart,
+  Tag,
+  type LucideIcon,
 } from "lucide-react";
 import { useEffect } from "react";
 
@@ -88,33 +88,53 @@ export default function LearnHubPage() {
     <div className="flex min-h-screen flex-col">
       <Header />
 
-      <main id="main-content" className="flex-1 px-4 py-12">
-        <div className="mx-auto max-w-5xl">
+      <main
+        id="main-content"
+        className="flex-1 bg-linear-to-b from-brand-subtle/35 via-surface to-surface px-4 py-10 md:py-14"
+      >
+        <div className="mx-auto max-w-6xl space-y-8">
           {/* Hero */}
-          <div className="mb-10 text-center">
-            <h1 className="mb-3 flex items-center justify-center gap-3 text-3xl font-bold text-foreground md:text-4xl">
-              <BookOpen size={32} aria-hidden="true" /> {t("learn.hubTitle")}
+          <section className="overflow-hidden rounded-4xl border border-border/70 bg-surface/95 p-6 shadow-[0_30px_80px_rgba(15,23,42,0.08)] backdrop-blur-sm md:p-8 dark:shadow-[0_30px_80px_rgba(0,0,0,0.28)]">
+            <p className="inline-flex rounded-full bg-brand-subtle px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-brand">
+              Learn
+            </p>
+
+            <h1 className="mt-4 flex items-center gap-3 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+              <BookOpen size={30} aria-hidden="true" />
+              {t("learn.hubTitle")}
             </h1>
-            <p className="mx-auto max-w-2xl text-lg text-foreground-secondary">
+
+            <p className="mt-3 max-w-3xl text-lg leading-8 text-foreground-secondary">
               {t("learn.hubSubtitle")}
             </p>
-          </div>
+
+            <p className="mt-2 max-w-3xl text-base leading-7 text-foreground-secondary">
+              {t("learn.hubDescription")}
+            </p>
+          </section>
 
           {/* Disclaimer */}
-          <Disclaimer className="mb-10" />
+          <Disclaimer className="rounded-2xl border border-warning-border/70 bg-warning-bg/70 p-4 shadow-sm" />
 
-          {/* Topic grid */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {TOPICS.map(({ slug, icon, titleKey, descKey }) => (
-              <LearnCard
-                key={slug}
-                icon={icon}
-                title={t(titleKey)}
-                description={t(descKey)}
-                href={`/learn/${slug}`}
-              />
-            ))}
-          </div>
+          <section className="space-y-5">
+            <h2 className="text-lg font-semibold tracking-tight text-foreground md:text-xl">
+              {t("learn.learnMore")}
+            </h2>
+
+            {/* Topic grid */}
+            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              {TOPICS.map(({ slug, icon, titleKey, descKey }) => (
+                <LearnCard
+                  key={slug}
+                  icon={icon}
+                  title={t(titleKey)}
+                  description={t(descKey)}
+                  href={`/learn/${slug}`}
+                  className="h-full"
+                />
+              ))}
+            </div>
+          </section>
         </div>
       </main>
 

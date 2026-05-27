@@ -3,6 +3,8 @@
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Disclaimer } from "@/components/learn/Disclaimer";
+import { LearnArticleShell } from "@/components/learn/LearnArticleShell";
+import { LearnSectionCard } from "@/components/learn/LearnSectionCard";
 import { LearnSidebar } from "@/components/learn/LearnSidebar";
 import { LearnTopicNav } from "@/components/learn/LearnTopicNav";
 import { SourceCitation } from "@/components/learn/SourceCitation";
@@ -43,55 +45,45 @@ export default function AdditivesPage() {
             {t("learn.backToHub")}
           </Link>
 
-          <article className="prose max-w-none">
-            <h1 className="flex items-center gap-2">
-              <FlaskConical
-                size={28}
-                aria-hidden="true"
-                className="inline-block"
-              />{" "}
-              {t("learn.additives.title")}
-            </h1>
+          <LearnArticleShell
+            icon={FlaskConical}
+            title={t("learn.additives.title")}
+            summary={t("learn.additives.summary")}
+          >
+            <LearnSectionCard title={t("learn.additives.whatAreTitle")}>
+              <p>{t("learn.additives.whatAreText")}</p>
+            </LearnSectionCard>
 
-            <div className="rounded-lg bg-brand-subtle p-4 not-prose">
-              <p className="text-sm font-medium text-brand">
-                {t("learn.tldr")}
-              </p>
-              <p className="mt-1 text-sm text-brand">
-                {t("learn.additives.summary")}
-              </p>
-            </div>
+            <LearnSectionCard title={t("learn.additives.notDangerousTitle")}>
+              <p>{t("learn.additives.notDangerousText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.additives.whatAreTitle")}</h2>
-            <p>{t("learn.additives.whatAreText")}</p>
+            <LearnSectionCard title={t("learn.additives.concernTiersTitle")}>
+              <div className="grid gap-3 md:grid-cols-2">
+                {tiers.map((key, i) => (
+                  <div
+                    key={key}
+                    className={`rounded-lg border p-4 ${tierColors[i]}`}
+                  >
+                    <p className="text-sm text-foreground">
+                      {t(`learn.additives.${key}`)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </LearnSectionCard>
 
-            <h2>{t("learn.additives.notDangerousTitle")}</h2>
-            <p>{t("learn.additives.notDangerousText")}</p>
+            <LearnSectionCard title={t("learn.additives.howWeUseTitle")}>
+              <p>{t("learn.additives.howWeUseText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.additives.concernTiersTitle")}</h2>
-            <div className="not-prose space-y-2">
-              {tiers.map((key, i) => (
-                <div
-                  key={key}
-                  className={`rounded-lg border p-3 ${tierColors[i]}`}
-                >
-                  <p className="text-sm text-foreground">
-                    {t(`learn.additives.${key}`)}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <LearnSectionCard title={t("learn.additives.polishContextTitle")}>
+              <p>{t("learn.additives.polishContextText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.additives.howWeUseTitle")}</h2>
-            <p>{t("learn.additives.howWeUseText")}</p>
+            <Disclaimer />
 
-            <h2>{t("learn.additives.polishContextTitle")}</h2>
-            <p>{t("learn.additives.polishContextText")}</p>
-
-            <Disclaimer className="mt-8" />
-
-            <h2>{t("learn.sourcesTitle")}</h2>
-            <div className="not-prose space-y-2">
+            <LearnSectionCard title={t("learn.sourcesTitle")}>
               <SourceCitation
                 author="EFSA"
                 title="Re-evaluation of food additives programme"
@@ -102,10 +94,10 @@ export default function AdditivesPage() {
                 title="Regulation (EC) No 1333/2008 on food additives"
                 year={2008}
               />
-            </div>
+            </LearnSectionCard>
 
             <LearnTopicNav />
-          </article>
+          </LearnArticleShell>
         </main>
       </div>
 
