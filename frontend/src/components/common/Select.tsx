@@ -64,7 +64,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label
             htmlFor={selectId}
-            className="mb-1.5 block text-sm font-medium text-foreground"
+            className="mb-1.5 block text-sm font-medium text-foreground-secondary"
           >
             {label}
           </label>
@@ -76,11 +76,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
           aria-invalid={error ? true : undefined}
           aria-describedby={errorId}
           className={[
-            "block w-full appearance-none rounded-lg border bg-surface shadow-sm transition-colors",
-            "focus-visible:outline-hidden focus-visible:ring-1",
+            "block w-full appearance-none rounded-xl border bg-surface/95 shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition-[border-color,box-shadow,background-color,color] motion-reduce:transition-none",
+            "focus-visible:outline-hidden focus-visible:ring-2",
             error
-              ? "border-error focus-visible:border-error focus-visible:ring-error"
-              : "border-strong focus-visible:border-brand focus-visible:ring-brand",
+              ? "border-error focus-visible:border-error focus-visible:ring-error/30"
+              : "border-default focus-visible:border-brand focus-visible:ring-brand/25",
             SIZE_CLASSES[size],
             // Space for chevron
             "pr-10",
