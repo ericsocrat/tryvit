@@ -54,11 +54,11 @@ export function FormField({
     <div className={className}>
       <label
         htmlFor={inputId}
-        className="mb-1.5 block text-sm font-medium text-foreground"
+        className="mb-1.5 block text-sm font-medium text-foreground-secondary"
       >
         {label}
         {required && (
-          <span className="ml-1 text-error" aria-hidden="true">
+          <span className="ml-1 text-error/90" aria-hidden="true">
             *
           </span>
         )}
@@ -75,12 +75,12 @@ export function FormField({
       {/* Reserve min-height to prevent layout shift when error appears */}
       <div className="min-h-5">
         {error && (
-          <p id={errorId} className="mt-1 text-xs text-error" role="alert">
+          <p id={errorId} className="mt-1.5 text-xs text-error" role="alert">
             {error}
           </p>
         )}
         {hint && !error && (
-          <p id={hintId} className="mt-1 text-xs text-foreground-muted">
+          <p id={hintId} className="mt-1.5 text-xs text-foreground-muted">
             {hint}
           </p>
         )}
