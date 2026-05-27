@@ -25,16 +25,16 @@ export function DietAllergensStep({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-7">
       {/* ── Diet section ── */}
-      <h1 className="mb-2 text-2xl font-bold text-foreground">
+      <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
         {t("onboarding.dietTitle")}
       </h1>
-      <p className="mb-6 text-sm text-foreground-secondary">
+      <p className="max-w-md text-sm text-foreground-secondary sm:text-base">
         {t("onboarding.dietSubtitle")}
       </p>
 
-      <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border bg-surface-subtle/60 p-4 sm:p-5">
+      <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border/70 bg-surface-subtle/70 p-4 shadow-sm sm:p-5">
         {DIET_OPTIONS.map((opt) => (
           <button
             type="button"
@@ -68,8 +68,8 @@ export function DietAllergensStep({
       )}
 
       {/* ── Allergens section ── */}
-      <section className="rounded-2xl border border-border bg-surface-subtle/60 p-4 sm:p-5">
-        <h2 className="mb-2 text-lg font-semibold text-foreground">
+      <section className="rounded-2xl border border-border/70 bg-surface-subtle/70 p-4 shadow-sm sm:p-5">
+        <h2 className="mb-2 text-base font-semibold text-foreground sm:text-lg">
           {t("onboarding.allergenTitle")}
         </h2>
         <p className="mb-4 text-sm text-foreground-secondary">
@@ -127,7 +127,7 @@ export function DietAllergensStep({
         )}
       </section>
 
-      <div className="mt-8 flex gap-3">
+      <div className="mt-1 flex gap-3">
         <Button type="button" variant="secondary" onClick={onBack} className="flex-1">
           {t("onboarding.back")}
         </Button>

@@ -82,7 +82,7 @@ function OverallStatus({ data }: Readonly<{ data: HealthCheckResponse }>) {
   const { t } = useTranslation();
   return (
     <div
-      className={`rounded-lg border p-6 ${statusBg(data.status)}`}
+      className={`rounded-2xl border p-6 shadow-sm ${statusBg(data.status)}`}
       data-testid="overall-status"
     >
       <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ function MvStalenessCard({
   const status = stale ? "degraded" : "healthy";
   return (
     <div
-      className={`rounded-lg border p-4 ${statusBg(status)}`}
+      className={`rounded-2xl border p-4 shadow-sm ${statusBg(status)}`}
       data-testid={`mv-${name}`}
     >
       <div className="flex items-center gap-2">
@@ -165,7 +165,7 @@ function RowCountCard({
 
   return (
     <div
-      className={`rounded-lg border p-4 ${statusBg(status)}`}
+      className={`rounded-2xl border p-4 shadow-sm ${statusBg(status)}`}
       data-testid="row-counts"
     >
       <div className="flex items-center gap-2">
@@ -221,13 +221,15 @@ export default function AdminMonitoringPage() {
     <div className="mx-auto max-w-4xl px-4 py-6">
       <Breadcrumbs items={breadcrumbs} />
 
-      <div className="mt-4 flex items-center gap-3">
-        <Activity className="h-6 w-6 text-info" />
-        <h1 className="text-2xl font-bold">{t("monitoring.title")}</h1>
+      <div className="mt-4 rounded-2xl border border-border/70 bg-surface/95 px-4 py-4 shadow-sm sm:px-5">
+        <div className="flex items-center gap-3">
+          <Activity className="h-6 w-6 text-info" />
+          <h1 className="text-2xl font-bold">{t("monitoring.title")}</h1>
+        </div>
+        <p className="mt-1 text-sm text-foreground-secondary">
+          {t("monitoring.subtitle")}
+        </p>
       </div>
-      <p className="mt-1 text-sm text-foreground-secondary">
-        {t("monitoring.subtitle")}
-      </p>
 
       {/* Loading state */}
       {isLoading && (
@@ -239,7 +241,7 @@ export default function AdminMonitoringPage() {
       {/* Error state */}
       {error && !data && (
         <div
-          className="mt-8 rounded-lg border border-error-border bg-error-bg p-4"
+          className="mt-8 rounded-2xl border border-error-border bg-error-bg p-4 shadow-sm"
           data-testid="error-state"
         >
           <div className="flex items-center gap-2">

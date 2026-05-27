@@ -57,7 +57,7 @@ function MetricCard({
 }>) {
   return (
     <div
-      className="rounded-lg border bg-surface p-4"
+      className="rounded-2xl border border-border/70 bg-surface/95 p-4 shadow-sm"
       data-testid={testId}
     >
       <div className="flex items-center gap-2 text-sm text-foreground-secondary">
@@ -91,7 +91,7 @@ function RankingTable({
 }>) {
   return (
     <div
-      className="rounded-lg border bg-surface p-4"
+      className="rounded-2xl border border-border/70 bg-surface/95 p-4 shadow-sm"
       data-testid={testId}
     >
       <h3 className="mb-3 flex items-center gap-2 font-semibold">
@@ -104,7 +104,7 @@ function RankingTable({
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b text-left text-foreground-muted">
+              <tr className="border-b border-border/70 text-left text-foreground-muted">
                 <th className="pb-2 pr-2">#</th>
                 {columns.map((col) => (
                   <th key={col} className="pb-2 pr-2">
@@ -114,22 +114,37 @@ function RankingTable({
               </tr>
             </thead>
             <tbody>
-              {rows.map((row, i) => (
-                <tr
-                  key={i}
-                  className="border-b last:border-0"
-                >
-                  <td className="py-1.5 pr-2 text-foreground-muted">{i + 1}</td>
-                  {row.map((cell, j) => (
-                    <td
-                      key={j}
-                      className={`py-1.5 pr-2 ${j === 0 ? "max-w-[200px] truncate" : "font-mono"}`}
+              {(() => {
+                let rank = 0;
+
+                return rows.map((row) => {
+                  rank += 1;
+                  const rowKey = row.map(String).join("|");
+
+                  return (
+                    <tr
+                      key={rowKey}
+                      className="border-b border-border/50 last:border-0"
                     >
-                      {typeof cell === "number" ? cell.toLocaleString() : cell}
-                    </td>
-                  ))}
-                </tr>
-              ))}
+                      <td className="py-1.5 pr-2 text-foreground-muted">
+                        {rank}
+                      </td>
+                      {columns.map((col, columnIndex) => {
+                        const cell = row[columnIndex];
+
+                        return (
+                          <td
+                            key={col}
+                            className={`py-1.5 pr-2 ${columnIndex === 0 ? "max-w-50 truncate" : "font-mono"}`}
+                          >
+                            {typeof cell === "number" ? cell.toLocaleString() : cell}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                });
+              })()}
             </tbody>
           </table>
         </div>
@@ -312,7 +327,7 @@ export default function AdminMetricsPage() {
       <Breadcrumbs items={breadcrumbs} />
 
       {/* Header */}
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/70 bg-surface/95 px-4 py-4 shadow-sm sm:px-5">
         <div className="flex items-center gap-3">
           <BarChart3 className="h-6 w-6 text-info" />
           <div>
@@ -328,7 +343,7 @@ export default function AdminMetricsPage() {
           <select
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
-            className="rounded-md border bg-surface px-3 py-1.5 text-sm"
+            className="rounded-lg border border-border/70 bg-surface px-3 py-1.5 text-sm"
             data-testid="date-range-select"
           >
             {DATE_RANGE_OPTIONS.map((opt) => (
@@ -341,7 +356,7 @@ export default function AdminMetricsPage() {
           {/* Refresh */}
           <button
             onClick={() => refetch()}
-            className="rounded-md border p-1.5 text-foreground-secondary hover:bg-surface-muted"
+            className="rounded-lg border border-border/70 p-1.5 text-foreground-secondary hover:bg-surface-muted"
             title="Refresh"
             data-testid="refresh-btn"
           >
@@ -352,7 +367,7 @@ export default function AdminMetricsPage() {
           <button
             onClick={handleExport}
             disabled={!data}
-            className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm text-foreground-secondary hover:bg-surface-muted disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg border border-border/70 px-3 py-1.5 text-sm text-foreground-secondary hover:bg-surface-muted disabled:opacity-50"
             data-testid="export-btn"
           >
             <Download className="h-4 w-4" />
@@ -371,7 +386,7 @@ export default function AdminMetricsPage() {
       {/* Error state */}
       {error && !data && (
         <div
-          className="mt-8 rounded-lg border border-error-border bg-error-bg p-4"
+          className="mt-8 rounded-2xl border border-error-border bg-error-bg p-4 shadow-sm"
           data-testid="error-state"
         >
           <div className="flex items-center gap-2">
@@ -454,7 +469,7 @@ export default function AdminMetricsPage() {
 
           {/* Row 3: Feature usage */}
           <div
-            className="rounded-lg border bg-surface p-4"
+            className="rounded-2xl border border-border/70 bg-surface/95 p-4 shadow-sm"
             data-testid="feature-usage"
           >
             <h3 className="mb-3 flex items-center gap-2 font-semibold">
@@ -467,7 +482,7 @@ export default function AdminMetricsPage() {
           {/* Row 4: Allergen distribution + Scan vs search */}
           <div className="grid gap-4 lg:grid-cols-2">
             <div
-              className="rounded-lg border bg-surface p-4"
+              className="rounded-2xl border border-border/70 bg-surface/95 p-4 shadow-sm"
               data-testid="allergen-dist"
             >
               <h3 className="mb-3 flex items-center gap-2 font-semibold">
@@ -495,7 +510,7 @@ export default function AdminMetricsPage() {
             </div>
 
             <div
-              className="rounded-lg border bg-surface p-4"
+              className="rounded-2xl border border-border/70 bg-surface/95 p-4 shadow-sm"
               data-testid="scan-vs-search"
             >
               <h3 className="mb-3 flex items-center gap-2 font-semibold">

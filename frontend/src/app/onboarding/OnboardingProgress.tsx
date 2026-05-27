@@ -17,7 +17,7 @@ export function OnboardingProgress({
   const { t } = useTranslation();
 
   return (
-    <div className="mb-8">
+    <div className="mb-7 rounded-2xl border border-border/60 bg-surface-subtle/55 px-3 py-3 sm:px-4">
       {/* Native progress for screen readers */}
       <progress
         className="sr-only"
@@ -34,12 +34,12 @@ export function OnboardingProgress({
           <div
             key={i}
             className={`h-2 flex-1 rounded-full transition-colors ${
-              i < currentStep ? "bg-brand" : "bg-surface-muted"
+              i < currentStep ? "bg-brand" : "bg-surface-muted/90"
             }`}
           />
         ))}
       </div>
-      <p className="text-center text-xs text-foreground-secondary">
+      <p className="text-center text-xs font-medium tracking-wide text-foreground-secondary">
         {t("onboarding.stepOf", {
           current: String(currentStep),
           total: String(totalSteps),

@@ -15,25 +15,25 @@ import { callRpc } from "@/lib/rpc";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
 import type {
-  AdminBatchRejectResponse,
-  AdminReviewResponse,
-  AdminSubmission,
-  AdminSubmissionsResponse,
-  AdminVelocityResponse,
-  RpcResult,
+    AdminBatchRejectResponse,
+    AdminReviewResponse,
+    AdminSubmission,
+    AdminSubmissionsResponse,
+    AdminVelocityResponse,
+    RpcResult,
 } from "@/lib/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Activity,
-  Ban,
-  CheckCircle,
-  Clock,
-  FileText,
-  Link2,
-  RefreshCw,
-  ShieldAlert,
-  ShieldCheck,
-  XCircle,
+    Activity,
+    Ban,
+    CheckCircle,
+    Clock,
+    FileText,
+    Link2,
+    RefreshCw,
+    ShieldAlert,
+    ShieldCheck,
+    XCircle,
 } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
@@ -177,7 +177,7 @@ export default function AdminSubmissionsPage() {
   }, [queryClient, queryKey]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <Breadcrumbs
         items={[
           { labelKey: "nav.home", href: "/app" },
@@ -185,7 +185,7 @@ export default function AdminSubmissionsPage() {
           { labelKey: "admin.submissionReview" },
         ]}
       />
-      <div>
+      <div className="rounded-2xl border border-border/70 bg-surface/95 px-4 py-4 shadow-sm sm:px-5">
         <h1 className="flex items-center gap-2 text-lg font-semibold text-foreground">
           <ShieldCheck size={20} aria-hidden="true" />
           {t("admin.submissionReview")}
@@ -198,10 +198,10 @@ export default function AdminSubmissionsPage() {
       {/* Velocity widget (#474) */}
       {velocityData && (
         <div
-          className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+          className="grid grid-cols-2 gap-2.5 sm:grid-cols-4"
           data-testid="velocity-widget"
         >
-          <div className="card p-3 text-center">
+          <div className="rounded-2xl border border-border/70 bg-surface/95 p-3 text-center shadow-sm">
             <p className="text-2xl font-bold text-foreground">
               {velocityData.pending_count}
             </p>
@@ -210,7 +210,7 @@ export default function AdminSubmissionsPage() {
               Pending
             </p>
           </div>
-          <div className="card p-3 text-center">
+          <div className="rounded-2xl border border-border/70 bg-surface/95 p-3 text-center shadow-sm">
             <p className="text-2xl font-bold text-foreground">
               {velocityData.last_24h}
             </p>
@@ -219,13 +219,13 @@ export default function AdminSubmissionsPage() {
               Last 24h
             </p>
           </div>
-          <div className="card p-3 text-center">
+          <div className="rounded-2xl border border-border/70 bg-surface/95 p-3 text-center shadow-sm">
             <p className="text-2xl font-bold text-foreground">
               {velocityData.last_7d}
             </p>
             <p className="text-xs text-foreground-secondary">Last 7d</p>
           </div>
-          <div className="card p-3 text-center">
+          <div className="rounded-2xl border border-error-border/40 bg-error-bg/30 p-3 text-center shadow-sm">
             <p className="text-2xl font-bold text-error">
               {velocityData.auto_rejected_24h}
             </p>
@@ -238,7 +238,7 @@ export default function AdminSubmissionsPage() {
       )}
 
       {/* Status tabs */}
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap gap-1.5 rounded-2xl border border-border/70 bg-surface-subtle/70 p-2">
         {STATUS_TABS.map((tab) => (
           <button
             key={tab.value}
@@ -265,7 +265,7 @@ export default function AdminSubmissionsPage() {
       </div>
 
       {/* Country filter */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 rounded-2xl border border-border/70 bg-surface-subtle/70 px-3 py-2.5">
         <span className="text-sm text-foreground-secondary">
           {t("admin.countryLabel")}
         </span>
@@ -293,7 +293,7 @@ export default function AdminSubmissionsPage() {
 
       {/* Error */}
       {error && (
-        <div className="card border-error-border bg-error-bg text-center">
+        <div className="rounded-2xl border border-error-border bg-error-bg p-4 text-center shadow-sm">
           <p className="mb-2 text-sm text-error-text">{t("admin.loadFailed")}</p>
           <button
             onClick={handleRetry}
@@ -412,7 +412,7 @@ function AdminSubmissionCard({
   const effectiveCountry = submission.suggested_country ?? submission.scan_country;
 
   return (
-    <li className="card">
+    <li className="rounded-2xl border border-border/70 bg-surface/95 p-4 shadow-sm sm:p-5">
       <div className="space-y-2">
         <div className="flex items-start justify-between">
           <div>

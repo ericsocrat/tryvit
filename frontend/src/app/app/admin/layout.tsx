@@ -9,11 +9,11 @@
 import { Icon } from "@/components/common/Icon";
 import { useTranslation } from "@/lib/i18n";
 import {
-    Activity,
-    FileText,
-    Gauge,
-    ShieldCheck,
-    type LucideIcon,
+  Activity,
+  FileText,
+  Gauge,
+  ShieldCheck,
+  type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -53,9 +53,9 @@ export default function AdminLayout({
   const { t } = useTranslation();
 
   return (
-    <div>
+    <div className="space-y-5">
       {/* Admin header with shield icon + sub-navigation */}
-      <div className="mb-6 border-b border-border">
+      <div className="rounded-2xl border border-border/70 bg-surface/95 p-3 shadow-sm sm:p-4">
         {/* Title row */}
         <div className="flex items-center gap-2 px-1 pb-3">
           <Icon icon={ShieldCheck} size="lg" className="text-brand" />
@@ -66,7 +66,7 @@ export default function AdminLayout({
 
         {/* Tab bar */}
         <nav
-          className="flex gap-1"
+          className="flex gap-1 rounded-xl bg-surface-subtle/70 p-1"
           aria-label={t("nav.admin")}
         >
           {ADMIN_TABS.map((tab) => {
@@ -77,10 +77,10 @@ export default function AdminLayout({
                 key={tab.href}
                 href={tab.href}
                 aria-current={isActive ? "page" : undefined}
-                className={`flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors ${
                   isActive
-                    ? "border-brand text-brand"
-                    : "border-transparent text-foreground-secondary hover:border-border hover:text-foreground"
+                    ? "bg-surface text-brand shadow-sm"
+                    : "text-foreground-secondary hover:bg-surface hover:text-foreground"
                 }`}
               >
                 <Icon icon={tab.icon} size="sm" />
