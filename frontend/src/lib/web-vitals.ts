@@ -112,7 +112,7 @@ export type MetricHandler = (metric: {
  */
 export const defaultMetricHandler: MetricHandler = (metric) => {
   // Dynamic import avoids pulling Sentry into non-instrumented builds
-  if (globalThis.window) {
+  if (process.env.NODE_ENV === "production" && globalThis.window) {
     if (!shouldCaptureWebVital(globalThis.window.location.pathname, metric.name)) {
       return;
     }

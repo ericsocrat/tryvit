@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+const sentryMock = vi.hoisted(() => ({
+  captureMessage: vi.fn(),
+}));
+
+vi.mock("@sentry/nextjs", () => sentryMock);
+
 // ─── Web Vitals Tests (#621) ────────────────────────────────────────────────
 // Tests the web-vitals collection module: rateMetric classification,
 // reportWebVitals initialization, and handler invocation.
@@ -271,6 +277,29 @@ describe("defaultMetricHandler", () => {
     );
 
     process.env.NODE_ENV = originalEnv;
+    spy.mockRestore();
+  });
+
+  it("does not send metrics to Sentry in development", () => {
+    const spy = vi.spyOn(console, "debug").mockImplementation(() => {});
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "development";
+
+    const originalWindow = globalThis.window;
+    // @ts-expect-error — intentional browser stub for development simulation
+    globalThis.window = { location: { pathname: "/app/search" } };
+
+    defaultMetricHandler({
+      name: "TTFB",
+      value: 1200,
+      id: "ttfb-dev",
+      rating: "poor",
+    });
+
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    process.env.NODE_ENV = originalEnv;
+    globalThis.window = originalWindow;
     spy.mockRestore();
   });
 
