@@ -11,14 +11,14 @@ import { Icon } from "@/components/common/Icon";
 import { useActiveRoute, type PrimaryRouteKey } from "@/hooks/use-active-route";
 import { useTranslation } from "@/lib/i18n";
 import {
-  BookOpen,
-  ChevronDown,
-  ScanText,
-  Settings,
-  ShieldCheck,
-  Trophy,
-  UtensilsCrossed,
-  type LucideIcon,
+    BookOpen,
+    ChevronDown,
+    ScanText,
+    Settings,
+    ShieldCheck,
+    Trophy,
+    UtensilsCrossed,
+    type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -136,7 +136,7 @@ export function DesktopHeaderNav() {
 
   return (
     <nav
-      className="hidden items-center gap-1 lg:flex xl:hidden"
+      className="hidden items-center gap-1 rounded-xl border border-border/60 bg-surface/80 px-1.5 py-1 shadow-sm backdrop-blur-sm lg:flex xl:hidden"
       aria-label={t("a11y.headerNavigation")}
     >
       {/* Primary inline links */}
@@ -148,9 +148,9 @@ export function DesktopHeaderNav() {
             key={item.href}
             href={item.href}
             aria-current={isActive ? "page" : undefined}
-            className={`relative rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors ${
+            className={`relative rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors ${
               isActive
-                ? "text-brand"
+                ? "bg-brand-subtle/80 text-brand"
                 : "text-foreground-secondary hover:bg-surface-muted hover:text-foreground"
             }`}
           >
@@ -169,9 +169,9 @@ export function DesktopHeaderNav() {
           onClick={() => setDropdownOpen((prev) => !prev)}
           aria-expanded={dropdownOpen}
           aria-haspopup="true"
-          className={`flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors ${
             isDropdownItemActive
-              ? "text-brand"
+              ? "bg-brand-subtle/80 text-brand"
               : "text-foreground-secondary hover:bg-surface-muted hover:text-foreground"
           }`}
         >
@@ -185,7 +185,7 @@ export function DesktopHeaderNav() {
 
         {dropdownOpen && (
           <div
-            className="absolute right-0 top-full z-50 mt-1 w-52 rounded-lg border border-border bg-surface py-1 shadow-lg"
+            className="absolute right-0 top-full z-50 mt-1.5 w-56 rounded-xl border border-border/70 bg-surface/95 py-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.16)] backdrop-blur-sm"
             role="menu"
           >
             {DROPDOWN_ITEMS.map((item) => {
@@ -200,7 +200,7 @@ export function DesktopHeaderNav() {
                   role="menuitem"
                   aria-current={isActive ? "page" : undefined}
                   onClick={closeDropdown}
-                  className={`flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors ${
+                  className={`mx-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
                     isActive
                       ? "bg-brand-subtle text-brand"
                       : "text-foreground-secondary hover:bg-surface-muted hover:text-foreground"
