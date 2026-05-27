@@ -833,7 +833,7 @@
     "email": "E-mail",
     "emailPlaceholder": "ty@example.com",
     "password": "Hasło",
-    "passwordPlaceholder": "Co najmniej 6 znaków",
+    "credentialsPlaceholder": "Co najmniej 6 znaków",
     "signingIn": "Logowanie…",
     "noAccount": "Nie masz konta?",
     "signUp": "Zarejestruj się",
@@ -1400,7 +1400,7 @@
       "polishContextTitle": "Kontekst polski",
       "polishContextText": "Wiele popularnych produktów w polskich supermarketach jak Żabka, Biedronka i Lidl to NOVA 4. To nie znaczy, że nigdy nie powinieneś ich jeść — oznacza to bycie świadomym, ile twojej diety pochodzi z ultra-przetworzonych źródeł.",
       "processingRiskTitle": "Jak tego używamy: Ryzyko Przetworzenia",
-      "processingRiskText": "In TryVit grupy NOVA są mapowane na trzy poziomy Ryzyka Przetworzenia: Niskie (NOVA 1–2), Umiarkowane (NOVA 3) i Wysokie (NOVA 4). Daje to szybki odczyt poziomu przetworzenia obok naszego Wyniku TryVit i Nutri-Score."
+      "processingRiskText": "W TryVit grupy NOVA są mapowane na trzy poziomy Ryzyka Przetworzenia: Niskie (NOVA 1–2), Umiarkowane (NOVA 3) i Wysokie (NOVA 4). Daje to szybki odczyt poziomu przetworzenia obok naszego Wyniku TryVit i Nutri-Score."
     },
     "tryvitScore": {
       "title": "Wynik TryVit",
@@ -1445,7 +1445,7 @@
       "concernTier2": "Klasa 2 — Umiarkowane ryzyko: Niektóre sztuczne słodziki i barwniki. Bezpieczne w zatwierdzonych dawkach, ale podlegające dalszym badaniom.",
       "concernTier3": "Klasa 3 — Wysokie ryzyko: Azotyny (E250), BHA (E320), niektóre barwniki azowe. EFSA zgłosiła obawy; niektóre mają obniżone ADI.",
       "howWeUseTitle": "Jak tego używamy",
-      "howWeUseText": "In TryVit każdy składnik ma przypisaną klasę ryzyka na podstawie ocen EFSA. Wynik obaw o składniki produktu (0–100) stanowi 5% ogólnego Wyniku TryVit. Produkty bez problematycznych dodatków uzyskują 0 w tym czynniku.",
+      "howWeUseText": "W TryVit każdy składnik ma przypisaną klasę ryzyka na podstawie ocen EFSA. Wynik obaw o składniki produktu (0–100) stanowi 5% ogólnego Wyniku TryVit. Produkty bez problematycznych dodatków uzyskują 0 w tym czynniku.",
       "polishContextTitle": "Kontekst polski",
       "polishContextText": "Polskie etykiety żywności są zgodne z rozporządzeniem UE 1169/2011. Wszystkie dodatki muszą być wymienione według ich numeru E lub pełnej nazwy na liście składników. Robiąc zakupy w Żabce lub Biedronce, sprawdź listę składników — krótsze listy z rozpoznawalnymi składnikami zazwyczaj oznaczają mniejsze przetworzenie."
     },

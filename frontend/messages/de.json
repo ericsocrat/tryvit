@@ -833,7 +833,7 @@
     "email": "E-Mail",
     "emailPlaceholder": "sie@beispiel.de",
     "password": "Passwort",
-    "passwordPlaceholder": "Mindestens 6 Zeichen",
+    "credentialsPlaceholder": "Mindestens 6 Zeichen",
     "signingIn": "Anmeldung läuft…",
     "noAccount": "Noch kein Konto?",
     "signUp": "Registrieren",
@@ -1400,7 +1400,7 @@
       "polishContextTitle": "Polnischer Kontext",
       "polishContextText": "Viele beliebte Produkte in polnischen Supermärkten wie Żabka, Biedronka und Lidl fallen in NOVA 4. Das bedeutet nicht, dass Sie sie nie essen sollten — es bedeutet, sich bewusst zu sein, wie viel Ihrer Ernährung aus hochverarbeiteten Quellen stammt.",
       "processingRiskTitle": "Wie wir es nutzen: Verarbeitungsrisiko",
-      "processingRiskText": "in TryVit werden NOVA-Gruppen drei Verarbeitungsrisikostufen zugeordnet: Niedrig (NOVA 1–2), Moderat (NOVA 3) und Hoch (NOVA 4). Dies gibt Ihnen einen schnellen Überblick über die Verarbeitung neben unserem TryVit Score und dem Nutri-Score."
+      "processingRiskText": "In TryVit werden NOVA-Gruppen drei Verarbeitungsrisikostufen zugeordnet: Niedrig (NOVA 1–2), Moderat (NOVA 3) und Hoch (NOVA 4). Dies gibt Ihnen einen schnellen Überblick über die Verarbeitung neben unserem TryVit Score und dem Nutri-Score."
     },
     "tryvitScore": {
       "title": "TryVit Score verstehen",
@@ -1445,7 +1445,7 @@
       "concernTier2": "Stufe 2 — Moderates Bedenken: Einige künstliche Süßstoffe und Farbstoffe. Bei zugelassenen Mengen sicher, aber Gegenstand laufender Forschung.",
       "concernTier3": "Stufe 3 — Hohes Bedenken: Nitrite (E250), BHA (E320), bestimmte Azofarbstoffe. EFSA hat Bedenken markiert; einige haben reduzierte ADI-Werte.",
       "howWeUseTitle": "Wie wir dies nutzen",
-      "howWeUseText": "in TryVit wird jeder Zutat basierend auf EFSA-Bewertungen eine Bedenklichkeitsstufe zugewiesen. Die Zutatenbedenklichkeitsbewertung des Produkts (0–100) trägt 5 % zum TryVit Score bei. Produkte ohne bedenkliche Zusatzstoffe erhalten 0 bei diesem Faktor.",
+      "howWeUseText": "In TryVit wird jeder Zutat basierend auf EFSA-Bewertungen eine Bedenklichkeitsstufe zugewiesen. Die Zutatenbedenklichkeitsbewertung des Produkts (0–100) trägt 5 % zum TryVit Score bei. Produkte ohne bedenkliche Zusatzstoffe erhalten 0 bei diesem Faktor.",
       "polishContextTitle": "Polnischer Kontext",
       "polishContextText": "Die polnische Lebensmittelkennzeichnung folgt der EU-Verordnung 1169/2011. Alle Zusatzstoffe müssen mit ihrer E-Nummer oder ihrem vollständigen Namen in der Zutatenliste aufgeführt sein. Beim Einkauf bei Żabka oder Biedronka überprüfen Sie die Zutatenliste — kürzere Listen mit erkennbaren Zutaten weisen in der Regel auf weniger Verarbeitung hin."
     },

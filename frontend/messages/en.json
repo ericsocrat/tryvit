@@ -833,7 +833,7 @@
     "email": "Email",
     "emailPlaceholder": "you@example.com",
     "password": "Password",
-    "passwordPlaceholder": "At least 6 characters",
+    "credentialsPlaceholder": "At least 6 characters",
     "signingIn": "Signing in…",
     "noAccount": "Don't have an account?",
     "signUp": "Sign Up",
@@ -1400,7 +1400,7 @@
       "polishContextTitle": "Polish context",
       "polishContextText": "Many popular products in Polish supermarkets like Żabka, Biedronka, and Lidl fall into NOVA 4. This doesn't mean you should never eat them — it means being aware of how much of your diet comes from ultra-processed sources.",
       "processingRiskTitle": "How we use it: Processing Risk",
-      "processingRiskText": "in TryVit, NOVA groups are mapped to three Processing Risk levels: Low (NOVA 1–2), Moderate (NOVA 3), and High (NOVA 4). This gives you a quick read on processing alongside our TryVit Score and Nutri-Score."
+      "processingRiskText": "In TryVit, NOVA groups are mapped to three Processing Risk levels: Low (NOVA 1–2), Moderate (NOVA 3), and High (NOVA 4). This gives you a quick read on processing alongside our TryVit Score and Nutri-Score."
     },
     "tryvitScore": {
       "title": "TryVit Score",
@@ -1445,7 +1445,7 @@
       "concernTier2": "Tier 2 — Moderate concern: Some artificial sweeteners and colorants. Safe at approved levels but subject to ongoing research.",
       "concernTier3": "Tier 3 — High concern: Nitrites (E250), BHA (E320), certain azo dyes. EFSA has flagged concerns; some have reduced ADIs.",
       "howWeUseTitle": "How we use this",
-      "howWeUseText": "in TryVit, each ingredient is assigned a concern tier based on EFSA evaluations. The product's ingredient concern score (0–100) contributes 5% to the overall TryVit Score. Products with no concerning additives score 0 on this factor.",
+      "howWeUseText": "In TryVit, each ingredient is assigned a concern tier based on EFSA evaluations. The product's ingredient concern score (0–100) contributes 5% to the overall TryVit Score. Products with no concerning additives score 0 on this factor.",
       "polishContextTitle": "Polish context",
       "polishContextText": "Polish food labeling follows EU Regulation 1169/2011. All additives must be listed by their E-number or full name in the ingredients list. When shopping at Żabka or Biedronka, check the ingredient list — shorter lists with recognizable ingredients generally indicate less processing."
     },

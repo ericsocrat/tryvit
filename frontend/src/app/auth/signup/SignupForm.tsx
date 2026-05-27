@@ -75,123 +75,129 @@ export function SignupForm() {
   }
 
   return (
-    <div id="main-content" className="w-full max-w-sm">
-      <div className="mb-2 flex justify-center lg:hidden">
-        <Logo variant="lockup" size={36} />
-      </div>
-      <p className="mb-6 text-center text-xs font-medium uppercase tracking-widest text-brand lg:hidden">
-        {t("landing.tagline")}
-      </p>
-      <h1 className="mb-2 text-center text-2xl font-bold text-foreground">
-        {t("auth.createAccount")}
-      </h1>
-      <p className="mb-8 text-center text-sm text-foreground-secondary">
-        {t("auth.signUpSubtitle")}
-      </p>
-
-      <SocialLoginButtons />
-
-      <form onSubmit={handleSignup} className="space-y-4">
-        <div>
-          <label
-            htmlFor="email"
-            className="mb-1 block text-sm font-medium text-foreground-secondary"
-          >
-            {t("auth.email")}
-          </label>
-          <input
-            id="email"
-            type="email"
-            autoComplete="email"
-            inputMode="email"
-            autoCapitalize="none"
-            spellCheck={false}
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="input-field"
-            placeholder={t("auth.emailPlaceholder")}
-          />
+    <div id="main-content" className="w-full max-w-md">
+      <div className="overflow-hidden rounded-3xl border border-border/70 bg-surface/95 p-6 shadow-[0_24px_72px_rgba(15,23,42,0.14)] backdrop-blur-sm sm:p-8 dark:border-white/10 dark:shadow-[0_28px_76px_rgba(0,0,0,0.38)]">
+        <div className="mb-2 flex justify-center lg:hidden">
+          <Logo variant="lockup" size={36} />
         </div>
 
-        <div>
-          <label
-            htmlFor="password"
-            className="mb-1 block text-sm font-medium text-foreground-secondary"
-          >
-            {t("auth.password")}
-          </label>
-          <div className="relative">
-            <input
-              id="password"
-              type={showPassword ? "text" : "password"}
-              autoComplete="new-password"
-              required
-              minLength={6}
-              aria-describedby="signup-password-help"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="input-field pr-10"
-              placeholder={t("auth.passwordPlaceholder")}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-foreground-muted hover:text-foreground-secondary"
-              aria-label={
-                showPassword
-                  ? t("auth.hidePassword")
-                  : t("auth.showPassword")
-              }
-            >
-              {showPassword ? (
-                <EyeOff className="h-4 w-4" />
-              ) : (
-                <Eye className="h-4 w-4" />
-              )}
-            </button>
-          </div>
-          <p id="signup-password-help" className="mt-1 text-xs text-foreground-muted">
-            {t("auth.passwordHelp")}
-          </p>
-        </div>
-
-        <TurnstileWidget
-          onSuccess={handleTurnstileSuccess}
-          onError={handleTurnstileError}
-          onExpire={handleTurnstileExpire}
-          action="signup"
-          className="flex justify-center"
-        />
-        <p
-          id="signup-captcha-hint"
-          className="text-center text-xs text-foreground-muted"
-          aria-live="polite"
-        >
-          {turnstileToken
-            ? t("auth.captchaVerified")
-            : t("auth.captchaPrompt")}
+        <p className="mb-5 text-center text-xs font-medium uppercase tracking-widest text-brand lg:hidden">
+          {t("landing.tagline")}
         </p>
 
-        <Button
-          type="submit"
-          disabled={loading || !turnstileToken}
-          aria-describedby={turnstileToken ? undefined : "signup-captcha-hint"}
-          fullWidth
-        >
-          {loading ? t("auth.creatingAccount") : t("auth.signUp")}
-        </Button>
-      </form>
+        <h1 className="mb-2 text-center text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          {t("auth.createAccount")}
+        </h1>
+        <p className="mb-7 text-center text-sm text-foreground-secondary sm:text-base">
+          {t("auth.signUpSubtitle")}
+        </p>
 
-      <p className="mt-6 text-center text-sm text-foreground-secondary">
-        {t("auth.hasAccount")}{" "}
-        <Link
-          href="/auth/login"
-          className="rounded-sm font-semibold text-brand underline-offset-4 transition-colors hover:text-brand-hover hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
-        >
-          {t("auth.signIn")}
-        </Link>
-      </p>
+        <SocialLoginButtons />
+
+        <form onSubmit={handleSignup} className="space-y-4">
+          <div>
+            <label
+              htmlFor="email"
+              className="mb-1.5 block text-sm font-medium text-foreground-secondary"
+            >
+              {t("auth.email")}
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="email"
+              inputMode="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-field"
+              placeholder={t("auth.emailPlaceholder")}
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="password"
+              className="mb-1.5 block text-sm font-medium text-foreground-secondary"
+            >
+              {t("auth.password")}
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="new-password"
+                required
+                minLength={6}
+                aria-describedby="signup-password-help"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input-field pr-10"
+                placeholder={t("auth.credentialsPlaceholder")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-foreground-muted transition-colors hover:text-foreground-secondary"
+                aria-label={
+                  showPassword
+                    ? t("auth.hidePassword")
+                    : t("auth.showPassword")
+                }
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+            <p id="signup-password-help" className="mt-1 text-xs text-foreground-muted">
+              {t("auth.passwordHelp")}
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-brand/25 bg-brand-subtle/35 p-3 shadow-sm">
+            <TurnstileWidget
+              onSuccess={handleTurnstileSuccess}
+              onError={handleTurnstileError}
+              onExpire={handleTurnstileExpire}
+              action="signup"
+              className="flex justify-center"
+            />
+            <p
+              id="signup-captcha-hint"
+              className="mt-2 text-center text-xs text-foreground-muted"
+              aria-live="polite"
+            >
+              {turnstileToken
+                ? t("auth.captchaVerified")
+                : t("auth.captchaPrompt")}
+            </p>
+          </div>
+
+          <Button
+            type="submit"
+            disabled={loading || !turnstileToken}
+            aria-describedby={turnstileToken ? undefined : "signup-captcha-hint"}
+            fullWidth
+          >
+            {loading ? t("auth.creatingAccount") : t("auth.signUp")}
+          </Button>
+        </form>
+
+        <p className="mt-6 text-center text-sm text-foreground-secondary">
+          {t("auth.hasAccount")}{" "}
+          <Link
+            href="/auth/login"
+            className="rounded-sm font-semibold text-brand underline-offset-4 transition-colors hover:text-brand-hover hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
+          >
+            {t("auth.signIn")}
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }
