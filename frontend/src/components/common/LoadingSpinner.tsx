@@ -18,11 +18,11 @@ export function LoadingSpinner({
   const { t } = useTranslation();
   return (
     <output
-      className={`flex items-center justify-center ${className}`}
+      className={`flex items-center justify-center gap-2 text-foreground-muted ${className}`}
       aria-label={t("common.loading")}
     >
       <div
-        className={`animate-spin rounded-full border-surface-muted border-t-brand ${SIZES[size]}`}
+        className={`animate-spin rounded-full border-surface-muted border-t-brand transition-colors motion-reduce:animate-none ${SIZES[size]}`}
       />
       <span className="sr-only">{t("common.loading")}</span>
     </output>

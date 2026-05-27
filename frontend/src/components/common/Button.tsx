@@ -66,8 +66,8 @@ const SPINNER_SIZES: Record<ButtonSize, string> = {
 // ─── Shared helpers ─────────────────────────────────────────────────────────
 
 const BASE_CLASSES = [
-  "inline-flex items-center justify-center font-semibold transition-colors press-scale",
-  "focus-visible:outline-2 focus-visible:outline-offset-2",
+  "inline-flex items-center justify-center select-none font-semibold transition-[background-color,color,box-shadow,transform] press-scale",
+  "motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2",
 ].join(" ");
 
 /** Build the full className string for button-styled elements. */

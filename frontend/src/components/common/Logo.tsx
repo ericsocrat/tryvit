@@ -39,14 +39,14 @@ export function Logo({ variant = "icon", size = 32, className }: Readonly<LogoPr
   const width = Math.round(size * asset.aspectRatio);
 
   return (
-    <span className={`inline-flex items-center ${className ?? ""}`}>
+    <span className={`inline-flex shrink-0 items-center ${className ?? ""}`}>
       {/* Light-mode variant — hidden when [data-theme="dark"] */}
       <img
         src={asset.light}
         alt="TryVit"
         width={width}
         height={size}
-        className="logo-light"
+        className="logo-light select-none"
       />
       {/* Dark-mode variant — hidden by default, shown when [data-theme="dark"] */}
       <img
@@ -54,7 +54,7 @@ export function Logo({ variant = "icon", size = 32, className }: Readonly<LogoPr
         alt=""
         width={width}
         height={size}
-        className="logo-dark"
+        className="logo-dark select-none"
         aria-hidden="true"
       />
     </span>
