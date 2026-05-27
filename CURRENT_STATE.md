@@ -1,34 +1,35 @@
 # CURRENT_STATE.md
 
-> **Last updated:** 2026-05-25 by GitHub Copilot (post-#1109 doc-freshness reconcile)
+> **Last updated:** 2026-05-27 by GitHub Copilot (state refresh for #1139)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 
 ---
 
 ## Active Branch & PR
 
-- **Branch:** `main`
-- **Latest SHA (main):** `6782a99e` (docs(governance): refresh stale docs metadata for drift gate (#1109))
-- **Open PRs:** 0
-- **Open issues:** 1 (#1060 npm audit moderates close-as-monitor — blocked on user authorization; tracks 1 HIGH `ws` GHSA-58qx-3vcg-4xpx via @lhci/cli dev-only). Issue #1059 closed.
-- **Mode:** 🟢 Clean — main fully green. Recent #1108 (deploy backup path) and #1109 (doc-freshness frontmatter) merged. Scheduled `Dependency Audit` failure at 08:32 UTC was stale (idna 3.15 PR #1095 merged at 10:15 UTC; subsequent runs at 10:11 success).
+- **Branch:** `test/e2e-auth-isolation-invariants-1143`
+- **Latest SHA (HEAD):** `15251bd4` (active feature branch)
+- **Latest SHA (main):** `90864811` (`origin/main`)
+- **Open PRs:** 2 (#1145 active feature PR, #1140 docs/state refresh PR)
+- **Open issues:** 2 (#1139 docs/state refresh; #1060 blocked security audit tracker)
+- **Mode:** 🟡 Dirty — local working tree has in-progress UI polish diffs on common components; feature PR #1145 is active.
 
 ## Recently Shipped (Phase 2 React Compiler Drain + Dependabot — 10 PRs since 1eca1509)
 
 Five Phase-2 React Compiler `set-state-in-effect` violations converted to `useSyncExternalStore` or render-time derivation (per ADR pattern). Plus routine Dependabot bumps. Branch `chore/react-compiler-command-palette` (#1076) addresses the explicitly-deferred line-197 reset in CommandPalette but predates #1104's clamped-index refactor of the same file — needs rebase.
 
-| PR    | Commit     | Change                                                                                  |
-| ----- | ---------- | --------------------------------------------------------------------------------------- |
-| #1106 | `688de9e0` | `fix(frontend): derive ScanResultView animation state (#1063)`                          |
-| #1080 | `3e65df36` | `ci(deps): bump github/codeql-action`                                                   |
-| #1071 | `72ba423f` | `fix(frontend): use useSyncExternalStore for deviceType in useAnalytics (#1063)`        |
-| #1105 | `4d3cb97e` | `fix(frontend): derive offLoading/offUrl from fetched state in ProductHeroImage (#1063)`|
-| #1104 | `8898cb84` | `fix(frontend): derive clamped activeIndex in CommandPalette (#1063)`                   |
-| #1103 | `d1c1c46d` | `fix(frontend): use useSyncExternalStore for install-prompt mount state (#1063)`        |
-| #1102 | `fbdc357d` | `fix(frontend): use useSyncExternalStore for camera support detection (#1063)`          |
-| #1101 | `7376a4df` | `chore(deps): bump the testing group (2 updates)`                                       |
-| #1099 | `e1affc92` | `chore(deps): bump @supabase/supabase-js`                                               |
-| #1097 | `15227fba` | `chore(deps): bump qs`                                                                  |
+| PR    | Commit     | Change                                                                                   |
+| ----- | ---------- | ---------------------------------------------------------------------------------------- |
+| #1106 | `688de9e0` | `fix(frontend): derive ScanResultView animation state (#1063)`                           |
+| #1080 | `3e65df36` | `ci(deps): bump github/codeql-action`                                                    |
+| #1071 | `72ba423f` | `fix(frontend): use useSyncExternalStore for deviceType in useAnalytics (#1063)`         |
+| #1105 | `4d3cb97e` | `fix(frontend): derive offLoading/offUrl from fetched state in ProductHeroImage (#1063)` |
+| #1104 | `8898cb84` | `fix(frontend): derive clamped activeIndex in CommandPalette (#1063)`                    |
+| #1103 | `d1c1c46d` | `fix(frontend): use useSyncExternalStore for install-prompt mount state (#1063)`         |
+| #1102 | `fbdc357d` | `fix(frontend): use useSyncExternalStore for camera support detection (#1063)`           |
+| #1101 | `7376a4df` | `chore(deps): bump the testing group (2 updates)`                                        |
+| #1099 | `e1affc92` | `chore(deps): bump @supabase/supabase-js`                                                |
+| #1097 | `15227fba` | `chore(deps): bump qs`                                                                   |
 
 ## Recently Shipped (Autonomous Quality Drain — 7 PRs)
 
@@ -235,11 +236,12 @@ End-to-end: reconcile → tighten detector → enforce in CI.
 | nightly      | ✅      | Data audit passing                                                    |
 | bundle-size  | ⚠️      | Baseline shift expected after Next.js 16 MAJOR upgrade (non-blocking) |
 
-## Open Issues (1 total)
+## Open Issues (2 total)
 
-| Issue | Priority | Summary                                   |
-| ----- | -------- | ----------------------------------------- |
-| #212  | Deferred | Infrastructure Cost Attribution Framework |
+| Issue | Priority | Summary                                                                                           | Status  |
+| ----- | -------- | ------------------------------------------------------------------------------------------------- | ------- |
+| #1139 | P3       | docs(state): refresh CURRENT_STATE header and active queue                                        | open    |
+| #1060 | P3       | chore(security): Track 2 moderate npm audit vulnerabilities (next/postcss) — no safe upgrade path | blocked |
 
 Issue #889 fully resolved and closed with PR #918 merge.
 Epic #920 fully resolved and closed — all 12/12 issues shipped.
@@ -311,7 +313,7 @@ These are documented follow-ups, not active work items. Address opportunisticall
 - **Nutrition coverage (production):** 2,438/2,438 (100%)
 - **Frontend test coverage:** ~92% lines (SonarCloud Quality Gate passing)
 - **ESLint warnings:** 23 (React Compiler rules — 5 rules downgraded to warn, see follow-ups)
-- **Open issues:** 1 | **Open PRs:** 1 (Dependabot #941)
+- **Open issues:** 2 | **Open PRs:** 2 (active: #1145, docs refresh #1140)
 - **Vitest:** 5,755 tests passing across 348 test files
 - **DB migrations:** 227 append-only (209 applied to production, 18 pending from epic #920)
 - **pgTAP test files:** 17
