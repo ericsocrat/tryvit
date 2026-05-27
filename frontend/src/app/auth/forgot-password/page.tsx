@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default function ForgotPasswordPage() {
   return (
-    <Suspense fallback={<LoadingSpinner className="min-h-screen" />}>
+    <Suspense fallback={<LoadingSpinner className="min-h-screen bg-background" />}>
       <ForgotPasswordForm />
     </Suspense>
   );

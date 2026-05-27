@@ -154,12 +154,12 @@ export function SignupForm() {
                 )}
               </button>
             </div>
-            <p id="signup-password-help" className="mt-1 text-xs text-foreground-muted">
+            <p id="signup-password-help" className="mt-1.5 text-xs text-foreground-muted">
               {t("auth.passwordHelp")}
             </p>
           </div>
 
-          <div className="rounded-xl border border-brand/25 bg-brand-subtle/35 p-3 shadow-sm">
+          <div className="rounded-xl border border-brand/25 bg-brand-subtle/40 p-3 shadow-[0_10px_28px_rgba(14,165,164,0.12)]">
             <TurnstileWidget
               onSuccess={handleTurnstileSuccess}
               onError={handleTurnstileError}
@@ -169,7 +169,7 @@ export function SignupForm() {
             />
             <p
               id="signup-captcha-hint"
-              className="mt-2 text-center text-xs text-foreground-muted"
+              className="mt-2.5 text-center text-xs text-foreground-muted"
               aria-live="polite"
             >
               {turnstileToken
@@ -182,6 +182,7 @@ export function SignupForm() {
             type="submit"
             disabled={loading || !turnstileToken}
             aria-describedby={turnstileToken ? undefined : "signup-captcha-hint"}
+            className="mt-1"
             fullWidth
           >
             {loading ? t("auth.creatingAccount") : t("auth.signUp")}

@@ -98,7 +98,7 @@ export function UpdatePasswordForm() {
                 )}
               </button>
             </div>
-            <p id="update-password-help" className="mt-1 text-xs text-foreground-muted">
+            <p id="update-password-help" className="mt-1.5 text-xs text-foreground-muted">
               {t("auth.passwordHelp")}
             </p>
           </div>
@@ -142,7 +142,7 @@ export function UpdatePasswordForm() {
             </div>
           </div>
 
-          <Button type="submit" disabled={loading} fullWidth>
+          <Button type="submit" disabled={loading} fullWidth className="mt-1">
             {loading
               ? t("auth.updatingPassword")
               : t("auth.updatePassword")}

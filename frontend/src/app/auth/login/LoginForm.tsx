@@ -78,14 +78,14 @@ export function LoginForm() {
         </p>
 
         {reason === "expired" && (
-          <div className="mb-4 rounded-lg border border-warning-border bg-warning-bg p-3 text-sm text-warning-text">
+          <div className="mb-4 rounded-xl border border-warning-border bg-warning-bg/95 p-3 text-sm text-warning-text shadow-[0_8px_24px_rgba(245,158,11,0.14)]">
             {t("auth.sessionExpiredBanner")}
           </div>
         )}
 
         {successBannerKey && (
           <div
-            className="mb-4 rounded-lg border border-success-border bg-success-bg p-3 text-sm text-success-text"
+            className="mb-4 rounded-xl border border-success-border bg-success-bg/95 p-3 text-sm text-success-text shadow-[0_8px_24px_rgba(34,197,94,0.12)]"
             role="status"
             aria-live="polite"
           >
@@ -154,10 +154,10 @@ export function LoginForm() {
                 )}
               </button>
             </div>
-            <p id="login-password-help" className="mt-1 text-xs text-foreground-muted">
+            <p id="login-password-help" className="mt-1.5 text-xs text-foreground-muted">
               {t("auth.passwordHelp")}
             </p>
-            <div className="mt-1.5 text-right">
+            <div className="mt-2 text-right">
               <Link
                 href="/auth/forgot-password"
                 className="rounded-sm text-xs font-semibold text-brand underline-offset-4 transition-colors hover:text-brand-hover hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
