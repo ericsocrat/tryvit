@@ -1,12 +1,12 @@
 # TryVit Frontend
 
-Next.js 15 (App Router) + TypeScript + Tailwind CSS frontend for the TryVit.
+Next.js 16 (App Router) + TypeScript + Tailwind CSS frontend for the TryVit.
 
 ## Tech Stack
 
 | Layer         | Choice                                          |
 | ------------- | ----------------------------------------------- |
-| Framework     | Next.js 15 (App Router)                         |
+| Framework     | Next.js 16 (App Router)                         |
 | Language      | TypeScript (strict)                             |
 | Styling       | Tailwind CSS (custom `brand` palette)           |
 | Auth          | `@supabase/ssr` (browser + server + middleware) |

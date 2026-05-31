@@ -13,7 +13,7 @@
 
 <p align="center">
   <a href="https://github.com/ericsocrat/tryvit/actions/workflows/pr-gate.yml"><img src="https://img.shields.io/github/actions/workflow/status/ericsocrat/tryvit/pr-gate.yml?style=flat-square&label=build" alt="Build Status" /></a>
-  <img src="https://img.shields.io/badge/QA%20checks-759%20passing-brightgreen?style=flat-square" alt="QA Checks" />
+  <img src="https://img.shields.io/badge/QA%20checks-776%20passing-brightgreen?style=flat-square" alt="QA Checks" />
   <img src="https://img.shields.io/badge/coverage-%E2%89%A588%25-brightgreen?style=flat-square" alt="Coverage" />
   <img src="https://img.shields.io/badge/products-2%2C602-1DB954?style=flat-square" alt="Products" />
   <img src="https://img.shields.io/badge/market-PL%20%2B%20DE-1DB954?style=flat-square" alt="Market" />
@@ -30,6 +30,25 @@
   Every product scored on 9 independent factors. Every number traceable to its source.<br />
   Not a calorie counter. Not a Nutri-Score app. A research-grade scoring engine.
 </p>
+
+<p align="center">
+  <a href="docs/DEMO_SCRIPT.md"><strong>▶ 3-minute demo walkthrough</strong></a> ·
+  <a href="docs/PRODUCT_POSITIONING.md"><strong>Product positioning &amp; non-goals</strong></a>
+</p>
+
+---
+
+<!-- ═══════════════════════════ 3b. WHO IT'S FOR ═════════════════════════ -->
+
+## 🎯 Who It's For
+
+- **Health-conscious shoppers in Poland & Germany** who want to know *why* a product scores the way it does — not just a single letter grade.
+- **Nutrition researchers & data engineers** who need transparent, source-traceable scoring with per-factor breakdowns.
+- **Contributors & reviewers** evaluating a reproducible, fully-tested food-data platform.
+
+**Why it exists:** existing apps reduce nutrition to one opaque grade. TryVit exposes every scoring factor, its weight, and the data confidence behind it — so the score is auditable rather than a black box.
+
+**Non-goals (explicitly out of scope):** TryVit is **not** a medical or dietary-advice tool, **not** a calorie/macro tracker, and makes **no** weight-loss or treatment claims. Markets are currently limited to Poland (primary) and Germany. Monetization is **not yet validated** — see [docs/PRODUCT_POSITIONING.md](docs/PRODUCT_POSITIONING.md).
 
 ---
 
@@ -53,7 +72,7 @@
     </td>
     <td align="center" width="25%">
       <h3>📱 Barcode Scanner</h3>
-      <p>EAN-13 barcode lookup with 99.8% coverage. Scan any product to see its full scoring breakdown instantly.</p>
+      <p>EAN-13 barcode lookup with broad catalog coverage. Scan any product to see its full scoring breakdown instantly.</p>
     </td>
   </tr>
 </table>
@@ -169,20 +188,20 @@ echo "SELECT * FROM v_master LIMIT 5;" | docker exec -i supabase_db_tryvit psql 
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────────────┐
 │  Open Food Facts │────▶│  Python Pipeline │────▶│  PostgreSQL (Supabase)  │
 │  API v2          │     │  sql_generator   │     │  228 migrations         │
-│  (category tags, │     │  validator       │     │  43 pipeline folders    │
+│  (category tags, │     │  validator       │     │  58 pipeline folders    │
 │   countries=PL,DE│     │  off_client      │     │  products + nutrition   │
 └─────────────────┘     └──────────────────┘     │  + ingredients + scores │
                                                   └───────────┬─────────────┘
                                                               │
                                                   ┌───────────▼─────────────┐
                                                   │  API Layer              │
-                                                  │  190+ RPC functions     │
+                                                  │  curated RPC/API layer  │
                                                   │  RLS + SECURITY DEFINER │
                                                   │  pg_trgm search         │
                                                   └───────────┬─────────────┘
                                                               │
                                                   ┌───────────▼─────────────┐
-                                                  │  Next.js 15 Frontend    │
+                                                  │  Next.js 16 Frontend    │
                                                   │  App Router + SSR       │
                                                   │  TanStack Query v5      │
                                                   │  Supabase Auth          │
@@ -242,11 +261,11 @@ Every score is fully explainable via `api_score_explanation()` — returns the 9
 
 <table>
   <tr>
-    <td align="center" width="16%"><strong>759</strong><br />QA Checks</td>
-    <td align="center" width="16%"><strong>48</strong><br />Test Suites</td>
-    <td align="center" width="16%"><strong>23</strong><br />Negative Tests</td>
+    <td align="center" width="16%"><strong>776</strong><br />QA Checks</td>
+    <td align="center" width="16%"><strong>49</strong><br />Test Suites</td>
+    <td align="center" width="16%"><strong>20</strong><br />Negative Tests</td>
     <td align="center" width="16%"><strong>≥88%</strong><br />Line Coverage</td>
-    <td align="center" width="16%"><strong>190+</strong><br />API Functions</td>
+    <td align="center" width="16%"><strong>RPC-first</strong><br />API Layer</td>
     <td align="center" width="16%"><strong>v3.3</strong><br />Scoring Engine</td>
   </tr>
 </table>
@@ -305,7 +324,7 @@ tryvit/
 │   ├── tests/                       # pgTAP integration tests
 │   └── functions/                   # Edge Functions (API gateway, push notifications, CAPTCHA)
 │
-├── frontend/                        # Next.js 15 App Router
+├── frontend/                        # Next.js 16 App Router
 │   ├── src/
 │   │   ├── app/                     # Pages (App Router)
 │   │   ├── components/              # React components
@@ -355,13 +374,13 @@ Every change is validated against **776 automated checks** across 49 QA suites p
   <tr>
     <td>Database QA</td>
     <td>Raw SQL (zero rows = pass)</td>
-    <td>747</td>
+    <td>776</td>
     <td><code>db/qa/QA__*.sql</code></td>
   </tr>
   <tr>
     <td>Negative Tests</td>
     <td>SQL constraint validation</td>
-    <td>23</td>
+    <td>20</td>
     <td><code>db/qa/TEST__*.sql</code></td>
   </tr>
   <tr>
@@ -400,7 +419,7 @@ Every change is validated against **776 automated checks** across 49 QA suites p
 
 1. **PR Gate** — Typecheck → Lint → Build → Unit tests → Playwright smoke E2E
 2. **Main Gate** — Above + Coverage → SonarCloud Quality Gate
-3. **QA Gate** — Schema → Pipelines → 759 QA checks → Sanity → Confidence threshold
+3. **QA Gate** — Schema → Pipelines → 776 QA checks → Sanity → Confidence threshold
 4. **Nightly** — Full Playwright (all projects) + Data Integrity Audit
 
 ---
@@ -415,7 +434,7 @@ Contributions are welcome! Please follow the project conventions:
 2. **Commit messages:** [Conventional Commits](https://www.conventionalcommits.org/) — enforced on PR titles
 3. **Testing:** Every change must include tests. See [copilot-instructions.md](copilot-instructions.md) §8
 4. **Migrations:** Append-only. Never modify existing `supabase/migrations/` files
-5. **QA:** `.\RUN_QA.ps1` must pass (747/747) before merging
+5. **QA:** `.\RUN_QA.ps1` must pass (776/776) before merging
 
 ---
 
@@ -446,7 +465,7 @@ Contributions are welcome! Please follow the project conventions:
 - [COUNTRY_EXPANSION_GUIDE.md](docs/COUNTRY_EXPANSION_GUIDE.md) — Multi-country protocol
 - [MIGRATION_CONVENTIONS.md](docs/MIGRATION_CONVENTIONS.md) — Migration safety & idempotency
 - [BACKFILL_STANDARD.md](docs/BACKFILL_STANDARD.md) — Backfill orchestration
-- [EAN_VALIDATION_STATUS.md](docs/EAN_VALIDATION_STATUS.md) — EAN coverage (99.8%)
+- [EAN_VALIDATION_STATUS.md](docs/EAN_VALIDATION_STATUS.md) — EAN coverage status
 
 </details>
 

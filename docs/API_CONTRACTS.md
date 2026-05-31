@@ -4,7 +4,7 @@
 > **Stability:** Stable — these surfaces are safe for frontend consumption.
 > **Versioning & Deprecation:** See [API_VERSIONING.md](API_VERSIONING.md) for breaking change protocol, sunset windows, and version strategy.
 > **Naming Conventions:** See [API_CONVENTIONS.md](API_CONVENTIONS.md) for RPC naming patterns, parameter standards, and security requirements.
-> **Canonical Registry:** See [api-registry.yaml](api-registry.yaml) for structured, machine-readable registry of all 107 functions.
+> **Canonical Registry:** See [api-registry.yaml](api-registry.yaml) — the structured, machine-readable registry that is the source of truth for the public API function inventory.
 
 ---
 

@@ -4,6 +4,11 @@
 > **Status:** Comprehensive audit of production data infrastructure
 > **Project:** tryvit (Supabase project `uskvezwftkkudvksmken`)
 
+> ⚠️ **Historical snapshot.** This document reflects the production data picture
+> as of 2026-02-28 (Phase 6 audit). Counts, totals, and migration numbers below
+> may have drifted. For live project status, see
+> [`CURRENT_STATE.md`](../CURRENT_STATE.md).
+
 ---
 
 ## Table of Contents

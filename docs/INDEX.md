@@ -2,29 +2,29 @@
 
 > **Last updated:** 2026-05-31
 > **Status:** Active — update when adding, renaming, or archiving docs
-> **Total documents:** 66 in `docs/` + 11 in `docs/decisions/` + 25 in `docs/assets/logo/` + 7 in `docs/assets/banners/` + 7 elsewhere in repo
+> **Total documents:** 68 in `docs/` + 11 in `docs/decisions/` + 25 in `docs/assets/logo/` + 7 in `docs/assets/banners/` + 7 elsewhere in repo
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
 
 ---
 
 ## Quick Navigation
 
-| Domain                                                   | Count | Documents                                                                                                                                                  |
-| -------------------------------------------------------- | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Architecture & Design](#architecture--design)           | 8     | Governance blueprint, domain boundaries, feature flags, scoring engine, search architecture, CI proposal, health-goal personalization                      |
-| [Diagrams](#diagrams)                                    | 13    | Architecture, ERDs, pipeline flow, QA overview, CI/CD, confidence, concern tiers, country expansion, scoring infographic + headers                         |
-| [Brand Assets](#brand-assets)                            | 17    | Logomark SVG variants + PNG exports, wordmark, lockup variants (horizontal + stacked, light + dark)                                                        |
-| [Banners](#banners)                                      | 5     | Social preview, README hero banner (SVG + PNG), badges reference                                                                                           |
-| [API](#api)                                              | 6     | Contracts, conventions, versioning, frontend mapping, contract testing, registry                                                                           |
-| [Scoring](#scoring)                                      | 2     | Methodology (formula), engine (architecture)                                                                                                               |
-| [Data & Provenance](#data--provenance)                   | 5     | Sources, provenance, integrity audits, EAN validation, production data                                                                                     |
-| [Security & Compliance](#security--compliance)           | 5     | Root policy, audit report, access audit, privacy checklist, rate limiting                                                                                  |
-| [Observability & Operations](#observability--operations) | 9     | Monitoring, observability, log schema, alerts, on-call policy, SLOs, metrics, incident response, disaster drill                                            |
-| [DevOps & Environment](#devops--environment)             | 3     | Environment strategy, staging setup, Sonar config                                                                                                          |
-| [Frontend & UX](#frontend--ux)                           | 7     | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec                                    |
-| [Process & Workflow](#process--workflow)                 | 8     | Agent workflow reference, agent review workflow, research workflow, viewing & testing, backfill standard, migration conventions, labels, country expansion |
-| [Governance & Policy](#governance--policy)               | 6     | Feature sunsetting, performance report, performance guardrails, doc governance, repo governance, this index                                                |
-| [Architecture Decisions](#architecture-decisions-adrs)   | 10    | MADR template + 9 ADRs (stack, scoring, country isolation, pipeline, API versioning, migrations, ingredients, nutrient density, ingredient language model) |
+| Domain                                                   | Count | Documents                                                                                                                                                               |
+| -------------------------------------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Architecture & Design](#architecture--design)           | 8     | Governance blueprint, domain boundaries, feature flags, scoring engine, search architecture, CI proposal, health-goal personalization                                   |
+| [Diagrams](#diagrams)                                    | 13    | Architecture, ERDs, pipeline flow, QA overview, CI/CD, confidence, concern tiers, country expansion, scoring infographic + headers                                      |
+| [Brand Assets](#brand-assets)                            | 17    | Logomark SVG variants + PNG exports, wordmark, lockup variants (horizontal + stacked, light + dark)                                                                     |
+| [Banners](#banners)                                      | 5     | Social preview, README hero banner (SVG + PNG), badges reference                                                                                                        |
+| [API](#api)                                              | 6     | Contracts, conventions, versioning, frontend mapping, contract testing, registry                                                                                        |
+| [Scoring](#scoring)                                      | 2     | Methodology (formula), engine (architecture)                                                                                                                            |
+| [Data & Provenance](#data--provenance)                   | 5     | Sources, provenance, integrity audits, EAN validation, production data                                                                                                  |
+| [Security & Compliance](#security--compliance)           | 5     | Root policy, audit report, access audit, privacy checklist, rate limiting                                                                                               |
+| [Observability & Operations](#observability--operations) | 9     | Monitoring, observability, log schema, alerts, on-call policy, SLOs, metrics, incident response, disaster drill                                                         |
+| [DevOps & Environment](#devops--environment)             | 3     | Environment strategy, staging setup, Sonar config                                                                                                                       |
+| [Frontend & UX](#frontend--ux)                           | 8     | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec, product positioning                            |
+| [Process & Workflow](#process--workflow)                 | 9     | Agent workflow reference, agent review workflow, research workflow, viewing & testing, backfill standard, migration conventions, labels, country expansion, demo script |
+| [Governance & Policy](#governance--policy)               | 6     | Feature sunsetting, performance report, performance guardrails, doc governance, repo governance, this index                                                             |
+| [Architecture Decisions](#architecture-decisions-adrs)   | 10    | MADR template + 9 ADRs (stack, scoring, country isolation, pipeline, API versioning, migrations, ingredients, nutrient density, ingredient language model)              |
 
 ---
 
@@ -201,6 +201,7 @@
 | [../frontend/docs/DESIGN_SYSTEM.md](../frontend/docs/DESIGN_SYSTEM.md) | Frontend design system — Tailwind tokens, component patterns                                                           | Frontend domain                                         | 2026-02-17   |
 | [../frontend/README.md](../frontend/README.md)                         | Frontend project overview — setup, scripts, architecture                                                               | Frontend domain                                         | 2026-02-24   |
 | [DESIGN_REFRESH_SPEC.md](DESIGN_REFRESH_SPEC.md)                       | Mobile-first design system & UX refresh spec — component redesign rules, layout principles, implementation order       | Frontend domain                                         | 2026-03-14   |
+| [PRODUCT_POSITIONING.md](PRODUCT_POSITIONING.md)                       | Product positioning — audience, problem, MVP scope, explicit non-goals, unvalidated assumptions                        | Product domain                                          | 2026-05-31   |
 
 ## Process & Workflow
 
@@ -214,6 +215,7 @@
 | [COUNTRY_EXPANSION_GUIDE.md](COUNTRY_EXPANSION_GUIDE.md) | Multi-country expansion protocol — PL active, DE micro-pilot                                                   | [#148](https://github.com/ericsocrat/tryvit/issues/148)                                                          | 2026-02-24   |
 | [AGENT_WORKFLOW.md](AGENT_WORKFLOW.md)                   | Agent/AI workflow reference — execution protocol, command quick-reference, domain matrix, priority definitions | [#200](https://github.com/ericsocrat/tryvit/issues/200)                                                          | 2026-03-02   |
 | [AGENT_REVIEW_WORKFLOW.md](AGENT_REVIEW_WORKFLOW.md)     | Strategic stabilization review workflow — 4-pass audit, execution, strict review, blocker-only correction      | —                                                                                                                | 2026-05-31   |
+| [DEMO_SCRIPT.md](DEMO_SCRIPT.md)                         | Runnable 3–5 minute demo walkthrough with scanner-failure recovery branch                                      | —                                                                                                                | 2026-05-31   |
 
 > **Repo root script:** [`setup-env.ps1`](../setup-env.ps1) — `.env` → PowerShell session loader with `-Verify` connectivity checks and `-ShowValues` masked display. Dot-source with `. .\setup-env.ps1`.
 
