@@ -43,7 +43,7 @@ You are a **food scientist, nutrition researcher, and senior data engineer** mai
 - **Never guess Nutri-Score.** Compute from nutrition or cite official sources.
 - **Idempotent everything.** Every SQL file safe to run 1× or 100×.
 - **Reproducible setup.** `supabase db reset` + pipelines = full rebuild.
-- **Country-scoped.** PL is primary; DE at full parity (1,066 products across 19 categories). All queries are country-filtered. See `docs/COUNTRY_EXPANSION_GUIDE.md`.
+- **Country-scoped.** PL is primary; DE at full parity (1,222 products across 21 categories). All queries are country-filtered. See `docs/COUNTRY_EXPANSION_GUIDE.md`.
 - **Every change must be tested.** No code ships without corresponding tests. See §8.
 
 ---
