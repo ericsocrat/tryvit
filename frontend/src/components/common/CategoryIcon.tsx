@@ -161,10 +161,16 @@ const ICON_PATHS: Record<string, IconPathData> = {
 
 /* ── Slug aliases (normalize DB slugs → icon keys) ───────────────────────── */
 
-const SLUG_ALIASES: Record<string, string> = {
+const SLUG_ALIASES = {
   "chips-pl": "chips",
   "chips-de": "chips",
-};
+} as const;
+
+type CategoryAliasSlug = keyof typeof SLUG_ALIASES;
+
+function resolveCategorySlug(slug: string): string {
+  return SLUG_ALIASES[slug as CategoryAliasSlug] ?? slug;
+}
 
 /* ── Size scale (matches Icon.tsx) ───────────────────────────────────────── */
 
@@ -216,17 +222,23 @@ export function CategoryIcon({
   label,
   className = "",
 }: CategoryIconProps) {
-  const resolvedSlug = SLUG_ALIASES[slug] ?? slug;
+  const resolvedSlug = resolveCategorySlug(slug);
   const iconData = ICON_PATHS[resolvedSlug];
   const px = SIZE_MAP[size];
   const isDecorative = !label;
+  const iconClassName = [
+    "select-none transition-colors motion-reduce:transition-none",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   // Fallback to Lucide UtensilsCrossed for unknown slugs
   if (!iconData) {
     return (
       <UtensilsCrossed
         size={px}
-        className={className}
+        className={iconClassName}
         aria-hidden={isDecorative ? "true" : undefined}
         aria-label={label}
       />
@@ -246,7 +258,7 @@ export function CategoryIcon({
       strokeWidth={isOutline ? 1.5 : undefined}
       strokeLinecap={isOutline ? "round" : undefined}
       strokeLinejoin={isOutline ? "round" : undefined}
-      className={className}
+      className={iconClassName}
       aria-hidden={isDecorative ? "true" : undefined}
       aria-label={label}
     >
@@ -261,7 +273,7 @@ export function CategoryIcon({
 
 /** Returns true if the category slug has a dedicated icon (not fallback). */
 export function hasCategoryIcon(slug: string): boolean {
-  const resolved = SLUG_ALIASES[slug] ?? slug;
+  const resolved = resolveCategorySlug(slug);
   return resolved in ICON_PATHS;
 }
 

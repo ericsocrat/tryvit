@@ -49,8 +49,8 @@ export function SubmitButton({
       disabled={isDisabled}
       aria-busy={isSubmitting || undefined}
       className={[
-        "inline-flex items-center justify-center gap-2 rounded-lg px-5 py-2.5 text-sm font-semibold transition-colors",
-        "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
+        "inline-flex items-center justify-center gap-2 rounded-xl border border-transparent px-5 py-2.5 text-sm font-semibold shadow-[0_4px_12px_rgba(15,23,42,0.14)] transition-[background-color,box-shadow,color] motion-reduce:transition-none",
+        "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:ring-offset-2",
         isDisabled
           ? "cursor-not-allowed bg-brand/50 text-white/70"
           : "bg-brand text-white hover:bg-brand-hover active:bg-brand-active",

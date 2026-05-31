@@ -42,13 +42,13 @@ export interface ButtonProps extends Omit<
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:
-    "bg-brand text-foreground-inverse shadow-sm hover:bg-brand-hover focus-visible:outline-brand dark:shadow-[0_6px_16px_rgba(34,197,94,0.18)]",
+    "bg-brand text-foreground-inverse shadow-[0_4px_12px_rgba(15,23,42,0.14)] hover:bg-brand-hover dark:shadow-[0_6px_16px_rgba(34,197,94,0.18)]",
   secondary:
-    "border border-strong bg-surface text-foreground-secondary shadow-sm hover:bg-surface-subtle focus-visible:outline-brand dark:border-white/20 dark:bg-white/[0.02] dark:text-foreground dark:hover:bg-white/10",
+    "border border-strong bg-surface/95 text-foreground-secondary shadow-[0_2px_8px_rgba(15,23,42,0.06)] hover:bg-surface-subtle dark:border-white/20 dark:bg-white/[0.02] dark:text-foreground dark:hover:bg-white/10",
   ghost:
-    "text-foreground-secondary hover:bg-surface-subtle focus-visible:outline-brand",
+    "text-foreground-secondary hover:bg-surface-subtle",
   danger:
-    "bg-error text-foreground-inverse shadow-sm hover:opacity-90 focus-visible:outline-error",
+    "bg-error text-foreground-inverse shadow-[0_4px_12px_rgba(127,29,29,0.22)] hover:opacity-90",
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {

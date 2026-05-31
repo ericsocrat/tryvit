@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import { Card } from "./Card";
 
 describe("Card", () => {
@@ -14,7 +14,7 @@ describe("Card", () => {
     expect(card.className).toContain("rounded-xl");
     expect(card.className).toContain("border");
     expect(card.className).toContain("bg-surface");
-    expect(card.className).toContain("shadow-sm");
+    expect(card.className).toContain("shadow-[0_2px_8px_rgba(15,23,42,0.06)]");
   });
 
   it("applies elevated variant", () => {

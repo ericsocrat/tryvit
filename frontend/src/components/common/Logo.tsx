@@ -12,6 +12,12 @@
 
 type LogoVariant = "icon" | "lockup";
 
+interface LogoAsset {
+  light: string;
+  dark: string;
+  aspectRatio: number;
+}
+
 interface LogoProps {
   /** Which logo form to render. Default: "icon" */
   variant?: LogoVariant;
@@ -21,7 +27,7 @@ interface LogoProps {
   className?: string;
 }
 
-const ASSETS = {
+const ASSETS: Record<LogoVariant, LogoAsset> = {
   icon: {
     light: "/logo/logomark.svg",
     dark: "/logo/logomark-dark.svg",
@@ -32,21 +38,23 @@ const ASSETS = {
     dark: "/logo/tryvit-logo-white.svg",
     aspectRatio: 200 / 48, // ~4.17
   },
-} as const;
+};
 
 export function Logo({ variant = "icon", size = 32, className }: Readonly<LogoProps>) {
   const asset = ASSETS[variant];
   const width = Math.round(size * asset.aspectRatio);
 
   return (
-    <span className={`inline-flex shrink-0 items-center ${className ?? ""}`}>
+    <span
+      className={`inline-flex shrink-0 items-center rounded-lg transition-[filter,opacity] motion-reduce:transition-none ${className ?? ""}`}
+    >
       {/* Light-mode variant — hidden when [data-theme="dark"] */}
       <img
         src={asset.light}
         alt="TryVit"
         width={width}
         height={size}
-        className="logo-light select-none"
+        className="logo-light select-none drop-shadow-[0_2px_6px_rgba(15,23,42,0.12)]"
       />
       {/* Dark-mode variant — hidden by default, shown when [data-theme="dark"] */}
       <img
@@ -54,7 +62,7 @@ export function Logo({ variant = "icon", size = 32, className }: Readonly<LogoPr
         alt=""
         width={width}
         height={size}
-        className="logo-dark select-none"
+        className="logo-dark select-none drop-shadow-[0_2px_6px_rgba(15,23,42,0.22)]"
         aria-hidden="true"
       />
     </span>

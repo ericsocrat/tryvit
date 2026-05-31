@@ -19,6 +19,11 @@ interface EmptyStateAction {
   onClick?: () => void;
 }
 
+interface ActionButtonProps {
+  action: EmptyStateAction;
+  primary?: boolean;
+}
+
 export interface EmptyStateProps {
   /** Variant determines the default icon. */
   readonly variant: "no-data" | "no-results" | "error" | "offline";
@@ -110,16 +115,13 @@ export function EmptyState({
 function ActionButton({
   action,
   primary = false,
-}: Readonly<{
-  action: EmptyStateAction;
-  primary?: boolean;
-}>) {
+}: Readonly<ActionButtonProps>) {
   const { t } = useTranslation();
   const label = t(action.labelKey);
 
   const baseClasses = primary
-    ? "rounded-lg bg-brand px-4 py-2 text-xs font-medium text-foreground-inverse shadow-[0_4px_12px_rgba(15,23,42,0.14)] transition-[background-color,box-shadow,color] motion-reduce:transition-none hover:bg-brand-hover focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/25"
-    : "text-xs font-medium text-brand underline underline-offset-2 transition-[color] motion-reduce:transition-none hover:text-brand-hover focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/25";
+    ? "rounded-lg bg-brand px-4 py-2 text-xs font-medium text-foreground-inverse shadow-[0_4px_12px_rgba(15,23,42,0.14)] transition-[background-color,box-shadow,color] motion-reduce:transition-none hover:bg-brand-hover focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/30"
+    : "text-xs font-medium text-brand underline underline-offset-2 transition-[color] motion-reduce:transition-none hover:text-brand-hover focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/30";
 
   if (action.href) {
     return (

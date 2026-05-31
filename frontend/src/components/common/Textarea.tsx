@@ -72,7 +72,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             "focus-visible:outline-hidden focus-visible:ring-2",
             error
               ? "border-error focus-visible:border-error focus-visible:ring-error/30"
-              : "border-default focus-visible:border-brand focus-visible:ring-brand/25",
+              : "border-default focus-visible:border-brand focus-visible:ring-brand/30",
           ].join(" ")}
           {...rest}
         />

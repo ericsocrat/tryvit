@@ -11,14 +11,17 @@
 
 "use client";
 
+import { useTranslation } from "@/lib/i18n";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { type ReactNode } from "react";
-import { useTranslation } from "@/lib/i18n";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export type InfoTooltipSide = "top" | "right" | "bottom" | "left";
 export type InfoTooltipAlign = "start" | "center" | "end";
+interface TooltipParams {
+  [key: string]: string | number;
+}
 
 export interface InfoTooltipProps {
   /** i18n key for the tooltip main text — resolved via useTranslation. */
@@ -26,7 +29,7 @@ export interface InfoTooltipProps {
   /** Optional i18n key for a longer secondary description. */
   readonly descriptionKey?: string;
   /** Interpolation params for messageKey and descriptionKey. */
-  readonly params?: Record<string, string | number>;
+  readonly params?: Readonly<TooltipParams>;
   /** Raw content string (bypasses i18n). Use messageKey when possible. */
   readonly content?: string;
   /** Placement side relative to trigger. @default "top" */

@@ -52,11 +52,17 @@ export function Icon({
 }: IconProps) {
   const px = SIZE_MAP[size];
   const isDecorative = !label;
+  const iconClassName = [
+    "select-none transition-colors motion-reduce:transition-none",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <LucideComponent
       size={px}
-      className={className}
+      className={iconClassName}
       aria-hidden={isDecorative ? "true" : undefined}
       aria-label={label}
       role={label ? "img" : undefined}

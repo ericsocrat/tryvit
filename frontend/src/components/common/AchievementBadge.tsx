@@ -102,7 +102,7 @@ export function AchievementBadge({
 
   return (
     <div
-      className={`inline-flex flex-col items-center gap-1 ${className}`}
+      className={`inline-flex flex-col items-center gap-1.5 rounded-xl border border-transparent bg-surface/95 px-1.5 py-1 shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color] motion-reduce:transition-none ${className}`}
       data-achievement={type}
       data-unlocked={unlocked}
     >
@@ -113,8 +113,8 @@ export function AchievementBadge({
         height={px}
         className={
           unlocked
-            ? "achievement-unlocked"
-            : "achievement-locked grayscale opacity-50"
+            ? "achievement-unlocked select-none drop-shadow-[0_4px_10px_rgba(15,23,42,0.18)] transition-[filter,opacity,transform] motion-reduce:transition-none"
+            : "achievement-locked grayscale opacity-50 select-none transition-[filter,opacity,transform] motion-reduce:transition-none"
         }
         draggable={false}
       />

@@ -53,7 +53,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
           id={checkboxId}
           className={[
             "h-4 w-4 shrink-0 rounded border-default bg-surface/95 text-brand shadow-[0_2px_8px_rgba(15,23,42,0.08)] transition-[border-color,box-shadow,background-color] motion-reduce:transition-none",
-            "focus-visible:ring-2 focus-visible:ring-brand/25 focus-visible:border-brand focus-visible:ring-offset-0",
+            "focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:border-brand focus-visible:ring-offset-0",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             "accent-brand cursor-pointer",
           ].join(" ")}

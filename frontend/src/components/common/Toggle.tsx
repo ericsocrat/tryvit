@@ -69,7 +69,7 @@ export function Toggle({
         onKeyDown={handleKeyDown}
         className={[
           "relative inline-flex shrink-0 cursor-pointer rounded-full border transition-[border-color,box-shadow,background-color] motion-reduce:transition-none",
-          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/25 focus-visible:border-brand",
+          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/30 focus-visible:border-brand",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           TRACK_SIZES[size],
           checked ? "border-brand bg-brand" : "border-default bg-surface/95",

@@ -6,11 +6,13 @@
 //   - "polite"    → wait for current speech to finish (default)
 //   - "assertive" → interrupt current speech immediately
 
+type LiveRegionPoliteness = "polite" | "assertive";
+
 interface LiveRegionProps {
   /** The text to announce. Changes trigger a screen-reader announcement. */
   message: string;
   /** aria-live politeness level (default: "polite"). */
-  politeness?: "polite" | "assertive";
+  politeness?: LiveRegionPoliteness;
 }
 
 export function LiveRegion({

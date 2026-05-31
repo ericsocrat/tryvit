@@ -95,7 +95,7 @@ export function OnboardingIllustration({
 
   return (
     <div
-      className={className}
+      className={`inline-flex items-center justify-center rounded-2xl border border-default bg-surface/95 p-2 shadow-[0_4px_12px_rgba(15,23,42,0.10)] transition-[box-shadow,background-color] motion-reduce:transition-none ${className ?? ""}`}
       data-testid="onboarding-illustration"
       data-step={step}
     >
@@ -105,6 +105,7 @@ export function OnboardingIllustration({
         width={width}
         height={height}
         priority={priority}
+        className="h-auto w-auto max-w-full select-none drop-shadow-[0_4px_10px_rgba(15,23,42,0.14)]"
         data-illustration={step}
       />
     </div>

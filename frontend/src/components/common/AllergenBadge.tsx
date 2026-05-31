@@ -10,8 +10,8 @@
  * unknown allergens.
  */
 
-import React from "react";
 import { AlertTriangle, Check, Zap } from "lucide-react";
+import React, { type ReactElement } from "react";
 import { InfoTooltip } from "./InfoTooltip";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@ export interface AllergenBadgeProps {
 // ─── Status styling ─────────────────────────────────────────────────────────
 
 interface StatusConfig {
-  icon: React.ReactNode;
+  icon: ReactElement;
   bg: string;
   text: string;
   srLabel: string;
@@ -76,12 +76,12 @@ export const AllergenBadge = React.memo(function AllergenBadge({
   showTooltip = false,
   className = "",
 }: Readonly<AllergenBadgeProps>) {
-  const config = STATUS_CONFIGS[status] ?? STATUS_CONFIGS.present;
+  const config = STATUS_CONFIGS[status];
 
   const badge = (
     <span
       className={[
-        "inline-flex items-center gap-1.5 rounded-full font-medium whitespace-nowrap",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-transparent font-medium shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none",
         config.bg,
         config.text,
         SIZE_CLASSES[size],

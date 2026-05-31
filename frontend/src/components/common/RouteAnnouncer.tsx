@@ -11,6 +11,25 @@
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
+const APP_SECTION_TITLES = {
+  categories: "Categories",
+  product: "Product Detail",
+  search: "Search",
+  compare: "Comparisons",
+  lists: "Lists",
+  scan: "Scanner",
+  settings: "Settings",
+  admin: "Admin",
+} as const;
+
+const PUBLIC_ROUTE_TITLES = {
+  auth: "Sign In",
+  onboarding: "Onboarding",
+  contact: "Contact",
+  privacy: "Privacy Policy",
+  terms: "Terms of Service",
+} as const;
+
 /** Map pathname segments to human-readable page names. */
 function pageTitle(pathname: string): string {
   const segments = pathname.replace(/^\//, "").split("/").filter(Boolean);
@@ -21,30 +40,13 @@ function pageTitle(pathname: string): string {
     const section = segments[1];
     if (!section) return "Dashboard";
 
-    const titles: Record<string, string> = {
-      categories: "Categories",
-      product: "Product Detail",
-      search: "Search",
-      compare: "Comparisons",
-      lists: "Lists",
-      scan: "Scanner",
-      settings: "Settings",
-      admin: "Admin",
-    };
-
-    return titles[section] ?? section.charAt(0).toUpperCase() + section.slice(1);
+    return APP_SECTION_TITLES[section as keyof typeof APP_SECTION_TITLES]
+      ?? section.charAt(0).toUpperCase() + section.slice(1);
   }
 
   // Public routes
-  const publicTitles: Record<string, string> = {
-    auth: "Sign In",
-    onboarding: "Onboarding",
-    contact: "Contact",
-    privacy: "Privacy Policy",
-    terms: "Terms of Service",
-  };
-
-  return publicTitles[segments[0]] ?? "Page";
+  return PUBLIC_ROUTE_TITLES[segments[0] as keyof typeof PUBLIC_ROUTE_TITLES]
+    ?? "Page";
 }
 
 export function RouteAnnouncer() {

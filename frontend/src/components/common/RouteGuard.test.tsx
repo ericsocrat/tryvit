@@ -1,8 +1,12 @@
-import { useState } from "react";
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, screen, waitFor, renderHook } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, renderHook, screen, waitFor } from "@testing-library/react";
+import { useState } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RouteGuard, usePreferences } from "./RouteGuard";
+
+interface WrapperProps {
+  children: React.ReactNode;
+}
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -31,7 +35,7 @@ vi.mock("@/lib/toast", () => ({
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
+function Wrapper({ children }: Readonly<WrapperProps>) {
   const [client] = useState(
     () =>
       new QueryClient({

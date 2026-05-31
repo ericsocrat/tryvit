@@ -17,17 +17,19 @@ const INDICATOR_SIZE = 32;
 
 type PullState = "idle" | "pulling" | "triggered" | "refreshing";
 
+interface PullToRefreshProps {
+  onRefresh: () => Promise<void>;
+  children: React.ReactNode;
+  className?: string;
+}
+
 // ─── Component ──────────────────────────────────────────────────────────────
 
 export function PullToRefresh({
   onRefresh,
   children,
   className = "",
-}: Readonly<{
-  onRefresh: () => Promise<void>;
-  children: React.ReactNode;
-  className?: string;
-}>) {
+}: Readonly<PullToRefreshProps>) {
   const { t } = useTranslation();
   const prefersReduced = useReducedMotion();
   const [pullState, setPullState] = useState<PullState>("idle");
@@ -136,7 +138,7 @@ export function PullToRefresh({
           aria-atomic="true"
         >
           <div
-            className="flex flex-col items-center gap-1"
+            className="flex flex-col items-center gap-1 rounded-full border border-transparent bg-surface/95 px-3 py-1.5 shadow-[0_4px_12px_rgba(15,23,42,0.12)] transition-[box-shadow,background-color] motion-reduce:transition-none"
             style={{
               opacity: progress,
               transform: `scale(${pullState === "triggered" || pullState === "refreshing" ? 1.1 : 0.5 + progress * 0.5})`,
@@ -180,7 +182,7 @@ export function PullToRefresh({
                 }}
               />
             </svg>
-            <span className="text-xs text-foreground-muted">
+            <span className="text-xs font-medium text-foreground-muted">
               {statusText}
             </span>
           </div>

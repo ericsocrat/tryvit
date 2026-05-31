@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import { Chip } from "./Chip";
 
 describe("Chip", () => {
@@ -62,6 +62,6 @@ describe("Chip", () => {
   it("applies default variant", () => {
     render(<Chip>Default</Chip>);
     const el = screen.getByText("Default").closest("span")!;
-    expect(el.className).toContain("bg-surface-muted");
+    expect(el.className).toContain("bg-surface-muted/95");
   });
 });

@@ -3,16 +3,16 @@
 // ─── RouteGuard: centralized redirect logic for /app/* pages ────────────────
 // Wraps useQuery for preferences and handles session expiry.
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { showToast } from "@/lib/toast";
-import { createClient } from "@/lib/supabase/client";
-import { getUserPreferences } from "@/lib/api";
-import { isAuthError } from "@/lib/rpc";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
-import type { UserPreferences } from "@/lib/types";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import { getUserPreferences } from "@/lib/api";
+import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { isAuthError } from "@/lib/rpc";
+import { createClient } from "@/lib/supabase/client";
+import { showToast } from "@/lib/toast";
+import type { UserPreferences } from "@/lib/types";
+import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -66,7 +66,9 @@ export function RouteGuard({ children }: Readonly<RouteGuardProps>) {
   if (isLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
-        <LoadingSpinner />
+        <div className="rounded-xl border border-default bg-surface/95 p-3 shadow-[0_4px_12px_rgba(15,23,42,0.10)]">
+          <LoadingSpinner />
+        </div>
       </div>
     );
   }

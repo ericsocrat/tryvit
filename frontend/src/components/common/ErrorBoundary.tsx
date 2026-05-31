@@ -16,7 +16,7 @@
 "use client";
 
 import { buttonClasses } from "@/components/common/Button";
-import { type ErrorType, ErrorIllustration } from "@/components/common/ErrorIllustration";
+import { ErrorIllustration, type ErrorType } from "@/components/common/ErrorIllustration";
 import { classifyError, type ErrorCategory } from "@/lib/error-classifier";
 import { reportBoundaryError, type ErrorContext } from "@/lib/error-reporter";
 import { useTranslation } from "@/lib/i18n";
@@ -70,15 +70,21 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
+interface PageFallbackProps {
+  error: Error;
+  onReset: () => void;
+}
+
+interface SectionFallbackProps {
+  onReset: () => void;
+}
+
 // ─── Default Fallbacks ──────────────────────────────────────────────────────
 
 function PageFallback({
   error,
   onReset,
-}: Readonly<{
-  error: Error;
-  onReset: () => void;
-}>) {
+}: Readonly<PageFallbackProps>) {
   const { t } = useTranslation();
   const digest = (error as Error & { digest?: string }).digest;
   const category = classifyError(error);
@@ -87,7 +93,7 @@ function PageFallback({
 
   return (
     <div
-      className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center"
+      className="flex min-h-[60vh] flex-col items-center justify-center rounded-2xl border border-default bg-surface/95 px-4 py-10 text-center shadow-[0_20px_60px_rgba(15,23,42,0.16)] transition-[box-shadow,background-color,color] motion-reduce:transition-none"
       role="alert"
       data-testid="error-boundary-page"
       data-error-category={category}
@@ -98,7 +104,7 @@ function PageFallback({
       <h2 className="mb-2 text-xl font-bold text-foreground">
         {t(i18nKeys.title)}
       </h2>
-      <p className="mb-6 max-w-md text-sm text-foreground-secondary">
+      <p className="mb-6 max-w-md text-sm leading-relaxed text-foreground-secondary">
         {t(i18nKeys.description)}
       </p>
       {digest && (
@@ -106,7 +112,7 @@ function PageFallback({
           {t("errorBoundary.errorId")}: {digest}
         </p>
       )}
-      <div className="flex gap-3">
+      <div className="flex gap-3 pt-1">
         <button
           onClick={onReset}
           className={buttonClasses("primary", "md")}
@@ -133,11 +139,11 @@ function PageFallback({
   );
 }
 
-function SectionFallback({ onReset }: Readonly<{ onReset: () => void }>) {
+function SectionFallback({ onReset }: Readonly<SectionFallbackProps>) {
   const { t } = useTranslation();
   return (
     <div
-      className="my-4 flex flex-col items-center justify-center rounded-lg border border-dashed border-strong p-6 text-center"
+      className="my-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-default bg-surface/95 p-6 text-center shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none"
       role="alert"
       data-testid="error-boundary-section"
     >
@@ -149,7 +155,7 @@ function SectionFallback({ onReset }: Readonly<{ onReset: () => void }>) {
       </p>
       <button
         onClick={onReset}
-        className={buttonClasses("primary", "sm")}
+        className={`${buttonClasses("primary", "sm")} mt-1`}
       >
         {t("common.tryAgain")}
       </button>
@@ -161,7 +167,7 @@ function ComponentFallback() {
   const { t } = useTranslation();
   return (
     <span
-      className="inline-flex items-center justify-center rounded border border-dashed border-border px-2 py-0.5 text-xs text-foreground-muted"
+      className="inline-flex items-center justify-center rounded-md border border-dashed border-default bg-surface/95 px-2 py-0.5 text-xs text-foreground-muted shadow-[0_2px_8px_rgba(15,23,42,0.06)]"
       role="alert"
       data-testid="error-boundary-component"
       title={t("errorBoundary.componentTooltip")}

@@ -33,7 +33,9 @@ export interface SelectProps extends Omit<
 
 // ─── Style maps ─────────────────────────────────────────────────────────────
 
-const SIZE_CLASSES: Record<string, string> = {
+type SelectSize = NonNullable<SelectProps["size"]>;
+
+const SIZE_CLASSES: Record<SelectSize, string> = {
   sm: "px-2.5 py-1.5 text-xs",
   md: "px-3.5 py-2.5 text-sm",
   lg: "px-4 py-3 text-base",
@@ -80,7 +82,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
             "focus-visible:outline-hidden focus-visible:ring-2",
             error
               ? "border-error focus-visible:border-error focus-visible:ring-error/30"
-              : "border-default focus-visible:border-brand focus-visible:ring-brand/25",
+              : "border-default focus-visible:border-brand focus-visible:ring-brand/30",
             SIZE_CLASSES[size],
             // Space for chevron
             "pr-10",

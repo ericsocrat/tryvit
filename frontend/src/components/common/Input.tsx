@@ -89,7 +89,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             "focus-visible:outline-hidden focus-visible:ring-2",
             error
               ? "border-error focus-visible:border-error focus-visible:ring-error/30"
-              : "border-default focus-visible:border-brand focus-visible:ring-brand/25",
+              : "border-default focus-visible:border-brand focus-visible:ring-brand/30",
             SIZE_CLASSES[size],
             icon ? "pl-10" : "",
           ]

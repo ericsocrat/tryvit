@@ -2,17 +2,22 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PullToRefresh } from "./PullToRefresh";
 
+type PullToRefreshTranslationKey =
+  | "pwa.pullToRefresh"
+  | "pwa.releaseToRefresh"
+  | "pwa.refreshing";
+
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
 vi.mock("@/lib/i18n", () => ({
   useTranslation: () => ({
     t: (key: string) => {
-      const map: Record<string, string> = {
+      const map: Record<PullToRefreshTranslationKey, string> = {
         "pwa.pullToRefresh": "Pull to refresh",
         "pwa.releaseToRefresh": "Release to refresh",
         "pwa.refreshing": "Refreshing…",
       };
-      return map[key] ?? key;
+      return map[key as PullToRefreshTranslationKey] ?? key;
     },
   }),
 }));

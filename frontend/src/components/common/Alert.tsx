@@ -112,7 +112,7 @@ export function Alert({
         <button
           type="button"
           onClick={() => setDismissed(true)}
-          className="shrink-0 rounded-md text-foreground-muted transition-colors motion-reduce:transition-none hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/25"
+          className="shrink-0 rounded-md text-foreground-muted transition-colors motion-reduce:transition-none hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/30"
           aria-label={t("a11y.dismiss")}
         >
           <X size={18} aria-hidden="true" />

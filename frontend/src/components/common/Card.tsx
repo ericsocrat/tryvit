@@ -35,7 +35,7 @@ export interface CardProps extends Omit<
 
 const VARIANT_CLASSES: Record<CardVariant, string> = {
   default:
-    "rounded-xl border border-default bg-surface/95 shadow-sm transition-[box-shadow,background-color,color] motion-reduce:transition-none",
+    "rounded-xl border border-default bg-surface/95 shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none",
   elevated:
     "rounded-xl bg-surface/95 shadow-md transition-[box-shadow,background-color,color] motion-reduce:transition-none",
   outlined:

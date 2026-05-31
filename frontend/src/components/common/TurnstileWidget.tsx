@@ -65,7 +65,10 @@ export function TurnstileWidget({
     ref.current?.reset();
   }, [onExpire]);
 
-  const wrapperClassName = ["flex w-full justify-center", className]
+  const wrapperClassName = [
+    "flex w-full justify-center rounded-xl border border-default bg-surface/95 px-2 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color] motion-reduce:transition-none",
+    className,
+  ]
     .filter(Boolean)
     .join(" ");
 

@@ -6,6 +6,13 @@
 
 import { COUNTRIES } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
+import type { ReactElement } from "react";
+
+interface FlagProps {
+  size: number;
+}
+type FlagComponent = (props: FlagProps) => ReactElement;
+type KnownCountryCode = (typeof COUNTRIES)[number]["code"];
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -24,7 +31,7 @@ interface CountryChipProps {
 // ─── Inline SVG Flags ───────────────────────────────────────────────────────
 // Simplified flag SVGs (<500 bytes each) for crisp rendering at small sizes.
 
-function PolishFlag({ size }: Readonly<{ size: number }>) {
+function PolishFlag({ size }: FlagProps) {
   return (
     <svg
       width={size}
@@ -39,7 +46,7 @@ function PolishFlag({ size }: Readonly<{ size: number }>) {
   );
 }
 
-function GermanFlag({ size }: Readonly<{ size: number }>) {
+function GermanFlag({ size }: FlagProps) {
   return (
     <svg
       width={size}
@@ -55,7 +62,7 @@ function GermanFlag({ size }: Readonly<{ size: number }>) {
   );
 }
 
-function FallbackFlag({ size }: Readonly<{ size: number }>) {
+function FallbackFlag({ size }: FlagProps) {
   return (
     <svg
       width={size}
@@ -79,7 +86,7 @@ function FallbackFlag({ size }: Readonly<{ size: number }>) {
   );
 }
 
-const FLAG_COMPONENTS: Record<string, typeof PolishFlag> = {
+const FLAG_COMPONENTS: Partial<Record<KnownCountryCode, FlagComponent>> = {
   PL: PolishFlag,
   DE: GermanFlag,
 };
@@ -110,7 +117,7 @@ export function CountryChip({
       <span
         role="img"
         aria-label={nullLabel ?? ""}
-        className={`inline-flex items-center ${cfg.gap} rounded-full border border-border bg-surface-muted ${cfg.px} ${cfg.text} font-medium text-foreground-muted ${className}`}
+        className={`inline-flex items-center ${cfg.gap} rounded-full border border-default bg-surface-muted/95 ${cfg.px} ${cfg.text} font-medium text-foreground-muted shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none ${className}`}
       >
         <FallbackFlag size={cfg.flag} />
         <span>{nullLabel}</span>
@@ -120,7 +127,7 @@ export function CountryChip({
 
   const meta = COUNTRIES.find((c) => c.code === country);
   const name = meta?.name ?? country;
-  const FlagIcon = FLAG_COMPONENTS[country] ?? FallbackFlag;
+  const FlagIcon = FLAG_COMPONENTS[country as KnownCountryCode] ?? FallbackFlag;
   const cfg = SIZE_CONFIG[size];
   const displayText = showLabel ? name : country;
 
@@ -128,7 +135,7 @@ export function CountryChip({
     <span
       role="img"
       aria-label={t("common.productFrom", { country: name })}
-      className={`inline-flex items-center ${cfg.gap} rounded-full border border-border bg-surface-subtle ${cfg.px} ${cfg.text} font-medium text-foreground-secondary ${className}`}
+      className={`inline-flex items-center ${cfg.gap} rounded-full border border-default bg-surface-subtle/95 ${cfg.px} ${cfg.text} font-medium text-foreground-secondary shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none ${className}`}
     >
       <FlagIcon size={cfg.flag} />
       <span>{displayText}</span>
