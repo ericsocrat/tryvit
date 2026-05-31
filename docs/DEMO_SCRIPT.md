@@ -29,6 +29,13 @@ Confirm before starting:
 
 - Supabase is running and seeded (local DB has product rows; if empty, run `.\RUN_LOCAL.ps1`).
 - `http://localhost:3000` loads the landing page.
+- **You are logged in with a demo account whose onboarding is complete.** All
+  `/app/*` routes (Categories, Product, Scan, Compare) are auth-gated and will
+  redirect to `/auth/login` — and then to `/onboarding` if it is incomplete —
+  so steps 2–4 are not reachable as a logged-out viewer. Sign in and finish
+  onboarding before the audience joins.
+  - Use a pre-created demo account with onboarding completed. Do not include
+    real credentials in this script.
 - Have one known barcode ready as a fallback (see step 3 recovery).
 
 ---
@@ -55,7 +62,8 @@ Confirm before starting:
 ## 3. Barcode scan (~60s)
 
 - Go to **Scan**.
-- **Show:** the camera-based EAN-13 scanner; scan a product barcode.
+- **Show:** the EAN-13 scanner. It defaults to camera mode; the **Manual entry**
+  toggle is always visible as the fallback. Scan a product barcode.
 - **Show:** the matched product and its full scoring breakdown.
 - **Proves:** real-world lookup from barcode to auditable score.
 
@@ -75,8 +83,11 @@ Then continue at step 4 as if the scan succeeded. Do not debug the camera live.
 ## 4. Compare & confidence (~45s)
 
 - Add 2–4 products to **Compare**.
-- **Show:** side-by-side factor comparison; point out differing additive counts and confidence scores.
-- **Say:** "The confidence score tells you how complete the underlying data is, so you know how much to trust each number."
+- **Show:** compare factors side-by-side; point out differing additive counts and
+  per-factor best/worst highlighting. Confidence is shown on each product's
+  detail page, not currently in the compare grid.
+- **Say:** "On each product page, the confidence score tells you how complete the
+  underlying data is, so you know how much to trust each number."
 - **Proves:** transparency and data-quality visibility.
 
 ---
