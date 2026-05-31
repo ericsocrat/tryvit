@@ -266,7 +266,7 @@ Epic #920 fully resolved and closed — all 12/12 issues shipped.
 - [x] UX Audit — 74 Playwright screenshots + 20 user screenshots analyzed → 4 issues created (#842-#845)
 - [x] P0 fix: Score display consistency — TryVit Score (100−unhealthiness) for filters/stats (PR #846)
 - [x] P1 fix: Category truncation, product not-found empty state, settings tab overflow (PR #847)
-- [x] P2 fix: Language flags removed, scanner default to manual, QuickWin null guard, 403 page enhanced (PR #848)
+- [x] P2 fix: Language flags removed, scanner default to manual, QuickWin null guard, 403 page enhanced (PR #848) — _superseded: scanner now defaults to camera mode with an always-visible manual entry fallback_
 - [x] P3 fix: Filter skeleton loader, category grid cleanup (PR #849)
 - [x] Fix 7 broken production functions — STABLE→VOLATILE + watchlist alias (PR #854)
 - [x] Configure PRODUCTION_URL secret for health endpoint verification
