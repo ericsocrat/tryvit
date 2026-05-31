@@ -1,5 +1,5 @@
 -- ============================================================
--- QA: Data Quality & Plausibility Checks (39 checks)
+-- QA: Data Quality & Plausibility Checks (40 checks)
 -- Validates data hygiene, plausibility bounds, cross-field
 -- consistency, and coverage regression thresholds.
 -- All checks are BLOCKING unless marked informational.
@@ -378,4 +378,20 @@ WHERE p.is_deprecated IS NOT TRUE
   AND p.brand IS NOT NULL
 GROUP BY normalize_brand(p.brand)
 HAVING COUNT(DISTINCT p.brand) > 1;
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- 40. No active QA fixture products in the live catalog
+--     QA fixtures (brand = 'QA Test Brand') are synthetic Dairy products
+--     seeded by frontend/tests/quality/seed-fixtures.mjs for Playwright
+--     quality-gate runs. They must ONLY exist on a staging/test instance.
+--     In June 2026 four leaked into production because the CI seed step fell
+--     back to the production URL when the staging secret was unset. This
+--     check fails if any such product is active (is_deprecated IS NOT TRUE),
+--     guaranteeing fixtures never surface in any user-facing surface again.
+-- ═══════════════════════════════════════════════════════════════════════════
+SELECT '40. no active QA fixture products' AS check_name,
+       COUNT(*) AS violations
+FROM products p
+WHERE p.brand = 'QA Test Brand'
+  AND p.is_deprecated IS NOT TRUE;
 

@@ -5,10 +5,16 @@
  * data so the quality-gate Playwright tests have real rendered DOM to audit.
  *
  * Usage:
- *   node tests/quality/seed-fixtures.mjs
+ *   node tests/quality/seed-fixtures.mjs              # seed fixtures
+ *   node tests/quality/seed-fixtures.mjs --teardown   # soft-deprecate fixtures
  *
  * Outputs KEY=VALUE lines to stdout for CI to capture into $GITHUB_ENV.
- * Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY env vars.
+ * Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY env vars,
+ * which MUST point at a staging/local/test instance. The seeder refuses to
+ * run against the production project (hard guard) — see PRODUCTION_PROJECT_REF.
+ *
+ * Missing env: skips with exit 0 locally, but FAILS with exit 1 in CI
+ * (CI=true) so a misconfigured staging secret can never pass silently.
  *
  * Idempotent — safe to run multiple times (upserts on unique constraints).
  *
@@ -22,11 +28,57 @@ import { createClient } from "@supabase/supabase-js";
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+// Canonical brand used by all QA fixtures. Centralised so the teardown path
+// and any future tooling reference a single source of truth.
+const QA_FIXTURE_BRAND = "QA Test Brand";
+
+// Hard safety guard. These QA fixtures must NEVER be written to the production
+// Supabase project. In June 2026 four fixtures leaked into the production
+// catalog because the CI seed step fell back to the production URL when the
+// staging secret was unset. The seeder now refuses to run against production,
+// regardless of how the URL was resolved.
+const PRODUCTION_PROJECT_REF = "uskvezwftkkudvksmken";
+
+// Are we running inside CI? GitHub Actions (and most CI providers) set CI=true.
+// In CI, missing fixture env is a hard failure — a silent skip would let the
+// quality-gate/nightly workflow pass green while seeding (or teardown) did
+// nothing, masking misconfigured staging secrets. Locally, a missing env is a
+// legitimate "I just want to run the app" case, so we skip safely.
+const IS_CI = process.env.CI === "true" || process.env.CI === "1";
+
 if (!SUPABASE_URL || !SERVICE_KEY) {
+  if (IS_CI) {
+    console.error(
+      "❌ Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in CI."
+    );
+    console.error(
+      "    QA fixture seeding/teardown requires the *_STAGING secrets. " +
+        "Failing instead of silently skipping — configure " +
+        "SUPABASE_URL_STAGING / SUPABASE_SERVICE_ROLE_KEY_STAGING."
+    );
+    process.exit(1);
+  }
   console.warn(
     "⚠️  Skipping QA fixture seeding — missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY"
   );
+  console.warn(
+    "    QA fixtures require an explicit staging/local/test target. " +
+      "Set the *_STAGING secrets — do not fall back to production."
+  );
   process.exit(0);
+}
+
+if (SUPABASE_URL.includes(PRODUCTION_PROJECT_REF)) {
+  console.error(
+    `❌ Refusing to seed QA fixtures against the production project ` +
+      `(${PRODUCTION_PROJECT_REF}). QA fixtures must only target a ` +
+      `staging, local, or test Supabase instance.`
+  );
+  console.error(
+    "    Resolved NEXT_PUBLIC_SUPABASE_URL points at production. " +
+      "Provide SUPABASE_URL_STAGING / SUPABASE_SERVICE_ROLE_KEY_STAGING instead."
+  );
+  process.exit(1);
 }
 
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
@@ -427,7 +479,54 @@ async function main() {
   console.error("\n🎉 QA fixture seeding complete!\n");
 }
 
-main().catch((err) => {
-  console.error(`\n❌ QA fixture seeding failed: ${err.message}`);
+/* ── Teardown ────────────────────────────────────────────────────────────── */
+
+/**
+ * Soft-deprecate all QA fixture products instead of hard-deleting them.
+ *
+ * Soft-deprecation (is_deprecated = true) is reversible and matches the
+ * project's "deprecate, never DELETE" data policy. v_master and the public
+ * API filter out is_deprecated rows, so deprecated fixtures stop appearing in
+ * any user-facing surface while remaining auditable in the table.
+ *
+ * Invoke with: node tests/quality/seed-fixtures.mjs --teardown
+ *           or: QA_FIXTURE_TEARDOWN=1 node tests/quality/seed-fixtures.mjs
+ */
+async function teardown() {
+  console.error(
+    `🧹 Soft-deprecating QA fixture products (brand="${QA_FIXTURE_BRAND}")...\n`
+  );
+
+  const { data, error } = await supabase
+    .from("products")
+    .update({
+      is_deprecated: true,
+      deprecated_reason: "qa-fixture teardown",
+    })
+    .eq("brand", QA_FIXTURE_BRAND)
+    .eq("is_deprecated", false)
+    .select("product_id");
+
+  if (error) {
+    throw new Error(`Teardown failed: ${error.message}`);
+  }
+
+  const count = data?.length ?? 0;
+  console.error(
+    `  ✅ Soft-deprecated ${count} QA fixture product(s) (reversible)\n`
+  );
+}
+
+/* ── Entry point ─────────────────────────────────────────────────────────── */
+
+const isTeardown =
+  process.argv.includes("--teardown") ||
+  process.env.QA_FIXTURE_TEARDOWN === "1";
+
+const run = isTeardown ? teardown : main;
+
+run().catch((err) => {
+  const action = isTeardown ? "teardown" : "seeding";
+  console.error(`\n❌ QA fixture ${action} failed: ${err.message}`);
   process.exit(1);
 });

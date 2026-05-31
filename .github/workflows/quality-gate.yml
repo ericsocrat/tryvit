@@ -111,19 +111,21 @@ jobs:
         id: seed
         working-directory: frontend
         run: |
-          # Seed deterministic test products; capture IDs into $GITHUB_ENV
-          OUTPUT=$(node tests/quality/seed-fixtures.mjs 2>&1 1>/tmp/qa-ids.txt || true)
-          echo "$OUTPUT"
-          if [ -f /tmp/qa-ids.txt ] && [ -s /tmp/qa-ids.txt ]; then
-            cat /tmp/qa-ids.txt >> "$GITHUB_ENV"
-            echo "seeded=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "seeded=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::QA fixture seeding skipped or failed — tests may use fallback IDs"
-          fi
+          set -o pipefail
+          # Seed deterministic test products; KEY=VALUE lines go to stdout.
+          # No `|| true` here — a non-zero exit (missing staging env in CI, or
+          # the in-script production guard tripping) MUST fail the job rather
+          # than let the quality gate pass green with nothing seeded.
+          node tests/quality/seed-fixtures.mjs | tee /tmp/qa-ids.txt
+          grep -E '^[A-Z_]+=' /tmp/qa-ids.txt >> "$GITHUB_ENV" || true
+          echo "seeded=true" >> "$GITHUB_OUTPUT"
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING || secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Staging-only: QA fixtures must NEVER target production. No fallback
+          # to NEXT_PUBLIC_SUPABASE_URL — if the staging secret is unset the
+          # seeder fails in CI (and the in-script production guard would abort
+          # anyway).
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING }}
 
       # ── Determine mode ───────────────────────────────────────────────────
       - name: Determine mode
@@ -172,6 +174,20 @@ jobs:
           BASE_URL: http://localhost:3000
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING || secrets.SUPABASE_SERVICE_ROLE_KEY }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING || secrets.NEXT_PUBLIC_SUPABASE_URL }}
+
+      # ── Teardown QA fixtures ─────────────────────────────────────────────
+      # Always runs after the fixture-dependent audits so staging never
+      # accumulates active QA Test Brand rows. Staging-only secrets; the
+      # in-script production guard makes targeting production impossible.
+      # In CI a missing staging secret fails this step (exit 1) rather than
+      # leaving fixtures behind silently.
+      - name: Teardown QA fixture data
+        if: always()
+        working-directory: frontend
+        run: node tests/quality/seed-fixtures.mjs --teardown
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING }}
 
       # ── Lighthouse CI (Mobile) ─────────────────────────────────────────
       - name: Run Lighthouse CI (Mobile)
