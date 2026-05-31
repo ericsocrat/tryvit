@@ -96,16 +96,20 @@ jobs:
 
       - name: Seed QA fixture data
         run: |
-          OUTPUT=$(node tests/quality/seed-fixtures.mjs 2>&1 1>/tmp/qa-ids.txt || true)
-          echo "$OUTPUT"
-          if [ -f /tmp/qa-ids.txt ] && [ -s /tmp/qa-ids.txt ]; then
-            cat /tmp/qa-ids.txt >> "$GITHUB_ENV"
-          else
-            echo "::warning::QA fixture seeding skipped or failed — tests may use fallback IDs"
-          fi
+          set -o pipefail
+          # KEY=VALUE lines go to stdout. No `|| true` — a non-zero exit
+          # (missing staging env in CI, or the in-script production guard
+          # tripping) MUST fail the job rather than run tests with nothing
+          # seeded.
+          node tests/quality/seed-fixtures.mjs | tee /tmp/qa-ids.txt
+          grep -E '^[A-Z_]+=' /tmp/qa-ids.txt >> "$GITHUB_ENV" || true
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING || secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          # Staging-only: QA fixtures must NEVER target production. No fallback
+          # to NEXT_PUBLIC_SUPABASE_URL — if the staging secret is unset the
+          # seeder fails in CI (and the in-script production guard would abort
+          # anyway).
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING }}
 
       - name: Full Playwright (all projects including visual)
         run: npx playwright test 2>&1 | tee ../playwright-stdout.log
@@ -118,6 +122,17 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING || secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY_STAGING || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+      # Always runs after the fixture-dependent Playwright suite so staging
+      # never accumulates active QA Test Brand rows. Staging-only secrets; the
+      # in-script production guard makes targeting production impossible. In CI
+      # a missing staging secret fails this step rather than leaking fixtures.
+      - name: Teardown QA fixture data
+        if: always()
+        run: node tests/quality/seed-fixtures.mjs --teardown
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING }}
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
