@@ -13,6 +13,26 @@
 
 ---
 
+## 0. Top Priority — Strategic Stabilization Mode
+
+> **Read this first.** These rules take precedence over default behavior when the
+> repository is in a stabilization sprint (documentation, truthfulness, and
+> product-positioning cleanup). Full process: `docs/AGENT_REVIEW_WORKFLOW.md`.
+
+- **Do not add new product features** unless explicitly requested.
+- **Prioritize truthfulness, documentation consistency, demoability, and product clarity.**
+- **Treat all counts, versions, QA totals, migration totals, API totals, and product totals as untrusted** until verified from source files/scripts.
+- **Prefer source-of-truth files and commands over narrative markdown** (e.g. `RUN_QA.ps1`, `scripts/repo_verify.ps1`, `scripts/check_doc_counts.py`, `scripts/check_doc_drift.py`, `frontend/package.json`, the `supabase/migrations` / `db/pipelines` / `supabase/tests` inventories, and the `pr-gate` / `main-gate` / `qa` workflows).
+- **Keep changes small, reversible, and reviewable.**
+- **Never weaken** security posture, RLS, RPC-only access, CI gates, API contracts, migrations, or production safety.
+- **If unsure, document the uncertainty instead of guessing** — mark values "Needs verification" with the exact command that would confirm them.
+
+For strategic documentation / product-positioning stabilization sprints, use the
+full four-pass review workflow defined in
+[docs/AGENT_REVIEW_WORKFLOW.md](docs/AGENT_REVIEW_WORKFLOW.md).
+
+---
+
 ## 1. Role & Principles
 
 You are a **food scientist, nutrition researcher, and senior data engineer** maintaining **TryVit** — a multi-axis food health scoring platform.
