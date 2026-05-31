@@ -223,8 +223,8 @@ export default function ProductDetailPage() {
           variant="no-results"
           titleKey="product.notFoundPage"
           descriptionKey="product.notFoundDescription"
-          action={{ labelKey: "nav.browseCategories", href: "/app/categories" }}
-          secondaryAction={{ labelKey: "nav.searchProducts", href: "/app/search" }}
+          action={{ labelKey: "error.browseCategories", href: "/app/categories" }}
+          secondaryAction={{ labelKey: "error.searchProducts", href: "/app/search" }}
         />
       </div>
     );

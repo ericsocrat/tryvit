@@ -87,7 +87,8 @@ describe("LandingSections", () => {
   it("renders stats heading and 4 stat values", () => {
     render(<LandingSections />);
     expect(screen.getByText("landing.statsHeading")).toBeInTheDocument();
-    expect(screen.getByText("landing.statProductsValue")).toBeInTheDocument();
+    // Product count is intentionally reused in both the hero "Model Snapshot" aside and the stats section
+    expect(screen.queryAllByText("landing.statProductsValue").length).toBeGreaterThanOrEqual(2);
     expect(screen.getByText("landing.statCategoriesValue")).toBeInTheDocument();
     expect(screen.queryAllByText("landing.statFactorsValue").length).toBeGreaterThanOrEqual(1);
     expect(screen.queryAllByText("landing.statCountriesValue").length).toBeGreaterThanOrEqual(1);

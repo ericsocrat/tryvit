@@ -144,14 +144,14 @@ export default function CategoryListingPage() {
         items={[
           { labelKey: "nav.home", href: "/app" },
           { labelKey: "categories.title", href: "/app/categories" },
-          { label: formatSlug(slug) },
+          { label: categoryStats?.display_name || formatSlug(slug) },
         ]}
       />
 
       {/* Header */}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold capitalize text-foreground lg:text-2xl">
-          {formatSlug(slug)}
+          {categoryStats?.display_name || formatSlug(slug)}
         </h1>
         {data && (
           <span className="text-sm text-foreground-secondary">
