@@ -6,7 +6,7 @@ Last audited: 2026-02-14 (vulnerability table below may be stale — re-run `cd 
 
 ### Summary
 
-> **Note:** The project upgraded to **Next.js 15.5.12**. The advisories below were
+> **Note:** The project upgraded to **Next.js 16.2.6**. The advisories below were
 > originally filed against Next.js 14.x. Run `npm audit --omit=dev` to verify
 > which, if any, still apply to the current version.
 
@@ -43,7 +43,7 @@ Last audited: 2026-02-14 (vulnerability table below may be stale — re-run `cd 
 
 ### Remediation Plan
 
-The project is now on **Next.js 15.5.12**. The advisories listed above were filed
+The project is now on **Next.js 16.2.6**. The advisories listed above were filed
 against v14.x and may no longer apply. Re-run `npm audit --omit=dev` and refresh
 this table when vulnerabilities change.
 
@@ -164,7 +164,7 @@ RLS is enabled and forced on all 12 data tables.
 
 ## QA Coverage
 
-Security posture is validated by 22 automated checks (`QA__security_posture.sql`):
+Security posture is validated by the automated security QA suite (`QA__security_posture.sql`):
 
 1. All data tables have RLS enabled
 2. All data tables have FORCE RLS enabled
@@ -189,4 +189,4 @@ Security posture is validated by 22 automated checks (`QA__security_posture.sql`
 21. `resolve_effective_country` is SECURITY DEFINER with `search_path` set
 22. `resolve_effective_country` EXECUTE revoked from `authenticated`
 
-**Total QA coverage:** 421 checks across 30 suites + 29 negative validation tests.
+**Total QA coverage:** 776 checks across 49 suites + 20 negative validation tests.
