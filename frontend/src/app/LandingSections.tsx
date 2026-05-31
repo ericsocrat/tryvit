@@ -84,7 +84,7 @@ function HeroSection() {
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-strong/50 bg-surface px-3 py-3 text-center dark:border-white/12 dark:bg-white/[0.03]">
-                  <p className="text-2xl font-bold text-foreground">2.6K+</p>
+                  <p className="text-2xl font-bold text-foreground">{t("landing.statProductsValue")}</p>
                   <p className="text-xs text-foreground-secondary">Products</p>
                 </div>
                 <div className="rounded-xl border border-strong/50 bg-surface px-3 py-3 text-center dark:border-white/12 dark:bg-white/[0.03]">

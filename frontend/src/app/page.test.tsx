@@ -203,7 +203,8 @@ describe("HomePage — Data Stats section", () => {
 
   it("renders four stat values", () => {
     render(<HomePage />);
-    expect(screen.getByText(tMap["landing.statProductsValue"])).toBeInTheDocument();
+    // Product count also appears in the hero "Model Snapshot" aside, so it can match more than once
+    expect(screen.queryAllByText(tMap["landing.statProductsValue"]).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(tMap["landing.statCategoriesValue"])).toBeInTheDocument();
     expect(screen.queryAllByText(tMap["landing.statFactorsValue"]).length).toBeGreaterThanOrEqual(1);
     expect(screen.queryAllByText(tMap["landing.statCountriesValue"]).length).toBeGreaterThanOrEqual(1);
