@@ -22,6 +22,7 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
+import ws from "ws";
 
 /* ── Environment ─────────────────────────────────────────────────────────── */
 
@@ -81,8 +82,16 @@ if (SUPABASE_URL.includes(PRODUCTION_PROJECT_REF)) {
   process.exit(1);
 }
 
+// The seeder only performs REST queries (upsert/select) — it never opens a
+// realtime channel. However, @supabase/supabase-js still constructs a
+// RealtimeClient eagerly, and on Node 20 (no native global WebSocket) that
+// throws "Node.js 20 detected without native WebSocket support". Passing the
+// `ws` package as the realtime transport satisfies the constructor without
+// changing any query behaviour. Node 22+ has a global WebSocket and ignores
+// this, so the fix is forward-compatible.
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
+  realtime: { transport: ws },
 });
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */

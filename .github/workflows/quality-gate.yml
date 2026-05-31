@@ -165,8 +165,13 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING || secrets.NEXT_PUBLIC_SUPABASE_URL }}
 
       # ── Desktop Audit ────────────────────────────────────────────────────
+      # No `if: always()` — the quality-desktop project is only registered when
+      # QA_MODE_LEVEL is set (HAS_QUALITY in playwright.config.ts). That value
+      # comes from the "Determine mode" step, which is skipped if seeding fails.
+      # Running this on failure would surface a misleading "project not found"
+      # error instead of the real seed failure, so it mirrors the Mobile Audit
+      # step and only runs when prior steps succeed.
       - name: Run Desktop Audit
-        if: always()
         working-directory: frontend
         run: npx playwright test --project=quality-desktop --reporter=html,list
         env:
