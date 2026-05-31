@@ -89,12 +89,12 @@ export const ProgressBar = React.memo(function ProgressBar({
       <div
         aria-hidden="true"
         className={[
-          "w-full overflow-hidden rounded-full bg-surface-muted",
+          "w-full overflow-hidden rounded-full border border-transparent bg-surface-muted/95 shadow-[0_2px_8px_rgba(15,23,42,0.06)]",
           TRACK_SIZES[size],
         ].join(" ")}
       >
         <div
-          className={`h-full rounded-full transition-[width] duration-slow ease-decelerate ${barColor}`}
+          className={`h-full rounded-full shadow-[0_1px_4px_rgba(15,23,42,0.14)] transition-[width] duration-slow ease-decelerate motion-reduce:transition-none ${barColor}`}
           style={{ width: `${clamped}%` }}
         />
       </div>

@@ -3,6 +3,8 @@
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Disclaimer } from "@/components/learn/Disclaimer";
+import { LearnArticleShell } from "@/components/learn/LearnArticleShell";
+import { LearnSectionCard } from "@/components/learn/LearnSectionCard";
 import { LearnSidebar } from "@/components/learn/LearnSidebar";
 import { LearnTopicNav } from "@/components/learn/LearnTopicNav";
 import { SourceCitation } from "@/components/learn/SourceCitation";
@@ -30,47 +32,38 @@ export default function HealthyChoicesPage() {
             {t("learn.backToHub")}
           </Link>
 
-          <article className="prose max-w-none">
-            <h1 className="flex items-center gap-2">
-              <Heart
-                size={28}
-                aria-hidden="true"
-                className="inline-block"
-              />{" "}
-              {t("learn.healthyChoices.title")}
-            </h1>
+          <LearnArticleShell
+            icon={Heart}
+            title={t("learn.healthyChoices.title")}
+            summary={t("learn.healthyChoices.summary")}
+          >
+            <LearnSectionCard title={t("learn.healthyChoices.startSmallTitle")}>
+              <p>{t("learn.healthyChoices.startSmallText")}</p>
+            </LearnSectionCard>
 
-            <div className="rounded-lg bg-brand-subtle p-4 not-prose">
-              <p className="text-sm font-medium text-brand">
-                {t("learn.tldr")}
-              </p>
-              <p className="mt-1 text-sm text-brand">
-                {t("learn.healthyChoices.summary")}
-              </p>
-            </div>
+            <LearnSectionCard title={t("learn.healthyChoices.compareTitle")}>
+              <p>{t("learn.healthyChoices.compareText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.healthyChoices.startSmallTitle")}</h2>
-            <p>{t("learn.healthyChoices.startSmallText")}</p>
+            <LearnSectionCard title={t("learn.healthyChoices.readLabelsTitle")}>
+              <p>{t("learn.healthyChoices.readLabelsText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.healthyChoices.compareTitle")}</h2>
-            <p>{t("learn.healthyChoices.compareText")}</p>
+            <LearnSectionCard title={t("learn.healthyChoices.processingTitle")}>
+              <p>{t("learn.healthyChoices.processingText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.healthyChoices.readLabelsTitle")}</h2>
-            <p>{t("learn.healthyChoices.readLabelsText")}</p>
+            <LearnSectionCard title={t("learn.healthyChoices.allergenTitle")}>
+              <p>{t("learn.healthyChoices.allergenText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.healthyChoices.processingTitle")}</h2>
-            <p>{t("learn.healthyChoices.processingText")}</p>
+            <LearnSectionCard title={t("learn.healthyChoices.habitsTitle")}>
+              <p>{t("learn.healthyChoices.habitsText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.healthyChoices.allergenTitle")}</h2>
-            <p>{t("learn.healthyChoices.allergenText")}</p>
+            <Disclaimer />
 
-            <h2>{t("learn.healthyChoices.habitsTitle")}</h2>
-            <p>{t("learn.healthyChoices.habitsText")}</p>
-
-            <Disclaimer className="mt-8" />
-
-            <h2>{t("learn.sourcesTitle")}</h2>
-            <div className="not-prose space-y-2">
+            <LearnSectionCard title={t("learn.sourcesTitle")}>
               <SourceCitation
                 author="WHO"
                 title="Healthy diet fact sheet"
@@ -82,10 +75,10 @@ export default function HealthyChoicesPage() {
                 title="Dietary reference values for nutrients"
                 url="https://www.efsa.europa.eu/en/topics/topic/dietary-reference-values"
               />
-            </div>
+            </LearnSectionCard>
 
             <LearnTopicNav />
-          </article>
+          </LearnArticleShell>
         </main>
       </div>
 

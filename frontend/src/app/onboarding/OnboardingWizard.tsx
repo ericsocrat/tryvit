@@ -159,7 +159,7 @@ export function OnboardingWizard() {
   return (
     <div
       data-testid="onboarding-wizard"
-      className="rounded-2xl border border-border bg-surface px-4 py-5 shadow-sm sm:px-6 sm:py-6"
+      className="rounded-3xl border border-border/70 bg-surface/95 px-4 py-5 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-sm sm:px-6 sm:py-6 dark:shadow-[0_24px_64px_rgba(0,0,0,0.30)]"
     >
       {/* Progress bar (shown on all steps) */}
       <OnboardingProgress currentStep={step + 1} totalSteps={TOTAL_STEPS} />

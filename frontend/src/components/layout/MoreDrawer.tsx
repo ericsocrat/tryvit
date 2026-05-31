@@ -161,7 +161,7 @@ export function MoreDrawer({ open, onClose }: Readonly<MoreDrawerProps>) {
     /* Backdrop */
     <div
       className={`fixed inset-0 z-50 transition-colors duration-200 ${
-        animating ? "bg-black/40" : "bg-transparent"
+        animating ? "bg-black/45" : "bg-transparent"
       }`}
     >
       <button
@@ -176,7 +176,7 @@ export function MoreDrawer({ open, onClose }: Readonly<MoreDrawerProps>) {
         ref={drawerRef}
         open
         aria-label={t("a11y.moreNavigation")}
-        className={`fixed bottom-0 left-0 right-0 z-50 m-0 w-full max-w-full transform rounded-t-2xl border-t border-border bg-surface p-0 pb-[env(safe-area-inset-bottom)] transition-transform duration-200 ease-out ${
+        className={`fixed bottom-0 left-0 right-0 z-50 m-0 w-full max-w-full transform rounded-t-3xl border-t border-border/70 bg-surface/95 p-0 pb-[env(safe-area-inset-bottom)] shadow-2xl backdrop-blur-sm transition-transform duration-200 ease-out ${
           animating ? "translate-y-0" : "translate-y-full"
         }`}
         onTouchStart={handleTouchStart}
@@ -185,18 +185,18 @@ export function MoreDrawer({ open, onClose }: Readonly<MoreDrawerProps>) {
       >
         {/* Drag handle */}
         <div className="flex justify-center pt-2 pb-1">
-          <div className="h-1 w-8 rounded-full bg-border" />
+          <div className="h-1 w-10 rounded-full bg-border" />
         </div>
 
         {/* Header + close */}
-        <div className="flex items-center justify-between px-4 py-2">
-          <span className="text-sm font-semibold text-foreground">
+        <div className="flex items-center justify-between border-b border-border/70 px-4 py-2.5">
+          <span className="text-sm font-semibold tracking-wide text-foreground">
             {t("nav.more")}
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="touch-target rounded-full p-1.5 text-foreground-secondary hover:bg-surface-muted hover:text-foreground transition-colors"
+            className="touch-target rounded-full p-1.5 text-foreground-secondary transition-colors hover:bg-surface-muted hover:text-foreground"
             aria-label={t("common.close")}
           >
             <Icon icon={X} size="md" />
@@ -205,17 +205,17 @@ export function MoreDrawer({ open, onClose }: Readonly<MoreDrawerProps>) {
 
         {/* Grouped nav items */}
         <nav aria-label={t("a11y.moreNavigation")}>
-          <div className="px-2 pb-4">
+          <div className="space-y-2 px-2 pb-4 pt-2">
             {DRAWER_SECTIONS.filter(
               (s) => s.labelKey !== "nav.admin" || isAdmin,
             ).map((section, sectionIdx) => (
-              <div key={section.labelKey}>
+              <div key={section.labelKey} className="rounded-2xl border border-border/60 bg-surface-subtle/50 px-1.5 py-1">
                 {/* Section divider (not before first section) */}
                 {sectionIdx > 0 && (
-                  <div className="mx-3 my-1.5 border-t border-border" />
+                  <div className="mx-2 mb-2 border-t border-border/60" />
                 )}
                 {/* Section label */}
-                <p className="px-3 pt-2 pb-1 text-xs font-semibold uppercase tracking-wider text-foreground-muted">
+                <p className="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-foreground-muted">
                   {t(section.labelKey)}
                 </p>
                 <ul>
@@ -228,9 +228,9 @@ export function MoreDrawer({ open, onClose }: Readonly<MoreDrawerProps>) {
                           href={item.href}
                           onClick={onClose}
                           aria-current={isActive ? "page" : undefined}
-                          className={`flex min-h-[48px] items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors ${
+                          className={`flex min-h-12 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                             isActive
-                              ? "border-l-3 border-brand bg-brand-subtle text-brand font-semibold"
+                              ? "border-l-3 border-brand bg-brand-subtle text-brand font-semibold shadow-sm"
                               : "text-foreground-secondary hover:bg-surface-muted hover:text-foreground"
                           }`}
                         >

@@ -11,9 +11,9 @@
 
 "use client";
 
-import { useCallback, useRef } from "react";
-import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { getTurnstileSiteKey } from "@/lib/turnstile";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { useCallback, useRef } from "react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -65,8 +65,15 @@ export function TurnstileWidget({
     ref.current?.reset();
   }, [onExpire]);
 
+  const wrapperClassName = [
+    "flex w-full justify-center rounded-xl border border-default bg-surface/95 px-2 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color] motion-reduce:transition-none",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className={className} data-testid="turnstile-widget">
+    <div className={wrapperClassName} data-testid="turnstile-widget">
       <Turnstile
         ref={ref}
         siteKey={siteKey}

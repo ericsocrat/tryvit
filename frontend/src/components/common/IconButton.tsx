@@ -30,12 +30,12 @@ export interface IconButtonProps extends Omit<
 
 const VARIANT_CLASSES: Record<IconButtonVariant, string> = {
   primary:
-    "bg-brand text-foreground-inverse hover:bg-brand-hover focus-visible:outline-brand",
+    "bg-brand text-foreground-inverse shadow-[0_4px_12px_rgba(15,23,42,0.14)] hover:bg-brand-hover",
   secondary:
-    "border border-strong bg-surface text-foreground-secondary hover:bg-surface-subtle focus-visible:outline-brand",
+    "border border-strong bg-surface/95 text-foreground-secondary hover:bg-surface-subtle",
   ghost:
-    "text-foreground-secondary hover:bg-surface-subtle focus-visible:outline-brand",
-  danger: "text-error hover:bg-error/10 focus-visible:outline-error",
+    "text-foreground-secondary hover:bg-surface-subtle",
+  danger: "text-error hover:bg-error/10",
 };
 
 const SIZE_CLASSES: Record<IconButtonSize, string> = {
@@ -65,8 +65,8 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
         aria-label={label}
         disabled={disabled}
         className={[
-          "inline-flex items-center justify-center transition-colors",
-          "focus-visible:outline-2 focus-visible:outline-offset-2",
+          "inline-flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[border-color,box-shadow,background-color,color] motion-reduce:transition-none",
+          "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/30",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           "touch-target-expanded",
           VARIANT_CLASSES[variant],

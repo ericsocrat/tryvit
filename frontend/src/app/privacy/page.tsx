@@ -2,91 +2,134 @@
 
 // ─── Privacy policy ──────────────────────────────────────────────────────────
 
-import { Footer } from "@/components/layout/Footer";
-import { Header } from "@/components/layout/Header";
+import { LegalPageShell } from "@/components/layout/LegalPageShell";
 import { useTranslation } from "@/lib/i18n";
 import { Camera, Eye, ShieldCheck, Smartphone, Trash2 } from "lucide-react";
 
 export default function PrivacyPage() {
   const { t } = useTranslation();
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
+    <LegalPageShell
+      title={t("legal.privacyTitle")}
+      intro="A concise summary of what we collect, why we collect it, and how image processing stays on your device."
+      updatedText={t("legal.lastUpdated")}
+    >
+      <section className="rounded-2xl border border-strong/20 bg-background/80 p-5 shadow-sm dark:bg-white/[0.03] sm:p-6">
+        <h2 className="text-lg font-semibold text-foreground">
+          {t("legal.dataWeCollect")}
+        </h2>
+        <p className="mt-3 leading-7 text-foreground-secondary">
+          {t("legal.dataWeCollectText")}
+        </p>
+      </section>
 
-      <main
-        id="main-content"
-        className="flex flex-1 flex-col items-center px-4 py-16"
-      >
-        <div className="prose max-w-lg">
-          <h1>{t("legal.privacyTitle")}</h1>
-          <p className="text-sm text-foreground-secondary">
-            {t("legal.lastUpdated")}
-          </p>
+      <section className="rounded-2xl border border-strong/20 bg-background/80 p-5 shadow-sm dark:bg-white/[0.03] sm:p-6">
+        <h2 className="text-lg font-semibold text-foreground">
+          {t("legal.howWeUse")}
+        </h2>
+        <p className="mt-3 leading-7 text-foreground-secondary">
+          {t("legal.howWeUseText")}
+        </p>
+      </section>
 
-          <h2>{t("legal.dataWeCollect")}</h2>
-          <p>{t("legal.dataWeCollectText")}</p>
+      <section className="rounded-2xl border border-strong/20 bg-background/80 p-5 shadow-sm dark:bg-white/[0.03] sm:p-6">
+        <h2 className="text-lg font-semibold text-foreground">
+          {t("legal.dataStorage")}
+        </h2>
+        <p className="mt-3 leading-7 text-foreground-secondary">
+          {t("legal.dataStorageText")}
+        </p>
+      </section>
 
-          <h2>{t("legal.howWeUse")}</h2>
-          <p>{t("legal.howWeUseText")}</p>
+      <section className="rounded-2xl border border-strong/20 bg-background/80 p-5 shadow-sm dark:bg-white/[0.03] sm:p-6">
+        <h2 className="text-lg font-semibold text-foreground">
+          {t("legal.imageProcessing")}
+        </h2>
 
-          <h2>{t("legal.dataStorage")}</h2>
-          <p>{t("legal.dataStorageText")}</p>
+        <div className="mt-5 grid gap-5 lg:grid-cols-2">
+          <div className="space-y-4 rounded-2xl bg-surface-subtle/60 p-5">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">
+              {t("legal.imageWhatWeProcess")}
+            </h3>
+            <p className="leading-7 text-foreground-secondary">
+              {t("legal.imageWhatWeProcessText")}
+            </p>
 
-          {/* ── Image Processing Policy (#56) ─────────────────────────── */}
-          <h2>{t("legal.imageProcessing")}</h2>
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">
+                {t("legal.imageHowWeProcess")}
+              </h3>
+              <ul className="space-y-3 text-sm leading-6 text-foreground-secondary">
+                {(
+                  [
+                    { icon: Smartphone, key: "legal.imageOnDevice" },
+                    { icon: ShieldCheck, key: "legal.imageNeverUploaded" },
+                    { icon: Trash2, key: "legal.imageNotStored" },
+                    { icon: Eye, key: "legal.imageOnlyText" },
+                  ] as const
+                ).map(({ icon: Icon, key }) => (
+                  <li key={key} className="flex items-start gap-3">
+                    <span className="mt-0.5 rounded-full bg-brand/10 p-1.5 text-brand">
+                      <Icon size={14} aria-hidden="true" />
+                    </span>
+                    <span>{t(key)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
 
-          <h3>{t("legal.imageWhatWeProcess")}</h3>
-          <p>{t("legal.imageWhatWeProcessText")}</p>
-
-          <h3>{t("legal.imageHowWeProcess")}</h3>
-          <ul className="space-y-2">
-            {(
-              [
-                { icon: Smartphone, key: "legal.imageOnDevice" },
-                { icon: ShieldCheck, key: "legal.imageNeverUploaded" },
-                { icon: Trash2, key: "legal.imageNotStored" },
-                { icon: Eye, key: "legal.imageOnlyText" },
-              ] as const
-            ).map(({ icon: Icon, key }) => (
-              <li key={key} className="flex items-start gap-2">
-                <Icon
-                  size={16}
-                  className="mt-0.5 shrink-0 text-brand"
-                  aria-hidden="true"
-                />
-                <span>{t(key)}</span>
-              </li>
-            ))}
-          </ul>
-
-          <h3>{t("legal.imageCamera")}</h3>
-          <ul className="space-y-1">
-            <li className="flex items-start gap-2">
-              <Camera
-                size={16}
-                className="mt-0.5 shrink-0 text-brand"
-                aria-hidden="true"
-              />
+          <div className="space-y-4 rounded-2xl border border-brand/15 bg-brand/5 p-5 dark:bg-brand/10">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">
+              {t("legal.imageCamera")}
+            </h3>
+            <p className="flex items-start gap-3 leading-7 text-foreground-secondary">
+              <span className="mt-0.5 rounded-full bg-brand/10 p-1.5 text-brand">
+                <Camera size={14} aria-hidden="true" />
+              </span>
               <span>{t("legal.imageCameraText")}</span>
-            </li>
-          </ul>
+            </p>
 
-          <h3>{t("legal.imageDataCollected")}</h3>
-          <p>{t("legal.imageDataCollectedText")}</p>
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">
+                {t("legal.imageDataCollected")}
+              </h3>
+              <p className="leading-7 text-foreground-secondary">
+                {t("legal.imageDataCollectedText")}
+              </p>
+            </div>
 
-          <h3>{t("legal.imageLegalBasis")}</h3>
-          <p>{t("legal.imageLegalBasisText")}</p>
-          {/* ── End Image Processing Policy ───────────────────────────── */}
-
-          <h2>{t("legal.yourRights")}</h2>
-          <p>{t("legal.yourRightsText")}</p>
-
-          <h2>{t("legal.contactSection")}</h2>
-          <p>{t("legal.contactText")}</p>
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">
+                {t("legal.imageLegalBasis")}
+              </h3>
+              <p className="leading-7 text-foreground-secondary">
+                {t("legal.imageLegalBasisText")}
+              </p>
+            </div>
+          </div>
         </div>
-      </main>
+      </section>
 
-      <Footer />
-    </div>
+      <section className="grid gap-5 md:grid-cols-2">
+        <div className="rounded-2xl border border-strong/20 bg-background/80 p-5 shadow-sm dark:bg-white/[0.03] sm:p-6">
+          <h2 className="text-lg font-semibold text-foreground">
+            {t("legal.yourRights")}
+          </h2>
+          <p className="mt-3 leading-7 text-foreground-secondary">
+            {t("legal.yourRightsText")}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-strong/20 bg-background/80 p-5 shadow-sm dark:bg-white/[0.03] sm:p-6">
+          <h2 className="text-lg font-semibold text-foreground">
+            {t("legal.contactSection")}
+          </h2>
+          <p className="mt-3 leading-7 text-foreground-secondary">
+            {t("legal.contactText")}
+          </p>
+        </div>
+      </section>
+    </LegalPageShell>
   );
 }

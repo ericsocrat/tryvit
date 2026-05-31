@@ -2,12 +2,20 @@ import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SectionError } from "./SectionError";
 
+type SectionErrorTranslationKey =
+  | "sectionError.network"
+  | "sectionError.auth"
+  | "sectionError.server"
+  | "sectionError.unknown"
+  | "sectionError.labeledMessage"
+  | "common.tryAgain";
+
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
 vi.mock("@/lib/i18n", () => ({
   useTranslation: () => ({
     t: (key: string, params?: Record<string, string | number>) => {
-      const map: Record<string, string> = {
+      const map: Record<SectionErrorTranslationKey, string> = {
         "sectionError.network": "Couldn't load — check your connection",
         "sectionError.auth": "Session expired — sign in to continue",
         "sectionError.server": "Couldn't load — server error",
@@ -15,7 +23,7 @@ vi.mock("@/lib/i18n", () => ({
         "sectionError.labeledMessage": `${params?.label ?? ""} couldn't be loaded`,
         "common.tryAgain": "Try again",
       };
-      return map[key] ?? key;
+      return map[key as SectionErrorTranslationKey] ?? key;
     },
   }),
 }));
@@ -24,7 +32,7 @@ vi.mock("@/lib/error-classifier", () => ({
   classifyError: vi.fn().mockReturnValue("unknown"),
 }));
 
- 
+
 const { classifyError } = await import("@/lib/error-classifier");
 const mockClassify = vi.mocked(classifyError);
 

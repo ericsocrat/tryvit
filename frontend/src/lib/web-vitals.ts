@@ -31,6 +31,30 @@ export const WEB_VITAL_THRESHOLDS = {
  */
 export type VitalRating = "good" | "needs-improvement" | "poor";
 
+const SENTRY_SUPPRESSED_PATHS = new Set(["/auth/update-password"]);
+
+function rateCls(value: number): VitalRating {
+  if (value <= 0.1) return "good";
+  if (value <= 0.25) return "needs-improvement";
+  return "poor";
+}
+
+function rateInp(value: number): VitalRating {
+  if (value <= 200) return "good";
+  if (value <= 500) return "needs-improvement";
+  return "poor";
+}
+
+function rateLcp(value: number): VitalRating {
+  if (value <= 2500) return "good";
+  if (value <= 4000) return "needs-improvement";
+  return "poor";
+}
+
+function rateSimpleThreshold(value: number, threshold: number): VitalRating {
+  return value <= threshold ? "good" : "poor";
+}
+
 /**
  * Classify a web vital value against Google's Core Web Vitals thresholds.
  */
@@ -40,26 +64,35 @@ export function rateMetric(name: string, value: number): VitalRating {
   if (threshold === undefined) return "good";
 
   if (name === "CLS") {
-    if (value <= 0.1) return "good";
-    if (value <= 0.25) return "needs-improvement";
-    return "poor";
+    return rateCls(value);
   }
 
   if (name === "INP") {
-    if (value <= 200) return "good";
-    if (value <= 500) return "needs-improvement";
-    return "poor";
+    return rateInp(value);
   }
 
   if (name === "LCP") {
-    if (value <= 2500) return "good";
-    if (value <= 4000) return "needs-improvement";
-    return "poor";
+    return rateLcp(value);
   }
 
   // FCP and TTFB: simple threshold check
-  if (value <= threshold) return "good";
-  return "poor";
+  return rateSimpleThreshold(value, threshold);
+}
+
+/**
+ * Decide whether a web vital should be reported to Sentry on the current route.
+ * Some auth recovery pages are intentionally excluded because they generate
+ * noisy TTFB/FCP signals that do not reflect app regressions.
+ */
+export function shouldCaptureWebVital(
+  pathname: string,
+  metricName: string,
+): boolean {
+  if (SENTRY_SUPPRESSED_PATHS.has(pathname) && (metricName === "TTFB" || metricName === "FCP")) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -79,7 +112,11 @@ export type MetricHandler = (metric: {
  */
 export const defaultMetricHandler: MetricHandler = (metric) => {
   // Dynamic import avoids pulling Sentry into non-instrumented builds
-  if (typeof window !== "undefined") {
+  if (process.env.NODE_ENV === "production" && globalThis.window) {
+    if (!shouldCaptureWebVital(globalThis.window.location.pathname, metric.name)) {
+      return;
+    }
+
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const Sentry = require("@sentry/nextjs");
@@ -123,7 +160,7 @@ export const defaultMetricHandler: MetricHandler = (metric) => {
 export function reportWebVitals(
   handler: MetricHandler = defaultMetricHandler,
 ): void {
-  if (typeof window === "undefined") return;
+  if (!globalThis.window) return;
 
   // Dynamic import so the module is only loaded in the browser
   import("web-vitals").then(({ onCLS, onINP, onLCP, onTTFB, onFCP }) => {

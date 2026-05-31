@@ -33,16 +33,16 @@ export function GoalsCategoriesStep({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-7">
       {/* ── Health Goals section ── */}
-      <h1 className="mb-2 text-2xl font-bold text-foreground">
+      <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
         {t("onboarding.healthGoalsTitle")}
       </h1>
-      <p className="mb-6 text-sm text-foreground-secondary">
+      <p className="max-w-md text-sm text-foreground-secondary sm:text-base">
         {t("onboarding.healthGoalsSubtitle")}
       </p>
 
-      <section className="space-y-3 rounded-2xl border border-border bg-surface-subtle/60 p-4 sm:p-5">
+      <section className="space-y-3 rounded-2xl border border-border/70 bg-surface-subtle/70 p-4 shadow-sm sm:p-5">
         {HEALTH_GOALS.map((goal) => (
           <button
             type="button"
@@ -67,8 +67,8 @@ export function GoalsCategoriesStep({
       </section>
 
       {/* ── Categories section ── */}
-      <section className="rounded-2xl border border-border bg-surface-subtle/60 p-4 sm:p-5">
-        <h2 className="mb-2 text-lg font-semibold text-foreground">
+      <section className="rounded-2xl border border-border/70 bg-surface-subtle/70 p-4 shadow-sm sm:p-5">
+        <h2 className="mb-2 text-base font-semibold text-foreground sm:text-lg">
           {t("onboarding.categoriesTitle")}
         </h2>
         <p className="mb-4 text-sm text-foreground-secondary">
@@ -96,7 +96,7 @@ export function GoalsCategoriesStep({
         </div>
       </section>
 
-      <div className="mt-8 flex gap-3">
+      <div className="mt-1 flex gap-3">
         <Button type="button" variant="secondary" onClick={onBack} className="flex-1">
           {t("onboarding.back")}
         </Button>

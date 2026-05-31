@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import Image from "next/image";
 import {
-  CategoryIcon,
-  hasCategoryIcon,
+    CategoryIcon,
+    hasCategoryIcon,
 } from "@/components/common/CategoryIcon";
+import Image from "next/image";
+import { useState } from "react";
 
 // ─── Size presets for different contexts ────────────────────────────────────
 
@@ -53,7 +53,7 @@ export function ProductThumbnail({
 
   return (
     <div
-      className={`relative shrink-0 overflow-hidden rounded-lg bg-surface-muted ${preset.container}`}
+      className={`relative shrink-0 overflow-hidden rounded-xl border border-default bg-surface-muted/95 shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color] motion-reduce:transition-none ${preset.container}`}
       data-testid="product-thumbnail"
     >
       {showImage ? (

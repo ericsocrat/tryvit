@@ -73,7 +73,6 @@ async function captureScreenshot(
     fullPage: false,
     animations: "disabled",
   });
-   
   console.log(`  ✅ ${filepath}`);
 }
 
@@ -205,8 +204,6 @@ async function cleanupTestUser() {
 const changedPages = getChangedPages();
 const publicPages = changedPages.filter((p) => !p.auth);
 const authPages = changedPages.filter((p) => p.auth);
-
- 
 console.log(
   `\n📸 PR Screenshots: ${changedPages.length} page(s) to capture\n` +
     changedPages.map((p) => `  • ${p.label} → ${p.url}`).join("\n"),
@@ -283,7 +280,6 @@ if (authPages.length > 0) {
 
 if (changedPages.length === 0) {
   test("No pages to screenshot (no matching file changes detected)", () => {
-     
     console.log("ℹ️  No changed files matched any page pattern. Nothing to capture.");
     expect(changedPages).toHaveLength(0);
   });

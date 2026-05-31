@@ -34,7 +34,7 @@ function AllergenChip({ warning }: AllergenChipProps) {
 
   return (
     <span
-      className={`inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-xxs font-medium leading-tight ${style}`}
+      className={`inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-xxs font-medium leading-tight shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none ${style}`}
       title={tooltip}
       data-testid="allergen-chip"
     >
@@ -78,7 +78,7 @@ export function AllergenChips({ warnings }: AllergenChipsProps) {
       ))}
       {overflow > 0 && (
         <span
-          className="inline-flex items-center rounded-full bg-surface-muted px-1.5 py-0.5 text-xxs font-medium text-foreground-muted"
+          className="inline-flex items-center rounded-full border border-transparent bg-surface-muted/95 px-1.5 py-0.5 text-xxs font-medium text-foreground-muted shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none"
           title={warnings
             .slice(MAX_VISIBLE)
             .map((w) => t(w.labelKey))

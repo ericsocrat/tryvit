@@ -61,10 +61,10 @@ export function LearnSidebar({ className = "" }: LearnSidebarProps) {
       aria-label={t("learn.sidebarLabel")}
       className={`hidden md:block ${className}`}
     >
-      <div className="sticky top-20 space-y-1">
+      <div className="sticky top-20 rounded-2xl border border-border/70 bg-surface/80 p-3 shadow-sm backdrop-blur-sm">
         <Link
           href="/learn"
-          className={`block rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+          className={`block rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
             pathname === "/learn"
               ? "bg-brand-subtle text-brand"
               : "text-foreground-secondary hover:bg-surface-subtle hover:text-foreground"
@@ -74,7 +74,7 @@ export function LearnSidebar({ className = "" }: LearnSidebarProps) {
           {t("learn.hubTitle")}
         </Link>
 
-        <div className="my-2 border-t" />
+        <div className="my-3 border-t border-border/70" />
 
         {TOPICS.map(({ slug, labelKey, icon: TopicIcon }) => {
           const href = `/learn/${slug}`;
@@ -83,7 +83,7 @@ export function LearnSidebar({ className = "" }: LearnSidebarProps) {
             <Link
               key={slug}
               href={href}
-              className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
+              className={`block rounded-xl px-3 py-2 text-sm transition-colors ${
                 isActive
                   ? "bg-brand-subtle font-medium text-brand"
                   : "text-foreground-secondary hover:bg-surface-subtle hover:text-foreground"

@@ -30,12 +30,14 @@ interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
+type ConfirmDialogInnerProps = Omit<ConfirmDialogProps, "open">;
+
 /**
  * Conditionally rendered wrapper — prevents closed <dialog> elements from
  * expanding the mobile layout viewport on Android Chrome. See PR #92.
  */
-export function ConfirmDialog(props: Readonly<ConfirmDialogProps>) {
-  if (!props.open) return null;
+export function ConfirmDialog({ open, ...props }: Readonly<ConfirmDialogProps>) {
+  if (!open) return null;
   return <ConfirmDialogInner {...props} />;
 }
 
@@ -46,7 +48,7 @@ function ConfirmDialogInner({
   variant = "default",
   onConfirm,
   onCancel,
-}: Readonly<ConfirmDialogProps>) {
+}: Readonly<ConfirmDialogInnerProps>) {
   const { t } = useTranslation();
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -74,7 +76,7 @@ function ConfirmDialogInner({
     <dialog
       ref={dialogRef}
       aria-labelledby="confirm-dialog-title"
-      className="fixed inset-0 z-50 m-auto w-full max-w-sm rounded-2xl bg-surface p-6 shadow-xl backdrop:bg-black/30 open:animate-[dialogIn_200ms_var(--ease-decelerate)] open:backdrop:animate-[backdropIn_150ms_var(--ease-standard)]"
+      className="fixed inset-0 z-50 m-auto w-full max-w-sm rounded-2xl border border-default bg-surface/95 p-6 shadow-[0_20px_60px_rgba(15,23,42,0.24)] backdrop:bg-black/35 open:animate-[dialogIn_200ms_var(--ease-decelerate)] open:backdrop:animate-[backdropIn_150ms_var(--ease-standard)]"
     >
       <h3
         id="confirm-dialog-title"
@@ -83,10 +85,10 @@ function ConfirmDialogInner({
         {title}
       </h3>
       {description && (
-        <p className="mb-4 text-sm text-foreground-secondary">{description}</p>
+        <p className="mb-5 text-sm leading-relaxed text-foreground-secondary">{description}</p>
       )}
 
-      <div className="flex justify-end gap-2">
+      <div className="flex justify-end gap-2 pt-1">
         <Button variant="secondary" onClick={onCancel}>
           {t("common.cancel")}
         </Button>

@@ -183,10 +183,10 @@ describe("MoreDrawer", () => {
 
   // ─── Touch targets ─────────────────────────────────────────────────
 
-  it("nav items have min-h-[48px] for touch targets", () => {
+  it("nav items have min-h-12 for touch targets", () => {
     render(<MoreDrawer open={true} onClose={onClose} />);
     const categoriesLink = screen.getByText("Categories").closest("a");
-    expect(categoriesLink?.className).toContain("min-h-[48px]");
+    expect(categoriesLink?.className).toContain("min-h-12");
   });
 
   it("applies touch-target class to close button", () => {

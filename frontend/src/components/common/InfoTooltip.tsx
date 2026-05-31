@@ -11,14 +11,17 @@
 
 "use client";
 
+import { useTranslation } from "@/lib/i18n";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { type ReactNode } from "react";
-import { useTranslation } from "@/lib/i18n";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export type InfoTooltipSide = "top" | "right" | "bottom" | "left";
 export type InfoTooltipAlign = "start" | "center" | "end";
+interface TooltipParams {
+  [key: string]: string | number;
+}
 
 export interface InfoTooltipProps {
   /** i18n key for the tooltip main text — resolved via useTranslation. */
@@ -26,7 +29,7 @@ export interface InfoTooltipProps {
   /** Optional i18n key for a longer secondary description. */
   readonly descriptionKey?: string;
   /** Interpolation params for messageKey and descriptionKey. */
-  readonly params?: Record<string, string | number>;
+  readonly params?: Readonly<TooltipParams>;
   /** Raw content string (bypasses i18n). Use messageKey when possible. */
   readonly content?: string;
   /** Placement side relative to trigger. @default "top" */
@@ -77,8 +80,8 @@ export function InfoTooltip({
           sideOffset={6}
           className={[
             "z-50 rounded-md px-3 py-2 text-xs leading-relaxed",
-            "bg-surface-subtle text-foreground border border-strong shadow-md",
-            "animate-in fade-in-0 zoom-in-95",
+            "border border-default bg-surface/95 text-foreground shadow-[0_10px_28px_rgba(15,23,42,0.18)]",
+            "animate-in fade-in-0 zoom-in-95 motion-reduce:animate-none",
             "data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95",
             "data-[side=top]:slide-in-from-bottom-2",
             "data-[side=bottom]:slide-in-from-top-2",

@@ -89,7 +89,12 @@ export function ErrorIllustration({
 
   return (
     <div
-      className={className}
+      className={[
+        "inline-flex items-center justify-center rounded-xl bg-transparent",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
       data-testid="error-illustration"
       data-error-type={type}
     >
@@ -99,6 +104,7 @@ export function ErrorIllustration({
         width={width}
         height={height}
         priority={priority}
+        className="h-auto w-auto max-w-full select-none drop-shadow-[0_10px_24px_rgba(15,23,42,0.14)]"
         data-illustration={type}
       />
     </div>

@@ -23,9 +23,9 @@ vi.mock("node:fs", () => ({
 }));
 
 import {
-    cleanScreenshotDir,
-    getTimestamp,
-    takeScreenshot,
+  cleanScreenshotDir,
+  getTimestamp,
+  takeScreenshot,
 } from "../helpers/screenshot";
 
 /* ── getTimestamp ─────────────────────────────────────────────────────────── */

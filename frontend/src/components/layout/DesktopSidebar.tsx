@@ -148,7 +148,7 @@ export function DesktopSidebar() {
 
   return (
     <nav
-      className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-border bg-surface xl:flex"
+      className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-border/70 bg-surface/95 backdrop-blur-sm xl:flex"
       aria-label={t("a11y.sidebarNavigation")}
     >
       {/* Logo */}
@@ -182,11 +182,13 @@ export function DesktopSidebar() {
 
       {/* Divider + admin nav (access gated by middleware, visibility by admin store) */}
       {isAdmin && <div className="border-t border-border px-3 py-2">
-        <div className="mb-1 flex items-center gap-2 px-3 pt-1 pb-1.5">
+        <div className="mb-1 rounded-lg bg-surface-subtle/70 px-2 py-1.5">
+          <div className="flex items-center gap-2 px-1">
           <Icon icon={ShieldCheck} size="sm" className="text-foreground-tertiary" />
           <span className="text-xs font-semibold uppercase tracking-wider text-foreground-tertiary">
             {t("nav.admin")}
           </span>
+          </div>
         </div>
         {ADMIN_ITEMS.map((item) => {
           const label = t(item.labelKey);

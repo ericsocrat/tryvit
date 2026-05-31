@@ -17,6 +17,7 @@ import { InfoTooltip } from "./InfoTooltip";
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export type ConfidenceLevel = "high" | "medium" | "low";
+type ConfidenceLevelAlias = ConfidenceLevel | "verified" | "estimated";
 export type ConfidenceBadgeSize = "sm" | "md";
 
 export interface ConfidenceBadgeProps {
@@ -45,13 +46,20 @@ interface ConfidenceConfig {
 }
 
 /** Normalize DB assign_confidence() values to band keys. */
-const LEVEL_ALIASES: Record<string, ConfidenceLevel> = {
+const LEVEL_ALIASES: Record<ConfidenceLevelAlias, ConfidenceLevel> = {
   high: "high",
   verified: "high",
   medium: "medium",
   estimated: "medium",
   low: "low",
 };
+
+function normalizeConfidenceLevel(
+  level: string | null | undefined,
+): ConfidenceLevel | undefined {
+  if (!level) return undefined;
+  return LEVEL_ALIASES[level.toLowerCase() as ConfidenceLevelAlias];
+}
 
 const LEVEL_CONFIGS: Record<ConfidenceLevel, ConfidenceConfig> = {
   high: {
@@ -146,7 +154,7 @@ export const ConfidenceBadge = React.memo(function ConfidenceBadge({
   showTooltip = false,
   className = "",
 }: Readonly<ConfidenceBadgeProps>) {
-  const normalized = level ? LEVEL_ALIASES[level.toLowerCase()] : undefined;
+  const normalized = normalizeConfidenceLevel(level);
   const config = normalized ? LEVEL_CONFIGS[normalized] : FALLBACK;
   const showPercentage =
     percentage != null && percentage >= 0 && percentage <= 100;
@@ -157,7 +165,7 @@ export const ConfidenceBadge = React.memo(function ConfidenceBadge({
   const badge = (
     <span
       className={[
-        "inline-flex items-center gap-1 rounded-full font-medium whitespace-nowrap",
+        "inline-flex items-center gap-1 whitespace-nowrap rounded-full border border-transparent font-medium shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none",
         config.bg,
         config.text,
         SIZE_CLASSES[size],

@@ -13,7 +13,7 @@
 import { buttonClasses } from "@/components/common/Button";
 import { classifyError, type ErrorCategory } from "@/lib/error-classifier";
 import { useTranslation } from "@/lib/i18n";
-import { AlertTriangle, RefreshCw, WifiOff } from "lucide-react";
+import { AlertTriangle, RefreshCw, WifiOff, type LucideIcon } from "lucide-react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -28,7 +28,7 @@ export interface SectionErrorProps {
 
 // ─── Icon per error category ────────────────────────────────────────────────
 
-const CATEGORY_ICON: Record<ErrorCategory, typeof AlertTriangle> = {
+const CATEGORY_ICON: Record<ErrorCategory, LucideIcon> = {
   network: WifiOff,
   auth: AlertTriangle,
   server: AlertTriangle,
@@ -52,7 +52,7 @@ export function SectionError({ error, onRetry, label }: SectionErrorProps) {
 
   return (
     <div
-      className="my-4 flex flex-col items-center justify-center rounded-lg border border-dashed border-strong p-6 text-center"
+      className="my-4 flex flex-col items-center justify-center rounded-xl border border-dashed border-default bg-surface/95 p-6 text-center shadow-[0_8px_20px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none"
       role="alert"
       data-testid="section-error"
       data-error-category={category}
@@ -70,7 +70,7 @@ export function SectionError({ error, onRetry, label }: SectionErrorProps) {
       {onRetry && (
         <button
           onClick={onRetry}
-          className={buttonClasses("primary", "sm")}
+          className={`${buttonClasses("primary", "sm")} mt-3`}
           data-testid="section-error-retry"
         >
           <RefreshCw size={14} className="mr-1 inline" aria-hidden="true" />

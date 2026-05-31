@@ -3,6 +3,8 @@
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Disclaimer } from "@/components/learn/Disclaimer";
+import { LearnArticleShell } from "@/components/learn/LearnArticleShell";
+import { LearnSectionCard } from "@/components/learn/LearnSectionCard";
 import { LearnSidebar } from "@/components/learn/LearnSidebar";
 import { LearnTopicNav } from "@/components/learn/LearnTopicNav";
 import { SourceCitation } from "@/components/learn/SourceCitation";
@@ -18,14 +20,12 @@ export default function ConfidencePage() {
   const levels: { key: string; color: string; icon: LucideIcon }[] = [
     {
       key: "levelVerified",
-      color:
-        "bg-success-bg border-success-border",
+      color: "bg-success-bg border-success-border",
       icon: BadgeCheck,
     },
     {
       key: "levelEstimated",
-      color:
-        "bg-warning-bg border-warning-border",
+      color: "bg-warning-bg border-warning-border",
       icon: Ruler,
     },
     {
@@ -50,53 +50,43 @@ export default function ConfidencePage() {
             {t("learn.backToHub")}
           </Link>
 
-          <article className="prose max-w-none">
-            <h1 className="flex items-center gap-2">
-              <BadgeCheck
-                size={28}
-                aria-hidden="true"
-                className="inline-block"
-              />{" "}
-              {t("learn.confidence.title")}
-            </h1>
+          <LearnArticleShell
+            icon={BadgeCheck}
+            title={t("learn.confidence.title")}
+            summary={t("learn.confidence.summary")}
+          >
+            <LearnSectionCard title={t("learn.confidence.whyTitle")}>
+              <p>{t("learn.confidence.whyText")}</p>
+            </LearnSectionCard>
 
-            <div className="rounded-lg bg-brand-subtle p-4 not-prose">
-              <p className="text-sm font-medium text-brand">
-                {t("learn.tldr")}
-              </p>
-              <p className="mt-1 text-sm text-brand">
-                {t("learn.confidence.summary")}
-              </p>
-            </div>
+            <LearnSectionCard title={t("learn.confidence.levelsTitle")}>
+              <div className="space-y-3">
+                {levels.map(({ key, color, icon: LevelIcon }) => (
+                  <div key={key} className={`rounded-lg border p-4 ${color}`}>
+                    <p className="flex items-center gap-2 text-sm text-foreground">
+                      <LevelIcon size={16} aria-hidden="true" />
+                      {t(`learn.confidence.${key}`)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </LearnSectionCard>
 
-            <h2>{t("learn.confidence.whyTitle")}</h2>
-            <p>{t("learn.confidence.whyText")}</p>
+            <LearnSectionCard title={t("learn.confidence.completenessTitle")}>
+              <p>{t("learn.confidence.completenessText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.confidence.levelsTitle")}</h2>
-            <div className="not-prose space-y-3">
-              {levels.map(({ key, color, icon: LevelIcon }) => (
-                <div key={key} className={`rounded-lg border p-4 ${color}`}>
-                  <p className="flex items-center gap-2 text-sm text-foreground">
-                    <LevelIcon size={16} aria-hidden="true" />{" "}
-                    {t(`learn.confidence.${key}`)}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <LearnSectionCard title={t("learn.confidence.howWeImproveTitle")}>
+              <p>{t("learn.confidence.howWeImproveText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.confidence.completenessTitle")}</h2>
-            <p>{t("learn.confidence.completenessText")}</p>
+            <LearnSectionCard title={t("learn.confidence.whatYouCanDoTitle")}>
+              <p>{t("learn.confidence.whatYouCanDoText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.confidence.howWeImproveTitle")}</h2>
-            <p>{t("learn.confidence.howWeImproveText")}</p>
+            <Disclaimer />
 
-            <h2>{t("learn.confidence.whatYouCanDoTitle")}</h2>
-            <p>{t("learn.confidence.whatYouCanDoText")}</p>
-
-            <Disclaimer className="mt-8" />
-
-            <h2>{t("learn.sourcesTitle")}</h2>
-            <div className="not-prose space-y-2">
+            <LearnSectionCard title={t("learn.sourcesTitle")}>
               <SourceCitation
                 author="EFSA"
                 title="Guidance on the assessment of the safety of feed additives"
@@ -107,10 +97,10 @@ export default function ConfidencePage() {
                 title="Data quality framework and completeness metrics"
                 url="https://wiki.openfoodfacts.org/Data_quality"
               />
-            </div>
+            </LearnSectionCard>
 
             <LearnTopicNav />
-          </article>
+          </LearnArticleShell>
         </main>
       </div>
 

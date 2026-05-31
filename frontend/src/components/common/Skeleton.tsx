@@ -67,7 +67,7 @@ export function Skeleton({
         {Array.from({ length: lines }, (_, i) => (
           <div
             key={i}
-            className="skeleton"
+            className="skeleton rounded-[var(--radius-md)] motion-reduce:animate-none"
             style={{
               ...style,
               // Last line is shorter for a natural look
@@ -80,7 +80,11 @@ export function Skeleton({
   }
 
   return (
-    <div className={`skeleton ${className}`} style={style} aria-hidden="true" />
+    <div
+      className={`skeleton rounded-[var(--radius-md)] motion-reduce:animate-none ${className}`}
+      style={style}
+      aria-hidden="true"
+    />
   );
 }
 
@@ -101,7 +105,11 @@ export function SkeletonContainer({
   children,
 }: Readonly<SkeletonContainerProps>) {
   return (
-    <output aria-busy="true" aria-label={label} className={className}>
+    <output
+      aria-busy="true"
+      aria-label={label}
+      className={`text-foreground-muted ${className}`}
+    >
       {children}
       <span className="sr-only">{label}</span>
     </output>

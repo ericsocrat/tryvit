@@ -1,8 +1,8 @@
 // ─── Learn pages compliance tests ─────────────────────────────────────────
 // Validates /learn page structure, components, i18n keys, and metadata.
 
-import { existsSync, readFileSync } from "fs";
-import { join } from "path";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const frontendDir = join(__dirname, "../..");
@@ -54,6 +54,14 @@ describe("Learn page files", () => {
 describe("Learn components", () => {
   it("Disclaimer component exists", () => {
     expect(existsSync(join(componentsDir, "Disclaimer.tsx"))).toBe(true);
+  });
+
+  it("LearnArticleShell component exists", () => {
+    expect(existsSync(join(componentsDir, "LearnArticleShell.tsx"))).toBe(true);
+  });
+
+  it("LearnSectionCard component exists", () => {
+    expect(existsSync(join(componentsDir, "LearnSectionCard.tsx"))).toBe(true);
   });
 
   it("SourceCitation component exists", () => {
@@ -148,6 +156,14 @@ describe("Topic pages use shared components", () => {
       expect(page).toContain("LearnSidebar");
     });
 
+    it(`${topic} uses LearnArticleShell`, () => {
+      expect(page).toContain("LearnArticleShell");
+    });
+
+    it(`${topic} uses LearnSectionCard`, () => {
+      expect(page).toContain("LearnSectionCard");
+    });
+
     it(`${topic} uses Disclaimer`, () => {
       expect(page).toContain("Disclaimer");
     });
@@ -161,8 +177,8 @@ describe("Topic pages use shared components", () => {
       expect(page).toContain('href="/learn"');
     });
 
-    it(`${topic} uses article element`, () => {
-      expect(page).toContain("<article");
+    it(`${topic} uses shared article shell`, () => {
+      expect(page).toContain("LearnArticleShell");
     });
   }
 });

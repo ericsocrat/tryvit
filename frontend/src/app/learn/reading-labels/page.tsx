@@ -3,6 +3,8 @@
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Disclaimer } from "@/components/learn/Disclaimer";
+import { LearnArticleShell } from "@/components/learn/LearnArticleShell";
+import { LearnSectionCard } from "@/components/learn/LearnSectionCard";
 import { LearnSidebar } from "@/components/learn/LearnSidebar";
 import { LearnTopicNav } from "@/components/learn/LearnTopicNav";
 import { SourceCitation } from "@/components/learn/SourceCitation";
@@ -36,45 +38,38 @@ export default function ReadingLabelsPage() {
             {t("learn.backToHub")}
           </Link>
 
-          <article className="prose max-w-none">
-            <h1 className="flex items-center gap-2">
-              <Tag size={28} aria-hidden="true" className="inline-block" />{" "}
-              {t("learn.readingLabels.title")}
-            </h1>
+          <LearnArticleShell
+            icon={Tag}
+            title={t("learn.readingLabels.title")}
+            summary={t("learn.readingLabels.summary")}
+          >
+            <LearnSectionCard title={t("learn.readingLabels.nutritionTableTitle")}>
+              <p>{t("learn.readingLabels.nutritionTableText")}</p>
+            </LearnSectionCard>
 
-            <div className="rounded-lg bg-brand-subtle p-4 not-prose">
-              <p className="text-sm font-medium text-brand">
-                {t("learn.tldr")}
-              </p>
-              <p className="mt-1 text-sm text-brand">
-                {t("learn.readingLabels.summary")}
-              </p>
-            </div>
+            <LearnSectionCard title={t("learn.readingLabels.per100gTitle")}>
+              <p>{t("learn.readingLabels.per100gText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.readingLabels.nutritionTableTitle")}</h2>
-            <p>{t("learn.readingLabels.nutritionTableText")}</p>
+            <LearnSectionCard title={t("learn.readingLabels.mandatoryTitle")}>
+              <ol className="space-y-2 pl-5">
+                {mandatoryItems.map((key) => (
+                  <li key={key}>{t(`learn.readingLabels.${key}`)}</li>
+                ))}
+              </ol>
+            </LearnSectionCard>
 
-            <h2>{t("learn.readingLabels.per100gTitle")}</h2>
-            <p>{t("learn.readingLabels.per100gText")}</p>
+            <LearnSectionCard title={t("learn.readingLabels.tipsTitle")}>
+              <ul className="space-y-2 pl-5">
+                {tips.map((key) => (
+                  <li key={key}>{t(`learn.readingLabels.${key}`)}</li>
+                ))}
+              </ul>
+            </LearnSectionCard>
 
-            <h2>{t("learn.readingLabels.mandatoryTitle")}</h2>
-            <ol>
-              {mandatoryItems.map((key) => (
-                <li key={key}>{t(`learn.readingLabels.${key}`)}</li>
-              ))}
-            </ol>
+            <Disclaimer />
 
-            <h2>{t("learn.readingLabels.tipsTitle")}</h2>
-            <ul>
-              {tips.map((key) => (
-                <li key={key}>{t(`learn.readingLabels.${key}`)}</li>
-              ))}
-            </ul>
-
-            <Disclaimer className="mt-8" />
-
-            <h2>{t("learn.sourcesTitle")}</h2>
-            <div className="not-prose space-y-2">
+            <LearnSectionCard title={t("learn.sourcesTitle")}>
               <SourceCitation
                 author="EU"
                 title="Regulation (EU) No 1169/2011 on the provision of food information to consumers"
@@ -86,10 +81,10 @@ export default function ReadingLabelsPage() {
                 title="Regulation (EU) No 1169/2011, Annex XIII — Reference intakes"
                 year={2011}
               />
-            </div>
+            </LearnSectionCard>
 
             <LearnTopicNav />
-          </article>
+          </LearnArticleShell>
         </main>
       </div>
 

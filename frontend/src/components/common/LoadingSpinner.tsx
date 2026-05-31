@@ -8,21 +8,25 @@ const SIZES = {
   lg: "h-12 w-12 border-4",
 } as const;
 
+type LoadingSpinnerSize = keyof typeof SIZES;
+
+interface LoadingSpinnerProps {
+  className?: string;
+  size?: LoadingSpinnerSize;
+}
+
 export function LoadingSpinner({
   className = "",
   size = "md",
-}: Readonly<{
-  className?: string;
-  size?: keyof typeof SIZES;
-}>) {
+}: Readonly<LoadingSpinnerProps>) {
   const { t } = useTranslation();
   return (
     <output
-      className={`flex items-center justify-center ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-full border border-transparent bg-surface/95 px-2 py-1 text-foreground-muted shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none ${className}`}
       aria-label={t("common.loading")}
     >
       <div
-        className={`animate-spin rounded-full border-surface-muted border-t-brand ${SIZES[size]}`}
+        className={`animate-spin rounded-full border-surface-muted border-t-brand shadow-[0_1px_3px_rgba(15,23,42,0.2)] transition-colors motion-reduce:animate-none ${SIZES[size]}`}
       />
       <span className="sr-only">{t("common.loading")}</span>
     </output>

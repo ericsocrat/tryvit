@@ -3,6 +3,8 @@
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { Disclaimer } from "@/components/learn/Disclaimer";
+import { LearnArticleShell } from "@/components/learn/LearnArticleShell";
+import { LearnSectionCard } from "@/components/learn/LearnSectionCard";
 import { LearnSidebar } from "@/components/learn/LearnSidebar";
 import { LearnTopicNav } from "@/components/learn/LearnTopicNav";
 import { SourceCitation } from "@/components/learn/SourceCitation";
@@ -53,60 +55,50 @@ export default function TryVitScorePage() {
             {t("learn.backToHub")}
           </Link>
 
-          <article className="prose max-w-none">
-            <h1 className="flex items-center gap-2">
-              <BarChart3
-                size={28}
-                aria-hidden="true"
-                className="inline-block"
-              />{" "}
-              {t("learn.tryvitScore.title")}
-            </h1>
+          <LearnArticleShell
+            icon={BarChart3}
+            title={t("learn.tryvitScore.title")}
+            summary={t("learn.tryvitScore.summary")}
+          >
+            <LearnSectionCard title={t("learn.tryvitScore.whatIsTitle")}>
+              <p>{t("learn.tryvitScore.whatIsText")}</p>
+            </LearnSectionCard>
 
-            <div className="rounded-lg bg-brand-subtle p-4 not-prose">
-              <p className="text-sm font-medium text-brand">
-                {t("learn.tldr")}
-              </p>
-              <p className="mt-1 text-sm text-brand">
-                {t("learn.tryvitScore.summary")}
-              </p>
-            </div>
-
-            <h2>{t("learn.tryvitScore.whatIsTitle")}</h2>
-            <p>{t("learn.tryvitScore.whatIsText")}</p>
-
-            <h2>{t("learn.tryvitScore.factorsTitle")}</h2>
-            <div className="not-prose space-y-2">
-              {penaltyFactors.map(({ key, weight }) => (
-                <div
-                  key={key}
-                  className="rounded-lg border bg-surface-subtle p-3"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm text-foreground">
-                        {t(`learn.tryvitScore.${key}`)}
-                      </p>
-                    </div>
-                    <div className="flex w-28 shrink-0 items-center gap-2">
-                      <div className="relative h-2 flex-1 rounded-full bg-(--color-border)">
-                        <div
-                          className="absolute left-0 top-0 h-full rounded-full bg-brand"
-                          style={{ width: `${(weight / 17) * 100}%` }}
-                        />
+            <LearnSectionCard title={t("learn.tryvitScore.factorsTitle")}>
+              <div className="space-y-3">
+                {penaltyFactors.map(({ key, weight }) => (
+                  <div
+                    key={key}
+                    className="rounded-xl border border-border/70 bg-surface-subtle p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-foreground">
+                          {t(`learn.tryvitScore.${key}`)}
+                        </p>
                       </div>
-                      <span className="w-8 text-right text-xs font-medium text-muted">
-                        {weight}%
-                      </span>
+                      <div className="flex w-28 shrink-0 items-center gap-2">
+                        <div className="relative h-2 flex-1 rounded-full bg-(--color-border)">
+                          <div
+                            className="absolute left-0 top-0 h-full rounded-full bg-brand"
+                            style={{ width: `${(weight / 17) * 100}%` }}
+                          />
+                        </div>
+                        <span className="w-8 text-right text-xs font-medium text-muted">
+                          {weight}%
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </LearnSectionCard>
 
-            <h3>{t("learn.tryvitScore.bonusTitle")}</h3>
-            <div className="not-prose">
-              <div className="rounded-lg border border-success-border bg-success-bg p-3">
+            <LearnSectionCard
+              title={t("learn.tryvitScore.bonusTitle")}
+              className="border-success-border bg-success-bg/70"
+            >
+              <div className="rounded-xl border border-success-border bg-success-bg p-4">
                 <div className="flex items-start gap-3">
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-foreground">
@@ -117,9 +109,7 @@ export default function TryVitScorePage() {
                     <div className="relative h-2 flex-1 rounded-full bg-(--color-border)">
                       <div
                         className="absolute left-0 top-0 h-full rounded-full bg-success"
-                        style={{
-                          width: `${(bonusFactor.weight / 17) * 100}%`,
-                        }}
+                        style={{ width: `${(bonusFactor.weight / 17) * 100}%` }}
                       />
                     </div>
                     <span className="w-8 text-right text-xs font-medium text-success-text">
@@ -128,32 +118,34 @@ export default function TryVitScorePage() {
                   </div>
                 </div>
               </div>
-            </div>
+            </LearnSectionCard>
 
-            <h2>{t("learn.tryvitScore.bandsTitle")}</h2>
-            <div className="not-prose space-y-2">
-              {bands.map((key, i) => (
-                <div
-                  key={key}
-                  className={`rounded-lg border p-3 ${bandColors[i]}`}
-                >
-                  <p className="text-sm font-medium text-foreground">
-                    {t(`learn.tryvitScore.${key}`)}
-                  </p>
-                </div>
-              ))}
-            </div>
+            <LearnSectionCard title={t("learn.tryvitScore.bandsTitle")}>
+              <div className="space-y-3">
+                {bands.map((key, i) => (
+                  <div
+                    key={key}
+                    className={`rounded-lg border p-4 ${bandColors[i]}`}
+                  >
+                    <p className="text-sm font-medium text-foreground">
+                      {t(`learn.tryvitScore.${key}`)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </LearnSectionCard>
 
-            <h2>{t("learn.tryvitScore.formulaTitle")}</h2>
-            <p>{t("learn.tryvitScore.formulaText")}</p>
+            <LearnSectionCard title={t("learn.tryvitScore.formulaTitle")}>
+              <p>{t("learn.tryvitScore.formulaText")}</p>
+            </LearnSectionCard>
 
-            <h2>{t("learn.tryvitScore.whyDifferentTitle")}</h2>
-            <p>{t("learn.tryvitScore.whyDifferentText")}</p>
+            <LearnSectionCard title={t("learn.tryvitScore.whyDifferentTitle")}>
+              <p>{t("learn.tryvitScore.whyDifferentText")}</p>
+            </LearnSectionCard>
 
-            <Disclaimer className="mt-8" />
+            <Disclaimer />
 
-            <h2>{t("learn.sourcesTitle")}</h2>
-            <div className="not-prose space-y-2">
+            <LearnSectionCard title={t("learn.sourcesTitle")}>
               <SourceCitation
                 author="WHO"
                 title="Guideline: Sugars intake for adults and children"
@@ -176,10 +168,10 @@ export default function TryVitScorePage() {
                 title="Regulation 2019/649 on trans fatty acids"
                 year={2019}
               />
-            </div>
+            </LearnSectionCard>
 
             <LearnTopicNav />
-          </article>
+          </LearnArticleShell>
         </main>
       </div>
 

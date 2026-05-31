@@ -14,6 +14,14 @@ import React, { useId, type ReactElement } from "react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
+interface FormFieldChildProps {
+  id?: string;
+  name?: string;
+  "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
+  "aria-required"?: boolean;
+}
+
 export interface FormFieldProps {
   /** Visible label text (already i18n-resolved). */
   readonly label: string;
@@ -26,7 +34,7 @@ export interface FormFieldProps {
   /** Helper text shown below the field when there is no error. */
   readonly hint?: string;
   /** The input element to render. */
-  readonly children: ReactElement;
+  readonly children: ReactElement<FormFieldChildProps>;
   /** Additional className for the outer wrapper. */
   readonly className?: string;
 }
@@ -54,17 +62,17 @@ export function FormField({
     <div className={className}>
       <label
         htmlFor={inputId}
-        className="mb-1.5 block text-sm font-medium text-foreground"
+        className="mb-1.5 block text-sm font-medium text-foreground-secondary transition-colors motion-reduce:transition-none"
       >
         {label}
         {required && (
-          <span className="ml-1 text-error" aria-hidden="true">
+          <span className="ml-1 text-error/90 transition-colors motion-reduce:transition-none" aria-hidden="true">
             *
           </span>
         )}
       </label>
 
-      {React.cloneElement(children as ReactElement<Record<string, unknown>>, {
+      {React.cloneElement(children, {
         id: inputId,
         name,
         "aria-invalid": error ? true : undefined,
@@ -75,12 +83,19 @@ export function FormField({
       {/* Reserve min-height to prevent layout shift when error appears */}
       <div className="min-h-5">
         {error && (
-          <p id={errorId} className="mt-1 text-xs text-error" role="alert">
+          <p
+            id={errorId}
+            className="mt-1.5 text-xs font-medium text-error transition-colors motion-reduce:transition-none"
+            role="alert"
+          >
             {error}
           </p>
         )}
         {hint && !error && (
-          <p id={hintId} className="mt-1 text-xs text-foreground-muted">
+          <p
+            id={hintId}
+            className="mt-1.5 text-xs text-foreground-muted transition-colors motion-reduce:transition-none"
+          >
             {hint}
           </p>
         )}

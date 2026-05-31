@@ -61,7 +61,7 @@ export function Badge({
   return (
     <span
       className={[
-        "inline-flex items-center gap-1.5 rounded-full font-medium whitespace-nowrap",
+        "inline-flex items-center gap-1.5 rounded-full border border-transparent font-medium whitespace-nowrap shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[border-color,box-shadow,background-color,color] motion-reduce:transition-none",
         styles.bg,
         styles.text,
         SIZE_CLASSES[size],

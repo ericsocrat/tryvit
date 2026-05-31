@@ -2,42 +2,28 @@
 
 // ─── Contact page stub ──────────────────────────────────────────────────────
 
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
+import { LegalPageShell } from "@/components/layout/LegalPageShell";
 import { useTranslation } from "@/lib/i18n";
 
 export default function ContactPage() {
   const { t } = useTranslation();
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-
-      <main id="main-content" className="flex flex-1 flex-col items-center px-4 py-16">
-        <div className="max-w-md">
-          <h1 className="mb-4 text-2xl font-bold text-foreground">
-            {t("legal.contactTitle")}
-          </h1>
-          <p className="mb-6 text-foreground-secondary">
-            {t("legal.contactIntro")}
-          </p>
-          <div className="card space-y-3">
-            <p className="text-sm text-foreground-secondary">
-              <strong>{t("legal.emailLabel")}</strong>{" "}
-              <a
-                href="mailto:hello@example.com"
-                className="text-brand underline"
-              >
-                hello@example.com
-              </a>
-            </p>
-            <p className="text-sm text-foreground-secondary">
-              {t("legal.responseTime")}
-            </p>
-          </div>
-        </div>
-      </main>
-
-      <Footer />
-    </div>
+    <LegalPageShell
+      title={t("legal.contactTitle")}
+      intro={t("legal.contactIntro")}
+      updatedText={t("legal.responseTime")}
+    >
+      <section className="rounded-2xl border border-strong/20 bg-background/80 p-5 shadow-sm dark:bg-white/[0.03] sm:p-6">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-brand">
+          {t("legal.emailLabel")}
+        </p>
+        <a
+          href="mailto:hello@example.com"
+          className="mt-3 inline-flex text-base font-medium text-brand underline decoration-brand/30 underline-offset-4 transition-colors hover:text-brand/80"
+        >
+          hello@example.com
+        </a>
+      </section>
+    </LegalPageShell>
   );
 }

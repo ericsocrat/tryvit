@@ -2,42 +2,45 @@
 
 // ─── Terms of service stub ───────────────────────────────────────────────────
 
-import { Footer } from "@/components/layout/Footer";
-import { Header } from "@/components/layout/Header";
+import { LegalPageShell } from "@/components/layout/LegalPageShell";
 import { useTranslation } from "@/lib/i18n";
 
 export default function TermsPage() {
   const { t } = useTranslation();
+  const sections = [
+    [t("legal.acceptance"), t("legal.acceptanceText")],
+    [t("legal.serviceDescription"), t("legal.serviceDescText")],
+    [t("legal.dataAccuracy"), t("legal.dataAccuracyText")],
+    [t("legal.userAccounts"), t("legal.userAccountsText")],
+    [t("legal.liability"), t("legal.liabilityText")],
+  ] as const;
+
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
+    <LegalPageShell
+      title={t("legal.termsTitle")}
+      intro="The rules for using TryVit, explained in plain language."
+      updatedText={t("legal.lastUpdated")}
+    >
+      {sections.map(([title, description]) => (
+        <section
+          key={title}
+          className="rounded-2xl border border-strong/20 bg-background/80 p-5 shadow-sm dark:bg-white/[0.03] sm:p-6"
+        >
+          <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+          <p className="mt-3 leading-7 text-foreground-secondary">
+            {description}
+          </p>
+        </section>
+      ))}
 
-      <main id="main-content" className="flex flex-1 flex-col items-center px-4 py-16">
-        <div className="prose max-w-lg">
-          <h1>{t("legal.termsTitle")}</h1>
-          <p className="text-sm text-foreground-secondary">{t("legal.lastUpdated")}</p>
-
-          <h2>{t("legal.acceptance")}</h2>
-          <p>{t("legal.acceptanceText")}</p>
-
-          <h2>{t("legal.serviceDescription")}</h2>
-          <p>{t("legal.serviceDescText")}</p>
-
-          <h2>{t("legal.dataAccuracy")}</h2>
-          <p>{t("legal.dataAccuracyText")}</p>
-
-          <h2>{t("legal.userAccounts")}</h2>
-          <p>{t("legal.userAccountsText")}</p>
-
-          <h2>{t("legal.liability")}</h2>
-          <p>{t("legal.liabilityText")}</p>
-
-          <h2>{t("legal.contactSection")}</h2>
-          <p>{t("legal.contactText")}</p>
-        </div>
-      </main>
-
-      <Footer />
-    </div>
+      <section className="rounded-2xl border border-brand/15 bg-brand/5 p-5 shadow-sm dark:bg-brand/10 sm:p-6">
+        <h2 className="text-lg font-semibold text-foreground">
+          {t("legal.contactSection")}
+        </h2>
+        <p className="mt-3 leading-7 text-foreground-secondary">
+          {t("legal.contactText")}
+        </p>
+      </section>
+    </LegalPageShell>
   );
 }

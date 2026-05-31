@@ -98,7 +98,7 @@ export const NutrientTrafficLight = React.memo(function NutrientTrafficLight({
   const badge = (
     <span
       className={[
-        "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-transparent px-2 py-0.5 text-xs font-medium shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none",
         config.bg,
         config.text,
         className,
@@ -108,7 +108,7 @@ export const NutrientTrafficLight = React.memo(function NutrientTrafficLight({
       aria-label={`${nutrientLabel}: ${value}${unit} (${config.label})`}
     >
       <span
-        className={`inline-block h-2 w-2 rounded-full ${NUTRIENT_DOT_COLORS[level]}`}
+        className={`inline-block h-2 w-2 rounded-full shadow-[0_1px_4px_rgba(15,23,42,0.2)] ${NUTRIENT_DOT_COLORS[level]}`}
         aria-hidden="true"
       />
       <span className="font-semibold">{nutrientLabel}</span>

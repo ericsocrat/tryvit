@@ -68,11 +68,11 @@ export function Navigation() {
   return (
     <>
       <nav
-        className="fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
+        className="fixed bottom-0 left-0 right-0 z-40 border-t border-border/70 bg-surface/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_rgba(15,23,42,0.08)] backdrop-blur-sm lg:hidden"
         aria-label={t("a11y.mainNavigation")}
         data-testid="main-navigation"
       >
-        <div className="mx-auto flex max-w-5xl">
+        <div className="mx-auto flex max-w-5xl px-1 pt-1">
           {NAV_ITEMS.map((item) => {
             const isActive = activeRoute === item.routeKey;
             const label = t(item.labelKey);
@@ -85,10 +85,10 @@ export function Navigation() {
                 href={item.href}
                 aria-label={label}
                 aria-current={isActive ? "page" : undefined}
-                className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 min-w-16 py-2 landscape:py-1 text-xs transition-colors ${
+                className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 min-w-16 rounded-xl py-2 landscape:py-1 text-xs transition-colors ${
                   isActive
-                    ? "text-brand font-semibold"
-                    : "text-foreground-secondary hover:text-foreground"
+                    ? "bg-brand-subtle/80 text-brand font-semibold"
+                    : "text-foreground-secondary hover:bg-surface-subtle/80 hover:text-foreground"
                 }`}
               >
                 {/* Active indicator pill */}
@@ -121,10 +121,10 @@ export function Navigation() {
             onClick={openMore}
             aria-expanded={moreOpen}
             aria-haspopup="dialog"
-            className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 min-w-16 py-2 landscape:py-1 text-xs transition-colors ${
+            className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 min-w-16 rounded-xl py-2 landscape:py-1 text-xs transition-colors ${
               isMoreActive
-                ? "text-brand font-semibold"
-                : "text-foreground-secondary hover:text-foreground"
+                ? "bg-brand-subtle/80 text-brand font-semibold"
+                : "text-foreground-secondary hover:bg-surface-subtle/80 hover:text-foreground"
             }`}
           >
             {isMoreActive && (

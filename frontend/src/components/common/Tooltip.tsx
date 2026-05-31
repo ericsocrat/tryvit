@@ -52,8 +52,8 @@ export function Tooltip({
         role="tooltip"
         className={[
           "pointer-events-none absolute z-50 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium",
-          "bg-surface-overlay text-foreground shadow-md border border-strong",
-          "opacity-0 transition-opacity duration-fast",
+          "border border-default bg-surface/95 text-foreground shadow-[0_10px_28px_rgba(15,23,42,0.18)]",
+          "opacity-0 transition-opacity duration-fast motion-reduce:transition-none",
           "group-hover:opacity-100 group-focus-within:opacity-100",
           POSITION_CLASSES[side],
         ].join(" ")}

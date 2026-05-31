@@ -173,7 +173,7 @@ export const NovaBadge = React.memo(function NovaBadge({
   const badge = (
     <span
       className={[
-        "inline-flex items-center gap-1.5 rounded-full font-semibold whitespace-nowrap",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-transparent font-semibold shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none",
         config.bg,
         config.text,
         SIZE_CLASSES[size],

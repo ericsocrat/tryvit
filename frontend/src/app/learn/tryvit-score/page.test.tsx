@@ -135,7 +135,7 @@ describe("TryVitScorePage", () => {
     const bonusText = screen.getByText(
       "learn.tryvitScore.factorNutrientDensity",
     );
-    const card = bonusText.closest("div.rounded-lg");
+    const card = bonusText.closest("div.border-success-border");
     expect(card?.className).toContain("border-success-border");
     expect(card?.className).toContain("bg-success-bg");
   });

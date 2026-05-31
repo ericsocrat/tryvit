@@ -32,19 +32,19 @@ export function WelcomeRegionStep({
   }
 
   return (
-    <div className="space-y-8">
-      <div className="mb-4 text-center text-5xl">🍎</div>
+    <div className="space-y-6 sm:space-y-7">
+      <div className="mb-1 text-center text-5xl">🍎</div>
 
-      <h1 className="mb-2 text-center text-2xl font-bold text-foreground">
+      <h1 className="text-center text-2xl font-bold text-foreground sm:text-3xl">
         {t("onboarding.welcomeTitle")}
       </h1>
-      <p className="mb-8 text-center text-sm text-foreground-secondary">
+      <p className="mx-auto max-w-md text-center text-sm text-foreground-secondary sm:text-base">
         {t("onboarding.welcomeSubtitle")}
       </p>
 
       {/* Region title */}
-      <section className="rounded-2xl border border-border bg-surface-subtle/60 p-4 sm:p-5">
-        <h2 className="mb-4 text-lg font-semibold text-foreground">
+      <section className="rounded-2xl border border-border/70 bg-surface-subtle/70 p-4 shadow-sm sm:p-5">
+        <h2 className="mb-4 text-base font-semibold text-foreground sm:text-lg">
           {t("onboarding.regionTitle")}
         </h2>
 
@@ -81,7 +81,7 @@ export function WelcomeRegionStep({
 
       {/* Language selector */}
       {data.country && availableLanguages.length > 0 && (
-        <section className="rounded-2xl border border-border bg-surface-subtle/60 p-4 sm:p-5">
+        <section className="rounded-2xl border border-border/70 bg-surface-subtle/70 p-4 shadow-sm sm:p-5">
           <h2 className="mb-3 text-sm font-semibold text-foreground-secondary">
             {t("onboarding.languageLabel")}
           </h2>
@@ -105,7 +105,7 @@ export function WelcomeRegionStep({
         </section>
       )}
 
-      <div className="mt-8 flex gap-3">
+      <div className="mt-1 flex gap-3">
         <Button
           type="button"
           variant="secondary"

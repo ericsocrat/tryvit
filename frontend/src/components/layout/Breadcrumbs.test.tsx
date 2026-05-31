@@ -203,7 +203,7 @@ describe("Breadcrumbs", () => {
     expect(mobileLink).toHaveTextContent("Lists");
   });
 
-  it("mobile compact link has min-h-[44px] for touch target", () => {
+  it("mobile compact link has min-h-11 for touch target", () => {
     render(
       <Breadcrumbs
         items={[
@@ -216,7 +216,7 @@ describe("Breadcrumbs", () => {
     const mobileLink = screen.getAllByRole("link").find(
       (el) => el.className.includes("md:hidden"),
     );
-    expect(mobileLink?.className).toContain("min-h-[44px]");
+    expect(mobileLink?.className).toContain("min-h-11");
   });
 
   it("does not render mobile compact link for single-item breadcrumb", () => {
@@ -226,7 +226,7 @@ describe("Breadcrumbs", () => {
       />,
     );
     const nav = screen.getByRole("navigation", { name: "Breadcrumb" });
-    const mobileLink = nav.querySelector("a.md\\:hidden");
+    const mobileLink = nav.querySelector(String.raw`a.md\:hidden`);
     expect(mobileLink).toBeNull();
   });
 });

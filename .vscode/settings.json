@@ -119,6 +119,7 @@
     "**/coverage/**",
     "**/.venv/**"
   ],
+  "todo-tree.ripgrep.ripgrep": "C:/Users/ericsocrat/AppData/Local/Programs/Microsoft VS Code/8761a5560c/resources/app/node_modules/@vscode/ripgrep-universal/bin/win32-x64/rg.exe",
   // ═══════════════════════════════════════════════════════════════════════
   // Code Spell Checker — project dictionary
   // ═══════════════════════════════════════════════════════════════════════

@@ -70,7 +70,7 @@ const STRIP_LETTER_SIZE: Record<
 };
 
 /** Special grade descriptions for aria-label. */
-const SPECIAL_LABELS: Record<string, string> = {
+const SPECIAL_LABELS: Record<NutriScoreSpecial, string> = {
   UNKNOWN: "not available",
   "NOT-APPLICABLE": "not applicable",
 };
@@ -105,7 +105,7 @@ export const NutriScoreBadge = React.memo(function NutriScoreBadge({
   const ariaLabel = isValid
     ? `Nutri-Score ${normalized}`
     : isSpecial
-      ? `Nutri-Score ${SPECIAL_LABELS[normalized]}`
+      ? `Nutri-Score ${SPECIAL_LABELS[normalized as NutriScoreSpecial]}`
       : "Nutri-Score unknown";
 
   // ─── sm: single-letter badge ────────────────────────────────────────────
@@ -119,7 +119,7 @@ export const NutriScoreBadge = React.memo(function NutriScoreBadge({
     const badge = (
       <span
         className={[
-          "inline-flex items-center justify-center rounded-md font-bold",
+          "inline-flex items-center justify-center rounded-md border border-transparent font-bold shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none",
           bgClass,
           SM_SIZE,
           className,
@@ -145,7 +145,7 @@ export const NutriScoreBadge = React.memo(function NutriScoreBadge({
     const strip = (
       <span
         className={[
-          "inline-flex items-center gap-0.5 rounded-lg bg-surface-muted px-1 py-0.5",
+          "inline-flex items-center gap-0.5 rounded-lg border border-transparent bg-surface-muted px-1 py-0.5 shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none",
           className,
         ]
           .filter(Boolean)
@@ -175,7 +175,7 @@ export const NutriScoreBadge = React.memo(function NutriScoreBadge({
   const strip = (
     <span
       className={[
-        "inline-flex items-center gap-0.5 rounded-lg bg-surface-muted px-1 py-0.5",
+        "inline-flex items-center gap-0.5 rounded-lg border border-transparent bg-surface-muted px-1 py-0.5 shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color,color] motion-reduce:transition-none",
         className,
       ]
         .filter(Boolean)
