@@ -7,21 +7,69 @@
 import { ButtonLink } from "@/components/common/Button";
 import { Logo } from "@/components/common/Logo";
 import { useTranslation } from "@/lib/i18n";
+import { createClient } from "@/lib/supabase/client";
 import {
-    BarChart3,
-    Camera,
-    ChevronRight,
-    Database,
-    Layers,
-    Search,
-    Shield,
-    ShoppingBasket,
-    type LucideIcon,
+  BarChart3,
+  Camera,
+  ChevronRight,
+  Database,
+  Layers,
+  Search,
+  Shield,
+  ShoppingBasket,
+  type LucideIcon,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+
+// ─── Auth state ─────────────────────────────────────────────────────────────
+// Mirrors the client-side auth pattern in Header.tsx so the landing CTAs can
+// show a Dashboard link to logged-in users while keeping `/` a static page.
+
+function useIsAuthenticated(): boolean {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+
+    try {
+      const client = createClient();
+
+      client.auth.getUser().then(({ data }) => {
+        if (active) {
+          setIsAuthenticated(!!data.user);
+        }
+      });
+
+      const onAuthStateChange = client.auth.onAuthStateChange;
+      if (typeof onAuthStateChange !== "function") {
+        return () => {
+          active = false;
+        };
+      }
+
+      const authListenerResult = onAuthStateChange((_event, session) => {
+        if (active) {
+          setIsAuthenticated(!!session?.user);
+        }
+      });
+
+      return () => {
+        active = false;
+        authListenerResult.data.subscription.unsubscribe();
+      };
+    } catch {
+      return () => {
+        active = false;
+      };
+    }
+  }, []);
+
+  return isAuthenticated;
+}
 
 // ─── Hero ───────────────────────────────────────────────────────────────────
 
-function HeroSection() {
+function HeroSection({ isAuthenticated }: { isAuthenticated: boolean }) {
   const { t } = useTranslation();
   return (
     <section className="relative isolate overflow-hidden bg-linear-to-b from-brand/12 via-surface to-surface pb-16 pt-16 sm:pb-24 sm:pt-20">
@@ -59,22 +107,35 @@ function HeroSection() {
               </p>
 
               <div className="flex flex-col gap-3 sm:flex-row">
-                <ButtonLink
-                  href="/auth/signup"
-                  size="lg"
-                  className="w-full px-8 sm:w-auto"
-                  iconRight={<ChevronRight size={18} aria-hidden="true" />}
-                >
-                  {t("landing.getStarted")}
-                </ButtonLink>
-                <ButtonLink
-                  href="/auth/login"
-                  variant="secondary"
-                  size="lg"
-                  className="w-full px-8 sm:w-auto"
-                >
-                  {t("landing.signIn")}
-                </ButtonLink>
+                {isAuthenticated ? (
+                  <ButtonLink
+                    href="/app"
+                    size="lg"
+                    className="w-full px-8 sm:w-auto"
+                    iconRight={<ChevronRight size={18} aria-hidden="true" />}
+                  >
+                    {t("auth.dashboard")}
+                  </ButtonLink>
+                ) : (
+                  <>
+                    <ButtonLink
+                      href="/auth/signup"
+                      size="lg"
+                      className="w-full px-8 sm:w-auto"
+                      iconRight={<ChevronRight size={18} aria-hidden="true" />}
+                    >
+                      {t("landing.getStarted")}
+                    </ButtonLink>
+                    <ButtonLink
+                      href="/auth/login"
+                      variant="secondary"
+                      size="lg"
+                      className="w-full px-8 sm:w-auto"
+                    >
+                      {t("landing.signIn")}
+                    </ButtonLink>
+                  </>
+                )}
               </div>
             </div>
 
@@ -300,7 +361,7 @@ function DataStatsSection() {
 
 // ─── CTA Repeat ─────────────────────────────────────────────────────────────
 
-function CtaRepeatSection() {
+function CtaRepeatSection({ isAuthenticated }: { isAuthenticated: boolean }) {
   const { t } = useTranslation();
   return (
     <section className="relative isolate overflow-hidden bg-linear-to-b from-brand/10 via-surface to-surface py-16 sm:py-20">
@@ -335,22 +396,35 @@ function CtaRepeatSection() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            <ButtonLink
-              href="/auth/signup"
-              size="lg"
-              className="w-full px-10 sm:w-auto"
-              iconRight={<ChevronRight size={18} aria-hidden="true" />}
-            >
-              {t("landing.getStarted")}
-            </ButtonLink>
-            <ButtonLink
-              href="/auth/login"
-              variant="secondary"
-              size="lg"
-              className="w-full px-10 sm:w-auto"
-            >
-              {t("landing.signIn")}
-            </ButtonLink>
+            {isAuthenticated ? (
+              <ButtonLink
+                href="/app"
+                size="lg"
+                className="w-full px-10 sm:w-auto"
+                iconRight={<ChevronRight size={18} aria-hidden="true" />}
+              >
+                {t("auth.dashboard")}
+              </ButtonLink>
+            ) : (
+              <>
+                <ButtonLink
+                  href="/auth/signup"
+                  size="lg"
+                  className="w-full px-10 sm:w-auto"
+                  iconRight={<ChevronRight size={18} aria-hidden="true" />}
+                >
+                  {t("landing.getStarted")}
+                </ButtonLink>
+                <ButtonLink
+                  href="/auth/login"
+                  variant="secondary"
+                  size="lg"
+                  className="w-full px-10 sm:w-auto"
+                >
+                  {t("landing.signIn")}
+                </ButtonLink>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -361,13 +435,14 @@ function CtaRepeatSection() {
 // ─── Combined export ────────────────────────────────────────────────────────
 
 export function LandingSections() {
+  const isAuthenticated = useIsAuthenticated();
   return (
     <>
-      <HeroSection />
+      <HeroSection isAuthenticated={isAuthenticated} />
       <FeaturesSection />
       <HowItWorksSection />
       <DataStatsSection />
-      <CtaRepeatSection />
+      <CtaRepeatSection isAuthenticated={isAuthenticated} />
     </>
   );
 }
