@@ -380,7 +380,7 @@ When opening an incident issue, apply these labels:
 | **Supabase Dashboard**| Database health monitoring — triggers SEV-1 for connection failures      |
 | **GitHub Actions**    | CI/CD health — triggers SEV-3 for pipeline failures                     |
 | **Vercel**            | Frontend deployment status — triggers SEV-2 for build/deploy failures   |
-| **`.\RUN_QA.ps1`**    | Data integrity verification — 429 checks across 30 suites              |
+| **`.\RUN_QA.ps1`**    | Data integrity verification — 777 checks across 49 suites              |
 | **`.\RUN_SANITY.ps1`**| Quick health check — 17 row-count and schema assertions                 |
 
 ---

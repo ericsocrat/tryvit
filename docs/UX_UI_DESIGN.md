@@ -2,7 +2,7 @@
 
 > **Status:** Production-ready specification — architecture, data contracts, and UX rules locked.
 > **Last updated:** 2026-02-13 (docs sync: scanner/preferences/country/diet-allergen features now implemented)
-> **Implementation stage:** Spec-complete. No front-end code yet. All API endpoints exist and pass QA (421/421 checks + 29/29 negative tests). This document is the single source of truth for any future front-end implementation.
+> **Implementation stage:** Spec-complete. No front-end code yet. All API endpoints exist and pass QA (777/777 checks + 20/20 negative tests). This document is the single source of truth for any future front-end implementation.
 
 ---
 

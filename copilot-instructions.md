@@ -629,7 +629,7 @@ All categories have **variable product counts** (28–95 active products). Categ
 | Desserts & Ice Cream | `desserts-ice-cream` |
 | Spices & Seasonings  | `spices-seasonings`  |
 
-**43 pipeline folders** (22 PL + 21 DE). Category-to-OFF tag mappings live in `pipeline/categories.py`. Each category has multiple OFF tags and search terms for comprehensive coverage. 7 new categories defined in `category_ref` but not yet added to the pipeline (see Issue #859).
+**58 pipeline folders** (22 PL active + 21 DE active + 7 new PL + 7 new DE + 1 legacy `chips` folder superseded by `chips-pl`). Category-to-OFF tag mappings live in `pipeline/categories.py`. Each category has multiple OFF tags and search terms for comprehensive coverage. The 7 new categories (pasta-rice, soups, coffee-tea, frozen-vegetables, ready-meals, desserts-ice-cream, spices-seasonings) have folders but are not yet populated with product data (see Issue #859).
 
 ---
 

@@ -90,7 +90,7 @@ Run all pipelines + QA suites automatically:
 ================================================
   Running QA Checks
 ================================================
-  All QA checks passed (421/421 — zero violation rows).
+  All QA checks passed (777/777 — zero violation rows).
 
   Database inventory:
   active_products | deprecated | nutrition | categories
@@ -109,7 +109,7 @@ Runs all 30 test suites with color-coded output:
 
 **Expected output**:
 ```
-ALL TESTS PASSED (421/421 checks across 30 suites)
+ALL TESTS PASSED (777/777 checks across 49 suites)
 ```
 
 ---

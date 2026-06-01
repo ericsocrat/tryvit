@@ -8,7 +8,7 @@
 > Anonymous (unauthenticated) access is blocked for all endpoints except shared views.
 >
 > **Canonical registry:** See [api-registry.yaml](api-registry.yaml) for the structured,
-> machine-readable registry of all 107 functions with parameters, return types,
+> machine-readable registry that currently lists public-schema functions with parameters, return types,
 > auth requirements, domain classification, and P95 targets.
 >
 > **Naming conventions:** See [API_CONVENTIONS.md](API_CONVENTIONS.md) for the RPC naming

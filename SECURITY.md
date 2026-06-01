@@ -33,7 +33,7 @@ Last audited: 2026-02-14 (vulnerability table below may be stale — re-run `cd 
 - Requires "insecure React Server Components" usage patterns.
 - Our RSC usage is standard (data fetching via Supabase client).
 - Vercel's infrastructure provides additional request-level protections.
-- **Low practical risk.** Will be resolved on Next.js 15/16 upgrade.
+- **Low practical risk.** Resolved — project is now on Next.js 16.
 
 **GHSA-5j98-mcp5-4vw2 — glob CLI injection:**
 - The `glob` CLI (`--cmd` flag) allows command injection.

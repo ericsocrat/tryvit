@@ -483,7 +483,7 @@ Scoring version: v3.2
 3. **Generate SQL** — remove `--dry-run` to create the 4-step pipeline in `db/pipelines/<category>/`
 4. **Run pipeline** — `.\RUN_LOCAL.ps1 -Category <folder>`
 5. **Enrich** — `python enrich_ingredients.py` (ingredients + allergens)
-6. **Validate** — `.\RUN_QA.ps1` (421 checks across 30 suites must pass)
+6. **Validate** — `.\RUN_QA.ps1` (777 checks across 49 suites must pass)
 
 ### Generated Pipeline Files
 
