@@ -5,7 +5,7 @@
 # Do NOT edit requirements.txt directly — it is auto-generated from this file.
 
 beautifulsoup4>=4.12,<5
-requests>=2.31,<3
+requests>=2.34.2,<3
 tqdm>=4.66,<5
 
 # Development / CI tools
