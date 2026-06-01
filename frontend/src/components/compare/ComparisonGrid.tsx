@@ -6,6 +6,7 @@
 // Highlights best/worst values per row with green/red coloring.
 
 import { AvoidBadge } from "@/components/product/AvoidBadge";
+import { ConfidenceBadge } from "@/components/common/ConfidenceBadge";
 import { NUTRI_COLORS, SCORE_BANDS, scoreBandFromScore } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 import { nutriScoreLabel } from "@/lib/nutri-label";
@@ -221,6 +222,10 @@ function DesktopGrid({
                       {p.brand}
                     </p>
                     <div className="flex items-center justify-center gap-1">
+                      <ConfidenceBadge
+                        level={p.confidence}
+                        percentage={p.data_completeness_pct}
+                      />
                       <span
                         className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${nutriClass}`}
                       >
@@ -583,6 +588,10 @@ function MobileSwipeView({
                 {product.brand}
               </p>
               <div className="mt-1 flex items-center gap-1.5">
+                <ConfidenceBadge
+                  level={product.confidence}
+                  percentage={product.data_completeness_pct}
+                />
                 <span
                   className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${nutriClass}`}
                 >

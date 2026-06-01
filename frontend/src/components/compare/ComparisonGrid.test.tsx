@@ -75,6 +75,7 @@ const productB = makeProduct({
   additives_count: 8,
   allergen_count: 0,
   allergen_tags: null,
+  confidence: "low",
 });
 
 const products = [productA, productB];
@@ -197,6 +198,14 @@ describe("ComparisonGrid", () => {
     expect(n3.length).toBeGreaterThanOrEqual(1);
     const n4 = screen.getAllByText(/N4/);
     expect(n4.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders confidence badges for compared products", () => {
+    render(<ComparisonGrid products={products} />);
+    const verified = screen.getAllByText("Verified");
+    const low = screen.getAllByText("Low");
+    expect(verified.length).toBeGreaterThanOrEqual(1);
+    expect(low.length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders swipe hint on mobile view", () => {
