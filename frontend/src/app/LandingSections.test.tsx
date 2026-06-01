@@ -1,8 +1,23 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LandingSections } from "./LandingSections";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
+
+const mockGetUser = vi.fn();
+const mockUnsubscribe = vi.fn();
+const mockOnAuthStateChange = vi.fn(() => ({
+  data: { subscription: { unsubscribe: mockUnsubscribe } },
+}));
+
+vi.mock("@/lib/supabase/client", () => ({
+  createClient: () => ({
+    auth: {
+      getUser: () => mockGetUser(),
+      onAuthStateChange: mockOnAuthStateChange,
+    },
+  }),
+}));
 
 vi.mock("@/components/common/Button", () => ({
   ButtonLink: ({
@@ -38,6 +53,11 @@ vi.mock("lucide-react", () => ({
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
 describe("LandingSections", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+  });
+
   it("renders the hero tagline", () => {
     render(<LandingSections />);
     expect(screen.getByText("landing.tagline")).toBeInTheDocument();
@@ -62,6 +82,22 @@ describe("LandingSections", () => {
     expect(
       signInLinks.some((link) => link.closest("a")?.getAttribute("href") === "/auth/login"),
     ).toBe(true);
+  });
+
+  it("shows Dashboard CTAs linking to /app when authenticated", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: { id: "u1" } } });
+    render(<LandingSections />);
+
+    // Both CTA clusters (hero + repeat) switch to the Dashboard link.
+    const dashboardLinks = await screen.findAllByText("auth.dashboard");
+    expect(dashboardLinks.length).toBeGreaterThanOrEqual(2);
+    dashboardLinks.forEach((link) => {
+      expect(link.closest("a")).toHaveAttribute("href", "/app");
+    });
+
+    // Public CTAs are hidden for authenticated users.
+    expect(screen.queryByText("landing.getStarted")).not.toBeInTheDocument();
+    expect(screen.queryByText("landing.signIn")).not.toBeInTheDocument();
   });
 
   it("renders features heading and 3 feature cards", () => {
