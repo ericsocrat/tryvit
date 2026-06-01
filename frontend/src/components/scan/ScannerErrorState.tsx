@@ -89,6 +89,11 @@ export function ScannerErrorState({
           {t("scan.enterManually")}
         </Button>
       </div>
+      {(error === "permission-denied" || error === "permission-unknown") && (
+        <p className="mt-2 text-xs text-warning-text/80">
+          {t("scan.manualFallbackReassurance")}
+        </p>
+      )}
     </div>
   );
 }

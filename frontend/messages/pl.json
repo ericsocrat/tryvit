@@ -332,6 +332,7 @@
     "cameraUnavailableHint": "Nie udało się uruchomić kamery. Spróbuj ponownie lub wpisz kod kreskowy ręcznie.",
     "reloadPage": "Odśwież stronę",
     "enterManually": "Wpisz kod ręcznie",
+    "manualFallbackReassurance": "Ręczne wpisanie kodu kreskowego działa od razu, gdy kamera jest niedostępna.",
     "retryCamera": "Spróbuj ponownie",
     "noCameraTitle": "Brak kamery",
     "noCameraHint": "To urządzenie nie posiada kamery. Użyj trybu ręcznego, aby wyszukać produkty.",

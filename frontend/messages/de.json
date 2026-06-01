@@ -332,6 +332,7 @@
     "cameraUnavailableHint": "Die Kamera konnte nicht gestartet werden. Versuchen Sie es erneut oder geben Sie den Barcode manuell ein.",
     "reloadPage": "Seite neu laden",
     "enterManually": "Barcode manuell eingeben",
+    "manualFallbackReassurance": "Die manuelle Barcode-Eingabe funktioniert sofort, wenn die Kamera nicht verfügbar ist.",
     "retryCamera": "Erneut versuchen",
     "noCameraTitle": "Keine Kamera verfügbar",
     "noCameraHint": "Dieses Gerät hat keine Kamera. Verwenden Sie die manuelle Eingabe, um Produkte nachzuschlagen.",

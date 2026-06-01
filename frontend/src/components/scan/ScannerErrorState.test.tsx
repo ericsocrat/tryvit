@@ -145,6 +145,19 @@ describe("ScannerErrorState", () => {
     expect(screen.getByText("scan.cameraBlockedHint")).toBeInTheDocument();
   });
 
+  it("shows manual fallback reassurance for permission-denied", () => {
+    render(
+      <ScannerErrorState
+        error="permission-denied"
+        onRetry={onRetry}
+        onManualEntry={onManualEntry}
+      />,
+    );
+    expect(
+      screen.getByText("scan.manualFallbackReassurance"),
+    ).toBeInTheDocument();
+  });
+
   it("shows cameraPermissionHint for permission-prompt", () => {
     render(
       <ScannerErrorState
@@ -169,6 +182,19 @@ describe("ScannerErrorState", () => {
     ).toBeInTheDocument();
   });
 
+  it("shows manual fallback reassurance for permission-unknown", () => {
+    render(
+      <ScannerErrorState
+        error="permission-unknown"
+        onRetry={onRetry}
+        onManualEntry={onManualEntry}
+      />,
+    );
+    expect(
+      screen.getByText("scan.manualFallbackReassurance"),
+    ).toBeInTheDocument();
+  });
+
   it("shows cameraUnavailableHint for generic", () => {
     render(
       <ScannerErrorState
@@ -178,6 +204,17 @@ describe("ScannerErrorState", () => {
       />,
     );
     expect(screen.getByText("scan.cameraUnavailableHint")).toBeInTheDocument();
+  });
+
+  it("does NOT show manual fallback reassurance for generic", () => {
+    render(
+      <ScannerErrorState
+        error="generic"
+        onRetry={onRetry}
+        onManualEntry={onManualEntry}
+      />,
+    );
+    expect(screen.queryByText("scan.manualFallbackReassurance")).toBeNull();
   });
 
   // ─── CTA Button visibility ─────────────────────────────────────────────

@@ -332,6 +332,7 @@
     "cameraUnavailableHint": "Could not start the camera. Try again or enter the barcode manually.",
     "reloadPage": "Reload Page",
     "enterManually": "Enter Barcode Manually",
+    "manualFallbackReassurance": "Manual barcode entry works right away if camera access is unavailable.",
     "retryCamera": "Retry Camera",
     "noCameraTitle": "No Camera Available",
     "noCameraHint": "This device does not have a camera. Use manual entry to look up products.",
