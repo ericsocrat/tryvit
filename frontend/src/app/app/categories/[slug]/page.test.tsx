@@ -11,8 +11,9 @@ vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({}),
 }));
 
+let mockSlug = "chips";
 vi.mock("next/navigation", () => ({
-  useParams: () => ({ slug: "chips" }),
+  useParams: () => ({ slug: mockSlug }),
 }));
 
 vi.mock("next/link", () => ({
@@ -26,8 +27,10 @@ vi.mock("next/link", () => ({
 }));
 
 const mockGetCategoryListing = vi.fn();
+const mockGetCategoryOverview = vi.fn();
 vi.mock("@/lib/api", () => ({
   getCategoryListing: (...args: unknown[]) => mockGetCategoryListing(...args),
+  getCategoryOverview: (...args: unknown[]) => mockGetCategoryOverview(...args),
 }));
 
 vi.mock("@/components/common/skeletons", () => ({
@@ -131,12 +134,36 @@ const mockProducts = [
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
+  mockSlug = "chips";
   mockGetCategoryListing.mockResolvedValue({
     ok: true,
     data: {
       total_count: 2,
       products: mockProducts,
     },
+  });
+  // Default overview: a valid "chips" category so the page renders normally.
+  // display_name matches formatSlug("chips") to keep heading/breadcrumb assertions stable.
+  mockGetCategoryOverview.mockResolvedValue({
+    ok: true,
+    data: [
+      {
+        country_code: "PL",
+        category: "Chips",
+        slug: "chips",
+        display_name: "chips",
+        category_description: null,
+        icon_emoji: "🥔",
+        sort_order: 1,
+        product_count: 2,
+        avg_score: 50,
+        min_score: 10,
+        max_score: 80,
+        median_score: 45,
+        pct_nutri_a_b: 20,
+        pct_nova_4: 75,
+      },
+    ],
   });
 });
 
@@ -219,6 +246,52 @@ describe("CategoryListingPage", () => {
         screen.getByText("No products in this category."),
       ).toBeInTheDocument();
     });
+  });
+
+  it("renders category stats with score bar on the consumer-facing TryVit scale", async () => {
+    render(<CategoryListingPage />, { wrapper: createWrapper() });
+
+    // Stats card range text uses TryVit (100 - raw): max_score 80 → 20, min_score 10 → 90.
+    await waitFor(() => {
+      expect(screen.getByText("20–90")).toBeInTheDocument();
+    });
+
+    // Score bar aria-label uses the same TryVit scale (ascending), not raw 10/80.
+    const bar = screen.getByRole("img", { name: "Score range 20 to 90" });
+    expect(bar).toBeInTheDocument();
+  });
+
+  it("shows a not-found state for an unknown/stale category slug", async () => {
+    mockSlug = "chips-pl"; // not present in the overview list
+    render(<CategoryListingPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("Category not found")).toBeInTheDocument();
+    });
+    // Action links back to the categories index.
+    expect(
+      screen.getByText("Browse all categories").closest("a"),
+    ).toHaveAttribute("href", "/app/categories");
+    // It must NOT fall back to the generic "no products" empty state.
+    expect(
+      screen.queryByText("No products in this category."),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows the no-products state for a valid category with zero products", async () => {
+    mockGetCategoryListing.mockResolvedValue({
+      ok: true,
+      data: { total_count: 0, products: [] },
+    });
+    render(<CategoryListingPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("No products in this category."),
+      ).toBeInTheDocument();
+    });
+    // A valid category must NOT render the not-found state.
+    expect(screen.queryByText("Category not found")).not.toBeInTheDocument();
   });
 
   it("renders product rows with names and brands", async () => {
