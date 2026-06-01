@@ -38,6 +38,13 @@ Confirm before starting:
     real credentials in this script.
 - Have one known barcode ready as a fallback (see step 3 recovery).
 
+### Auth readiness check (30s)
+
+1. Open `/app/compare` (or `/app/search`) before the audience joins.
+2. If you are redirected to `/auth/login`, sign in with the pre-created demo account.
+3. If you are redirected to onboarding, complete or skip onboarding, then return to the same protected route.
+4. Refresh once and confirm the protected page still loads.
+
 ---
 
 ## 1. Landing & positioning (~30s)
