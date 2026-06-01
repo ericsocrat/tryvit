@@ -313,7 +313,7 @@ SUPABASE_STAGING_DB_PASSWORD=
 
 | Workflow            | Backend                           | Purpose                                | Cloud mutation risk                    |
 | ------------------- | --------------------------------- | -------------------------------------- | -------------------------------------- |
-| `qa.yml`            | Ephemeral PostgreSQL 17 container | Schema + pipeline + 421 QA + 17 sanity | **None** — container only              |
+| `qa.yml`            | Ephemeral PostgreSQL 17 container | Schema + pipeline + 777 QA + 17 sanity | **None** — container only              |
 | `ci.yml`            | Production keys (anon-level only) | Lint, build, Playwright E2E            | **Read-only** — anon key cannot mutate |
 | `build.yml`         | N/A (build only) + SonarCloud     | Build, unit tests, coverage            | **None**                               |
 | `sync-cloud-db.yml` | Staging then Production           | Auto-apply migrations on merge to main | **Schema only** — `supabase db push`   |
@@ -342,7 +342,7 @@ SUPABASE_STAGING_DB_PASSWORD=
 
 ```
 1. ☐ Develop migration locally (supabase db reset to test)
-2. ☐ Run RUN_QA.ps1 locally — all 421+ checks pass
+2. ☐ Run RUN_QA.ps1 locally — all 777+ checks pass
 3. ☐ Push to branch → CI green (qa.yml + ci.yml + build.yml)
 4. ☐ Merge to main → sync-cloud-db.yml applies to staging (if enabled), then production
 5. ☐ Run RUN_SANITY.ps1 -Env staging — all checks pass
@@ -353,7 +353,7 @@ SUPABASE_STAGING_DB_PASSWORD=
 
 ```
 1. ☐ Develop migration locally (supabase db reset to test)
-2. ☐ Run RUN_QA.ps1 locally — all 421+ checks pass
+2. ☐ Run RUN_QA.ps1 locally — all 777+ checks pass
 3. ☐ Push to branch → CI green (qa.yml + ci.yml + build.yml)
 4. ☐ Merge to main
 5. ☐ Apply to staging: supabase link --project-ref <staging-ref> && supabase db push

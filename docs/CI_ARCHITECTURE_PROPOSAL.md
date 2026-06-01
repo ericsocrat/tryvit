@@ -72,7 +72,7 @@
 | Run all category pipelines    | Loop over `db/pipelines/*/PIPELINE__*.sql` | 60-120s      |
 | Schema drift detection        | SQL query                                  | 5s           |
 | Post-pipeline fixup           | `db/ci_post_pipeline.sql`                  | 5s           |
-| QA (421 checks)               | `RUN_QA.ps1`                               | 30-60s       |
+| QA (777 checks)               | `RUN_QA.ps1`                               | 30-60s       |
 | Sanity (17 checks)            | `RUN_SANITY.ps1`                           | 10-20s       |
 | Confidence coverage threshold | SQL check                                  | 5s           |
 | QA summary + fail gate        |                                            | 5s           |
@@ -127,7 +127,7 @@ PW run          ✓ (dead)     ✓ (real) + ✓ (preview)
 Event: pull_request
 ├── build.yml        ← lint + type-check + build + unit tests + PW (dead) + Sonar
 ├── ci.yml           ← lint + type-check + build → PW (real) + PW (preview)
-└── qa.yml           ← full DB pipeline + 421 QA checks (even for frontend-only PRs!)
+└── qa.yml           ← full DB pipeline + 777 QA checks (even for frontend-only PRs!)
 
 Event: push to main
 ├── build.yml        ← everything again
@@ -224,7 +224,7 @@ flowchart TD
         direction TB
         D1[Postgres Service] --> D2[Schema Migrations]
         D2 --> D3[Pipeline Execution]
-        D3 --> D4[421 QA Checks]
+        D3 --> D4[777 QA Checks]
         D4 --> D5[17 Sanity Checks]
         D5 --> D6[Confidence Threshold]
     end
@@ -839,7 +839,7 @@ These checks MUST pass before merge is allowed:
 
 1. `PR Gate / Lint → Type-check → Build → Test` — core frontend gate
 2. `PR Gate / Playwright Smoke` — basic E2E sanity
-3. `QA / Pipeline + QA (421 checks) + Sanity (17 checks)` — only when `db/**` or `supabase/**` paths are touched (use path-based required check or use `paths-ignore` + `if` guard)
+3. `QA / Pipeline + QA (777 checks) + Sanity (17 checks)` — only when `db/**` or `supabase/**` paths are touched (use path-based required check or use `paths-ignore` + `if` guard)
 
 ### 5.3 Non-Negotiable Standards
 

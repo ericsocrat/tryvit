@@ -90,7 +90,7 @@ Run all pipelines + QA suites automatically:
 ================================================
   Running QA Checks
 ================================================
-  All QA checks passed (421/421 — zero violation rows).
+  All QA checks passed (777/777 — zero violation rows).
 
   Database inventory:
   active_products | deprecated | nutrition | categories
@@ -101,7 +101,7 @@ Run all pipelines + QA suites automatically:
 ---
 
 ### 4. **Standalone QA Runner** (Recommended)
-Runs all 30 test suites with color-coded output:
+Runs the full current QA suite set with color-coded output:
 
 ```powershell
 .\RUN_QA.ps1
@@ -109,19 +109,19 @@ Runs all 30 test suites with color-coded output:
 
 **Expected output**:
 ```
-ALL TESTS PASSED (421/421 checks across 30 suites)
+✓ ALL TESTS PASSED (777/777 checks)
 ```
 
 ---
 
-### 5. **Negative Validation Tests** (29 constraint tests)
+### 5. **Negative Validation Tests** (destructive-intent validation)
 Verifies the database correctly rejects invalid data:
 
 ```powershell
 .\RUN_NEGATIVE_TESTS.ps1
 ```
 
-**Expected output**: `29/29 CAUGHT, 0 MISSED`
+**Expected output**: final success line like `✓ ALL ... checks correctly detected violations` with `0` missed checks.
 
 ---
 

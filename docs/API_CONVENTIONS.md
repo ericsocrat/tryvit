@@ -16,52 +16,52 @@ All public schema functions follow a strict naming pattern:
 
 ### 1.1 Visibility Prefixes
 
-| Prefix        | Meaning                                    | Auth Requirement     | Example                          |
-| ------------- | ------------------------------------------ | -------------------- | -------------------------------- |
-| `api_`        | Public-facing, called by frontend          | `authenticated`      | `api_search_products`            |
-| `api_admin_`  | Admin-only, called by admin panel          | `authenticated` + admin check | `api_admin_get_submissions` |
-| `admin_`      | Admin/ops tooling (not exposed via PostgREST) | Direct DB access  | `admin_rescore_batch`            |
-| `metric_`     | Analytics/metrics aggregation              | Direct DB access     | `metric_dau`                     |
-| `trg_`        | Trigger functions (not callable directly)  | N/A (trigger-fired)  | `trg_set_updated_at`             |
-| _(none/internal)_ | Internal helpers, not exposed as RPC   | N/A                  | `compute_unhealthiness_v32`      |
+| Prefix            | Meaning                                       | Auth Requirement              | Example                     |
+| ----------------- | --------------------------------------------- | ----------------------------- | --------------------------- |
+| `api_`            | Public-facing, called by frontend             | `authenticated`               | `api_search_products`       |
+| `api_admin_`      | Admin-only, called by admin panel             | `authenticated` + admin check | `api_admin_get_submissions` |
+| `admin_`          | Admin/ops tooling (not exposed via PostgREST) | Direct DB access              | `admin_rescore_batch`       |
+| `metric_`         | Analytics/metrics aggregation                 | Direct DB access              | `metric_dau`                |
+| `trg_`            | Trigger functions (not callable directly)     | N/A (trigger-fired)           | `trg_set_updated_at`        |
+| _(none/internal)_ | Internal helpers, not exposed as RPC          | N/A                           | `compute_unhealthiness_v32` |
 
 ### 1.2 Domain Names
 
-| Domain         | Scope                                               | Examples                                                |
-| -------------- | --------------------------------------------------- | ------------------------------------------------------- |
-| `products`     | Product identity, detail, listing, alternatives      | `api_product_detail`, `api_better_alternatives`         |
-| `category`     | Category listing, overview, statistics               | `api_category_listing`, `api_category_overview`         |
-| `scoring`      | Score computation, explanation, history               | `api_score_explanation`, `api_score_history`             |
-| `search`       | Full-text search, autocomplete, filters               | `api_search_products`, `api_search_autocomplete`        |
-| `health`       | Health profiles, warnings, daily values               | `api_create_health_profile`, `api_product_health_warnings` |
-| `lists`        | User product lists (CRUD, sharing)                    | `api_create_list`, `api_get_lists`, `api_add_to_list`   |
-| `compare`      | Product comparisons                                   | `api_get_products_for_compare`, `api_save_comparison`   |
-| `scanner`      | Barcode scanning, scan history                        | `api_record_scan`, `api_get_scan_history`               |
-| `preferences`  | User preferences, onboarding                          | `api_get_user_preferences`, `api_complete_onboarding`   |
-| `submissions`  | User product submissions                              | `api_submit_product`, `api_get_my_submissions`          |
-| `telemetry`    | Event tracking, analytics                             | `api_track_event`, `api_admin_get_event_summary`        |
-| `dashboard`    | Dashboard data, recently viewed                       | `api_get_dashboard_data`, `api_get_recently_viewed`     |
-| `confidence`   | Data confidence scoring                               | `api_data_confidence`                                   |
-| `provenance`   | Data source tracking, cross-validation                | `admin_provenance_dashboard`                            |
-| `infrastructure` | MV refresh, staleness, search vectors               | `refresh_all_materialized_views`, `mv_staleness_check`  |
-| `flags`        | Feature flags, rollout                                | `admin_toggle_flag`, `expire_stale_flags`               |
+| Domain           | Scope                                           | Examples                                                   |
+| ---------------- | ----------------------------------------------- | ---------------------------------------------------------- |
+| `products`       | Product identity, detail, listing, alternatives | `api_product_detail`, `api_better_alternatives`            |
+| `category`       | Category listing, overview, statistics          | `api_category_listing`, `api_category_overview`            |
+| `scoring`        | Score computation, explanation, history         | `api_score_explanation`, `api_score_history`               |
+| `search`         | Full-text search, autocomplete, filters         | `api_search_products`, `api_search_autocomplete`           |
+| `health`         | Health profiles, warnings, daily values         | `api_create_health_profile`, `api_product_health_warnings` |
+| `lists`          | User product lists (CRUD, sharing)              | `api_create_list`, `api_get_lists`, `api_add_to_list`      |
+| `compare`        | Product comparisons                             | `api_get_products_for_compare`, `api_save_comparison`      |
+| `scanner`        | Barcode scanning, scan history                  | `api_record_scan`, `api_get_scan_history`                  |
+| `preferences`    | User preferences, onboarding                    | `api_get_user_preferences`, `api_complete_onboarding`      |
+| `submissions`    | User product submissions                        | `api_submit_product`, `api_get_my_submissions`             |
+| `telemetry`      | Event tracking, analytics                       | `api_track_event`, `api_admin_get_event_summary`           |
+| `dashboard`      | Dashboard data, recently viewed                 | `api_get_dashboard_data`, `api_get_recently_viewed`        |
+| `confidence`     | Data confidence scoring                         | `api_data_confidence`                                      |
+| `provenance`     | Data source tracking, cross-validation          | `admin_provenance_dashboard`                               |
+| `infrastructure` | MV refresh, staleness, search vectors           | `refresh_all_materialized_views`, `mv_staleness_check`     |
+| `flags`          | Feature flags, rollout                          | `admin_toggle_flag`, `expire_stale_flags`                  |
 
 ### 1.3 Action Naming
 
 Actions use descriptive verb-noun or verb patterns:
 
-| Pattern          | Usage                       | Examples                                        |
-| ---------------- | --------------------------- | ----------------------------------------------- |
-| `get_*`          | Retrieve single/list        | `api_get_lists`, `api_get_scan_history`          |
-| `create_*`       | Insert new record           | `api_create_list`, `api_create_health_profile`   |
-| `update_*`       | Modify existing record      | `api_update_list`, `api_update_health_profile`   |
-| `delete_*`       | Remove record               | `api_delete_list`, `api_delete_comparison`        |
-| `search_*`       | Full-text/fuzzy search      | `api_search_products`, `api_search_autocomplete` |
-| `record_*`       | Log an event/action         | `api_record_scan`, `api_record_product_view`     |
-| `toggle_*`       | Flip boolean state          | `api_toggle_share`, `admin_toggle_flag`          |
-| `compute_*`      | Calculate derived value     | `compute_unhealthiness_v32`, `compute_score`     |
-| `find_*`         | Discovery/similarity        | `find_better_alternatives`, `find_similar_products` |
-| `resolve_*`      | Multi-tier resolution       | `resolve_effective_country`, `resolve_language`   |
+| Pattern     | Usage                   | Examples                                            |
+| ----------- | ----------------------- | --------------------------------------------------- |
+| `get_*`     | Retrieve single/list    | `api_get_lists`, `api_get_scan_history`             |
+| `create_*`  | Insert new record       | `api_create_list`, `api_create_health_profile`      |
+| `update_*`  | Modify existing record  | `api_update_list`, `api_update_health_profile`      |
+| `delete_*`  | Remove record           | `api_delete_list`, `api_delete_comparison`          |
+| `search_*`  | Full-text/fuzzy search  | `api_search_products`, `api_search_autocomplete`    |
+| `record_*`  | Log an event/action     | `api_record_scan`, `api_record_product_view`        |
+| `toggle_*`  | Flip boolean state      | `api_toggle_share`, `admin_toggle_flag`             |
+| `compute_*` | Calculate derived value | `compute_unhealthiness_v32`, `compute_score`        |
+| `find_*`    | Discovery/similarity    | `find_better_alternatives`, `find_similar_products` |
+| `resolve_*` | Multi-tier resolution   | `resolve_effective_country`, `resolve_language`     |
 
 ### 1.4 Version Suffix
 
@@ -84,31 +84,31 @@ Do **not** use version suffixes for new endpoints or non-breaking changes.
 
 ### 2.1 Standard Prefixes
 
-| Prefix | Usage                    | Example                        |
-| ------ | ------------------------ | ------------------------------ |
-| `p_`   | Function parameters      | `p_product_id`, `p_query`      |
-| `v_`   | Local variables (plpgsql)| `v_total`, `v_rows`            |
+| Prefix | Usage                     | Example                   |
+| ------ | ------------------------- | ------------------------- |
+| `p_`   | Function parameters       | `p_product_id`, `p_query` |
+| `v_`   | Local variables (plpgsql) | `v_total`, `v_rows`       |
 
 ### 2.2 Common Parameters
 
 These parameters appear across multiple functions and must use consistent names:
 
-| Parameter              | Type      | Default | Description                    |
-| ---------------------- | --------- | ------- | ------------------------------ |
-| `p_product_id`         | `bigint`  | —       | Product identifier             |
-| `p_ean`                | `text`    | —       | EAN-13 barcode                 |
-| `p_category`           | `text`    | `NULL`  | Category filter                |
-| `p_country`            | `text`    | `NULL`  | Country code (auto-resolved)   |
-| `p_limit`              | `integer` | `20`    | Result page size               |
-| `p_offset`             | `integer` | `0`     | Result page offset             |
-| `p_query`              | `text`    | —       | Search query text              |
-| `p_sort_by`            | `text`    | `'score'` | Sort column key              |
-| `p_sort_dir`           | `text`    | `'asc'` | Sort direction (asc/desc)      |
-| `p_diet_preference`    | `text`    | `NULL`  | Diet filter                    |
-| `p_avoid_allergens`    | `text[]`  | `NULL`  | Allergen exclusion list        |
-| `p_strict_diet`        | `boolean` | `false` | Strict diet matching           |
-| `p_strict_allergen`    | `boolean` | `false` | Strict allergen matching       |
-| `p_treat_may_contain`  | `boolean` | `false` | Treat traces as contains       |
+| Parameter             | Type      | Default   | Description                  |
+| --------------------- | --------- | --------- | ---------------------------- |
+| `p_product_id`        | `bigint`  | —         | Product identifier           |
+| `p_ean`               | `text`    | —         | EAN-13 barcode               |
+| `p_category`          | `text`    | `NULL`    | Category filter              |
+| `p_country`           | `text`    | `NULL`    | Country code (auto-resolved) |
+| `p_limit`             | `integer` | `20`      | Result page size             |
+| `p_offset`            | `integer` | `0`       | Result page offset           |
+| `p_query`             | `text`    | —         | Search query text            |
+| `p_sort_by`           | `text`    | `'score'` | Sort column key              |
+| `p_sort_dir`          | `text`    | `'asc'`   | Sort direction (asc/desc)    |
+| `p_diet_preference`   | `text`    | `NULL`    | Diet filter                  |
+| `p_avoid_allergens`   | `text[]`  | `NULL`    | Allergen exclusion list      |
+| `p_strict_diet`       | `boolean` | `false`   | Strict diet matching         |
+| `p_strict_allergen`   | `boolean` | `false`   | Strict allergen matching     |
+| `p_treat_may_contain` | `boolean` | `false`   | Treat traces as contains     |
 
 ### 2.3 Pagination Clamping
 
@@ -155,12 +155,12 @@ When `auth.uid()` is `NULL`.
 
 All score-related responses use consistent band labels:
 
-| Band         | Score Range | Key Value     |
-| ------------ | ----------- | ------------- |
-| Low risk     | 1–25        | `"low"`       |
-| Moderate     | 26–50       | `"moderate"`  |
-| High         | 51–75       | `"high"`      |
-| Very high    | 76–100      | `"very_high"` |
+| Band      | Score Range | Key Value     |
+| --------- | ----------- | ------------- |
+| Low risk  | 1–25        | `"low"`       |
+| Moderate  | 26–50       | `"moderate"`  |
+| High      | 51–75       | `"high"`      |
+| Very high | 76–100      | `"very_high"` |
 
 ### 3.4 Boolean Conversion
 
@@ -268,19 +268,19 @@ and 7 `trg_*` functions follow the naming convention correctly.
 These internal functions predate the convention but are **not exposed as RPCs**,
 so renaming is unnecessary:
 
-| Function                        | Domain         | Notes                              |
-| ------------------------------- | -------------- | ---------------------------------- |
-| `compute_unhealthiness_v32`     | scoring        | Active scoring function            |
-| `assign_confidence`             | confidence     | Called by `score_category()`       |
-| `find_better_alternatives`      | products       | Called by `api_better_alternatives` |
-| `find_similar_products`         | products       | Similarity engine                  |
-| `build_search_vector`           | search         | Trigger helper                     |
-| `expand_search_query`           | search         | Query expansion                    |
-| `search_rank`                   | search         | Ranking function                   |
-| `resolve_effective_country`     | preferences    | Country resolution                 |
-| `resolve_language`              | preferences    | Language resolution                |
-| `score_category` (PROCEDURE)    | scoring        | Batch scoring orchestrator         |
-| `compute_score`                 | scoring        | Config-driven scoring              |
+| Function                     | Domain      | Notes                               |
+| ---------------------------- | ----------- | ----------------------------------- |
+| `compute_unhealthiness_v32`  | scoring     | Active scoring function             |
+| `assign_confidence`          | confidence  | Called by `score_category()`        |
+| `find_better_alternatives`   | products    | Called by `api_better_alternatives` |
+| `find_similar_products`      | products    | Similarity engine                   |
+| `build_search_vector`        | search      | Trigger helper                      |
+| `expand_search_query`        | search      | Query expansion                     |
+| `search_rank`                | search      | Ranking function                    |
+| `resolve_effective_country`  | preferences | Country resolution                  |
+| `resolve_language`           | preferences | Language resolution                 |
+| `score_category` (PROCEDURE) | scoring     | Batch scoring orchestrator          |
+| `compute_score`              | scoring     | Config-driven scoring               |
 
 These are all internal helpers that follow implicit domain conventions.
 No renaming action needed — the `api_*` / `admin_*` / `metric_*` / `trg_*`
@@ -290,18 +290,18 @@ prefix system provides sufficient clarity for the RPC surface.
 
 ## 8. Function Count Summary
 
-| Visibility     | Count | Description                              |
-| -------------- | ----: | ---------------------------------------- |
-| `api_*`        |    57 | Public frontend-facing (incl. `api_admin_*`) |
-| `api_admin_*`  |     7 | Admin panel (subset of `api_*`)          |
-| `admin_*`      |     7 | Ops tooling (not RPC-exposed)            |
-| `metric_*`     |    10 | Analytics aggregation                    |
-| `trg_*`        |     7 | Trigger functions                        |
-| _(internal)_   |    26 | Internal helpers, compute, resolve       |
-| **Total**      | **107** |                                        |
+| Visibility    |   Count | Description                                  |
+| ------------- | ------: | -------------------------------------------- |
+| `api_*`       |      57 | Public frontend-facing (incl. `api_admin_*`) |
+| `api_admin_*` |       7 | Admin panel (subset of `api_*`)              |
+| `admin_*`     |       7 | Ops tooling (not RPC-exposed)                |
+| `metric_*`    |      10 | Analytics aggregation                        |
+| `trg_*`       |       7 | Trigger functions                            |
+| _(internal)_  |      26 | Internal helpers, compute, resolve           |
+| **Total**     | **107** |                                              |
 
 ---
 
 > **Canonical registry:** See [api-registry.yaml](api-registry.yaml) for the structured,
-> machine-readable registry of all 107 functions with parameters, return types,
+> machine-readable registry that currently lists public-schema functions with parameters, return types,
 > auth requirements, domain classification, and performance targets.

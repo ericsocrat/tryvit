@@ -13,6 +13,10 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Documentation
+
+- Reconcile stale documentation references across project docs: update outdated QA/check-count references to current documented values, switch API registry references in `API_CONVENTIONS.md` and `FRONTEND_API_MAP.md` to count-neutral wording, clarify pipeline folder terminology in `copilot-instructions.md`, and mark the stale Next.js upgrade note in `SECURITY.md` as resolved (#1147)
+
 ### Fixed
 
 - Resolve 6 React Compiler violations (Phase 1 of 2): `static-components`
