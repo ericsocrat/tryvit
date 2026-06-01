@@ -1,6 +1,8 @@
 // ─── Category Score Bar — mini score range visualization ─────────────────────
 
 import { type ScoreColorBand, scoreColorFromScore } from "@/lib/constants";
+import { useTranslation } from "@/lib/i18n";
+import { toTryVitScore } from "@/lib/score-utils";
 
 // Tailwind-safe bg classes for each 5-band color token
 const BAND_BG: Record<ScoreColorBand, string> = {
@@ -30,16 +32,28 @@ export function CategoryScoreBar({
   maxScore,
   avgScore,
 }: Readonly<CategoryScoreBarProps>) {
+  const { t } = useTranslation();
+
+  // Geometry and color stay on the raw unhealthiness axis (lower = healthier).
   const band = scoreColorFromScore(avgScore);
   const left = Math.max(0, Math.min(100, minScore));
   const right = Math.max(0, Math.min(100, maxScore));
   const width = Math.max(2, right - left); // minimum 2% so tiny ranges are visible
 
+  // Accessible label uses the consumer-facing TryVit scale (higher = healthier),
+  // ascending to match the visible CategoryStatsCard range direction:
+  // most unhealthy (lowest TryVit) → least unhealthy (highest TryVit).
+  const tryVitLow = toTryVitScore(maxScore);
+  const tryVitHigh = toTryVitScore(minScore);
+
   return (
     <div
       className="relative h-1.5 w-full overflow-hidden rounded-full bg-surface-subtle"
       role="img"
-      aria-label={`Score range ${minScore} to ${maxScore}`}
+      aria-label={t("categories.scoreRangeAria", {
+        min: tryVitLow,
+        max: tryVitHigh,
+      })}
     >
       <div
         className={`absolute inset-y-0 rounded-full ${BAND_BG[band]}`}

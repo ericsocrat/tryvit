@@ -136,6 +136,32 @@ export default function CategoryListingPage() {
     await queryClient.invalidateQueries({ queryKey: queryKeys.categoryListing(slug, sortBy, sortDir, offset) });
   }, [queryClient, slug, sortBy, sortDir, offset]);
 
+  // Unknown or stale category slug: the overview loaded successfully but no
+  // category matches this slug. Show a dedicated not-found state instead of a
+  // fabricated empty category (distinct from a valid category with 0 products).
+  if (overviewData !== undefined && !categoryStats) {
+    return (
+      <div className="space-y-6">
+        <Breadcrumbs
+          items={[
+            { labelKey: "nav.home", href: "/app" },
+            { labelKey: "categories.title", href: "/app/categories" },
+            { label: formatSlug(slug) },
+          ]}
+        />
+        <EmptyState
+          variant="no-results"
+          titleKey="categories.notFound"
+          descriptionKey="categories.notFoundDesc"
+          action={{
+            labelKey: "categories.backToCategories",
+            href: "/app/categories",
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <PullToRefresh onRefresh={handleRefresh}>
     <div className="space-y-6">

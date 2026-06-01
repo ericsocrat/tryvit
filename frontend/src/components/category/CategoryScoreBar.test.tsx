@@ -5,12 +5,14 @@ import { CategoryScoreBar } from "./CategoryScoreBar";
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
 describe("CategoryScoreBar", () => {
-  it("renders with role img and aria-label", () => {
-    render(<CategoryScoreBar minScore={20} maxScore={80} avgScore={50} />);
+  it("renders aria-label on the consumer-facing TryVit scale (not raw unhealthiness)", () => {
+    // Raw unhealthiness min=10, max=40 → TryVit ascending: 100-40=60 to 100-10=90.
+    // Asymmetric values prove the conversion (raw would read "10 to 40").
+    render(<CategoryScoreBar minScore={10} maxScore={40} avgScore={25} />);
 
     const bar = screen.getByRole("img");
     expect(bar).toBeInTheDocument();
-    expect(bar).toHaveAttribute("aria-label", "Score range 20 to 80");
+    expect(bar).toHaveAttribute("aria-label", "Score range 60 to 90");
   });
 
   it("renders filled segment with correct positioning", () => {
