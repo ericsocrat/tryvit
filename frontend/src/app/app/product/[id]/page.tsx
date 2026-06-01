@@ -362,6 +362,9 @@ export default function ProductDetailPage() {
                   />
                 ) : null;
               })()}
+              <p className="text-xs text-foreground-muted">
+                {t("product.scoreConfidenceHint")}
+              </p>
             </div>
 
             {/* Health flags (inline) */}

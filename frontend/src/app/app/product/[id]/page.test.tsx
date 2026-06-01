@@ -1228,6 +1228,22 @@ describe("ProductDetailPage", () => {
     });
   });
 
+  it("shows the score-confidence guidance helper under the score section", async () => {
+    mockGetProductProfile.mockResolvedValue({
+      ok: true,
+      data: makeProfile(),
+    });
+    render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "Use TryVit Score for quick health ranking, then check Confidence and NOVA before deciding.",
+        ),
+      ).toBeInTheDocument();
+    });
+  });
+
   it("expands score interpretation on click with correct band text", async () => {
     mockGetProductProfile.mockResolvedValue({
       ok: true,

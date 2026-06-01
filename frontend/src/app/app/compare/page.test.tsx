@@ -92,7 +92,7 @@ describe("ComparePage", () => {
     it("shows empty state when no ids param", () => {
       render(<ComparePage />, { wrapper: createWrapper() });
       expect(
-        screen.getByText("Select 2–4 products to compare"),
+        screen.getByText("Start by choosing 2–4 products to compare"),
       ).toBeInTheDocument();
     });
 
@@ -100,7 +100,7 @@ describe("ComparePage", () => {
       mockGet.mockReturnValue("5");
       render(<ComparePage />, { wrapper: createWrapper() });
       expect(
-        screen.getByText("Select 2–4 products to compare"),
+        screen.getByText("Start by choosing 2–4 products to compare"),
       ).toBeInTheDocument();
     });
 

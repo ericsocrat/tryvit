@@ -233,11 +233,11 @@ describe("SearchPage", () => {
     // Description text from search.emptyStateDescription
     expect(
       screen.getByText(
-        "Find healthier alternatives, compare products, and make informed choices.",
+        "Start with a simple term, open a product, then compare alternatives in one tap.",
       ),
     ).toBeInTheDocument();
-    // "Try searching for" label
-    expect(screen.getByText("Try searching for")).toBeInTheDocument();
+    // Starter label above popular terms
+    expect(screen.getByText("Start with one of these")).toBeInTheDocument();
     // First 6 popular terms rendered as chips
     expect(screen.getByText("milk")).toBeInTheDocument();
     expect(screen.getByText("cheese")).toBeInTheDocument();
