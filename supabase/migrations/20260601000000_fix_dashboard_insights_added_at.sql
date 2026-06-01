@@ -1,4 +1,5 @@
 -- 20260601000000_fix_dashboard_insights_added_at.sql
+-- Migration: Correct api_dashboard_insights() score-trend list-item ordering to use user_product_list_items.added_at
 -- Purpose: Runtime fix for api_dashboard_insights().
 --   The score-trend block ordered favorites by `li.created_at`, but the
 --   user_product_list_items table (alias `li`) has no `created_at` column —
