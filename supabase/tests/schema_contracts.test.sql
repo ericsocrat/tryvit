@@ -122,6 +122,7 @@ SELECT has_function('public', 'api_admin_get_funnel',      'function api_admin_g
 SELECT has_function('public', 'api_record_product_view',   'function api_record_product_view exists');
 SELECT has_function('public', 'api_get_recently_viewed',   'function api_get_recently_viewed exists');
 SELECT has_function('public', 'api_get_dashboard_data',    'function api_get_dashboard_data exists');
+SELECT has_function('public', 'api_dashboard_insights',    'function api_dashboard_insights exists');
 SELECT has_function('public', 'resolve_language',           'function resolve_language exists');
 SELECT has_function('public', 'expand_search_query',        'function expand_search_query exists');
 

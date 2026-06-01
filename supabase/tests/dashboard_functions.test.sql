@@ -5,7 +5,7 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 
 BEGIN;
-SELECT plan(20);
+SELECT plan(24);
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- 1. api_record_product_view — basic contract
@@ -138,6 +138,103 @@ SET LOCAL "request.jwt.claims" = '{"sub":"00000000-0000-0000-0000-000000000001"}
 SELECT lives_ok(
   $$SELECT public.api_dashboard_insights()$$,
   'api_dashboard_insights executes score-trend query without error (added_at regression guard)'
+);
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- 5. api_dashboard_insights favorites semantic hardening
+--    Favorites are identified by list_type='favorites' and must continue
+--    to work even if the display name is renamed/localized.
+-- ═══════════════════════════════════════════════════════════════════════════
+
+INSERT INTO auth.users (
+  id,
+  aud,
+  role,
+  email,
+  encrypted_password,
+  email_confirmed_at,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at,
+  updated_at
+)
+VALUES (
+  '00000000-0000-0000-0000-0000000000d1'::uuid,
+  'authenticated',
+  'authenticated',
+  'pgtap-dashboard-favorites@example.com',
+  crypt('password', gen_salt('bf')),
+  now(),
+  '{"provider":"email","providers":["email"]}'::jsonb,
+  '{}'::jsonb,
+  now(),
+  now()
+)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.category_ref (category, slug, display_name, sort_order, is_active)
+VALUES ('pgtap-dashboard-cat', 'pgtap-dashboard-cat', 'pgTAP Dashboard Cat', 998, true)
+ON CONFLICT (category) DO UPDATE SET slug = 'pgtap-dashboard-cat';
+
+INSERT INTO public.country_ref (country_code, country_name, is_active)
+VALUES ('XY', 'Dashboard Test Country', true)
+ON CONFLICT (country_code) DO NOTHING;
+
+INSERT INTO public.products (
+  product_id, ean, product_name, brand, category, country,
+  unhealthiness_score, nutri_score_label, nova_classification
+) VALUES (
+  999982, '5901234888099', 'pgTAP Dashboard Favorite Product', 'DashboardBrand',
+  'pgtap-dashboard-cat', 'XY', 42, 'B', '2'
+)
+ON CONFLICT (product_id) DO NOTHING;
+
+INSERT INTO public.user_product_lists (
+  id, user_id, name, is_default, list_type, share_enabled
+) VALUES (
+  '11111111-2222-3333-4444-555555555555'::uuid,
+  '00000000-0000-0000-0000-0000000000d1'::uuid,
+  'Ulubione (renamed)',
+  true,
+  'favorites',
+  false
+)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.user_product_list_items (
+  id, list_id, product_id, position, notes, added_at
+) VALUES (
+  'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'::uuid,
+  '11111111-2222-3333-4444-555555555555'::uuid,
+  999982,
+  0,
+  NULL,
+  now()
+)
+ON CONFLICT (list_id, product_id) DO NOTHING;
+
+SET LOCAL "request.jwt.claim.sub" = '00000000-0000-0000-0000-0000000000d1';
+SET LOCAL "request.jwt.claims" = '{"sub":"00000000-0000-0000-0000-0000000000d1","role":"authenticated"}';
+
+SELECT ok(
+  NOT ((public.api_dashboard_insights()) ? 'error'),
+  'api_dashboard_insights succeeds for renamed favorites list'
+);
+
+SELECT is(
+  ((public.api_dashboard_insights())->>'avg_score')::numeric,
+  42.0::numeric,
+  'api_dashboard_insights includes renamed favorites list_type data in avg_score'
+);
+
+SELECT ok(
+  (public.api_dashboard_insights()) ? 'score_trend',
+  'api_dashboard_insights includes score_trend key'
+);
+
+SELECT ok(
+  (public.api_dashboard_insights()) ? 'nova_distribution',
+  'api_dashboard_insights includes nova_distribution key'
 );
 
 SELECT * FROM finish();
