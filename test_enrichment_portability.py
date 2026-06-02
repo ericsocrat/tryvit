@@ -21,6 +21,7 @@ from enrich_ingredients import (
 
 # ─── _format_ingredient_row ────────────────────────────────────────────────
 
+
 class TestFormatIngredientRow:
     def test_basic_row(self):
         row = {
@@ -61,6 +62,7 @@ class TestFormatIngredientRow:
 
 
 # ─── _gen_ingredient_batch ─────────────────────────────────────────────────
+
 
 class TestGenIngredientBatch:
     @pytest.fixture
@@ -137,6 +139,7 @@ class TestGenIngredientBatch:
 
 # ─── _gen_ingredient_section ───────────────────────────────────────────────
 
+
 class TestGenIngredientSection:
     def test_batches_large_input(self):
         rows = [
@@ -177,6 +180,7 @@ class TestGenIngredientSection:
 
 
 # ─── process_ingredients ───────────────────────────────────────────────────
+
 
 class TestProcessIngredients:
     def test_rows_have_ingredient_name_not_id(self):
@@ -263,6 +267,7 @@ class TestProcessIngredients:
 
 # ─── percent normalization / validation ───────────────────────────────────
 
+
 class TestPercentNormalization:
     def test_valid_percent_preserved(self):
         anomalies: list[dict] = []
@@ -312,6 +317,7 @@ class TestPercentNormalization:
 
 
 # ─── validate_statement (identity guard) ───────────────────────────────────
+
 
 class TestValidateStatement:
     def test_portable_ingredient_insert_passes(self):

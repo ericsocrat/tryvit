@@ -916,9 +916,7 @@ def main():
         sample = percent_anomalies[:5]
         for a in sample:
             print(
-                "    - "
-                f"EAN {a['ean']}, ingredient '{a['ingredient_name']}', "
-                f"{a['field']}={a['value']} ({a['reason']})"
+                f"    - EAN {a['ean']}, ingredient '{a['ingredient_name']}', {a['field']}={a['value']} ({a['reason']})"
             )
 
     invalid_rows = _find_invalid_percent_rows(all_ingredient_rows)
