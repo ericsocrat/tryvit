@@ -11,13 +11,16 @@ import pytest
 
 from check_enrichment_identity import validate_statement
 from enrich_ingredients import (
+    _find_invalid_percent_rows,
     _format_ingredient_row,
     _gen_ingredient_batch,
     _gen_ingredient_section,
+    _normalize_percent_value,
     process_ingredients,
 )
 
 # ─── _format_ingredient_row ────────────────────────────────────────────────
+
 
 class TestFormatIngredientRow:
     def test_basic_row(self):
@@ -59,6 +62,7 @@ class TestFormatIngredientRow:
 
 
 # ─── _gen_ingredient_batch ─────────────────────────────────────────────────
+
 
 class TestGenIngredientBatch:
     @pytest.fixture
@@ -135,6 +139,7 @@ class TestGenIngredientBatch:
 
 # ─── _gen_ingredient_section ───────────────────────────────────────────────
 
+
 class TestGenIngredientSection:
     def test_batches_large_input(self):
         rows = [
@@ -175,6 +180,7 @@ class TestGenIngredientSection:
 
 
 # ─── process_ingredients ───────────────────────────────────────────────────
+
 
 class TestProcessIngredients:
     def test_rows_have_ingredient_name_not_id(self):
@@ -232,8 +238,86 @@ class TestProcessIngredients:
         assert "xylitol" in new_ingredients
         assert rows[0]["ingredient_name"] == "Xylitol"
 
+    def test_out_of_range_percent_is_sanitized_to_null(self):
+        off_product = {
+            "ingredients": [
+                {"text": "bad ingredient", "id": "en:bad-ingredient", "percent": 300, "percent_estimate": 0.5},
+            ]
+        }
+        lookup = {"bad ingredient": 1}
+        new_ingredients: dict = {}
+        anomalies: list[dict] = []
+
+        rows = process_ingredients(
+            off_product,
+            "DE",
+            "4062300344877",
+            lookup,
+            new_ingredients,
+            anomalies,
+        )
+
+        assert len(rows) == 1
+        assert rows[0]["percent"] is None
+        assert rows[0]["percent_estimate"] == 0.5
+        assert len(anomalies) == 1
+        assert anomalies[0]["field"] == "percent"
+        assert anomalies[0]["reason"] == "out_of_range"
+
+
+# ─── percent normalization / validation ───────────────────────────────────
+
+
+class TestPercentNormalization:
+    def test_valid_percent_preserved(self):
+        anomalies: list[dict] = []
+        v = _normalize_percent_value(
+            12.345,
+            field_name="percent",
+            ean="5900000000001",
+            ingredient_name="Sugar",
+            anomalies=anomalies,
+        )
+        assert v == 12.35
+        assert anomalies == []
+
+    def test_comma_decimal_parsed(self):
+        anomalies: list[dict] = []
+        v = _normalize_percent_value(
+            "3,5",
+            field_name="percent",
+            ean="5900000000001",
+            ingredient_name="Sugar",
+            anomalies=anomalies,
+        )
+        assert v == 3.5
+        assert anomalies == []
+
+    def test_out_of_range_becomes_null_and_logs(self):
+        anomalies: list[dict] = []
+        v = _normalize_percent_value(
+            300,
+            field_name="percent",
+            ean="4062300344877",
+            ingredient_name="Bad",
+            anomalies=anomalies,
+        )
+        assert v is None
+        assert len(anomalies) == 1
+        assert anomalies[0]["reason"] == "out_of_range"
+
+    def test_invalid_rows_detector(self):
+        rows = [
+            {"ean": "1", "ingredient_name": "A", "percent": 10, "percent_estimate": 20},
+            {"ean": "2", "ingredient_name": "B", "percent": 101, "percent_estimate": 20},
+            {"ean": "3", "ingredient_name": "C", "percent": None, "percent_estimate": -1},
+        ]
+        bad = _find_invalid_percent_rows(rows)
+        assert len(bad) == 2
+
 
 # ─── validate_statement (identity guard) ───────────────────────────────────
+
 
 class TestValidateStatement:
     def test_portable_ingredient_insert_passes(self):

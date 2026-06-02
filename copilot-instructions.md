@@ -189,7 +189,7 @@ tryvit/
 │   │   ├── api-gateway/             # Write-path gateway (rate limiting, validation) (#478)
 │   │   └── send-push-notification/  # Push notification handler
 │   ├── dr-drill/                    # Disaster recovery drill artifacts
-│   └── migrations/                  # 230 append-only schema migrations
+│   └── migrations/                  # 231 append-only schema migrations
 │       ├── 20260207000100_create_schema.sql
 │       ├── 20260207000200_baseline.sql
 │       ├── 20260207000300_add_chip_metadata.sql
@@ -698,7 +698,7 @@ a mix of `'baked'`, `'fried'`, and `'none'`.
 
 ## 7. Migrations
 
-**Location:** `supabase/migrations/` — managed by Supabase CLI. Currently **230 migrations**.
+**Location:** `supabase/migrations/` — managed by Supabase CLI. Currently **231 migrations**.
 
 **Rules:**
 

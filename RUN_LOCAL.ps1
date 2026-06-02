@@ -246,6 +246,48 @@ if ($Enrich) {
     # Step 2: Apply the generated migration
     $enrichMigrations = Get-ChildItem -Path (Join-Path $PSScriptRoot "supabase" "migrations") -Filter "*populate_ingredients_allergens*" | Sort-Object Name | Select-Object -Last 1
     if ($enrichMigrations) {
+        Write-Host "Step 2a: Validating percent ranges in generated migration..." -ForegroundColor Yellow
+        $validatePercentScript = @"
+import re
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+line_re = re.compile(
+    r"\(\s*'(?P<country>[^']+)'\s*,\s*'(?P<ean>[^']+)'\s*,\s*'(?P<name>(?:[^']|'')*)'\s*,\s*(?P<position>\d+)\s*,\s*(?P<pct>NULL|-?\d+(?:\.\d+)?)::numeric\s*,\s*(?P<pct_est>NULL|-?\d+(?:\.\d+)?)::numeric"
+)
+
+bad = []
+for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+    m = line_re.search(line)
+    if not m:
+        continue
+    pct = m.group("pct")
+    if pct != "NULL":
+        val = float(pct)
+        if val < 0 or val > 100:
+            bad.append((lineno, m.group("country"), m.group("ean"), m.group("name"), val))
+
+if bad:
+    print(f"Found {len(bad)} out-of-range product_ingredient.percent values in {path.name}", file=sys.stderr)
+    for row in bad[:5]:
+        print(
+            f"  line {row[0]} country={row[1]} ean={row[2]} ingredient='{row[3]}' percent={row[4]}",
+            file=sys.stderr,
+        )
+    sys.exit(1)
+
+print("Percent range validation passed.")
+"@
+        & $pythonExe -c $validatePercentScript $enrichMigrations.FullName
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  ✓ Percent range validation passed" -ForegroundColor Green
+        }
+        else {
+            Write-Host "  ✗ Percent range validation FAILED" -ForegroundColor Red
+            exit 1
+        }
+
         Write-Host "Step 2: Applying enrichment migration: $($enrichMigrations.Name)..." -ForegroundColor Yellow
         $output = Get-Content $enrichMigrations.FullName -Raw | docker exec -i $CONTAINER psql -U $DB_USER -d $DB_NAME -v ON_ERROR_STOP=1 2>&1
         if ($LASTEXITCODE -eq 0) {
