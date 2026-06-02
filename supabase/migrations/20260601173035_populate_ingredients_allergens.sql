@@ -1,4 +1,5 @@
--- Populate product_ingredient and product_allergen_info tables
+-- Migration: Populate product_ingredient and product_allergen_info tables
+-- Rollback: Delete rows inserted by this migration from product_ingredient, product_allergen_info, and ingredient_ref if a full regeneration is required.
 -- Generated: 2026-06-02 03:09
 -- Products processed: 8673
 -- Products with ingredients: 7562
