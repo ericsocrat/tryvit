@@ -285,12 +285,81 @@ def _clamp_percent_estimate(pct_est: float | None) -> float | None:
     return round(max(pct_est, 0), 2)
 
 
+def _normalize_percent_value(
+    value: object,
+    *,
+    field_name: str,
+    ean: str,
+    ingredient_name: str,
+    anomalies: list[dict],
+) -> float | None:
+    """Normalize percent-like fields.
+
+    - Preserve NULL/empty as NULL
+    - Preserve valid numeric range [0, 100]
+    - If outside range or unparsable, set NULL and record anomaly
+    """
+    if value is None:
+        return None
+
+    if isinstance(value, str):
+        raw = value.strip()
+        if raw == "":
+            return None
+        # Some OFF entries may use comma decimal separators.
+        raw = raw.replace(",", ".")
+    else:
+        raw = str(value)
+
+    try:
+        parsed = float(raw)
+    except (TypeError, ValueError):
+        anomalies.append(
+            {
+                "ean": ean,
+                "ingredient_name": ingredient_name,
+                "field": field_name,
+                "value": value,
+                "reason": "unparsable",
+            }
+        )
+        return None
+
+    if parsed < 0 or parsed > 100:
+        anomalies.append(
+            {
+                "ean": ean,
+                "ingredient_name": ingredient_name,
+                "field": field_name,
+                "value": value,
+                "reason": "out_of_range",
+            }
+        )
+        return None
+
+    return round(parsed, 2)
+
+
+def _find_invalid_percent_rows(rows: list[dict]) -> list[dict]:
+    """Return rows that still contain out-of-range percent values."""
+    bad: list[dict] = []
+    for r in rows:
+        pct = r.get("percent")
+        if pct is not None and (pct < 0 or pct > 100):
+            bad.append(r)
+        pct_est = r.get("percent_estimate")
+        if pct_est is not None and (pct_est < 0 or pct_est > 100):
+            bad.append(r)
+    return bad
+
+
 def process_ingredients(
     off_product: dict,
     country: str,
     ean: str,
     ingredient_lookup: dict[str, int],
     new_ingredients: dict[str, dict],
+    percent_anomalies: list[dict] | None = None,
 ) -> list[dict]:
     """Extract ingredient rows for a product.
 
@@ -300,6 +369,9 @@ def process_ingredients(
     ingredients = off_product.get("ingredients", [])
     if not ingredients:
         return []
+
+    if percent_anomalies is None:
+        percent_anomalies = []
 
     rows: list[dict] = []
 
@@ -330,8 +402,20 @@ def process_ingredients(
                 "ean": ean,
                 "ingredient_name": display_name,
                 "position": pos,
-                "percent": item.get("percent"),
-                "percent_estimate": _clamp_percent_estimate(item.get("percent_estimate")),
+                "percent": _normalize_percent_value(
+                    item.get("percent"),
+                    field_name="percent",
+                    ean=ean,
+                    ingredient_name=display_name,
+                    anomalies=percent_anomalies,
+                ),
+                "percent_estimate": _normalize_percent_value(
+                    item.get("percent_estimate"),
+                    field_name="percent_estimate",
+                    ean=ean,
+                    ingredient_name=display_name,
+                    anomalies=percent_anomalies,
+                ),
                 "is_sub_ingredient": is_sub,
                 "parent_ingredient_name": parent_name if is_sub else None,
             }
@@ -765,6 +849,7 @@ def main():
     all_ingredient_rows = []
     all_allergen_rows = []
     new_ingredients: dict[str, dict] = {}
+    percent_anomalies: list[dict] = []
 
     stats = {
         "processed": 0,
@@ -800,6 +885,7 @@ def main():
                     product["ean"],
                     ingredient_lookup,
                     new_ingredients,
+                    percent_anomalies,
                 )
                 if ing_rows:
                     stats["with_ingredients"] += 1
@@ -824,6 +910,28 @@ def main():
     print(f"  New ingredients to add: {len(new_ingredients)}")
     print(f"  Total ingredient rows: {len(all_ingredient_rows)}")
     print(f"  Total allergen rows: {len(all_allergen_rows)}")
+
+    if percent_anomalies:
+        print(f"  Percent anomalies sanitized to NULL: {len(percent_anomalies)}")
+        sample = percent_anomalies[:5]
+        for a in sample:
+            print(
+                "    - "
+                f"EAN {a['ean']}, ingredient '{a['ingredient_name']}', "
+                f"{a['field']}={a['value']} ({a['reason']})"
+            )
+
+    invalid_rows = _find_invalid_percent_rows(all_ingredient_rows)
+    if invalid_rows:
+        print("\nERROR: Invalid percent values remain after normalization.", file=sys.stderr)
+        for row in invalid_rows[:5]:
+            print(
+                "  "
+                f"EAN {row.get('ean')} ingredient '{row.get('ingredient_name')}' "
+                f"percent={row.get('percent')} percent_estimate={row.get('percent_estimate')}",
+                file=sys.stderr,
+            )
+        sys.exit(1)
 
     sql = generate_migration(all_ingredient_rows, all_allergen_rows, new_ingredients, stats)
 
