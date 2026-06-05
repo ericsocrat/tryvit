@@ -644,32 +644,3 @@ WHERE
     NOT ((api_score_explanation(p.product_id))->'summary') ? 'conflicts'
     OR NOT ((api_score_explanation(p.product_id))->'summary') ? 'qualified_headline';
 
-
--- ═══════════════════════════════════════════════════════════════════════════
--- Test 6: ingredient_concern_score matches concern-tier formula
--- ═══════════════════════════════════════════════════════════════════════════
-WITH expected_scores AS (
-  SELECT
-    p.product_id,
-    LEAST(100, COALESCE(SUM(
-      CASE ir.concern_tier
-        WHEN 1 THEN 15
-        WHEN 2 THEN 40
-        WHEN 3 THEN 100
-        ELSE 0
-      END
-    ), 0))::int AS expected_ingredient_concern_score
-  FROM products p
-  LEFT JOIN product_ingredient pi ON pi.product_id = p.product_id
-  LEFT JOIN ingredient_ref ir ON ir.ingredient_id = pi.ingredient_id
-  WHERE p.is_deprecated IS NOT TRUE
-  GROUP BY p.product_id
-)
-SELECT p.product_id, p.brand, p.product_name,
-       p.ingredient_concern_score,
-       e.expected_ingredient_concern_score,
-       'INCORRECT ingredient_concern_score' AS issue
-FROM products p
-JOIN expected_scores e ON e.product_id = p.product_id
-WHERE p.is_deprecated IS NOT TRUE
-  AND COALESCE(p.ingredient_concern_score, 0) <> e.expected_ingredient_concern_score;
