@@ -198,3 +198,43 @@ SELECT '17. ingredient_translations source valid' AS check_name,
 FROM ingredient_translations
 WHERE source NOT IN ('curated', 'off_api', 'auto_translated', 'user_submitted');
 
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- 18. concern_tier should not remain all-zero once product_ingredient exists
+-- ═══════════════════════════════════════════════════════════════════════════
+SELECT '18. concern_tier populated when product ingredients exist' AS check_name,
+       CASE
+         WHEN NOT EXISTS (SELECT 1 FROM product_ingredient) THEN 0
+         WHEN EXISTS (
+           SELECT 1
+           FROM product_ingredient pi
+           JOIN ingredient_ref ir ON ir.ingredient_id = pi.ingredient_id
+           WHERE COALESCE(ir.concern_tier, 0) > 0
+         ) THEN 0
+         ELSE 1
+       END AS violations;
+
+-- ═══════════════════════════════════════════════════════════════════════════
+-- 19. products linked to concern-tier ingredients should have concern score
+-- ═══════════════════════════════════════════════════════════════════════════
+SELECT '19. concern-tier linked products have concern score' AS check_name,
+       CASE
+         WHEN NOT EXISTS (
+           SELECT 1
+           FROM product_ingredient pi
+           JOIN ingredient_ref ir ON ir.ingredient_id = pi.ingredient_id
+           WHERE COALESCE(ir.concern_tier, 0) > 0
+         ) THEN 0
+         ELSE (
+           SELECT COUNT(*)
+           FROM (
+             SELECT DISTINCT p.product_id
+             FROM products p
+             JOIN product_ingredient pi ON pi.product_id = p.product_id
+             JOIN ingredient_ref ir ON ir.ingredient_id = pi.ingredient_id
+             WHERE p.is_deprecated IS NOT TRUE
+               AND COALESCE(ir.concern_tier, 0) > 0
+               AND COALESCE(p.ingredient_concern_score, 0) = 0
+           ) x
+         )
+       END AS violations;
