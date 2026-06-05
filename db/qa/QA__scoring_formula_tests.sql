@@ -643,3 +643,4 @@ FROM (
 WHERE
     NOT ((api_score_explanation(p.product_id))->'summary') ? 'conflicts'
     OR NOT ((api_score_explanation(p.product_id))->'summary') ? 'qualified_headline';
+

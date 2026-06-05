@@ -189,7 +189,7 @@ tryvit/
 │   │   ├── api-gateway/             # Write-path gateway (rate limiting, validation) (#478)
 │   │   └── send-push-notification/  # Push notification handler
 │   ├── dr-drill/                    # Disaster recovery drill artifacts
-│   └── migrations/                  # 231 append-only schema migrations
+│   └── migrations/                  # 232 append-only schema migrations
 │       ├── 20260207000100_create_schema.sql
 │       ├── 20260207000200_baseline.sql
 │       ├── 20260207000300_add_chip_metadata.sql
@@ -698,7 +698,7 @@ a mix of `'baked'`, `'fried'`, and `'none'`.
 
 ## 7. Migrations
 
-**Location:** `supabase/migrations/` — managed by Supabase CLI. Currently **231 migrations**.
+**Location:** `supabase/migrations/` — managed by Supabase CLI. Currently **232 migrations**.
 
 **Rules:**
 
@@ -2705,3 +2705,4 @@ gh issue comment XXX --body "Session complete — <what was done, what's next>"
 - Sections are numbered sequentially so any agent can say "per §X.Y" unambiguously.
 - When this file is updated, the commit message should include the sections changed (e.g., `chore(docs): copilot-instructions §4 — add ingredient_translations table`).
 - When the instructions conflict with a specific issue's acceptance criteria, the issue wins for that specific change — but document the divergence in the PR description.
+
