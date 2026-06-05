@@ -1,3 +1,5 @@
+-- Migration: Backfill ingredient concern tiers from strict additive/E-code classification.
+-- Rollback: Manual rollback only. Restore affected ingredient_ref.concern_tier/is_additive/concern_reason and products.ingredient_concern_score from backup if needed.
 -- Backfill ingredient_ref.concern_tier using strict additive/E-code classification.
 -- Safe to re-run. Does not downgrade existing higher concern tiers.
 
@@ -137,3 +139,4 @@ WHERE p.product_id = cs.product_id
   AND p.ingredient_concern_score IS DISTINCT FROM cs.score;
 
 COMMIT;
+
