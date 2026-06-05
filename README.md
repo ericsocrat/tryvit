@@ -187,7 +187,7 @@ echo "SELECT * FROM v_master LIMIT 5;" | docker exec -i supabase_db_tryvit psql 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────────────┐
 │  Open Food Facts │────▶│  Python Pipeline │────▶│  PostgreSQL (Supabase)  │
-│  API v2          │     │  sql_generator   │     │  231 migrations         │
+│  API v2          │     │  sql_generator   │     │  232 migrations         │
 │  (category tags, │     │  validator       │     │  58 pipeline folders    │
 │   countries=PL,DE│     │  off_client      │     │  products + nutrition   │
 └─────────────────┘     └──────────────────┘     │  + ingredients + scores │
@@ -319,7 +319,7 @@ tryvit/
 │   └── views/                       # Reference view definitions
 │
 ├── supabase/
-│   ├── migrations/                  # 231 append-only schema migrations
+│   ├── migrations/                  # 232 append-only schema migrations
 │   ├── seed/                        # Reference data seeds
 │   ├── tests/                       # pgTAP integration tests
 │   └── functions/                   # Edge Functions (API gateway, push notifications, CAPTCHA)
@@ -531,3 +531,4 @@ This project is licensed under the terms in the [LICENSE](LICENSE) file.
   <br />
   <em>Built with science and care.</em>
 </p>
+
