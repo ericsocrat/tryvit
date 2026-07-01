@@ -9,4 +9,4 @@ requests>=2.34.2,<3
 tqdm>=4.66,<5
 
 # Development / CI tools
-ruff>=0.15.15,<1
+ruff>=0.15.20,<1
