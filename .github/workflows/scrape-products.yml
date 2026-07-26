@@ -34,7 +34,7 @@ jobs:
         retailer: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.retailer != 'all' && fromJSON(format('["{0}"]', github.event.inputs.retailer)) || fromJSON('["biedronka","rewe"]') }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-python@v7
         with:
