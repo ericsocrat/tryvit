@@ -108,7 +108,10 @@ jobs:
           npx license-checker --production --excludePrivatePackages --json > /tmp/licenses.json 2>/dev/null || true
 
           # Forbidden license identifiers (grep-safe, pipe-separated)
-          FORBIDDEN_RE="GPL-2\.0|GPL-3\.0|AGPL|SSPL|EUPL|OSL-3\.0|CPAL|CPL-1\.0|Sleepycat|Watcom"
+          # Match GPL as a complete SPDX identifier so weak-copyleft LGPL
+          # expressions are not misclassified merely because they contain
+          # the substring "GPL". LGPL is intentionally not in FORBIDDEN.
+          FORBIDDEN_RE="(^|[^A-Za-z])GPL-(2\.0|3\.0)|AGPL|SSPL|EUPL|OSL-3\.0|CPAL|CPL-1\.0|Sleepycat|Watcom"
 
           # Known-safe overrides: packages manually audited as safe despite
           # ambiguous license metadata. Add "package@version" entries here.
