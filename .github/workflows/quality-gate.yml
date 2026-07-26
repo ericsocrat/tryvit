@@ -106,8 +106,26 @@ jobs:
       - name: Wait for app ready
         run: npx wait-on http://localhost:3000 --timeout 60000
 
+      # Dependabot-triggered workflows cannot read ordinary Actions secrets.
+      # Keep build/test coverage active, but skip staging-only fixture audits
+      # when those credentials are unavailable instead of reporting a false
+      # application failure.
+      - name: Check staging credentials
+        id: staging
+        env:
+          STAGING_URL: ${{ secrets.SUPABASE_URL_STAGING }}
+          STAGING_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING }}
+        run: |
+          if [ -n "$STAGING_URL" ] && [ -n "$STAGING_SERVICE_KEY" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Staging credentials unavailable; skipping fixture-dependent quality audits."
+          fi
+
       # ── Seed QA fixture data ──────────────────────────────────────────────
       - name: Seed QA fixture data
+        if: steps.staging.outputs.available == 'true'
         id: seed
         working-directory: frontend
         run: |
@@ -156,6 +174,7 @@ jobs:
 
       # ── Mobile Audit ─────────────────────────────────────────────────────
       - name: Run Mobile Audit
+        if: steps.staging.outputs.available == 'true'
         working-directory: frontend
         run: npx playwright test --project=quality-mobile --reporter=html,list
         env:
@@ -172,6 +191,7 @@ jobs:
       # error instead of the real seed failure, so it mirrors the Mobile Audit
       # step and only runs when prior steps succeed.
       - name: Run Desktop Audit
+        if: steps.staging.outputs.available == 'true'
         working-directory: frontend
         run: npx playwright test --project=quality-desktop --reporter=html,list
         env:
@@ -187,7 +207,7 @@ jobs:
       # In CI a missing staging secret fails this step (exit 1) rather than
       # leaving fixtures behind silently.
       - name: Teardown QA fixture data
-        if: always()
+        if: always() && steps.seed.outputs.seeded == 'true'
         working-directory: frontend
         run: node tests/quality/seed-fixtures.mjs --teardown
         env:
