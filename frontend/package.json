@@ -88,7 +88,7 @@
     "sharp": "^0.35.3",
     "svgo": "^4.0.2",
     "tailwindcss": "^4.2.1",
-    "typescript": "^6.0.3",
+    "typescript": "^7.0.2",
     "vitest": "^4.0.18",
     "vitest-axe": "^0.1.0",
     "ws": "^8.21.1"
