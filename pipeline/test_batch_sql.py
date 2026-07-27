@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pytest
 
+import pipeline.sql_generator as sql_generator
 from pipeline.sql_generator import _chunk, generate_pipeline
 
 # ---------------------------------------------------------------------------
@@ -55,8 +56,9 @@ def _make_products(n: int) -> list[dict]:
 
 
 @pytest.fixture()
-def tmp_output(tmp_path: Path) -> Path:
+def tmp_output(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """Return a fresh output directory for a fake category."""
+    monkeypatch.setattr(sql_generator, "PIPELINES_ROOT", tmp_path)
     out = tmp_path / "test-cat"
     out.mkdir()
     return out
