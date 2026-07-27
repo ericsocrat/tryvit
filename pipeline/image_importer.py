@@ -87,6 +87,17 @@ def _safe_child_path(directory: Path, filename: str) -> Path:
     return path
 
 
+def _safe_pipeline_subdirectory(directory: Path, name: str) -> Path:
+    """Return a generated directory that cannot escape ``db/pipelines``."""
+    path = (directory / name).resolve()
+    root = PIPELINES_ROOT.resolve()
+    try:
+        path.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(f"Refusing to write outside pipeline root: {name}") from exc
+    return path
+
+
 # ---------------------------------------------------------------------------
 # OFF image extraction
 # ---------------------------------------------------------------------------
@@ -607,7 +618,7 @@ def main() -> None:
             dir_slug = f"{slug_base}-pl"
         else:
             dir_slug = slug_base
-        output_path = base_dir / dir_slug
+        output_path = _safe_pipeline_subdirectory(base_dir, dir_slug)
         output_path.mkdir(parents=True, exist_ok=True)
 
         # Use dir_slug in filename to match sql_generator.py convention
