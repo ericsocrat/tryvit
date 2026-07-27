@@ -97,7 +97,7 @@ jobs:
             echo "Health check attempt $attempt/$MAX_RETRIES..."
 
             # Capture body AND HTTP status separately (no -f flag)
-            http_code=$(curl -s -o /tmp/health_body.txt -w "%{http_code}" \
+            http_code=$(curl -s -D /tmp/health_headers.txt -o /tmp/health_body.txt -w "%{http_code}" \
               --max-time 20 "$TARGET_URL/api/health" 2>/dev/null) || true
             response=$(cat /tmp/health_body.txt 2>/dev/null || echo "")
 
@@ -130,8 +130,9 @@ jobs:
             fi
           fi
 
-          # ── Vercel Deployment Protection (401/403) ──
-          if [ "$http_code" = "401" ] || [ "$http_code" = "403" ]; then
+          # ── Vercel Deployment Protection (401/403 or SSO redirect) ──
+          if [ "$http_code" = "401" ] || [ "$http_code" = "403" ] || \
+             { [ "$http_code" = "302" ] && grep -qi '^location: https://vercel.com/sso-api' /tmp/health_headers.txt; }; then
             echo "| /api/health | ⏭️ HTTP $http_code — Vercel deployment protection (skipped) |" >> "$GITHUB_STEP_SUMMARY"
             echo "::notice::Health check skipped — Vercel deployment protection returned HTTP $http_code on deployment-specific URL"
             exit 0
