@@ -65,7 +65,7 @@ export function LoginForm() {
     <div id="main-content" className="w-full max-w-md">
       <div className="overflow-hidden rounded-3xl border border-border/70 bg-surface/95 p-6 shadow-[0_24px_72px_rgba(15,23,42,0.14)] backdrop-blur-sm sm:p-8 dark:border-white/10 dark:shadow-[0_28px_76px_rgba(0,0,0,0.38)]">
         <div className="mb-2 flex justify-center lg:hidden">
-          <Logo variant="lockup" size={36} />
+          <Logo variant="lockup" size={36} priority />
         </div>
         <p className="mb-5 text-center text-xs font-medium uppercase tracking-widest text-brand lg:hidden">
           {t("landing.tagline")}

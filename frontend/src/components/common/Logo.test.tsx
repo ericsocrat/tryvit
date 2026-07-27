@@ -106,6 +106,14 @@ describe("Logo", () => {
     expect(img).toHaveAttribute("height", "48");
   });
 
+  it("prioritises the visible image when requested", () => {
+    render(<Logo priority />);
+    expect(screen.getByAltText("TryVit")).toHaveAttribute(
+      "fetchpriority",
+      "high",
+    );
+  });
+
   it("respects custom size for lockup variant", () => {
     render(<Logo variant="lockup" size={28} />);
     const img = screen.getByAltText("TryVit");

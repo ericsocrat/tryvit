@@ -25,6 +25,8 @@ interface LogoProps {
   size?: number;
   /** Additional CSS classes applied to the wrapper span */
   className?: string;
+  /** Prioritise the visible logo when it is the page's largest contentful element. */
+  priority?: boolean;
 }
 
 const ASSETS: Record<LogoVariant, LogoAsset> = {
@@ -40,7 +42,12 @@ const ASSETS: Record<LogoVariant, LogoAsset> = {
   },
 };
 
-export function Logo({ variant = "icon", size = 32, className }: Readonly<LogoProps>) {
+export function Logo({
+  variant = "icon",
+  size = 32,
+  className,
+  priority = false,
+}: Readonly<LogoProps>) {
   const asset = ASSETS[variant];
   const width = Math.round(size * asset.aspectRatio);
 
@@ -54,6 +61,7 @@ export function Logo({ variant = "icon", size = 32, className }: Readonly<LogoPr
         alt="TryVit"
         width={width}
         height={size}
+        fetchPriority={priority ? "high" : "auto"}
         className="logo-light select-none drop-shadow-[0_2px_6px_rgba(15,23,42,0.12)]"
       />
       {/* Dark-mode variant — hidden by default, shown when [data-theme="dark"] */}
