@@ -64,12 +64,12 @@ describe("Motion Tokens (#61)", () => {
   describe("utility classes exist", () => {
     it("defines hover-lift utility", () => {
       expect(css).toContain("@utility hover-lift");
-      expect(css).toContain("&:hover");
+      expect(css).toContain(".hover-lift:hover");
     });
 
     it("defines press-scale utility", () => {
       expect(css).toContain("@utility press-scale");
-      expect(css).toContain("&:active");
+      expect(css).toContain(".press-scale:active");
     });
 
     it("defines hover-lift-press utility", () => {
@@ -97,10 +97,7 @@ describe("Motion Tokens (#61)", () => {
 
   describe("GPU-composited properties only", () => {
     it("hover-lift uses transform (not top/left/margin)", () => {
-      // In v4, @utility hover-lift uses nested &:hover syntax
-      const hoverLiftBlock = css.match(
-        /@utility hover-lift\s*\{([\s\S]*?)\n\}/,
-      );
+      const hoverLiftBlock = css.match(/\.hover-lift:hover\s*\{([\s\S]*?)\n\}/);
       expect(hoverLiftBlock).not.toBeNull();
       const block = hoverLiftBlock![1];
       expect(block).toContain("transform");
@@ -110,10 +107,7 @@ describe("Motion Tokens (#61)", () => {
     });
 
     it("press-scale uses transform (not width/height)", () => {
-      // In v4, @utility press-scale uses nested &:active syntax
-      const pressScaleBlock = css.match(
-        /@utility press-scale\s*\{([\s\S]*?)\n\}/,
-      );
+      const pressScaleBlock = css.match(/\.press-scale:active\s*\{([\s\S]*?)\n\}/);
       expect(pressScaleBlock).not.toBeNull();
       const block = pressScaleBlock![1];
       expect(block).toContain("scale(0.97)");

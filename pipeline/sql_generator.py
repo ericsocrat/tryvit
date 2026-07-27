@@ -21,6 +21,17 @@ from pathlib import Path
 # ---------------------------------------------------------------------------
 
 
+def _safe_child_path(directory: Path, filename: str) -> Path:
+    """Return a file path that is guaranteed to remain inside *directory*."""
+    root = directory.resolve()
+    path = (root / filename).resolve()
+    try:
+        path.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(f"Refusing to write outside pipeline directory: {filename}") from exc
+    return path
+
+
 def _sql_text(value: str | None) -> str:
     """Wrap a value in single quotes, escaping internal apostrophes.
 
@@ -780,7 +791,7 @@ def generate_pipeline(
     list[Path]
         Paths of the generated files.
     """
-    out = Path(output_dir)
+    out = Path(output_dir).resolve()
     out.mkdir(parents=True, exist_ok=True)
 
     # Use the directory name as the file slug so that files inside
@@ -812,7 +823,9 @@ def generate_pipeline(
             batch_start = offset + 1
             batch_end = offset + len(chunk)
             offset += len(chunk)
-            path = out / f"PIPELINE__{slug}__01_batch_{batch_num:03d}_insert_products.sql"
+            path = _safe_child_path(
+                out, f"PIPELINE__{slug}__01_batch_{batch_num:03d}_insert_products.sql"
+            )
             path.write_text(
                 _gen_01_batch(
                     category, chunk, products, today, country,
@@ -828,7 +841,9 @@ def generate_pipeline(
             batch_start = offset + 1
             batch_end = offset + len(chunk)
             offset += len(chunk)
-            path = out / f"PIPELINE__{slug}__03_batch_{batch_num:03d}_add_nutrition.sql"
+            path = _safe_child_path(
+                out, f"PIPELINE__{slug}__03_batch_{batch_num:03d}_add_nutrition.sql"
+            )
             path.write_text(
                 _gen_03_batch(
                     category, chunk, country,
@@ -845,32 +860,32 @@ def generate_pipeline(
             old.unlink()
 
         # 01 — single insert products
-        path01 = out / f"PIPELINE__{slug}__01_insert_products.sql"
+        path01 = _safe_child_path(out, f"PIPELINE__{slug}__01_insert_products.sql")
         path01.write_text(_gen_01_insert_products(category, products, today, country), encoding="utf-8")
         files.append(path01)
 
         # 03 — single add nutrition
-        path03 = out / f"PIPELINE__{slug}__03_add_nutrition.sql"
+        path03 = _safe_child_path(out, f"PIPELINE__{slug}__03_add_nutrition.sql")
         path03.write_text(_gen_03_add_nutrition(category, products, country), encoding="utf-8")
         files.append(path03)
 
     # 04 — scoring (always single file)
-    path04 = out / f"PIPELINE__{slug}__04_scoring.sql"
+    path04 = _safe_child_path(out, f"PIPELINE__{slug}__04_scoring.sql")
     path04.write_text(_gen_04_scoring(category, products, today, country), encoding="utf-8")
     files.append(path04)
 
     # 05 — source provenance (always single file)
-    path05 = out / f"PIPELINE__{slug}__05_source_provenance.sql"
+    path05 = _safe_child_path(out, f"PIPELINE__{slug}__05_source_provenance.sql")
     path05.write_text(_gen_05_source_provenance(category, products, today, country), encoding="utf-8")
     files.append(path05)
 
     # 06 — add images (always single file)
-    path06 = out / f"PIPELINE__{slug}__06_add_images.sql"
+    path06 = _safe_child_path(out, f"PIPELINE__{slug}__06_add_images.sql")
     path06.write_text(_gen_06_add_images(category, products, today, country), encoding="utf-8")
     files.append(path06)
 
     # 07 — store availability (always single file)
-    path07 = out / f"PIPELINE__{slug}__07_store_availability.sql"
+    path07 = _safe_child_path(out, f"PIPELINE__{slug}__07_store_availability.sql")
     path07.write_text(_gen_07_store_availability(category, products, today, country), encoding="utf-8")
     files.append(path07)
 

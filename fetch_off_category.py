@@ -78,6 +78,7 @@ NUTRITION_MAP = {
 }
 
 PIPELINE_DIR = Path(__file__).parent / "db" / "pipelines"
+PROJECT_ROOT = Path(__file__).resolve().parent
 
 DB_CONTAINER = "supabase_db_tryvit"
 DB_USER = "postgres"
@@ -667,7 +668,12 @@ def _collect_ean_list(args: argparse.Namespace) -> list[str]:
     if args.eans:
         ean_list.extend(e.strip() for e in args.eans.split(",") if e.strip())
     if args.ean_file:
-        ean_path = Path(args.ean_file)
+        ean_path = (PROJECT_ROOT / args.ean_file).resolve()
+        try:
+            ean_path.relative_to(PROJECT_ROOT)
+        except ValueError:
+            print("ERROR: --ean-file must be inside the TryVit project directory")
+            sys.exit(1)
         if not ean_path.exists():
             print(f"ERROR: EAN file not found: {ean_path}")
             sys.exit(1)

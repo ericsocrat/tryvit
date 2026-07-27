@@ -53,6 +53,8 @@ REQUEST_DELAY = 0.5  # seconds
 DB_CONTAINER = "supabase_db_tryvit"
 DB_USER = "postgres"
 DB_NAME = "postgres"
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PIPELINES_ROOT = PROJECT_ROOT / "db" / "pipelines"
 
 # Mapping from OFF image key prefix → our image_type
 OFF_TYPE_MAP = {
@@ -61,6 +63,28 @@ OFF_TYPE_MAP = {
     "nutrition": "nutrition_label",
     "packaging": "packaging",
 }
+
+
+def _resolve_pipeline_output_dir(value: str) -> Path:
+    """Resolve a CLI output directory and keep it within ``db/pipelines``."""
+    path = (PROJECT_ROOT / value).resolve()
+    root = PIPELINES_ROOT.resolve()
+    try:
+        path.relative_to(root)
+    except ValueError as exc:
+        raise ValueError("--output-dir must be inside db/pipelines") from exc
+    return path
+
+
+def _safe_child_path(directory: Path, filename: str) -> Path:
+    """Return a generated file path that cannot escape *directory*."""
+    root = directory.resolve()
+    path = (root / filename).resolve()
+    try:
+        path.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(f"Refusing to write outside output directory: {filename}") from exc
+    return path
 
 
 # ---------------------------------------------------------------------------
@@ -575,7 +599,7 @@ def main() -> None:
         # Most PL categories use plain slug (e.g., "bread"), but chips-pl
         # is a special case.  DE categories always use "{slug}-de".
         slug_base = _slug(category)
-        base_dir = Path(args.output_dir)
+        base_dir = _resolve_pipeline_output_dir(args.output_dir)
         if country != "PL":
             dir_slug = f"{slug_base}-{country.lower()}"
         elif (base_dir / f"{slug_base}-pl").is_dir():
@@ -589,7 +613,7 @@ def main() -> None:
         # Use dir_slug in filename to match sql_generator.py convention
         # (e.g., PIPELINE__bread-de__06_add_images.sql in bread-de/)
         filename = f"PIPELINE__{dir_slug}__06_add_images.sql"
-        filepath = output_path / filename
+        filepath = _safe_child_path(output_path, filename)
         filepath.write_text(sql, encoding="utf-8")
         sql_files_written.append(filepath)
         logger.info("    Wrote: %s", filepath)
