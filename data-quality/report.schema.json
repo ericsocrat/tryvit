@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tryvit.example/schemas/data-quality-report-v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "active_product_count": {
+      "type": ["integer", "null"]
+    },
+    "baseline": {
+      "type": ["object", "null"]
+    },
+    "breakdowns": {
+      "properties": {
+        "category": { "type": "object" },
+        "country": { "type": "object" }
+      },
+      "required": ["country", "category"],
+      "type": "object"
+    },
+    "dataset_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "environment": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "failures": {
+      "items": { "type": "string" },
+      "type": "array"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "metrics": {
+      "type": "object"
+    },
+    "regressions": {
+      "items": { "type": "object" },
+      "type": "array"
+    },
+    "report_schema_version": {
+      "const": 1
+    },
+    "status": {
+      "enum": ["pass", "warn", "fail"]
+    },
+    "thresholds": {
+      "type": "object"
+    },
+    "warnings": {
+      "items": { "type": "string" },
+      "type": "array"
+    }
+  },
+  "required": [
+    "report_schema_version",
+    "generated_at",
+    "environment",
+    "dataset_id",
+    "status",
+    "active_product_count",
+    "metrics",
+    "breakdowns",
+    "thresholds",
+    "baseline",
+    "regressions",
+    "warnings",
+    "failures"
+  ],
+  "title": "TryVit data-quality report",
+  "type": "object"
+}

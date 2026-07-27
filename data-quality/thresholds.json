@@ -1,0 +1,143 @@
+{
+  "country_overrides": {},
+  "report_schema_version": 1,
+  "rules": [
+    {
+      "direction": "higher",
+      "hard_min": 1,
+      "id": "active_products",
+      "max_regression": 0,
+      "path": "metrics.dataset.active_products",
+      "regression_unit": "count",
+      "severity": "failure"
+    },
+    {
+      "direction": "higher",
+      "hard_min": 7.1,
+      "id": "allergen_known_contains_pct",
+      "max_regression": 1.0,
+      "path": "metrics.allergens.known_contains.pct",
+      "regression_unit": "percentage_points",
+      "severity": "failure"
+    },
+    {
+      "direction": "higher",
+      "hard_min": 60.6,
+      "id": "average_confidence",
+      "max_regression": 1.0,
+      "path": "metrics.confidence.average_total",
+      "regression_unit": "points",
+      "severity": "failure"
+    },
+    {
+      "direction": "lower",
+      "id": "scoring_empty_categories",
+      "max_regression": 0,
+      "path": "metrics.scoring.empty_category_count",
+      "regression_unit": "count",
+      "severity": "warning"
+    },
+    {
+      "direction": "lower",
+      "hard_max": 0,
+      "id": "duplicate_country_ean_products",
+      "max_regression": 0,
+      "path": "metrics.ean.duplicate_country_aware_products",
+      "regression_unit": "count",
+      "severity": "failure"
+    },
+    {
+      "direction": "higher",
+      "hard_min": 98.9,
+      "id": "ean_valid_pct",
+      "max_regression": 1.0,
+      "path": "metrics.ean.valid.pct",
+      "regression_unit": "percentage_points",
+      "severity": "failure"
+    },
+    {
+      "direction": "higher",
+      "hard_min": 10.2,
+      "id": "ingredient_coverage_pct",
+      "max_regression": 1.0,
+      "path": "metrics.ingredients.with_links.pct",
+      "regression_unit": "percentage_points",
+      "severity": "failure"
+    },
+    {
+      "direction": "lower",
+      "hard_max": 0,
+      "id": "ingredient_orphan_links",
+      "max_regression": 0,
+      "path": "metrics.ingredients.orphan_links.missing_reference",
+      "regression_unit": "count",
+      "severity": "failure"
+    },
+    {
+      "direction": "lower",
+      "hard_max": 5.0,
+      "id": "low_confidence_pct",
+      "max_regression": 0.5,
+      "path": "metrics.confidence.bands.low.pct",
+      "regression_unit": "percentage_points",
+      "severity": "failure"
+    },
+    {
+      "direction": "lower",
+      "hard_max": 0,
+      "id": "missing_confidence_rows",
+      "max_regression": 0,
+      "path": "metrics.confidence.missing_from_view.count",
+      "regression_unit": "count",
+      "severity": "failure"
+    },
+    {
+      "direction": "lower",
+      "hard_max": 0,
+      "id": "missing_critical_identity",
+      "max_regression": 0,
+      "path": "metrics.critical_fields.missing_any.count",
+      "regression_unit": "count",
+      "severity": "failure"
+    },
+    {
+      "direction": "higher",
+      "hard_min": 99.0,
+      "id": "nutrition_usable_core_pct",
+      "max_regression": 1.0,
+      "path": "metrics.nutrition.usable_core.pct",
+      "regression_unit": "percentage_points",
+      "severity": "failure"
+    },
+    {
+      "direction": "lower",
+      "hard_max": 0,
+      "id": "nutrition_impossible_values",
+      "max_regression": 0,
+      "path": "metrics.nutrition.impossible_values.count",
+      "regression_unit": "count",
+      "severity": "failure"
+    },
+    {
+      "direction": "lower",
+      "id": "scoring_collapsed_categories",
+      "max_regression": 1,
+      "path": "metrics.scoring.collapsed_category_count",
+      "regression_unit": "count",
+      "severity": "warning"
+    },
+    {
+      "direction": "lower",
+      "hard_max": 0,
+      "id": "scoring_invalid_scores",
+      "max_regression": 0,
+      "path": "metrics.scoring.invalid_scores.count",
+      "regression_unit": "count",
+      "severity": "failure"
+    }
+  ],
+  "schema_version": 1,
+  "scoring": {
+    "collapsed_category_min_products": 5
+  }
+}

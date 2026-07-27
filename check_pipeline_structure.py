@@ -8,6 +8,7 @@ Checks:
   - Step 01 uses ON CONFLICT (country, brand, product_name)
   - Step 03 uses ON CONFLICT (product_id)
   - Step 04 calls score_category()
+  - Every product deprecation records a reason
   - No hardcoded product_id integer literals in INSERT/UPDATE
   - No references to non-portable constructs
 
@@ -63,6 +64,11 @@ STEP_04_SCORE_CALL = re.compile(
 # Batch file step pattern: 01_batch_001_insert_products → base step "01_insert_products"
 _BATCH_STEP_RE = re.compile(r"^(\d{2})_batch_\d{3}_(.+)$")
 
+_PRODUCT_DEPRECATION = re.compile(
+    r"update\s+products\s+set\s+(?:(?!;).)*is_deprecated\s*=\s*true(?:(?!;).)*;",
+    re.IGNORECASE | re.DOTALL,
+)
+
 
 def _check_required_files(category: str, folder: Path) -> list[str]:
     """Check that all required step files exist for a category."""
@@ -102,32 +108,29 @@ def _check_hardcoded_pids(category: str, fname: str, content: str) -> list[str]:
                 continue
             if _is_subquery_context(content, match.start(), match.end()):
                 continue
-            violations.append(
-                f"[{category}/{fname}] Possible hardcoded product_id: {match.group().strip()}"
-            )
+            violations.append(f"[{category}/{fname}] Possible hardcoded product_id: {match.group().strip()}")
     return violations
 
 
-def _check_step_structure(
-    category: str, fname: str, step: str, content: str
-) -> list[str]:
+def _check_step_structure(category: str, fname: str, step: str, content: str) -> list[str]:
     """Validate step-specific SQL patterns."""
     violations: list[str] = []
 
     if step == "01_insert_products" and not STEP_01_CONFLICT.search(content):
-        violations.append(
-            f"[{category}/{fname}] Missing ON CONFLICT (country, brand, product_name)"
-        )
+        violations.append(f"[{category}/{fname}] Missing ON CONFLICT (country, brand, product_name)")
+
+    if step == "01_insert_products":
+        for statement in _PRODUCT_DEPRECATION.findall(content):
+            if "deprecated_reason" not in statement.lower():
+                violations.append(f"[{category}/{fname}] Product deprecation is missing deprecated_reason")
 
     elif step == "03_add_nutrition":
         has_upsert = STEP_03_CONFLICT.search(content)
-        has_delete_insert = re.search(
-            r"delete\s+from\s+nutrition_facts", content, re.IGNORECASE
-        ) and re.search(r"insert\s+into\s+nutrition_facts", content, re.IGNORECASE)
+        has_delete_insert = re.search(r"delete\s+from\s+nutrition_facts", content, re.IGNORECASE) and re.search(
+            r"insert\s+into\s+nutrition_facts", content, re.IGNORECASE
+        )
         if not has_upsert and not has_delete_insert:
-            violations.append(
-                f"[{category}/{fname}] Missing ON CONFLICT (product_id) or delete-then-insert pattern"
-            )
+            violations.append(f"[{category}/{fname}] Missing ON CONFLICT (product_id) or delete-then-insert pattern")
 
     elif step == "04_scoring" and not STEP_04_SCORE_CALL.search(content):
         violations.append(f"[{category}/{fname}] Missing CALL score_category()")

@@ -15,7 +15,15 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
+- Document the deterministic PostgreSQL data-quality report, metric semantics,
+  threshold policy, and intentional baseline-update workflow.
 - Reconcile stale documentation references across project docs: update outdated QA/check-count references to current documented values, switch API registry references in `API_CONVENTIONS.md` and `FRONTEND_API_MAP.md` to count-neutral wording, clarify pipeline folder terminology in `copilot-instructions.md`, and mark the stale Next.js upgrade note in `SECURITY.md` as resolved (#1147)
+
+### CI
+
+- Add a versioned data-quality report and regression gate to deterministic DB
+  QA, with JSON/Markdown artifacts and one source of truth for confidence
+  thresholds.
 
 ### Fixed
 

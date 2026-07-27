@@ -4,7 +4,9 @@
 
 -- 0a. DEPRECATE old products in this category & release their EANs
 update products
-set is_deprecated = true, ean = null
+set is_deprecated = true,
+    deprecated_reason = 'Replaced by pipeline refresh',
+    ean = null
 where country = 'PL'
   and category = 'Chips'
   and is_deprecated is not true;
