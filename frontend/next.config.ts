@@ -47,6 +47,9 @@ const nextConfig: NextConfig = {
   // Enable View Transitions API for smoother page navigations (#61)
   experimental: {
     viewTransition: true,
+    // TypeScript 7 does not expose the compiler API that Next.js normally uses.
+    // Delegate type checking to the TypeScript CLI instead.
+    useTypeScriptCli: true,
   },
   // Allow Open Food Facts product images
   images: {
