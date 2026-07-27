@@ -47,6 +47,10 @@ env:
 
 jobs:
   quality_gate:
+    # Dependabot cannot read the Supabase runtime and staging secrets needed
+    # to start the audited app. Its PRs remain covered by PR Gate (build,
+    # lint, unit, and Playwright) plus the separate Lighthouse workflow.
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
