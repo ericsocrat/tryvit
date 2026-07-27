@@ -253,6 +253,7 @@ tryvit/
 │   ├── CONTRACT_TESTING.md          # API contract testing strategy & pgTAP patterns
 │   ├── COUNTRY_EXPANSION_GUIDE.md   # Multi-country protocol (PL active, DE full parity)
 │   ├── DATA_INTEGRITY_AUDITS.md     # Ongoing data integrity audit framework
+│   ├── data-quality-report.md        # Deterministic DB quality report, baseline, and CI gate
 │   ├── DATA_PROVENANCE.md           # Data provenance & freshness governance
 │   ├── DATA_SOURCES.md              # Source hierarchy & validation workflow
 │   ├── DISASTER_DRILL_REPORT.md     # Disaster recovery drill report & findings

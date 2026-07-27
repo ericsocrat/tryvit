@@ -15,6 +15,9 @@ on:
       - "enrich_ingredients.py"
       - "check_enrichment_identity.py"
       - "check_pipeline_structure.py"
+      - "data_quality_report.py"
+      - "test_data_quality_report.py"
+      - "data-quality/**"
       - "fetch_off_category.py"
       - ".github/workflows/qa.yml"
   pull_request:
@@ -27,6 +30,9 @@ on:
       - "enrich_ingredients.py"
       - "check_enrichment_identity.py"
       - "check_pipeline_structure.py"
+      - "data_quality_report.py"
+      - "test_data_quality_report.py"
+      - "data-quality/**"
       - "fetch_off_category.py"
       - "RUN_QA.ps1"
       - "RUN_LOCAL.ps1"
@@ -91,6 +97,9 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
+      - name: Data-quality report unit tests
+        run: python -m unittest test_data_quality_report.py
+
       - name: Enrichment identity guard
         run: |
           set -euo pipefail
@@ -119,21 +128,19 @@ jobs:
           echo '-- CI: skipped (orphan cleanup deferred to ci_post_enrichment.sql)' \
             > supabase/migrations/20260316000700_cleanup_orphan_ingredient_refs.sql
 
-          for f in $(ls supabase/migrations/*.sql | sort); do
+          while IFS= read -r -d '' f; do
             echo "Applying: $f"
             psql -v ON_ERROR_STOP=1 -f "$f"
-          done
+          done < <(find supabase/migrations -maxdepth 1 -type f -name '*.sql' -print0 | sort -z)
 
       - name: Run pipelines
         run: |
           set -euo pipefail
-          for category in db/pipelines/*/; do
-            cat_name=$(basename "$category")
-            for f in $(ls "$category"PIPELINE__*.sql 2>/dev/null | sort); do
-              echo "  RUN  $f"
-              psql -v ON_ERROR_STOP=1 -f "$f"
-            done
-          done
+          while IFS= read -r -d '' f; do
+            echo "  RUN  $f"
+            psql -v ON_ERROR_STOP=1 -f "$f"
+          done < <(find db/pipelines -mindepth 2 -maxdepth 2 \
+            -type f -name 'PIPELINE__*.sql' -print0 | sort -z)
 
       - name: Replay enrichment data
         run: |
@@ -203,6 +210,45 @@ jobs:
           echo "Applying CI post-pipeline fixup..."
           psql -v ON_ERROR_STOP=1 -f db/ci_post_pipeline.sql
           echo "Post-pipeline fixup complete."
+
+      - name: Generate data-quality report
+        id: data_quality
+        run: |
+          set +e
+          python data_quality_report.py \
+            --config data-quality/thresholds.json \
+            --baseline data-quality/baselines/ci-v1.json \
+            --dataset-id deterministic-ci-qa-v1 \
+            --environment ci \
+            --json-out data-quality-report.json \
+            --markdown-out data-quality-report.md
+          exit_code=$?
+          set -e
+          echo "exit_code=$exit_code" >> "$GITHUB_OUTPUT"
+          if [ "$exit_code" -ne 0 ]; then
+            echo "::warning::Data-quality gate exited with code $exit_code"
+          fi
+
+      - name: Upload data-quality report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: data-quality-report
+          path: |
+            data-quality-report.json
+            data-quality-report.md
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Add data-quality summary
+        if: always()
+        shell: pwsh
+        run: |
+          if (Test-Path 'data-quality-report.md') {
+            Get-Content 'data-quality-report.md' | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          } else {
+            "## TryVit data-quality report`n`n[FAIL] Report was not generated." | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          }
 
       - name: Scoring diagnostic
         if: always()
@@ -301,28 +347,6 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
-      - name: Confidence coverage threshold
-        run: |
-          # Fail if more than 5% of products have low confidence
-          # Note: CI threshold is 5% (not 1%) because data-enrichment migrations
-          # use hardcoded product_ids and don't populate ingredient/allergen data,
-          # artificially deflating confidence scores.
-          low_count=$(psql --tuples-only -c "
-            SELECT COUNT(*) FROM v_product_confidence WHERE confidence_band = 'low';
-          " 2>&1 | tr -d ' ')
-          total=$(psql --tuples-only -c "
-            SELECT COUNT(*) FROM products WHERE is_deprecated IS NOT TRUE;
-          " 2>&1 | tr -d ' ')
-          # Integer math: threshold = total * 5 / 100 (5% floor division)
-          threshold=$((total * 5 / 100))
-          echo "Low confidence: $low_count / $total (threshold: $threshold)"
-          if [ "$low_count" -gt "$threshold" ]; then
-            echo "✗ FAILED — More than 5% of products have low confidence ($low_count / $total)"
-            exit 1
-          else
-            echo "✓ PASS — Low confidence within threshold"
-          fi
-
       - name: Generate QA summary
         if: always()
         shell: pwsh
@@ -354,20 +378,38 @@ jobs:
           [void]$sb.AppendLine("*Schema version: $($qa.version) · Timestamp: $($qa.timestamp)*")
           $sb.ToString() | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
-      - name: Fail if QA failed
+      - name: Fail if QA or data quality failed
         if: always()
         shell: pwsh
         run: |
-          if (-not (Test-Path 'qa.json')) { exit 1 }
+          $failed = $false
+          if (-not (Test-Path 'qa.json')) {
+            Write-Host "::error::qa.json was not generated"
+            $failed = $true
+          }
+          if (-not (Test-Path 'data-quality-report.json')) {
+            Write-Host "::error::data-quality-report.json was not generated"
+            $failed = $true
+          }
+          if ($failed) { exit 1 }
           $qa = Get-Content 'qa.json' -Raw | ConvertFrom-Json
           if ($qa.overall -eq 'fail') {
             Write-Host "::error::QA FAILED — $($qa.summary.failed) check(s) failed"
-            exit 1
+            $failed = $true
           }
           if ($qa.overall -eq 'warn') {
             Write-Host "::warning::QA passed with warnings ($($qa.summary.warnings) flagged items)"
             # Only fail on warn if explicitly requested
             $failOnWarn = '${{ inputs.fail_on_warn }}' -eq 'true'
-            if ($failOnWarn) { exit 2 }
+            if ($failOnWarn) { $failed = $true }
           }
+          $dataQuality = Get-Content 'data-quality-report.json' -Raw | ConvertFrom-Json
+          if ($dataQuality.status -eq 'fail' -or $dataQuality.failures.Count -gt 0) {
+            Write-Host "::error::Data-quality gate FAILED — $($dataQuality.failures.Count) failure(s)"
+            $failed = $true
+          } elseif ($dataQuality.status -eq 'warn') {
+            Write-Host "::warning::Data-quality gate passed with $($dataQuality.warnings.Count) warning(s)"
+          }
+          if ($failed) { exit 1 }
           Write-Host "QA passed: $($qa.summary.passed)/$($qa.summary.total_checks) checks"
+          Write-Host "Data quality passed: $($dataQuality.active_product_count) active products"

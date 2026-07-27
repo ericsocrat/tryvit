@@ -1,0 +1,24 @@
+{
+  "baseline_id": "deterministic-ci-v1",
+  "baseline_schema_version": 1,
+  "created_at": "2026-07-28T00:00:00+00:00",
+  "dataset_id": "deterministic-ci-qa-v1",
+  "report_schema_version": 1,
+  "values": {
+    "active_products": 8552,
+    "allergen_known_contains_pct": 8.1,
+    "average_confidence": 61.6,
+    "duplicate_country_ean_products": 0,
+    "ean_valid_pct": 99.9,
+    "ingredient_coverage_pct": 11.2,
+    "ingredient_orphan_links": 0,
+    "low_confidence_pct": 0.1,
+    "missing_confidence_rows": 0,
+    "missing_critical_identity": 0,
+    "nutrition_impossible_values": 0,
+    "nutrition_usable_core_pct": 100.0,
+    "scoring_collapsed_categories": 0,
+    "scoring_empty_categories": 0,
+    "scoring_invalid_scores": 0
+  }
+}
