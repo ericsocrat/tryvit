@@ -54,8 +54,9 @@ jobs:
     name: RPC Contract Validation
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Skip forks — they never have staging secrets
-    if: github.event.pull_request.head.repo.fork != true
+    # Skip forks and Dependabot — GitHub does not expose staging secrets to either.
+    # Dependabot changes remain covered by the secret-free PR validation suite.
+    if: github.event.pull_request.head.repo.fork != true && github.actor != 'dependabot[bot]'
 
     defaults:
       run:
