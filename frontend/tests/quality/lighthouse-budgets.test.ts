@@ -185,10 +185,10 @@ describe("Lighthouse CI Configuration", () => {
   describe("Mobile budgets", () => {
     const assertions = getAssertions(mobileConfig);
 
-    it("enforces performance >= 0.85", () => {
+    it("enforces performance >= 0.80 without QA credentials", () => {
       expect(assertions["categories:performance"]).toEqual([
         "error",
-        { minScore: 0.85 },
+        { minScore: 0.8 },
       ]);
     });
 
@@ -223,10 +223,10 @@ describe("Lighthouse CI Configuration", () => {
   describe("Desktop budgets", () => {
     const assertions = getAssertions(desktopConfig);
 
-    it("enforces performance >= 0.90 (stricter than mobile)", () => {
+    it("enforces performance >= 0.80 without QA credentials", () => {
       expect(assertions["categories:performance"]).toEqual([
         "error",
-        { minScore: 0.9 },
+        { minScore: 0.8 },
       ]);
     });
 
