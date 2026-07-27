@@ -10,7 +10,10 @@ from pipeline.image_importer import (
     _safe_child_path as image_path,
     _safe_pipeline_subdirectory,
 )
-from pipeline.sql_generator import _safe_child_path as sql_path
+from pipeline.sql_generator import (
+    _resolve_pipeline_output_dir as sql_output_dir,
+    _safe_child_path as sql_path,
+)
 
 
 def test_sql_generator_output_stays_inside_directory(tmp_path: Path) -> None:
@@ -22,6 +25,11 @@ def test_sql_generator_output_stays_inside_directory(tmp_path: Path) -> None:
 def test_sql_generator_rejects_path_traversal(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="outside pipeline directory"):
         sql_path(tmp_path, "../outside.sql")
+
+
+def test_sql_generator_rejects_output_outside_pipeline_root() -> None:
+    with pytest.raises(ValueError, match="outside db/pipelines"):
+        sql_output_dir("../outside")
 
 
 def test_image_importer_rejects_output_outside_pipeline_root() -> None:

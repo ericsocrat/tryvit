@@ -20,6 +20,22 @@ from pathlib import Path
 # Helpers
 # ---------------------------------------------------------------------------
 
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PIPELINES_ROOT = PROJECT_ROOT / "db" / "pipelines"
+
+
+def _resolve_pipeline_output_dir(output_dir: str | Path) -> Path:
+    """Resolve an output directory and require it to stay under db/pipelines."""
+    root = PIPELINES_ROOT.resolve()
+    path = Path(output_dir).resolve()
+    try:
+        path.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(
+            "Refusing to write outside db/pipelines: " + str(output_dir)
+        ) from exc
+    return path
+
 
 def _safe_child_path(directory: Path, filename: str) -> Path:
     """Return a file path that is guaranteed to remain inside *directory*."""
@@ -791,7 +807,7 @@ def generate_pipeline(
     list[Path]
         Paths of the generated files.
     """
-    out = Path(output_dir).resolve()
+    out = _resolve_pipeline_output_dir(output_dir)
     out.mkdir(parents=True, exist_ok=True)
 
     # Use the directory name as the file slug so that files inside

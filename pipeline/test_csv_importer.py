@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 
+import pipeline.sql_generator as sql_generator
 from pipeline.csv_importer import (
     MAX_ROWS,
     VALID_CATEGORIES,
@@ -20,6 +21,12 @@ from pipeline.csv_importer import (
     CSVImporter,
     CSVImportError,
 )
+
+
+@pytest.fixture(autouse=True)
+def pipeline_output_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep generated test SQL isolated from the repository pipeline directory."""
+    monkeypatch.setattr(sql_generator, "PIPELINES_ROOT", tmp_path)
 
 
 def _write_csv(tmp_path: Path, content: str) -> Path:
