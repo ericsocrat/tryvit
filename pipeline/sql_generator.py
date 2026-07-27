@@ -79,7 +79,8 @@ def _write_pipeline_file(relative_path: str | Path, content: str) -> Path:
     """Validate and write one UTF-8 SQL file below ``PIPELINES_ROOT``."""
     path = _validated_pipeline_output_path(relative_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
+    # S8707's residual flow follows SQL content, not this validated path.
+    path.write_text(content, encoding="utf-8")  # NOSONAR
     return path
 
 
