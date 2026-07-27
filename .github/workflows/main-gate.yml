@@ -63,11 +63,11 @@ jobs:
       - run: npm ci
 
       - name: TypeScript type-check
-        run: npx tsc --noEmit
+        run: npm run type-check
         timeout-minutes: 3
 
       - name: ESLint
-        run: npx eslint src/
+        run: npm run lint
         timeout-minutes: 3
 
       - name: CI runtime summary
