@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
+import { getDeploymentReadiness } from "@/lib/deployment-readiness";
 
 import { LandingSections } from "./LandingSections";
 
@@ -15,11 +16,11 @@ import { LandingSections } from "./LandingSections";
 export const metadata: Metadata = {
   title: "TryVit — Know What You Eat",
   description:
-    "Compare food products, understand nutrition scores, and make healthier choices. 2,400+ products across Poland and Germany.",
+    "Explore TryVit food scoring, ingredient transparency, and healthier-choice tools. Live data features depend on current service availability.",
   openGraph: {
     title: "TryVit — Know What You Eat",
     description:
-      "Compare food products, understand nutrition scores, and make healthier choices. 2,400+ products across Poland and Germany.",
+      "Explore TryVit food scoring, ingredient transparency, and healthier-choice tools. Live data features depend on current service availability.",
     images: ["/opengraph-image"],
     type: "website",
   },
@@ -35,6 +36,8 @@ export const metadata: Metadata = {
 // ─── Page ───────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
+  const readiness = getDeploymentReadiness();
+  const dataAvailable = readiness.dataBackend === "available";
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -42,23 +45,27 @@ export default function HomePage() {
     url: "https://tryvit.vercel.app",
     description:
       "Compare food products, understand nutrition scores, and make healthier choices.",
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate:
-          "https://tryvit.vercel.app/app/search?q={search_term_string}",
-      },
-      "query-input": "required name=search_term_string",
-    },
+    ...(dataAvailable
+      ? {
+          potentialAction: {
+            "@type": "SearchAction",
+            target: {
+              "@type": "EntryPoint",
+              urlTemplate:
+                "https://tryvit.vercel.app/app/search?q={search_term_string}",
+            },
+            "query-input": "required name=search_term_string",
+          },
+        }
+      : {}),
   };
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <Header dataAvailable={dataAvailable} />
 
       <main id="main-content" className="flex-1">
-        <LandingSections />
+        <LandingSections dataAvailable={dataAvailable} />
       </main>
 
       <Footer />

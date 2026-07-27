@@ -13,7 +13,7 @@ const emptySubscribe = () => () => {};
 const getMountedSnapshot = () => globalThis.window !== undefined;
 const getMountedServerSnapshot = () => false;
 
-export function Header() {
+export function Header({ dataAvailable = true }: { dataAvailable?: boolean }) {
   const { t } = useTranslation();
   const { resolved, setMode } = useTheme();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -24,6 +24,8 @@ export function Header() {
   );
 
   useEffect(() => {
+    if (!dataAvailable) return;
+
     let active = true;
 
     try {
@@ -57,7 +59,7 @@ export function Header() {
         active = false;
       };
     }
-  }, []);
+  }, [dataAvailable]);
 
   function toggleTheme() {
     setMode(resolved === "dark" ? "light" : "dark");
@@ -93,8 +95,12 @@ export function Header() {
               <Moon size={20} aria-hidden="true" />
             )}
           </button>
-          <ButtonLink href={isAuthenticated ? "/app" : "/auth/login"}>
-            {isAuthenticated ? t("auth.dashboard") : t("auth.signIn")}
+          <ButtonLink href={dataAvailable ? (isAuthenticated ? "/app" : "/auth/login") : "#service-status"}>
+            {dataAvailable
+              ? isAuthenticated
+                ? t("auth.dashboard")
+                : t("auth.signIn")
+              : t("landing.demoMode")}
           </ButtonLink>
         </nav>
       </div>

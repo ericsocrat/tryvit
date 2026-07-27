@@ -25,10 +25,12 @@ import { useEffect, useState } from "react";
 // Mirrors the client-side auth pattern in Header.tsx so the landing CTAs can
 // show a Dashboard link to logged-in users while keeping `/` a static page.
 
-function useIsAuthenticated(): boolean {
+function useIsAuthenticated(enabled: boolean): boolean {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    if (!enabled) return;
+
     let active = true;
 
     try {
@@ -62,14 +64,20 @@ function useIsAuthenticated(): boolean {
         active = false;
       };
     }
-  }, []);
+  }, [enabled]);
 
   return isAuthenticated;
 }
 
 // ─── Hero ───────────────────────────────────────────────────────────────────
 
-function HeroSection({ isAuthenticated }: { isAuthenticated: boolean }) {
+function HeroSection({
+  dataAvailable,
+  isAuthenticated,
+}: {
+  dataAvailable: boolean;
+  isAuthenticated: boolean;
+}) {
   const { t } = useTranslation();
   return (
     <section className="relative isolate overflow-hidden bg-linear-to-b from-brand/12 via-surface to-surface pb-16 pt-16 sm:pb-24 sm:pt-20">
@@ -103,11 +111,29 @@ function HeroSection({ isAuthenticated }: { isAuthenticated: boolean }) {
                 {t("landing.tagline")}
               </h1>
               <p className="mb-8 max-w-2xl text-lg leading-relaxed text-foreground-secondary sm:text-xl">
-                {t("landing.description")}
+                {t(dataAvailable ? "landing.description" : "landing.demoDescription")}
               </p>
 
               <div className="flex flex-col gap-3 sm:flex-row">
-                {isAuthenticated ? (
+                {!dataAvailable ? (
+                  <>
+                    <ButtonLink
+                      href="#service-status"
+                      size="lg"
+                      className="w-full px-8 sm:w-auto"
+                    >
+                      {t("landing.viewStatus")}
+                    </ButtonLink>
+                    <ButtonLink
+                      href="/contact"
+                      variant="secondary"
+                      size="lg"
+                      className="w-full px-8 sm:w-auto"
+                    >
+                      {t("layout.contact")}
+                    </ButtonLink>
+                  </>
+                ) : isAuthenticated ? (
                   <ButtonLink
                     href="/app"
                     size="lg"
@@ -167,6 +193,46 @@ function HeroSection({ isAuthenticated }: { isAuthenticated: boolean }) {
               </div>
             </aside>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ServiceStatusBanner() {
+  const { t } = useTranslation();
+
+  return (
+    <section
+      id="service-status"
+      aria-labelledby="service-status-heading"
+      className="border-b border-warning/35 bg-warning/10"
+    >
+      <div className="mx-auto max-w-5xl px-4 py-5">
+        <div className="rounded-2xl border border-warning/45 bg-surface/95 p-5 shadow-sm">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.1em] text-warning">
+            {t("landing.demoMode")}
+          </p>
+          <h2 id="service-status-heading" className="text-lg font-bold text-foreground">
+            {t("landing.serviceStatusTitle")}
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground-secondary">
+            {t("landing.serviceStatusDescription")}
+          </p>
+          <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-3">
+            <div className="rounded-xl bg-success/10 px-3 py-2">
+              <dt className="font-semibold text-foreground">{t("landing.applicationStatus")}</dt>
+              <dd className="text-foreground-secondary">{t("landing.available")}</dd>
+            </div>
+            <div className="rounded-xl bg-warning/10 px-3 py-2">
+              <dt className="font-semibold text-foreground">{t("landing.dataStatus")}</dt>
+              <dd className="text-foreground-secondary">{t("landing.paused")}</dd>
+            </div>
+            <div className="rounded-xl bg-surface-subtle px-3 py-2">
+              <dt className="font-semibold text-foreground">{t("landing.productReadiness")}</dt>
+              <dd className="text-foreground-secondary">{t("landing.demoOnly")}</dd>
+            </div>
+          </dl>
         </div>
       </div>
     </section>
@@ -303,7 +369,7 @@ function HowItWorksSection() {
 
 // ─── Data Stats ─────────────────────────────────────────────────────────────
 
-function DataStatsSection() {
+function DataStatsSection({ dataAvailable }: { dataAvailable: boolean }) {
   const { t } = useTranslation();
   const stats: { icon: LucideIcon; value: string; label: string }[] = [
     { icon: ShoppingBasket, value: t("landing.statProductsValue"), label: t("landing.statProducts") },
@@ -328,7 +394,7 @@ function DataStatsSection() {
         </p>
 
         <div className="mx-auto mb-8 max-w-3xl rounded-2xl border border-strong/60 bg-surface/90 px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.08em] text-foreground-secondary shadow-sm dark:border-white/12 dark:bg-white/[0.03]">
-          Live catalog metrics update as sourcing and scoring pipelines run.
+          {t(dataAvailable ? "landing.liveMetrics" : "landing.demoMetrics")}
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
@@ -361,7 +427,13 @@ function DataStatsSection() {
 
 // ─── CTA Repeat ─────────────────────────────────────────────────────────────
 
-function CtaRepeatSection({ isAuthenticated }: { isAuthenticated: boolean }) {
+function CtaRepeatSection({
+  dataAvailable,
+  isAuthenticated,
+}: {
+  dataAvailable: boolean;
+  isAuthenticated: boolean;
+}) {
   const { t } = useTranslation();
   return (
     <section className="relative isolate overflow-hidden bg-linear-to-b from-brand/10 via-surface to-surface py-16 sm:py-20">
@@ -379,24 +451,35 @@ function CtaRepeatSection({ isAuthenticated }: { isAuthenticated: boolean }) {
 
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-strong/60 bg-surface-subtle px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-foreground-secondary">
             <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-            Ready When You Are
+            {t(dataAvailable ? "landing.readyLabel" : "landing.demoMode")}
           </div>
 
           <h2 className="mb-4 text-2xl font-bold text-foreground sm:text-3xl">
-            {t("landing.ctaHeading")}
+            {t(dataAvailable ? "landing.ctaHeading" : "landing.demoCtaHeading")}
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-foreground-secondary">
-            {t("landing.ctaDescription")}
+            {t(dataAvailable ? "landing.ctaDescription" : "landing.demoCtaDescription")}
           </p>
 
-          <div className="mb-8 flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-foreground-secondary">
-            <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">No credit card</span>
-            <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">Fast onboarding</span>
-            <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">Transparent scoring</span>
-          </div>
+          {dataAvailable && (
+            <div className="mb-8 flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-foreground-secondary">
+              <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">No credit card</span>
+              <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">Fast onboarding</span>
+              <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">Transparent scoring</span>
+            </div>
+          )}
 
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            {isAuthenticated ? (
+            {!dataAvailable ? (
+              <>
+                <ButtonLink href="#service-status" size="lg" className="w-full px-10 sm:w-auto">
+                  {t("landing.viewStatus")}
+                </ButtonLink>
+                <ButtonLink href="/contact" variant="secondary" size="lg" className="w-full px-10 sm:w-auto">
+                  {t("layout.contact")}
+                </ButtonLink>
+              </>
+            ) : isAuthenticated ? (
               <ButtonLink
                 href="/app"
                 size="lg"
@@ -434,15 +517,16 @@ function CtaRepeatSection({ isAuthenticated }: { isAuthenticated: boolean }) {
 
 // ─── Combined export ────────────────────────────────────────────────────────
 
-export function LandingSections() {
-  const isAuthenticated = useIsAuthenticated();
+export function LandingSections({ dataAvailable = true }: { dataAvailable?: boolean }) {
+  const isAuthenticated = useIsAuthenticated(dataAvailable);
   return (
     <>
-      <HeroSection isAuthenticated={isAuthenticated} />
+      {!dataAvailable && <ServiceStatusBanner />}
+      <HeroSection dataAvailable={dataAvailable} isAuthenticated={isAuthenticated} />
       <FeaturesSection />
       <HowItWorksSection />
-      <DataStatsSection />
-      <CtaRepeatSection isAuthenticated={isAuthenticated} />
+      <DataStatsSection dataAvailable={dataAvailable} />
+      <CtaRepeatSection dataAvailable={dataAvailable} isAuthenticated={isAuthenticated} />
     </>
   );
 }

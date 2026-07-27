@@ -23,6 +23,11 @@ const MvStalenessEntrySchema = z.object({
 const HealthResponseSchema = z
   .object({
     status: z.enum(["healthy", "degraded", "unhealthy"]),
+    readiness: z.object({
+      application: z.literal("available"),
+      data_backend: z.enum(["available", "unavailable"]),
+      full_product: z.enum(["ready", "not_ready"]),
+    }),
     checks: z.object({
       connectivity: z.boolean(),
       mv_staleness: z.object({
@@ -43,6 +48,11 @@ const HealthResponseSchema = z
 
 const VALID_HEALTHY = {
   status: "healthy",
+  readiness: {
+    application: "available",
+    data_backend: "available",
+    full_product: "ready",
+  },
   checks: {
     connectivity: true,
     mv_staleness: {
@@ -53,6 +63,19 @@ const VALID_HEALTHY = {
   },
   timestamp: "2026-02-22T14:35:00Z",
 } as const;
+
+const UnavailableResponseSchema = z
+  .object({
+    status: z.literal("unavailable"),
+    readiness: z.object({
+      application: z.literal("available"),
+      data_backend: z.literal("unavailable"),
+      full_product: z.literal("not_ready"),
+    }),
+    checks: z.object({ connectivity: z.literal(false) }),
+    timestamp: z.string(),
+  })
+  .strict();
 
 const VALID_DEGRADED = {
   ...VALID_HEALTHY,
@@ -87,6 +110,21 @@ describe("Health response contract (Zod)", () => {
 
   it("accepts an unhealthy response", () => {
     expect(() => HealthResponseSchema.parse(VALID_UNHEALTHY)).not.toThrow();
+  });
+
+  it("accepts the explicit data-unavailable response", () => {
+    expect(() =>
+      UnavailableResponseSchema.parse({
+        status: "unavailable",
+        readiness: {
+          application: "available",
+          data_backend: "unavailable",
+          full_product: "not_ready",
+        },
+        checks: { connectivity: false },
+        timestamp: "2026-07-27T12:00:00Z",
+      }),
+    ).not.toThrow();
   });
 
   // ── Strict mode: reject unknown keys (secret-leak guard) ───────────────

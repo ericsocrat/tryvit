@@ -34,9 +34,9 @@ jobs:
         retailer: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.retailer != 'all' && fromJSON(format('["{0}"]', github.event.inputs.retailer)) || fromJSON('["biedronka","rewe"]') }}
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-python@v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: '3.12'
           cache: 'pip'
@@ -45,11 +45,21 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run scraper
+        env:
+          RETAILER: ${{ matrix.retailer }}
+          RAW_MAX_PRODUCTS: ${{ github.event.inputs.max_products || '500' }}
         run: |
-          python -m pipeline.scrape \
-            --retailer ${{ matrix.retailer }} \
-            --max-products ${{ github.event.inputs.max_products || '500' }} \
-            --output-dir scraped-data/${{ matrix.retailer }}
+          MAX_PRODUCTS=$(python scripts/validate_max_products.py "$RAW_MAX_PRODUCTS")
+          command=(
+            python -m pipeline.scrape
+            --retailer "$RETAILER"
+            --max-products "$MAX_PRODUCTS"
+            --output-dir "scraped-data/$RETAILER"
+          )
+          printf 'Running:'
+          printf ' %q' "${command[@]}"
+          printf '\n'
+          "${command[@]}"
 
       - name: Upload scraped CSV
         if: success()

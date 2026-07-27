@@ -6,6 +6,7 @@
 // Instrumented with structured logging (#183).
 
 import { NextResponse } from "next/server";
+import { getDeploymentReadiness } from "@/lib/deployment-readiness";
 import { createServiceRoleClient } from "@/lib/supabase/service";
 import { logger } from "@/lib/logger";
 
@@ -33,6 +34,23 @@ export interface HealthCheckResponse {
     };
   };
   timestamp: string;
+}
+
+type PublicReadiness = {
+  application: "available";
+  data_backend: "available" | "unavailable";
+  full_product: "ready" | "not_ready";
+};
+
+function publicReadiness(
+  dataBackend: PublicReadiness["data_backend"],
+  fullProduct: PublicReadiness["full_product"],
+): PublicReadiness {
+  return {
+    application: "available",
+    data_backend: dataBackend,
+    full_product: fullProduct,
+  };
 }
 
 /** Validate the response shape to prevent leaking unexpected data */
@@ -90,6 +108,30 @@ function sanitizeResponse(data: unknown): HealthCheckResponse | null {
 
 export async function GET() {
   const start = performance.now();
+  const deploymentReadiness = getDeploymentReadiness();
+
+  if (deploymentReadiness.dataBackend === "unavailable") {
+    logger.info("Health check completed in demo mode", {
+      route: "/api/health",
+      method: "GET",
+      status: 503,
+      duration: Math.round(performance.now() - start),
+      meta: { mode: "demo", dataBackend: "unavailable" },
+    });
+
+    return NextResponse.json(
+      {
+        status: "unavailable",
+        readiness: publicReadiness("unavailable", "not_ready"),
+        checks: { connectivity: false },
+        timestamp: new Date().toISOString(),
+      },
+      {
+        status: 503,
+        headers: { "Cache-Control": "no-store" },
+      },
+    );
+  }
 
   try {
     const supabase = createServiceRoleClient();
@@ -108,6 +150,7 @@ export async function GET() {
       return NextResponse.json(
         {
           status: "unhealthy",
+          readiness: publicReadiness("unavailable", "not_ready"),
           checks: { connectivity: false },
           timestamp: new Date().toISOString(),
         },
@@ -123,6 +166,7 @@ export async function GET() {
       return NextResponse.json(
         {
           status: "unhealthy",
+          readiness: publicReadiness("available", "not_ready"),
           checks: { connectivity: true },
           timestamp: new Date().toISOString(),
         },
@@ -144,10 +188,19 @@ export async function GET() {
       meta: { dbStatus: sanitized.status },
     });
 
-    return NextResponse.json(sanitized, {
+    return NextResponse.json(
+      {
+        ...sanitized,
+        readiness: publicReadiness(
+          sanitized.checks.connectivity ? "available" : "unavailable",
+          sanitized.status === "unhealthy" ? "not_ready" : "ready",
+        ),
+      },
+      {
       status: httpStatus,
       headers: { "Cache-Control": "no-store" },
-    });
+      },
+    );
   } catch (error) {
     const duration = Math.round(performance.now() - start);
     logger.error("Health check exception", {
@@ -164,6 +217,7 @@ export async function GET() {
     return NextResponse.json(
       {
         status: "unhealthy",
+        readiness: publicReadiness("unavailable", "not_ready"),
         checks: { connectivity: false },
         timestamp: new Date().toISOString(),
       },
