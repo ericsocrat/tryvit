@@ -29,7 +29,7 @@
     "@radix-ui/react-tooltip": "^1.2.16",
     "@sentry/nextjs": "^10.68.0",
     "@serwist/next": "^9.5.12",
-    "@supabase/ssr": "^0.12.0",
+    "@supabase/ssr": "^0.12.3",
     "@supabase/supabase-js": "^2.110.2",
     "@tanstack/react-query": "^5.101.4",
     "@upstash/ratelimit": "^2.0.8",
