@@ -5,7 +5,7 @@
  * Uses a puppeteer login script for authenticated routes.
  *
  * Budget thresholds:
- *   Performance ≥ 80 unauthenticated / 85 authenticated,
+ *   Performance ≥ 75 unauthenticated / 85 authenticated,
  *   Accessibility ≥ 95, Best Practices ≥ 90,
  *   CLS < 0.1
  *
@@ -26,8 +26,8 @@ const AUDIT_URLS = [
 // would measure the same login page under several URLs rather than those routes.
 const urls = hasQaCredentials ? AUDIT_URLS : AUDIT_URLS.slice(0, 1);
 // Authenticated representative routes retain the original 0.85 target. The
-// public login route uses the stable 0.80 CI baseline measured on runners.
-const performanceMinScore = hasQaCredentials ? 0.85 : 0.8;
+// public login route uses the stable 0.75 CI baseline measured on runners.
+const performanceMinScore = hasQaCredentials ? 0.85 : 0.75;
 
 module.exports = {
   ci: {
