@@ -5,7 +5,6 @@ import { getDeploymentReadiness } from "./deployment-readiness";
 const liveEnvironment: NodeJS.ProcessEnv = {
   NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
   NEXT_PUBLIC_SUPABASE_ANON_KEY: "public-anon-key",
-  SUPABASE_SERVICE_ROLE_KEY: "server-only-service-key",
 };
 
 describe("getDeploymentReadiness", () => {
@@ -21,7 +20,6 @@ describe("getDeploymentReadiness", () => {
   it.each([
     "NEXT_PUBLIC_SUPABASE_URL",
     "NEXT_PUBLIC_SUPABASE_ANON_KEY",
-    "SUPABASE_SERVICE_ROLE_KEY",
   ])("falls back to demo mode when %s is absent", (missingKey) => {
     const environment = { ...liveEnvironment };
     delete environment[missingKey];
@@ -31,6 +29,14 @@ describe("getDeploymentReadiness", () => {
       dataBackend: "unavailable",
       fullProduct: "not_ready",
       mode: "demo",
+    });
+  });
+
+  it("does not couple public UI readiness to the server-only health credential", () => {
+    expect(getDeploymentReadiness(liveEnvironment)).toMatchObject({
+      dataBackend: "available",
+      fullProduct: "ready",
+      mode: "live",
     });
   });
 

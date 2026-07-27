@@ -9,8 +9,9 @@ export type DeploymentReadiness = {
  * Resolve public product readiness without exposing configuration details.
  *
  * `TRYVIT_DATA_BACKEND_MODE=demo` is an explicit kill switch. Live mode still
- * requires every credential needed by the browser and the server-side health
- * check, so an incomplete deployment always falls back to the safe demo state.
+ * requires the complete browser-safe Supabase configuration. Server-side
+ * health credentials are checked separately by the health route and never
+ * influence client rendering.
  */
 export function getDeploymentReadiness(
   env: NodeJS.ProcessEnv = process.env,
@@ -18,8 +19,7 @@ export function getDeploymentReadiness(
   const requestedMode = env.TRYVIT_DATA_BACKEND_MODE?.trim().toLowerCase();
   const configurationComplete = Boolean(
     env.NEXT_PUBLIC_SUPABASE_URL &&
-      env.NEXT_PUBLIC_SUPABASE_ANON_KEY &&
-      env.SUPABASE_SERVICE_ROLE_KEY,
+      env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   );
   const modePermitsLive = !requestedMode || requestedMode === "live";
   const dataBackendAvailable =

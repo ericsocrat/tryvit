@@ -109,8 +109,15 @@ function sanitizeResponse(data: unknown): HealthCheckResponse | null {
 export async function GET() {
   const start = performance.now();
   const deploymentReadiness = getDeploymentReadiness();
+  const healthBackendConfigured = Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+  );
 
-  if (deploymentReadiness.dataBackend === "unavailable") {
+  if (
+    deploymentReadiness.dataBackend === "unavailable" ||
+    !healthBackendConfigured
+  ) {
     logger.info("Health check completed in demo mode", {
       route: "/api/health",
       method: "GET",

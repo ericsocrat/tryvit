@@ -210,7 +210,7 @@ function ServiceStatusBanner() {
     >
       <div className="mx-auto max-w-5xl px-4 py-5">
         <div className="rounded-2xl border border-warning/45 bg-surface/95 p-5 shadow-sm">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.1em] text-warning">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.1em] text-warning-text">
             {t("landing.demoMode")}
           </p>
           <h2 id="service-status-heading" className="text-lg font-bold text-foreground">
