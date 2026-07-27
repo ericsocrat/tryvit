@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import HomePage, { metadata } from "./page";
 
 // ─── i18n translations map ──────────────────────────────────────────────────
@@ -10,6 +10,24 @@ const tMap: Record<string, string> = {
     "Search, scan, and compare food products in Poland and Germany. Get instant health scores, allergen warnings, and better alternatives.",
   "landing.getStarted": "Get started",
   "landing.signIn": "Sign in",
+  "landing.demoMode": "Demo mode",
+  "landing.demoDescription":
+    "Explore the scoring approach. Live data features are paused.",
+  "landing.serviceStatusTitle":
+    "The TryVit website is available; live data features are paused",
+  "landing.serviceStatusDescription": "Live data will return after readiness checks.",
+  "landing.applicationStatus": "Website",
+  "landing.dataStatus": "Data backend",
+  "landing.productReadiness": "Product readiness",
+  "landing.available": "Available",
+  "landing.paused": "Paused",
+  "landing.demoOnly": "Demo only",
+  "landing.viewStatus": "View service status",
+  "landing.liveMetrics": "Live catalog metrics update.",
+  "landing.demoMetrics": "Catalog metrics will return after readiness checks.",
+  "landing.readyLabel": "Ready when you are",
+  "landing.demoCtaHeading": "Explore TryVit in demo mode",
+  "landing.demoCtaDescription": "Live catalog and account features are paused.",
   "landing.featuresHeading": "Everything you need to eat healthier",
   "landing.featureSearch": "Search",
   "landing.featureSearchDesc":
@@ -30,14 +48,14 @@ const tMap: Record<string, string> = {
   "landing.step3Desc":
     "Discover healthier alternatives in the same category.",
   "landing.statsHeading": "Trusted data you can rely on",
-  "landing.statProducts": "Products analyzed",
+  "landing.statProducts": "Live catalog",
   "landing.statCategories": "Food categories",
   "landing.statFactors": "Scoring factors",
   "landing.statCountries": "Countries covered",
   "landing.ctaHeading": "Ready to eat healthier?",
   "landing.ctaDescription":
     "Join TryVit and make informed food choices backed by real nutrition data.",
-  "landing.statProductsValue": "2,400+",
+  "landing.statProductsValue": "In validation",
   "landing.statCategoriesValue": "25",
   "landing.statFactorsValue": "9",
   "landing.statCountriesValue": "2",
@@ -81,6 +99,17 @@ vi.mock("@/components/layout/Footer", () => ({
   Footer: () => <footer data-testid="footer">Footer</footer>,
 }));
 
+beforeEach(() => {
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "public-anon-key");
+  vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "server-only-service-key");
+  vi.stubEnv("TRYVIT_DATA_BACKEND_MODE", "live");
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
+
 // ─── Hero section ───────────────────────────────────────────────────────────
 
 describe("HomePage — Hero section", () => {
@@ -114,6 +143,21 @@ describe("HomePage — Hero section", () => {
     render(<HomePage />);
     const links = screen.queryAllByText("Sign in");
     expect(links.some((link) => link.getAttribute("href") === "/auth/login")).toBe(true);
+  });
+
+  it("shows demo mode and removes live CTAs when the backend is unavailable", () => {
+    vi.stubEnv("TRYVIT_DATA_BACKEND_MODE", "demo");
+    const { container } = render(<HomePage />);
+
+    expect(
+      screen.getByText("The TryVit website is available; live data features are paused"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Get started")).not.toBeInTheDocument();
+    expect(screen.getAllByText("In validation").length).toBeGreaterThanOrEqual(2);
+    const structuredData = JSON.parse(
+      container.querySelector('script[type="application/ld+json"]')!.textContent!,
+    );
+    expect(structuredData.potentialAction).toBeUndefined();
   });
 });
 
@@ -212,7 +256,7 @@ describe("HomePage — Data Stats section", () => {
 
   it("renders stat labels", () => {
     render(<HomePage />);
-    expect(screen.getByText("Products analyzed")).toBeInTheDocument();
+    expect(screen.getByText("Live catalog")).toBeInTheDocument();
     expect(screen.getByText("Food categories")).toBeInTheDocument();
     expect(screen.getByText("Scoring factors")).toBeInTheDocument();
     expect(screen.getByText("Countries covered")).toBeInTheDocument();
@@ -278,9 +322,9 @@ describe("HomePage — SEO metadata", () => {
     expect(metadata.title).toBe("TryVit — Know What You Eat");
   });
 
-  it("exports metadata description mentioning products and countries", () => {
-    expect(metadata.description).toContain("2,400+");
-    expect(metadata.description).toContain("Poland and Germany");
+  it("exports metadata without an unverified live product-count claim", () => {
+    expect(metadata.description).toContain("service availability");
+    expect(metadata.description).not.toMatch(/2[,. ]400\+/);
   });
 
   it("exports openGraph metadata with type website", () => {

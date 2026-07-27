@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -78,6 +78,14 @@ async function parseResponse(response: Response) {
 describe("GET /api/health", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "public-anon-key");
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "server-only-service-key");
+    vi.stubEnv("TRYVIT_DATA_BACKEND_MODE", "live");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it("returns 200 with healthy response", async () => {
@@ -89,7 +97,31 @@ describe("GET /api/health", () => {
     expect(body.status).toBe("healthy");
     expect(body.checks.connectivity).toBe(true);
     expect(body.checks.row_counts.products).toBe(3012);
+    expect(body.readiness).toEqual({
+      application: "available",
+      data_backend: "available",
+      full_product: "ready",
+    });
     expect(body.timestamp).toBe("2026-02-22T14:35:00Z");
+  });
+
+  it("returns a safe 503 demo response when backend configuration is absent", async () => {
+    vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "");
+
+    const { status, body } = await parseResponse(await GET());
+
+    expect(status).toBe(503);
+    expect(body).toMatchObject({
+      status: "unavailable",
+      readiness: {
+        application: "available",
+        data_backend: "unavailable",
+        full_product: "not_ready",
+      },
+      checks: { connectivity: false },
+    });
+    expect(JSON.stringify(body)).not.toContain("SUPABASE");
+    expect(mockRpc).not.toHaveBeenCalled();
   });
 
   it("returns 200 for degraded status", async () => {

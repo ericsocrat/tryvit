@@ -62,24 +62,38 @@ jobs:
         env:
           PYTHONIOENCODING: utf-8
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          COUNTRY: ${{ inputs.country || 'ALL' }}
+          CATEGORY: ${{ inputs.category || '' }}
+          RAW_MAX_PRODUCTS: ${{ inputs.max_products || '100' }}
+          REQUESTED_DRY_RUN: ${{ github.event_name == 'schedule' && 'true' || inputs.dry_run }}
+          STALE_ONLY: ${{ inputs.stale_only || false }}
         run: |
-          ARGS="--country ${{ inputs.country || 'ALL' }}"
-          ARGS="$ARGS --max-products ${{ inputs.max_products || '100' }}"
+          MAX_PRODUCTS=$(python scripts/validate_max_products.py "$RAW_MAX_PRODUCTS")
 
-          if [ -n "${{ inputs.category }}" ]; then
-            ARGS="$ARGS --category \"${{ inputs.category }}\""
+          if [ "$REQUESTED_DRY_RUN" != "true" ]; then
+            echo "::error::Database writes are disabled for this scheduled refresh workflow"
+            exit 1
           fi
 
-          if [ "${{ inputs.dry_run || 'true' }}" = "true" ]; then
-            ARGS="$ARGS --dry-run"
+          command=(
+            python -m pipeline.orchestrate
+            --country "$COUNTRY"
+            --max-products "$MAX_PRODUCTS"
+            --dry-run
+          )
+
+          if [ -n "$CATEGORY" ]; then
+            command+=(--category "$CATEGORY")
           fi
 
-          if [ "${{ inputs.stale_only }}" = "true" ]; then
-            ARGS="$ARGS --stale-only"
+          if [ "$STALE_ONLY" = "true" ]; then
+            command+=(--stale-only)
           fi
 
-          echo "Running: python -m pipeline.orchestrate $ARGS"
-          eval "python -m pipeline.orchestrate $ARGS"
+          printf 'Running:'
+          printf ' %q' "${command[@]}"
+          printf '\n'
+          "${command[@]}"
 
       - name: Upload execution report
         if: always()

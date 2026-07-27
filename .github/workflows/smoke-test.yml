@@ -1,23 +1,12 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# Post-Deploy Smoke Test — Verify production health after deployment
-# ═══════════════════════════════════════════════════════════════════════════════
-# Triggered automatically after a successful Vercel deployment.
-# Hits the /api/health endpoint (with retry logic) and validates the response.
-# Also checks critical page routes return 200, and measures response times.
+# Post-Deploy Smoke Test — verify the public production experience.
 #
-# Behaviour by environment:
-#   • Production — failures are BLOCKING (exit 1), surfaces via CI status.
-#   • Preview    — failures are NON-BLOCKING (warning annotation only).
+# The workflow reports three independent signals:
+#   1. application/build availability;
+#   2. data-backend availability;
+#   3. full product readiness.
 #
-# This catches:
-#   • Broken builds that somehow passed CI
-#   • Environment variable misconfiguration
-#   • Supabase connectivity issues post-deploy
-#   • Missing/broken API routes
-#
-# For Vercel deployments, deployment_status events fire automatically.
-# The workflow also supports manual trigger for ad-hoc health checks.
-# ═══════════════════════════════════════════════════════════════════════════════
+# A protected, inaccessible, skipped, or non-2xx health endpoint is never
+# considered full readiness.
 
 name: Post-Deploy Smoke Test
 
@@ -26,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       target_url:
-        description: "URL to smoke test (e.g. https://your-app.vercel.app)"
+        description: "Public URL to smoke test"
         required: true
         type: string
 
@@ -44,176 +33,123 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
 
-    # Run on successful deployment OR manual trigger
+    # Deployment events are evaluated only for production. Manual runs remain
+    # available for deterministic checks of another public URL.
     if: >-
-      (github.event_name == 'deployment_status' && github.event.deployment_status.state == 'success') ||
+      (github.event_name == 'deployment_status' &&
+       github.event.deployment_status.state == 'success' &&
+       github.event.deployment_status.environment == 'Production') ||
       github.event_name == 'workflow_dispatch'
 
     env:
-      TARGET_URL: ${{ github.event.deployment_status.target_url || github.event.inputs.target_url }}
-      DEPLOY_ENV: ${{ github.event.deployment_status.environment || 'manual' }}
+      TARGET_URL: ${{ github.event_name == 'deployment_status' && 'https://tryvit.vercel.app' || inputs.target_url }}
+      DEPLOY_ENV: ${{ github.event_name == 'deployment_status' && 'Production' || 'manual' }}
 
     steps:
-      - name: Wait for deployment to stabilize
-        run: |
-          # Both production and preview deploys need warm-up for Vercel cold starts.
-          # Production uses a unique deployment URL that may take time to resolve.
-          if [ "$DEPLOY_ENV" = "Production" ]; then
-            echo "Production deploy — waiting 30s for DNS + cold start"
-            sleep 30
-          else
-            echo "Preview deploy ($DEPLOY_ENV) — waiting 30s for cold start"
-            sleep 30
-          fi
+      - name: Checkout health evaluator
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - name: Verify target URL
+      - name: Wait for the production alias to stabilize
+        if: ${{ github.event_name == 'deployment_status' }}
+        run: sleep 30
+
+      - name: Initialize report
         run: |
           if [ -z "$TARGET_URL" ]; then
-            echo "::error::No target URL available"
+            echo "::error::No public target URL is available"
             exit 1
           fi
-          echo "Smoke testing: $TARGET_URL (env: $DEPLOY_ENV)"
 
-      # ── Health endpoint (deep check with retries) ────────────────────
-      - name: Health check — /api/health
+          {
+            echo "## Post-Deploy Smoke Test"
+            echo ""
+            echo "**Public target:** \`$TARGET_URL\`"
+            echo "**Environment:** $DEPLOY_ENV"
+            echo "**Time:** $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo ""
+            echo "| Signal | Result |"
+            echo "|--------|--------|"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check application/build availability
+        id: application
         run: |
-          echo "## Post-Deploy Smoke Test" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Target:** \`$TARGET_URL\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Environment:** $DEPLOY_ENV" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Time:** $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
+          http_code=$(curl --silent --show-error --location --output /dev/null \
+            --write-out "%{http_code}" --max-time 20 "$TARGET_URL/") || http_code="000"
 
-          # Retry up to 5 times with 15s backoff (handles Vercel cold starts + DNS)
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 400 ]; then
+            echo "| Application/build | ✅ Available (HTTP $http_code) |" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "| Application/build | ❌ Unavailable (HTTP $http_code) |" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::Public application returned HTTP $http_code"
+            exit 1
+          fi
+
+      - name: Check data-backend availability
+        id: data_health
+        if: ${{ always() }}
+        run: |
           MAX_RETRIES=5
           RETRY_DELAY=15
           attempt=0
-          http_code=""
-          response=""
-          reached=false
+          http_code="000"
+          : > /tmp/health_body.json
 
-          while [ $attempt -lt $MAX_RETRIES ]; do
+          while [ "$attempt" -lt "$MAX_RETRIES" ]; do
             attempt=$((attempt + 1))
-            echo "Health check attempt $attempt/$MAX_RETRIES..."
+            echo "Health check attempt $attempt/$MAX_RETRIES"
+            http_code=$(curl --silent --show-error --output /tmp/health_body.json \
+              --write-out "%{http_code}" --max-time 20 "$TARGET_URL/api/health") || http_code="000"
 
-            # Capture body AND HTTP status separately (no -f flag)
-            http_code=$(curl -s -D /tmp/health_headers.txt -o /tmp/health_body.txt -w "%{http_code}" \
-              --max-time 20 "$TARGET_URL/api/health" 2>/dev/null) || true
-            response=$(cat /tmp/health_body.txt 2>/dev/null || echo "")
-
-            # Got an HTTP response (any status code) — endpoint is reachable
-            if [ -n "$http_code" ] && [ "$http_code" != "000" ]; then
-              reached=true
+            if [ "$http_code" != "000" ]; then
               break
             fi
 
-            # Connection-level failure (DNS, timeout, refused) — retry
-            if [ $attempt -lt $MAX_RETRIES ]; then
-              echo "Attempt $attempt failed (no HTTP response), retrying in ${RETRY_DELAY}s..."
-              sleep $RETRY_DELAY
+            if [ "$attempt" -lt "$MAX_RETRIES" ]; then
+              sleep "$RETRY_DELAY"
             fi
           done
 
-          echo "| Route | Status |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|-------|--------|" >> "$GITHUB_STEP_SUMMARY"
-
-          # ── No HTTP response at all (connection failure) ──
-          if [ "$reached" != "true" ]; then
-            echo "| /api/health | ❌ Connection failed ($MAX_RETRIES attempts) |" >> "$GITHUB_STEP_SUMMARY"
-            if [ "$DEPLOY_ENV" = "Production" ]; then
-              echo "::error::Health endpoint unreachable at $TARGET_URL/api/health after $MAX_RETRIES attempts"
-              exit 1
-            else
-              echo "::warning::Health endpoint unreachable on preview deploy — non-blocking"
-              echo "> ⚠️ Preview deploy health check failed — this is non-blocking." >> "$GITHUB_STEP_SUMMARY"
-              exit 0
-            fi
-          fi
-
-          # ── Vercel Deployment Protection (401/403 or SSO redirect) ──
-          if [ "$http_code" = "401" ] || [ "$http_code" = "403" ] || \
-             { [ "$http_code" = "302" ] && grep -qi '^location: https://vercel.com/sso-api' /tmp/health_headers.txt; }; then
-            echo "| /api/health | ⏭️ HTTP $http_code — Vercel deployment protection (skipped) |" >> "$GITHUB_STEP_SUMMARY"
-            echo "::notice::Health check skipped — Vercel deployment protection returned HTTP $http_code on deployment-specific URL"
-            exit 0
-          fi
-
-          # ── Got a response — parse the health status ──
-          status=$(echo "$response" | python3 -c "import sys,json; print(json.load(sys.stdin).get('status','unknown'))" 2>/dev/null || echo "parse_error")
-
-          if [ "$status" = "healthy" ] || [ "$status" = "degraded" ]; then
-            echo "| /api/health | ✅ $status (HTTP $http_code) |" >> "$GITHUB_STEP_SUMMARY"
+          if python3 scripts/evaluate_health_response.py "$http_code" /tmp/health_body.json; then
+            echo "| Data backend | ✅ Available (HTTP $http_code) |" >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "| /api/health | ❌ $status (HTTP $http_code) |" >> "$GITHUB_STEP_SUMMARY"
-            if [ "$DEPLOY_ENV" = "Production" ]; then
-              echo "::error::Health check returned status: $status (HTTP $http_code)"
-              echo "Response: $response"
-              exit 1
-            else
-              echo "::warning::Health check returned status: $status on preview deploy — non-blocking"
-            fi
+            echo "| Data backend | ❌ Unavailable (HTTP $http_code) |" >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::Public health endpoint did not prove data-backend availability"
+            exit 1
           fi
 
-      # ── Critical page routes (HTTP 200 check) ───────────────────────
-      - name: Check critical routes
+      - name: Check critical application routes
+        id: routes
+        if: ${{ always() }}
         run: |
           failed=0
-          routes=("/" "/app" "/app/scan")
+          for route in "/app" "/app/scan"; do
+            http_code=$(curl --silent --show-error --location --output /dev/null \
+              --write-out "%{http_code}" --max-time 20 "$TARGET_URL$route") || http_code="000"
 
-          for route in "${routes[@]}"; do
-            status_code=$(curl -so /dev/null -w "%{http_code}" --max-time 20 "$TARGET_URL$route" 2>/dev/null)
-
-            # Vercel deployment protection — skip gracefully
-            if [ "$status_code" = "401" ] || [ "$status_code" = "403" ]; then
-              echo "| $route | ⏭️ $status_code (Vercel protection) |" >> "$GITHUB_STEP_SUMMARY"
-              continue
-            fi
-
-            if [ "$status_code" -ge 200 ] && [ "$status_code" -lt 400 ]; then
-              echo "| $route | ✅ $status_code |" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 400 ]; then
+              echo "| Route \`$route\` | ✅ Available (HTTP $http_code) |" >> "$GITHUB_STEP_SUMMARY"
             else
-              echo "| $route | ❌ $status_code |" >> "$GITHUB_STEP_SUMMARY"
-              if [ "$DEPLOY_ENV" = "Production" ]; then
-                echo "::error::Route $route returned HTTP $status_code"
-              else
-                echo "::warning::Route $route returned HTTP $status_code on preview deploy"
-              fi
+              echo "| Route \`$route\` | ❌ Unavailable (HTTP $http_code) |" >> "$GITHUB_STEP_SUMMARY"
+              echo "::error::Route $route returned HTTP $http_code"
               failed=1
             fi
           done
+          exit "$failed"
 
-          if [ "$failed" -ne 0 ]; then
-            if [ "$DEPLOY_ENV" = "Production" ]; then
-              exit 1
-            else
-              echo "::warning::Some routes failed on preview deploy — non-blocking"
-            fi
+      - name: Report full product readiness
+        if: ${{ always() }}
+        env:
+          APPLICATION_OUTCOME: ${{ steps.application.outcome }}
+          DATA_HEALTH_OUTCOME: ${{ steps.data_health.outcome }}
+          ROUTES_OUTCOME: ${{ steps.routes.outcome }}
+        run: |
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$APPLICATION_OUTCOME" = "success" ] && \
+             [ "$DATA_HEALTH_OUTCOME" = "success" ] && \
+             [ "$ROUTES_OUTCOME" = "success" ]; then
+            echo "✅ **Full product readiness: ready.**" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "⚠️ **Full product readiness: not ready.**" >> "$GITHUB_STEP_SUMMARY"
+            echo "The website, data backend, and product routes are reported separately above." >> "$GITHUB_STEP_SUMMARY"
           fi
-
-      # ── Response time baseline ───────────────────────────────────────
-      - name: Measure response times
-        if: ${{ !cancelled() }}
-        run: |
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Response Times" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Route | Time (ms) |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|-------|-----------|" >> "$GITHUB_STEP_SUMMARY"
-
-          routes=("/" "/api/health")
-          for route in "${routes[@]}"; do
-            time_ms=$(curl -so /dev/null -w "%{time_total}" --max-time 15 "$TARGET_URL$route" 2>/dev/null | awk '{printf "%.0f", $1 * 1000}')
-            echo "| $route | ${time_ms}ms |" >> "$GITHUB_STEP_SUMMARY"
-
-            # Warn if response time > 3 seconds
-            if [ "$time_ms" -gt 3000 ]; then
-              echo "::warning::Slow response: $route took ${time_ms}ms"
-            fi
-          done
-
-      - name: Summary
-        if: ${{ !cancelled() }}
-        run: |
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "---" >> "$GITHUB_STEP_SUMMARY"
-          echo "✅ **Post-deploy smoke test passed.**" >> "$GITHUB_STEP_SUMMARY"

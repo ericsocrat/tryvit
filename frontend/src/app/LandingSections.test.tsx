@@ -149,4 +149,14 @@ describe("LandingSections", () => {
     // h1 (tagline) + h2 (features, howItWorks, stats, cta) + h3 (3 features + 3 steps) = 11
     expect(headings.length).toBeGreaterThanOrEqual(5);
   });
+
+  it("shows an explicit demo state and disables live-data CTAs", () => {
+    render(<LandingSections dataAvailable={false} />);
+
+    expect(screen.getByText("landing.serviceStatusTitle")).toBeInTheDocument();
+    expect(screen.getByText("landing.demoDescription")).toBeInTheDocument();
+    expect(screen.queryByText("landing.getStarted")).not.toBeInTheDocument();
+    expect(screen.queryByText("landing.signIn")).not.toBeInTheDocument();
+    expect(mockGetUser).not.toHaveBeenCalled();
+  });
 });
