@@ -24,27 +24,63 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PIPELINES_ROOT = PROJECT_ROOT / "db" / "pipelines"
 
 
+class PipelineOutputPathError(ValueError):
+    """Raised when a generated SQL path escapes the trusted pipeline root."""
+
+
 def _resolve_pipeline_output_dir(output_dir: str | Path) -> Path:
     """Resolve an output directory and require it to stay under db/pipelines."""
     root = PIPELINES_ROOT.resolve()
-    path = Path(output_dir).resolve()
+    try:
+        path = Path(output_dir).resolve()
+    except (OSError, RuntimeError) as exc:
+        raise PipelineOutputPathError(
+            f"Invalid pipeline output directory: {output_dir!s}"
+        ) from exc
     try:
         path.relative_to(root)
     except ValueError as exc:
-        raise ValueError(
+        raise PipelineOutputPathError(
             "Refusing to write outside db/pipelines: " + str(output_dir)
         ) from exc
     return path
 
 
-def _safe_child_path(directory: Path, filename: str) -> Path:
-    """Return a file path that is guaranteed to remain inside *directory*."""
-    root = directory.resolve()
-    path = (root / filename).resolve()
+def _validated_pipeline_output_path(relative_path: str | Path) -> Path:
+    """Resolve a relative generated-file path under the trusted pipeline root."""
+    requested = Path(relative_path)
+    if requested.is_absolute():
+        raise PipelineOutputPathError(
+            f"Pipeline output path must be relative: {relative_path!s}"
+        )
+    if requested == Path("."):
+        raise PipelineOutputPathError("Pipeline output path must name a file")
+
+    trusted_root = PIPELINES_ROOT.resolve()
     try:
-        path.relative_to(root)
+        candidate = (trusted_root / requested).resolve()
+    except (OSError, RuntimeError) as exc:
+        raise PipelineOutputPathError(
+            f"Invalid pipeline output path: {relative_path!s}"
+        ) from exc
+
+    try:
+        candidate.relative_to(trusted_root)
     except ValueError as exc:
-        raise ValueError(f"Refusing to write outside pipeline directory: {filename}") from exc
+        raise PipelineOutputPathError(
+            f"Refusing to write outside db/pipelines: {relative_path!s}"
+        ) from exc
+    if candidate == trusted_root:
+        raise PipelineOutputPathError("Pipeline output path must name a file")
+    return candidate
+
+
+def _write_pipeline_file(relative_path: str | Path, content: str) -> Path:
+    """Validate and write one UTF-8 SQL file below ``PIPELINES_ROOT``."""
+    path = _validated_pipeline_output_path(relative_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    # S8707's residual flow follows SQL content, not this validated path.
+    path.write_text(content, encoding="utf-8")  # NOSONAR
     return path
 
 
@@ -808,7 +844,7 @@ def generate_pipeline(
         Paths of the generated files.
     """
     out = _resolve_pipeline_output_dir(output_dir)
-    out.mkdir(parents=True, exist_ok=True)
+    relative_out = out.relative_to(PIPELINES_ROOT.resolve())
 
     # Use the directory name as the file slug so that files inside
     # ``dairy-de/`` are named ``PIPELINE__dairy-de__*`` (matches
@@ -839,15 +875,13 @@ def generate_pipeline(
             batch_start = offset + 1
             batch_end = offset + len(chunk)
             offset += len(chunk)
-            path = _safe_child_path(
-                out, f"PIPELINE__{slug}__01_batch_{batch_num:03d}_insert_products.sql"
-            )
-            path.write_text(
+            path = _write_pipeline_file(
+                relative_out
+                / f"PIPELINE__{slug}__01_batch_{batch_num:03d}_insert_products.sql",
                 _gen_01_batch(
                     category, chunk, products, today, country,
                     batch_num, total_batches, batch_start, batch_end,
                 ),
-                encoding="utf-8",
             )
             files.append(path)
 
@@ -857,15 +891,13 @@ def generate_pipeline(
             batch_start = offset + 1
             batch_end = offset + len(chunk)
             offset += len(chunk)
-            path = _safe_child_path(
-                out, f"PIPELINE__{slug}__03_batch_{batch_num:03d}_add_nutrition.sql"
-            )
-            path.write_text(
+            path = _write_pipeline_file(
+                relative_out
+                / f"PIPELINE__{slug}__03_batch_{batch_num:03d}_add_nutrition.sql",
                 _gen_03_batch(
                     category, chunk, country,
                     batch_num, total_batches, batch_start, batch_end,
                 ),
-                encoding="utf-8",
             )
             files.append(path)
     else:
@@ -876,33 +908,45 @@ def generate_pipeline(
             old.unlink()
 
         # 01 — single insert products
-        path01 = _safe_child_path(out, f"PIPELINE__{slug}__01_insert_products.sql")
-        path01.write_text(_gen_01_insert_products(category, products, today, country), encoding="utf-8")
+        path01 = _write_pipeline_file(
+            relative_out / f"PIPELINE__{slug}__01_insert_products.sql",
+            _gen_01_insert_products(category, products, today, country),
+        )
         files.append(path01)
 
         # 03 — single add nutrition
-        path03 = _safe_child_path(out, f"PIPELINE__{slug}__03_add_nutrition.sql")
-        path03.write_text(_gen_03_add_nutrition(category, products, country), encoding="utf-8")
+        path03 = _write_pipeline_file(
+            relative_out / f"PIPELINE__{slug}__03_add_nutrition.sql",
+            _gen_03_add_nutrition(category, products, country),
+        )
         files.append(path03)
 
     # 04 — scoring (always single file)
-    path04 = _safe_child_path(out, f"PIPELINE__{slug}__04_scoring.sql")
-    path04.write_text(_gen_04_scoring(category, products, today, country), encoding="utf-8")
+    path04 = _write_pipeline_file(
+        relative_out / f"PIPELINE__{slug}__04_scoring.sql",
+        _gen_04_scoring(category, products, today, country),
+    )
     files.append(path04)
 
     # 05 — source provenance (always single file)
-    path05 = _safe_child_path(out, f"PIPELINE__{slug}__05_source_provenance.sql")
-    path05.write_text(_gen_05_source_provenance(category, products, today, country), encoding="utf-8")
+    path05 = _write_pipeline_file(
+        relative_out / f"PIPELINE__{slug}__05_source_provenance.sql",
+        _gen_05_source_provenance(category, products, today, country),
+    )
     files.append(path05)
 
     # 06 — add images (always single file)
-    path06 = _safe_child_path(out, f"PIPELINE__{slug}__06_add_images.sql")
-    path06.write_text(_gen_06_add_images(category, products, today, country), encoding="utf-8")
+    path06 = _write_pipeline_file(
+        relative_out / f"PIPELINE__{slug}__06_add_images.sql",
+        _gen_06_add_images(category, products, today, country),
+    )
     files.append(path06)
 
     # 07 — store availability (always single file)
-    path07 = _safe_child_path(out, f"PIPELINE__{slug}__07_store_availability.sql")
-    path07.write_text(_gen_07_store_availability(category, products, today, country), encoding="utf-8")
+    path07 = _write_pipeline_file(
+        relative_out / f"PIPELINE__{slug}__07_store_availability.sql",
+        _gen_07_store_availability(category, products, today, country),
+    )
     files.append(path07)
 
     return files
