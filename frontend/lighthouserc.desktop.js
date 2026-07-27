@@ -12,6 +12,18 @@
  */
 
 const QA_PRODUCT_ID = process.env.QA_PRODUCT_ID ?? "1";
+const hasQaCredentials = Boolean(
+  process.env.QA_TEST_EMAIL && process.env.QA_TEST_PASSWORD,
+);
+const AUDIT_URLS = [
+  "http://localhost:3000/auth/login",
+  "http://localhost:3000/app",
+  `http://localhost:3000/app/product/${QA_PRODUCT_ID}`,
+];
+
+// Protected routes redirect to login without QA credentials, so auditing them
+// would measure the same login page under several URLs rather than those routes.
+const urls = hasQaCredentials ? AUDIT_URLS : AUDIT_URLS.slice(0, 1);
 
 module.exports = {
   ci: {
@@ -19,11 +31,7 @@ module.exports = {
       startServerCommand: "cd frontend && npm run start -- -p 3000",
       startServerReadyPattern: "Ready in",
       startServerReadyTimeout: 30000,
-      url: [
-        "http://localhost:3000/auth/login",
-        "http://localhost:3000/app",
-        `http://localhost:3000/app/product/${QA_PRODUCT_ID}`,
-      ],
+      url: urls,
       numberOfRuns: 3,
       puppeteerScript: "./frontend/tests/quality/lighthouse-auth.js",
       puppeteerLaunchOptions: {
