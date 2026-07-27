@@ -25,7 +25,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "20"
+  NODE_VERSION: "22"
   # ── CI runtime observability baselines (seconds) ─────────────────────────
   BASELINE_STATIC: 90
   BASELINE_UNIT: 280
