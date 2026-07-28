@@ -7,6 +7,7 @@ connection is used, which makes generation safe for local use and CI.
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import re
 import sys
@@ -17,10 +18,12 @@ from pathlib import Path
 from pipeline.enrichment import (
     AllergenEvidence,
     IngredientEvidence,
+    canonicalize_allergens,
     generate_enrichment_sql,
     linkable_matches,
     match_ingredients,
 )
+from pipeline.utils import slug
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PILOT_PATH = Path(__file__).with_name("enrichment_pilot.json")
@@ -52,8 +55,13 @@ def _none_or_text(value: str) -> str | None:
     return None if value == "NULL" else _unquote(value)
 
 
-def load_pilot(path: Path = PILOT_PATH) -> dict:
+def load_manifest(path: Path = PILOT_PATH) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def load_pilot(path: Path = PILOT_PATH) -> dict:
+    """Backward-compatible alias for Phase 4A callers."""
+    return load_manifest(path)
 
 
 @lru_cache(maxsize=1)
@@ -114,17 +122,37 @@ def parse_snapshot(
 
 
 def _folder_for(category: str, country: str) -> Path:
-    slug = category.casefold().replace(" ", "-")
+    folder_slug = slug(category)
     if country != "PL":
-        slug += f"-{country.casefold()}"
-    return PROJECT_ROOT / "db" / "pipelines" / slug
+        folder_slug += f"-{country.casefold()}"
+    return PROJECT_ROOT / "db" / "pipelines" / folder_slug
 
 
-def build_outputs(pilot_path: Path = PILOT_PATH) -> tuple[dict[Path, str], dict]:
-    pilot = load_pilot(pilot_path)
-    snapshot_path = PROJECT_ROOT / pilot["source"]
+def _selected_products(manifest: dict) -> set[tuple[str, str, str]]:
+    if "products" in manifest:
+        return {(item["category"], item["country"], item["ean"]) for item in manifest["products"]}
+    selection_path = PROJECT_ROOT / manifest["selection_file"]
+    scopes = {(item["category"], item["country"]) for item in manifest["scopes"]}
+    selected: set[tuple[str, str, str]] = set()
+    with selection_path.open(newline="", encoding="utf-8") as handle:
+        reader = csv.DictReader(handle)
+        if reader.fieldnames != ["category", "country", "ean"]:
+            raise ValueError("selection CSV must have category,country,ean columns")
+        for row in reader:
+            key = (row["category"], row["country"], row["ean"])
+            if key[:2] not in scopes:
+                raise ValueError(f"selection row is outside approved scopes: {key}")
+            selected.add(key)
+    if not selected:
+        raise ValueError("enrichment manifest selected no products")
+    return selected
+
+
+def build_outputs(manifest_path: Path = PILOT_PATH) -> tuple[dict[Path, str], dict]:
+    manifest = load_manifest(manifest_path)
+    snapshot_path = PROJECT_ROOT / manifest["source"]
     ingredients, allergens, references, reference_properties = parse_snapshot(snapshot_path)
-    selected = {(item["category"], item["country"], item["ean"]) for item in pilot["products"]}
+    selected = _selected_products(manifest)
     category_for = {(country, ean): category for category, country, ean in selected}
     ingredient_groups: dict[tuple[str, str], list[IngredientEvidence]] = defaultdict(list)
     allergen_groups: dict[tuple[str, str], list[AllergenEvidence]] = defaultdict(list)
@@ -158,36 +186,52 @@ def build_outputs(pilot_path: Path = PILOT_PATH) -> tuple[dict[Path, str], dict]
             category,
             matches,
             allergen_groups[(category, country)],
-            pilot["source_label"],
+            manifest["source_label"],
             reference_properties,
+            phase=manifest.get("phase"),
         )
 
     classification = Counter(row.classification for row in all_matches)
+    linked_matches = linkable_matches(all_matches)
+    parent_safety_withheld = sum(row.canonical_name is not None and row not in linked_matches for row in all_matches)
     products_with_ingredients = {(row.evidence.country, row.evidence.ean) for row in all_matches}
     products_with_allergens = {(row.country, row.ean) for rows in allergen_groups.values() for row in rows}
     stats = {
-        "pilot_products": len(selected),
+        "selected_products": len(selected),
         "products_with_ingredient_evidence": len(products_with_ingredients),
         "products_with_allergen_evidence": len(products_with_allergens),
         "ingredient_evidence_rows": len(all_matches),
-        "linked_ingredient_rows": len(linkable_matches(all_matches)),
+        "linked_ingredient_rows": len(linked_matches),
         "exact_matches": classification["exact"],
         "alias_matches": classification["alias"],
         "reviewed_matches": classification["reviewed"],
         "unresolved_matches": classification["unresolved"],
         "ambiguous_matches": classification["ambiguous"],
+        "quarantined_matches": classification["quarantined"],
+        "parent_safety_withheld": parent_safety_withheld,
         "allergen_evidence_rows": sum(len(rows) for rows in allergen_groups.values()),
+        "canonical_allergen_rows": sum(len(canonicalize_allergens(rows)) for rows in allergen_groups.values()),
         "generated_files": len(outputs),
     }
+    if "products" in manifest:
+        stats["pilot_products"] = len(selected)
     return outputs, stats
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=PILOT_PATH,
+        help="manifest path (default: Phase 4A pilot)",
+    )
     parser.add_argument("--check", action="store_true", help="fail if committed SQL is stale")
     parser.add_argument("--stats-json", action="store_true", help="print machine-readable statistics")
+    parser.add_argument("--list-paths", action="store_true", help="print generated repository paths")
     args = parser.parse_args(argv)
-    outputs, stats = build_outputs()
+    manifest_path = args.manifest if args.manifest.is_absolute() else PROJECT_ROOT / args.manifest
+    outputs, stats = build_outputs(manifest_path)
     stale: list[str] = []
     for path, content in outputs.items():
         if args.check:
@@ -201,6 +245,10 @@ def main(argv: list[str] | None = None) -> int:
         for path in stale:
             print(f"  {path}", file=sys.stderr)  # noqa: T201
         return 1
+    if args.list_paths:
+        for path in sorted(outputs):
+            print(path.relative_to(PROJECT_ROOT).as_posix())  # noqa: T201
+        return 0
     print(json.dumps(stats, indent=2, sort_keys=True) if args.stats_json else stats)  # noqa: T201
     return 0
 

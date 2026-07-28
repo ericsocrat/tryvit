@@ -9,14 +9,17 @@ from unittest import mock
 
 import pipeline.sql_generator as sql_generator
 from pipeline.enrichment import (
+    PHASE4B_PATH,
     AllergenEvidence,
     IngredientEvidence,
     canonicalize_allergens,
+    enrichment_scopes,
     evidence_from_products,
     generate_enrichment_sql,
     match_ingredient,
     match_ingredients,
     normalize_token,
+    validate_registry,
 )
 from pipeline.generate_enrichment_pilot import build_outputs
 from pipeline.sql_generator import generate_pipeline
@@ -59,6 +62,22 @@ class EnrichmentTests(unittest.TestCase):
         self.assertEqual(ambiguous.classification, "ambiguous")
         self.assertIsNone(ambiguous.canonical_name)
         self.assertEqual(ambiguous.candidates, ("Corn Starch", "Potato Starch", "Wheat Starch"))
+
+    def test_quarantined_source_artifact_is_never_linkable(self) -> None:
+        registry = REGISTRY | {"quarantined": {"kcal": "nutrition-label artifact"}}
+        result = match_ingredient(ingredient("KCAL"), REFERENCES | {"KCAL"}, registry)
+        self.assertEqual(result.classification, "quarantined")
+        self.assertIsNone(result.canonical_name)
+
+    def test_conflicting_registry_aliases_are_rejected(self) -> None:
+        registry = {
+            "aliases": {"water": "Water"},
+            "reviewed": {"water": "Water"},
+            "ambiguous": {},
+            "allergen_aliases": {},
+        }
+        with self.assertRaisesRegex(ValueError, "conflicting enrichment registry tokens"):
+            validate_registry(registry, REFERENCES)
 
     def test_duplicate_prevention_and_deterministic_ordering(self) -> None:
         evidence = [
@@ -124,6 +143,42 @@ class EnrichmentTests(unittest.TestCase):
         self.assertEqual(first_stats["products_with_ingredient_evidence"], 18)
         self.assertTrue(all(path.read_text(encoding="utf-8") == content for path, content in first.items()))
 
+    def test_phase4b_outputs_are_bounded_reproducible_and_quarantined(self) -> None:
+        first, first_stats = build_outputs(PHASE4B_PATH)
+        second, second_stats = build_outputs(PHASE4B_PATH)
+        self.assertEqual(first, second)
+        self.assertEqual(first_stats, second_stats)
+        self.assertEqual(first_stats["selected_products"], 941)
+        self.assertEqual(first_stats["generated_files"], 4)
+        self.assertEqual(first_stats["ambiguous_matches"], 27)
+        self.assertEqual(first_stats["quarantined_matches"], 2)
+        self.assertEqual(first_stats["unresolved_matches"], 0)
+        self.assertEqual(first_stats["linked_ingredient_rows"], 9988)
+        expected_names = {
+            "PIPELINE__breakfast-grain-based-de__02_enrichment.sql",
+            "PIPELINE__dairy-de__02_enrichment.sql",
+            "PIPELINE__drinks-de__02_enrichment.sql",
+            "PIPELINE__sweets-de__02_enrichment.sql",
+        }
+        self.assertEqual({path.name for path in first}, expected_names)
+        self.assertTrue(all("-- Phase: 4B" in content for content in first.values()))
+        self.assertTrue(all("p.is_deprecated IS NOT TRUE" in content for content in first.values()))
+        combined = "\n".join(first.values())
+        self.assertNotIn("('Kcal', false", combined)
+        self.assertNotIn("('Kcal 0 8', false", combined)
+
+    def test_approved_scopes_include_phase4a_and_only_four_phase4b_scopes(self) -> None:
+        scopes = enrichment_scopes()
+        phase4b = {
+            ("Breakfast & Grain-Based", "DE"),
+            ("Dairy", "DE"),
+            ("Drinks", "DE"),
+            ("Sweets", "DE"),
+        }
+        self.assertTrue(phase4b <= scopes)
+        self.assertEqual(len(phase4b), 4)
+        self.assertNotIn(("Sauces", "DE"), scopes)
+
     def test_standard_generation_emits_ordered_enrichment_output(self) -> None:
         product = {
             "brand": "Test",
@@ -162,6 +217,39 @@ class EnrichmentTests(unittest.TestCase):
             names.index("PIPELINE__chips-de__02_enrichment.sql"),
             names.index("PIPELINE__chips-de__03_add_nutrition.sql"),
         )
+
+    def test_standard_phase4b_generation_retains_ci_deferral_marker(self) -> None:
+        product = {
+            "brand": "Test",
+            "product_name": "Test dairy",
+            "ean": "4018077010316",
+            "product_type": "Grocery",
+            "prep_method": "not-applicable",
+            "store_availability": None,
+            "controversies": "none",
+            "calories": 100,
+            "total_fat_g": 1,
+            "saturated_fat_g": 0,
+            "trans_fat_g": 0,
+            "carbs_g": 10,
+            "sugars_g": 1,
+            "fibre_g": 1,
+            "protein_g": 1,
+            "salt_g": 0.1,
+            "nutri_score_label": "B",
+            "nova_group": "2",
+            "_ingredients": [{"text": "Water", "id": "en:water"}],
+            "_allergens_tags": ["en:milk"],
+            "_traces_tags": [],
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            output = root / "dairy-de"
+            with mock.patch.object(sql_generator, "PIPELINES_ROOT", root):
+                files = generate_pipeline("Dairy", [product], str(output), country="DE")
+            enrichment = next(path for path in files if path.name.endswith("__02_enrichment.sql"))
+            content = enrichment.read_text(encoding="utf-8")
+        self.assertIn("-- Phase: 4B", content)
 
 
 if __name__ == "__main__":

@@ -18,6 +18,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 REGISTRY_PATH = Path(__file__).with_name("enrichment_registry.json")
 PILOT_PATH = Path(__file__).with_name("enrichment_pilot.json")
+PHASE4B_PATH = Path(__file__).with_name("enrichment_phase4b.json")
 SNAPSHOT_PATH = PROJECT_ROOT / "supabase" / "migrations" / "20260601173035_populate_ingredients_allergens.sql"
 
 ALLERGEN_IDS = frozenset(
@@ -82,6 +83,48 @@ def load_registry(path: Path = REGISTRY_PATH) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def validate_registry(registry: Mapping, reference_names: Iterable[str]) -> None:
+    """Reject conflicting or non-existent explicit mappings.
+
+    Registry entries are human-reviewed control data.  A token may belong to
+    exactly one of aliases, reviewed mappings, or the ambiguity quarantine.
+    Every declared target must already exist in the committed reference
+    vocabulary; the registry never creates semantic identities implicitly.
+    """
+    references = frozenset(reference_names)
+    groups = {
+        name: {normalize_token(str(key)): value for key, value in registry.get(name, {}).items()}
+        for name in ("aliases", "reviewed", "ambiguous", "quarantined")
+    }
+    for left, right in (
+        ("aliases", "reviewed"),
+        ("aliases", "ambiguous"),
+        ("aliases", "quarantined"),
+        ("reviewed", "ambiguous"),
+        ("reviewed", "quarantined"),
+        ("ambiguous", "quarantined"),
+    ):
+        overlap = sorted(groups[left].keys() & groups[right].keys())
+        if overlap:
+            raise ValueError(f"conflicting enrichment registry tokens in {left}/{right}: {overlap}")
+    for group_name in ("aliases", "reviewed"):
+        missing = sorted(str(target) for target in groups[group_name].values() if str(target) not in references)
+        if missing:
+            raise ValueError(f"{group_name} targets missing from reference vocabulary: {missing}")
+    for token, candidates in groups["ambiguous"].items():
+        values = tuple(sorted({str(value) for value in candidates}))
+        if len(values) < 2:
+            raise ValueError(f"ambiguous token {token!r} must declare at least two candidates")
+        missing = sorted(value for value in values if value not in references)
+        if missing:
+            raise ValueError(f"ambiguous candidates missing from reference vocabulary: {missing}")
+    invalid_allergens = sorted(
+        str(target) for target in registry.get("allergen_aliases", {}).values() if str(target) not in ALLERGEN_IDS
+    )
+    if invalid_allergens:
+        raise ValueError(f"allergen aliases target unknown canonical IDs: {invalid_allergens}")
+
+
 def pilot_categories(path: Path = PILOT_PATH) -> frozenset[str]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     return frozenset(item["category"] for item in payload["products"])
@@ -90,6 +133,24 @@ def pilot_categories(path: Path = PILOT_PATH) -> frozenset[str]:
 def pilot_scopes(path: Path = PILOT_PATH) -> frozenset[tuple[str, str]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     return frozenset((item["category"], item["country"]) for item in payload["products"])
+
+
+def manifest_scopes(path: Path) -> frozenset[tuple[str, str]]:
+    """Return the explicitly approved category-country scopes in a manifest."""
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if "scopes" in payload:
+        return frozenset((item["category"], item["country"]) for item in payload["scopes"])
+    return frozenset((item["category"], item["country"]) for item in payload.get("products", ()))
+
+
+def enrichment_scopes(paths: Sequence[Path] | None = None) -> frozenset[tuple[str, str]]:
+    """Return every approved scope across Phase 4 manifests."""
+    manifests = tuple(paths or (PILOT_PATH, PHASE4B_PATH))
+    scopes: set[tuple[str, str]] = set()
+    for path in manifests:
+        if path.is_file():
+            scopes.update(manifest_scopes(path))
+    return frozenset(scopes)
 
 
 @lru_cache(maxsize=1)
@@ -118,7 +179,21 @@ def match_ingredient(
     config = dict(registry or load_registry())
     references = frozenset(reference_names)
     index = _normalized_index(references)
+    validate_registry(config, references)
+    return _match_ingredient(evidence, references, index, config)
+
+
+def _match_ingredient(
+    evidence: IngredientEvidence,
+    references: frozenset[str],
+    index: Mapping[str, tuple[str, ...]],
+    config: Mapping,
+) -> IngredientMatch:
+    """Classify one token using a pre-built deterministic reference index."""
     normalized = normalize_token(evidence.source_text)
+
+    if normalized in config.get("quarantined", {}):
+        return IngredientMatch(evidence, normalized, "quarantined", None)
 
     explicit = tuple(sorted(config.get("ambiguous", {}).get(normalized, ())))
     if explicit:
@@ -152,7 +227,11 @@ def match_ingredients(
     registry: Mapping | None = None,
 ) -> list[IngredientMatch]:
     """Match, de-duplicate, and order evidence deterministically."""
-    matched = [match_ingredient(item, reference_names, registry) for item in evidence]
+    references = frozenset(reference_names)
+    config = dict(registry or load_registry())
+    validate_registry(config, references)
+    index = _normalized_index(references)
+    matched = [_match_ingredient(item, references, index, config) for item in evidence]
     ordered = sorted(
         matched,
         key=lambda row: (
@@ -239,6 +318,7 @@ def generate_enrichment_sql(
     allergens: Sequence[AllergenEvidence],
     source_label: str,
     reference_properties: Mapping[str, tuple[bool, str, str, str]] | None = None,
+    phase: str | None = None,
 ) -> str:
     """Generate stable, idempotent linkage SQL keyed by country and EAN."""
     canonical_by_source = {
@@ -258,6 +338,7 @@ def generate_enrichment_sql(
     canonical_allergens = canonicalize_allergens(allergens)
     lines = [
         "-- Generated deterministic ingredient/allergen enrichment",
+        *([f"-- Phase: {phase}"] if phase else []),
         f"-- Category: {category}",
         f"-- Source: {source_label}",
         "-- Identity: products(country, ean); absence of rows means unknown.",
