@@ -15,6 +15,12 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
+from pipeline.enrichment_governance import (
+    governed_token_entry,
+    parent_child_rule,
+    validate_governance_registry,
+)
+
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 REGISTRY_PATH = Path(__file__).with_name("enrichment_registry.json")
 PILOT_PATH = Path(__file__).with_name("enrichment_pilot.json")
@@ -52,6 +58,7 @@ class IngredientEvidence:
     is_sub_ingredient: bool = False
     parent_source_text: str | None = None
     canonical_hint: str | None = None
+    category: str | None = None
 
 
 @dataclass(frozen=True)
@@ -92,6 +99,14 @@ def validate_registry(registry: Mapping, reference_names: Iterable[str]) -> None
     vocabulary; the registry never creates semantic identities implicitly.
     """
     references = frozenset(reference_names)
+    if registry.get("schema_version") == 2:
+        validate_governance_registry(registry, references)
+        invalid_allergens = sorted(
+            str(target) for target in registry.get("allergen_aliases", {}).values() if str(target) not in ALLERGEN_IDS
+        )
+        if invalid_allergens:
+            raise ValueError(f"allergen aliases target unknown canonical IDs: {invalid_allergens}")
+        return
     groups = {
         name: {normalize_token(str(key)): value for key, value in registry.get(name, {}).items()}
         for name in ("aliases", "reviewed", "ambiguous", "quarantined")
@@ -192,6 +207,39 @@ def _match_ingredient(
     """Classify one token using a pre-built deterministic reference index."""
     normalized = normalize_token(evidence.source_text)
 
+    governed = governed_token_entry(config, normalized, evidence.country, evidence.category)
+    if governed is not None:
+        classification = governed["mapping_classification"]
+        if classification in {"exact_canonical_match", "approved_alias", "context_qualified_alias"}:
+            compatibility_classification = {
+                "exact_canonical_match": "exact",
+                "approved_alias": "alias",
+                "context_qualified_alias": "reviewed",
+            }[classification]
+            return IngredientMatch(
+                evidence,
+                normalized,
+                compatibility_classification,
+                str(governed["canonical_ingredient_identity"]),
+            )
+        if classification == "ambiguous_and_withheld":
+            return IngredientMatch(
+                evidence,
+                normalized,
+                "ambiguous",
+                None,
+                tuple(sorted(str(value) for value in governed.get("candidates", ()))),
+            )
+        if classification == "source_artifact_and_quarantined":
+            return IngredientMatch(evidence, normalized, "quarantined", None)
+        return IngredientMatch(evidence, normalized, "unresolved", None)
+    if config.get("schema_version") == 2 and any(
+        entry.get("normalized_source_token") == normalized for entry in config.get("entries", ())
+    ):
+        # A reviewed token outside its approved scope must not fall through to
+        # normalized exact matching; that would silently leak the scoped rule.
+        return IngredientMatch(evidence, normalized, "unresolved", None)
+
     if normalized in config.get("quarantined", {}):
         return IngredientMatch(evidence, normalized, "quarantined", None)
 
@@ -277,29 +325,36 @@ def canonicalize_allergens(
     return [result[key] for key in sorted(result)]
 
 
-def linkable_matches(matches: Sequence[IngredientMatch]) -> list[IngredientMatch]:
+def linkable_matches(
+    matches: Sequence[IngredientMatch], registry: Mapping | None = None
+) -> list[IngredientMatch]:
     """Return matched rows whose parent relationship is also unambiguous."""
+    config = dict(registry or load_registry())
     canonical_by_source = {
         (row.evidence.country, row.evidence.ean, row.normalized_text): row.canonical_name
         for row in matches
         if row.canonical_name is not None
     }
-    return [
-        row
-        for row in matches
-        if row.canonical_name is not None
-        and (
-            not row.evidence.is_sub_ingredient
-            or canonical_by_source.get(
-                (
-                    row.evidence.country,
-                    row.evidence.ean,
-                    normalize_token(row.evidence.parent_source_text or ""),
-                )
-            )
-            is not None
+    result: list[IngredientMatch] = []
+    for row in matches:
+        if row.canonical_name is None:
+            continue
+        if not row.evidence.is_sub_ingredient:
+            result.append(row)
+            continue
+        parent_token = normalize_token(row.evidence.parent_source_text or "")
+        if canonical_by_source.get((row.evidence.country, row.evidence.ean, parent_token)) is None:
+            continue
+        rule = parent_child_rule(
+            config,
+            parent_token,
+            row.normalized_text,
+            row.evidence.country,
+            row.evidence.category,
         )
-    ]
+        if rule is None or rule.get("inference_allowed") is True:
+            result.append(row)
+    return result
 
 
 def _sql_text(value: str | None) -> str:
@@ -470,7 +525,7 @@ def generate_enrichment_sql(
 
 
 def evidence_from_products(
-    products: Sequence[Mapping], country: str
+    products: Sequence[Mapping], country: str, category: str | None = None
 ) -> tuple[list[IngredientEvidence], list[AllergenEvidence]]:
     """Convert normalized pipeline products into explicit source evidence."""
     ingredients: list[IngredientEvidence] = []
@@ -495,6 +550,7 @@ def evidence_from_products(
                     percent_estimate=(
                         str(item["percent_estimate"]) if item.get("percent_estimate") is not None else None
                     ),
+                    category=category,
                 )
             )
         for raw in product.get("_allergens_tags") or ():

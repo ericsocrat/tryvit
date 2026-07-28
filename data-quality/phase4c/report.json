@@ -1,0 +1,921 @@
+{
+  "allergen_provenance": {
+    "deterministic_ingredient_derived_records": 32,
+    "explicit_source_contains_records": 1278,
+    "explicit_source_may_contain_records": 1110,
+    "missing_evidence_is_allergen_free": false,
+    "products_unknown_due_to_missing_evidence": 202,
+    "products_with_known_evidence": 739,
+    "selected_products": 941,
+    "total_records_after_provenance_union": 2420
+  },
+  "checks": {
+    "all_11_unsafe_dependent_children_withheld": true,
+    "all_23_starch_occurrences_withheld": true,
+    "all_4_vegetable_oil_occurrences_withheld": true,
+    "both_source_artifacts_quarantined": true,
+    "conflicts_absent": true,
+    "deprecated_products_unchanged": true,
+    "hosted_supabase_writes_absent": true,
+    "non_target_categories_unchanged": true,
+    "phase4b_outputs_unchanged": true,
+    "registry_valid": true
+  },
+  "conflicts_detected": [],
+  "coverage_and_confidence": {
+    "phase4b_before_after": {
+      "category_coverage": [
+        {
+          "active_products": 199,
+          "allergen_evidence": {
+            "after_count": 193,
+            "after_percentage": 97.0,
+            "before_count": 0,
+            "before_percentage": 0.0
+          },
+          "average_confidence": {
+            "after": 92.0,
+            "before": 58.0,
+            "delta": 34.0
+          },
+          "average_score": {
+            "after": 22.0,
+            "before": 21.3,
+            "delta": 0.7
+          },
+          "category": "Breakfast & Grain-Based",
+          "country": "DE",
+          "ingredient_coverage": {
+            "after_count": 195,
+            "after_percentage": 98.0,
+            "before_count": 0,
+            "before_percentage": 0.0
+          }
+        },
+        {
+          "active_products": 287,
+          "allergen_evidence": {
+            "after_count": 264,
+            "after_percentage": 92.0,
+            "before_count": 26,
+            "before_percentage": 9.1
+          },
+          "average_confidence": {
+            "after": 91.7,
+            "before": 61.3,
+            "delta": 30.4
+          },
+          "average_score": {
+            "after": 25.3,
+            "before": 25.2,
+            "delta": 0.1
+          },
+          "category": "Dairy",
+          "country": "DE",
+          "ingredient_coverage": {
+            "after_count": 281,
+            "after_percentage": 97.9,
+            "before_count": 28,
+            "before_percentage": 9.8
+          }
+        },
+        {
+          "active_products": 300,
+          "allergen_evidence": {
+            "after_count": 87,
+            "after_percentage": 29.0,
+            "before_count": 14,
+            "before_percentage": 4.7
+          },
+          "average_confidence": {
+            "after": 85.3,
+            "before": 62.2,
+            "delta": 23.1
+          },
+          "average_score": {
+            "after": 9.1,
+            "before": 8.7,
+            "delta": 0.4
+          },
+          "category": "Drinks",
+          "country": "DE",
+          "ingredient_coverage": {
+            "after_count": 294,
+            "after_percentage": 98.0,
+            "before_count": 45,
+            "before_percentage": 15.0
+          }
+        },
+        {
+          "active_products": 299,
+          "allergen_evidence": {
+            "after_count": 283,
+            "after_percentage": 94.6,
+            "before_count": 48,
+            "before_percentage": 16.1
+          },
+          "average_confidence": {
+            "after": 91.1,
+            "before": 63.6,
+            "delta": 27.5
+          },
+          "average_score": {
+            "after": 46.6,
+            "before": 46.0,
+            "delta": 0.6
+          },
+          "category": "Sweets",
+          "country": "DE",
+          "ingredient_coverage": {
+            "after_count": 292,
+            "after_percentage": 97.7,
+            "before_count": 48,
+            "before_percentage": 16.1
+          }
+        }
+      ],
+      "overall_coverage": {
+        "active_products": 8652,
+        "average_confidence": {
+          "after": 65.0,
+          "before": 61.5,
+          "delta": 3.5
+        },
+        "average_score": {
+          "after": 21.3,
+          "before": 21.3,
+          "delta": 0.0
+        },
+        "ingredients": {
+          "after_count": 1874,
+          "after_percentage": 21.7,
+          "before_count": 933,
+          "before_percentage": 10.8
+        },
+        "known_contains": {
+          "after_count": 1389,
+          "after_percentage": 16.1,
+          "before_count": 679,
+          "before_percentage": 7.8
+        }
+      }
+    },
+    "phase4c_confidence_change": 0.0,
+    "phase4c_coverage_change_percentage_points": 0.0,
+    "phase4c_linkage_change": 0,
+    "phase4c_score_change": 0.0
+  },
+  "drinks_de_analysis": {
+    "active_products": 300,
+    "ambiguous_tokens_withheld": 0,
+    "deterministic_ingredient_derived_records": 2,
+    "explicit_source_contains_records": 76,
+    "explicit_source_may_contain_records": 41,
+    "finding": "The low known-allergen coverage is primarily genuine absence of source declarations in the selected beverage records. Only two additional records are supported by deterministic ingredient rules; there are no ambiguous Drinks tokens withholding allergen evidence. The dominant unknown-product tokens are water, acids, sugar, flavourings, juices, and vitamins, so missing evidence remains unknown rather than allergen-free.",
+    "ingredient_coverage_after": {
+      "after_count": 294,
+      "after_percentage": 98.0,
+      "before_count": 45,
+      "before_percentage": 15.0
+    },
+    "known_allergen_coverage_after": {
+      "after_count": 87,
+      "after_percentage": 29.0,
+      "before_count": 14,
+      "before_percentage": 4.7
+    },
+    "phase4b_selected_products_with_ingredient_evidence": 249,
+    "selected_products_unknown_due_to_missing_evidence": 176,
+    "selected_products_with_known_evidence": 73,
+    "source_artifacts_quarantined": 1,
+    "top_tokens_in_unknown_products": [
+      {
+        "normalized_token": "water",
+        "occurrences": 75
+      },
+      {
+        "normalized_token": "acid",
+        "occurrences": 54
+      },
+      {
+        "normalized_token": "sugar",
+        "occurrences": 51
+      },
+      {
+        "normalized_token": "natural flavouring",
+        "occurrences": 42
+      },
+      {
+        "normalized_token": "vitamins",
+        "occurrences": 35
+      },
+      {
+        "normalized_token": "antioxidant",
+        "occurrences": 30
+      },
+      {
+        "normalized_token": "colour",
+        "occurrences": 27
+      },
+      {
+        "normalized_token": "flavouring",
+        "occurrences": 24
+      },
+      {
+        "normalized_token": "thiamin",
+        "occurrences": 23
+      },
+      {
+        "normalized_token": "orange juice from concentrate",
+        "occurrences": 22
+      },
+      {
+        "normalized_token": "vitamin c",
+        "occurrences": 22
+      },
+      {
+        "normalized_token": "sweetener",
+        "occurrences": 22
+      },
+      {
+        "normalized_token": "apple juice",
+        "occurrences": 21
+      },
+      {
+        "normalized_token": "acidity regulator",
+        "occurrences": 21
+      },
+      {
+        "normalized_token": "banana",
+        "occurrences": 20
+      }
+    ]
+  },
+  "governance_checksum_sha256": "c4d400d67c3bc04b45d29331cb9495c45672e3d8b613ead992771203469e0e37",
+  "governance_registry": "pipeline/enrichment_registry.json",
+  "manual_review_required": [
+    "A botanical source declaration is required before Starch can map to corn, potato, or wheat starch.",
+    "A named oil source is required before Vegetable Oil can map to a specific oil.",
+    "The source tokens Stärke Weizen and Stärke Mais should be re-reviewed if a corrected or more specific source declaration becomes available.",
+    "Allergen absence claims require explicit producer evidence; unknown Drinks records cannot be classified as allergen-free."
+  ],
+  "objective": "Deterministic enrichment governance; no new category batch or linkage writes.",
+  "observed_edge_case_counts": {
+    "approved_global_alias_occurrences": 13,
+    "approved_scoped_alias_occurrences": 0,
+    "source_artifacts_quarantined": 2,
+    "starch_ambiguous_withheld": 23,
+    "unsafe_dependent_children_withheld": 11,
+    "vegetable_oil_ambiguous_withheld": 4
+  },
+  "parent_child_decisions": [
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Breakfast & Grain-Based",
+      "child_canonical_identity": "Stärke Weizen",
+      "child_source_token": "Stärke Weizen",
+      "classification": "unsafe_parent_child_inference_and_withheld",
+      "country": "DE",
+      "ean": "4000521021870",
+      "inference_allowed": false,
+      "parent_source_token": "Starch",
+      "reason": "The child cannot be attached while the source parent lacks a safe canonical identity."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Breakfast & Grain-Based",
+      "child_canonical_identity": "Sunflower Oil",
+      "child_source_token": "Sunflower",
+      "classification": "unsafe_parent_child_inference_and_withheld",
+      "country": "DE",
+      "ean": "4056489864905",
+      "inference_allowed": false,
+      "parent_source_token": "Vegetable Oil",
+      "reason": "The child identity is known, but its unresolved parent prevents a structurally valid linkage."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Breakfast & Grain-Based",
+      "child_canonical_identity": "Cottonseed",
+      "child_source_token": "Cottonseed",
+      "classification": "unsafe_parent_child_inference_and_withheld",
+      "country": "DE",
+      "ean": "4056489864905",
+      "inference_allowed": false,
+      "parent_source_token": "Vegetable Oil",
+      "reason": "The child identity is known, but its unresolved parent prevents a structurally valid linkage."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "child_canonical_identity": "Rapeseed Oil",
+      "child_source_token": "Rapeseed",
+      "classification": "unsafe_parent_child_inference_and_withheld",
+      "country": "DE",
+      "ean": "4003751060152",
+      "inference_allowed": false,
+      "parent_source_token": "Vegetable Oil",
+      "reason": "The child identity is known, but its unresolved parent prevents a structurally valid linkage."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "child_canonical_identity": "Sunflower Oil",
+      "child_source_token": "Sunflower",
+      "classification": "unsafe_parent_child_inference_and_withheld",
+      "country": "DE",
+      "ean": "4003751060152",
+      "inference_allowed": false,
+      "parent_source_token": "Vegetable Oil",
+      "reason": "The child identity is known, but its unresolved parent prevents a structurally valid linkage."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "child_canonical_identity": "Rapeseed Oil",
+      "child_source_token": "Rapeseed",
+      "classification": "unsafe_parent_child_inference_and_withheld",
+      "country": "DE",
+      "ean": "4056489920144",
+      "inference_allowed": false,
+      "parent_source_token": "Vegetable Oil",
+      "reason": "The child identity is known, but its unresolved parent prevents a structurally valid linkage."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "child_canonical_identity": "Sunflower Oil",
+      "child_source_token": "Sunflower",
+      "classification": "unsafe_parent_child_inference_and_withheld",
+      "country": "DE",
+      "ean": "4056489920144",
+      "inference_allowed": false,
+      "parent_source_token": "Vegetable Oil",
+      "reason": "The child identity is known, but its unresolved parent prevents a structurally valid linkage."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "child_canonical_identity": "Rapeseed Oil",
+      "child_source_token": "Rapeseed",
+      "classification": "unsafe_parent_child_inference_and_withheld",
+      "country": "DE",
+      "ean": "4056489920151",
+      "inference_allowed": false,
+      "parent_source_token": "Vegetable Oil",
+      "reason": "The child identity is known, but its unresolved parent prevents a structurally valid linkage."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "child_canonical_identity": "Sunflower Oil",
+      "child_source_token": "Sunflower",
+      "classification": "unsafe_parent_child_inference_and_withheld",
+      "country": "DE",
+      "ean": "4056489920151",
+      "inference_allowed": false,
+      "parent_source_token": "Vegetable Oil",
+      "reason": "The child identity is known, but its unresolved parent prevents a structurally valid linkage."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Sweets",
+      "child_canonical_identity": "Stärke Mais",
+      "child_source_token": "Stärke Mais",
+      "classification": "unsafe_parent_child_inference_and_withheld",
+      "country": "DE",
+      "ean": "4000417663016",
+      "inference_allowed": false,
+      "parent_source_token": "Starch",
+      "reason": "The child cannot be attached while the source parent lacks a safe canonical identity."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Sweets",
+      "child_canonical_identity": "Stärke Weizen",
+      "child_source_token": "Stärke Weizen",
+      "classification": "unsafe_parent_child_inference_and_withheld",
+      "country": "DE",
+      "ean": "4000417663016",
+      "inference_allowed": false,
+      "parent_source_token": "Starch",
+      "reason": "The child cannot be attached while the source parent lacks a safe canonical identity."
+    }
+  ],
+  "phase": "4C",
+  "phase4b_compatibility": {
+    "allergen_records_created": 2420,
+    "checksums": {
+      "first_run": {
+        "all": {
+          "product_allergen_info": "39795bd2c395efb59c050153a0a980dd",
+          "product_ingredient": "c34366c5a341534e98e4d4cba9733145"
+        },
+        "non_target": {
+          "product_allergen_info": "2277d975d9f263ec769cfe703af8321f",
+          "product_ingredient": "e6b8fde7d4f6da1cd06859bc084e347a"
+        },
+        "selected": {
+          "product_allergen_info": "3eb0b4f21e3d7b09164e92e09ae8a3b4",
+          "product_ingredient": "896aca051bc066d857fabef34017ea68"
+        }
+      },
+      "rerun": {
+        "all": {
+          "product_allergen_info": "39795bd2c395efb59c050153a0a980dd",
+          "product_ingredient": "c34366c5a341534e98e4d4cba9733145"
+        },
+        "non_target": {
+          "product_allergen_info": "2277d975d9f263ec769cfe703af8321f",
+          "product_ingredient": "e6b8fde7d4f6da1cd06859bc084e347a"
+        },
+        "selected": {
+          "product_allergen_info": "3eb0b4f21e3d7b09164e92e09ae8a3b4",
+          "product_ingredient": "896aca051bc066d857fabef34017ea68"
+        }
+      }
+    },
+    "ingredient_links_created": 9988,
+    "products_enriched": 941
+  },
+  "registry_counts": {
+    "ambiguous_tokens_withheld": 2,
+    "approved_global_aliases": 2,
+    "approved_scoped_aliases": 3,
+    "parent_child_rules": 5,
+    "source_artifacts_quarantined": 2
+  },
+  "reviewed_tokens": [
+    {
+      "allergen_derivation_allowed": false,
+      "canonical_ingredient_identity": null,
+      "category_scope": [],
+      "country_scope": [],
+      "mapping_classification": "source_artifact_and_quarantined",
+      "normalized_source_token": "kcal",
+      "parent_child_inference_allowed": false,
+      "phase4b_occurrences": 1,
+      "raw_source_token": "Kcal",
+      "review_note": "Energy-unit text is not an ingredient.",
+      "review_status": "quarantined",
+      "source_or_evidence": "Nutrition-label fragment observed once in Sweets DE"
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "canonical_ingredient_identity": null,
+      "category_scope": [],
+      "country_scope": [],
+      "mapping_classification": "source_artifact_and_quarantined",
+      "normalized_source_token": "kcal 0 8",
+      "parent_child_inference_allowed": false,
+      "phase4b_occurrences": 1,
+      "raw_source_token": "Kcal 0 8",
+      "review_note": "Energy-label text was parsed inside an ingredient hierarchy and must never be linked.",
+      "review_status": "quarantined",
+      "source_or_evidence": "Nutrition-label fragment observed once in Drinks DE"
+    },
+    {
+      "allergen_derivation_allowed": true,
+      "canonical_ingredient_identity": "Paprika Or Bell Pepper",
+      "category_scope": [
+        "Frozen Vegetables"
+      ],
+      "country_scope": [
+        "PL"
+      ],
+      "mapping_classification": "context_qualified_alias",
+      "normalized_source_token": "papryka",
+      "parent_child_inference_allowed": true,
+      "phase4b_occurrences": 0,
+      "raw_source_token": "papryka",
+      "review_note": "Polish papryka means paprika or bell pepper in the approved Frozen Vegetables pilot scope.",
+      "review_status": "approved",
+      "source_or_evidence": "Reviewed Polish Phase 4A product context"
+    },
+    {
+      "allergen_derivation_allowed": true,
+      "canonical_ingredient_identity": "Paprika Or Bell Pepper",
+      "category_scope": [
+        "Meat"
+      ],
+      "country_scope": [
+        "PL"
+      ],
+      "mapping_classification": "context_qualified_alias",
+      "normalized_source_token": "papryka",
+      "parent_child_inference_allowed": true,
+      "phase4b_occurrences": 0,
+      "raw_source_token": "papryka",
+      "review_note": "Polish papryka means paprika or bell pepper in the approved Meat pilot scope.",
+      "review_status": "approved",
+      "source_or_evidence": "Reviewed Polish Phase 4A product context"
+    },
+    {
+      "allergen_derivation_allowed": true,
+      "canonical_ingredient_identity": "Rapeseed Oil",
+      "category_scope": [],
+      "country_scope": [],
+      "mapping_classification": "approved_alias",
+      "normalized_source_token": "rapeseed",
+      "parent_child_inference_allowed": true,
+      "phase4b_occurrences": 6,
+      "raw_source_token": "rapeseed",
+      "review_note": "The source token names the same oil identity without the word oil.",
+      "review_status": "approved",
+      "source_or_evidence": "OFF taxonomy synonym reviewed against the committed ingredient vocabulary"
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "candidates": [
+        "Corn Starch",
+        "Potato Starch",
+        "Wheat Starch"
+      ],
+      "canonical_ingredient_identity": null,
+      "category_scope": [],
+      "country_scope": [],
+      "mapping_classification": "ambiguous_and_withheld",
+      "normalized_source_token": "starch",
+      "parent_child_inference_allowed": false,
+      "phase4b_occurrences": 23,
+      "raw_source_token": "Starch",
+      "review_note": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence.",
+      "review_status": "withheld",
+      "source_or_evidence": "23 Phase 4B occurrences across Breakfast & Grain-Based DE, Dairy DE, and Sweets DE"
+    },
+    {
+      "allergen_derivation_allowed": true,
+      "canonical_ingredient_identity": "Sunflower Oil",
+      "category_scope": [],
+      "country_scope": [],
+      "mapping_classification": "approved_alias",
+      "normalized_source_token": "sunflower",
+      "parent_child_inference_allowed": true,
+      "phase4b_occurrences": 7,
+      "raw_source_token": "sunflower",
+      "review_note": "The source token names the same oil identity without the word oil.",
+      "review_status": "approved",
+      "source_or_evidence": "OFF taxonomy synonym reviewed against the committed ingredient vocabulary"
+    },
+    {
+      "allergen_derivation_allowed": true,
+      "canonical_ingredient_identity": "Sour Cream Powder",
+      "category_scope": [
+        "Dairy"
+      ],
+      "country_scope": [
+        "DE"
+      ],
+      "mapping_classification": "context_qualified_alias",
+      "normalized_source_token": "trockenmilcherzeugnis aus sauerrahm",
+      "parent_child_inference_allowed": true,
+      "phase4b_occurrences": 0,
+      "raw_source_token": "Trockenmilcherzeugnis aus Sauerrahm",
+      "review_note": "The German label explicitly identifies a dried sour-cream product in Dairy.",
+      "review_status": "approved",
+      "source_or_evidence": "Reviewed German dairy label context"
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "candidates": [
+        "Rapeseed Oil",
+        "Sunflower Oil"
+      ],
+      "canonical_ingredient_identity": null,
+      "category_scope": [],
+      "country_scope": [],
+      "mapping_classification": "ambiguous_and_withheld",
+      "normalized_source_token": "vegetable oil",
+      "parent_child_inference_allowed": false,
+      "phase4b_occurrences": 4,
+      "raw_source_token": "Vegetable Oil",
+      "review_note": "The broad source token cannot justify selecting one specific oil.",
+      "review_status": "withheld",
+      "source_or_evidence": "4 Phase 4B occurrences across Breakfast & Grain-Based DE and Dairy DE"
+    }
+  ],
+  "schema_version": 1,
+  "source": "supabase/migrations/20260601173035_populate_ingredients_allergens.sql",
+  "status": "pass",
+  "withheld_occurrences": [
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Breakfast & Grain-Based",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4000521021870",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Breakfast & Grain-Based",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4000521031152",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Breakfast & Grain-Based",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4056489864905",
+      "normalized_source_token": "vegetable oil",
+      "parent_source_token": "Sultana",
+      "raw_source_token": "Vegetable Oil",
+      "reason": "The broad source token cannot justify selecting one specific oil."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4000400008602",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4002468102322",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4002671145505",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4003751060152",
+      "normalized_source_token": "vegetable oil",
+      "parent_source_token": null,
+      "raw_source_token": "Vegetable Oil",
+      "reason": "The broad source token cannot justify selecting one specific oil."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4025500288150",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4036300152701",
+      "normalized_source_token": "starch",
+      "parent_source_token": "Anti Caking Agent",
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4045357001986",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4045357099136",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "40466057",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "40466101",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4047247197830",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4047247288187",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4047247389815",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4056489920144",
+      "normalized_source_token": "vegetable oil",
+      "parent_source_token": null,
+      "raw_source_token": "Vegetable Oil",
+      "reason": "The broad source token cannot justify selecting one specific oil."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4056489920144",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4056489920151",
+      "normalized_source_token": "vegetable oil",
+      "parent_source_token": null,
+      "raw_source_token": "Vegetable Oil",
+      "reason": "The broad source token cannot justify selecting one specific oil."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4056489920151",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4061458038553",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4061464519619",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4088500784503",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Dairy",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4337256731744",
+      "normalized_source_token": "starch",
+      "parent_source_token": "Anti Caking Agent",
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Drinks",
+      "classification": "source_artifact_and_quarantined",
+      "country": "DE",
+      "ean": "4311501710036",
+      "normalized_source_token": "kcal 0 8",
+      "parent_source_token": "Colour",
+      "raw_source_token": "Kcal 0 8",
+      "reason": "Energy-label text was parsed inside an ingredient hierarchy and must never be linked."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Sweets",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4000417663016",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Sweets",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4000607164002",
+      "normalized_source_token": "starch",
+      "parent_source_token": null,
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Sweets",
+      "classification": "source_artifact_and_quarantined",
+      "country": "DE",
+      "ean": "4008400520421",
+      "normalized_source_token": "kcal",
+      "parent_source_token": "Energie",
+      "raw_source_token": "Kcal",
+      "reason": "Energy-unit text is not an ingredient."
+    },
+    {
+      "allergen_derivation_allowed": false,
+      "category": "Sweets",
+      "classification": "ambiguous_and_withheld",
+      "country": "DE",
+      "ean": "4013320033302",
+      "normalized_source_token": "starch",
+      "parent_source_token": "Zitronencrisp",
+      "raw_source_token": "Starch",
+      "reason": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    }
+  ]
+}
