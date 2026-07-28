@@ -14,7 +14,7 @@ from pipeline.enrichment import (
     match_ingredients,
     validate_registry,
 )
-from pipeline.enrichment_governance import governed_token_entry
+from pipeline.enrichment_governance import governed_token_entry, historical_phase4b_registry
 from pipeline.generate_enrichment_pilot import build_outputs, parse_snapshot
 from pipeline.governance_report import _derived_allergen_tags, build_report, render_markdown
 
@@ -64,6 +64,13 @@ class EnrichmentGovernanceTests(unittest.TestCase):
         outside = match_ingredient(self.evidence("papryka", country="PL", category="Drinks"), self.references)
         self.assertEqual((approved.classification, approved.canonical_name), ("reviewed", "Paprika Or Bell Pepper"))
         self.assertIsNone(outside.canonical_name)
+
+    def test_historical_phase4b_registry_reproduces_pre_governance_controls(self) -> None:
+        projected = historical_phase4b_registry(self.registry)
+        self.assertEqual(projected["aliases"]["rapeseed"], "Rapeseed Oil")
+        self.assertEqual(projected["reviewed"]["papryka"], "Paprika Or Bell Pepper")
+        self.assertEqual(projected["ambiguous"]["starch"], ["Corn Starch", "Potato Starch", "Wheat Starch"])
+        self.assertIn("kcal 0 8", projected["quarantined"])
 
     def test_overlapping_scope_conflict_fails_clearly(self) -> None:
         registry = copy.deepcopy(self.registry)

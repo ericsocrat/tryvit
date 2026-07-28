@@ -232,3 +232,38 @@ def validate_governance_registry(registry: Mapping, reference_names: Iterable[st
     _validate_conflicts(entries)
     _validate_cycles(entries)
     _validate_parent_rules(rules)
+
+
+def historical_phase4b_registry(registry: Mapping) -> dict:
+    """Project schema v2 into the registry used by the historical Phase 4B ranking.
+
+    The committed candidate ranking is an immutable record of the decision made
+    before scoped governance existed.  This projection is intentionally limited
+    to reproducing that read-only report; enrichment writes continue to use the
+    scoped schema-v2 registry.
+    """
+    if registry.get("schema_version") != 2:
+        return dict(registry)
+
+    projected: dict[str, dict] = {
+        "aliases": {},
+        "reviewed": {},
+        "ambiguous": {},
+        "quarantined": {},
+        "allergen_aliases": dict(registry.get("allergen_aliases", {})),
+    }
+    for entry in registry.get("entries", ()):
+        token = str(entry["normalized_source_token"])
+        classification = entry["mapping_classification"]
+        if classification == "approved_alias":
+            projected["aliases"][token] = str(entry["canonical_ingredient_identity"])
+        elif classification == "context_qualified_alias":
+            target = str(entry["canonical_ingredient_identity"])
+            previous = projected["reviewed"].setdefault(token, target)
+            if previous != target:
+                raise ValueError(f"historical Phase 4B alias conflict for {token!r}")
+        elif classification == "ambiguous_and_withheld":
+            projected["ambiguous"][token] = list(entry.get("candidates", ()))
+        elif classification == "source_artifact_and_quarantined":
+            projected["quarantined"][token] = str(entry["review_note"])
+    return projected

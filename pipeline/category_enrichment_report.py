@@ -20,7 +20,8 @@ from pathlib import Path
 from typing import Any
 
 from data_quality_report import PsqlExecutor, pct
-from pipeline.enrichment import canonicalize_allergens, linkable_matches, match_ingredients
+from pipeline.enrichment import canonicalize_allergens, linkable_matches, load_registry, match_ingredients
+from pipeline.enrichment_governance import historical_phase4b_registry
 from pipeline.generate_enrichment_pilot import PROJECT_ROOT, build_outputs, load_manifest, parse_snapshot
 
 MANIFEST_PATH = Path(__file__).with_name("enrichment_phase4b.json")
@@ -81,6 +82,7 @@ def _selected_scopes(manifest: dict[str, Any]) -> set[tuple[str, str]]:
 def _candidate_analysis(executor: PsqlExecutor, manifest: dict[str, Any]) -> tuple[dict[str, Any], str]:
     products = executor.rows("phase4b_products", PRODUCTS_SQL)
     ingredients, allergens, references, _ = parse_snapshot()
+    ranking_registry = historical_phase4b_registry(load_registry())
     ingredients_by_product: dict[tuple[str, str], list] = defaultdict(list)
     allergens_by_product: dict[tuple[str, str], list] = defaultdict(list)
     for row in ingredients:
@@ -106,8 +108,8 @@ def _candidate_analysis(executor: PsqlExecutor, manifest: dict[str, Any]) -> tup
             for key in sorted(missing_ingredient_keys)
             for ingredient in ingredients_by_product.get(key, ())
         ]
-        matches = match_ingredients(source_rows, references)
-        linked = linkable_matches(matches)
+        matches = match_ingredients(source_rows, references, registry=ranking_registry)
+        linked = linkable_matches(matches, registry=ranking_registry)
         enrichable_products = sorted({(row.evidence.country, row.evidence.ean) for row in linked})
         canonical_allergens = canonicalize_allergens(
             [allergen for key in sorted(missing_allergen_keys) for allergen in allergens_by_product.get(key, ())]
