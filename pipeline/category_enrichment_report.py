@@ -15,6 +15,7 @@ import io
 import json
 import tempfile
 from collections import Counter, defaultdict
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -101,7 +102,9 @@ def _candidate_analysis(executor: PsqlExecutor, manifest: dict[str, Any]) -> tup
         missing_ingredient_keys = {(str(row["country"]), str(row["ean"])) for row in missing_ingredient_products}
         missing_allergen_keys = {(str(row["country"]), str(row["ean"])) for row in missing_allergen_products}
         source_rows = [
-            ingredient for key in sorted(missing_ingredient_keys) for ingredient in ingredients_by_product.get(key, ())
+            replace(ingredient, category=category)
+            for key in sorted(missing_ingredient_keys)
+            for ingredient in ingredients_by_product.get(key, ())
         ]
         matches = match_ingredients(source_rows, references)
         linked = linkable_matches(matches)
