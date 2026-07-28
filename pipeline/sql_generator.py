@@ -18,11 +18,13 @@ import hashlib
 from pathlib import Path
 
 from pipeline.enrichment import (
+    PHASE4B_PATH,
+    enrichment_scopes,
     evidence_from_products,
     generate_enrichment_sql,
     load_snapshot_reference_names,
+    manifest_scopes,
     match_ingredients,
-    pilot_scopes,
 )
 
 # ---------------------------------------------------------------------------
@@ -43,15 +45,11 @@ def _resolve_pipeline_output_dir(output_dir: str | Path) -> Path:
     try:
         path = Path(output_dir).resolve()
     except (OSError, RuntimeError) as exc:
-        raise PipelineOutputPathError(
-            f"Invalid pipeline output directory: {output_dir!s}"
-        ) from exc
+        raise PipelineOutputPathError(f"Invalid pipeline output directory: {output_dir!s}") from exc
     try:
         path.relative_to(root)
     except ValueError as exc:
-        raise PipelineOutputPathError(
-            "Refusing to write outside db/pipelines: " + str(output_dir)
-        ) from exc
+        raise PipelineOutputPathError("Refusing to write outside db/pipelines: " + str(output_dir)) from exc
     return path
 
 
@@ -59,9 +57,7 @@ def _validated_pipeline_output_path(relative_path: str | Path) -> Path:
     """Resolve a relative generated-file path under the trusted pipeline root."""
     requested = Path(relative_path)
     if requested.is_absolute():
-        raise PipelineOutputPathError(
-            f"Pipeline output path must be relative: {relative_path!s}"
-        )
+        raise PipelineOutputPathError(f"Pipeline output path must be relative: {relative_path!s}")
     if requested == Path("."):
         raise PipelineOutputPathError("Pipeline output path must name a file")
 
@@ -69,16 +65,12 @@ def _validated_pipeline_output_path(relative_path: str | Path) -> Path:
     try:
         candidate = (trusted_root / requested).resolve()
     except (OSError, RuntimeError) as exc:
-        raise PipelineOutputPathError(
-            f"Invalid pipeline output path: {relative_path!s}"
-        ) from exc
+        raise PipelineOutputPathError(f"Invalid pipeline output path: {relative_path!s}") from exc
 
     try:
         candidate.relative_to(trusted_root)
     except ValueError as exc:
-        raise PipelineOutputPathError(
-            f"Refusing to write outside db/pipelines: {relative_path!s}"
-        ) from exc
+        raise PipelineOutputPathError(f"Refusing to write outside db/pipelines: {relative_path!s}") from exc
     if candidate == trusted_root:
         raise PipelineOutputPathError("Pipeline output path must name a file")
     return candidate
@@ -626,7 +618,7 @@ BATCH_SIZE = 100
 
 def _chunk(items: list, size: int) -> list[list]:
     """Split *items* into chunks of at most *size* elements."""
-    return [items[i:i + size] for i in range(0, len(items), size)]
+    return [items[i : i + size] for i in range(0, len(items), size)]
 
 
 def _gen_01_batch(
@@ -864,10 +856,10 @@ def generate_pipeline(
     files: list[Path] = []
     use_batching = batch_size > 0 and len(products) > batch_size
 
-    # Step 02 is intentionally limited to the Phase 4A categories.  Its input
+    # Step 02 is intentionally limited to approved Phase 4 category scopes.  Its input
     # comes from the same normalized product payload as steps 01/03, and the
     # reference vocabulary is a committed snapshot rather than a live API.
-    if (category, country) in pilot_scopes():
+    if (category, country) in enrichment_scopes():
         ingredient_evidence, allergen_evidence = evidence_from_products(products, country)
         matches = match_ingredients(
             ingredient_evidence,
@@ -880,6 +872,7 @@ def generate_pipeline(
                 matches,
                 allergen_evidence,
                 "normalized pipeline input (Open Food Facts explicit evidence)",
+                phase="4B" if (category, country) in manifest_scopes(PHASE4B_PATH) else None,
             ),
         )
     else:
@@ -906,11 +899,17 @@ def generate_pipeline(
             batch_end = offset + len(chunk)
             offset += len(chunk)
             path = _write_pipeline_file(
-                relative_out
-                / f"PIPELINE__{slug}__01_batch_{batch_num:03d}_insert_products.sql",
+                relative_out / f"PIPELINE__{slug}__01_batch_{batch_num:03d}_insert_products.sql",
                 _gen_01_batch(
-                    category, chunk, products, today, country,
-                    batch_num, total_batches, batch_start, batch_end,
+                    category,
+                    chunk,
+                    products,
+                    today,
+                    country,
+                    batch_num,
+                    total_batches,
+                    batch_start,
+                    batch_end,
                 ),
             )
             files.append(path)
@@ -922,11 +921,15 @@ def generate_pipeline(
             batch_end = offset + len(chunk)
             offset += len(chunk)
             path = _write_pipeline_file(
-                relative_out
-                / f"PIPELINE__{slug}__03_batch_{batch_num:03d}_add_nutrition.sql",
+                relative_out / f"PIPELINE__{slug}__03_batch_{batch_num:03d}_add_nutrition.sql",
                 _gen_03_batch(
-                    category, chunk, country,
-                    batch_num, total_batches, batch_start, batch_end,
+                    category,
+                    chunk,
+                    country,
+                    batch_num,
+                    total_batches,
+                    batch_start,
+                    batch_end,
                 ),
             )
             files.append(path)

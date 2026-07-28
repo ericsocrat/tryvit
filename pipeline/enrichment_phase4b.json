@@ -1,0 +1,38 @@
+{
+  "phase": "4B",
+  "source": "supabase/migrations/20260601173035_populate_ingredients_allergens.sql",
+  "source_label": "committed OFF-derived snapshot 20260601173035",
+  "selection_file": "data-quality/phase4b/selected-products.csv",
+  "scopes": [
+    {
+      "category": "Breakfast & Grain-Based",
+      "country": "DE",
+      "rationale": "Dense explicit ingredient and allergen evidence, 98.0% source completeness, and high everyday search relevance."
+    },
+    {
+      "category": "Dairy",
+      "country": "DE",
+      "rationale": "Largest reliable coverage gain in the candidate set, with explicit allergen evidence for most selected products."
+    },
+    {
+      "category": "Drinks",
+      "country": "DE",
+      "rationale": "High barcode relevance, 97.6% source completeness, and no ambiguous source tokens in the selected batch."
+    },
+    {
+      "category": "Sweets",
+      "country": "DE",
+      "rationale": "High expected ingredient and allergen coverage gain with a 0.1% ambiguity rate."
+    }
+  ],
+  "ranking_weights": {
+    "active_product_count": 0.1,
+    "missing_ingredient_percentage": 0.1,
+    "missing_allergen_percentage": 0.05,
+    "ingredient_source_completeness": 0.15,
+    "token_safety": 0.15,
+    "expected_ingredient_coverage_gain": 0.2,
+    "expected_allergen_evidence_gain": 0.1,
+    "barcode_and_search_relevance_proxy": 0.15
+  }
+}

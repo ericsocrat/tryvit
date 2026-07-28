@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     services:
       postgres:
@@ -104,7 +104,12 @@ jobs:
         run: python -m unittest pipeline.test_enrichment
 
       - name: Deterministic enrichment generated-output check
-        run: python -m pipeline.generate_enrichment_pilot --check --stats-json
+        run: |
+          python -m pipeline.generate_enrichment_pilot --check --stats-json
+          python -m pipeline.generate_enrichment_pilot \
+            --manifest phase4b \
+            --check \
+            --stats-json
 
       - name: Enrichment identity guard
         run: |
@@ -143,6 +148,10 @@ jobs:
         run: |
           set -euo pipefail
           while IFS= read -r -d '' f; do
+            if grep -q '^-- Phase: 4B$' "$f"; then
+              echo "  DEFER $f"
+              continue
+            fi
             echo "  RUN  $f"
             psql -v ON_ERROR_STOP=1 -f "$f"
           done < <(find db/pipelines -mindepth 2 -maxdepth 2 \
@@ -180,6 +189,38 @@ jobs:
           echo "Computing concern scores and re-scoring all categories..."
           psql -v ON_ERROR_STOP=1 -f db/ci_post_enrichment.sql
 
+          echo "Applying the canonical post-pipeline fixup before the Phase 4B baseline..."
+          psql -v ON_ERROR_STOP=1 -f db/ci_post_pipeline.sql
+
+          echo "Reproducing the Phase 4B candidate ranking and before snapshot..."
+          python -m pipeline.category_enrichment_report --stage before --check
+
+          echo "Applying deferred Phase 4B category enrichment..."
+          while IFS= read -r -d '' f; do
+            if grep -q '^-- Phase: 4B$' "$f"; then
+              echo "  PHASE4B $f"
+              psql -v ON_ERROR_STOP=1 -f "$f"
+            fi
+          done < <(find db/pipelines -mindepth 2 -maxdepth 2 \
+            -type f -name 'PIPELINE__*.sql' -print0 | sort -z)
+          psql -v ON_ERROR_STOP=1 -f db/ci_post_enrichment.sql
+          psql -v ON_ERROR_STOP=1 -f db/ci_post_pipeline.sql
+          python -m pipeline.category_enrichment_report \
+            --stage snapshot
+
+          echo "Rerunning Phase 4B to prove idempotency..."
+          while IFS= read -r -d '' f; do
+            if grep -q '^-- Phase: 4B$' "$f"; then
+              psql -v ON_ERROR_STOP=1 -f "$f"
+            fi
+          done < <(find db/pipelines -mindepth 2 -maxdepth 2 \
+            -type f -name 'PIPELINE__*.sql' -print0 | sort -z)
+          psql -v ON_ERROR_STOP=1 -f db/ci_post_enrichment.sql
+          psql -v ON_ERROR_STOP=1 -f db/ci_post_pipeline.sql
+          python -m pipeline.category_enrichment_report \
+            --stage report \
+            --check
+
           echo "Enrichment replay complete."
           # Verify data arrived
           counts=$(psql --tuples-only --no-align -c "
@@ -209,13 +250,6 @@ jobs:
           else
             echo "✓ No schema drift detected"
           fi
-
-      - name: Post-pipeline fixup
-        run: |
-          set -euo pipefail
-          echo "Applying CI post-pipeline fixup..."
-          psql -v ON_ERROR_STOP=1 -f db/ci_post_pipeline.sql
-          echo "Post-pipeline fixup complete."
 
       - name: Generate data-quality report
         id: data_quality

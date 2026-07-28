@@ -1,0 +1,240 @@
+{
+  "allergen_records_created": 2420,
+  "category_coverage": [
+    {
+      "active_products": 199,
+      "allergen_evidence": {
+        "after_count": 193,
+        "after_percentage": 97.0,
+        "before_count": 0,
+        "before_percentage": 0.0
+      },
+      "average_confidence": {
+        "after": 92.0,
+        "before": 58.0,
+        "delta": 34.0
+      },
+      "average_score": {
+        "after": 22.0,
+        "before": 21.3,
+        "delta": 0.7
+      },
+      "category": "Breakfast & Grain-Based",
+      "country": "DE",
+      "ingredient_coverage": {
+        "after_count": 195,
+        "after_percentage": 98.0,
+        "before_count": 0,
+        "before_percentage": 0.0
+      }
+    },
+    {
+      "active_products": 287,
+      "allergen_evidence": {
+        "after_count": 264,
+        "after_percentage": 92.0,
+        "before_count": 26,
+        "before_percentage": 9.1
+      },
+      "average_confidence": {
+        "after": 91.7,
+        "before": 61.3,
+        "delta": 30.4
+      },
+      "average_score": {
+        "after": 25.3,
+        "before": 25.2,
+        "delta": 0.1
+      },
+      "category": "Dairy",
+      "country": "DE",
+      "ingredient_coverage": {
+        "after_count": 281,
+        "after_percentage": 97.9,
+        "before_count": 28,
+        "before_percentage": 9.8
+      }
+    },
+    {
+      "active_products": 300,
+      "allergen_evidence": {
+        "after_count": 87,
+        "after_percentage": 29.0,
+        "before_count": 14,
+        "before_percentage": 4.7
+      },
+      "average_confidence": {
+        "after": 85.3,
+        "before": 62.2,
+        "delta": 23.1
+      },
+      "average_score": {
+        "after": 9.1,
+        "before": 8.7,
+        "delta": 0.4
+      },
+      "category": "Drinks",
+      "country": "DE",
+      "ingredient_coverage": {
+        "after_count": 294,
+        "after_percentage": 98.0,
+        "before_count": 45,
+        "before_percentage": 15.0
+      }
+    },
+    {
+      "active_products": 299,
+      "allergen_evidence": {
+        "after_count": 283,
+        "after_percentage": 94.6,
+        "before_count": 48,
+        "before_percentage": 16.1
+      },
+      "average_confidence": {
+        "after": 91.1,
+        "before": 63.6,
+        "delta": 27.5
+      },
+      "average_score": {
+        "after": 46.6,
+        "before": 46.0,
+        "delta": 0.6
+      },
+      "category": "Sweets",
+      "country": "DE",
+      "ingredient_coverage": {
+        "after_count": 292,
+        "after_percentage": 97.7,
+        "before_count": 48,
+        "before_percentage": 16.1
+      }
+    }
+  ],
+  "checks": {
+    "all_selected_products_enriched": true,
+    "deprecated_products_unchanged": true,
+    "duplicate_keys_absent": true,
+    "generated_ingredient_links_reconcile": true,
+    "idempotent_rerun": true,
+    "non_target_categories_unchanged": true,
+    "withheld_classifications_not_linked": true
+  },
+  "checksums": {
+    "first_run": {
+      "all": {
+        "product_allergen_info": "39795bd2c395efb59c050153a0a980dd",
+        "product_ingredient": "c34366c5a341534e98e4d4cba9733145"
+      },
+      "non_target": {
+        "product_allergen_info": "2277d975d9f263ec769cfe703af8321f",
+        "product_ingredient": "e6b8fde7d4f6da1cd06859bc084e347a"
+      },
+      "selected": {
+        "product_allergen_info": "3eb0b4f21e3d7b09164e92e09ae8a3b4",
+        "product_ingredient": "896aca051bc066d857fabef34017ea68"
+      }
+    },
+    "rerun": {
+      "all": {
+        "product_allergen_info": "39795bd2c395efb59c050153a0a980dd",
+        "product_ingredient": "c34366c5a341534e98e4d4cba9733145"
+      },
+      "non_target": {
+        "product_allergen_info": "2277d975d9f263ec769cfe703af8321f",
+        "product_ingredient": "e6b8fde7d4f6da1cd06859bc084e347a"
+      },
+      "selected": {
+        "product_allergen_info": "3eb0b4f21e3d7b09164e92e09ae8a3b4",
+        "product_ingredient": "896aca051bc066d857fabef34017ea68"
+      }
+    }
+  },
+  "explicit_allergen_records_emitted": 2388,
+  "ingredient_links_created": 9988,
+  "limitations": [
+    "Missing allergen evidence remains unknown and is never interpreted as allergen-free.",
+    "Allergen rows come only from explicit source tags or tested deterministic ingredient rules.",
+    "Search relevance is a product-volume/EAN proxy because no search-event dataset is available.",
+    "No fuzzy or semantic mapping writes a linkage; ambiguous and unmatched tokens are quarantined."
+  ],
+  "mapping_methods": {
+    "alias": 13,
+    "ambiguous_withheld": 27,
+    "exact": 9986,
+    "parent_safety_withheld": 11,
+    "quarantined_withheld": 2,
+    "reviewed": 0,
+    "unmatched_withheld": 0
+  },
+  "overall_coverage": {
+    "active_products": 8652,
+    "average_confidence": {
+      "after": 65.0,
+      "before": 61.5,
+      "delta": 3.5
+    },
+    "average_score": {
+      "after": 21.3,
+      "before": 21.3,
+      "delta": 0.0
+    },
+    "ingredients": {
+      "after_count": 1874,
+      "after_percentage": 21.7,
+      "before_count": 933,
+      "before_percentage": 10.8
+    },
+    "known_contains": {
+      "after_count": 1389,
+      "after_percentage": 16.1,
+      "before_count": 679,
+      "before_percentage": 7.8
+    }
+  },
+  "phase": "4B",
+  "products_enriched": 941,
+  "products_evaluated": 1085,
+  "products_selected": 941,
+  "schema_version": 1,
+  "selected_categories": [
+    {
+      "category": "Breakfast & Grain-Based",
+      "country": "DE",
+      "rationale": "Dense explicit ingredient and allergen evidence, 98.0% source completeness, and high everyday search relevance."
+    },
+    {
+      "category": "Dairy",
+      "country": "DE",
+      "rationale": "Largest reliable coverage gain in the candidate set, with explicit allergen evidence for most selected products."
+    },
+    {
+      "category": "Drinks",
+      "country": "DE",
+      "rationale": "High barcode relevance, 97.6% source completeness, and no ambiguous source tokens in the selected batch."
+    },
+    {
+      "category": "Sweets",
+      "country": "DE",
+      "rationale": "High expected ingredient and allergen coverage gain with a 0.1% ambiguity rate."
+    }
+  ],
+  "source": "supabase/migrations/20260601173035_populate_ingredients_allergens.sql",
+  "source_evidence": {
+    "alias_matches": 13,
+    "allergen_evidence_rows": 2394,
+    "ambiguous_matches": 27,
+    "canonical_allergen_rows": 2388,
+    "exact_matches": 9986,
+    "generated_files": 4,
+    "ingredient_evidence_rows": 10028,
+    "linked_ingredient_rows": 9988,
+    "parent_safety_withheld": 11,
+    "products_with_allergen_evidence": 736,
+    "products_with_ingredient_evidence": 941,
+    "quarantined_matches": 2,
+    "reviewed_matches": 0,
+    "selected_products": 941,
+    "unresolved_matches": 0
+  },
+  "status": "pass"
+}

@@ -1,7 +1,6 @@
 {
   "aliases": {
     "rapeseed": "Rapeseed Oil",
-    "soya": "Soybeans",
     "sunflower": "Sunflower Oil"
   },
   "reviewed": {
@@ -11,6 +10,10 @@
   "ambiguous": {
     "starch": ["Corn Starch", "Potato Starch", "Wheat Starch"],
     "vegetable oil": ["Rapeseed Oil", "Sunflower Oil"]
+  },
+  "quarantined": {
+    "kcal": "nutrition-label artifact",
+    "kcal 0 8": "nutrition-label artifact"
   },
   "allergen_aliases": {
     "nuts": "tree-nuts",

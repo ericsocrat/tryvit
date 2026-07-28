@@ -45,23 +45,25 @@ There is no negative or "allergen-free" state in the generated SQL.
 
 ## Reproducible results
 
-The canonical Phase 3 baseline in `data-quality/baselines/ci-v1.json` contains
-8,552 active products. (The 8,652 figure in the audit brief does not match the
-checked-in baseline or the reproduced database.) The baseline and post-pilot
-reports both passed with zero data-quality failures and zero warnings.
+The checked-in Phase 3 comparison baseline contains 8,552 active products, but
+the canonical fresh CI rebuild of merged `main` contains 8,652. The extra 100
+are an existing pipeline-output change that the baseline gate classifies as an
+improvement. Phase 4A is measured against the reproducible fresh CI state, not
+the older comparison baseline. Both pre-pilot and post-pilot CI reports passed
+with zero data-quality failures and zero warnings.
 
 | Metric | Before | After | Result |
 |---|---:|---:|---|
-| Active products | 8,552 | 8,552 | stable |
-| Product-ingredient rows, overall | 13,356 | 13,678 | +322 |
+| Active products | 8,652 | 8,652 | stable |
+| Product-ingredient rows, overall | 12,610 | 12,932 | +322 |
 | Product-ingredient rows, pilot | 0 | 322 | populated |
 | Products with ingredient links, pilot | 0/18 in pilot output | 18/18 (100%) | target met |
-| Overall ingredient coverage | 961 (11.2%) | 979 (11.4%) | +18 products |
+| Overall ingredient coverage | 915 (10.6%) | 933 (10.8%) | +18 products |
 | Products with usable allergen evidence, pilot | 16 | 16 | stable evidence set |
 | Known allergen coverage, pilot evidence | — | 16/16 (100%) | target met |
-| Overall known-contains coverage | 694 (8.1%) | 708 (8.3%) | +14 products |
-| Usable core nutrition | 8,552 (100.0%) | 8,552 (100.0%) | stable |
-| Valid EAN | 8,545 (99.9%) | 8,545 (99.9%) | stable |
+| Overall known-contains coverage | 665 (7.7%) | 679 (7.8%) | +14 products |
+| Usable core nutrition | 8,652 (100.0%) | 8,652 (100.0%) | stable |
+| Valid EAN | 8,644 (99.9%) | 8,644 (99.9%) | stable |
 | Missing critical identity | 0 | 0 | stable |
 | Duplicate pilot ingredient/allergen keys | 0 | 0 | stable |
 | Data-quality failures / warnings | 0 / 0 | 0 / 0 | stable |
