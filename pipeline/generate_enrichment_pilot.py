@@ -29,6 +29,10 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PILOT_PATH = Path(__file__).with_name("enrichment_pilot.json")
 PHASE4B_MANIFEST_PATH = Path(__file__).with_name("enrichment_phase4b.json")
 MANIFESTS = {"phase4a": PILOT_PATH, "phase4b": PHASE4B_MANIFEST_PATH}
+SOURCE_SNAPSHOT = "supabase/migrations/20260601173035_populate_ingredients_allergens.sql"
+SOURCE_SNAPSHOT_PATH = PROJECT_ROOT / SOURCE_SNAPSHOT
+PHASE4B_SELECTION = "data-quality/phase4b/selected-products.csv"
+PHASE4B_SELECTION_PATH = PROJECT_ROOT / PHASE4B_SELECTION
 
 _SQL_STRING = r"'(?:''|[^'])*'"
 _INGREDIENT_RE = re.compile(
@@ -57,21 +61,13 @@ def _none_or_text(value: str) -> str | None:
     return None if value == "NULL" else _unquote(value)
 
 
-def _project_input_file(path: Path) -> Path:
-    """Resolve a committed input file without allowing repository escape."""
-    root = PROJECT_ROOT.resolve()
-    candidate = path.resolve() if path.is_absolute() else (root / path).resolve()
-    try:
-        candidate.relative_to(root)
-    except ValueError as exc:
-        raise ValueError(f"enrichment input must remain inside the project: {path}") from exc
-    if not candidate.is_file():
-        raise ValueError(f"enrichment input file does not exist: {path}")
-    return candidate
-
-
 def load_manifest(path: Path = PILOT_PATH) -> dict:
-    return json.loads(_project_input_file(path).read_text(encoding="utf-8"))
+    if path not in MANIFESTS.values():
+        raise ValueError(f"unsupported enrichment manifest: {path.name}")
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    if manifest.get("source") != SOURCE_SNAPSHOT:
+        raise ValueError("enrichment manifest must use the approved committed source snapshot")
+    return manifest
 
 
 def load_pilot(path: Path = PILOT_PATH) -> dict:
@@ -80,20 +76,17 @@ def load_pilot(path: Path = PILOT_PATH) -> dict:
 
 
 @lru_cache(maxsize=1)
-def parse_snapshot(
-    path: Path,
-) -> tuple[
+def parse_snapshot() -> tuple[
     list[IngredientEvidence],
     list[AllergenEvidence],
     set[str],
     dict[str, tuple[bool, str, str, str]],
 ]:
-    snapshot_path = _project_input_file(path)
     ingredients: list[IngredientEvidence] = []
     allergens: list[AllergenEvidence] = []
     reference_names: set[str] = set()
     reference_properties: dict[str, tuple[bool, str, str, str]] = {}
-    for line in snapshot_path.read_text(encoding="utf-8").splitlines():
+    for line in SOURCE_SNAPSHOT_PATH.read_text(encoding="utf-8").splitlines():
         reference = _REFERENCE_RE.match(line)
         if reference:
             data = reference.groupdict()
@@ -147,10 +140,11 @@ def _folder_for(category: str, country: str) -> Path:
 def _selected_products(manifest: dict) -> set[tuple[str, str, str]]:
     if "products" in manifest:
         return {(item["category"], item["country"], item["ean"]) for item in manifest["products"]}
-    selection_path = _project_input_file(Path(manifest["selection_file"]))
+    if manifest.get("selection_file") != PHASE4B_SELECTION:
+        raise ValueError("Phase 4B manifest must use the approved committed selection")
     scopes = {(item["category"], item["country"]) for item in manifest["scopes"]}
     selected: set[tuple[str, str, str]] = set()
-    with selection_path.open(newline="", encoding="utf-8") as handle:
+    with PHASE4B_SELECTION_PATH.open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
         if reader.fieldnames != ["category", "country", "ean"]:
             raise ValueError("selection CSV must have category,country,ean columns")
@@ -166,8 +160,7 @@ def _selected_products(manifest: dict) -> set[tuple[str, str, str]]:
 
 def build_outputs(manifest_path: Path = PILOT_PATH) -> tuple[dict[Path, str], dict]:
     manifest = load_manifest(manifest_path)
-    snapshot_path = PROJECT_ROOT / manifest["source"]
-    ingredients, allergens, references, reference_properties = parse_snapshot(snapshot_path)
+    ingredients, allergens, references, reference_properties = parse_snapshot()
     selected = _selected_products(manifest)
     category_for = {(country, ean): category for category, country, ean in selected}
     ingredient_groups: dict[tuple[str, str], list[IngredientEvidence]] = defaultdict(list)

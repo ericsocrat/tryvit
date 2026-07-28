@@ -626,15 +626,6 @@ def _json_text(payload: dict[str, Any]) -> str:
     return json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
 
 
-def _deliver(path: Path, content: str, check: bool) -> None:
-    if check:
-        if not path.is_file() or path.read_text(encoding="utf-8") != content:
-            raise SystemExit(f"stale generated Phase 4B artifact: {path.relative_to(PROJECT_ROOT)}")
-        return
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
-
-
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", choices=("before", "snapshot", "report"), required=True)
@@ -646,10 +637,19 @@ def main(argv: list[str] | None = None) -> int:
     if args.stage == "before":
         ranking, selection = _candidate_analysis(executor, manifest)
         before = _snapshot(executor, manifest)
-        _deliver(RANKING_JSON, _json_text(ranking), args.check)
-        _deliver(RANKING_MARKDOWN, _ranking_markdown(ranking), args.check)
-        _deliver(SELECTION_CSV, selection, args.check)
-        _deliver(BEFORE_JSON, _json_text(before), args.check)
+        artifacts = (
+            (RANKING_JSON, _json_text(ranking)),
+            (RANKING_MARKDOWN, _ranking_markdown(ranking)),
+            (SELECTION_CSV, selection),
+            (BEFORE_JSON, _json_text(before)),
+        )
+        for path, content in artifacts:
+            if args.check:
+                if not path.is_file() or path.read_text(encoding="utf-8") != content:
+                    raise SystemExit(f"stale generated Phase 4B artifact: {path.relative_to(PROJECT_ROOT)}")
+            else:
+                OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+                path.write_text(content, encoding="utf-8")
         print(  # noqa: T201
             json.dumps(
                 {
@@ -662,13 +662,27 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
     if args.stage == "snapshot":
-        _deliver(FIRST_RUN_JSON, _json_text(_snapshot(executor, manifest)), args.check)
+        snapshot = _json_text(_snapshot(executor, manifest))
+        if args.check:
+            if not FIRST_RUN_JSON.is_file() or FIRST_RUN_JSON.read_text(encoding="utf-8") != snapshot:
+                raise SystemExit("stale Phase 4B first-run snapshot")
+        else:
+            FIRST_RUN_JSON.write_text(snapshot, encoding="utf-8")
         return 0
     before = json.loads(BEFORE_JSON.read_text(encoding="utf-8"))
     first = json.loads(FIRST_RUN_JSON.read_text(encoding="utf-8"))
     report = _final_report(manifest_path, manifest, before, first, _snapshot(executor, manifest))
-    _deliver(REPORT_JSON, _json_text(report), args.check)
-    _deliver(REPORT_MARKDOWN, _report_markdown(report), args.check)
+    artifacts = (
+        (REPORT_JSON, _json_text(report)),
+        (REPORT_MARKDOWN, _report_markdown(report)),
+    )
+    for path, content in artifacts:
+        if args.check:
+            if not path.is_file() or path.read_text(encoding="utf-8") != content:
+                raise SystemExit(f"stale generated Phase 4B artifact: {path.relative_to(PROJECT_ROOT)}")
+        else:
+            OUTPUT_ROOT.mkdir(parents=True, exist_ok=True)
+            path.write_text(content, encoding="utf-8")
     print(json.dumps({"status": report["status"], "checks": report["checks"]}, sort_keys=True))  # noqa: T201
     return 0 if report["status"] == "pass" else 1
 
