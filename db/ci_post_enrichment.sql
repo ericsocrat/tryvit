@@ -404,6 +404,25 @@ CALL score_category('Seafood & Fish',           p_country := 'DE');
 CALL score_category('Snacks',                   p_country := 'DE');
 CALL score_category('Sweets',                   p_country := 'DE');
 
+-- Reconcile every active category-country pair, including pipeline-specific
+-- categories (for example Frozen Vegetables, Soups, Ready Meals, and
+-- Desserts & Ice Cream) that are not represented in the legacy call list.
+-- This keeps enrichment changes and stored v3.3 scores in parity.
+DO $reconcile_scores$
+DECLARE
+  scope record;
+BEGIN
+  FOR scope IN
+    SELECT DISTINCT country, category
+    FROM products
+    WHERE is_deprecated IS NOT TRUE
+    ORDER BY country, category
+  LOOP
+    CALL score_category(scope.category, 100, scope.country);
+  END LOOP;
+END
+$reconcile_scores$;
+
 COMMIT;
 
 -- ═══════════════════════════════════════════════════════════════

@@ -1,0 +1,24 @@
+{
+  "source": "supabase/migrations/20260601173035_populate_ingredients_allergens.sql",
+  "source_label": "committed OFF-derived snapshot 20260601173035",
+  "products": [
+    {"category": "Frozen Vegetables", "country": "PL", "ean": "3083680014601"},
+    {"category": "Frozen Vegetables", "country": "PL", "ean": "3083681147834"},
+    {"category": "Frozen Vegetables", "country": "PL", "ean": "5901581210176"},
+    {"category": "Frozen Vegetables", "country": "PL", "ean": "5901581211173"},
+    {"category": "Frozen Vegetables", "country": "PL", "ean": "5902966000337"},
+    {"category": "Frozen Vegetables", "country": "PL", "ean": "5907431389788"},
+    {"category": "Chips", "country": "DE", "ean": "4018077010316"},
+    {"category": "Chips", "country": "DE", "ean": "4062139005550"},
+    {"category": "Chips", "country": "DE", "ean": "4062139005826"},
+    {"category": "Chips", "country": "DE", "ean": "4062139006038"},
+    {"category": "Chips", "country": "DE", "ean": "4062139007677"},
+    {"category": "Chips", "country": "DE", "ean": "4063367194788"},
+    {"category": "Meat", "country": "PL", "ean": "5900331604517"},
+    {"category": "Meat", "country": "PL", "ean": "5901874906793"},
+    {"category": "Meat", "country": "PL", "ean": "5907701800838"},
+    {"category": "Meat", "country": "PL", "ean": "5907701803440"},
+    {"category": "Meat", "country": "PL", "ean": "5908230507229"},
+    {"category": "Meat", "country": "PL", "ean": "5908230515804"}
+  ]
+}

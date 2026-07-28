@@ -1,13 +1,14 @@
 """SQL file generator for the tryvit pipeline.
 
-Generates the 6-file SQL pattern used by every category pipeline:
+Generates the ordered SQL pattern used by every category pipeline:
 
 1. ``PIPELINE__{cat}__01_insert_products.sql``
-2. ``PIPELINE__{cat}__03_add_nutrition.sql``
-3. ``PIPELINE__{cat}__04_scoring.sql``
-4. ``PIPELINE__{cat}__05_source_provenance.sql``
-5. ``PIPELINE__{cat}__06_add_images.sql``
-6. ``PIPELINE__{cat}__07_store_availability.sql``
+2. ``PIPELINE__{cat}__02_enrichment.sql`` (Phase 4A pilot categories)
+3. ``PIPELINE__{cat}__03_add_nutrition.sql``
+4. ``PIPELINE__{cat}__04_scoring.sql``
+5. ``PIPELINE__{cat}__05_source_provenance.sql``
+6. ``PIPELINE__{cat}__06_add_images.sql``
+7. ``PIPELINE__{cat}__07_store_availability.sql``
 """
 
 from __future__ import annotations
@@ -15,6 +16,14 @@ from __future__ import annotations
 import datetime
 import hashlib
 from pathlib import Path
+
+from pipeline.enrichment import (
+    evidence_from_products,
+    generate_enrichment_sql,
+    load_snapshot_reference_names,
+    match_ingredients,
+    pilot_scopes,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -855,6 +864,27 @@ def generate_pipeline(
     files: list[Path] = []
     use_batching = batch_size > 0 and len(products) > batch_size
 
+    # Step 02 is intentionally limited to the Phase 4A categories.  Its input
+    # comes from the same normalized product payload as steps 01/03, and the
+    # reference vocabulary is a committed snapshot rather than a live API.
+    if (category, country) in pilot_scopes():
+        ingredient_evidence, allergen_evidence = evidence_from_products(products, country)
+        matches = match_ingredients(
+            ingredient_evidence,
+            load_snapshot_reference_names(),
+        )
+        path02 = _write_pipeline_file(
+            relative_out / f"PIPELINE__{slug}__02_enrichment.sql",
+            generate_enrichment_sql(
+                category,
+                matches,
+                allergen_evidence,
+                "normalized pipeline input (Open Food Facts explicit evidence)",
+            ),
+        )
+    else:
+        path02 = None
+
     if use_batching:
         chunks = _chunk(products, batch_size)
         total_batches = len(chunks)
@@ -914,12 +944,20 @@ def generate_pipeline(
         )
         files.append(path01)
 
+        if path02 is not None:
+            files.append(path02)
+
         # 03 — single add nutrition
         path03 = _write_pipeline_file(
             relative_out / f"PIPELINE__{slug}__03_add_nutrition.sql",
             _gen_03_add_nutrition(category, products, country),
         )
         files.append(path03)
+
+    if use_batching and path02 is not None:
+        # All 01 batches must execute before the single enrichment file.
+        insert_at = sum("__01_" in path.name for path in files)
+        files.insert(insert_at, path02)
 
     # 04 — scoring (always single file)
     path04 = _write_pipeline_file(

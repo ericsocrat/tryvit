@@ -310,11 +310,16 @@ def _generate_sql_output(
             print(f"[DRY RUN] Would generate batched SQL ({n_batches} batches of {batch_size}) in: {output_dir}")
             for i in range(1, n_batches + 1):
                 print(f"  PIPELINE__{slug}__01_batch_{i:03d}_insert_products.sql")
-            for i in range(1, n_batches + 1):
-                print(f"  PIPELINE__{slug}__03_batch_{i:03d}_add_nutrition.sql")
         else:
             print("[DRY RUN] Would generate SQL files in:", output_dir)
             print(f"  PIPELINE__{slug}__01_insert_products.sql ({len(products)} products)")
+        from pipeline.enrichment import pilot_scopes
+        if (category, country) in pilot_scopes():
+            print(f"  PIPELINE__{slug}__02_enrichment.sql (explicit ingredient/allergen evidence)")
+        if use_batching:
+            for i in range(1, n_batches + 1):
+                print(f"  PIPELINE__{slug}__03_batch_{i:03d}_add_nutrition.sql")
+        else:
             print(f"  PIPELINE__{slug}__03_add_nutrition.sql ({len(products)} nutrition rows)")
         print(f"  PIPELINE__{slug}__04_scoring.sql")
         print(f"  PIPELINE__{slug}__05_source_provenance.sql")
