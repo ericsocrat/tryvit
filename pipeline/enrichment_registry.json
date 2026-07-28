@@ -1,0 +1,21 @@
+{
+  "aliases": {
+    "rapeseed": "Rapeseed Oil",
+    "soya": "Soybeans",
+    "sunflower": "Sunflower Oil"
+  },
+  "reviewed": {
+    "papryka": "Paprika Or Bell Pepper",
+    "trockenmilcherzeugnis aus sauerrahm": "Sour Cream Powder"
+  },
+  "ambiguous": {
+    "starch": ["Corn Starch", "Potato Starch", "Wheat Starch"],
+    "vegetable oil": ["Rapeseed Oil", "Sunflower Oil"]
+  },
+  "allergen_aliases": {
+    "nuts": "tree-nuts",
+    "soy": "soybeans",
+    "soya": "soybeans",
+    "sulphur dioxide and sulphites": "sulphites"
+  }
+}

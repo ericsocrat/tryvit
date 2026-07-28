@@ -2,11 +2,9 @@
 
 Sequences the pipeline for all categories in a country:
   1. pipeline.run → fetch from OFF API → generate SQL files
-  2. Execute generated SQL against target DB
-  3. enrich_ingredients → generate enrichment SQL
-  4. Execute enrichment SQL
-  5. CALL score_category('CategoryName') via psql
-  6. Log results to JSON report
+  2. Execute generated SQL (including ordered step 02 enrichment when enabled)
+  3. CALL score_category('CategoryName') via psql
+  4. Log results to JSON report
 
 Usage::
 
@@ -42,7 +40,6 @@ logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PIPELINE_DIR = PROJECT_ROOT / "db" / "pipelines"
 REPORTS_DIR = PROJECT_ROOT / "pipeline" / "reports"
-ENRICH_SCRIPT = PROJECT_ROOT / "enrich_ingredients.py"
 
 DB_CONTAINER = "supabase_db_tryvit"
 DB_USER = "postgres"
@@ -255,16 +252,13 @@ class PipelineOrchestrator:
             result["sql_files_executed"] = sql_count
             print(f"  Executed {sql_count} SQL files")
 
-            # Phase 4: Enrich ingredients/allergens
-            try:
-                self._enrich_category(category)
-                result["enriched"] = True
-                print("  Enrichment complete")
-            except Exception as exc:
-                msg = f"{category}: enrichment failed — {exc}"
-                logger.warning(msg)
-                self._report["warnings"].append(msg)
-                print(f"  Enrichment skipped (error: {exc})")
+            # Enrichment is an ordered generated file, not a second live fetch.
+            result["enriched"] = any(
+                "__02_enrichment.sql" in path.name
+                for path in output_dir.glob("PIPELINE__*.sql")
+            )
+            if result["enriched"]:
+                print("  Deterministic enrichment applied")
 
             # Phase 5: Score category
             self._score_category(category)
@@ -311,20 +305,6 @@ class PipelineOrchestrator:
         for sql_file in sql_files:
             _execute_sql_file(sql_file)
         return len(sql_files)
-
-    def _enrich_category(self, category: str) -> None:
-        """Run enrich_ingredients.py for the category's country."""
-        if not ENRICH_SCRIPT.is_file():
-            msg = f"Enrichment script not found: {ENRICH_SCRIPT}"
-            raise FileNotFoundError(msg)
-
-        cmd = [
-            sys.executable,
-            str(ENRICH_SCRIPT),
-            "--country",
-            self.country,
-        ]
-        subprocess.run(cmd, capture_output=True, text=True, check=True)
 
     def _score_category(self, category: str) -> None:
         """CALL score_category('CategoryName') via psql."""

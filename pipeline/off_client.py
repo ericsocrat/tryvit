@@ -608,6 +608,11 @@ def extract_product_data(off_product: dict) -> dict | None:
         "nutri_score_label": nutri_score_label,
         # Ingredients
         "ingredients_raw": ingredients_raw,
+        # Explicit OFF evidence retained for deterministic step 02 generation.
+        # Empty lists remain unknown; they are never interpreted as negative.
+        "_ingredients": off_product.get("ingredients") or [],
+        "_allergens_tags": off_product.get("allergens_tags") or [],
+        "_traces_tags": off_product.get("traces_tags") or [],
         # OFF metadata (used by validator)
         "_completeness": off_product.get("completeness", 0),
         "_has_image": bool(off_product.get("image_url")),

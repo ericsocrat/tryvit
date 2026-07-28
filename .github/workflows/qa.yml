@@ -100,6 +100,12 @@ jobs:
       - name: Data-quality report unit tests
         run: python -m unittest test_data_quality_report.py
 
+      - name: Deterministic enrichment unit tests
+        run: python -m unittest pipeline.test_enrichment
+
+      - name: Deterministic enrichment generated-output check
+        run: python -m pipeline.generate_enrichment_pilot --check --stats-json
+
       - name: Enrichment identity guard
         run: |
           set -euo pipefail

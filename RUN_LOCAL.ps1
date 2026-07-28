@@ -36,7 +36,7 @@ param(
     [Parameter(HelpMessage = "Run the full QA suite (via RUN_QA.ps1) after pipeline execution.")]
     [switch]$RunQA,
 
-    [Parameter(HelpMessage = "Run ingredient/allergen enrichment via enrich_ingredients.py after pipeline execution. Requires internet (OFF API).")]
+    [Parameter(HelpMessage = "Deprecated compatibility flag; ordered step 02 enrichment now runs with the pipeline.")]
     [switch]$Enrich
 )
 
@@ -211,9 +211,15 @@ else {
     Write-Host "  ⚠ MV refresh failed (non-blocking): $mvOutput" -ForegroundColor DarkYellow
 }
 
-# ─── Ingredient/Allergen Enrichment (optional) ─────────────────────────────────────
+# ─── Ingredient/Allergen Enrichment compatibility notice ───────────────────────────
 
 if ($Enrich) {
+    Write-Host "  NOTE: -Enrich is no longer required; deterministic step 02 files were already executed." -ForegroundColor Yellow
+}
+
+# Retained temporarily for rollback reference.  The live OFF enrichment path is
+# intentionally unreachable; Phase 4A must not depend on a second network fetch.
+if ($false) {
     Write-Host ""
     Write-Host "================================================" -ForegroundColor Cyan
     Write-Host "  Ingredient & Allergen Enrichment" -ForegroundColor Cyan
