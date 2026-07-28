@@ -1,0 +1,303 @@
+{
+  "allergen_provenance": {
+    "ambiguous_tokens_withheld": 70,
+    "artifacts_quarantined": 1,
+    "deterministic_ingredient_derived_records": 18,
+    "explicit_source_contains_records": 1128,
+    "explicit_source_may_contain_records": 1081,
+    "manual_review_queue": [
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "coconut",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "coconut oil",
+        "occurrences": 5
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "colza oil",
+        "occurrences": 2
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "fully refined soybean",
+        "occurrences": 1
+      },
+      {
+        "classification": "artifact",
+        "normalized_token": "kcal pro 100g rm pro 100g 620",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "palm",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "palm oil",
+        "occurrences": 3
+      },
+      {
+        "classification": "unresolved",
+        "normalized_token": "papryka",
+        "occurrences": 2
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "partially hydrogenated palm oil",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "rapeseed",
+        "occurrences": 5
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "rapeseed oil",
+        "occurrences": 5
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "soya",
+        "occurrences": 2
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "soya oil",
+        "occurrences": 1
+      },
+      {
+        "classification": "ambiguous",
+        "normalized_token": "starch",
+        "occurrences": 50
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "sunflower",
+        "occurrences": 6
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "sunflower oil",
+        "occurrences": 2
+      },
+      {
+        "classification": "ambiguous",
+        "normalized_token": "vegetable oil",
+        "occurrences": 20
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "wheat starch",
+        "occurrences": 4
+      }
+    ],
+    "mapping_methods": {
+      "ambiguous": 70,
+      "approved_global_alias": 15,
+      "artifact": 1,
+      "exact_canonical": 11075,
+      "unresolved": 2
+    },
+    "missing_evidence_is_allergen_free": false,
+    "products_remaining_allergen_unknown": 128,
+    "products_with_known_evidence": 677,
+    "selected_products": 805,
+    "unknown_tokens_withheld": 2,
+    "unsafe_child_tokens_withheld": 39
+  },
+  "allergen_records_created_after_provenance_union": 2227,
+  "category_coverage": [
+    {
+      "active_products": 295,
+      "allergen_evidence_after": 222,
+      "allergen_evidence_before": 27,
+      "allergen_records_created": 209,
+      "average_confidence_change": 23.5,
+      "average_score_change": 0.1,
+      "category": "Dairy",
+      "country": "PL",
+      "ingredient_coverage_after": 227,
+      "ingredient_coverage_before": 28,
+      "ingredient_links_created": 917
+    },
+    {
+      "active_products": 197,
+      "allergen_evidence_after": 163,
+      "allergen_evidence_before": 0,
+      "allergen_records_created": 685,
+      "average_confidence_change": 32.3,
+      "average_score_change": 0.4,
+      "category": "Frozen & Prepared",
+      "country": "DE",
+      "ingredient_coverage_after": 193,
+      "ingredient_coverage_before": 0,
+      "ingredient_links_created": 3520
+    },
+    {
+      "active_products": 195,
+      "allergen_evidence_after": 107,
+      "allergen_evidence_before": 0,
+      "allergen_records_created": 277,
+      "average_confidence_change": 26.2,
+      "average_score_change": 0.1,
+      "category": "Meat",
+      "country": "DE",
+      "ingredient_coverage_after": 188,
+      "ingredient_coverage_before": 0,
+      "ingredient_links_created": 2722
+    },
+    {
+      "active_products": 300,
+      "allergen_evidence_after": 255,
+      "allergen_evidence_before": 43,
+      "allergen_records_created": 1056,
+      "average_confidence_change": 25.5,
+      "average_score_change": 1.3,
+      "category": "Sweets",
+      "country": "PL",
+      "ingredient_coverage_after": 268,
+      "ingredient_coverage_before": 43,
+      "ingredient_links_created": 3892
+    }
+  ],
+  "checks": {
+    "deprecated_products_unchanged": true,
+    "first_run_equals_rerun": true,
+    "historical_phase4b_artifacts_unchanged": true,
+    "hosted_supabase_writes_absent": true,
+    "missing_allergen_evidence_is_unknown": true,
+    "no_duplicate_allergen_keys": true,
+    "no_duplicate_ingredient_keys": true,
+    "non_target_links_unchanged": true,
+    "non_target_product_identity_unchanged": true,
+    "phase4b_linkages_unchanged": true,
+    "phase4c_governance_checksum_unchanged": true,
+    "starch_and_vegetable_oil_withheld": true
+  },
+  "checksums": {
+    "all": {
+      "product_allergen_info": "ab563f248d7d21d77659a5aae1c6a8b0",
+      "product_ingredient": "d364b44eb61b91d9acdf05d02285f590"
+    },
+    "non_target": {
+      "product_allergen_info": "a971fa011a4a53db39593b997b799b69",
+      "product_ingredient": "8d99cf6c67d2ac6d90c8d2badd68d391"
+    },
+    "selected": {
+      "product_allergen_info": "70311e82438b1efa1389ad2eef2b8c67",
+      "product_ingredient": "c417c3777d9698788ec9b8e4f1c49dee"
+    }
+  },
+  "deferred_categories": [
+    {
+      "reason": "Ranks fourth, but Meat DE was selected for its larger product gain and materially smaller ambiguity queue (1 token versus 18), keeping this batch lower risk.",
+      "scope": "Snacks (DE)"
+    },
+    {
+      "reason": "High linkage potential but the largest ambiguous-token queue among the leading candidates increases review and regression risk.",
+      "scope": "Instant & Frozen (DE)"
+    },
+    {
+      "reason": "Excellent source and allergen completeness, but it is a smaller gain than the selected categories and can anchor the next controlled batch.",
+      "scope": "Bread (DE)"
+    },
+    {
+      "reason": "Meaningful gain, but lower source completeness and a larger ambiguity queue than Meat DE.",
+      "scope": "Spreads & Dips (DE)"
+    },
+    {
+      "reason": "Strong barcode relevance but only 32 products have explicit allergen evidence, so it provides less balanced quality gain than the selected scopes.",
+      "scope": "Drinks (PL)"
+    },
+    {
+      "reason": "High user relevance, but only 61.4% of missing products have ingredient source evidence.",
+      "scope": "Bread (PL)"
+    }
+  ],
+  "explicit_allergen_records_generated": 2209,
+  "first_run_checksums": {
+    "all": {
+      "product_allergen_info": "ab563f248d7d21d77659a5aae1c6a8b0",
+      "product_ingredient": "d364b44eb61b91d9acdf05d02285f590"
+    },
+    "non_target": {
+      "product_allergen_info": "a971fa011a4a53db39593b997b799b69",
+      "product_ingredient": "8d99cf6c67d2ac6d90c8d2badd68d391"
+    },
+    "selected": {
+      "product_allergen_info": "70311e82438b1efa1389ad2eef2b8c67",
+      "product_ingredient": "c417c3777d9698788ec9b8e4f1c49dee"
+    }
+  },
+  "governance_changes": [],
+  "ingredient_links_generated": 11051,
+  "manual_review_required": [
+    "Generic Starch requires a declared botanical source before it can map.",
+    "Generic Vegetable Oil requires a named oil source before it can map.",
+    "Unknown and ambiguous source tokens in the report queue require domain review before any mapping.",
+    "Missing producer allergen evidence remains unknown and cannot support allergen-free claims."
+  ],
+  "non_target_checksums_after": {
+    "product_allergen_info": "a971fa011a4a53db39593b997b799b69",
+    "product_ingredient": "8d99cf6c67d2ac6d90c8d2badd68d391"
+  },
+  "non_target_checksums_before": {
+    "product_allergen_info": "a971fa011a4a53db39593b997b799b69",
+    "product_ingredient": "8d99cf6c67d2ac6d90c8d2badd68d391"
+  },
+  "objective": "Controlled category-level enrichment governed by the Phase 4C registry.",
+  "overall_coverage": {
+    "active_products": 8652,
+    "average_confidence_change": 3.0,
+    "average_score_change": 0.1,
+    "ingredient_coverage_percentage_after": 31.0,
+    "ingredient_coverage_percentage_before": 21.7,
+    "ingredient_covered_after": 2679,
+    "ingredient_covered_before": 1874,
+    "known_contains_after": 1982,
+    "known_contains_before": 1389,
+    "known_contains_coverage_percentage_after": 22.9,
+    "known_contains_coverage_percentage_before": 16.1
+  },
+  "phase": "4D",
+  "phase4b_checksums_after": {
+    "product_allergen_info": "4a065c655549462a879de1ab334353b7",
+    "product_ingredient": "896aca051bc066d857fabef34017ea68"
+  },
+  "phase4b_checksums_before": {
+    "product_allergen_info": "4a065c655549462a879de1ab334353b7",
+    "product_ingredient": "896aca051bc066d857fabef34017ea68"
+  },
+  "phase4c_governance_checksum": "c4d400d67c3bc04b45d29331cb9495c45672e3d8b613ead992771203469e0e37",
+  "products_enriched": 805,
+  "products_evaluated": 987,
+  "report_checksum_sha256": "926778d839da63584e0dcc8025b49147ed5b07fbfadc7485cfc2e480082a4268",
+  "rerun_checksums": {
+    "all": {
+      "product_allergen_info": "ab563f248d7d21d77659a5aae1c6a8b0",
+      "product_ingredient": "d364b44eb61b91d9acdf05d02285f590"
+    },
+    "non_target": {
+      "product_allergen_info": "a971fa011a4a53db39593b997b799b69",
+      "product_ingredient": "8d99cf6c67d2ac6d90c8d2badd68d391"
+    },
+    "selected": {
+      "product_allergen_info": "70311e82438b1efa1389ad2eef2b8c67",
+      "product_ingredient": "c417c3777d9698788ec9b8e4f1c49dee"
+    }
+  },
+  "schema_version": 1,
+  "selected_categories": [
+    "Sweets (PL)",
+    "Frozen & Prepared (DE)",
+    "Dairy (PL)",
+    "Meat (DE)"
+  ],
+  "status": "pass"
+}
