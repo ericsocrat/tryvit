@@ -20,6 +20,7 @@ from pathlib import Path
 from pipeline.enrichment import (
     PHASE4B_PATH,
     PHASE4D_PATH,
+    PHASE4E_PATH,
     enrichment_scopes,
     evidence_from_products,
     generate_enrichment_sql,
@@ -878,6 +879,8 @@ def generate_pipeline(
                     if (category, country) in manifest_scopes(PHASE4B_PATH)
                     else "4D"
                     if (category, country) in manifest_scopes(PHASE4D_PATH)
+                    else "4E"
+                    if (category, country) in manifest_scopes(PHASE4E_PATH)
                     else None
                 ),
             ),

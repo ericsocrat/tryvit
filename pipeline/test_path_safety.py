@@ -95,7 +95,7 @@ def test_sql_generator_rejects_output_outside_pipeline_root() -> None:
 
 @pytest.mark.parametrize(
     ("category", "slug", "country"),
-    [("Dairy", "dairy", "PL"), ("Bread", "bread-de", "DE")],
+    [("Canned Goods", "canned-goods", "PL"), ("Cereals", "cereals-de", "DE")],
 )
 def test_generated_paths_and_contents_remain_unchanged(
     trusted_sql_root: Path,

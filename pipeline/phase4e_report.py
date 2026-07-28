@@ -1,14 +1,13 @@
-"""Reproducible Phase 4D category ranking, selection, and verification report.
+"""Reproducible Phase 4E category ranking, selection, and verification report.
 
 The module reads only the canonical local/CI PostgreSQL fixture and the
 committed OFF-derived evidence snapshot.  It never connects to hosted
-Supabase.  Phase 4D uses the schema-v2 governance registry for every write.
+Supabase.  Phase 4E uses the schema-v2 governance registry for every write.
 """
 
 from __future__ import annotations
 
 import argparse
-import copy
 import csv
 import hashlib
 import io
@@ -32,17 +31,19 @@ from pipeline.enrichment_governance import governed_token_entry
 from pipeline.generate_enrichment_pilot import PROJECT_ROOT, build_outputs, load_manifest, parse_snapshot
 from pipeline.governance_report import _derived_allergen_tags
 
-MANIFEST_PATH = Path(__file__).with_name("enrichment_phase4d.json")
+MANIFEST_PATH = Path(__file__).with_name("enrichment_phase4e.json")
 PHASE4B_MANIFEST_PATH = Path(__file__).with_name("enrichment_phase4b.json")
+PHASE4D_MANIFEST_PATH = Path(__file__).with_name("enrichment_phase4d.json")
 PHASE4C_REPORT_PATH = PROJECT_ROOT / "data-quality" / "phase4c" / "report.json"
-OUTPUT_ROOT = PROJECT_ROOT / "data-quality" / "phase4d"
+PHASE4D_REPORT_PATH = PROJECT_ROOT / "data-quality" / "phase4d" / "report.json"
+OUTPUT_ROOT = PROJECT_ROOT / "data-quality" / "phase4e"
 RANKING_JSON = OUTPUT_ROOT / "candidate-ranking.json"
 RANKING_MARKDOWN = OUTPUT_ROOT / "candidate-ranking.md"
 SELECTION_CSV = OUTPUT_ROOT / "selected-products.csv"
 BEFORE_JSON = OUTPUT_ROOT / "before.json"
 REPORT_JSON = OUTPUT_ROOT / "report.json"
 REPORT_MARKDOWN = OUTPUT_ROOT / "report.md"
-FIRST_RUN_JSON = Path(tempfile.gettempdir()) / "tryvit-phase4d-first-run.json"
+FIRST_RUN_JSON = Path(tempfile.gettempdir()) / "tryvit-phase4e-first-run.json"
 
 SEARCH_RELEVANCE = {
     "Sweets": 100,
@@ -64,9 +65,9 @@ SEARCH_RELEVANCE = {
 def _selected_scopes(manifest: dict[str, Any]) -> set[tuple[str, str]]:
     scopes = {(row["category"], row["country"]) for row in manifest["scopes"]}
     if not 2 <= len(scopes) <= 4:
-        raise ValueError("Phase 4D must select 2-4 category-country scopes")
+        raise ValueError("Phase 4E must select 2-4 category-country scopes")
     if len(scopes) != len(manifest["scopes"]):
-        raise ValueError("Phase 4D manifest contains duplicate scopes")
+        raise ValueError("Phase 4E manifest contains duplicate scopes")
     return scopes
 
 
@@ -97,7 +98,7 @@ def _mapping_method(row: Any, registry: dict[str, Any]) -> str:
 
 
 def _candidate_analysis(executor: PsqlExecutor, manifest: dict[str, Any]) -> tuple[dict[str, Any], str]:
-    products = executor.rows("phase4d_products", PRODUCTS_SQL)
+    products = executor.rows("phase4e_products", PRODUCTS_SQL)
     ingredients, allergens, references, _ = parse_snapshot()
     registry = load_registry()
     ingredient_by_key: dict[tuple[str, str], list[Any]] = defaultdict(list)
@@ -230,8 +231,8 @@ def _candidate_analysis(executor: PsqlExecutor, manifest: dict[str, Any]) -> tup
     writer.writerows(selection_rows)
     ranking = {
         "schema_version": 1,
-        "phase": "4D",
-        "baseline": "merged Phase 4C fixture after deterministic Phase 4B replay",
+        "phase": "4E",
+        "baseline": "merged Phase 4D fixture after deterministic Phase 4B and Phase 4D replay",
         "source": manifest["source"],
         "selection_rule": (
             "active products missing ingredient links with committed source evidence and at least one "
@@ -263,9 +264,9 @@ def _semantic_checksum(value: Any) -> str:
 
 def _ranking_markdown(ranking: dict[str, Any]) -> str:
     lines = [
-        "# Phase 4D candidate-category ranking",
+        "# Phase 4E candidate-category ranking",
         "",
-        "The ranking was refreshed after the merged Phase 4B linkage state and uses the Phase 4C governance registry.",
+        "The ranking was refreshed after the merged Phase 4D linkage state and uses the Phase 4C governance registry.",
         "",
         (
             "| Rank | Scope | Score | Active | Missing ingredients | Source | Explicit allergens | "
@@ -283,8 +284,9 @@ def _ranking_markdown(ranking: dict[str, Any]) -> str:
         )
     lines.extend(["", "## Selected", ""])
     lines.extend(f"- **{row['scope']}** — {row['selection_rationale']}" for row in ranking["selected_scopes"])
-    lines.extend(["", "## Leading deferred", ""])
-    lines.extend(f"- **{row['scope']}** — {row['deferral_reason']}" for row in ranking["deferred_scopes"])
+    if ranking["deferred_scopes"]:
+        lines.extend(["", "## Leading deferred", ""])
+        lines.extend(f"- **{row['scope']}** — {row['deferral_reason']}" for row in ranking["deferred_scopes"])
     return "\n".join(lines) + "\n"
 
 
@@ -318,7 +320,7 @@ SELECT
    WHERE p.is_deprecated IS TRUE) AS deprecated_ingredient_checksum,
   {_deprecated_allergen_checksum_sql()}
 """
-    return executor.rows("phase4d_isolation", sql)[0]
+    return executor.rows("phase4e_isolation", sql)[0]
 
 
 def _stable_snapshot(executor: PsqlExecutor, manifest: dict[str, Any]) -> dict[str, Any]:
@@ -326,7 +328,7 @@ def _stable_snapshot(executor: PsqlExecutor, manifest: dict[str, Any]) -> dict[s
 
     Historical PostgreSQL image revisions can preserve a different raw
     ``source_tag`` while producing the same canonical allergen linkage. Phase
-    4D therefore hashes the linkage identity (product, canonical tag, kind)
+    4E therefore hashes the linkage identity (product, canonical tag, kind)
     and verifies raw provenance separately from the committed source fixture.
     """
     snapshot = _snapshot(executor, manifest)
@@ -346,7 +348,7 @@ JOIN products p ON p.product_id=pai.product_id
 WHERE p.is_deprecated IS NOT TRUE AND {predicate}
 """
         snapshot["checksums"][name]["product_allergen_info"] = executor.rows(
-            f"phase4d_{name}_canonical_allergen_checksum", sql
+            f"phase4e_{name}_canonical_allergen_checksum", sql
         )[0]["value"]
     return snapshot
 
@@ -381,6 +383,11 @@ def _allergen_provenance(manifest: dict[str, Any]) -> dict[str, Any]:
         for tag in _derived_allergen_tags(str(row.canonical_name)):
             derived.add((row.evidence.country, row.evidence.ean, tag, "contains"))
     derived_only = derived - explicit
+    explicit_products = {(country, ean) for country, ean, _, _ in explicit}
+    derived_products = {(country, ean) for country, ean, _, _ in derived}
+    explicit_only_products = explicit_products - derived_products
+    derived_only_products = derived_products - explicit_products
+    both_products = explicit_products & derived_products
     known = {(country, ean) for country, ean, _, _ in explicit | derived}
     selected_keys = {(country, ean) for _, country, ean in selected}
     methods = Counter(_mapping_method(row, registry) for row in matches)
@@ -405,6 +412,9 @@ def _allergen_provenance(manifest: dict[str, Any]) -> dict[str, Any]:
         "explicit_source_contains_records": sum(row[3] == "contains" for row in explicit),
         "explicit_source_may_contain_records": sum(row[3] == "traces" for row in explicit),
         "deterministic_ingredient_derived_records": len(derived_only),
+        "products_with_explicit_evidence_only": len(explicit_only_products),
+        "products_with_derived_evidence_only": len(derived_only_products),
+        "products_with_explicit_and_derived_evidence": len(both_products),
         "products_with_known_evidence": len(known),
         "products_remaining_allergen_unknown": len(selected_keys - known),
         "missing_evidence_is_allergen_free": False,
@@ -429,9 +439,16 @@ def _final_report(
 ) -> dict[str, Any]:
     _, stats = build_outputs(MANIFEST_PATH)
     phase4b_outputs, _ = build_outputs(PHASE4B_MANIFEST_PATH)
+    phase4d_outputs, _ = build_outputs(PHASE4D_MANIFEST_PATH)
     historical_phase4b_unchanged = all(
         path.is_file() and path.read_text(encoding="utf-8") == content
         for path, content in phase4b_outputs.items()
+    )
+    phase4d_report = json.loads(PHASE4D_REPORT_PATH.read_text(encoding="utf-8"))
+    historical_phase4d_unchanged = (
+        all(path.is_file() and path.read_text(encoding="utf-8") == content for path, content in phase4d_outputs.items())
+        and phase4d_report["report_checksum_sha256"]
+        == "926778d839da63584e0dcc8025b49147ed5b07fbfadc7485cfc2e480082a4268"
     )
     provenance = _allergen_provenance(manifest)
     category_before = {(row["category"], row["country"]): row for row in before["snapshot"]["categories"]}
@@ -478,6 +495,8 @@ def _final_report(
         },
         "phase4b_linkages_unchanged": before["phase4b"]["checksums"]["selected"]
         == after["phase4b"]["checksums"]["selected"],
+        "phase4d_linkages_unchanged": before["phase4d"]["checksums"]["selected"]
+        == after["phase4d"]["checksums"]["selected"],
         "phase4c_governance_checksum_unchanged": phase4c["governance_checksum_sha256"]
         == "c4d400d67c3bc04b45d29331cb9495c45672e3d8b613ead992771203469e0e37",
         "starch_and_vegetable_oil_withheld": all(
@@ -487,11 +506,12 @@ def _final_report(
         ),
         "missing_allergen_evidence_is_unknown": provenance["missing_evidence_is_allergen_free"] is False,
         "historical_phase4b_artifacts_unchanged": historical_phase4b_unchanged,
+        "historical_phase4d_artifacts_unchanged": historical_phase4d_unchanged,
         "hosted_supabase_writes_absent": True,
     }
     report: dict[str, Any] = {
         "schema_version": 1,
-        "phase": "4D",
+        "phase": "4E",
         "status": "pass" if all(checks.values()) else "fail",
         "objective": "Controlled category-level enrichment governed by the Phase 4C registry.",
         "selected_categories": [row["scope"] for row in ranking["selected_scopes"]],
@@ -502,11 +522,43 @@ def _final_report(
         "products_enriched": stats["selected_products"],
         "ingredient_links_generated": stats["linked_ingredient_rows"],
         "explicit_allergen_records_generated": stats["canonical_allergen_rows"],
+        "candidate_link_reconciliation": {
+            "candidate_ingredient_rows": stats["ingredient_evidence_rows"],
+            "valid_ingredient_links": stats["linked_ingredient_rows"],
+            "rejected_candidate_rows": stats["ingredient_evidence_rows"] - stats["linked_ingredient_rows"],
+            "exact_mappings": stats["exact_matches"],
+            "approved_alias_mappings": stats["alias_matches"] + stats["reviewed_matches"],
+            "ambiguous_rows": stats["ambiguous_matches"],
+            "unknown_rows": stats["unresolved_matches"],
+            "artifact_rows": stats["quarantined_matches"],
+            "unsafe_child_rows": stats["parent_safety_withheld"],
+        },
         "allergen_records_created_after_provenance_union": (
             after["snapshot"]["selected"]["allergen_records"]
             - before["snapshot"]["selected"]["allergen_records"]
         ),
         "governance_changes": [],
+        "selected_scope_reconciliation": [
+            {
+                key: row[key]
+                for key in (
+                    "scope",
+                    "active_products",
+                    "ingredient_source_completeness_percentage",
+                    "explicit_allergen_source_completeness_percentage",
+                    "governed_exact_match_rate",
+                    "mapping_methods",
+                    "ambiguous_token_rate",
+                    "unknown_token_rate",
+                    "artifact_rate",
+                    "unsafe_parent_child_rate",
+                    "expected_enrichable_products",
+                    "expected_ingredient_links",
+                    "expected_explicit_allergen_records",
+                )
+            }
+            for row in ranking["selected_scopes"]
+        ],
         "allergen_provenance": provenance,
         "category_coverage": category_changes,
         "overall_coverage": {
@@ -519,6 +571,14 @@ def _final_report(
             "known_contains_after": after_overall["known_contains_products"],
             "known_contains_coverage_percentage_before": before_overall["known_contains_coverage_percentage"],
             "known_contains_coverage_percentage_after": after_overall["known_contains_coverage_percentage"],
+            "positive_allergen_evidence_before": before_overall["allergen_evidence_products"],
+            "positive_allergen_evidence_after": after_overall["allergen_evidence_products"],
+            "positive_allergen_evidence_percentage_before": pct(
+                before_overall["allergen_evidence_products"], before_overall["active_products"]
+            ),
+            "positive_allergen_evidence_percentage_after": pct(
+                after_overall["allergen_evidence_products"], after_overall["active_products"]
+            ),
             "average_score_change": round(
                 float(after_overall["average_score"] or 0) - float(before_overall["average_score"] or 0), 1
             ),
@@ -535,6 +595,9 @@ def _final_report(
         "non_target_checksums_after": after["snapshot"]["checksums"]["non_target"],
         "phase4b_checksums_before": before["phase4b"]["checksums"]["selected"],
         "phase4b_checksums_after": after["phase4b"]["checksums"]["selected"],
+        "phase4d_checksums_before": before["phase4d"]["checksums"]["selected"],
+        "phase4d_checksums_after": after["phase4d"]["checksums"]["selected"],
+        "phase4d_report_checksum": phase4d_report["report_checksum_sha256"],
         "phase4c_governance_checksum": phase4c["governance_checksum_sha256"],
         "checks": checks,
         "manual_review_required": [
@@ -552,7 +615,7 @@ def _report_markdown(report: dict[str, Any]) -> str:
     coverage = report["overall_coverage"]
     provenance = report["allergen_provenance"]
     lines = [
-        "# Phase 4D category enrichment report",
+        "# Phase 4E category enrichment report",
         "",
         f"Status: **{report['status'].upper()}**",
         "",
@@ -561,10 +624,16 @@ def _report_markdown(report: dict[str, Any]) -> str:
         "## Generated enrichment",
         "",
         f"- Products enriched: {report['products_enriched']}",
+        f"- Products evaluated: {report['products_evaluated']}",
         f"- Ingredient links generated: {report['ingredient_links_generated']}",
+        f"- Candidate ingredient rows: {report['candidate_link_reconciliation']['candidate_ingredient_rows']}",
+        f"- Rejected candidate rows: {report['candidate_link_reconciliation']['rejected_candidate_rows']}",
         f"- Explicit contains records: {provenance['explicit_source_contains_records']}",
         f"- Explicit may-contain records: {provenance['explicit_source_may_contain_records']}",
         f"- Deterministic ingredient-derived records: {provenance['deterministic_ingredient_derived_records']}",
+        f"- Products with explicit evidence only: {provenance['products_with_explicit_evidence_only']}",
+        f"- Products with derived evidence only: {provenance['products_with_derived_evidence_only']}",
+        f"- Products with both evidence types: {provenance['products_with_explicit_and_derived_evidence']}",
         f"- Products remaining allergen-unknown: {provenance['products_remaining_allergen_unknown']}",
         "",
         "## Overall coverage",
@@ -575,6 +644,10 @@ def _report_markdown(report: dict[str, Any]) -> str:
         f"- Known-allergen coverage: {coverage['known_contains_before']} -> {coverage['known_contains_after']} "
         f"({coverage['known_contains_coverage_percentage_before']:.1f}% -> "
         f"{coverage['known_contains_coverage_percentage_after']:.1f}%)",
+        f"- Any-positive-allergen evidence: {coverage['positive_allergen_evidence_before']} -> "
+        f"{coverage['positive_allergen_evidence_after']} "
+        f"({coverage['positive_allergen_evidence_percentage_before']:.1f}% -> "
+        f"{coverage['positive_allergen_evidence_percentage_after']:.1f}%)",
         f"- Average score change: {coverage['average_score_change']:+.1f}",
         f"- Average confidence change: {coverage['average_confidence_change']:+.1f}",
         "",
@@ -587,7 +660,7 @@ def _report_markdown(report: dict[str, Any]) -> str:
         f"- Unsafe child tokens withheld: {provenance['unsafe_child_tokens_withheld']}",
         "- Missing allergen evidence remains unknown.",
         (
-            "- Non-target linkages and product identities, deprecated products, Phase 4B linkages, "
+            "- Non-target linkages and product identities, deprecated products, Phase 4B/4D linkages, "
             "and Phase 4C governance are unchanged."
         ),
         "- Hosted Supabase writes: none.",
@@ -598,67 +671,64 @@ def _report_markdown(report: dict[str, Any]) -> str:
         f"- Ingredient checksum: `{report['checksums']['all']['product_ingredient']}`",
         f"- Allergen checksum: `{report['checksums']['all']['product_allergen_info']}`",
         f"- First run equals rerun: {str(report['checks']['first_run_equals_rerun']).lower()}",
+        f"- Protected Phase 4D report checksum: `{report['phase4d_report_checksum']}`",
+        "",
+        "## Category coverage",
+        "",
+        (
+            "| Scope | Products | Ingredient coverage | Allergen evidence | Links | "
+            "Allergen records | Confidence | Score |"
+        ),
+        "|---|---:|---:|---:|---:|---:|---:|---:|",
+    ]
+    lines.extend(
+        f"| {row['category']} ({row['country']}) | {row['active_products']} | "
+        f"{row['ingredient_coverage_before']} -> {row['ingredient_coverage_after']} | "
+        f"{row['allergen_evidence_before']} -> {row['allergen_evidence_after']} | "
+        f"{row['ingredient_links_created']} | {row['allergen_records_created']} | "
+        f"{row['average_confidence_change']:+.1f} | {row['average_score_change']:+.1f} |"
+        for row in report["category_coverage"]
+    )
+    lines.extend(
+        [
         "",
         "## Manual review still required",
         "",
-    ]
+        ]
+    )
     lines.extend(f"- {item}" for item in report["manual_review_required"])
     return "\n".join(lines) + "\n"
 
 
 def _state(executor: PsqlExecutor, manifest: dict[str, Any]) -> dict[str, Any]:
     phase4b_manifest = load_manifest(PHASE4B_MANIFEST_PATH)
+    phase4d_manifest = load_manifest(PHASE4D_MANIFEST_PATH)
     return {
         "snapshot": _stable_snapshot(executor, manifest),
         "isolation": _isolation_snapshot(executor, manifest),
         "phase4b": _stable_snapshot(executor, phase4b_manifest),
+        "phase4d": _stable_snapshot(executor, phase4d_manifest),
     }
 
 
-def _historical_before_compatibility_matches(expected: str, actual: str) -> bool:
-    """Mask only Phase 4D's legacy non-total-order identity checksum."""
-    try:
-        expected_value = json.loads(expected)
-        actual_value = json.loads(actual)
-        expected_value["isolation"]["non_target_product_checksum"] = "legacy-nondeterministic"
-        actual_value["isolation"]["non_target_product_checksum"] = "legacy-nondeterministic"
-    except (json.JSONDecodeError, KeyError, TypeError):
-        return False
-    return expected_value == actual_value
-
-
-def _write_or_check(
-    artifacts: dict[Path, str],
-    check: bool,
-    *,
-    historical_compatibility: bool = False,
-) -> None:
+def _write_or_check(artifacts: dict[Path, str], check: bool) -> None:
     stale: list[str] = []
     for path, content in artifacts.items():
         if check:
-            existing = path.read_text(encoding="utf-8") if path.is_file() else ""
-            compatible = (
-                historical_compatibility
-                and path == BEFORE_JSON
-                and _historical_before_compatibility_matches(existing, content)
-            )
-            if existing != content and not compatible:
+            if not path.is_file() or path.read_text(encoding="utf-8") != content:
                 stale.append(path.relative_to(PROJECT_ROOT).as_posix())
         else:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(content, encoding="utf-8", newline="\n")
     if stale:
-        raise SystemExit("stale generated Phase 4D artifact(s): " + ", ".join(stale))
+        raise SystemExit("stale generated Phase 4E artifact(s): " + ", ".join(stale))
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", choices=("before", "snapshot", "report"), required=True)
     parser.add_argument("--check", action="store_true")
-    parser.add_argument("--historical-compat-check", action="store_true")
     args = parser.parse_args(argv)
-    if args.historical_compat_check and not args.check:
-        parser.error("--historical-compat-check requires --check")
     executor = PsqlExecutor()
     manifest = load_manifest(MANIFEST_PATH)
     if args.stage == "before":
@@ -670,11 +740,7 @@ def main(argv: list[str] | None = None) -> int:
             SELECTION_CSV: selection,
             BEFORE_JSON: _json_text(before),
         }
-        _write_or_check(
-            artifacts,
-            args.check,
-            historical_compatibility=args.historical_compat_check,
-        )
+        _write_or_check(artifacts, args.check)
         print(  # noqa: T201 - CLI status output
             json.dumps({"candidates": ranking["candidate_count"], "selected": ranking["selected_product_count"]})
         )
@@ -686,21 +752,15 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if not FIRST_RUN_JSON.is_file():
-        raise SystemExit("Phase 4D first-run snapshot is missing")
+        raise SystemExit("Phase 4E first-run snapshot is missing")
     ranking = json.loads(RANKING_JSON.read_text(encoding="utf-8"))
     before = json.loads(BEFORE_JSON.read_text(encoding="utf-8"))
     first = json.loads(FIRST_RUN_JSON.read_text(encoding="utf-8"))
     after = _state(executor, manifest)
-    if args.historical_compat_check:
-        before = copy.deepcopy(before)
-        before["isolation"]["non_target_product_checksum"] = after["isolation"][
-            "non_target_product_checksum"
-        ]
     report = _final_report(manifest, ranking, before, first, after)
     _write_or_check(
         {REPORT_JSON: _json_text(report), REPORT_MARKDOWN: _report_markdown(report)},
         args.check,
-        historical_compatibility=args.historical_compat_check,
     )
     print(  # noqa: T201 - CLI status output
         json.dumps({"status": report["status"], "checksum": report["report_checksum_sha256"]})

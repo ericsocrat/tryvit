@@ -30,10 +30,12 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PILOT_PATH = Path(__file__).with_name("enrichment_pilot.json")
 PHASE4B_MANIFEST_PATH = Path(__file__).with_name("enrichment_phase4b.json")
 PHASE4D_MANIFEST_PATH = Path(__file__).with_name("enrichment_phase4d.json")
+PHASE4E_MANIFEST_PATH = Path(__file__).with_name("enrichment_phase4e.json")
 MANIFESTS = {
     "phase4a": PILOT_PATH,
     "phase4b": PHASE4B_MANIFEST_PATH,
     "phase4d": PHASE4D_MANIFEST_PATH,
+    "phase4e": PHASE4E_MANIFEST_PATH,
 }
 SOURCE_SNAPSHOT = "supabase/migrations/20260601173035_populate_ingredients_allergens.sql"
 SOURCE_SNAPSHOT_PATH = PROJECT_ROOT / SOURCE_SNAPSHOT

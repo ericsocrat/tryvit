@@ -101,7 +101,12 @@ jobs:
         run: python -m unittest test_data_quality_report.py
 
       - name: Deterministic enrichment unit tests
-        run: python -m unittest pipeline.test_enrichment pipeline.test_enrichment_governance pipeline.test_phase4d
+        run: >-
+          python -m unittest
+          pipeline.test_enrichment
+          pipeline.test_enrichment_governance
+          pipeline.test_phase4d
+          pipeline.test_phase4e
 
       - name: Deterministic enrichment generated-output check
         run: |
@@ -112,6 +117,10 @@ jobs:
             --stats-json
           python -m pipeline.generate_enrichment_pilot \
             --manifest phase4d \
+            --check \
+            --stats-json
+          python -m pipeline.generate_enrichment_pilot \
+            --manifest phase4e \
             --check \
             --stats-json
 
@@ -155,7 +164,7 @@ jobs:
         run: |
           set -euo pipefail
           while IFS= read -r -d '' f; do
-            if grep -Eq '^-- Phase: 4(B|D)$' "$f"; then
+            if grep -Eq '^-- Phase: 4(B|D|E)$' "$f"; then
               echo "  DEFER $f"
               continue
             fi
@@ -233,7 +242,10 @@ jobs:
             --historical-compat-check
 
           echo "Reproducing the Phase 4D candidate ranking and before snapshot..."
-          python -m pipeline.phase4d_report --stage before --check
+          python -m pipeline.phase4d_report \
+            --stage before \
+            --check \
+            --historical-compat-check
 
           echo "Applying deferred Phase 4D category enrichment..."
           while IFS= read -r -d '' f; do
@@ -254,7 +266,34 @@ jobs:
           done < <(find db/pipelines -mindepth 2 -maxdepth 2 \
             -type f -name 'PIPELINE__*.sql' -print0 | sort -z)
           psql -v ON_ERROR_STOP=1 -f db/ci_post_phase4d.sql
-          python -m pipeline.phase4d_report --stage report --check
+          python -m pipeline.phase4d_report \
+            --stage report \
+            --check \
+            --historical-compat-check
+
+          echo "Reproducing the Phase 4E candidate ranking and before snapshot..."
+          python -m pipeline.phase4e_report --stage before --check
+
+          echo "Applying deferred Phase 4E category enrichment..."
+          while IFS= read -r -d '' f; do
+            if grep -q '^-- Phase: 4E$' "$f"; then
+              echo "  PHASE4E $f"
+              psql -v ON_ERROR_STOP=1 -f "$f"
+            fi
+          done < <(find db/pipelines -mindepth 2 -maxdepth 2 \
+            -type f -name 'PIPELINE__*.sql' -print0 | sort -z)
+          psql -v ON_ERROR_STOP=1 -f db/ci_post_phase4e.sql
+          python -m pipeline.phase4e_report --stage snapshot
+
+          echo "Rerunning Phase 4E to prove idempotency..."
+          while IFS= read -r -d '' f; do
+            if grep -q '^-- Phase: 4E$' "$f"; then
+              psql -v ON_ERROR_STOP=1 -f "$f"
+            fi
+          done < <(find db/pipelines -mindepth 2 -maxdepth 2 \
+            -type f -name 'PIPELINE__*.sql' -print0 | sort -z)
+          psql -v ON_ERROR_STOP=1 -f db/ci_post_phase4e.sql
+          python -m pipeline.phase4e_report --stage report --check
 
           echo "Enrichment replay complete."
           # Verify data arrived

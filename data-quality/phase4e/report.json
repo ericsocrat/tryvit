@@ -1,0 +1,430 @@
+{
+  "allergen_provenance": {
+    "ambiguous_tokens_withheld": 115,
+    "artifacts_quarantined": 1,
+    "deterministic_ingredient_derived_records": 23,
+    "explicit_source_contains_records": 1166,
+    "explicit_source_may_contain_records": 1292,
+    "manual_review_queue": [
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "4 olive",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "5 soja",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "acid",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "antioxidant",
+        "occurrences": 5
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "coconut",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "colza oil",
+        "occurrences": 3
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "corn",
+        "occurrences": 2
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "emulsifier",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "flavour enhancer",
+        "occurrences": 1
+      },
+      {
+        "classification": "artifact",
+        "normalized_token": "kcal 100 g 1994",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "mustard",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "olive",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "olive oil",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "onion",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "palm fat",
+        "occurrences": 3
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "palm oil",
+        "occurrences": 10
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "rapeseed",
+        "occurrences": 5
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "rapeseed oil",
+        "occurrences": 3
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "sesame seeds",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "soja öl",
+        "occurrences": 1
+      },
+      {
+        "classification": "ambiguous",
+        "normalized_token": "starch",
+        "occurrences": 81
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "stärke weizen",
+        "occurrences": 1
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "sunflower",
+        "occurrences": 4
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "sunflower oil",
+        "occurrences": 9
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "szójabab olaj",
+        "occurrences": 1
+      },
+      {
+        "classification": "ambiguous",
+        "normalized_token": "vegetable oil",
+        "occurrences": 34
+      },
+      {
+        "classification": "unsafe_child",
+        "normalized_token": "wheat",
+        "occurrences": 5
+      }
+    ],
+    "mapping_methods": {
+      "ambiguous": 115,
+      "approved_global_alias": 12,
+      "artifact": 1,
+      "exact_canonical": 12877
+    },
+    "missing_evidence_is_allergen_free": false,
+    "products_remaining_allergen_unknown": 54,
+    "products_with_derived_evidence_only": 2,
+    "products_with_explicit_and_derived_evidence": 481,
+    "products_with_explicit_evidence_only": 108,
+    "products_with_known_evidence": 591,
+    "selected_products": 645,
+    "unknown_tokens_withheld": 0,
+    "unsafe_child_tokens_withheld": 63
+  },
+  "allergen_records_created_after_provenance_union": 2481,
+  "candidate_link_reconciliation": {
+    "ambiguous_rows": 115,
+    "approved_alias_mappings": 12,
+    "artifact_rows": 1,
+    "candidate_ingredient_rows": 13005,
+    "exact_mappings": 12877,
+    "rejected_candidate_rows": 179,
+    "unknown_rows": 0,
+    "unsafe_child_rows": 63,
+    "valid_ingredient_links": 12826
+  },
+  "category_coverage": [
+    {
+      "active_products": 195,
+      "allergen_evidence_after": 190,
+      "allergen_evidence_before": 45,
+      "allergen_records_created": 456,
+      "average_confidence_change": 26.0,
+      "average_score_change": 0.2,
+      "category": "Bread",
+      "country": "DE",
+      "ingredient_coverage_after": 192,
+      "ingredient_coverage_before": 46,
+      "ingredient_links_created": 1986
+    },
+    {
+      "active_products": 198,
+      "allergen_evidence_after": 168,
+      "allergen_evidence_before": 0,
+      "allergen_records_created": 984,
+      "average_confidence_change": 30.3,
+      "average_score_change": 2.2,
+      "category": "Instant & Frozen",
+      "country": "DE",
+      "ingredient_coverage_after": 173,
+      "ingredient_coverage_before": 0,
+      "ingredient_links_created": 5501
+    },
+    {
+      "active_products": 152,
+      "allergen_evidence_after": 147,
+      "allergen_evidence_before": 0,
+      "allergen_records_created": 614,
+      "average_confidence_change": 34.0,
+      "average_score_change": 0.9,
+      "category": "Snacks",
+      "country": "DE",
+      "ingredient_coverage_after": 151,
+      "ingredient_coverage_before": 0,
+      "ingredient_links_created": 2457
+    },
+    {
+      "active_products": 198,
+      "allergen_evidence_after": 131,
+      "allergen_evidence_before": 0,
+      "allergen_records_created": 427,
+      "average_confidence_change": 28.5,
+      "average_score_change": 0.1,
+      "category": "Spreads & Dips",
+      "country": "DE",
+      "ingredient_coverage_after": 175,
+      "ingredient_coverage_before": 0,
+      "ingredient_links_created": 2882
+    }
+  ],
+  "checks": {
+    "deprecated_products_unchanged": true,
+    "first_run_equals_rerun": true,
+    "historical_phase4b_artifacts_unchanged": true,
+    "historical_phase4d_artifacts_unchanged": true,
+    "hosted_supabase_writes_absent": true,
+    "missing_allergen_evidence_is_unknown": true,
+    "no_duplicate_allergen_keys": true,
+    "no_duplicate_ingredient_keys": true,
+    "non_target_links_unchanged": true,
+    "non_target_product_identity_unchanged": true,
+    "phase4b_linkages_unchanged": true,
+    "phase4c_governance_checksum_unchanged": true,
+    "phase4d_linkages_unchanged": true,
+    "starch_and_vegetable_oil_withheld": true
+  },
+  "checksums": {
+    "all": {
+      "product_allergen_info": "1f4617006d38d669920b84d6a57c7a53",
+      "product_ingredient": "fb70c1467a4344c3522f496c03215446"
+    },
+    "non_target": {
+      "product_allergen_info": "faccf3360189a91912d9e37a448de7a0",
+      "product_ingredient": "0f0f46624774f714082f13a7ef77398a"
+    },
+    "selected": {
+      "product_allergen_info": "9a8f718fd9b2f01901f9f33eadb0c32a",
+      "product_ingredient": "b2b6be442352e6305565d8319d176c62"
+    }
+  },
+  "deferred_categories": [],
+  "explicit_allergen_records_generated": 2458,
+  "first_run_checksums": {
+    "all": {
+      "product_allergen_info": "1f4617006d38d669920b84d6a57c7a53",
+      "product_ingredient": "fb70c1467a4344c3522f496c03215446"
+    },
+    "non_target": {
+      "product_allergen_info": "faccf3360189a91912d9e37a448de7a0",
+      "product_ingredient": "0f0f46624774f714082f13a7ef77398a"
+    },
+    "selected": {
+      "product_allergen_info": "9a8f718fd9b2f01901f9f33eadb0c32a",
+      "product_ingredient": "b2b6be442352e6305565d8319d176c62"
+    }
+  },
+  "governance_changes": [],
+  "ingredient_links_generated": 12826,
+  "manual_review_required": [
+    "Generic Starch requires a declared botanical source before it can map.",
+    "Generic Vegetable Oil requires a named oil source before it can map.",
+    "Unknown and ambiguous source tokens in the report queue require domain review before any mapping.",
+    "Missing producer allergen evidence remains unknown and cannot support allergen-free claims."
+  ],
+  "non_target_checksums_after": {
+    "product_allergen_info": "faccf3360189a91912d9e37a448de7a0",
+    "product_ingredient": "0f0f46624774f714082f13a7ef77398a"
+  },
+  "non_target_checksums_before": {
+    "product_allergen_info": "faccf3360189a91912d9e37a448de7a0",
+    "product_ingredient": "0f0f46624774f714082f13a7ef77398a"
+  },
+  "objective": "Controlled category-level enrichment governed by the Phase 4C registry.",
+  "overall_coverage": {
+    "active_products": 8652,
+    "average_confidence_change": 2.6,
+    "average_score_change": 0.1,
+    "ingredient_coverage_percentage_after": 38.4,
+    "ingredient_coverage_percentage_before": 31.0,
+    "ingredient_covered_after": 3324,
+    "ingredient_covered_before": 2679,
+    "known_contains_after": 2558,
+    "known_contains_before": 1982,
+    "known_contains_coverage_percentage_after": 29.6,
+    "known_contains_coverage_percentage_before": 22.9,
+    "positive_allergen_evidence_after": 2721,
+    "positive_allergen_evidence_before": 2130,
+    "positive_allergen_evidence_percentage_after": 31.4,
+    "positive_allergen_evidence_percentage_before": 24.6
+  },
+  "phase": "4E",
+  "phase4b_checksums_after": {
+    "product_allergen_info": "4a065c655549462a879de1ab334353b7",
+    "product_ingredient": "896aca051bc066d857fabef34017ea68"
+  },
+  "phase4b_checksums_before": {
+    "product_allergen_info": "4a065c655549462a879de1ab334353b7",
+    "product_ingredient": "896aca051bc066d857fabef34017ea68"
+  },
+  "phase4c_governance_checksum": "c4d400d67c3bc04b45d29331cb9495c45672e3d8b613ead992771203469e0e37",
+  "phase4d_checksums_after": {
+    "product_allergen_info": "70311e82438b1efa1389ad2eef2b8c67",
+    "product_ingredient": "c417c3777d9698788ec9b8e4f1c49dee"
+  },
+  "phase4d_checksums_before": {
+    "product_allergen_info": "70311e82438b1efa1389ad2eef2b8c67",
+    "product_ingredient": "c417c3777d9698788ec9b8e4f1c49dee"
+  },
+  "phase4d_report_checksum": "926778d839da63584e0dcc8025b49147ed5b07fbfadc7485cfc2e480082a4268",
+  "products_enriched": 645,
+  "products_evaluated": 743,
+  "report_checksum_sha256": "dd4cd47f0cf7bec4068f32e2edb34ce348d630d5eaac9dde1a2dd792886f0607",
+  "rerun_checksums": {
+    "all": {
+      "product_allergen_info": "1f4617006d38d669920b84d6a57c7a53",
+      "product_ingredient": "fb70c1467a4344c3522f496c03215446"
+    },
+    "non_target": {
+      "product_allergen_info": "faccf3360189a91912d9e37a448de7a0",
+      "product_ingredient": "0f0f46624774f714082f13a7ef77398a"
+    },
+    "selected": {
+      "product_allergen_info": "9a8f718fd9b2f01901f9f33eadb0c32a",
+      "product_ingredient": "b2b6be442352e6305565d8319d176c62"
+    }
+  },
+  "schema_version": 1,
+  "selected_categories": [
+    "Snacks (DE)",
+    "Instant & Frozen (DE)",
+    "Bread (DE)",
+    "Spreads & Dips (DE)"
+  ],
+  "selected_scope_reconciliation": [
+    {
+      "active_products": 152,
+      "ambiguous_token_rate": 0.7,
+      "artifact_rate": 0.0,
+      "expected_enrichable_products": 151,
+      "expected_explicit_allergen_records": 608,
+      "expected_ingredient_links": 2457,
+      "explicit_allergen_source_completeness_percentage": 95.4,
+      "governed_exact_match_rate": 99.0,
+      "ingredient_source_completeness_percentage": 99.3,
+      "mapping_methods": {
+        "ambiguous": 18,
+        "approved_global_alias": 6,
+        "exact_canonical": 2469
+      },
+      "scope": "Snacks (DE)",
+      "unknown_token_rate": 0.0,
+      "unsafe_parent_child_rate": 0.7
+    },
+    {
+      "active_products": 198,
+      "ambiguous_token_rate": 1.1,
+      "artifact_rate": 0.0,
+      "expected_enrichable_products": 173,
+      "expected_explicit_allergen_records": 982,
+      "expected_ingredient_links": 5501,
+      "explicit_allergen_source_completeness_percentage": 85.4,
+      "governed_exact_match_rate": 98.8,
+      "ingredient_source_completeness_percentage": 87.4,
+      "mapping_methods": {
+        "ambiguous": 63,
+        "approved_global_alias": 1,
+        "artifact": 1,
+        "exact_canonical": 5539
+      },
+      "scope": "Instant & Frozen (DE)",
+      "unknown_token_rate": 0.0,
+      "unsafe_parent_child_rate": 0.7
+    },
+    {
+      "active_products": 195,
+      "ambiguous_token_rate": 0.2,
+      "artifact_rate": 0.0,
+      "expected_enrichable_products": 146,
+      "expected_explicit_allergen_records": 454,
+      "expected_ingredient_links": 1986,
+      "explicit_allergen_source_completeness_percentage": 96.7,
+      "governed_exact_match_rate": 99.7,
+      "ingredient_source_completeness_percentage": 98.0,
+      "mapping_methods": {
+        "ambiguous": 3,
+        "approved_global_alias": 2,
+        "exact_canonical": 1985
+      },
+      "scope": "Bread (DE)",
+      "unknown_token_rate": 0.0,
+      "unsafe_parent_child_rate": 0.1
+    },
+    {
+      "active_products": 198,
+      "ambiguous_token_rate": 1.1,
+      "artifact_rate": 0.0,
+      "expected_enrichable_products": 175,
+      "expected_explicit_allergen_records": 424,
+      "expected_ingredient_links": 2882,
+      "explicit_allergen_source_completeness_percentage": 66.2,
+      "governed_exact_match_rate": 98.8,
+      "ingredient_source_completeness_percentage": 88.4,
+      "mapping_methods": {
+        "ambiguous": 31,
+        "approved_global_alias": 3,
+        "exact_canonical": 2884
+      },
+      "scope": "Spreads & Dips (DE)",
+      "unknown_token_rate": 0.0,
+      "unsafe_parent_child_rate": 0.2
+    }
+  ],
+  "status": "pass"
+}

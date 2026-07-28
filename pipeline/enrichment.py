@@ -26,6 +26,7 @@ REGISTRY_PATH = Path(__file__).with_name("enrichment_registry.json")
 PILOT_PATH = Path(__file__).with_name("enrichment_pilot.json")
 PHASE4B_PATH = Path(__file__).with_name("enrichment_phase4b.json")
 PHASE4D_PATH = Path(__file__).with_name("enrichment_phase4d.json")
+PHASE4E_PATH = Path(__file__).with_name("enrichment_phase4e.json")
 SNAPSHOT_PATH = PROJECT_ROOT / "supabase" / "migrations" / "20260601173035_populate_ingredients_allergens.sql"
 
 ALLERGEN_IDS = frozenset(
@@ -161,7 +162,7 @@ def manifest_scopes(path: Path) -> frozenset[tuple[str, str]]:
 
 def enrichment_scopes(paths: Sequence[Path] | None = None) -> frozenset[tuple[str, str]]:
     """Return every approved scope across Phase 4 manifests."""
-    manifests = tuple(paths or (PILOT_PATH, PHASE4B_PATH, PHASE4D_PATH))
+    manifests = tuple(paths or (PILOT_PATH, PHASE4B_PATH, PHASE4D_PATH, PHASE4E_PATH))
     scopes: set[tuple[str, str]] = set()
     for path in manifests:
         if path.is_file():

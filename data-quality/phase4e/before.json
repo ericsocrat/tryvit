@@ -1,0 +1,283 @@
+{
+  "isolation": {
+    "deprecated_allergen_checksum": "0de323963eea180768ebf5b86185f652",
+    "deprecated_ingredient_checksum": "0de323963eea180768ebf5b86185f652",
+    "non_target_product_checksum": "903332094754a65a1de2c0af554563b0"
+  },
+  "phase4b": {
+    "categories": [
+      {
+        "active_products": 199,
+        "allergen_evidence_products": 193,
+        "allergen_records": 924,
+        "average_confidence": 92.0,
+        "average_score": 22.0,
+        "category": "Breakfast & Grain-Based",
+        "country": "DE",
+        "ingredient_covered_products": 195,
+        "ingredient_links": 3676,
+        "known_contains_products": 190
+      },
+      {
+        "active_products": 287,
+        "allergen_evidence_products": 264,
+        "allergen_records": 293,
+        "average_confidence": 91.7,
+        "average_score": 25.3,
+        "category": "Dairy",
+        "country": "DE",
+        "ingredient_covered_products": 281,
+        "ingredient_links": 1552,
+        "known_contains_products": 264
+      },
+      {
+        "active_products": 300,
+        "allergen_evidence_products": 87,
+        "allergen_records": 136,
+        "average_confidence": 85.3,
+        "average_score": 9.1,
+        "category": "Drinks",
+        "country": "DE",
+        "ingredient_covered_products": 294,
+        "ingredient_links": 2362,
+        "known_contains_products": 83
+      },
+      {
+        "active_products": 299,
+        "allergen_evidence_products": 283,
+        "allergen_records": 1375,
+        "average_confidence": 91.1,
+        "average_score": 46.6,
+        "category": "Sweets",
+        "country": "DE",
+        "ingredient_covered_products": 292,
+        "ingredient_links": 3477,
+        "known_contains_products": 261
+      }
+    ],
+    "checksums": {
+      "all": {
+        "product_allergen_info": "ab563f248d7d21d77659a5aae1c6a8b0",
+        "product_ingredient": "d364b44eb61b91d9acdf05d02285f590"
+      },
+      "non_target": {
+        "product_allergen_info": "3cc33dd6b567ecc7eeb2a6ad3501b0b3",
+        "product_ingredient": "448966072c05f7f098c90045673d1608"
+      },
+      "selected": {
+        "product_allergen_info": "4a065c655549462a879de1ab334353b7",
+        "product_ingredient": "896aca051bc066d857fabef34017ea68"
+      }
+    },
+    "duplicates": {
+      "allergen_duplicate_keys": 0,
+      "ingredient_duplicate_keys": 0
+    },
+    "overall": {
+      "active_products": 8652,
+      "allergen_evidence_products": 2130,
+      "allergen_records": 7388,
+      "average_confidence": 68.0,
+      "average_score": 21.4,
+      "ingredient_coverage_percentage": 31.0,
+      "ingredient_covered_products": 2679,
+      "ingredient_links": 33971,
+      "known_contains_coverage_percentage": 22.9,
+      "known_contains_products": 1982
+    },
+    "schema_version": 1,
+    "selected": {
+      "allergen_evidence_products": 827,
+      "allergen_records": 2728,
+      "deprecated_allergen_records": 0,
+      "deprecated_ingredient_links": 0,
+      "ingredient_covered_products": 1062,
+      "ingredient_links": 11067,
+      "products_evaluated": 1085
+    }
+  },
+  "phase4d": {
+    "categories": [
+      {
+        "active_products": 295,
+        "allergen_evidence_products": 222,
+        "allergen_records": 237,
+        "average_confidence": 84.8,
+        "average_score": 21.1,
+        "category": "Dairy",
+        "country": "PL",
+        "ingredient_covered_products": 227,
+        "ingredient_links": 1017,
+        "known_contains_products": 222
+      },
+      {
+        "active_products": 197,
+        "allergen_evidence_products": 163,
+        "allergen_records": 685,
+        "average_confidence": 90.3,
+        "average_score": 25.8,
+        "category": "Frozen & Prepared",
+        "country": "DE",
+        "ingredient_covered_products": 193,
+        "ingredient_links": 3520,
+        "known_contains_products": 153
+      },
+      {
+        "active_products": 195,
+        "allergen_evidence_products": 107,
+        "allergen_records": 277,
+        "average_confidence": 84.2,
+        "average_score": 25.5,
+        "category": "Meat",
+        "country": "DE",
+        "ingredient_covered_products": 188,
+        "ingredient_links": 2722,
+        "known_contains_products": 41
+      },
+      {
+        "active_products": 300,
+        "allergen_evidence_products": 255,
+        "allergen_records": 1353,
+        "average_confidence": 88.5,
+        "average_score": 41.6,
+        "category": "Sweets",
+        "country": "PL",
+        "ingredient_covered_products": 268,
+        "ingredient_links": 4647,
+        "known_contains_products": 245
+      }
+    ],
+    "checksums": {
+      "all": {
+        "product_allergen_info": "ab563f248d7d21d77659a5aae1c6a8b0",
+        "product_ingredient": "d364b44eb61b91d9acdf05d02285f590"
+      },
+      "non_target": {
+        "product_allergen_info": "a971fa011a4a53db39593b997b799b69",
+        "product_ingredient": "8d99cf6c67d2ac6d90c8d2badd68d391"
+      },
+      "selected": {
+        "product_allergen_info": "70311e82438b1efa1389ad2eef2b8c67",
+        "product_ingredient": "c417c3777d9698788ec9b8e4f1c49dee"
+      }
+    },
+    "duplicates": {
+      "allergen_duplicate_keys": 0,
+      "ingredient_duplicate_keys": 0
+    },
+    "overall": {
+      "active_products": 8652,
+      "allergen_evidence_products": 2130,
+      "allergen_records": 7388,
+      "average_confidence": 68.0,
+      "average_score": 21.4,
+      "ingredient_coverage_percentage": 31.0,
+      "ingredient_covered_products": 2679,
+      "ingredient_links": 33971,
+      "known_contains_coverage_percentage": 22.9,
+      "known_contains_products": 1982
+    },
+    "schema_version": 1,
+    "selected": {
+      "allergen_evidence_products": 747,
+      "allergen_records": 2552,
+      "deprecated_allergen_records": 0,
+      "deprecated_ingredient_links": 0,
+      "ingredient_covered_products": 876,
+      "ingredient_links": 11906,
+      "products_evaluated": 987
+    }
+  },
+  "snapshot": {
+    "categories": [
+      {
+        "active_products": 195,
+        "allergen_evidence_products": 45,
+        "allergen_records": 147,
+        "average_confidence": 66.2,
+        "average_score": 14.7,
+        "category": "Bread",
+        "country": "DE",
+        "ingredient_covered_products": 46,
+        "ingredient_links": 676,
+        "known_contains_products": 44
+      },
+      {
+        "active_products": 198,
+        "allergen_evidence_products": 0,
+        "allergen_records": 0,
+        "average_confidence": 58.0,
+        "average_score": 23.2,
+        "category": "Instant & Frozen",
+        "country": "DE",
+        "ingredient_covered_products": 0,
+        "ingredient_links": 0,
+        "known_contains_products": 0
+      },
+      {
+        "active_products": 152,
+        "allergen_evidence_products": 0,
+        "allergen_records": 0,
+        "average_confidence": 57.9,
+        "average_score": 29.1,
+        "category": "Snacks",
+        "country": "DE",
+        "ingredient_covered_products": 0,
+        "ingredient_links": 0,
+        "known_contains_products": 0
+      },
+      {
+        "active_products": 198,
+        "allergen_evidence_products": 0,
+        "allergen_records": 0,
+        "average_confidence": 58.0,
+        "average_score": 23.2,
+        "category": "Spreads & Dips",
+        "country": "DE",
+        "ingredient_covered_products": 0,
+        "ingredient_links": 0,
+        "known_contains_products": 0
+      }
+    ],
+    "checksums": {
+      "all": {
+        "product_allergen_info": "ab563f248d7d21d77659a5aae1c6a8b0",
+        "product_ingredient": "d364b44eb61b91d9acdf05d02285f590"
+      },
+      "non_target": {
+        "product_allergen_info": "faccf3360189a91912d9e37a448de7a0",
+        "product_ingredient": "0f0f46624774f714082f13a7ef77398a"
+      },
+      "selected": {
+        "product_allergen_info": "e5c974cd091b08f6d7e845730c872012",
+        "product_ingredient": "584ba5972b2a9322b9b4c15717ed4581"
+      }
+    },
+    "duplicates": {
+      "allergen_duplicate_keys": 0,
+      "ingredient_duplicate_keys": 0
+    },
+    "overall": {
+      "active_products": 8652,
+      "allergen_evidence_products": 2130,
+      "allergen_records": 7388,
+      "average_confidence": 68.0,
+      "average_score": 21.4,
+      "ingredient_coverage_percentage": 31.0,
+      "ingredient_covered_products": 2679,
+      "ingredient_links": 33971,
+      "known_contains_coverage_percentage": 22.9,
+      "known_contains_products": 1982
+    },
+    "schema_version": 1,
+    "selected": {
+      "allergen_evidence_products": 45,
+      "allergen_records": 147,
+      "deprecated_allergen_records": 0,
+      "deprecated_ingredient_links": 0,
+      "ingredient_covered_products": 46,
+      "ingredient_links": 676,
+      "products_evaluated": 743
+    }
+  }
+}
