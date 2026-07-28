@@ -12,6 +12,7 @@ import json
 import re
 import sys
 from collections import Counter, defaultdict
+from dataclasses import replace
 from functools import lru_cache
 from pathlib import Path
 
@@ -169,7 +170,7 @@ def build_outputs(manifest_path: Path = PILOT_PATH) -> tuple[dict[Path, str], di
     for row in ingredients:
         category = category_for.get((row.country, row.ean))
         if category:
-            ingredient_groups[(category, row.country)].append(row)
+            ingredient_groups[(category, row.country)].append(replace(row, category=category))
     for row in allergens:
         category = category_for.get((row.country, row.ean))
         if category:

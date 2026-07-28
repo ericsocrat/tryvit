@@ -101,7 +101,7 @@ jobs:
         run: python -m unittest test_data_quality_report.py
 
       - name: Deterministic enrichment unit tests
-        run: python -m unittest pipeline.test_enrichment
+        run: python -m unittest pipeline.test_enrichment pipeline.test_enrichment_governance
 
       - name: Deterministic enrichment generated-output check
         run: |
@@ -110,6 +110,9 @@ jobs:
             --manifest phase4b \
             --check \
             --stats-json
+
+      - name: Deterministic enrichment governance report check
+        run: python -m pipeline.governance_report --check
 
       - name: Enrichment identity guard
         run: |

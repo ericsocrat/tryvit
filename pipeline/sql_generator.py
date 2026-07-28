@@ -860,7 +860,7 @@ def generate_pipeline(
     # comes from the same normalized product payload as steps 01/03, and the
     # reference vocabulary is a committed snapshot rather than a live API.
     if (category, country) in enrichment_scopes():
-        ingredient_evidence, allergen_evidence = evidence_from_products(products, country)
+        ingredient_evidence, allergen_evidence = evidence_from_products(products, country, category)
         matches = match_ingredients(
             ingredient_evidence,
             load_snapshot_reference_names(),

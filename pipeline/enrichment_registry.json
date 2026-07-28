@@ -1,20 +1,192 @@
 {
-  "aliases": {
-    "rapeseed": "Rapeseed Oil",
-    "sunflower": "Sunflower Oil"
-  },
-  "reviewed": {
-    "papryka": "Paprika Or Bell Pepper",
-    "trockenmilcherzeugnis aus sauerrahm": "Sour Cream Powder"
-  },
-  "ambiguous": {
-    "starch": ["Corn Starch", "Potato Starch", "Wheat Starch"],
-    "vegetable oil": ["Rapeseed Oil", "Sunflower Oil"]
-  },
-  "quarantined": {
-    "kcal": "nutrition-label artifact",
-    "kcal 0 8": "nutrition-label artifact"
-  },
+  "schema_version": 2,
+  "generic_tokens": [
+    "starch",
+    "vegetable oil"
+  ],
+  "entries": [
+    {
+      "raw_source_token": "rapeseed",
+      "normalized_source_token": "rapeseed",
+      "canonical_ingredient_identity": "Rapeseed Oil",
+      "mapping_classification": "approved_alias",
+      "country_scope": [],
+      "category_scope": [],
+      "source_or_evidence": "OFF taxonomy synonym reviewed against the committed ingredient vocabulary",
+      "review_status": "approved",
+      "allergen_derivation_allowed": true,
+      "parent_child_inference_allowed": true,
+      "review_note": "The source token names the same oil identity without the word oil."
+    },
+    {
+      "raw_source_token": "sunflower",
+      "normalized_source_token": "sunflower",
+      "canonical_ingredient_identity": "Sunflower Oil",
+      "mapping_classification": "approved_alias",
+      "country_scope": [],
+      "category_scope": [],
+      "source_or_evidence": "OFF taxonomy synonym reviewed against the committed ingredient vocabulary",
+      "review_status": "approved",
+      "allergen_derivation_allowed": true,
+      "parent_child_inference_allowed": true,
+      "review_note": "The source token names the same oil identity without the word oil."
+    },
+    {
+      "raw_source_token": "papryka",
+      "normalized_source_token": "papryka",
+      "canonical_ingredient_identity": "Paprika Or Bell Pepper",
+      "mapping_classification": "context_qualified_alias",
+      "country_scope": ["PL"],
+      "category_scope": ["Meat"],
+      "source_or_evidence": "Reviewed Polish Phase 4A product context",
+      "review_status": "approved",
+      "allergen_derivation_allowed": true,
+      "parent_child_inference_allowed": true,
+      "review_note": "Polish papryka means paprika or bell pepper in the approved Meat pilot scope."
+    },
+    {
+      "raw_source_token": "papryka",
+      "normalized_source_token": "papryka",
+      "canonical_ingredient_identity": "Paprika Or Bell Pepper",
+      "mapping_classification": "context_qualified_alias",
+      "country_scope": ["PL"],
+      "category_scope": ["Frozen Vegetables"],
+      "source_or_evidence": "Reviewed Polish Phase 4A product context",
+      "review_status": "approved",
+      "allergen_derivation_allowed": true,
+      "parent_child_inference_allowed": true,
+      "review_note": "Polish papryka means paprika or bell pepper in the approved Frozen Vegetables pilot scope."
+    },
+    {
+      "raw_source_token": "Trockenmilcherzeugnis aus Sauerrahm",
+      "normalized_source_token": "trockenmilcherzeugnis aus sauerrahm",
+      "canonical_ingredient_identity": "Sour Cream Powder",
+      "mapping_classification": "context_qualified_alias",
+      "country_scope": ["DE"],
+      "category_scope": ["Dairy"],
+      "source_or_evidence": "Reviewed German dairy label context",
+      "review_status": "approved",
+      "allergen_derivation_allowed": true,
+      "parent_child_inference_allowed": true,
+      "review_note": "The German label explicitly identifies a dried sour-cream product in Dairy."
+    },
+    {
+      "raw_source_token": "Starch",
+      "normalized_source_token": "starch",
+      "canonical_ingredient_identity": null,
+      "mapping_classification": "ambiguous_and_withheld",
+      "country_scope": [],
+      "category_scope": [],
+      "source_or_evidence": "23 Phase 4B occurrences across Breakfast & Grain-Based DE, Dairy DE, and Sweets DE",
+      "review_status": "withheld",
+      "allergen_derivation_allowed": false,
+      "parent_child_inference_allowed": false,
+      "candidates": ["Corn Starch", "Potato Starch", "Wheat Starch"],
+      "review_note": "The generic token does not identify its botanical source; a global mapping could create unsupported gluten evidence."
+    },
+    {
+      "raw_source_token": "Vegetable Oil",
+      "normalized_source_token": "vegetable oil",
+      "canonical_ingredient_identity": null,
+      "mapping_classification": "ambiguous_and_withheld",
+      "country_scope": [],
+      "category_scope": [],
+      "source_or_evidence": "4 Phase 4B occurrences across Breakfast & Grain-Based DE and Dairy DE",
+      "review_status": "withheld",
+      "allergen_derivation_allowed": false,
+      "parent_child_inference_allowed": false,
+      "candidates": ["Rapeseed Oil", "Sunflower Oil"],
+      "review_note": "The broad source token cannot justify selecting one specific oil."
+    },
+    {
+      "raw_source_token": "Kcal",
+      "normalized_source_token": "kcal",
+      "canonical_ingredient_identity": null,
+      "mapping_classification": "source_artifact_and_quarantined",
+      "country_scope": [],
+      "category_scope": [],
+      "source_or_evidence": "Nutrition-label fragment observed once in Sweets DE",
+      "review_status": "quarantined",
+      "allergen_derivation_allowed": false,
+      "parent_child_inference_allowed": false,
+      "review_note": "Energy-unit text is not an ingredient."
+    },
+    {
+      "raw_source_token": "Kcal 0 8",
+      "normalized_source_token": "kcal 0 8",
+      "canonical_ingredient_identity": null,
+      "mapping_classification": "source_artifact_and_quarantined",
+      "country_scope": [],
+      "category_scope": [],
+      "source_or_evidence": "Nutrition-label fragment observed once in Drinks DE",
+      "review_status": "quarantined",
+      "allergen_derivation_allowed": false,
+      "parent_child_inference_allowed": false,
+      "review_note": "Energy-label text was parsed inside an ingredient hierarchy and must never be linked."
+    }
+  ],
+  "parent_child_rules": [
+    {
+      "parent_normalized_token": "starch",
+      "child_normalized_token": "stärke weizen",
+      "country_scope": ["DE"],
+      "category_scope": ["Breakfast & Grain-Based", "Sweets"],
+      "mapping_classification": "unsafe_parent_child_inference_and_withheld",
+      "inference_allowed": false,
+      "allergen_derivation_allowed": false,
+      "source_or_evidence": "3 Phase 4B child occurrences beneath an ambiguous Starch parent",
+      "review_status": "withheld",
+      "review_note": "The child cannot be attached while the source parent lacks a safe canonical identity."
+    },
+    {
+      "parent_normalized_token": "starch",
+      "child_normalized_token": "stärke mais",
+      "country_scope": ["DE"],
+      "category_scope": ["Sweets"],
+      "mapping_classification": "unsafe_parent_child_inference_and_withheld",
+      "inference_allowed": false,
+      "allergen_derivation_allowed": false,
+      "source_or_evidence": "1 Phase 4B child occurrence beneath an ambiguous Starch parent",
+      "review_status": "withheld",
+      "review_note": "The child cannot be attached while the source parent lacks a safe canonical identity."
+    },
+    {
+      "parent_normalized_token": "vegetable oil",
+      "child_normalized_token": "sunflower",
+      "country_scope": ["DE"],
+      "category_scope": ["Breakfast & Grain-Based", "Dairy"],
+      "mapping_classification": "unsafe_parent_child_inference_and_withheld",
+      "inference_allowed": false,
+      "allergen_derivation_allowed": false,
+      "source_or_evidence": "4 Phase 4B child occurrences beneath an ambiguous Vegetable Oil parent",
+      "review_status": "withheld",
+      "review_note": "The child identity is known, but its unresolved parent prevents a structurally valid linkage."
+    },
+    {
+      "parent_normalized_token": "vegetable oil",
+      "child_normalized_token": "rapeseed",
+      "country_scope": ["DE"],
+      "category_scope": ["Dairy"],
+      "mapping_classification": "unsafe_parent_child_inference_and_withheld",
+      "inference_allowed": false,
+      "allergen_derivation_allowed": false,
+      "source_or_evidence": "3 Phase 4B child occurrences beneath an ambiguous Vegetable Oil parent",
+      "review_status": "withheld",
+      "review_note": "The child identity is known, but its unresolved parent prevents a structurally valid linkage."
+    },
+    {
+      "parent_normalized_token": "vegetable oil",
+      "child_normalized_token": "cottonseed",
+      "country_scope": ["DE"],
+      "category_scope": ["Breakfast & Grain-Based"],
+      "mapping_classification": "unsafe_parent_child_inference_and_withheld",
+      "inference_allowed": false,
+      "allergen_derivation_allowed": false,
+      "source_or_evidence": "1 Phase 4B child occurrence beneath an ambiguous Vegetable Oil parent",
+      "review_status": "withheld",
+      "review_note": "The child identity is known, but its unresolved parent prevents a structurally valid linkage."
+    }
+  ],
   "allergen_aliases": {
     "nuts": "tree-nuts",
     "soy": "soybeans",
