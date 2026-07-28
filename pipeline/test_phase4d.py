@@ -198,7 +198,7 @@ class Phase4DTests(unittest.TestCase):
             {
                 "active_products": 8652,
                 "checksums": {
-                    "product_allergen_info": "legacy-a",
+                    "product_allergen_info": "a" * 32,
                     "product_ingredient": "stable-ingredient",
                 },
             }
@@ -207,7 +207,7 @@ class Phase4DTests(unittest.TestCase):
             {
                 "active_products": 8652,
                 "checksums": {
-                    "product_allergen_info": "legacy-b",
+                    "product_allergen_info": "b" * 32,
                     "product_ingredient": "stable-ingredient",
                 },
             }
