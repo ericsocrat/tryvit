@@ -13,6 +13,7 @@ import argparse
 import csv
 import io
 import json
+import tempfile
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
@@ -29,6 +30,7 @@ SELECTION_CSV = OUTPUT_ROOT / "selected-products.csv"
 BEFORE_JSON = OUTPUT_ROOT / "before.json"
 REPORT_JSON = OUTPUT_ROOT / "report.json"
 REPORT_MARKDOWN = OUTPUT_ROOT / "report.md"
+FIRST_RUN_JSON = Path(tempfile.gettempdir()) / "tryvit-phase4b-first-run.json"
 
 PRODUCTS_SQL = r"""
 SELECT
@@ -636,23 +638,17 @@ def _deliver(path: Path, content: str, check: bool) -> None:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", choices=("before", "snapshot", "report"), required=True)
-    parser.add_argument("--manifest", type=Path, default=MANIFEST_PATH)
     parser.add_argument("--check", action="store_true")
-    parser.add_argument("--json-out", type=Path)
-    parser.add_argument("--markdown-out", type=Path)
-    parser.add_argument("--selection-out", type=Path)
-    parser.add_argument("--before", type=Path, default=BEFORE_JSON)
-    parser.add_argument("--first-run", type=Path)
     args = parser.parse_args(argv)
-    manifest_path = args.manifest if args.manifest.is_absolute() else PROJECT_ROOT / args.manifest
+    manifest_path = MANIFEST_PATH
     manifest = load_manifest(manifest_path)
     executor = PsqlExecutor()
     if args.stage == "before":
         ranking, selection = _candidate_analysis(executor, manifest)
         before = _snapshot(executor, manifest)
-        _deliver(args.json_out or RANKING_JSON, _json_text(ranking), args.check)
-        _deliver(args.markdown_out or RANKING_MARKDOWN, _ranking_markdown(ranking), args.check)
-        _deliver(args.selection_out or SELECTION_CSV, selection, args.check)
+        _deliver(RANKING_JSON, _json_text(ranking), args.check)
+        _deliver(RANKING_MARKDOWN, _ranking_markdown(ranking), args.check)
+        _deliver(SELECTION_CSV, selection, args.check)
         _deliver(BEFORE_JSON, _json_text(before), args.check)
         print(  # noqa: T201
             json.dumps(
@@ -666,19 +662,13 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
     if args.stage == "snapshot":
-        if args.json_out is None:
-            parser.error("--json-out is required for snapshot stage")
-        _deliver(args.json_out, _json_text(_snapshot(executor, manifest)), args.check)
+        _deliver(FIRST_RUN_JSON, _json_text(_snapshot(executor, manifest)), args.check)
         return 0
-    if args.first_run is None:
-        parser.error("--first-run is required for report stage")
-    before_path = args.before if args.before.is_absolute() else PROJECT_ROOT / args.before
-    first_path = args.first_run if args.first_run.is_absolute() else PROJECT_ROOT / args.first_run
-    before = json.loads(before_path.read_text(encoding="utf-8"))
-    first = json.loads(first_path.read_text(encoding="utf-8"))
+    before = json.loads(BEFORE_JSON.read_text(encoding="utf-8"))
+    first = json.loads(FIRST_RUN_JSON.read_text(encoding="utf-8"))
     report = _final_report(manifest_path, manifest, before, first, _snapshot(executor, manifest))
-    _deliver(args.json_out or REPORT_JSON, _json_text(report), args.check)
-    _deliver(args.markdown_out or REPORT_MARKDOWN, _report_markdown(report), args.check)
+    _deliver(REPORT_JSON, _json_text(report), args.check)
+    _deliver(REPORT_MARKDOWN, _report_markdown(report), args.check)
     print(json.dumps({"status": report["status"], "checks": report["checks"]}, sort_keys=True))  # noqa: T201
     return 0 if report["status"] == "pass" else 1
 

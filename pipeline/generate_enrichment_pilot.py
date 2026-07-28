@@ -27,6 +27,8 @@ from pipeline.utils import slug
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PILOT_PATH = Path(__file__).with_name("enrichment_pilot.json")
+PHASE4B_MANIFEST_PATH = Path(__file__).with_name("enrichment_phase4b.json")
+MANIFESTS = {"phase4a": PILOT_PATH, "phase4b": PHASE4B_MANIFEST_PATH}
 
 _SQL_STRING = r"'(?:''|[^'])*'"
 _INGREDIENT_RE = re.compile(
@@ -55,8 +57,21 @@ def _none_or_text(value: str) -> str | None:
     return None if value == "NULL" else _unquote(value)
 
 
+def _project_input_file(path: Path) -> Path:
+    """Resolve a committed input file without allowing repository escape."""
+    root = PROJECT_ROOT.resolve()
+    candidate = path.resolve() if path.is_absolute() else (root / path).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError as exc:
+        raise ValueError(f"enrichment input must remain inside the project: {path}") from exc
+    if not candidate.is_file():
+        raise ValueError(f"enrichment input file does not exist: {path}")
+    return candidate
+
+
 def load_manifest(path: Path = PILOT_PATH) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
+    return json.loads(_project_input_file(path).read_text(encoding="utf-8"))
 
 
 def load_pilot(path: Path = PILOT_PATH) -> dict:
@@ -73,11 +88,12 @@ def parse_snapshot(
     set[str],
     dict[str, tuple[bool, str, str, str]],
 ]:
+    snapshot_path = _project_input_file(path)
     ingredients: list[IngredientEvidence] = []
     allergens: list[AllergenEvidence] = []
     reference_names: set[str] = set()
     reference_properties: dict[str, tuple[bool, str, str, str]] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in snapshot_path.read_text(encoding="utf-8").splitlines():
         reference = _REFERENCE_RE.match(line)
         if reference:
             data = reference.groupdict()
@@ -131,7 +147,7 @@ def _folder_for(category: str, country: str) -> Path:
 def _selected_products(manifest: dict) -> set[tuple[str, str, str]]:
     if "products" in manifest:
         return {(item["category"], item["country"], item["ean"]) for item in manifest["products"]}
-    selection_path = PROJECT_ROOT / manifest["selection_file"]
+    selection_path = _project_input_file(Path(manifest["selection_file"]))
     scopes = {(item["category"], item["country"]) for item in manifest["scopes"]}
     selected: set[tuple[str, str, str]] = set()
     with selection_path.open(newline="", encoding="utf-8") as handle:
@@ -222,16 +238,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--manifest",
-        type=Path,
-        default=PILOT_PATH,
-        help="manifest path (default: Phase 4A pilot)",
+        choices=tuple(MANIFESTS),
+        default="phase4a",
+        help="approved manifest name (default: phase4a)",
     )
     parser.add_argument("--check", action="store_true", help="fail if committed SQL is stale")
     parser.add_argument("--stats-json", action="store_true", help="print machine-readable statistics")
     parser.add_argument("--list-paths", action="store_true", help="print generated repository paths")
     args = parser.parse_args(argv)
-    manifest_path = args.manifest if args.manifest.is_absolute() else PROJECT_ROOT / args.manifest
-    outputs, stats = build_outputs(manifest_path)
+    outputs, stats = build_outputs(MANIFESTS[args.manifest])
     stale: list[str] = []
     for path, content in outputs.items():
         if args.check:

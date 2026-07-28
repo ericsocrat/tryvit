@@ -21,7 +21,7 @@ from pipeline.enrichment import (
     normalize_token,
     validate_registry,
 )
-from pipeline.generate_enrichment_pilot import build_outputs
+from pipeline.generate_enrichment_pilot import _project_input_file, build_outputs
 from pipeline.sql_generator import generate_pipeline
 
 REFERENCES = {
@@ -142,6 +142,13 @@ class EnrichmentTests(unittest.TestCase):
         self.assertEqual(first_stats["pilot_products"], 18)
         self.assertEqual(first_stats["products_with_ingredient_evidence"], 18)
         self.assertTrue(all(path.read_text(encoding="utf-8") == content for path, content in first.items()))
+
+    def test_generator_rejects_inputs_outside_the_repository(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            outside = Path(temp_dir) / "untrusted.json"
+            outside.write_text("{}", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "must remain inside the project"):
+                _project_input_file(outside)
 
     def test_phase4b_outputs_are_bounded_reproducible_and_quarantined(self) -> None:
         first, first_stats = build_outputs(PHASE4B_PATH)

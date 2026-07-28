@@ -107,7 +107,7 @@ jobs:
         run: |
           python -m pipeline.generate_enrichment_pilot --check --stats-json
           python -m pipeline.generate_enrichment_pilot \
-            --manifest pipeline/enrichment_phase4b.json \
+            --manifest phase4b \
             --check \
             --stats-json
 
@@ -206,8 +206,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f db/ci_post_enrichment.sql
           psql -v ON_ERROR_STOP=1 -f db/ci_post_pipeline.sql
           python -m pipeline.category_enrichment_report \
-            --stage snapshot \
-            --json-out /tmp/phase4b-first-run.json
+            --stage snapshot
 
           echo "Rerunning Phase 4B to prove idempotency..."
           while IFS= read -r -d '' f; do
@@ -220,7 +219,6 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f db/ci_post_pipeline.sql
           python -m pipeline.category_enrichment_report \
             --stage report \
-            --first-run /tmp/phase4b-first-run.json \
             --check
 
           echo "Enrichment replay complete."
