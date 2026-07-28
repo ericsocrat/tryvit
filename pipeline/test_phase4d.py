@@ -7,6 +7,7 @@ import json
 import unittest
 from dataclasses import replace
 
+from pipeline.category_enrichment_report import _historical_compatibility_matches
 from pipeline.enrichment import (
     PHASE4B_PATH,
     PHASE4D_PATH,
@@ -191,6 +192,34 @@ class Phase4DTests(unittest.TestCase):
             self.report["phase4c_governance_checksum"],
             "c4d400d67c3bc04b45d29331cb9495c45672e3d8b613ead992771203469e0e37",
         )
+
+    def test_phase4b_compatibility_masks_only_legacy_allergen_checksum(self) -> None:
+        expected = json.dumps(
+            {
+                "active_products": 8652,
+                "checksums": {
+                    "product_allergen_info": "legacy-a",
+                    "product_ingredient": "stable-ingredient",
+                },
+            }
+        )
+        provenance_variant = json.dumps(
+            {
+                "active_products": 8652,
+                "checksums": {
+                    "product_allergen_info": "legacy-b",
+                    "product_ingredient": "stable-ingredient",
+                },
+            }
+        )
+        ingredient_regression = provenance_variant.replace("stable-ingredient", "changed-ingredient")
+        metric_regression = provenance_variant.replace("8652", "8651")
+        non_checksum_change = json.dumps({"product_allergen_info": "legacy-b"})
+
+        self.assertTrue(_historical_compatibility_matches(expected, provenance_variant))
+        self.assertFalse(_historical_compatibility_matches(expected, ingredient_regression))
+        self.assertFalse(_historical_compatibility_matches(expected, metric_regression))
+        self.assertFalse(_historical_compatibility_matches(expected, non_checksum_change))
 
 
 if __name__ == "__main__":

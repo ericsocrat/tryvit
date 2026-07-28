@@ -200,7 +200,10 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f db/ci_post_pipeline.sql
 
           echo "Reproducing the Phase 4B candidate ranking and before snapshot..."
-          python -m pipeline.category_enrichment_report --stage before --check
+          python -m pipeline.category_enrichment_report \
+            --stage before \
+            --check \
+            --historical-compat-check
 
           echo "Applying deferred Phase 4B category enrichment..."
           while IFS= read -r -d '' f; do
@@ -226,7 +229,8 @@ jobs:
           psql -v ON_ERROR_STOP=1 -f db/ci_post_pipeline.sql
           python -m pipeline.category_enrichment_report \
             --stage report \
-            --check
+            --check \
+            --historical-compat-check
 
           echo "Reproducing the Phase 4D candidate ranking and before snapshot..."
           python -m pipeline.phase4d_report --stage before --check
