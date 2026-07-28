@@ -290,7 +290,8 @@ WHERE {selected}
 SELECT md5(COALESCE(string_agg(concat_ws('|', p.country, COALESCE(p.ean,''), p.category,
   i.name_en, pi.position, COALESCE(pi.percent::text,''), COALESCE(pi.percent_estimate::text,''),
   pi.is_sub_ingredient, COALESCE(parent_i.name_en,'')), ';'
-  ORDER BY p.country,p.ean,p.category,i.name_en,pi.position), '')) AS value
+  ORDER BY p.country COLLATE "C",p.ean COLLATE "C",p.category COLLATE "C",
+    i.name_en COLLATE "C",pi.position), '')) AS value
 FROM product_ingredient pi
 JOIN products p ON p.product_id=pi.product_id
 JOIN ingredient_ref i ON i.ingredient_id=pi.ingredient_id
@@ -301,7 +302,8 @@ WHERE p.is_deprecated IS NOT TRUE AND {predicate}
             sql = f"""
 SELECT md5(COALESCE(string_agg(concat_ws('|', p.country, COALESCE(p.ean,''), p.category,
   pai.tag,pai.type,COALESCE(pai.source_tag,'')), ';'
-  ORDER BY p.country,p.ean,p.category,pai.tag,pai.type), '')) AS value
+  ORDER BY p.country COLLATE "C",p.ean COLLATE "C",p.category COLLATE "C",
+    pai.tag COLLATE "C",pai.type COLLATE "C"), '')) AS value
 FROM product_allergen_info pai
 JOIN products p ON p.product_id=pai.product_id
 WHERE p.is_deprecated IS NOT TRUE AND {predicate}

@@ -123,29 +123,29 @@
     "first_run": {
       "all": {
         "product_allergen_info": "39795bd2c395efb59c050153a0a980dd",
-        "product_ingredient": "7612f103bbc2dd31117d1609df191b64"
+        "product_ingredient": "c34366c5a341534e98e4d4cba9733145"
       },
       "non_target": {
         "product_allergen_info": "2277d975d9f263ec769cfe703af8321f",
-        "product_ingredient": "32e9324880c77b8bb52879ed48c4ae39"
+        "product_ingredient": "e6b8fde7d4f6da1cd06859bc084e347a"
       },
       "selected": {
         "product_allergen_info": "3eb0b4f21e3d7b09164e92e09ae8a3b4",
-        "product_ingredient": "882ee4f0332f0dd70c6580520f6fb797"
+        "product_ingredient": "896aca051bc066d857fabef34017ea68"
       }
     },
     "rerun": {
       "all": {
         "product_allergen_info": "39795bd2c395efb59c050153a0a980dd",
-        "product_ingredient": "7612f103bbc2dd31117d1609df191b64"
+        "product_ingredient": "c34366c5a341534e98e4d4cba9733145"
       },
       "non_target": {
         "product_allergen_info": "2277d975d9f263ec769cfe703af8321f",
-        "product_ingredient": "32e9324880c77b8bb52879ed48c4ae39"
+        "product_ingredient": "e6b8fde7d4f6da1cd06859bc084e347a"
       },
       "selected": {
         "product_allergen_info": "3eb0b4f21e3d7b09164e92e09ae8a3b4",
-        "product_ingredient": "882ee4f0332f0dd70c6580520f6fb797"
+        "product_ingredient": "896aca051bc066d857fabef34017ea68"
       }
     }
   },

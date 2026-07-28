@@ -52,15 +52,15 @@
   "checksums": {
     "all": {
       "product_allergen_info": "113bff74e56180783ae679d754066d58",
-      "product_ingredient": "564ffc93333311acb150d8a107e1451a"
+      "product_ingredient": "ad61ce26aaf802a671ddc05b0461e2fa"
     },
     "non_target": {
       "product_allergen_info": "2277d975d9f263ec769cfe703af8321f",
-      "product_ingredient": "32e9324880c77b8bb52879ed48c4ae39"
+      "product_ingredient": "e6b8fde7d4f6da1cd06859bc084e347a"
     },
     "selected": {
       "product_allergen_info": "97773879ea2bdde9fb6fc70fd0affd3b",
-      "product_ingredient": "b5fef1c4b0270a75df6b384139708e19"
+      "product_ingredient": "1b21fd9fc23632cade2aea20d929fc67"
     }
   },
   "duplicates": {

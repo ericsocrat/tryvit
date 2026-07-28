@@ -83,9 +83,9 @@ Two identical applications produced the same semantic checksums:
 
 | Scope | Product-ingredient | Product-allergen |
 |---|---|---|
-| All active products | `7612f103bbc2dd31117d1609df191b64` | `39795bd2c395efb59c050153a0a980dd` |
-| Selected categories | `882ee4f0332f0dd70c6580520f6fb797` | `3eb0b4f21e3d7b09164e92e09ae8a3b4` |
-| Non-target categories | `32e9324880c77b8bb52879ed48c4ae39` | `2277d975d9f263ec769cfe703af8321f` |
+| All active products | `c34366c5a341534e98e4d4cba9733145` | `39795bd2c395efb59c050153a0a980dd` |
+| Selected categories | `896aca051bc066d857fabef34017ea68` | `3eb0b4f21e3d7b09164e92e09ae8a3b4` |
+| Non-target categories | `e6b8fde7d4f6da1cd06859bc084e347a` | `2277d975d9f263ec769cfe703af8321f` |
 
 The rerun created no duplicate keys, changed no deprecated-product links, and
 left all non-target category checksums unchanged. CI regenerates the ranking,
