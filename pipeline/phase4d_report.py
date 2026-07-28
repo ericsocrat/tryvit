@@ -287,6 +287,16 @@ def _ranking_markdown(ranking: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _deprecated_allergen_checksum_sql() -> str:
+    """Hash deprecated allergen linkage identity without unstable provenance labels."""
+    return """
+  (SELECT md5(COALESCE(string_agg(concat_ws('|',p.product_id,pai.tag,pai.type), ';'
+      ORDER BY p.product_id,pai.tag COLLATE "C",pai.type COLLATE "C"),''))
+   FROM products p LEFT JOIN product_allergen_info pai ON pai.product_id=p.product_id
+   WHERE p.is_deprecated IS TRUE) AS deprecated_allergen_checksum
+""".strip()
+
+
 def _isolation_snapshot(executor: PsqlExecutor, manifest: dict[str, Any]) -> dict[str, Any]:
     scopes = _selected_scopes(manifest)
     predicates = " OR ".join(
@@ -304,10 +314,7 @@ SELECT
       ORDER BY p.product_id,pi.ingredient_id,pi.position),''))
    FROM products p LEFT JOIN product_ingredient pi ON pi.product_id=p.product_id
    WHERE p.is_deprecated IS TRUE) AS deprecated_ingredient_checksum,
-  (SELECT md5(COALESCE(string_agg(concat_ws('|',p.product_id,pai.tag,pai.type,COALESCE(pai.source_tag,'')), ';'
-      ORDER BY p.product_id,pai.tag COLLATE "C",pai.type COLLATE "C"),''))
-   FROM products p LEFT JOIN product_allergen_info pai ON pai.product_id=p.product_id
-   WHERE p.is_deprecated IS TRUE) AS deprecated_allergen_checksum
+  {_deprecated_allergen_checksum_sql()}
 """
     return executor.rows("phase4d_isolation", sql)[0]
 

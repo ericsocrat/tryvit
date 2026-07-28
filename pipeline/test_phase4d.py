@@ -19,6 +19,7 @@ from pipeline.enrichment import (
     match_ingredients,
 )
 from pipeline.generate_enrichment_pilot import PROJECT_ROOT, build_outputs, load_manifest, parse_snapshot
+from pipeline.phase4d_report import _deprecated_allergen_checksum_sql
 
 
 class Phase4DTests(unittest.TestCase):
@@ -220,6 +221,11 @@ class Phase4DTests(unittest.TestCase):
         self.assertFalse(_historical_compatibility_matches(expected, ingredient_regression))
         self.assertFalse(_historical_compatibility_matches(expected, metric_regression))
         self.assertFalse(_historical_compatibility_matches(expected, non_checksum_change))
+
+    def test_deprecated_allergen_checksum_uses_canonical_linkage_identity(self) -> None:
+        checksum_sql = _deprecated_allergen_checksum_sql()
+        self.assertIn("pai.tag,pai.type", checksum_sql)
+        self.assertNotIn("source_tag", checksum_sql)
 
 
 if __name__ == "__main__":
