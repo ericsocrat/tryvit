@@ -79,8 +79,7 @@ def _selected_scopes(manifest: dict[str, Any]) -> set[tuple[str, str]]:
 
 def _candidate_analysis(executor: PsqlExecutor, manifest: dict[str, Any]) -> tuple[dict[str, Any], str]:
     products = executor.rows("phase4b_products", PRODUCTS_SQL)
-    snapshot_path = PROJECT_ROOT / manifest["source"]
-    ingredients, allergens, references, _ = parse_snapshot(snapshot_path)
+    ingredients, allergens, references, _ = parse_snapshot()
     ingredients_by_product: dict[tuple[str, str], list] = defaultdict(list)
     allergens_by_product: dict[tuple[str, str], list] = defaultdict(list)
     for row in ingredients:
