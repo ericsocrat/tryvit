@@ -227,6 +227,10 @@ class Phase4DTests(unittest.TestCase):
         self.assertIn("pai.tag,pai.type", checksum_sql)
         self.assertNotIn("source_tag", checksum_sql)
 
+    def test_phase4d_post_processing_refreshes_analytical_views_last(self) -> None:
+        post_sql = (PROJECT_ROOT / "db" / "ci_post_phase4d.sql").read_text(encoding="utf-8").rstrip()
+        self.assertTrue(post_sql.endswith("SELECT refresh_all_materialized_views();"))
+
 
 if __name__ == "__main__":
     unittest.main()

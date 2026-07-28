@@ -241,3 +241,7 @@ CALL score_category('Frozen & Prepared', p_country := 'DE');
 CALL score_category('Meat', p_country := 'DE');
 
 COMMIT;
+
+-- Keep repository-wide analytical views synchronized with the scoped writes.
+-- The refresh is read-derived and does not mutate product or linkage rows.
+SELECT refresh_all_materialized_views();
