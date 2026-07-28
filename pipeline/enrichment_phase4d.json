@@ -1,0 +1,73 @@
+{
+  "phase": "4D",
+  "source": "supabase/migrations/20260601173035_populate_ingredients_allergens.sql",
+  "source_label": "committed OFF-derived snapshot 20260601173035",
+  "selection_file": "data-quality/phase4d/selected-products.csv",
+  "scopes": [
+    {
+      "category": "Sweets",
+      "country": "PL",
+      "rationale": "Highest refreshed score, with 225 safely enrichable products, strong explicit allergen evidence, and high barcode/search relevance."
+    },
+    {
+      "category": "Dairy",
+      "country": "PL",
+      "rationale": "Second-highest refreshed score, with 199 safely enrichable products and explicit allergen evidence for nearly the entire evidence-bearing batch."
+    },
+    {
+      "category": "Frozen & Prepared",
+      "country": "DE",
+      "rationale": "High-value prepared-food scope with 98.0% ingredient-source completeness; ambiguous tokens are bounded and withheld by governance."
+    },
+    {
+      "category": "Meat",
+      "country": "DE",
+      "rationale": "High everyday-search relevance, 96.4% source completeness, 188 safely enrichable products, and only one ambiguous token."
+    }
+  ],
+  "deferred": [
+    {
+      "category": "Snacks",
+      "country": "DE",
+      "reason": "Ranks fourth, but Meat DE was selected for its larger product gain and materially smaller ambiguity queue (1 token versus 18), keeping this batch lower risk."
+    },
+    {
+      "category": "Bread",
+      "country": "DE",
+      "reason": "Excellent source and allergen completeness, but it is a smaller gain than the selected categories and can anchor the next controlled batch."
+    },
+    {
+      "category": "Drinks",
+      "country": "PL",
+      "reason": "Strong barcode relevance but only 32 products have explicit allergen evidence, so it provides less balanced quality gain than the selected scopes."
+    },
+    {
+      "category": "Instant & Frozen",
+      "country": "DE",
+      "reason": "High linkage potential but the largest ambiguous-token queue among the leading candidates increases review and regression risk."
+    },
+    {
+      "category": "Spreads & Dips",
+      "country": "DE",
+      "reason": "Meaningful gain, but lower source completeness and a larger ambiguity queue than Meat DE."
+    },
+    {
+      "category": "Bread",
+      "country": "PL",
+      "reason": "High user relevance, but only 61.4% of missing products have ingredient source evidence."
+    }
+  ],
+  "ranking_weights": {
+    "active_product_count": 0.06,
+    "missing_ingredient_percentage": 0.06,
+    "missing_allergen_percentage": 0.04,
+    "ingredient_source_completeness": 0.12,
+    "explicit_allergen_source_completeness": 0.10,
+    "governed_exact_match_rate": 0.10,
+    "approved_scoped_alias_rate": 0.04,
+    "token_safety": 0.10,
+    "expected_catalog_coverage_gain": 0.16,
+    "barcode_and_search_relevance": 0.12,
+    "implementation_and_regression_safety": 0.10
+  }
+}

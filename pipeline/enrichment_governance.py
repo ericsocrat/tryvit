@@ -73,14 +73,26 @@ def governed_token_entry(
     """Resolve one governed token using the narrowest matching approved scope."""
     if registry.get("schema_version") != 2:
         return None
-    matches = [
-        entry
-        for entry in registry.get("entries", ())
-        if entry.get("normalized_source_token") == normalized_token and scope_matches(entry, country, category)
-    ]
+    matches = []
+    for entry in registry.get("entries", ()):
+        governed_token = str(entry.get("normalized_source_token", ""))
+        exact_token = governed_token == normalized_token
+        governed_artifact_prefix = (
+            entry.get("mapping_classification") == "source_artifact_and_quarantined"
+            and normalized_token.startswith(governed_token + " ")
+        )
+        if (exact_token or governed_artifact_prefix) and scope_matches(entry, country, category):
+            matches.append(entry)
     if not matches:
         return None
-    return sorted(matches, key=_specificity, reverse=True)[0]
+    return sorted(
+        matches,
+        key=lambda entry: (
+            entry.get("normalized_source_token") == normalized_token,
+            _specificity(entry),
+        ),
+        reverse=True,
+    )[0]
 
 
 def parent_child_rule(

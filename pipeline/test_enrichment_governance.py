@@ -133,6 +133,11 @@ class EnrichmentGovernanceTests(unittest.TestCase):
         self.assertEqual(result.classification, "quarantined")
         self.assertIsNone(result.canonical_name)
 
+    def test_source_artifact_family_is_quarantined_by_governed_prefix(self) -> None:
+        result = match_ingredient(self.evidence("Kcal Pro 100G Rm Pro 100G 620"), self.references)
+        self.assertEqual(result.classification, "quarantined")
+        self.assertIsNone(result.canonical_name)
+
     def test_safe_and_unsafe_parent_child_relationships(self) -> None:
         safe = match_ingredients(
             [

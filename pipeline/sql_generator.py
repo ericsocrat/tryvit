@@ -19,6 +19,7 @@ from pathlib import Path
 
 from pipeline.enrichment import (
     PHASE4B_PATH,
+    PHASE4D_PATH,
     enrichment_scopes,
     evidence_from_products,
     generate_enrichment_sql,
@@ -872,7 +873,13 @@ def generate_pipeline(
                 matches,
                 allergen_evidence,
                 "normalized pipeline input (Open Food Facts explicit evidence)",
-                phase="4B" if (category, country) in manifest_scopes(PHASE4B_PATH) else None,
+                phase=(
+                    "4B"
+                    if (category, country) in manifest_scopes(PHASE4B_PATH)
+                    else "4D"
+                    if (category, country) in manifest_scopes(PHASE4D_PATH)
+                    else None
+                ),
             ),
         )
     else:

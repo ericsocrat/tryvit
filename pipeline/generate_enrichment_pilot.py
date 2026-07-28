@@ -29,11 +29,14 @@ from pipeline.utils import slug
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PILOT_PATH = Path(__file__).with_name("enrichment_pilot.json")
 PHASE4B_MANIFEST_PATH = Path(__file__).with_name("enrichment_phase4b.json")
-MANIFESTS = {"phase4a": PILOT_PATH, "phase4b": PHASE4B_MANIFEST_PATH}
+PHASE4D_MANIFEST_PATH = Path(__file__).with_name("enrichment_phase4d.json")
+MANIFESTS = {
+    "phase4a": PILOT_PATH,
+    "phase4b": PHASE4B_MANIFEST_PATH,
+    "phase4d": PHASE4D_MANIFEST_PATH,
+}
 SOURCE_SNAPSHOT = "supabase/migrations/20260601173035_populate_ingredients_allergens.sql"
 SOURCE_SNAPSHOT_PATH = PROJECT_ROOT / SOURCE_SNAPSHOT
-PHASE4B_SELECTION = "data-quality/phase4b/selected-products.csv"
-PHASE4B_SELECTION_PATH = PROJECT_ROOT / PHASE4B_SELECTION
 
 _SQL_STRING = r"'(?:''|[^'])*'"
 _INGREDIENT_RE = re.compile(
@@ -141,11 +144,13 @@ def _folder_for(category: str, country: str) -> Path:
 def _selected_products(manifest: dict) -> set[tuple[str, str, str]]:
     if "products" in manifest:
         return {(item["category"], item["country"], item["ean"]) for item in manifest["products"]}
-    if manifest.get("selection_file") != PHASE4B_SELECTION:
-        raise ValueError("Phase 4B manifest must use the approved committed selection")
+    selection_file = manifest.get("selection_file")
+    expected_selection = f"data-quality/phase{str(manifest['phase']).casefold()}/selected-products.csv"
+    if selection_file != expected_selection:
+        raise ValueError(f"Phase {manifest['phase']} manifest must use its approved committed selection")
     scopes = {(item["category"], item["country"]) for item in manifest["scopes"]}
     selected: set[tuple[str, str, str]] = set()
-    with PHASE4B_SELECTION_PATH.open(newline="", encoding="utf-8") as handle:
+    with (PROJECT_ROOT / selection_file).open(newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)
         if reader.fieldnames != ["category", "country", "ean"]:
             raise ValueError("selection CSV must have category,country,ean columns")
