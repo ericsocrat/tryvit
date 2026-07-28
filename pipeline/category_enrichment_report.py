@@ -80,6 +80,21 @@ def _historical_compatibility_matches(expected: str, actual: str) -> bool:
     return _historical_compatibility_value(expected_value) == _historical_compatibility_value(actual_value)
 
 
+def _linkage_checksums_match(
+    expected: dict[str, str],
+    actual: dict[str, str],
+    *,
+    historical_compatibility: bool = False,
+) -> bool:
+    """Compare linkage checksums, optionally using Phase 4B legacy semantics."""
+
+    if expected == actual:
+        return True
+    return historical_compatibility and (
+        _historical_compatibility_value(expected) == _historical_compatibility_value(actual)
+    )
+
+
 PRODUCTS_SQL = r"""
 SELECT
   p.country,
@@ -461,6 +476,8 @@ def _final_report(
     before: dict[str, Any],
     first: dict[str, Any],
     after: dict[str, Any],
+    *,
+    historical_compatibility: bool = False,
 ) -> dict[str, Any]:
     _, source_stats = build_outputs(manifest_path)
     selection_path = PROJECT_ROOT / manifest["selection_file"]
@@ -508,7 +525,11 @@ def _final_report(
         before["selected"]["ingredient_covered_products"]
     )
     idempotent = first["checksums"] == after["checksums"]
-    non_target_unchanged = before["checksums"]["non_target"] == after["checksums"]["non_target"]
+    non_target_unchanged = _linkage_checksums_match(
+        before["checksums"]["non_target"],
+        after["checksums"]["non_target"],
+        historical_compatibility=historical_compatibility,
+    )
     duplicate_free = all(int(value) == 0 for value in after["duplicates"].values())
     deprecated_unchanged = (
         before["selected"]["deprecated_ingredient_links"] == after["selected"]["deprecated_ingredient_links"]
@@ -732,7 +753,14 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     before = json.loads(BEFORE_JSON.read_text(encoding="utf-8"))
     first = json.loads(FIRST_RUN_JSON.read_text(encoding="utf-8"))
-    report = _final_report(manifest_path, manifest, before, first, _snapshot(executor, manifest))
+    report = _final_report(
+        manifest_path,
+        manifest,
+        before,
+        first,
+        _snapshot(executor, manifest),
+        historical_compatibility=args.historical_compat_check,
+    )
     artifacts = (
         (REPORT_JSON, _json_text(report)),
         (REPORT_MARKDOWN, _report_markdown(report)),

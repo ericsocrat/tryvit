@@ -7,7 +7,7 @@ import json
 import unittest
 from dataclasses import replace
 
-from pipeline.category_enrichment_report import _historical_compatibility_matches
+from pipeline.category_enrichment_report import _historical_compatibility_matches, _linkage_checksums_match
 from pipeline.enrichment import (
     PHASE4B_PATH,
     PHASE4D_PATH,
@@ -221,6 +221,28 @@ class Phase4DTests(unittest.TestCase):
         self.assertFalse(_historical_compatibility_matches(expected, ingredient_regression))
         self.assertFalse(_historical_compatibility_matches(expected, metric_regression))
         self.assertFalse(_historical_compatibility_matches(expected, non_checksum_change))
+
+    def test_phase4b_non_target_check_uses_legacy_semantics_only_when_requested(self) -> None:
+        expected = {
+            "product_allergen_info": "a" * 32,
+            "product_ingredient": "stable-ingredient",
+        }
+        provenance_variant = {
+            "product_allergen_info": "b" * 32,
+            "product_ingredient": "stable-ingredient",
+        }
+        ingredient_regression = {
+            "product_allergen_info": "b" * 32,
+            "product_ingredient": "changed-ingredient",
+        }
+
+        self.assertFalse(_linkage_checksums_match(expected, provenance_variant))
+        self.assertTrue(
+            _linkage_checksums_match(expected, provenance_variant, historical_compatibility=True)
+        )
+        self.assertFalse(
+            _linkage_checksums_match(expected, ingredient_regression, historical_compatibility=True)
+        )
 
     def test_deprecated_allergen_checksum_uses_canonical_linkage_identity(self) -> None:
         checksum_sql = _deprecated_allergen_checksum_sql()
