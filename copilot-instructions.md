@@ -9,7 +9,7 @@
 > **Servings:** removed as separate table — all nutrition data is per-100g on nutrition_facts
 > **Ingredient analytics:** 5,340 unique ingredients (all clean ASCII English), 2,691 allergen declarations, 2,702 trace declarations
 > **Ingredient concerns:** EFSA-based 4-tier additive classification (0=none, 1=low, 2=moderate, 3=high)
-> **QA:** 777 checks across 49 suites + 20 negative validation tests — all passing
+> **QA:** 784 checks across 50 suites (776 blocking) + 20 negative validation tests — all passing
 
 ---
 
@@ -189,7 +189,7 @@ tryvit/
 │   │   ├── api-gateway/             # Write-path gateway (rate limiting, validation) (#478)
 │   │   └── send-push-notification/  # Push notification handler
 │   ├── dr-drill/                    # Disaster recovery drill artifacts
-│   └── migrations/                  # 232 append-only schema migrations
+│   └── migrations/                  # 233 append-only schema migrations
 │       ├── 20260207000100_create_schema.sql
 │       ├── 20260207000200_baseline.sql
 │       ├── 20260207000300_add_chip_metadata.sql
@@ -304,7 +304,7 @@ tryvit/
 │       ├── 006-append-only-migrations.md
 │       └── 007-english-canonical-ingredients.md
 ├── RUN_LOCAL.ps1                    # Pipeline runner (idempotent)
-├── RUN_QA.ps1                       # QA test runner (777 checks across 49 suites)
+├── RUN_QA.ps1                       # QA test runner (784 checks across 50 suites; 776 blocking)
 ├── RUN_NEGATIVE_TESTS.ps1           # Negative test runner (20 injection tests)
 ├── RUN_SANITY.ps1                   # Sanity checks (16) — row counts, schema assertions
 ├── RUN_REMOTE.ps1                   # Remote deployment (requires confirmation)
@@ -699,7 +699,7 @@ a mix of `'baked'`, `'fried'`, and `'none'`.
 
 ## 7. Migrations
 
-**Location:** `supabase/migrations/` — managed by Supabase CLI. Currently **232 migrations**.
+**Location:** `supabase/migrations/` — managed by Supabase CLI. Currently **233 migrations**.
 
 **Rules:**
 
@@ -771,7 +771,7 @@ A change is **not done** unless relevant tests were added/updated, every suite i
 | Component tests     | **Testing Library React** + Vitest                | `frontend/src/components/**/*.test.tsx`      | same as above                        |
 | E2E smoke           | **Playwright 1.58** (Chromium)                    | `frontend/e2e/smoke.spec.ts`                 | `cd frontend && npx playwright test` |
 | E2E auth            | Playwright (requires `SUPABASE_SERVICE_ROLE_KEY`) | `frontend/e2e/authenticated.spec.ts`         | same (CI auto-detects key)           |
-| DB QA (777 checks)  | Raw SQL (zero rows = pass)                        | `db/qa/QA__*.sql` (49 suites)                | `.\RUN_QA.ps1`                       |
+| DB QA (784 checks; 776 blocking) | Raw SQL (zero rows = pass)          | `db/qa/QA__*.sql` (50 suites)                | `.\RUN_QA.ps1`                       |
 | Negative validation | SQL injection/constraint tests                    | `db/qa/TEST__negative_checks.sql`            | `.\RUN_NEGATIVE_TESTS.ps1`           |
 | DB sanity           | Row-count + schema assertions                     | via `RUN_SANITY.ps1`                         | `.\RUN_SANITY.ps1 -Env local`        |
 | Pipeline structure  | Python validator                                  | `check_pipeline_structure.py`                | `python check_pipeline_structure.py` |
@@ -912,7 +912,7 @@ E2E tests are the **only** exception — they run against a live dev server but 
   - **`pr-title-lint.yml`**: PR title conventional-commit validation (all PRs)
   - **`main-gate.yml`**: Typecheck → Lint → Build → Unit tests with coverage → Playwright smoke E2E → SonarCloud scan + BLOCKING Quality Gate → Sentry sourcemap upload
   - **`nightly.yml`**: Full Playwright (all projects incl. visual regression) + Data Integrity Audit (parallel)
-  - **`qa.yml`**: Pipeline structure guard → Schema migrations → Schema drift detection → Pipelines → QA (777 checks) → Sanity (17 checks) → Confidence threshold
+  - **`qa.yml`**: Pipeline structure guard → Schema migrations → Schema drift detection → Pipelines → QA (784 checks; 776 blocking) → Sanity (17 checks) → Confidence threshold
   - **`deploy.yml`**: Manual trigger → Schema diff → Approval gate (production) → Pre-deploy backup → `supabase db push` → Post-deploy sanity
   - **`sync-cloud-db.yml`**: Auto-sync migrations to production on merge to `main`
 - **Required (merge-blocking) checks:** `Unit Tests`, `Playwright Smoke`, `Typecheck & Lint`, `Build`. These four must pass before a PR can merge.
@@ -949,7 +949,7 @@ If adding/changing DB schema or SQL functions:
 - For rollback procedures, see `DEPLOYMENT.md` → **Rollback Procedures** (5 scenarios + emergency checklist).
 - Add a QA check that verifies the migration outcome (row counts, constraint behavior).
 - Ensure idempotency (`IF NOT EXISTS`, `ON CONFLICT`, `DO UPDATE SET`).
-- Run `.\RUN_QA.ps1` to verify all 777 checks pass + `.\RUN_NEGATIVE_TESTS.ps1` for 20 injection tests.
+- Run `.\RUN_QA.ps1` to verify all 784 checks pass (776 blocking) + `.\RUN_NEGATIVE_TESTS.ps1` for 20 injection tests.
 
 ### 8.14 Snapshots Are Not Enough
 
@@ -1044,7 +1044,7 @@ At the end of every PR-like change, include a **Verification** section:
 | Scoring Band Distribution | `QA__scoring_distribution.sql`      |     12 | No        |
 | **Negative Validation**   | `TEST__negative_checks.sql`         |     20 | Yes       |
 
-**Run:** `.\RUN_QA.ps1` — expects **777/777 checks passing** (+ EAN validation).
+**Run:** `.\RUN_QA.ps1` — expects **784/784 checks passing** (776 blocking, + EAN validation).
 **Run:** `.\RUN_NEGATIVE_TESTS.ps1` — expects **20/20 caught**.
 
 ### 8.19 Key Regression Tests (Scoring Suite)
@@ -2043,7 +2043,7 @@ Else → fallback Z (always safe, always returns a value)
 ## Verification Checklist (Definition of Done)
 
 - [ ] `python check_pipeline_structure.py` — 0 errors
-- [ ] `.\RUN_QA.ps1` — all 777 checks pass
+- [ ] `.\RUN_QA.ps1` — all 784 checks pass (776 blocking)
 - [ ] `.\RUN_NEGATIVE_TESTS.ps1` — 20/20 caught
 - [ ] `supabase test db` — all pgTAP pass
 - [ ] `cd frontend && npx tsc --noEmit` — 0 errors
@@ -2537,7 +2537,7 @@ After implementation, update ALL of these that apply (per §18.1):
 
 ```powershell
 supabase test db                  → XX/XX pgTAP tests pass
-.\RUN_QA.ps1                      → 777/777 checks pass (0 failures)
+.\RUN_QA.ps1                      → 784/784 checks pass (776 blocking, 0 failures)
 .\RUN_NEGATIVE_TESTS.ps1          → 20/20 caught
 npx tsc --noEmit                  → 0 errors
 npx vitest run                    → XXX/XXX tests pass
