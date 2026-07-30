@@ -408,7 +408,9 @@ export default function DevComponentsPage() {
         <Row label="Status">
           <AllergenBadge status="present" allergenName="Gluten" />
           <AllergenBadge status="traces" allergenName="Milk" />
-          <AllergenBadge status="free" allergenName="Nuts" />
+          <AllergenBadge status="derived" allergenName="Eggs" />
+          <AllergenBadge status="unknown" allergenName="Soy" />
+          <AllergenBadge status="assessed-absent" allergenName="Nuts" />
         </Row>
       </Section>
     </div>

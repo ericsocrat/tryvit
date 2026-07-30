@@ -166,15 +166,22 @@ describe("FilterPanel", () => {
     expect(screen.queryAllByText(/^UNKNOWN$/)).toHaveLength(0);
   });
 
-  it("renders allergen-free filter checkboxes", async () => {
+  it("renders truthful allergen-evidence exclusion checkboxes", async () => {
     renderPanel();
     await waitFor(() => {
-      expect(screen.getAllByText("Gluten-free").length).toBeGreaterThanOrEqual(
-        1,
-      );
+      expect(
+        screen.getAllByText(
+          "Exclude products with Gluten contains evidence",
+        ).length,
+      ).toBeGreaterThanOrEqual(1);
     });
     expect(
-      screen.getAllByText("Milk-free").length,
+      screen.getAllByText("Exclude products with Milk contains evidence")
+        .length,
+    ).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText(/Missing evidence is not treated as allergen-free/)
+        .length,
     ).toBeGreaterThanOrEqual(1);
   });
 

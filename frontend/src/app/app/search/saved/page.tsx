@@ -198,7 +198,9 @@ function FilterSummaryChips({ filters }: Readonly<{ filters: SearchFilters }>) {
       return info ? t(info.labelKey) : tag.replace(/^en:/, "");
     });
     chips.push(
-      t("savedSearches.allergenFreeFilter", { values: labels.join(", ") }),
+      t("savedSearches.excludeAllergenEvidenceFilter", {
+        values: labels.join(", "),
+      }),
     );
   }
   if (filters.max_unhealthiness !== undefined) {

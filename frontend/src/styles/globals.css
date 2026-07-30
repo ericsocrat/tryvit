@@ -440,7 +440,7 @@
     --color-allergen-traces: #f59e0b;
     /* May contain traces */
     --color-allergen-free: #22c55e;
-    /* Free from */
+    /* Reserved for authoritatively assessed absence */
 
     /* ── Semantic Feedback ── */
     --color-success: #22c55e;

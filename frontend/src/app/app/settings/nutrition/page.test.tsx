@@ -270,22 +270,26 @@ describe("NutritionSettingsPage", () => {
       expect(screen.getByTestId("allergen-presets")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("Gluten-free")).toBeInTheDocument();
-    expect(screen.getByText("Dairy-free")).toBeInTheDocument();
-    expect(screen.getByText("Nut-free")).toBeInTheDocument();
+    expect(screen.getByText("Avoid gluten evidence")).toBeInTheDocument();
+    expect(screen.getByText("Avoid milk evidence")).toBeInTheDocument();
+    expect(
+      screen.getByText("Avoid tree-nut and peanut evidence"),
+    ).toBeInTheDocument();
     const presetContainer = screen.getByTestId("allergen-presets");
-    expect(presetContainer).toHaveTextContent("Vegan");
+    expect(presetContainer).toHaveTextContent(
+      "Common animal-source allergen evidence",
+    );
   });
 
-  it("clicking Gluten-free preset selects the gluten allergen", async () => {
+  it("clicking the gluten-evidence preset selects gluten", async () => {
     render(<NutritionSettingsPage />, { wrapper: createWrapper() });
     const user = userEvent.setup();
 
     await waitFor(() => {
-      expect(screen.getByText("Gluten-free")).toBeInTheDocument();
+      expect(screen.getByText("Avoid gluten evidence")).toBeInTheDocument();
     });
 
-    await user.click(screen.getByText("Gluten-free"));
+    await user.click(screen.getByText("Avoid gluten evidence"));
 
     // Gluten tag should now be selected — save button should appear (dirty)
     expect(
@@ -293,15 +297,19 @@ describe("NutritionSettingsPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("clicking Nut-free preset selects both Tree Nuts and Peanuts", async () => {
+  it("clicking the nut-evidence preset selects Tree Nuts and Peanuts", async () => {
     render(<NutritionSettingsPage />, { wrapper: createWrapper() });
     const user = userEvent.setup();
 
     await waitFor(() => {
-      expect(screen.getByText("Nut-free")).toBeInTheDocument();
+      expect(
+        screen.getByText("Avoid tree-nut and peanut evidence"),
+      ).toBeInTheDocument();
     });
 
-    await user.click(screen.getByText("Nut-free"));
+    await user.click(
+      screen.getByText("Avoid tree-nut and peanut evidence"),
+    );
 
     // Should show strictness toggles since allergens are now selected
     await waitFor(() => {
@@ -314,12 +322,12 @@ describe("NutritionSettingsPage", () => {
     const user = userEvent.setup();
 
     await waitFor(() => {
-      expect(screen.getByText("Dairy-free")).toBeInTheDocument();
+      expect(screen.getByText("Avoid milk evidence")).toBeInTheDocument();
     });
 
     // Select then deselect
-    await user.click(screen.getByText("Dairy-free"));
-    await user.click(screen.getByText("Dairy-free"));
+    await user.click(screen.getByText("Avoid milk evidence"));
+    await user.click(screen.getByText("Avoid milk evidence"));
 
     // No strictness toggles since allergens are now empty again
     expect(

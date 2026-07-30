@@ -206,8 +206,10 @@ WHERE  product_id IN (
 -- the allergen declarations here, after products exist, so allergen-related
 -- QA checks have data to validate against.
 
-INSERT INTO product_allergen_info (product_id, tag, type)
-SELECT p.product_id, v.tag, v.type
+INSERT INTO product_allergen_info (
+  product_id, tag, type, source_tag, evidence_basis
+)
+SELECT p.product_id, v.tag, v.type, v.tag, 'explicit_source'
 FROM (VALUES
   -- Chips (contain milk / gluten from flavoring ingredients)
   ('PL', '5900073020118', 'gluten', 'contains'),

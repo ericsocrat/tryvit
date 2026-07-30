@@ -1,73 +1,68 @@
-import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("@/lib/i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string, params?: { name?: string }) =>
+      `${key}${params?.name ? ` ${params.name}` : ""}`,
+  }),
+}));
+
 import { AllergenBadge } from "./AllergenBadge";
 
 describe("AllergenBadge", () => {
-  it("renders allergen name", () => {
-    render(<AllergenBadge status="present" allergenName="Gluten" />);
-    expect(screen.getByText("Gluten")).toBeTruthy();
-  });
-
-  it("applies present status styling", () => {
+  it("renders explicit presence with warning styling", () => {
     render(<AllergenBadge status="present" allergenName="Milk" />);
-    const badge = screen.getByLabelText("Contains Milk");
+    const badge = screen.getByLabelText("allergenBadge.present Milk");
     expect(badge.className).toContain("text-allergen-present");
-    expect(badge.className).toContain("bg-allergen-present/10");
   });
 
-  it("applies traces status styling", () => {
+  it("renders may-contain evidence", () => {
     render(<AllergenBadge status="traces" allergenName="Nuts" />);
-    const badge = screen.getByLabelText("May contain traces of Nuts");
-    expect(badge.className).toContain("text-allergen-traces");
+    expect(
+      screen.getByLabelText("allergenBadge.traces Nuts"),
+    ).toBeInTheDocument();
   });
 
-  it("applies free status styling", () => {
-    render(<AllergenBadge status="free" allergenName="Soy" />);
-    const badge = screen.getByLabelText("Free from Soy");
+  it("renders deterministic derived evidence distinctly", () => {
+    render(<AllergenBadge status="derived" allergenName="Gluten" />);
+    expect(
+      screen.getByLabelText("allergenBadge.derived Gluten"),
+    ).toHaveClass("text-warning-text");
+  });
+
+  it("renders missing evidence as neutral unknown, never green", () => {
+    render(<AllergenBadge status="unknown" allergenName="Soy" />);
+    const badge = screen.getByLabelText("allergenBadge.unknown Soy");
+    expect(badge).toHaveClass("text-foreground-muted", "bg-surface-muted");
+    expect(badge.className).not.toContain("allergen-free");
+  });
+
+  it("reserves green treatment for authoritative assessed absence", () => {
+    render(<AllergenBadge status="assessed-absent" allergenName="Sesame" />);
+    const badge = screen.getByLabelText(
+      "allergenBadge.assessedAbsent Sesame",
+    );
     expect(badge.className).toContain("text-allergen-free");
   });
 
-  it("shows correct icon for present", () => {
-    const { container } = render(
-      <AllergenBadge status="present" allergenName="Eggs" />,
-    );
-    expect(container.querySelector("svg")).toBeTruthy();
-  });
-
-  it("shows correct icon for traces", () => {
-    const { container } = render(
-      <AllergenBadge status="traces" allergenName="Fish" />,
-    );
-    // Zap icon renders as SVG
-    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("shows correct icon for free", () => {
-    const { container } = render(
-      <AllergenBadge status="free" allergenName="Sesame" />,
-    );
-    // Check icon renders as SVG
-    expect(container.querySelectorAll("svg").length).toBeGreaterThanOrEqual(1);
-  });
-
   it("applies size classes", () => {
-    render(<AllergenBadge status="present" allergenName="Gluten" size="md" />);
-    const badge = screen.getByLabelText("Contains Gluten");
-    expect(badge.className).toContain("text-sm");
+    render(<AllergenBadge status="present" allergenName="Eggs" size="md" />);
+    expect(screen.getByLabelText("allergenBadge.present Eggs")).toHaveClass(
+      "text-sm",
+    );
   });
 
-  it("shows tooltip on hover when showTooltip is true", async () => {
+  it("shows an evidence-specific tooltip", async () => {
     const user = userEvent.setup();
     render(
       <TooltipPrimitive.Provider delayDuration={0}>
-        <AllergenBadge status="present" allergenName="Gluten" showTooltip />
+        <AllergenBadge status="derived" allergenName="Gluten" showTooltip />
       </TooltipPrimitive.Provider>,
     );
-
     await user.hover(screen.getByText("Gluten"));
-    const tooltip = await screen.findByRole("tooltip");
-    expect(tooltip.textContent).toContain("Gluten");
+    expect(await screen.findByRole("tooltip")).toHaveTextContent("Gluten");
   });
 });

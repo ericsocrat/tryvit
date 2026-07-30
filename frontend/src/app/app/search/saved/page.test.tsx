@@ -199,7 +199,9 @@ describe("SavedSearchesPage", () => {
       expect(screen.getByText("1 category")).toBeInTheDocument();
     });
     expect(screen.getByText("Nutri: A, B")).toBeInTheDocument();
-    expect(screen.getByText(/Free:.*Gluten/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Exclude products with contains evidence:.*Gluten/),
+    ).toBeInTheDocument();
     expect(screen.getByText("Score ≤ 40")).toBeInTheDocument();
     expect(screen.getByText("Sort: unhealthiness")).toBeInTheDocument();
   });

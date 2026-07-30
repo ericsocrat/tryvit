@@ -86,18 +86,38 @@ describe("AllergenChips", () => {
 
   // ── Tooltip text ──────────────────────────────────────────────────────
 
-  it("shows 'Contains: ...' tooltip for contains type", () => {
+  it("uses the translated contains-evidence tooltip", () => {
     render(<AllergenChips warnings={[makeWarning({ type: "contains" })]} />);
 
     const chip = screen.getByTestId("allergen-chip");
-    expect(chip.getAttribute("title")).toBe("Contains: Milk");
+    expect(chip.getAttribute("title")).toBe(
+      "Contains Milk — This product lists Milk as an ingredient.",
+    );
   });
 
-  it("shows 'May contain traces: ...' tooltip for traces type", () => {
+  it("uses the translated may-contain tooltip", () => {
     render(<AllergenChips warnings={[makeWarning({ type: "traces" })]} />);
 
     const chip = screen.getByTestId("allergen-chip");
-    expect(chip.getAttribute("title")).toBe("May contain traces: Milk");
+    expect(chip.getAttribute("title")).toBe(
+      "May contain traces of Milk — Cross-contamination possible during manufacturing.",
+    );
+  });
+
+  it("labels ingredient-derived positive evidence distinctly", () => {
+    render(
+      <AllergenChips
+        warnings={[
+          makeWarning({ evidenceBasis: "ingredient_derived" }),
+        ]}
+      />,
+    );
+
+    const chip = screen.getByTestId("allergen-chip");
+    expect(chip.getAttribute("title")).toContain(
+      "Ingredient evidence indicates Milk",
+    );
+    expect(chip).toHaveTextContent(/derived/i);
   });
 
   // ── Max visible / overflow ────────────────────────────────────────────

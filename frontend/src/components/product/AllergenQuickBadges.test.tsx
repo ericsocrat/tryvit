@@ -20,6 +20,12 @@ function makeAllergens(
     traces: "eggs,soybeans",
     contains_count: 2,
     traces_count: 2,
+    evidence: [
+      { tag: "gluten", evidence_type: "contains", evidence_basis: "ingredient_derived" },
+      { tag: "milk", evidence_type: "contains", evidence_basis: "explicit_source" },
+      { tag: "eggs", evidence_type: "may_contain", evidence_basis: "explicit_source" },
+      { tag: "soybeans", evidence_type: "may_contain", evidence_basis: "legacy_unclassified" },
+    ],
     ...overrides,
   };
 }
@@ -51,7 +57,22 @@ describe("AllergenQuickBadges", () => {
   it("renders only contains when traces is empty", () => {
     render(
       <AllergenQuickBadges
-        allergens={makeAllergens({ traces: "", traces_count: 0 })}
+        allergens={makeAllergens({
+          traces: "",
+          traces_count: 0,
+          evidence: [
+            {
+              tag: "gluten",
+              evidence_type: "contains",
+              evidence_basis: "ingredient_derived",
+            },
+            {
+              tag: "milk",
+              evidence_type: "contains",
+              evidence_basis: "explicit_source",
+            },
+          ],
+        })}
       />,
     );
     expect(screen.getByText("gluten")).toBeInTheDocument();
@@ -64,7 +85,14 @@ describe("AllergenQuickBadges", () => {
   it("renders only traces when contains is empty", () => {
     render(
       <AllergenQuickBadges
-        allergens={makeAllergens({ contains: "", contains_count: 0 })}
+        allergens={makeAllergens({
+          contains: "",
+          contains_count: 0,
+          evidence: [
+            { tag: "eggs", evidence_type: "may_contain", evidence_basis: "explicit_source" },
+            { tag: "soybeans", evidence_type: "may_contain", evidence_basis: "legacy_unclassified" },
+          ],
+        })}
       />,
     );
     expect(screen.getByText("eggs")).toBeInTheDocument();
@@ -73,7 +101,7 @@ describe("AllergenQuickBadges", () => {
 
   // ── Empty state ──────────────────────────────────────────────────────────
 
-  it("renders no-allergens message when both are empty", () => {
+  it("renders neutral unavailable evidence when both are empty", () => {
     render(
       <AllergenQuickBadges
         allergens={{
@@ -81,11 +109,12 @@ describe("AllergenQuickBadges", () => {
           traces: "",
           contains_count: 0,
           traces_count: 0,
+          evidence: [],
         }}
       />,
     );
     expect(
-      screen.getByText("product.noKnownAllergens"),
+      screen.getByText("product.allergenEvidenceUnavailable"),
     ).toBeInTheDocument();
   });
 
@@ -97,6 +126,7 @@ describe("AllergenQuickBadges", () => {
           traces: "",
           contains_count: 0,
           traces_count: 0,
+          evidence: [],
         }}
       />,
     );

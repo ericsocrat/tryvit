@@ -1,88 +1,16 @@
 "use client";
 
-// ─── AllergenMatrix ─────────────────────────────────────────────────────────
-// Structured allergen display: grouped by status (contains / traces / free),
-// EU FIC Regulation 1169/2011-aligned grid with color-coded badges.
-
+import {
+  buildAllergenDisplayRows,
+  getAllergenEvidence,
+  type AllergenDisplayStatus,
+} from "@/lib/allergen-evidence";
 import { useTranslation } from "@/lib/i18n";
 import type { ProfileAllergens } from "@/lib/types";
-import { AlertTriangle, Check, Minus } from "lucide-react";
-
-/**
- * EU FIC Regulation 1169/2011 mandates declaration of these 14 allergens.
- * Tags are now bare canonical IDs (e.g. "milk", "gluten").
- * Legacy data may still carry the "en:" prefix; normaliseTag() strips it as a fallback.
- */
-const EU_14_ALLERGENS = [
-  "gluten",
-  "crustaceans",
-  "eggs",
-  "fish",
-  "peanuts",
-  "soybeans",
-  "milk",
-  "tree-nuts",
-  "celery",
-  "mustard",
-  "sesame",
-  "sulphites",
-  "lupin",
-  "molluscs",
-] as const;
-
-
-
-/** Normalise an allergen tag: trim, lowercase, and strip legacy "en:" prefix if present. */
-function normaliseTag(tag: string): string {
-  return tag.trim().replace(/^en:/, "").toLowerCase();
-}
-
-type AllergenStatus = "contains" | "traces" | "free";
-
-interface AllergenRow {
-  name: string;
-  status: AllergenStatus;
-}
-
-function parseAllergens(allergens: ProfileAllergens): AllergenRow[] {
-  const containsSet = new Set(
-    allergens.contains.split(",").filter(Boolean).map(normaliseTag),
-  );
-  const tracesSet = new Set(
-    allergens.traces.split(",").filter(Boolean).map(normaliseTag),
-  );
-
-  // Collect all mentioned allergens + EU14 baseline
-  const allNames = new Set<string>([
-    ...EU_14_ALLERGENS,
-    ...containsSet,
-    ...tracesSet,
-  ]);
-
-  const rows: AllergenRow[] = [];
-  for (const name of allNames) {
-    if (containsSet.has(name)) {
-      rows.push({ name, status: "contains" });
-    } else if (tracesSet.has(name)) {
-      rows.push({ name, status: "traces" });
-    } else {
-      rows.push({ name, status: "free" });
-    }
-  }
-
-  // Sort: contains first, then traces, then free
-  const statusOrder: Record<AllergenStatus, number> = {
-    contains: 0,
-    traces: 1,
-    free: 2,
-  };
-  rows.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
-
-  return rows;
-}
+import { AlertTriangle, Check, CircleHelp, Dna, Minus } from "lucide-react";
 
 const STATUS_CONFIG: Record<
-  AllergenStatus,
+  AllergenDisplayStatus,
   { bg: string; border: string; text: string; label: string }
 > = {
   contains: {
@@ -91,34 +19,46 @@ const STATUS_CONFIG: Record<
     text: "text-error-text",
     label: "allergenMatrix.contains",
   },
-  traces: {
+  derived: {
+    bg: "bg-warning-bg",
+    border: "border-warning-border",
+    text: "text-warning-text",
+    label: "allergenMatrix.derived",
+  },
+  may_contain: {
     bg: "bg-warning-bg",
     border: "border-warning-border",
     text: "text-warning-text",
     label: "allergenMatrix.traces",
   },
-  free: {
+  unknown: {
+    bg: "bg-surface-muted",
+    border: "border-border",
+    text: "text-foreground-muted",
+    label: "allergenMatrix.unknown",
+  },
+  assessed_absent: {
     bg: "bg-success-bg",
     border: "border-success-border",
     text: "text-success-text",
-    label: "allergenMatrix.free",
+    label: "allergenMatrix.assessedAbsent",
   },
 };
 
-function StatusIcon({ status }: Readonly<{ status: AllergenStatus }>) {
+function StatusIcon({ status }: Readonly<{ status: AllergenDisplayStatus }>) {
   switch (status) {
     case "contains":
-      return (
-        <AlertTriangle size={12} className="text-error-text" aria-hidden="true" />
-      );
-    case "traces":
-      return <Minus size={12} className="text-warning-text" aria-hidden="true" />;
-    case "free":
-      return <Check size={12} className="text-success-text" aria-hidden="true" />;
+      return <AlertTriangle size={13} aria-hidden="true" />;
+    case "derived":
+      return <Dna size={13} aria-hidden="true" />;
+    case "may_contain":
+      return <Minus size={13} aria-hidden="true" />;
+    case "unknown":
+      return <CircleHelp size={13} aria-hidden="true" />;
+    case "assessed_absent":
+      return <Check size={13} aria-hidden="true" />;
   }
 }
-
-
 
 interface AllergenMatrixProps {
   readonly allergens: ProfileAllergens;
@@ -126,36 +66,45 @@ interface AllergenMatrixProps {
 
 export function AllergenMatrix({ allergens }: AllergenMatrixProps) {
   const { t } = useTranslation();
-  const rows = parseAllergens(allergens);
-  const hasAny = allergens.contains_count > 0 || allergens.traces_count > 0;
-
-  if (!hasAny) {
-    return (
-      <p className="flex items-center gap-1 text-sm text-success-text">
-        <Check size={14} aria-hidden="true" /> {t("product.noKnownAllergens")}
-      </p>
-    );
-  }
+  const rows = buildAllergenDisplayRows(allergens);
+  const evidence = getAllergenEvidence(allergens);
+  const hasEvidence = evidence.length > 0;
 
   return (
     <div className="space-y-3">
-      {/* Compact grid */}
+      {!hasEvidence && (
+        <p className="flex items-center gap-1.5 text-sm text-foreground-muted">
+          <CircleHelp size={14} aria-hidden="true" />
+          {t("product.allergenEvidenceUnavailable")}
+        </p>
+      )}
+
       <table
         className="w-full border-separate border-spacing-1.5"
         aria-label={t("allergenMatrix.title")}
       >
         <tbody>
           {rows.map((row) => {
-            const cfg = STATUS_CONFIG[row.status];
+            const config = STATUS_CONFIG[row.status];
             return (
               <tr key={row.name}>
                 <td
-                  className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 ${cfg.bg} ${cfg.border}`}
+                  className={`rounded-lg border px-2.5 py-1.5 ${config.bg} ${config.border}`}
                 >
-                  <StatusIcon status={row.status} />
-                  <span className={`text-xs font-medium ${cfg.text}`}>
-                    {t(`allergens.${row.name}`)}
+                  <span className={`flex items-center gap-1.5 ${config.text}`}>
+                    <StatusIcon status={row.status} />
+                    <span className="text-xs font-medium">
+                      {t(`allergens.${row.name}`)}
+                    </span>
+                    <span className="ml-auto text-xxs font-normal">
+                      {t(config.label)}
+                    </span>
                   </span>
+                  {row.evidenceBasis === "legacy_unclassified" && (
+                    <span className="mt-0.5 block pl-[19px] text-xxs text-foreground-muted">
+                      {t("allergenMatrix.provenanceUnavailable")}
+                    </span>
+                  )}
                 </td>
               </tr>
             );
@@ -163,27 +112,25 @@ export function AllergenMatrix({ allergens }: AllergenMatrixProps) {
         </tbody>
       </table>
 
-      {/* Legend */}
       <div className="flex flex-wrap gap-3 text-xs text-foreground-muted">
         <span className="flex items-center gap-1">
-          <AlertTriangle
-            size={10}
-            className="text-error"
-            aria-hidden="true"
-          />{" "}
+          <AlertTriangle size={10} className="text-error" aria-hidden="true" />
           {t("allergenMatrix.contains")}
         </span>
         <span className="flex items-center gap-1">
-          <Minus size={10} className="text-warning" aria-hidden="true" />{" "}
+          <Dna size={10} className="text-warning" aria-hidden="true" />
+          {t("allergenMatrix.derived")}
+        </span>
+        <span className="flex items-center gap-1">
+          <Minus size={10} className="text-warning" aria-hidden="true" />
           {t("allergenMatrix.traces")}
         </span>
         <span className="flex items-center gap-1">
-          <Check size={10} className="text-success" aria-hidden="true" />{" "}
-          {t("allergenMatrix.free")}
+          <CircleHelp size={10} aria-hidden="true" />
+          {t("allergenMatrix.unknown")}
         </span>
       </div>
 
-      {/* Disclaimer */}
       <p className="text-xs leading-relaxed text-foreground-muted">
         {t("allergenMatrix.disclaimer")}
       </p>

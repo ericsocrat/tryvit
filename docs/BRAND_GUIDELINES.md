@@ -186,7 +186,10 @@ These colors are defined by EU regulation and **must not be modified**.
 | ------- | -------------------------- | --------- | --------- |
 | Present | `--color-allergen-present` | `#ef4444` | `#f87171` |
 | Traces  | `--color-allergen-traces`  | `#f59e0b` | `#fbbf24` |
-| Free    | `--color-allergen-free`    | `#22c55e` | `#4ade80` |
+| Assessed absent¹ | `--color-allergen-free` | `#22c55e` | `#4ade80` |
+
+¹ Reserved for authoritative assessed-absence evidence. Missing evidence must
+use the neutral unknown treatment, never this success color.
 
 ### 3.8 Semantic Feedback
 

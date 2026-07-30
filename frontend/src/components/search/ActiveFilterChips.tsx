@@ -67,13 +67,16 @@ export function ActiveFilterChips({
     });
   }
 
-  // Allergen-free chips
+  // Positive allergen-evidence exclusion chips. The legacy wire key is kept
+  // for API and saved-search compatibility; the user-facing claim is truthful.
   for (const tag of filters.allergen_free ?? []) {
     const info = ALLERGEN_TAGS.find((a) => a.tag === tag);
     // Tags are bare canonical IDs; strip legacy en: prefix as fallback
     const label = info
-      ? t("chips.allergenFree", { label: t(info.labelKey) })
-      : t("chips.allergenFree", { label: tag.replace(/^en:/, "") });
+      ? t("chips.excludeAllergenEvidence", { label: t(info.labelKey) })
+      : t("chips.excludeAllergenEvidence", {
+          label: tag.replace(/^en:/, ""),
+        });
     chips.push({
       key: `al-${tag}`,
       label,

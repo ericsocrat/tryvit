@@ -48,6 +48,38 @@ describe("matchProductAllergens", () => {
     });
   });
 
+  it("keeps deterministic ingredient-derived warnings distinguishable", () => {
+    const data: ProductAllergenData = {
+      contains: ["milk"],
+      traces: [],
+      evidence: [
+        {
+          tag: "milk",
+          evidence_type: "contains",
+          evidence_basis: "ingredient_derived",
+        },
+      ],
+    };
+
+    expect(matchProductAllergens(data, ["milk"], false)[0]).toMatchObject({
+      tag: "milk",
+      type: "contains",
+      evidenceBasis: "ingredient_derived",
+    });
+  });
+
+  it("does not turn an unknown evidence state into a warning or all-clear", () => {
+    const data: ProductAllergenData = {
+      contains: [],
+      traces: [],
+      evidence: [],
+      evidence_status: "unknown",
+      absence_assessment: "not_assessed",
+    };
+
+    expect(matchProductAllergens(data, ["milk"], true)).toEqual([]);
+  });
+
   it("matches multiple contains allergens", () => {
     const data: ProductAllergenData = {
       contains: ["milk", "gluten", "eggs"],

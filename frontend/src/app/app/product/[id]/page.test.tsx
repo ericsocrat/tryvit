@@ -564,7 +564,9 @@ describe("ProductDetailPage", () => {
     render(<ProductDetailPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText("May contain traces")).toBeInTheDocument();
+      expect(
+        screen.getAllByText("May contain traces").length,
+      ).toBeGreaterThanOrEqual(1);
     });
     expect(screen.getByText("Soy")).toBeInTheDocument();
   });
@@ -1187,7 +1189,9 @@ describe("ProductDetailPage", () => {
         screen.getAllByText("Test Chips Original").length,
       ).toBeGreaterThanOrEqual(1);
     });
-    expect(screen.getByText(/No known allergens/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Allergen evidence unavailable/),
+    ).toBeInTheDocument();
   });
 
   it("handles null nutri_score with question mark", async () => {
@@ -1312,7 +1316,9 @@ describe("ProductDetailPage", () => {
     render(<ProductDetailPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText("Contains")).toBeInTheDocument();
+      expect(screen.getAllByText("Contains").length).toBeGreaterThanOrEqual(
+        1,
+      );
     });
 
     // AllergenMatrix renders contains allergens with red styling in a <table>
@@ -1328,7 +1334,9 @@ describe("ProductDetailPage", () => {
     render(<ProductDetailPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText("May contain traces")).toBeInTheDocument();
+      expect(
+        screen.getAllByText("May contain traces").length,
+      ).toBeGreaterThanOrEqual(1);
     });
 
     // AllergenMatrix renders traces allergens with amber styling in a <table>

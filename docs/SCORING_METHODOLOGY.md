@@ -490,14 +490,14 @@ SELECT ROUND((
     (CASE WHEN p.nutri_score_label != 'UNKNOWN' THEN 1 ELSE 0 END) +           -- 11. Nutri-Score (A-E or NOT-APPLICABLE)
     (CASE WHEN p.nova_classification IS NOT NULL THEN 1 ELSE 0 END) +           -- 12. NOVA
     (CASE WHEN EXISTS (...product_ingredient...) THEN 1 ELSE 0 END) +           -- 13. Ingredients
-    (CASE WHEN EXISTS (...allergen OR ingredient...) THEN 1 ELSE 0 END) +       -- 14. Allergen assessment
+    (CASE WHEN EXISTS (...allergen OR ingredient...) THEN 1 ELSE 0 END) +       -- 14. Allergen-evaluation inputs
     (CASE WHEN p.source_type IS NOT NULL THEN 1 ELSE 0 END)                     -- 15. Source provenance
 )::numeric / 15.0 * 100)
 ```
 
 **Key design decisions:**
 - **Equal weights** — Each checkpoint is worth ~6.67%. This avoids over-weighting nutrition fields (which are almost always complete) at the expense of ingredient/allergen coverage.
-- **Allergen assessment** (checkpoint 14) counts as passed if the product has allergen data OR ingredient data (since ingredient data implies allergen assessment was possible, even if the product is allergen-free).
+- **Allergen-evaluation inputs** (checkpoint 14) counts as passed if the product has positive allergen evidence or ingredient data that can support governed evaluation. It is a data-availability checkpoint only: it does not certify that every allergen was assessed, and it never proves an unmentioned allergen absent.
 - **NOT-APPLICABLE Nutri-Score** counts as "complete" — it's a valid assessment, not missing data.
 - **Dynamic computation** — `score_category()` calls `compute_data_completeness()` automatically; the static `p_data_completeness` parameter is retained for backward compatibility but ignored.
 

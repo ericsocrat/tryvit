@@ -112,7 +112,9 @@ describe("generateCSV", () => {
   it("handles products with missing optional fields", () => {
     const csv = generateCSV([MINIMAL_PRODUCT], { includeTimestamp: false });
     // Missing EAN, calories etc. should be empty
-    expect(csv).toContain("Simple Item,TestBrand,,Other,50,C,3,,,,,,,,,");
+    expect(csv).toContain(
+      "Simple Item,TestBrand,,Other,50,C,3,,,,,,,,Evidence unavailable,",
+    );
   });
 
   it("uses CRLF line endings", () => {
@@ -203,9 +205,9 @@ describe("generateText", () => {
     expect(text).toContain("Allergens: milk");
   });
 
-  it("shows 'none' when no allergens", () => {
+  it("shows evidence unavailable when no allergens are recorded", () => {
     const text = generateText([MINIMAL_PRODUCT], { includeTimestamp: false });
-    expect(text).toContain("Allergens: none");
+    expect(text).toContain("Allergens: evidence unavailable");
   });
 
   it("can skip the header block", () => {

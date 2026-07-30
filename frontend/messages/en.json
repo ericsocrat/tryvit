@@ -282,7 +282,8 @@
     "asc": "↑ Asc",
     "desc": "↓ Desc",
     "category": "Category",
-    "allergenFree": "Allergen-Free",
+    "excludeAllergenEvidence": "Exclude products with contains evidence",
+    "excludeAllergenEvidenceHint": "Products with matching contains evidence are excluded. Missing evidence is not treated as allergen-free.",
     "novaGroup": "NOVA Group",
     "nova1": "1 — Unprocessed",
     "nova2": "2 — Processed ingredients",
@@ -512,7 +513,8 @@
     },
     "allergens": "Allergens",
     "mayContain": "May contain:",
-    "noKnownAllergens": "No known allergens listed",
+    "noKnownAllergens": "Allergen evidence unavailable",
+    "allergenEvidenceUnavailable": "Allergen evidence unavailable — missing information does not mean allergen-free",
     "dataQuality": "Data Quality",
     "productPhotos": "Product Photos",
     "confidence": "Confidence: {value}",
@@ -586,7 +588,6 @@
     "ecoScoreComingSoon": "Eco-Score data coming soon. We're working on integrating environmental impact data for products.",
     "trafficLightSummary": "Nutrient traffic light summary",
     "keyNutrients": "Key Nutrients",
-    "noKnownAllergens": "No known allergens",
     "quickSummary": "Quick Summary",
     "showFullAnalysis": "Show full analysis",
     "showSummary": "Show summary",
@@ -628,18 +629,30 @@
     "contains": "Contains",
     "traces": "May contain (traces)"
   },
+  "allergenBadge": {
+    "present": "Contains {name}",
+    "traces": "May contain traces of {name}",
+    "derived": "Ingredient evidence indicates {name}",
+    "unknown": "Evidence for {name} is unavailable",
+    "assessedAbsent": "Authoritative evidence assesses {name} as absent"
+  },
   "allergenMatrix": {
     "title": "Allergen status matrix",
     "contains": "Contains",
     "traces": "May contain traces",
-    "free": "Free from",
-    "disclaimer": "Allergen information is sourced from product labels and may change. Always check packaging before consumption, especially if you have severe allergies."
+    "derived": "Derived from ingredients",
+    "derivedShort": "derived",
+    "unknown": "Evidence unavailable",
+    "assessedAbsent": "Assessed absent",
+    "explicitSource": "Explicit source evidence",
+    "provenanceUnavailable": "Positive evidence; source provenance unavailable",
+    "disclaimer": "Allergen evidence may come from product labels or deterministic ingredient relationships and may be incomplete. Missing evidence never proves absence. Always check packaging before consumption, especially if you have severe allergies."
   },
   "allergenPreset": {
-    "glutenFree": "Gluten-free",
-    "dairyFree": "Dairy-free",
-    "nutFree": "Nut-free",
-    "vegan": "Vegan"
+    "glutenFree": "Avoid gluten evidence",
+    "dairyFree": "Avoid milk evidence",
+    "nutFree": "Avoid tree-nut and peanut evidence",
+    "vegan": "Common animal-source allergen evidence"
   },
   "categories": {
     "title": "Categories",
@@ -819,7 +832,7 @@
     "cannotUndo": "This action cannot be undone.",
     "categories": "{count} {count|category|categories}",
     "nutriFilter": "Nutri: {values}",
-    "allergenFreeFilter": "Free: {values}",
+    "excludeAllergenEvidenceFilter": "Exclude products with contains evidence: {values}",
     "maxScoreFilter": "Score ≤ {score}",
     "sortFilter": "Sort: {sortBy}"
   },
@@ -1211,7 +1224,7 @@
   "chips": {
     "nutri": "Nutri {value}",
     "nova_group": "NOVA {value}",
-    "allergenFree": "{label}-free",
+    "excludeAllergenEvidence": "Exclude products with {label} contains evidence",
     "scoreMin": "TryVit Score ≥ {value}",
     "sortLabel": "Sort: {label}",
     "removeFilter": "Remove {label} filter"
@@ -1225,7 +1238,7 @@
     "extreme": "Extreme",
     "contains": "Contains",
     "mayContainTraces": "May contain traces of",
-    "freeFrom": "Free from",
+    "freeFrom": "Assessed absent",
     "unprocessed": "Unprocessed",
     "processedIngredients": "Processed ingredients",
     "processed": "Processed",
@@ -1313,7 +1326,9 @@
     "allergen": {
       "present": "Contains {name} — This product lists {name} as an ingredient.",
       "traces": "May contain traces of {name} — Cross-contamination possible during manufacturing.",
-      "free": "Free from {name} — No {name} detected in this product."
+      "derived": "Ingredient evidence indicates {name} — Verify the product label before consumption.",
+      "unknown": "Evidence for {name} is unavailable — This does not mean the allergen is absent.",
+      "assessedAbsent": "An authoritative source assesses {name} as absent — Always verify the current package label."
     },
     "nutrient": {
       "low": "{nutrient}: {value}{unit} per 100g — Low level (FSA green). Within recommended limits.",

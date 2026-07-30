@@ -3,6 +3,7 @@
 // All functions are pure (no hooks/side-effects) for easy testing.
 
 import { ALLERGEN_TAGS } from "@/lib/constants";
+import type { AllergenEvidenceBasis } from "@/lib/types";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -10,6 +11,13 @@ import { ALLERGEN_TAGS } from "@/lib/constants";
 export interface ProductAllergenData {
   readonly contains: string[];
   readonly traces: string[];
+  readonly evidence?: readonly {
+    readonly tag: string;
+    readonly evidence_type: "contains" | "may_contain";
+    readonly evidence_basis: AllergenEvidenceBasis;
+  }[];
+  readonly evidence_status?: "unknown" | "positive_evidence_available";
+  readonly absence_assessment?: "not_assessed" | "assessed";
 }
 
 /** Allergen data map keyed by product_id */
@@ -27,6 +35,8 @@ export interface AllergenWarning {
   readonly icon: string;
   /** Whether the product "contains" or has "traces" of this allergen */
   readonly type: "contains" | "traces";
+  /** Provenance when returned by the evidence-aware API. */
+  readonly evidenceBasis?: AllergenEvidenceBasis;
 }
 
 // ─── Allergen icon mapping ──────────────────────────────────────────────────
@@ -73,6 +83,13 @@ export function matchProductAllergens(
 
   const avoidSet = new Set(userAvoidAllergens);
   const warnings: AllergenWarning[] = [];
+  const evidenceBasis = (
+    tag: string,
+    evidenceType: "contains" | "may_contain",
+  ) =>
+    productAllergens.evidence?.find(
+      (item) => item.tag === tag && item.evidence_type === evidenceType,
+    )?.evidence_basis;
 
   // Check "contains" allergens
   for (const tag of productAllergens.contains) {
@@ -82,6 +99,7 @@ export function matchProductAllergens(
         labelKey: LABEL_KEY_MAP.get(tag) ?? `allergens.${tag}`,
         icon: ALLERGEN_ICONS[tag] ?? "⚠️",
         type: "contains",
+        evidenceBasis: evidenceBasis(tag, "contains"),
       });
     }
   }
@@ -96,6 +114,7 @@ export function matchProductAllergens(
           labelKey: LABEL_KEY_MAP.get(tag) ?? `allergens.${tag}`,
           icon: ALLERGEN_ICONS[tag] ?? "⚠️",
           type: "traces",
+          evidenceBasis: evidenceBasis(tag, "may_contain"),
         });
       }
     }
