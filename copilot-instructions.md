@@ -278,6 +278,9 @@ tryvit/
 │   ├── ON_CALL_POLICY.md            # On-call & alert ownership, ack targets, triage labels
 │   ├── PERFORMANCE_GUARDRAILS.md    # Performance guardrails, query budgets & scale projections
 │   ├── PERFORMANCE_REPORT.md        # Performance audit, scale projections, query patterns
+│   ├── PHASE5_DESIGN_SYSTEM_BLUEPRINT.md # Living Label Design System V2 target architecture
+│   ├── PHASE5_IMPLEMENTATION_ROADMAP.md # Staged Phase 5 plan, gates, rollback boundaries & next prompt
+│   ├── PHASE5_MASTER_EXPERIENCE_AUDIT.md # Full-route UX audit, visual direction & prioritized findings
 │   ├── PRIVACY_CHECKLIST.md         # GDPR/RODO compliance checklist & data lifecycle
 │   ├── PRODUCTION_DATA.md           # Production data management
 │   ├── RATE_LIMITING.md             # Rate limiting strategy & API abuse prevention
@@ -2189,6 +2192,9 @@ Then execute §19 (Canonical Execution Discipline Protocol v2) in full.
 | `docs/UX_UI_DESIGN.md`        | UI/UX guidelines, component standards, accessibility                                             | Frontend component development       |
 | `docs/UX_IMPACT_METRICS.md`   | UX measurement standard, metric catalog, SQL event templates                                     | Any UX-visible frontend change       |
 | `docs/BRAND_GUIDELINES.md`    | TryVit brand standards — color palette, typography, voice, usage rules                           | Brand-related UI work                |
+| `docs/PHASE5_MASTER_EXPERIENCE_AUDIT.md` | Phase 5 product/route audit, visual direction and prioritized issues                   | Planning or reviewing Phase 5 work   |
+| `docs/PHASE5_DESIGN_SYSTEM_BLUEPRINT.md` | Design System V2 tokens, components, evidence, motion and accessibility                 | Implementing Phase 5 foundations     |
+| `docs/PHASE5_IMPLEMENTATION_ROADMAP.md` | Phase 5 sequencing, acceptance gates, rollback boundaries and next implementation prompt  | Scoping any Phase 5 implementation   |
 | `docs/SEARCH_ARCHITECTURE.md` | pg_trgm, tsvector, ranking algorithm, synonym table                                              | Search functionality changes         |
 
 ### 18.3 Data Governance & Quality

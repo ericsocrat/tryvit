@@ -2,7 +2,7 @@
 
 > **Last updated:** 2026-07-30
 > **Status:** Active — update when adding, renaming, or archiving docs
-> **Total documents:** 73 in `docs/` + 11 in `docs/decisions/` + 25 in `docs/assets/logo/` + 7 in `docs/assets/banners/` + 7 elsewhere in repo
+> **Total documents:** 76 in `docs/` + 11 in `docs/decisions/` + 25 in `docs/assets/logo/` + 7 in `docs/assets/banners/` + 7 elsewhere in repo
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
 
 ---
@@ -21,7 +21,7 @@
 | [Security & Compliance](#security--compliance)           | 5     | Root policy, audit report, access audit, privacy checklist, rate limiting                                                                                               |
 | [Observability & Operations](#observability--operations) | 9     | Monitoring, observability, log schema, alerts, on-call policy, SLOs, metrics, incident response, disaster drill                                                         |
 | [DevOps & Environment](#devops--environment)             | 3     | Environment strategy, staging setup, Sonar config                                                                                                                       |
-| [Frontend & UX](#frontend--ux)                           | 8     | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec, product positioning                            |
+| [Frontend & UX](#frontend--ux)                           | 11    | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec, product positioning, Phase 5 audit/blueprint/roadmap |
 | [Process & Workflow](#process--workflow)                 | 9     | Agent workflow reference, agent review workflow, research workflow, viewing & testing, backfill standard, migration conventions, labels, country expansion, demo script |
 | [Governance & Policy](#governance--policy)               | 6     | Feature sunsetting, performance report, performance guardrails, doc governance, repo governance, this index                                                             |
 | [Architecture Decisions](#architecture-decisions-adrs)   | 10    | MADR template + 9 ADRs (stack, scoring, country isolation, pipeline, API versioning, migrations, ingredients, nutrient density, ingredient language model)              |
@@ -207,6 +207,9 @@
 | [../frontend/README.md](../frontend/README.md)                         | Frontend project overview — setup, scripts, architecture                                                               | Frontend domain                                         | 2026-02-24   |
 | [DESIGN_REFRESH_SPEC.md](DESIGN_REFRESH_SPEC.md)                       | Mobile-first design system & UX refresh spec — component redesign rules, layout principles, implementation order       | Frontend domain                                         | 2026-03-14   |
 | [PRODUCT_POSITIONING.md](PRODUCT_POSITIONING.md)                       | Product positioning — audience, problem, MVP scope, explicit non-goals, unvalidated assumptions                        | Product domain                                          | 2026-05-31   |
+| [PHASE5_MASTER_EXPERIENCE_AUDIT.md](PHASE5_MASTER_EXPERIENCE_AUDIT.md) | Phase 5 full-route experience audit, screenshot inventory, visual direction, research and prioritized findings         | Frontend domain                                         | 2026-07-30   |
+| [PHASE5_DESIGN_SYSTEM_BLUEPRINT.md](PHASE5_DESIGN_SYSTEM_BLUEPRINT.md) | Living Label Design System V2 architecture, tokens, components, motion, evidence semantics, accessibility and budgets  | Frontend domain                                         | 2026-07-30   |
+| [PHASE5_IMPLEMENTATION_ROADMAP.md](PHASE5_IMPLEMENTATION_ROADMAP.md)   | Staged Phase 5 delivery plan, weighted priority, acceptance gates, rollback boundaries and exact Phase 5A.0 prompt      | Frontend domain                                         | 2026-07-30   |
 
 ## Process & Workflow
 
