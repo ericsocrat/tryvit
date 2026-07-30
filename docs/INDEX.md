@@ -1,8 +1,8 @@
 # Documentation Index
 
-> **Last updated:** 2026-07-28
+> **Last updated:** 2026-07-30
 > **Status:** Active — update when adding, renaming, or archiving docs
-> **Total documents:** 72 in `docs/` + 11 in `docs/decisions/` + 25 in `docs/assets/logo/` + 7 in `docs/assets/banners/` + 7 elsewhere in repo
+> **Total documents:** 73 in `docs/` + 11 in `docs/decisions/` + 25 in `docs/assets/logo/` + 7 in `docs/assets/banners/` + 7 elsewhere in repo
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
 
 ---
@@ -17,7 +17,7 @@
 | [Banners](#banners)                                      | 5     | Social preview, README hero banner (SVG + PNG), badges reference                                                                                                        |
 | [API](#api)                                              | 6     | Contracts, conventions, versioning, frontend mapping, contract testing, registry                                                                                        |
 | [Scoring](#scoring)                                      | 2     | Methodology (formula), engine (architecture)                                                                                                                            |
-| [Data & Provenance](#data--provenance)                   | 9     | Sources, provenance, integrity audits, quality reporting, enrichment pilot, expansion and governance, EAN validation, production data                                   |
+| [Data & Provenance](#data--provenance)                   | 10    | Sources, provenance, integrity audits, quality reporting, enrichment, allergen evidence semantics, EAN validation, production data                                      |
 | [Security & Compliance](#security--compliance)           | 5     | Root policy, audit report, access audit, privacy checklist, rate limiting                                                                                               |
 | [Observability & Operations](#observability--operations) | 9     | Monitoring, observability, log schema, alerts, on-call policy, SLOs, metrics, incident response, disaster drill                                                         |
 | [DevOps & Environment](#devops--environment)             | 3     | Environment strategy, staging setup, Sonar config                                                                                                                       |
@@ -151,6 +151,7 @@
 | [PHASE4A_ENRICHMENT_PILOT.md](PHASE4A_ENRICHMENT_PILOT.md) | Deterministic ingredient/allergen enrichment pilot, semantics, metrics, and expansion gate | Phase 4A audit | 2026-07-28 |
 | [PHASE4B_CATEGORY_ENRICHMENT.md](PHASE4B_CATEGORY_ENRICHMENT.md) | Controlled category ranking, enrichment results, determinism, and rollout gate | Phase 4B audit | 2026-07-28 |
 | [ingredient-enrichment-governance.md](ingredient-enrichment-governance.md) | Deterministic alias, scope, parent-child, artifact, and allergen-provenance governance | Phase 4C audit | 2026-07-28 |
+| [PHASE5_PREFLIGHT_ALLERGEN_EVIDENCE.md](PHASE5_PREFLIGHT_ALLERGEN_EVIDENCE.md) | Positive allergen-evidence provenance, unknown-state semantics, truthful search behavior, and verification boundary | Phase 5 preflight A | 2026-07-30 |
 | [EAN_VALIDATION_STATUS.md](EAN_VALIDATION_STATUS.md) | EAN coverage tracking — 997/1,025 (97.3%)                                        | Data domain                                             | 2026-02-24   |
 | [PRODUCTION_DATA.md](PRODUCTION_DATA.md)             | Production data management — sync, backup, restore procedures                    | DevOps domain                                           | 2026-02-24   |
 
