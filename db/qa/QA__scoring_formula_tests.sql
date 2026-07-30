@@ -606,21 +606,22 @@ WHERE p.product_name = 'Wildlachsfilet'
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- Test 40: DE regression anchor — Instant-Nudeln Beef (Instant & Frozen)
---          Instant noodles, no ingredient enrichment data for this product.
+--          Phase 4E adds 48 source-backed ingredient links, including five
+--          additives, two tier-1 concern ingredients, and explicit palm oil.
 --          v3.3: protein 10g (bonus 30), fibre 0g → density 30 → -2 pt
---          High sat fat (11g, ceil 10) + high salt (5g, ceil 3) = 45.
+--          The governed evidence adds 8.2 weighted points to the prior ≈45.
 --          Issues #602, #715.
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT p.product_id, p.brand, p.product_name,
        p.unhealthiness_score,
        'REGRESSION: Instant-Nudeln Beef (DE) score changed' AS issue,
-       CONCAT('Expected 43-47, got ', p.unhealthiness_score) AS detail
+       CONCAT('Expected 51-55, got ', p.unhealthiness_score) AS detail
 FROM products p
 WHERE p.product_name = 'Instant-Nudeln Beef'
   AND p.brand = 'Asia Green Garden'
   AND p.country = 'DE'
   AND p.is_deprecated IS NOT TRUE
-  AND p.unhealthiness_score::int NOT BETWEEN 43 AND 47;
+  AND p.unhealthiness_score::int NOT BETWEEN 51 AND 55;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- Test 41: Signal-conflict detection — api_score_explanation returns
@@ -643,4 +644,3 @@ FROM (
 WHERE
     NOT ((api_score_explanation(p.product_id))->'summary') ? 'conflicts'
     OR NOT ((api_score_explanation(p.product_id))->'summary') ? 'qualified_headline';
-

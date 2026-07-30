@@ -20,12 +20,15 @@ from pathlib import Path
 from pipeline.enrichment import (
     PHASE4B_PATH,
     PHASE4D_PATH,
+    PHASE4E_PATH,
     enrichment_scopes,
     evidence_from_products,
     generate_enrichment_sql,
     load_snapshot_reference_names,
+    load_snapshot_reference_properties,
     manifest_scopes,
     match_ingredients,
+    taxonomy_backed_reference_names,
 )
 
 # ---------------------------------------------------------------------------
@@ -862,9 +865,24 @@ def generate_pipeline(
     # reference vocabulary is a committed snapshot rather than a live API.
     if (category, country) in enrichment_scopes():
         ingredient_evidence, allergen_evidence = evidence_from_products(products, country, category)
+        phase = (
+            "4B"
+            if (category, country) in manifest_scopes(PHASE4B_PATH)
+            else "4D"
+            if (category, country) in manifest_scopes(PHASE4D_PATH)
+            else "4E"
+            if (category, country) in manifest_scopes(PHASE4E_PATH)
+            else None
+        )
+        references = load_snapshot_reference_names()
         matches = match_ingredients(
             ingredient_evidence,
-            load_snapshot_reference_names(),
+            references,
+            exact_reference_names=(
+                taxonomy_backed_reference_names(load_snapshot_reference_properties())
+                if phase == "4E"
+                else references
+            ),
         )
         path02 = _write_pipeline_file(
             relative_out / f"PIPELINE__{slug}__02_enrichment.sql",
@@ -873,13 +891,7 @@ def generate_pipeline(
                 matches,
                 allergen_evidence,
                 "normalized pipeline input (Open Food Facts explicit evidence)",
-                phase=(
-                    "4B"
-                    if (category, country) in manifest_scopes(PHASE4B_PATH)
-                    else "4D"
-                    if (category, country) in manifest_scopes(PHASE4D_PATH)
-                    else None
-                ),
+                phase=phase,
             ),
         )
     else:

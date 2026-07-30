@@ -26,6 +26,7 @@ REGISTRY_PATH = Path(__file__).with_name("enrichment_registry.json")
 PILOT_PATH = Path(__file__).with_name("enrichment_pilot.json")
 PHASE4B_PATH = Path(__file__).with_name("enrichment_phase4b.json")
 PHASE4D_PATH = Path(__file__).with_name("enrichment_phase4d.json")
+PHASE4E_PATH = Path(__file__).with_name("enrichment_phase4e.json")
 SNAPSHOT_PATH = PROJECT_ROOT / "supabase" / "migrations" / "20260601173035_populate_ingredients_allergens.sql"
 
 ALLERGEN_IDS = frozenset(
@@ -161,7 +162,7 @@ def manifest_scopes(path: Path) -> frozenset[tuple[str, str]]:
 
 def enrichment_scopes(paths: Sequence[Path] | None = None) -> frozenset[tuple[str, str]]:
     """Return every approved scope across Phase 4 manifests."""
-    manifests = tuple(paths or (PILOT_PATH, PHASE4B_PATH, PHASE4D_PATH))
+    manifests = tuple(paths or (PILOT_PATH, PHASE4B_PATH, PHASE4D_PATH, PHASE4E_PATH))
     scopes: set[tuple[str, str]] = set()
     for path in manifests:
         if path.is_file():
@@ -179,6 +180,57 @@ def load_snapshot_reference_names(path: Path = SNAPSHOT_PATH) -> frozenset[str]:
     return frozenset(value.replace("''", "'") for value in pattern.findall(path.read_text(encoding="utf-8")))
 
 
+@lru_cache(maxsize=1)
+def load_snapshot_reference_properties(
+    path: Path = SNAPSHOT_PATH,
+) -> dict[str, tuple[bool, str, str, str]]:
+    """Read taxonomy metadata for reference identities from the snapshot.
+
+    Raw ingredient evidence is intentionally excluded.  A source token merely
+    appearing in the snapshot must not make it a trusted canonical identity.
+    """
+    pattern = re.compile(
+        r"^\s*\('((?:''|[^'])*)', (true|false), "
+        r"'((?:''|[^'])*)', '((?:''|[^'])*)', '((?:''|[^'])*)'\),?\s*$",
+        re.MULTILINE,
+    )
+    return {
+        name.replace("''", "'"): (
+            is_additive == "true",
+            vegan.replace("''", "'"),
+            vegetarian.replace("''", "'"),
+            palm.replace("''", "'"),
+        )
+        for name, is_additive, vegan, vegetarian, palm in pattern.findall(
+            path.read_text(encoding="utf-8")
+        )
+    }
+
+
+def taxonomy_backed_reference_names(
+    reference_properties: Mapping[str, tuple[bool, str, str, str]] | None = None,
+) -> frozenset[str]:
+    """Return identities carrying independent taxonomy metadata.
+
+    The committed source contains raw OCR and label fragments alongside real
+    ingredient names.  Taxonomy metadata is the conservative deterministic
+    boundary used by Phase 4E: additive identities or names with at least one
+    known dietary/palm property may be matched automatically.  Unannotated raw
+    strings remain review candidates instead of becoming canonical by
+    self-reference.
+    """
+    properties = (
+        load_snapshot_reference_properties()
+        if reference_properties is None
+        else reference_properties
+    )
+    return frozenset(
+        name
+        for name, (is_additive, vegan, vegetarian, palm) in properties.items()
+        if is_additive or any(value != "unknown" for value in (vegan, vegetarian, palm))
+    )
+
+
 def _normalized_index(reference_names: Iterable[str]) -> dict[str, tuple[str, ...]]:
     grouped: dict[str, set[str]] = {}
     for name in sorted(set(reference_names)):
@@ -190,13 +242,28 @@ def match_ingredient(
     evidence: IngredientEvidence,
     reference_names: Iterable[str],
     registry: Mapping | None = None,
+    *,
+    exact_reference_names: Iterable[str] | None = None,
 ) -> IngredientMatch:
     """Classify one token without guessing when a match is ambiguous."""
     config = dict(registry or load_registry())
     references = frozenset(reference_names)
+    exact_references = (
+        references if exact_reference_names is None else frozenset(exact_reference_names)
+    )
+    if not exact_references <= references:
+        raise ValueError("exact reference vocabulary must be a subset of reference names")
     index = _normalized_index(references)
+    exact_index = index if exact_references == references else _normalized_index(exact_references)
     validate_registry(config, references)
-    return _match_ingredient(evidence, references, index, config)
+    return _match_ingredient(
+        evidence,
+        references,
+        index,
+        config,
+        exact_references,
+        exact_index,
+    )
 
 
 def _match_ingredient(
@@ -204,6 +271,8 @@ def _match_ingredient(
     references: frozenset[str],
     index: Mapping[str, tuple[str, ...]],
     config: Mapping,
+    exact_references: frozenset[str],
+    exact_index: Mapping[str, tuple[str, ...]],
 ) -> IngredientMatch:
     """Classify one token using a pre-built deterministic reference index."""
     normalized = normalize_token(evidence.source_text)
@@ -257,15 +326,31 @@ def _match_ingredient(
         return IngredientMatch(evidence, normalized, "reviewed", reviewed_target)
 
     for candidate in (evidence.source_text.strip(), (evidence.canonical_hint or "").strip()):
-        if candidate and candidate in references:
+        if candidate and candidate in exact_references:
             return IngredientMatch(evidence, normalized, "exact", candidate)
 
     for candidate in (evidence.source_text, evidence.canonical_hint or ""):
-        hits = index.get(normalize_token(candidate), ()) if candidate else ()
+        hits = exact_index.get(normalize_token(candidate), ()) if candidate else ()
         if len(hits) == 1:
             return IngredientMatch(evidence, normalized, "alias", hits[0])
         if len(hits) > 1:
             return IngredientMatch(evidence, normalized, "ambiguous", None, hits)
+
+    untrusted: set[str] = set()
+    for candidate in (evidence.source_text.strip(), (evidence.canonical_hint or "").strip()):
+        if candidate and candidate in references:
+            untrusted.add(candidate)
+    for candidate in (evidence.source_text, evidence.canonical_hint or ""):
+        if candidate:
+            untrusted.update(index.get(normalize_token(candidate), ()))
+    if untrusted:
+        return IngredientMatch(
+            evidence,
+            normalized,
+            "untrusted_reference",
+            None,
+            tuple(sorted(untrusted)),
+        )
 
     return IngredientMatch(evidence, normalized, "unresolved", None)
 
@@ -274,13 +359,31 @@ def match_ingredients(
     evidence: Sequence[IngredientEvidence],
     reference_names: Iterable[str],
     registry: Mapping | None = None,
+    *,
+    exact_reference_names: Iterable[str] | None = None,
 ) -> list[IngredientMatch]:
     """Match, de-duplicate, and order evidence deterministically."""
     references = frozenset(reference_names)
+    exact_references = (
+        references if exact_reference_names is None else frozenset(exact_reference_names)
+    )
+    if not exact_references <= references:
+        raise ValueError("exact reference vocabulary must be a subset of reference names")
     config = dict(registry or load_registry())
     validate_registry(config, references)
     index = _normalized_index(references)
-    matched = [_match_ingredient(item, references, index, config) for item in evidence]
+    exact_index = index if exact_references == references else _normalized_index(exact_references)
+    matched = [
+        _match_ingredient(
+            item,
+            references,
+            index,
+            config,
+            exact_references,
+            exact_index,
+        )
+        for item in evidence
+    ]
     ordered = sorted(
         matched,
         key=lambda row: (
@@ -391,6 +494,26 @@ def generate_enrichment_sql(
             row.canonical_name or "",
         )
     )
+    phase4e_positions: dict[IngredientMatch, int] = {}
+    if phase == "4E":
+        product_matches: dict[tuple[str, str], list[IngredientMatch]] = {}
+        for row in linked:
+            key = (row.evidence.country, row.evidence.ean)
+            product_matches.setdefault(key, []).append(row)
+        for product_rows in product_matches.values():
+            positions = list(range(1, len(product_rows) + 1))
+            if product_rows and product_rows[0].evidence.is_sub_ingredient:
+                first_top = next(
+                    (
+                        index
+                        for index, row in enumerate(product_rows)
+                        if not row.evidence.is_sub_ingredient
+                    ),
+                    None,
+                )
+                if first_top is not None:
+                    positions[0], positions[first_top] = positions[first_top], positions[0]
+            phase4e_positions.update(zip(product_rows, positions, strict=True))
     canonical_allergens = canonicalize_allergens(allergens)
     lines = [
         "-- Generated deterministic ingredient/allergen enrichment",
@@ -444,6 +567,7 @@ def generate_enrichment_sql(
         values = []
         for row in linked:
             ev = row.evidence
+            position = phase4e_positions.get(row, ev.position)
             parent = (
                 canonical_by_source.get((ev.country, ev.ean, normalize_token(ev.parent_source_text or "")))
                 if ev.is_sub_ingredient
@@ -456,7 +580,7 @@ def generate_enrichment_sql(
                         _sql_text(ev.country),
                         _sql_text(ev.ean),
                         _sql_text(row.canonical_name),
-                        str(ev.position),
+                        str(position),
                         _sql_numeric(ev.percent),
                         _sql_numeric(ev.percent_estimate),
                         "true" if ev.is_sub_ingredient else "false",
