@@ -1,4 +1,6 @@
--- Phase 5 preflight A: truthful allergen evidence semantics.
+-- Migration: Phase 5 preflight A — truthful allergen evidence semantics.
+-- Rollback: Restore the verified pre-Phase-5 API/view definitions, then drop
+-- product_allergen_info evidence-basis constraints, trigger, function, and column.
 --
 -- product_allergen_info continues to store positive evidence only. Absence of
 -- a row is unknown, never an assessed absence. The additive evidence_basis
