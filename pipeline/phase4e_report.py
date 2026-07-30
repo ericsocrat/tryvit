@@ -26,6 +26,7 @@ from pipeline.enrichment import (
     load_registry,
     match_ingredients,
     normalize_token,
+    taxonomy_backed_reference_names,
 )
 from pipeline.enrichment_governance import governed_token_entry
 from pipeline.generate_enrichment_pilot import PROJECT_ROOT, build_outputs, load_manifest, parse_snapshot
@@ -99,7 +100,8 @@ def _mapping_method(row: Any, registry: dict[str, Any]) -> str:
 
 def _candidate_analysis(executor: PsqlExecutor, manifest: dict[str, Any]) -> tuple[dict[str, Any], str]:
     products = executor.rows("phase4e_products", PRODUCTS_SQL)
-    ingredients, allergens, references, _ = parse_snapshot()
+    ingredients, allergens, references, reference_properties = parse_snapshot()
+    exact_references = taxonomy_backed_reference_names(reference_properties)
     registry = load_registry()
     ingredient_by_key: dict[tuple[str, str], list[Any]] = defaultdict(list)
     allergen_by_key: dict[tuple[str, str], list[Any]] = defaultdict(list)
@@ -128,7 +130,12 @@ def _candidate_analysis(executor: PsqlExecutor, manifest: dict[str, Any]) -> tup
             for key in sorted(ingredient_keys)
             for item in ingredient_by_key.get(key, ())
         ]
-        matches = match_ingredients(evidence, references, registry)
+        matches = match_ingredients(
+            evidence,
+            references,
+            registry,
+            exact_reference_names=exact_references,
+        )
         linked = linkable_matches(matches, registry)
         linked_set = set(linked)
         enrichable = sorted({(row.evidence.country, row.evidence.ean) for row in linked})
@@ -187,6 +194,8 @@ def _candidate_analysis(executor: PsqlExecutor, manifest: dict[str, Any]) -> tup
                 "unsafe_parent_child_rate": pct(unsafe_children, token_count),
                 "unknown_tokens": methods["unresolved"] + methods["unknown"],
                 "unknown_token_rate": pct(methods["unresolved"] + methods["unknown"], token_count),
+                "untrusted_reference_tokens": methods["untrusted_reference"],
+                "untrusted_reference_rate": pct(methods["untrusted_reference"], token_count),
             }
         )
 
@@ -199,7 +208,13 @@ def _candidate_analysis(executor: PsqlExecutor, manifest: dict[str, Any]) -> tup
     for row in eligible:
         withheld_rate = sum(
             float(row[name] or 0)
-            for name in ("ambiguous_token_rate", "artifact_rate", "unsafe_parent_child_rate", "unknown_token_rate")
+            for name in (
+                "ambiguous_token_rate",
+                "artifact_rate",
+                "unsafe_parent_child_rate",
+                "unknown_token_rate",
+                "untrusted_reference_rate",
+            )
         )
         implementation_safety = max(0.0, 100.0 - min(100.0, withheld_rate * 4))
         components = {
@@ -270,9 +285,9 @@ def _ranking_markdown(ranking: dict[str, Any]) -> str:
         "",
         (
             "| Rank | Scope | Score | Active | Missing ingredients | Source | Explicit allergens | "
-            "Enrichable | Ambiguous | Risk | Selected |"
+            "Enrichable | Ambiguous | Untrusted raw | Risk | Selected |"
         ),
-        "|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|:---:|",
+        "|---:|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---:|",
     ]
     for row in ranking["candidates"]:
         lines.append(
@@ -280,6 +295,7 @@ def _ranking_markdown(ranking: dict[str, Any]) -> str:
             f"{row['missing_ingredient_links']} | {row['ingredient_source_completeness_percentage']:.1f}% | "
             f"{row['explicit_allergen_source_completeness_percentage']:.1f}% | "
             f"{row['expected_enrichable_products']} | {row['ambiguous_tokens']} | "
+            f"{row['untrusted_reference_tokens']} | "
             f"{row['implementation_and_regression_risk']:.2f} | {'yes' if row['selected'] else 'no'} |"
         )
     lines.extend(["", "## Selected", ""])
@@ -354,7 +370,8 @@ WHERE p.is_deprecated IS NOT TRUE AND {predicate}
 
 
 def _allergen_provenance(manifest: dict[str, Any]) -> dict[str, Any]:
-    ingredients, allergens, references, _ = parse_snapshot()
+    ingredients, allergens, references, reference_properties = parse_snapshot()
+    exact_references = taxonomy_backed_reference_names(reference_properties)
     registry = load_registry()
     selection = list(csv.DictReader(SELECTION_CSV.read_text(encoding="utf-8").splitlines()))
     selected = {(row["category"], row["country"], row["ean"]) for row in selection}
@@ -364,7 +381,12 @@ def _allergen_provenance(manifest: dict[str, Any]) -> dict[str, Any]:
         for row in ingredients
         if (row.country, row.ean) in category_for
     ]
-    matches = match_ingredients(selected_ingredients, references, registry)
+    matches = match_ingredients(
+        selected_ingredients,
+        references,
+        registry,
+        exact_reference_names=exact_references,
+    )
     linked = linkable_matches(matches, registry)
     selected_allergens = [row for row in allergens if (row.country, row.ean) in category_for]
     explicit_rows = canonicalize_allergens(selected_allergens, registry)
@@ -421,6 +443,7 @@ def _allergen_provenance(manifest: dict[str, Any]) -> dict[str, Any]:
         "mapping_methods": dict(sorted(methods.items())),
         "ambiguous_tokens_withheld": methods["ambiguous"],
         "unknown_tokens_withheld": methods["unresolved"] + methods["unknown"],
+        "untrusted_reference_tokens_withheld": methods["untrusted_reference"],
         "artifacts_quarantined": methods["artifact"],
         "unsafe_child_tokens_withheld": len(unsafe),
         "manual_review_queue": [
@@ -508,6 +531,9 @@ def _final_report(
         "historical_phase4b_artifacts_unchanged": historical_phase4b_unchanged,
         "historical_phase4d_artifacts_unchanged": historical_phase4d_unchanged,
         "hosted_supabase_writes_absent": True,
+        "taxonomy_backed_exact_policy_applied": manifest.get("exact_reference_policy")
+        == "taxonomy-backed-v1"
+        and provenance["untrusted_reference_tokens_withheld"] > 0,
     }
     report: dict[str, Any] = {
         "schema_version": 1,
@@ -519,7 +545,7 @@ def _final_report(
             {"scope": row["scope"], "reason": row["deferral_reason"]} for row in ranking["deferred_scopes"]
         ],
         "products_evaluated": after["snapshot"]["selected"]["products_evaluated"],
-        "products_enriched": stats["selected_products"],
+        "products_enriched": stats["products_with_linked_ingredients"],
         "ingredient_links_generated": stats["linked_ingredient_rows"],
         "explicit_allergen_records_generated": stats["canonical_allergen_rows"],
         "candidate_link_reconciliation": {
@@ -530,6 +556,7 @@ def _final_report(
             "approved_alias_mappings": stats["alias_matches"] + stats["reviewed_matches"],
             "ambiguous_rows": stats["ambiguous_matches"],
             "unknown_rows": stats["unresolved_matches"],
+            "untrusted_reference_rows": stats["untrusted_reference_matches"],
             "artifact_rows": stats["quarantined_matches"],
             "unsafe_child_rows": stats["parent_safety_withheld"],
         },
@@ -550,6 +577,7 @@ def _final_report(
                     "mapping_methods",
                     "ambiguous_token_rate",
                     "unknown_token_rate",
+                    "untrusted_reference_rate",
                     "artifact_rate",
                     "unsafe_parent_child_rate",
                     "expected_enrichable_products",
@@ -603,6 +631,7 @@ def _final_report(
         "manual_review_required": [
             "Generic Starch requires a declared botanical source before it can map.",
             "Generic Vegetable Oil requires a named oil source before it can map.",
+            "Raw snapshot tokens without independent taxonomy metadata remain untrusted and require review.",
             "Unknown and ambiguous source tokens in the report queue require domain review before any mapping.",
             "Missing producer allergen evidence remains unknown and cannot support allergen-free claims.",
         ],
@@ -628,6 +657,8 @@ def _report_markdown(report: dict[str, Any]) -> str:
         f"- Ingredient links generated: {report['ingredient_links_generated']}",
         f"- Candidate ingredient rows: {report['candidate_link_reconciliation']['candidate_ingredient_rows']}",
         f"- Rejected candidate rows: {report['candidate_link_reconciliation']['rejected_candidate_rows']}",
+        f"- Untrusted raw-reference rows withheld: "
+        f"{report['candidate_link_reconciliation']['untrusted_reference_rows']}",
         f"- Explicit contains records: {provenance['explicit_source_contains_records']}",
         f"- Explicit may-contain records: {provenance['explicit_source_may_contain_records']}",
         f"- Deterministic ingredient-derived records: {provenance['deterministic_ingredient_derived_records']}",
@@ -653,9 +684,13 @@ def _report_markdown(report: dict[str, Any]) -> str:
         "",
         "## Governance and safety",
         "",
-        "- No new aliases were needed; all linkages use the Phase 4C registry and exact canonical identities.",
+        (
+            "- No new aliases were needed; automatic exact matches are limited to "
+            "taxonomy-backed identities with independent semantic metadata."
+        ),
         f"- Ambiguous tokens withheld: {provenance['ambiguous_tokens_withheld']}",
         f"- Unknown tokens withheld: {provenance['unknown_tokens_withheld']}",
+        f"- Untrusted raw-reference tokens withheld: {provenance['untrusted_reference_tokens_withheld']}",
         f"- Artifacts quarantined: {provenance['artifacts_quarantined']}",
         f"- Unsafe child tokens withheld: {provenance['unsafe_child_tokens_withheld']}",
         "- Missing allergen evidence remains unknown.",

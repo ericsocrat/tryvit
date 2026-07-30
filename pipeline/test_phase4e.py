@@ -19,6 +19,7 @@ from pipeline.enrichment import (
     load_registry,
     match_ingredient,
     match_ingredients,
+    taxonomy_backed_reference_names,
 )
 from pipeline.generate_enrichment_pilot import PROJECT_ROOT, build_outputs, load_manifest, parse_snapshot
 from pipeline.phase4d_report import (
@@ -33,7 +34,8 @@ class Phase4ETests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.manifest = load_manifest(PHASE4E_PATH)
         cls.registry = load_registry()
-        cls.ingredients, cls.allergens, cls.references, _ = parse_snapshot()
+        cls.ingredients, cls.allergens, cls.references, cls.reference_properties = parse_snapshot()
+        cls.exact_references = taxonomy_backed_reference_names(cls.reference_properties)
         cls.outputs, cls.stats = build_outputs(PHASE4E_PATH)
         cls.report = json.loads(
             (PROJECT_ROOT / "data-quality" / "phase4e" / "report.json").read_text(encoding="utf-8")
@@ -69,10 +71,11 @@ class Phase4ETests(unittest.TestCase):
                 ("Spreads & Dips", "DE"),
             },
         )
-        self.assertEqual(self.stats["selected_products"], 645)
+        self.assertEqual(self.stats["selected_products"], 635)
         self.assertEqual(self.stats["generated_files"], 4)
-        self.assertEqual(self.stats["linked_ingredient_rows"], 12826)
-        self.assertEqual(self.stats["canonical_allergen_rows"], 2458)
+        self.assertEqual(self.stats["linked_ingredient_rows"], 8197)
+        self.assertEqual(self.stats["canonical_allergen_rows"], 2444)
+        self.assertEqual(self.stats["untrusted_reference_matches"], 3043)
         self.assertEqual(self.stats["quarantined_matches"], 1)
 
     def test_each_selected_scope_has_exact_mappings(self) -> None:
@@ -89,10 +92,41 @@ class Phase4ETests(unittest.TestCase):
             for row in self.ingredients
             if (row.country, row.ean) in category_for
         ]
-        for match in match_ingredients(rows, self.references, self.registry):
+        for match in match_ingredients(
+            rows,
+            self.references,
+            self.registry,
+            exact_reference_names=self.exact_references,
+        ):
             if match.classification == "exact":
                 exact_scopes.add((match.evidence.category, match.evidence.country))
         self.assertEqual(exact_scopes, {(category, country) for category, country, _ in selected})
+
+    def test_raw_snapshot_self_reference_cannot_create_canonical_links(self) -> None:
+        artifacts = (
+            "Nährwerte",
+            "Brennwert Fett",
+            "2000 Kcal",
+            "8400 Kj",
+            "3 Portionen",
+            "Bei Raumtemperatur Lagern",
+            "Zutaten",
+            "Www",
+        )
+        for token in artifacts:
+            with self.subTest(token=token):
+                match = match_ingredient(
+                    self.evidence(token),
+                    self.references,
+                    self.registry,
+                    exact_reference_names=self.exact_references,
+                )
+                self.assertIn(match.classification, {"untrusted_reference", "quarantined"})
+                self.assertIsNone(match.canonical_name)
+
+        generated = "\n".join(self.outputs.values())
+        for token in artifacts:
+            self.assertNotIn(f"'{token}'", generated)
 
     def test_global_and_scoped_alias_rules_remain_authoritative(self) -> None:
         global_alias = match_ingredient(self.evidence("rapeseed"), self.references, self.registry)
@@ -171,13 +205,13 @@ class Phase4ETests(unittest.TestCase):
 
     def test_allergen_provenance_and_unknown_semantics_are_separate(self) -> None:
         provenance = self.report["allergen_provenance"]
-        self.assertEqual(provenance["explicit_source_contains_records"], 1166)
-        self.assertEqual(provenance["explicit_source_may_contain_records"], 1292)
-        self.assertEqual(provenance["deterministic_ingredient_derived_records"], 23)
-        self.assertEqual(provenance["products_with_explicit_evidence_only"], 108)
-        self.assertEqual(provenance["products_with_derived_evidence_only"], 2)
-        self.assertEqual(provenance["products_with_explicit_and_derived_evidence"], 481)
-        self.assertEqual(provenance["products_remaining_allergen_unknown"], 54)
+        self.assertEqual(provenance["explicit_source_contains_records"], 1158)
+        self.assertEqual(provenance["explicit_source_may_contain_records"], 1286)
+        self.assertEqual(provenance["deterministic_ingredient_derived_records"], 8)
+        self.assertEqual(provenance["products_with_explicit_evidence_only"], 125)
+        self.assertEqual(provenance["products_with_derived_evidence_only"], 1)
+        self.assertEqual(provenance["products_with_explicit_and_derived_evidence"], 460)
+        self.assertEqual(provenance["products_remaining_allergen_unknown"], 49)
         self.assertIs(provenance["missing_evidence_is_allergen_free"], False)
         self.assertEqual(canonicalize_allergens([], self.registry), [])
 
@@ -213,13 +247,15 @@ class Phase4ETests(unittest.TestCase):
             "historical_phase4b_artifacts_unchanged",
             "historical_phase4d_artifacts_unchanged",
             "hosted_supabase_writes_absent",
+            "taxonomy_backed_exact_policy_applied",
         }
         self.assertTrue(required <= checks.keys())
         self.assertTrue(all(checks[name] for name in required))
         reconciliation = self.report["candidate_link_reconciliation"]
-        self.assertEqual(reconciliation["candidate_ingredient_rows"], 13005)
-        self.assertEqual(reconciliation["valid_ingredient_links"], 12826)
-        self.assertEqual(reconciliation["rejected_candidate_rows"], 179)
+        self.assertEqual(reconciliation["candidate_ingredient_rows"], 12714)
+        self.assertEqual(reconciliation["valid_ingredient_links"], 8197)
+        self.assertEqual(reconciliation["rejected_candidate_rows"], 4517)
+        self.assertEqual(reconciliation["untrusted_reference_rows"], 3043)
 
     def test_phase4b_phase4c_and_phase4d_historical_results_are_unchanged(self) -> None:
         _, phase4b_stats = build_outputs(PHASE4B_PATH)

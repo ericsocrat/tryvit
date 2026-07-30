@@ -5,6 +5,12 @@ authorized German scopes: Snacks, Instant & Frozen, Bread, and Spreads & Dips.
 It reads only the committed OFF-derived snapshot and never connects to hosted
 Supabase.
 
+Raw strings in that snapshot are not treated as canonical merely because they
+occur in the source. Phase 4E permits automatic exact matching only for
+reference identities carrying independent taxonomy metadata (additive or
+dietary/palm properties). Unannotated OCR, label, preparation, storage, and
+other raw strings remain untrusted review candidates and cannot create links.
+
 ## Deterministic replay
 
 1. Rebuild the canonical fixture and replay Phase 4B twice.

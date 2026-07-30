@@ -19,6 +19,7 @@ from pipeline.enrichment import (
     match_ingredient,
     match_ingredients,
     normalize_token,
+    taxonomy_backed_reference_names,
     validate_registry,
 )
 from pipeline.generate_enrichment_pilot import build_outputs, load_manifest
@@ -68,6 +69,56 @@ class EnrichmentTests(unittest.TestCase):
         result = match_ingredient(ingredient("KCAL"), REFERENCES | {"KCAL"}, registry)
         self.assertEqual(result.classification, "quarantined")
         self.assertIsNone(result.canonical_name)
+
+    def test_exact_matching_can_require_an_independently_trusted_reference(self) -> None:
+        references = REFERENCES | {"2000 Kcal"}
+        trusted = REFERENCES
+
+        trusted_exact = match_ingredient(
+            ingredient("Water"),
+            references,
+            REGISTRY,
+            exact_reference_names=trusted,
+        )
+        normalized_alias = match_ingredient(
+            ingredient("WATER"),
+            references,
+            REGISTRY,
+            exact_reference_names=trusted,
+        )
+        untrusted = match_ingredient(
+            ingredient("2000 Kcal"),
+            references,
+            REGISTRY,
+            exact_reference_names=trusted,
+        )
+
+        self.assertEqual((trusted_exact.classification, trusted_exact.canonical_name), ("exact", "Water"))
+        self.assertEqual((normalized_alias.classification, normalized_alias.canonical_name), ("alias", "Water"))
+        self.assertEqual(untrusted.classification, "untrusted_reference")
+        self.assertIsNone(untrusted.canonical_name)
+        self.assertEqual(untrusted.candidates, ("2000 Kcal",))
+
+    def test_taxonomy_metadata_defines_the_conservative_exact_boundary(self) -> None:
+        properties = {
+            "Water": (False, "yes", "yes", "no"),
+            "E250": (True, "unknown", "unknown", "unknown"),
+            "2000 Kcal": (False, "unknown", "unknown", "unknown"),
+        }
+
+        self.assertEqual(
+            taxonomy_backed_reference_names(properties),
+            frozenset({"Water", "E250"}),
+        )
+
+    def test_exact_reference_boundary_must_be_a_subset(self) -> None:
+        with self.assertRaisesRegex(ValueError, "subset of reference names"):
+            match_ingredient(
+                ingredient("Water"),
+                REFERENCES,
+                REGISTRY,
+                exact_reference_names=REFERENCES | {"outside"},
+            )
 
     def test_conflicting_registry_aliases_are_rejected(self) -> None:
         registry = {
@@ -133,6 +184,30 @@ class EnrichmentTests(unittest.TestCase):
         self.assertIn("DO NOTHING", first)
         self.assertNotIn("now()", first.lower())
         self.assertNotIn("UPDATE SET", first.upper())
+
+    def test_phase4e_sql_densely_reindexes_retained_positions_only(self) -> None:
+        matches = match_ingredients(
+            [
+                IngredientEvidence(
+                    "PL",
+                    "5900000000001",
+                    "Rapeseed Oil",
+                    4,
+                    is_sub_ingredient=True,
+                    parent_source_text="Water",
+                ),
+                ingredient("Water", 7),
+            ],
+            REFERENCES,
+            REGISTRY,
+        )
+        phase4e = generate_enrichment_sql("Snacks", matches, [], "fixture-v1", phase="4E")
+        historical = generate_enrichment_sql("Snacks", matches, [], "fixture-v1", phase="4D")
+
+        self.assertIn("'Water', 1, NULL::numeric", phase4e)
+        self.assertIn("'Rapeseed Oil', 2, NULL::numeric", phase4e)
+        self.assertIn("'Water', 7, NULL::numeric", historical)
+        self.assertIn("'Rapeseed Oil', 4, NULL::numeric", historical)
 
     def test_committed_pilot_outputs_are_reproducible(self) -> None:
         first, first_stats = build_outputs()

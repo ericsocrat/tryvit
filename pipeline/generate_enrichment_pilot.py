@@ -23,6 +23,7 @@ from pipeline.enrichment import (
     generate_enrichment_sql,
     linkable_matches,
     match_ingredients,
+    taxonomy_backed_reference_names,
 )
 from pipeline.utils import slug
 
@@ -73,6 +74,11 @@ def load_manifest(path: Path = PILOT_PATH) -> dict:
     manifest = json.loads(path.read_text(encoding="utf-8"))
     if manifest.get("source") != SOURCE_SNAPSHOT:
         raise ValueError("enrichment manifest must use the approved committed source snapshot")
+    policy = manifest.get("exact_reference_policy", "snapshot-source-v1")
+    if policy not in {"snapshot-source-v1", "taxonomy-backed-v1"}:
+        raise ValueError(f"unsupported exact-reference policy: {policy}")
+    if manifest.get("phase") == "4E" and policy != "taxonomy-backed-v1":
+        raise ValueError("Phase 4E requires the taxonomy-backed exact-reference policy")
     return manifest
 
 
@@ -169,6 +175,11 @@ def _selected_products(manifest: dict) -> set[tuple[str, str, str]]:
 def build_outputs(manifest_path: Path = PILOT_PATH) -> tuple[dict[Path, str], dict]:
     manifest = load_manifest(manifest_path)
     ingredients, allergens, references, reference_properties = parse_snapshot()
+    exact_references = (
+        taxonomy_backed_reference_names(reference_properties)
+        if manifest.get("exact_reference_policy") == "taxonomy-backed-v1"
+        else references
+    )
     selected = _selected_products(manifest)
     category_for = {(country, ean): category for category, country, ean in selected}
     ingredient_groups: dict[tuple[str, str], list[IngredientEvidence]] = defaultdict(list)
@@ -194,7 +205,11 @@ def build_outputs(manifest_path: Path = PILOT_PATH) -> tuple[dict[Path, str], di
     outputs: dict[Path, str] = {}
     all_matches = []
     for category, country in sorted(ingredient_groups):
-        matches = match_ingredients(ingredient_groups[(category, country)], references)
+        matches = match_ingredients(
+            ingredient_groups[(category, country)],
+            references,
+            exact_reference_names=exact_references,
+        )
         all_matches.extend(matches)
         folder = _folder_for(category, country)
         slug = folder.name
@@ -212,6 +227,9 @@ def build_outputs(manifest_path: Path = PILOT_PATH) -> tuple[dict[Path, str], di
     linked_matches = linkable_matches(all_matches)
     parent_safety_withheld = sum(row.canonical_name is not None and row not in linked_matches for row in all_matches)
     products_with_ingredients = {(row.evidence.country, row.evidence.ean) for row in all_matches}
+    products_with_linked_ingredients = {
+        (row.evidence.country, row.evidence.ean) for row in linked_matches
+    }
     products_with_allergens = {(row.country, row.ean) for rows in allergen_groups.values() for row in rows}
     stats = {
         "selected_products": len(selected),
@@ -230,6 +248,9 @@ def build_outputs(manifest_path: Path = PILOT_PATH) -> tuple[dict[Path, str], di
         "canonical_allergen_rows": sum(len(canonicalize_allergens(rows)) for rows in allergen_groups.values()),
         "generated_files": len(outputs),
     }
+    if manifest.get("exact_reference_policy") == "taxonomy-backed-v1":
+        stats["products_with_linked_ingredients"] = len(products_with_linked_ingredients)
+        stats["untrusted_reference_matches"] = classification["untrusted_reference"]
     if "products" in manifest:
         stats["pilot_products"] = len(selected)
     return outputs, stats

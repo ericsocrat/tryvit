@@ -2,47 +2,49 @@
 
 Status: **PASS**
 
-Selected: Snacks (DE), Instant & Frozen (DE), Bread (DE), Spreads & Dips (DE)
+Selected: Spreads & Dips (DE), Bread (DE), Snacks (DE), Instant & Frozen (DE)
 
 ## Generated enrichment
 
-- Products enriched: 645
+- Products enriched: 635
 - Products evaluated: 743
-- Ingredient links generated: 12826
-- Candidate ingredient rows: 13005
-- Rejected candidate rows: 179
-- Explicit contains records: 1166
-- Explicit may-contain records: 1292
-- Deterministic ingredient-derived records: 23
-- Products with explicit evidence only: 108
-- Products with derived evidence only: 2
-- Products with both evidence types: 481
-- Products remaining allergen-unknown: 54
+- Ingredient links generated: 8197
+- Candidate ingredient rows: 12714
+- Rejected candidate rows: 4517
+- Untrusted raw-reference rows withheld: 3043
+- Explicit contains records: 1158
+- Explicit may-contain records: 1286
+- Deterministic ingredient-derived records: 8
+- Products with explicit evidence only: 125
+- Products with derived evidence only: 1
+- Products with both evidence types: 460
+- Products remaining allergen-unknown: 49
 
 ## Overall coverage
 
-- Ingredient coverage: 2679 -> 3324 (31.0% -> 38.4%)
-- Known-allergen coverage: 1982 -> 2558 (22.9% -> 29.6%)
-- Any-positive-allergen evidence: 2130 -> 2721 (24.6% -> 31.4%)
-- Average score change: +0.1
-- Average confidence change: +2.6
+- Ingredient coverage: 2679 -> 3314 (31.0% -> 38.3%)
+- Known-allergen coverage: 1982 -> 2553 (22.9% -> 29.5%)
+- Any-positive-allergen evidence: 2130 -> 2716 (24.6% -> 31.4%)
+- Average score change: +0.0
+- Average confidence change: +2.5
 
 ## Governance and safety
 
-- No new aliases were needed; all linkages use the Phase 4C registry and exact canonical identities.
-- Ambiguous tokens withheld: 115
+- No new aliases were needed; automatic exact matches are limited to taxonomy-backed identities with independent semantic metadata.
+- Ambiguous tokens withheld: 112
 - Unknown tokens withheld: 0
+- Untrusted raw-reference tokens withheld: 3043
 - Artifacts quarantined: 1
-- Unsafe child tokens withheld: 63
+- Unsafe child tokens withheld: 1361
 - Missing allergen evidence remains unknown.
 - Non-target linkages and product identities, deprecated products, Phase 4B/4D linkages, and Phase 4C governance are unchanged.
 - Hosted Supabase writes: none.
 
 ## Determinism
 
-- Report checksum: `dd4cd47f0cf7bec4068f32e2edb34ce348d630d5eaac9dde1a2dd792886f0607`
-- Ingredient checksum: `fb70c1467a4344c3522f496c03215446`
-- Allergen checksum: `1f4617006d38d669920b84d6a57c7a53`
+- Report checksum: `45da776c98ce7833dd18b6fd44b8bba38cf8ce97941af3f395a08f6feb4c3d4d`
+- Ingredient checksum: `7f8493a1b67c0642cc5e6aebaeb1bac0`
+- Allergen checksum: `a40319f730cb5c6df9757dc658eb5dff`
 - First run equals rerun: true
 - Protected Phase 4D report checksum: `926778d839da63584e0dcc8025b49147ed5b07fbfadc7485cfc2e480082a4268`
 
@@ -50,14 +52,15 @@ Selected: Snacks (DE), Instant & Frozen (DE), Bread (DE), Spreads & Dips (DE)
 
 | Scope | Products | Ingredient coverage | Allergen evidence | Links | Allergen records | Confidence | Score |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Bread (DE) | 195 | 46 -> 192 | 45 -> 190 | 1986 | 456 | +26.0 | +0.2 |
-| Instant & Frozen (DE) | 198 | 0 -> 173 | 0 -> 168 | 5501 | 984 | +30.3 | +2.2 |
-| Snacks (DE) | 152 | 0 -> 151 | 0 -> 147 | 2457 | 614 | +34.0 | +0.9 |
-| Spreads & Dips (DE) | 198 | 0 -> 175 | 0 -> 131 | 2882 | 427 | +28.5 | +0.1 |
+| Bread (DE) | 195 | 46 -> 191 | 45 -> 190 | 1492 | 456 | +25.9 | +0.2 |
+| Instant & Frozen (DE) | 198 | 0 -> 168 | 0 -> 166 | 3109 | 967 | +29.5 | +1.1 |
+| Snacks (DE) | 152 | 0 -> 150 | 0 -> 145 | 1430 | 605 | +33.7 | +0.6 |
+| Spreads & Dips (DE) | 198 | 0 -> 172 | 0 -> 130 | 2166 | 424 | +28.1 | +0.0 |
 
 ## Manual review still required
 
 - Generic Starch requires a declared botanical source before it can map.
 - Generic Vegetable Oil requires a named oil source before it can map.
+- Raw snapshot tokens without independent taxonomy metadata remain untrusted and require review.
 - Unknown and ambiguous source tokens in the report queue require domain review before any mapping.
 - Missing producer allergen evidence remains unknown and cannot support allergen-free claims.

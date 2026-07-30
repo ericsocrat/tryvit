@@ -2,6 +2,7 @@
   "phase": "4E",
   "source": "supabase/migrations/20260601173035_populate_ingredients_allergens.sql",
   "source_label": "committed OFF-derived snapshot 20260601173035",
+  "exact_reference_policy": "taxonomy-backed-v1",
   "selection_file": "data-quality/phase4e/selected-products.csv",
   "scopes": [
     {
