@@ -60,6 +60,11 @@ export interface SearchFilters {
   category?: string[];
   nutri_score?: string[];
   nova_group?: string[];
+  /**
+   * Legacy wire key retained for saved-search and RPC compatibility.
+   * Semantics: exclude products with matching positive `contains` evidence.
+   * It does not mean that remaining products are allergen-free.
+   */
   allergen_free?: string[];
   max_unhealthiness?: number;
   country?: string;
@@ -692,6 +697,25 @@ export interface ProfileAllergens {
   traces: string;
   contains_count: number;
   traces_count: number;
+  /** Additive Phase 5 evidence contract; omitted by pre-Phase-5 responses. */
+  evidence?: ProfileAllergenEvidence[];
+  evidence_status?: "positive_evidence_available" | "unknown";
+  absence_assessment?: "not_assessed" | "assessed";
+  assessed_absent?: string[];
+}
+
+export type AllergenEvidenceType = "contains" | "may_contain";
+
+export type AllergenEvidenceBasis =
+  | "explicit_source"
+  | "ingredient_derived"
+  | "legacy_unclassified";
+
+export interface ProfileAllergenEvidence {
+  tag: string;
+  evidence_type: AllergenEvidenceType;
+  evidence_basis: AllergenEvidenceBasis;
+  source_tag?: string | null;
 }
 
 export interface ScoreBreakdownFactor {

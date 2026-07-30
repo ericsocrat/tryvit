@@ -28,9 +28,11 @@ function AllergenChip({ warning }: AllergenChipProps) {
   const name = t(warning.labelKey);
   const style = CHIP_STYLES[warning.type];
   const tooltip =
-    warning.type === "contains"
-      ? `Contains: ${name}`
-      : `May contain traces: ${name}`;
+    warning.evidenceBasis === "ingredient_derived"
+      ? t("tooltip.allergen.derived", { name })
+      : warning.type === "contains"
+        ? t("tooltip.allergen.present", { name })
+        : t("tooltip.allergen.traces", { name });
 
   return (
     <span
@@ -40,6 +42,9 @@ function AllergenChip({ warning }: AllergenChipProps) {
     >
       <span aria-hidden="true">{warning.icon}</span>
       <span className="max-w-16 truncate">{name}</span>
+      {warning.evidenceBasis === "ingredient_derived" && (
+        <span className="sr-only">({t("allergenMatrix.derivedShort")})</span>
+      )}
     </span>
   );
 }

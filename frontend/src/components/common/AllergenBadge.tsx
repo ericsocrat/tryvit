@@ -1,44 +1,39 @@
+"use client";
+
 /**
- * AllergenBadge — color-coded allergen warning badge.
+ * AllergenBadge — evidence-aware allergen status badge.
  *
- * Statuses:
- *   present → red (allergen confirmed present)
- *   traces  → yellow/amber (may contain traces)
- *   free    → green (allergen-free)
- *
- * Uses `--color-allergen-*` design tokens. Shows generic warning icon for
- * unknown allergens.
+ * `assessed-absent` is reserved for authoritative absence evidence. Callers
+ * must use `unknown` when evidence is missing.
  */
 
-import { AlertTriangle, Check, Zap } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
+import { AlertTriangle, Check, CircleHelp, Dna, Zap } from "lucide-react";
 import React, { type ReactElement } from "react";
 import { InfoTooltip } from "./InfoTooltip";
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
-export type AllergenStatus = "present" | "traces" | "free";
+export type AllergenStatus =
+  | "present"
+  | "traces"
+  | "derived"
+  | "unknown"
+  | "assessed-absent";
 export type AllergenBadgeSize = "sm" | "md";
 
 export interface AllergenBadgeProps {
-  /** Allergen presence status. */
   readonly status: AllergenStatus;
-  /** Human-readable allergen name. */
   readonly allergenName: string;
-  /** Size preset. @default "sm" */
   readonly size?: AllergenBadgeSize;
-  /** Show explanatory tooltip on hover. @default false */
   readonly showTooltip?: boolean;
-  /** Additional CSS classes. */
   readonly className?: string;
 }
-
-// ─── Status styling ─────────────────────────────────────────────────────────
 
 interface StatusConfig {
   icon: ReactElement;
   bg: string;
   text: string;
-  srLabel: string;
+  labelKey: string;
+  tooltipKey: string;
 }
 
 const STATUS_CONFIGS: Record<AllergenStatus, StatusConfig> = {
@@ -46,19 +41,36 @@ const STATUS_CONFIGS: Record<AllergenStatus, StatusConfig> = {
     icon: <AlertTriangle size={12} />,
     bg: "bg-allergen-present/10",
     text: "text-allergen-present",
-    srLabel: "Contains",
+    labelKey: "allergenBadge.present",
+    tooltipKey: "present",
   },
   traces: {
     icon: <Zap size={12} />,
     bg: "bg-allergen-traces/10",
     text: "text-allergen-traces",
-    srLabel: "May contain traces of",
+    labelKey: "allergenBadge.traces",
+    tooltipKey: "traces",
   },
-  free: {
+  derived: {
+    icon: <Dna size={12} />,
+    bg: "bg-warning-bg",
+    text: "text-warning-text",
+    labelKey: "allergenBadge.derived",
+    tooltipKey: "derived",
+  },
+  unknown: {
+    icon: <CircleHelp size={12} />,
+    bg: "bg-surface-muted",
+    text: "text-foreground-muted",
+    labelKey: "allergenBadge.unknown",
+    tooltipKey: "unknown",
+  },
+  "assessed-absent": {
     icon: <Check size={12} />,
     bg: "bg-allergen-free/10",
     text: "text-allergen-free",
-    srLabel: "Free from",
+    labelKey: "allergenBadge.assessedAbsent",
+    tooltipKey: "assessedAbsent",
   },
 };
 
@@ -67,8 +79,6 @@ const SIZE_CLASSES: Record<AllergenBadgeSize, string> = {
   md: "px-2.5 py-1 text-sm",
 };
 
-// ─── Component ──────────────────────────────────────────────────────────────
-
 export const AllergenBadge = React.memo(function AllergenBadge({
   status,
   allergenName,
@@ -76,6 +86,7 @@ export const AllergenBadge = React.memo(function AllergenBadge({
   showTooltip = false,
   className = "",
 }: Readonly<AllergenBadgeProps>) {
+  const { t } = useTranslation();
   const config = STATUS_CONFIGS[status];
 
   const badge = (
@@ -89,7 +100,7 @@ export const AllergenBadge = React.memo(function AllergenBadge({
       ]
         .filter(Boolean)
         .join(" ")}
-      aria-label={`${config.srLabel} ${allergenName}`}
+      aria-label={t(config.labelKey, { name: allergenName })}
     >
       <span aria-hidden="true">{config.icon}</span>
       {allergenName}
@@ -99,7 +110,7 @@ export const AllergenBadge = React.memo(function AllergenBadge({
   if (showTooltip) {
     return (
       <InfoTooltip
-        messageKey={`tooltip.allergen.${status}`}
+        messageKey={`tooltip.allergen.${config.tooltipKey}`}
         params={{ name: allergenName }}
       >
         {badge}

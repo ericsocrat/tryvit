@@ -33,8 +33,8 @@ WHERE name_en ~ '^\d+$'
 -- inferred here.  Logic mirrors QA__allergen_integrity checks 9-14.
 
 -- Milk (excludes cocoa butter, coconut milk, lactic acid, etc.)
-INSERT INTO product_allergen_info (product_id, tag, type)
-SELECT DISTINCT pi.product_id, 'milk', 'contains'
+INSERT INTO product_allergen_info (product_id, tag, type, evidence_basis)
+SELECT DISTINCT pi.product_id, 'milk', 'contains', 'ingredient_derived'
 FROM product_ingredient pi
 JOIN ingredient_ref ir ON ir.ingredient_id = pi.ingredient_id
 JOIN products p ON p.product_id = pi.product_id AND p.is_deprecated IS NOT TRUE
@@ -55,8 +55,8 @@ AND NOT EXISTS (
 ON CONFLICT (product_id, tag, type) DO NOTHING;
 
 -- Gluten (excludes buckwheat, benzoate, coat)
-INSERT INTO product_allergen_info (product_id, tag, type)
-SELECT DISTINCT pi.product_id, 'gluten', 'contains'
+INSERT INTO product_allergen_info (product_id, tag, type, evidence_basis)
+SELECT DISTINCT pi.product_id, 'gluten', 'contains', 'ingredient_derived'
 FROM product_ingredient pi
 JOIN ingredient_ref ir ON ir.ingredient_id = pi.ingredient_id
 JOIN products p ON p.product_id = pi.product_id AND p.is_deprecated IS NOT TRUE
@@ -77,8 +77,8 @@ AND NOT EXISTS (
 ON CONFLICT (product_id, tag, type) DO NOTHING;
 
 -- Eggs (excludes eggplant, reggiano, egg noodle)
-INSERT INTO product_allergen_info (product_id, tag, type)
-SELECT DISTINCT pi.product_id, 'eggs', 'contains'
+INSERT INTO product_allergen_info (product_id, tag, type, evidence_basis)
+SELECT DISTINCT pi.product_id, 'eggs', 'contains', 'ingredient_derived'
 FROM product_ingredient pi
 JOIN ingredient_ref ir ON ir.ingredient_id = pi.ingredient_id
 JOIN products p ON p.product_id = pi.product_id AND p.is_deprecated IS NOT TRUE
@@ -91,8 +91,8 @@ AND NOT EXISTS (
 ON CONFLICT (product_id, tag, type) DO NOTHING;
 
 -- Soybeans
-INSERT INTO product_allergen_info (product_id, tag, type)
-SELECT DISTINCT pi.product_id, 'soybeans', 'contains'
+INSERT INTO product_allergen_info (product_id, tag, type, evidence_basis)
+SELECT DISTINCT pi.product_id, 'soybeans', 'contains', 'ingredient_derived'
 FROM product_ingredient pi
 JOIN ingredient_ref ir ON ir.ingredient_id = pi.ingredient_id
 JOIN products p ON p.product_id = pi.product_id AND p.is_deprecated IS NOT TRUE
@@ -104,8 +104,8 @@ AND NOT EXISTS (
 ON CONFLICT (product_id, tag, type) DO NOTHING;
 
 -- Fish
-INSERT INTO product_allergen_info (product_id, tag, type)
-SELECT DISTINCT pi.product_id, 'fish', 'contains'
+INSERT INTO product_allergen_info (product_id, tag, type, evidence_basis)
+SELECT DISTINCT pi.product_id, 'fish', 'contains', 'ingredient_derived'
 FROM product_ingredient pi
 JOIN ingredient_ref ir ON ir.ingredient_id = pi.ingredient_id
 JOIN products p ON p.product_id = pi.product_id AND p.is_deprecated IS NOT TRUE
@@ -119,8 +119,8 @@ AND NOT EXISTS (
 ON CONFLICT (product_id, tag, type) DO NOTHING;
 
 -- Peanuts
-INSERT INTO product_allergen_info (product_id, tag, type)
-SELECT DISTINCT pi.product_id, 'peanuts', 'contains'
+INSERT INTO product_allergen_info (product_id, tag, type, evidence_basis)
+SELECT DISTINCT pi.product_id, 'peanuts', 'contains', 'ingredient_derived'
 FROM product_ingredient pi
 JOIN ingredient_ref ir ON ir.ingredient_id = pi.ingredient_id
 JOIN products p ON p.product_id = pi.product_id AND p.is_deprecated IS NOT TRUE

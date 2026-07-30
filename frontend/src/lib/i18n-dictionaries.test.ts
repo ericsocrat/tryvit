@@ -192,7 +192,9 @@ describe("i18n message dictionaries", () => {
     // Allergen statuses
     "tooltip.allergen.present",
     "tooltip.allergen.traces",
-    "tooltip.allergen.free",
+    "tooltip.allergen.derived",
+    "tooltip.allergen.unknown",
+    "tooltip.allergen.assessedAbsent",
     // Nutrient traffic light
     "tooltip.nutrient.low",
     "tooltip.nutrient.medium",

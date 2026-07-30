@@ -298,12 +298,15 @@ export function FilterPanel({
 
           <hr className="border-t border-border/40" />
 
-          {/* Allergen-Free */}
+          {/* Allergen evidence exclusion (legacy wire key: allergen_free) */}
           {data && (data.allergens?.length ?? 0) > 0 && (
             <div>
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground-secondary">
-                {t("filters.allergenFree")}
+                {t("filters.excludeAllergenEvidence")}
               </h3>
+              <p className="mb-2 text-xs leading-relaxed text-foreground-muted">
+                {t("filters.excludeAllergenEvidenceHint")}
+              </p>
               <div className="space-y-1 max-h-40 overflow-y-auto">
                 {data.allergens.map((al) => {
                   const labelInfo = ALLERGEN_TAGS.find((a) => a.tag === al.tag);
@@ -325,7 +328,9 @@ export function FilterPanel({
                         }
                         className="h-5 w-5 rounded border-strong text-brand focus-visible:ring-brand"
                       />
-                      <span className="text-sm">{t("chips.allergenFree", { label })}</span>
+                      <span className="text-sm">
+                        {t("chips.excludeAllergenEvidence", { label })}
+                      </span>
                       <span className="ml-auto text-xs text-foreground-muted">
                         {al.count}
                       </span>

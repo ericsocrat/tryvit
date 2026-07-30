@@ -2,169 +2,140 @@ import type { ProfileAllergens } from "@/lib/types";
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-// ── Mocks ────────────────────────────────────────────────────────────────────
-
 vi.mock("@/lib/i18n", () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
+  useTranslation: () => ({ t: (key: string) => key }),
 }));
 
 import { AllergenMatrix } from "./AllergenMatrix";
 
-// ── Fixtures ─────────────────────────────────────────────────────────────────
-
 function makeAllergens(
-  overrides?: Partial<ProfileAllergens>,
+  overrides: Partial<ProfileAllergens> = {},
 ): ProfileAllergens {
   return {
     contains: "gluten,milk",
     traces: "eggs,soybeans",
     contains_count: 2,
     traces_count: 2,
+    evidence: [
+      {
+        tag: "gluten",
+        evidence_type: "contains",
+        evidence_basis: "ingredient_derived",
+      },
+      {
+        tag: "milk",
+        evidence_type: "contains",
+        evidence_basis: "explicit_source",
+      },
+      {
+        tag: "eggs",
+        evidence_type: "may_contain",
+        evidence_basis: "explicit_source",
+      },
+      {
+        tag: "soybeans",
+        evidence_type: "may_contain",
+        evidence_basis: "legacy_unclassified",
+      },
+    ],
+    evidence_status: "positive_evidence_available",
+    absence_assessment: "not_assessed",
+    assessed_absent: [],
     ...overrides,
   };
 }
 
-// ── Tests ────────────────────────────────────────────────────────────────────
-
 describe("AllergenMatrix", () => {
-  it("renders no-allergens message when contains and traces are both 0", () => {
+  it("renders a neutral unavailable state and unknown EU-14 rows with no evidence", () => {
     render(
       <AllergenMatrix
-        allergens={{
+        allergens={makeAllergens({
           contains: "",
           traces: "",
           contains_count: 0,
           traces_count: 0,
-        }}
-      />,
-    );
-    expect(screen.getByText("product.noKnownAllergens")).toBeInTheDocument();
-    // Should NOT render the grid
-    expect(screen.queryByRole("table")).not.toBeInTheDocument();
-  });
-
-  it("renders the allergen grid when allergens are present", () => {
-    render(<AllergenMatrix allergens={makeAllergens()} />);
-    expect(screen.getByRole("table")).toBeInTheDocument();
-  });
-
-  it("groups allergens by status: contains first, then traces, then free", () => {
-    render(<AllergenMatrix allergens={makeAllergens()} />);
-    const rows = screen.getAllByRole("row");
-    const cells = rows.map(
-      (r) => within(r).getByRole("cell").textContent ?? "",
-    );
-
-    // Mock t() returns keys as-is, so match on i18n keys
-    const glutenIdx = cells.findIndex((c) => c.includes("allergens.gluten"));
-    const milkIdx = cells.findIndex((c) => c.includes("allergens.milk"));
-    const eggsIdx = cells.findIndex((c) => c.includes("allergens.eggs"));
-    const soyIdx = cells.findIndex((c) => c.includes("allergens.soybeans"));
-    // The first "free" EU allergen (e.g., Crustaceans or Peanuts)
-    const freeIdx = cells.findIndex((c) => c.includes("allergens.peanuts"));
-
-    // contains before traces
-    expect(glutenIdx).toBeLessThan(eggsIdx);
-    expect(milkIdx).toBeLessThan(eggsIdx);
-    // traces before free
-    expect(soyIdx).toBeLessThan(freeIdx);
-  });
-
-  it("normalises tags via lowercase/trim (legacy en: prefix fallback)", () => {
-    render(
-      <AllergenMatrix
-        allergens={makeAllergens({
-          contains: "gluten",
-          traces: "",
-          contains_count: 1,
-          traces_count: 0,
+          evidence: [],
+          evidence_status: "unknown",
         })}
       />,
     );
-    // Mock t() returns keys — check for the i18n key
-    const table = screen.getByRole("table");
-    const cells = within(table).getAllByRole("cell");
-    const textValues = cells.map((c) => c.textContent);
-    expect(textValues).toContain("allergens.gluten");
+    expect(
+      screen.getByText("product.allergenEvidenceUnavailable"),
+    ).toBeInTheDocument();
+    expect(screen.getAllByRole("row")).toHaveLength(14);
+    expect(screen.getAllByText("allergenMatrix.unknown")).toHaveLength(15);
   });
 
-  it("includes all 14 EU mandatory allergens even if not in data", () => {
+  it("does not render success styling when evidence is missing", () => {
     render(
       <AllergenMatrix
         allergens={makeAllergens({
-          contains: "gluten",
+          contains: "",
           traces: "",
-          contains_count: 1,
+          contains_count: 0,
           traces_count: 0,
-        })}
-      />,
-    );
-    const rows = screen.getAllByRole("row");
-    // At minimum, all 14 EU allergens should be present
-    expect(rows.length).toBeGreaterThanOrEqual(14);
-  });
-
-  it("formats allergen names using DISPLAY_NAMES map", () => {
-    render(
-      <AllergenMatrix
-        allergens={makeAllergens({
-          contains: "sesame",
-          traces: "sulphites",
-          contains_count: 1,
-          traces_count: 1,
+          evidence: [],
         })}
       />,
     );
     const table = screen.getByRole("table");
-    expect(within(table).getByText("allergens.sesame")).toBeInTheDocument();
-    expect(within(table).getByText("allergens.sulphites")).toBeInTheDocument();
+    expect(table.querySelector(".bg-success-bg")).toBeNull();
+    expect(table.querySelector(".text-success-text")).toBeNull();
   });
 
-  it("renders the legend with all three statuses", () => {
+  it("distinguishes explicit, derived, may-contain, and unknown states", () => {
     render(<AllergenMatrix allergens={makeAllergens()} />);
-    expect(screen.getByText("allergenMatrix.contains")).toBeInTheDocument();
-    expect(screen.getByText("allergenMatrix.traces")).toBeInTheDocument();
-    expect(screen.getByText("allergenMatrix.free")).toBeInTheDocument();
-  });
-
-  it("renders the disclaimer text", () => {
-    render(<AllergenMatrix allergens={makeAllergens()} />);
-    expect(screen.getByText("allergenMatrix.disclaimer")).toBeInTheDocument();
-  });
-
-  it("adds extra allergens not in the EU14 baseline", () => {
-    render(
-      <AllergenMatrix
-        allergens={makeAllergens({
-          contains: "gluten,buckwheat",
-          traces: "",
-          contains_count: 2,
-          traces_count: 0,
-        })}
-      />,
-    );
-    const table = screen.getByRole("table");
-    expect(within(table).getByText("allergens.buckwheat")).toBeInTheDocument();
-    // Total rows should be > 14 (14 EU + 1 extra)
     const rows = screen.getAllByRole("row");
-    expect(rows.length).toBe(15);
+    const rowFor = (name: string) =>
+      rows.find((row) => row.textContent?.includes(`allergens.${name}`));
+
+    expect(rowFor("milk")?.textContent).toContain("allergenMatrix.contains");
+    expect(rowFor("gluten")?.textContent).toContain("allergenMatrix.derived");
+    expect(rowFor("eggs")?.textContent).toContain("allergenMatrix.traces");
+    expect(rowFor("peanuts")?.textContent).toContain("allergenMatrix.unknown");
   });
 
-  it("handles empty comma-separated strings gracefully", () => {
+  it("marks positive legacy evidence with unavailable provenance", () => {
+    render(<AllergenMatrix allergens={makeAllergens()} />);
+    expect(
+      screen.getByText("allergenMatrix.provenanceUnavailable"),
+    ).toBeInTheDocument();
+  });
+
+  it("preserves the legacy CSV response shape without calling gaps free", () => {
     render(
       <AllergenMatrix
         allergens={{
-          contains: ",,",
-          traces: ",",
+          contains: "en:milk",
+          traces: "gluten",
           contains_count: 1,
           traces_count: 1,
         }}
       />,
     );
-    // Should render grid without errors — all 14 EU allergens as "free"
-    const rows = screen.getAllByRole("row");
-    expect(rows.length).toBe(14);
+    const table = screen.getByRole("table");
+    expect(within(table).getByText("allergens.milk")).toBeInTheDocument();
+    expect(within(table).getByText("allergens.gluten")).toBeInTheDocument();
+    expect(screen.queryByText("allergenMatrix.free")).not.toBeInTheDocument();
+  });
+
+  it("supports authoritative assessed absence without inferring it", () => {
+    render(
+      <AllergenMatrix
+        allergens={makeAllergens({
+          evidence: [],
+          contains: "",
+          traces: "",
+          contains_count: 0,
+          traces_count: 0,
+          absence_assessment: "assessed",
+          assessed_absent: ["milk"],
+        })}
+      />,
+    );
+    const milkRow = screen
+      .getAllByRole("row")
+      .find((row) => row.textContent?.includes("allergens.milk"));
+    expect(milkRow?.textContent).toContain("allergenMatrix.assessedAbsent");
   });
 });

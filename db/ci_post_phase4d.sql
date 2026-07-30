@@ -174,8 +174,8 @@ derived AS (
   FROM target_links
   WHERE ingredient_name LIKE '%peanut%'
 )
-INSERT INTO product_allergen_info (product_id, tag, type)
-SELECT product_id, tag, 'contains'
+INSERT INTO product_allergen_info (product_id, tag, type, evidence_basis)
+SELECT product_id, tag, 'contains', 'ingredient_derived'
 FROM derived
 ON CONFLICT (product_id, tag, type) DO NOTHING;
 

@@ -74,6 +74,9 @@ function escapeCSVField(value: string | number | undefined | null): string {
 }
 
 function productToCSVRow(p: ExportableProduct): string {
+  const allergenEvidence = p.allergen_tags?.length
+    ? p.allergen_tags.join("; ")
+    : "Evidence unavailable";
   const fields: (string | number | undefined)[] = [
     p.product_name,
     p.brand,
@@ -89,7 +92,7 @@ function productToCSVRow(p: ExportableProduct): string {
     p.salt_g,
     p.protein_g,
     p.fiber_g,
-    p.allergen_tags?.join("; "),
+    allergenEvidence,
     p.confidence_band,
   ];
   return fields.map(escapeCSVField).join(",");
@@ -160,7 +163,13 @@ export function generateComparisonCSV(products: ExportableProduct[]): string {
     ["Salt (g)", (p) => p.salt_g],
     ["Protein (g)", (p) => p.protein_g],
     ["Fiber (g)", (p) => p.fiber_g],
-    ["Allergens", (p) => p.allergen_tags?.join("; ")],
+    [
+      "Allergens",
+      (p) =>
+        p.allergen_tags?.length
+          ? p.allergen_tags.join("; ")
+          : "Evidence unavailable",
+    ],
     ["Confidence", (p) => p.confidence_band],
   ];
 
@@ -212,7 +221,9 @@ export function generateText(
     const salt = p.salt_g == null ? "–" : `${p.salt_g}g`;
     lines.push(`   Per 100g: ${cal} kcal · Fat ${fat} · Sugar ${sugar} · Salt ${salt}`);
 
-    const allergens = p.allergen_tags?.length ? p.allergen_tags.join(", ") : "none";
+    const allergens = p.allergen_tags?.length
+      ? p.allergen_tags.join(", ")
+      : "evidence unavailable";
     lines.push(`   Allergens: ${allergens}`, "");
   });
 

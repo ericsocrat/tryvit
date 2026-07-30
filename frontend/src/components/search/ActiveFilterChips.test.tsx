@@ -105,7 +105,7 @@ describe("ActiveFilterChips", () => {
     expect(screen.getByText("Nutri Unknown")).toBeTruthy();
   });
 
-  // ─── Allergen-free chips ────────────────────────────────────────────
+  // ─── Allergen evidence exclusion chips ─────────────────────────────
 
   // ─── NOVA group chips ───────────────────────────────────────────────
 
@@ -143,17 +143,18 @@ describe("ActiveFilterChips", () => {
     });
   });
 
-  // ─── Allergen-free chips ────────────────────────────────────────────
+  // ─── Allergen evidence exclusion chips ─────────────────────────────
 
-  it("renders allergen-free chips with label lookup", () => {
+  it("renders truthful allergen-evidence chips with label lookup", () => {
     render(
       <ActiveFilterChips
         filters={{ allergen_free: ["gluten"] }}
         onChange={onChange}
       />,
     );
-    // Should find the ALLERGEN_TAGS entry and render "{label}-free"
-    const chip = screen.getByText(/gluten-free/i);
+    const chip = screen.getByText(
+      /exclude products with gluten contains evidence/i,
+    );
     expect(chip).toBeTruthy();
   });
 
@@ -164,7 +165,9 @@ describe("ActiveFilterChips", () => {
         onChange={onChange}
       />,
     );
-    expect(screen.getByText("mystery-free")).toBeTruthy();
+    expect(
+      screen.getByText("Exclude products with mystery contains evidence"),
+    ).toBeTruthy();
   });
 
   // ─── Min TryVit Score chip ──────────────────────────────────────────
