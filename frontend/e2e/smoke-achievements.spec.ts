@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/safe-test";
 
 // ─── Achievements E2E Tests (#51) — Smoke ───────────────────────────────────
 // Verifies achievements page navigation structure exists and is accessible.

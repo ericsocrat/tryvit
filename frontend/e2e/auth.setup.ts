@@ -2,16 +2,22 @@
 // Creates a test user via Supabase Admin API, logs in through the UI, completes
 // onboarding, and saves browser storageState for downstream test projects.
 //
-// Skipped automatically when SUPABASE_SERVICE_ROLE_KEY is not set.
+// Registered only in explicit local-authenticated safety mode.
 
-import { expect, test as setup } from "@playwright/test";
+import path from "node:path";
+
+import { expect, test as setup } from "./fixtures/safe-test";
 import {
     TEST_EMAIL,
     TEST_PASSWORD,
     ensureTestUser,
 } from "./helpers/test-user";
 
-const AUTH_STATE_PATH = "e2e/.auth/user.json";
+const authStateDirectory = process.env.VISUAL_SAFETY_AUTH_STATE_DIR;
+if (!authStateDirectory || !path.isAbsolute(authStateDirectory)) {
+  throw new Error("[VS_AUTH_STATE_DIR] owned-temporary-directory-required");
+}
+const AUTH_STATE_PATH = path.join(authStateDirectory, "user.json");
 
 setup("create user and authenticate via UI", async ({ page }) => {
   // Auth flow involves a network round-trip to Supabase (user creation +

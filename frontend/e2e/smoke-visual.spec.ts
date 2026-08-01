@@ -5,7 +5,7 @@
 // Issue #70 — Visual Regression Baseline
 // Total: 6 pages × 2 themes × 2 viewports = 24 baselines
 
-import { test } from "@playwright/test";
+import { test } from "./fixtures/safe-test";
 import {
   assertScreenshot,
   buildTestMatrix,

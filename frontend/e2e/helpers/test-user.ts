@@ -1,15 +1,21 @@
 // ─── E2E test user lifecycle ─────────────────────────────────────────────────
 // Creates and tears down a Supabase Auth user for authenticated Playwright tests.
-// Requires SUPABASE_SERVICE_ROLE_KEY to access the Admin API.
+// Requires explicit local-authenticated mode and a guarded local Admin API.
 
 import type { WebSocketLikeConstructor } from "@supabase/realtime-js";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
+import {
+  VisualSafetyError,
+  createGuardedFetch,
+  createGuardedWebSocketConstructor,
+  loadSafetyContractFromEnvironment,
+} from "./visual-safety";
 
 export const TEST_EMAIL = "e2e-playwright-auth@test.tryvit.local";
 export const FUNCTIONAL_TEST_EMAIL = "e2e-playwright-functional@test.tryvit.local";
 export const TEST_PASSWORD = "PlaywrightTest123!";
-const WebSocketTransport = WebSocket as unknown as WebSocketLikeConstructor;
+const WebSocketImplementation = WebSocket as unknown as WebSocketLikeConstructor;
 
 type TestUserScope = "authenticated" | "functional";
 
@@ -17,20 +23,40 @@ function getScopeEmail(scope: TestUserScope): string {
   return scope === "functional" ? FUNCTIONAL_TEST_EMAIL : TEST_EMAIL;
 }
 
-function getAdminClient(): SupabaseClient {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!url || !key) {
-    throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY",
+export function getGuardedFixtureRequest(): {
+  readonly origin: string;
+  readonly serviceRoleKey: string;
+  readonly fetch: typeof fetch;
+} {
+  const contract = loadSafetyContractFromEnvironment(process.env);
+  if (contract.mode !== "local-authenticated") {
+    throw new VisualSafetyError("VS_FIXTURE_MODE", "fixture.local-only");
+  }
+  // Read the credential only after the canonical local origin guard passes.
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceRoleKey) {
+    throw new VisualSafetyError(
+      "VS_FIXTURE_CREDENTIAL",
+      "fixture.local-service-role-missing",
     );
   }
+  return {
+    origin: contract.supabaseOrigin,
+    serviceRoleKey,
+    fetch: createGuardedFetch({ allowedOrigin: contract.supabaseOrigin }),
+  };
+}
 
-  return createClient(url, key, {
+export function getAdminClient(): SupabaseClient {
+  const runtime = getGuardedFixtureRequest();
+  const WebSocketTransport = createGuardedWebSocketConstructor({
+    allowedOrigin: runtime.origin,
+    WebSocketImpl: WebSocketImplementation,
+  });
+
+  return createClient(runtime.origin, runtime.serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
-    // Node <22 does not provide a native WebSocket for Supabase Realtime.
-    // Provide ws transport so CI auth setup can initialize the admin client.
+    global: { fetch: runtime.fetch },
     realtime: { transport: WebSocketTransport },
   });
 }
@@ -50,7 +76,12 @@ async function findTestUserById(
   while (true) {
     const {
       data: { users },
+      error,
     } = await supabase.auth.admin.listUsers({ page, perPage: PAGE_SIZE });
+
+    if (error) {
+      throw new VisualSafetyError("VS_FIXTURE_ADMIN", "fixture.list-users");
+    }
 
     const match = users.find((u) => u.email === email);
     if (match) return match.id;
@@ -71,7 +102,10 @@ export async function ensureScopedTestUser(
   // Remove stale test user if present (idempotent) — paginated search
   const existingId = await findTestUserById(supabase, email);
   if (existingId) {
-    await supabase.auth.admin.deleteUser(existingId);
+    const { error } = await supabase.auth.admin.deleteUser(existingId);
+    if (error) {
+      throw new VisualSafetyError("VS_FIXTURE_ADMIN", "fixture.delete-user");
+    }
   }
 
   // Create fresh, pre-confirmed user
@@ -82,7 +116,7 @@ export async function ensureScopedTestUser(
   });
 
   if (error) {
-    throw new Error(`Failed to create test user: ${error.message}`);
+    throw new VisualSafetyError("VS_FIXTURE_ADMIN", "fixture.create-user");
   }
 
   const userId = data.user.id;
@@ -101,7 +135,7 @@ export async function ensureScopedTestUser(
     });
 
   if (prefError) {
-    throw new Error(`Failed to set test user preferences: ${prefError.message}`);
+    throw new VisualSafetyError("VS_FIXTURE_ADMIN", "fixture.preferences");
   }
 
   return userId;
@@ -119,7 +153,10 @@ export async function deleteScopedTestUser(scope: TestUserScope): Promise<void> 
 
   const userId = await findTestUserById(supabase, email);
   if (userId) {
-    await supabase.auth.admin.deleteUser(userId);
+    const { error } = await supabase.auth.admin.deleteUser(userId);
+    if (error) {
+      throw new VisualSafetyError("VS_FIXTURE_ADMIN", "fixture.delete-user");
+    }
   }
 }
 

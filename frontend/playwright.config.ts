@@ -1,18 +1,192 @@
+import { createHash, timingSafeEqual } from "node:crypto";
+import { lstatSync, readFileSync, realpathSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+
 import { defineConfig, devices } from "@playwright/test";
 
-// Auth e2e tests require SUPABASE_SERVICE_ROLE_KEY to provision test users.
-// When the key is not set, only smoke tests run (no auth coverage).
-const HAS_AUTH = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+import {
+  canonicalizeLoopbackOrigin,
+  loadSafetyContractFromEnvironment,
+  validateInvocationProof,
+} from "./e2e/helpers/visual-safety";
 
-// Visual regression tests require baselines to be generated first.
-// Run with VISUAL_REGRESSION=true to include visual snapshot tests.
-const HAS_VISUAL = !!process.env.VISUAL_REGRESSION;
+const safetyContract = loadSafetyContractFromEnvironment(process.env);
+const LOCAL_AUTHENTICATED = safetyContract.mode === "local-authenticated";
+const frontendRoot = realpathSync.native(process.cwd());
+const repositoryRoot = realpathSync.native(path.resolve(frontendRoot, ".."));
+
+function pathIsWithin(root: string, candidate: string): boolean {
+  const relative = path.relative(root, candidate);
+  return (
+    relative === "" ||
+    (!relative.startsWith(`..${path.sep}`) &&
+      relative !== ".." &&
+      !path.isAbsolute(relative))
+  );
+}
+
+function enabled(name: string): boolean {
+  const value = process.env[name];
+  if (value === undefined || value === "") return false;
+  if (value === "true") return true;
+  throw new Error(`[VS_ENV_INVALID] boolean-toggle:${name}`);
+}
+
+const HAS_VISUAL = enabled("VISUAL_REGRESSION");
+const HAS_SCREENSHOTS = enabled("CAPTURE_SCREENSHOTS");
+const HAS_PR_SCREENSHOTS = enabled("PR_SCREENSHOTS");
+const HAS_QUALITY = Boolean(process.env.QA_MODE_LEVEL);
+const HAS_SAFETY_BROWSER_TESTS = enabled("VISUAL_SAFETY_BROWSER_TESTS");
+const HAS_SAFETY_NEGATIVE_TESTS = enabled("VISUAL_SAFETY_NEGATIVE_TESTS");
+const HAS_OWNED_SERVER = enabled("VISUAL_SAFETY_OWNED_SERVER");
+
+const proxyServer = process.env.VISUAL_SAFETY_PROXY
+  ? canonicalizeLoopbackOrigin(process.env.VISUAL_SAFETY_PROXY).origin
+  : undefined;
+
+if (!proxyServer) {
+  throw new Error("[VS_PROXY_REQUIRED] owned-browser-egress-proxy");
+}
+
+const invocationFile = process.env.VISUAL_SAFETY_INVOCATION_FILE;
+const invocationToken = process.env.VISUAL_SAFETY_INVOCATION_TOKEN;
+if (
+  !invocationFile ||
+  !path.isAbsolute(invocationFile) ||
+  !invocationToken
+) {
+  throw new Error("[VS_INVOCATION_PROOF] launcher-proof-required");
+}
+const invocationTemporaryRoot = realpathSync.native(tmpdir());
+if (pathIsWithin(repositoryRoot, invocationTemporaryRoot)) {
+  throw new Error("[VS_INVOCATION_PROOF] temporary-root-inside-workspace");
+}
+const invocationLexical = path.resolve(invocationFile);
+const invocationDirectory = path.dirname(invocationLexical);
+const invocationDirectoryMetadata = lstatSync(invocationDirectory);
+const invocationFileMetadata = lstatSync(invocationLexical);
+if (
+  path.dirname(invocationDirectory) !== invocationTemporaryRoot ||
+  !path.basename(invocationDirectory).startsWith(
+    "tryvit-visual-invocation-",
+  ) ||
+  !invocationDirectoryMetadata.isDirectory() ||
+  invocationDirectoryMetadata.isSymbolicLink() ||
+  path.basename(invocationLexical) !== "proof.json" ||
+  !invocationFileMetadata.isFile() ||
+  invocationFileMetadata.isSymbolicLink() ||
+  realpathSync.native(invocationLexical) !== invocationLexical
+) {
+  throw new Error("[VS_INVOCATION_PROOF] launcher-proof-invalid");
+}
+let invocationProof: unknown;
+try {
+  invocationProof = JSON.parse(readFileSync(invocationLexical, "utf8"));
+} catch {
+  throw new Error("[VS_INVOCATION_PROOF] launcher-proof-invalid");
+}
+const proofRecord = invocationProof as Record<string, unknown>;
+const inheritedRunnerPid = process.env.VISUAL_SAFETY_CONFIG_RUNNER_PID;
+const inheritedSeal = process.env.VISUAL_SAFETY_CONFIG_SEAL;
+const sealFor = (runnerPid: number, serverPid: number): string =>
+  createHash("sha256")
+    .update(
+      `${invocationToken}:${runnerPid}:${serverPid}:${invocationLexical}`,
+      "utf8",
+    )
+    .digest("hex");
+if (inheritedRunnerPid || inheritedSeal) {
+  const runnerPid = Number(inheritedRunnerPid);
+  const serverPid = Number(proofRecord.serverPid);
+  const expectedSeal = sealFor(runnerPid, serverPid);
+  const actualSeal = Buffer.from(inheritedSeal ?? "", "utf8");
+  const expectedSealBytes = Buffer.from(expectedSeal, "utf8");
+  if (
+    !Number.isSafeInteger(runnerPid) ||
+    runnerPid <= 0 ||
+    (process.pid !== runnerPid && process.ppid !== runnerPid) ||
+    actualSeal.length !== expectedSealBytes.length ||
+    !timingSafeEqual(actualSeal, expectedSealBytes)
+  ) {
+    throw new Error("[VS_INVOCATION_PROOF] worker-seal-invalid");
+  }
+  validateInvocationProof(invocationProof, {
+    ownerToken: invocationToken,
+    launcherPid: Number(proofRecord.launcherPid),
+    contract: safetyContract,
+    proxyOrigin: proxyServer,
+  });
+} else {
+  const validated = validateInvocationProof(invocationProof, {
+    ownerToken: invocationToken,
+    launcherPid: process.ppid,
+    contract: safetyContract,
+    proxyOrigin: proxyServer,
+  });
+  process.env.VISUAL_SAFETY_CONFIG_RUNNER_PID = String(process.pid);
+  process.env.VISUAL_SAFETY_CONFIG_SEAL = sealFor(
+    process.pid,
+    validated.serverPid,
+  );
+}
+
+const authStateDirectory = process.env.VISUAL_SAFETY_AUTH_STATE_DIR;
+const authStateOwner = process.env.VISUAL_SAFETY_AUTH_STATE_OWNER;
+let verifiedAuthStateDirectory: string | undefined;
+if (LOCAL_AUTHENTICATED) {
+  if (
+    !authStateDirectory ||
+    !path.isAbsolute(authStateDirectory) ||
+    !authStateOwner ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
+      authStateOwner,
+    )
+  ) {
+    throw new Error("[VS_AUTH_STATE_DIR] owned-temporary-directory-required");
+  }
+  const temporaryRoot = realpathSync.native(tmpdir());
+  if (pathIsWithin(repositoryRoot, temporaryRoot)) {
+    throw new Error("[VS_AUTH_STATE_DIR] temporary-root-inside-workspace");
+  }
+  const lexical = path.resolve(authStateDirectory);
+  const metadata = lstatSync(lexical);
+  if (
+    path.dirname(lexical) !== temporaryRoot ||
+    !path.basename(lexical).startsWith("tryvit-visual-auth-") ||
+    !metadata.isDirectory() ||
+    metadata.isSymbolicLink()
+  ) {
+    throw new Error("[VS_AUTH_STATE_DIR] owned-temporary-directory-invalid");
+  }
+  const resolved = realpathSync.native(lexical);
+  if (resolved !== lexical) {
+    throw new Error("[VS_AUTH_STATE_DIR] owned-temporary-directory-invalid");
+  }
+  const ownerMarker = path.join(
+    resolved,
+    ".tryvit-visual-safety-owner",
+  );
+  const ownerMetadata = lstatSync(ownerMarker);
+  if (
+    !ownerMetadata.isFile() ||
+    ownerMetadata.isSymbolicLink() ||
+    readFileSync(ownerMarker, "utf8").trim() !== authStateOwner
+  ) {
+    throw new Error("[VS_AUTH_STATE_DIR] owned-temporary-directory-invalid");
+  }
+  verifiedAuthStateDirectory = resolved;
+}
+const authStatePath = (filename: string): string | undefined =>
+  verifiedAuthStateDirectory
+    ? path.join(verifiedAuthStateDirectory, filename)
+    : undefined;
 
 /* ── Project definitions ─────────────────────────────────────────────────── */
 
 const smokeProject = {
   name: "smoke",
-  testMatch: /smoke(?!.*visual).*\.spec\.ts/,
+  testMatch: /(?:smoke(?!.*visual).*|image-policy)\.spec\.ts/,
   use: { ...devices["Desktop Chrome"] },
 };
 
@@ -34,17 +208,17 @@ const authenticatedProject = {
   dependencies: ["auth-setup"],
   use: {
     ...devices["Desktop Chrome"],
-    storageState: "e2e/.auth/user.json",
+    storageState: authStatePath("user.json"),
   },
 };
 
 const functionalProject = {
   name: "functional",
-  testMatch: /functional.*\.spec\.ts/,
+  testMatch: /(?:functional.*|product-detail-tabs)\.spec\.ts/,
   dependencies: ["functional-auth-setup"],
   use: {
     ...devices["Desktop Chrome"],
-    storageState: "e2e/.auth/functional-user.json",
+    storageState: authStatePath("functional-user.json"),
   },
 };
 
@@ -60,30 +234,19 @@ const visualAuthenticatedProject = {
   dependencies: ["auth-setup"],
   use: {
     ...devices["Desktop Chrome"],
-    storageState: "e2e/.auth/user.json",
+    storageState: authStatePath("user.json"),
   },
 };
 
-// ── Screenshot capture toggle ───────────────────────────────────────────────
-// Set CAPTURE_SCREENSHOTS=true to enable the screenshot capture project.
-// This captures polished PNGs for docs/screenshots/ (Issues #404, #430, #431).
-const HAS_SCREENSHOTS = !!process.env.CAPTURE_SCREENSHOTS;
-
-// ── PR screenshot toggle ────────────────────────────────────────────────────
-// Set PR_SCREENSHOTS=true to capture screenshots of only pages affected by
-// the current branch's changes. Output: frontend/pr-screenshots/
-const HAS_PR_SCREENSHOTS = !!process.env.PR_SCREENSHOTS;
-
 const screenshotsProject = {
   name: "screenshots",
-  testMatch: /screenshot-capture\.spec\.ts|visual-audit\.spec\.ts/,
-  // Self-contained: handles its own auth (no dependency on auth-setup).
-  // CSP bypass needed because local Supabase (127.0.0.1) is blocked by
-  // connect-src in production CSP headers.
+  testMatch: LOCAL_AUTHENTICATED
+    ? /screenshot-capture\.spec\.ts|visual-audit\.spec\.ts/
+    : /visual-audit\.spec\.ts/,
   dependencies: [] as string[],
   use: {
     ...devices["Desktop Chrome"],
-    bypassCSP: true,
+    bypassCSP: LOCAL_AUTHENTICATED,
     actionTimeout: 15_000,
     navigationTimeout: 20_000,
   },
@@ -95,27 +258,21 @@ const prScreenshotsProject = {
   dependencies: [] as string[],
   use: {
     ...devices["Desktop Chrome"],
-    bypassCSP: true,
+    bypassCSP: LOCAL_AUTHENTICATED,
     actionTimeout: 15_000,
     navigationTimeout: 20_000,
   },
 };
 
-// ── Quality gate audit toggle ───────────────────────────────────────────────
-const HAS_QUALITY = !!process.env.QA_MODE_LEVEL;
-
 const qualityMobileProject = {
   name: "quality-mobile",
   testDir: "./tests/quality",
   testMatch: /mobile\.audit\.spec\.ts/,
-  dependencies: HAS_AUTH ? ["auth-setup"] : [],
+  dependencies: LOCAL_AUTHENTICATED ? ["auth-setup"] : [],
   use: {
-    // Use Chromium (installed in CI) with iPhone 14 viewport/touch settings.
-    // CI only installs Chromium; quality audits care about mobile viewport
-    // behaviour, not WebKit-specific rendering.
     ...devices["iPhone 14"],
     browserName: "chromium" as const,
-    storageState: HAS_AUTH ? "e2e/.auth/user.json" : undefined,
+    storageState: LOCAL_AUTHENTICATED ? authStatePath("user.json") : undefined,
   },
 };
 
@@ -123,31 +280,49 @@ const qualityDesktopProject = {
   name: "quality-desktop",
   testDir: "./tests/quality",
   testMatch: /desktop\.audit\.spec\.ts/,
-  dependencies: HAS_AUTH ? ["auth-setup"] : [],
+  dependencies: LOCAL_AUTHENTICATED ? ["auth-setup"] : [],
   use: {
     ...devices["Desktop Chrome"],
     viewport: { width: 1280, height: 800 },
-    storageState: HAS_AUTH ? "e2e/.auth/user.json" : undefined,
+    storageState: LOCAL_AUTHENTICATED ? authStatePath("user.json") : undefined,
   },
 };
 
+const safetyBrowserProject = {
+  name: "visual-safety-browser",
+  testMatch: /visual-safety-browser\.spec\.ts/,
+  use: { ...devices["Desktop Chrome"] },
+};
+
+const safetyNegativeProject = {
+  name: "visual-safety-negative",
+  testMatch: /visual-safety-auto-fixture-negative\.spec\.ts/,
+  use: { ...devices["Desktop Chrome"] },
+};
+
 const projects = [
-  ...(HAS_AUTH ? [authSetupProject, functionalAuthSetupProject] : []),
+  ...(LOCAL_AUTHENTICATED
+    ? [authSetupProject, functionalAuthSetupProject]
+    : []),
   smokeProject,
-  ...(HAS_AUTH ? [authenticatedProject, functionalProject] : []),
+  ...(LOCAL_AUTHENTICATED ? [authenticatedProject, functionalProject] : []),
   ...(HAS_VISUAL ? [visualSmokeProject] : []),
-  ...(HAS_VISUAL && HAS_AUTH ? [visualAuthenticatedProject] : []),
+  ...(HAS_VISUAL && LOCAL_AUTHENTICATED
+    ? [visualAuthenticatedProject]
+    : []),
   ...(HAS_QUALITY ? [qualityMobileProject, qualityDesktopProject] : []),
+  ...(HAS_SAFETY_BROWSER_TESTS ? [safetyBrowserProject] : []),
+  ...(HAS_SAFETY_NEGATIVE_TESTS ? [safetyNegativeProject] : []),
   ...(HAS_SCREENSHOTS ? [screenshotsProject] : []),
   ...(HAS_PR_SCREENSHOTS ? [prScreenshotsProject] : []),
 ];
 
-/* ── Config ──────────────────────────────────────────────────────────────── */
+/* ── Configuration ───────────────────────────────────────────────────────── */
 
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
-  forbidOnly: !!process.env.CI,
+  forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI
@@ -157,49 +332,57 @@ export default defineConfig({
         ["json", { outputFile: "test-results/a11y-results.json" }],
       ]
     : "html",
-
-  /* Hard cap so the suite never hangs indefinitely */
   globalTimeout: 600_000,
-  /* Per-test timeout */
   timeout: 30_000,
-
   expect: {
-    /* Give client-side hydration enough time in CI */
     timeout: 10_000,
-    /* Visual regression screenshot comparison thresholds (Issue #70) */
     toHaveScreenshot: {
-      maxDiffPixelRatio: 0.01, // 1% pixel tolerance
+      maxDiffPixelRatio: 0.01,
       animations: "disabled",
-      threshold: 0.2, // Per-pixel color sensitivity
+      threshold: 0.2,
     },
   },
-
-  /* Snapshot path template for visual regression baselines (Issue #70) */
   snapshotPathTemplate:
     "{testDir}/__screenshots__/{testFilePath}/{arg}{ext}",
-
-  ...(HAS_AUTH && { globalTeardown: "./e2e/global-teardown" }),
-
+  ...(LOCAL_AUTHENTICATED && { globalTeardown: "./e2e/global-teardown" }),
   use: {
-    baseURL: process.env.BASE_URL || "http://localhost:3000",
-    trace: "on-first-retry",
+    baseURL: safetyContract.appOrigin,
+    serviceWorkers: "block",
+    ...(proxyServer ? { proxy: { server: proxyServer } } : {}),
+    // Traces can contain headers, cookies, and URLs. Safety infrastructure uses
+    // redacted count-only markers instead of credential-bearing traces.
+    trace: "off",
     screenshot: "only-on-failure",
+    video: "off",
     actionTimeout: 10_000,
     navigationTimeout: 15_000,
   },
-
   projects,
-
-  /* CI starts its own dev server; locally you must run `npm run dev` first.
-     The webServer block caused hangs when a stale Node process held port 3000
-     without actually serving — Playwright's "plugin setup" waited forever.
-     When BASE_URL is set (e.g., Vercel preview), skip the local dev server. */
-  ...(process.env.CI && !process.env.BASE_URL && {
-    webServer: {
-      command: "npm run dev -- --port 3000",
-      url: "http://localhost:3000",
-      reuseExistingServer: false,
-      timeout: 60_000,
-    },
-  }),
+  ...(HAS_OWNED_SERVER
+    ? {}
+    : {
+        webServer: {
+          command:
+            "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts serve",
+          // The CLI serve command performs its own complete preflight. The
+          // main wrappers normally own the server before Playwright starts.
+          port: 3000,
+          reuseExistingServer: false,
+          timeout: 60_000,
+          env: {
+            VISUAL_SAFETY_MODE: safetyContract.mode,
+            VISUAL_SAFETY_APP_ORIGIN: safetyContract.appOrigin,
+            BASE_URL: safetyContract.appOrigin,
+            VISUAL_SAFETY_SUPABASE_ORIGIN:
+              safetyContract.supabaseOrigin ?? "",
+            VISUAL_SAFETY_BUILD_SUPABASE_ORIGIN:
+              safetyContract.publicBuildAdapter?.supabaseOrigin ?? "",
+            VISUAL_SAFETY_BUILD_ADAPTER_ID:
+              safetyContract.publicBuildAdapter?.id ?? "",
+            NEXT_PUBLIC_SUPABASE_URL: safetyContract.supabaseOrigin ?? "",
+            NEXT_PUBLIC_SUPABASE_ANON_KEY: "",
+            SUPABASE_SERVICE_ROLE_KEY: "",
+          },
+        },
+      }),
 });

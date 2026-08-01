@@ -19,6 +19,7 @@ on:
     branches: [main]
     paths:
       - "frontend/**"
+      - "supabase/config.toml"
       - ".github/workflows/quality-gate.yml"
   schedule:
     - cron: "0 4 * * *" # Nightly at 04:00 UTC (staggered from nightly 02:00 + api-contract 03:30)
@@ -42,17 +43,15 @@ concurrency:
 
 env:
   NEXT_PUBLIC_QA_MODE: "1"
-  # Fixture IDs are seeded dynamically by the "Seed QA fixture data" step.
-  # Override via QA_PRODUCT_ID, QA_CATEGORY_SLUG secrets if needed.
+  # Browser safety mode is explicit per step. Authenticated coverage is valid
+  # only when the local-emulator preflight succeeds.
 
 jobs:
   quality_gate:
-    # Dependabot cannot read the Supabase runtime and staging secrets needed
-    # to start the audited app. Its PRs remain covered by PR Gate (build,
-    # lint, unit, and Playwright) plus the separate Lighthouse workflow.
-    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
 
     steps:
       # ── Checkout ─────────────────────────────────────────────────────────
@@ -87,68 +86,6 @@ jobs:
         working-directory: frontend
         run: npx playwright install-deps chromium
 
-      # ── Build ────────────────────────────────────────────────────────────
-      - name: Build application
-        working-directory: frontend
-        run: npm run build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING || secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY_STAGING || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-
-      # ── Start application ──────────────────────────────────────────────────────
-      - name: Start application
-        working-directory: frontend
-        run: npm run start &
-        env:
-          PORT: 3000
-          # Server-side code (middleware, server components) needs these at
-          # runtime; NEXT_PUBLIC_* are baked into the client bundle at build
-          # time but process.env reads in Node.js require the actual values.
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING || secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY_STAGING || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-
-      - name: Wait for app ready
-        run: npx wait-on http://localhost:3000 --timeout 60000
-
-      # Dependabot-triggered workflows cannot read ordinary Actions secrets.
-      # Keep build/test coverage active, but skip staging-only fixture audits
-      # when those credentials are unavailable instead of reporting a false
-      # application failure.
-      - name: Check staging credentials
-        id: staging
-        env:
-          STAGING_URL: ${{ secrets.SUPABASE_URL_STAGING }}
-          STAGING_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING }}
-        run: |
-          if [ -n "$STAGING_URL" ] && [ -n "$STAGING_SERVICE_KEY" ]; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Staging credentials unavailable; skipping fixture-dependent quality audits."
-          fi
-
-      # ── Seed QA fixture data ──────────────────────────────────────────────
-      - name: Seed QA fixture data
-        if: steps.staging.outputs.available == 'true'
-        id: seed
-        working-directory: frontend
-        run: |
-          set -o pipefail
-          # Seed deterministic test products; KEY=VALUE lines go to stdout.
-          # No `|| true` here — a non-zero exit (missing staging env in CI, or
-          # the in-script production guard tripping) MUST fail the job rather
-          # than let the quality gate pass green with nothing seeded.
-          node tests/quality/seed-fixtures.mjs | tee /tmp/qa-ids.txt
-          grep -E '^[A-Z_]+=' /tmp/qa-ids.txt >> "$GITHUB_ENV" || true
-          echo "seeded=true" >> "$GITHUB_OUTPUT"
-        env:
-          # Staging-only: QA fixtures must NEVER target production. No fallback
-          # to NEXT_PUBLIC_SUPABASE_URL — if the staging secret is unset the
-          # seeder fails in CI (and the in-script production guard would abort
-          # anyway).
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING }}
-
       # ── Determine mode ───────────────────────────────────────────────────
       - name: Determine mode
         id: mode
@@ -162,86 +99,97 @@ jobs:
           fi
           echo "Quality gate mode: $(cat "$GITHUB_OUTPUT" | grep mode | cut -d= -f2)"
 
-      # ── Check auth credentials ──────────────────────────────────────────
-      - name: Check auth credentials
-        id: auth
-        run: |
-          if [ -n "$QA_TEST_EMAIL" ] && [ -n "$QA_TEST_PASSWORD" ]; then
-            echo "has_auth=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_auth=false" >> "$GITHUB_OUTPUT"
-            echo "⚠️  Missing QA_TEST_EMAIL and/or QA_TEST_PASSWORD — Lighthouse audits will be skipped"
-          fi
-        env:
-          QA_TEST_EMAIL: ${{ secrets.QA_TEST_EMAIL }}
-          QA_TEST_PASSWORD: ${{ secrets.QA_TEST_PASSWORD }}
-
-      # ── Mobile Audit ─────────────────────────────────────────────────────
-      - name: Run Mobile Audit
-        if: steps.staging.outputs.available == 'true'
+      # ── Public audits ────────────────────────────────────────────────────
+      - name: Public visual-safety preflight
         working-directory: frontend
-        run: npx playwright test --project=quality-mobile --reporter=html,list
+        run: npm run visual-safety:preflight
         env:
+          VISUAL_SAFETY_MODE: public
+          BASE_URL: http://127.0.0.1:3000
+
+      - name: Run public Mobile Audit
+        working-directory: frontend
+        run: npm run visual-safety:public -- --project=quality-mobile --reporter=html,list
+        env:
+          VISUAL_SAFETY_MODE: public
           QA_MODE_LEVEL: ${{ steps.mode.outputs.mode }}
-          BASE_URL: http://localhost:3000
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING || secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING || secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          BASE_URL: http://127.0.0.1:3000
 
-      # ── Desktop Audit ────────────────────────────────────────────────────
-      # No `if: always()` — the quality-desktop project is only registered when
-      # QA_MODE_LEVEL is set (HAS_QUALITY in playwright.config.ts). That value
-      # comes from the "Determine mode" step, which is skipped if seeding fails.
-      # Running this on failure would surface a misleading "project not found"
-      # error instead of the real seed failure, so it mirrors the Mobile Audit
-      # step and only runs when prior steps succeed.
-      - name: Run Desktop Audit
-        if: steps.staging.outputs.available == 'true'
+      - name: Run public Desktop Audit
         working-directory: frontend
-        run: npx playwright test --project=quality-desktop --reporter=html,list
+        run: npm run visual-safety:public -- --project=quality-desktop --reporter=html,list
         env:
+          VISUAL_SAFETY_MODE: public
           QA_MODE_LEVEL: ${{ steps.mode.outputs.mode }}
-          BASE_URL: http://localhost:3000
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING || secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING || secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          BASE_URL: http://127.0.0.1:3000
 
-      # ── Teardown QA fixtures ─────────────────────────────────────────────
-      # Always runs after the fixture-dependent audits so staging never
-      # accumulates active QA Test Brand rows. Staging-only secrets; the
-      # in-script production guard makes targeting production impossible.
-      # In CI a missing staging secret fails this step (exit 1) rather than
-      # leaving fixtures behind silently.
-      - name: Teardown QA fixture data
-        if: always() && steps.seed.outputs.seeded == 'true'
+      - name: Run public Lighthouse audits
         working-directory: frontend
-        run: node tests/quality/seed-fixtures.mjs --teardown
+        run: npm run visual-safety:lighthouse
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING }}
+          VISUAL_SAFETY_MODE: public
+          BASE_URL: http://127.0.0.1:3000
 
-      # ── Lighthouse CI (Mobile) ─────────────────────────────────────────
-      - name: Run Lighthouse CI (Mobile)
+      - name: Assert public visual safety
+        id: public_safety_assert
+        if: ${{ always() }}
         working-directory: frontend
-        if: always() && steps.auth.outputs.has_auth == 'true'
-        run: npx lhci autorun --config=lighthouserc.mobile.js
+        run: npm run visual-safety:assert
         env:
-          QA_TEST_EMAIL: ${{ secrets.QA_TEST_EMAIL }}
-          QA_TEST_PASSWORD: ${{ secrets.QA_TEST_PASSWORD }}
-          QA_PRODUCT_ID: ${{ secrets.QA_PRODUCT_ID }}
+          VISUAL_SAFETY_MODE: public
+          BASE_URL: http://127.0.0.1:3000
 
-      # ── Lighthouse CI (Desktop) ────────────────────────────────────────
-      - name: Run Lighthouse CI (Desktop)
+      # ── Authenticated audits: verified local emulator only ───────────────
+      # This is intentionally blocking. A runner without a verified local
+      # emulator fails here; hosted staging/production is never a fallback,
+      # and public coverage is not reported as authenticated equivalence.
+      - name: Local-authenticated visual-safety preflight (blocking)
+        id: auth_preflight
         working-directory: frontend
-        if: always() && steps.auth.outputs.has_auth == 'true'
-        run: npx lhci autorun --config=lighthouserc.desktop.js
+        run: npm run visual-safety:preflight
         env:
-          QA_TEST_EMAIL: ${{ secrets.QA_TEST_EMAIL }}
-          QA_TEST_PASSWORD: ${{ secrets.QA_TEST_PASSWORD }}
-          QA_PRODUCT_ID: ${{ secrets.QA_PRODUCT_ID }}
+          VISUAL_SAFETY_MODE: local-authenticated
+          BASE_URL: http://127.0.0.1:3000
+
+      - name: Run local-authenticated Mobile Audit
+        working-directory: frontend
+        run: npm run visual-safety:local-authenticated -- --project=quality-mobile --reporter=html,list
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+          QA_MODE_LEVEL: ${{ steps.mode.outputs.mode }}
+          BASE_URL: http://127.0.0.1:3000
+
+      - name: Run local-authenticated Desktop Audit
+        working-directory: frontend
+        run: npm run visual-safety:local-authenticated -- --project=quality-desktop --reporter=html,list
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+          QA_MODE_LEVEL: ${{ steps.mode.outputs.mode }}
+          BASE_URL: http://127.0.0.1:3000
+
+      # The Lighthouse wrapper intentionally refuses authenticated mode until
+      # a dedicated guarded local fixture exists. Keep this blocking so public
+      # Lighthouse coverage is never reported as authenticated equivalence.
+      - name: Enforce authenticated Lighthouse local-fixture gate (blocking)
+        working-directory: frontend
+        run: npm run visual-safety:lighthouse
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+          BASE_URL: http://127.0.0.1:3000
+
+      - name: Assert local-authenticated visual safety
+        id: auth_safety_assert
+        if: ${{ always() && steps.auth_preflight.outcome == 'success' }}
+        working-directory: frontend
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+          BASE_URL: http://127.0.0.1:3000
 
       # ── Upload Artifacts ─────────────────────────────────────────────────
       - name: Upload Screenshots
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
+        if: ${{ always() && steps.public_safety_assert.outcome == 'success' && (steps.auth_preflight.outcome != 'success' || steps.auth_safety_assert.outcome == 'success') }}
         with:
           name: qa-screenshots-${{ steps.mode.outputs.mode }}
           path: frontend/qa_screenshots/latest/
@@ -250,7 +198,7 @@ jobs:
 
       - name: Upload Playwright Report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
+        if: ${{ always() && steps.public_safety_assert.outcome == 'success' && (steps.auth_preflight.outcome != 'success' || steps.auth_safety_assert.outcome == 'success') }}
         with:
           name: playwright-quality-report
           path: frontend/playwright-report/
@@ -259,7 +207,7 @@ jobs:
 
       - name: Upload Lighthouse Reports
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
+        if: ${{ always() && steps.public_safety_assert.outcome == 'success' && (steps.auth_preflight.outcome != 'success' || steps.auth_safety_assert.outcome == 'success') }}
         with:
           name: lighthouse-reports-${{ steps.mode.outputs.mode }}
           path: frontend/lighthouse-reports/
@@ -270,16 +218,22 @@ jobs:
       - name: Quality Gate Summary
         if: always()
         run: |
-          echo "## Quality Gate Results" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "| Key | Value |" >> "$GITHUB_STEP_SUMMARY"
-          echo "|-----|-------|" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Mode** | \`${{ steps.mode.outputs.mode }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Trigger** | \`${{ github.event_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "| **Commit** | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Artifacts" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Screenshots, Playwright Report, Lighthouse Reports uploaded (14-day retention)" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## Quality Gate Results"
+            echo ""
+            echo "| Key | Value |"
+            echo "|-----|-------|"
+            echo "| **Mode** | \`${{ steps.mode.outputs.mode }}\` |"
+            echo "| **Trigger** | \`${{ github.event_name }}\` |"
+            echo "| **Commit** | \`${{ github.sha }}\` |"
+            echo "| **Public safety assertion** | \`${{ steps.public_safety_assert.outcome }}\` |"
+            echo "| **Local-auth preflight** | \`${{ steps.auth_preflight.outcome }}\` |"
+            echo "| **Local-auth safety assertion** | \`${{ steps.auth_safety_assert.outcome }}\` |"
+            echo ""
+            echo "### Artifacts"
+            echo "- Artifacts upload only after applicable safety assertions pass (14-day retention)."
+            echo "- Authenticated coverage is local-emulator-only; a missing or invalid emulator is blocking and is never replaced by hosted or public coverage."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # ── Optional: Nightly failure notification ───────────────────────────
       - name: Notify on nightly failure

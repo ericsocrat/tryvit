@@ -3,8 +3,8 @@
 // current branch's file changes. Used for both local self-review and CI
 // PR verification.
 //
-// Self-contained auth: creates a test user and signs in via the UI, bypassing
-// CSP restrictions (same pattern as screenshot-capture.spec.ts).
+// Local-authenticated mode creates a test user and signs in via the UI after
+// the checked-in emulator passes the guard. Public mode never provisions one.
 //
 // How it determines which pages to capture:
 //   1. Reads CHANGED_FILES env var (newline-separated paths, set by runner)
@@ -12,19 +12,21 @@
 //   3. Maps file paths to page URLs via page-map.ts
 //
 // Usage:
-//   # Via local runner (recommended):
-//   pwsh RUN_PR_SCREENSHOTS.ps1
+//   # From the repository root; the explicit mode is mandatory:
+//   pwsh ./RUN_PR_SCREENSHOTS.ps1 -Mode Public
+//   pwsh ./RUN_PR_SCREENSHOTS.ps1 -Mode LocalAuthenticated -All
 //
-//   # Manual:
-//   PR_SCREENSHOTS=true CHANGED_FILES="frontend/src/app/app/scan/page.tsx"
-//     npx playwright test --project=pr-screenshots
+// The runner owns the clean build, server, browser guard, and cleanup. Do not
+// invoke this project through a raw Playwright command.
 //
 // Output: frontend/pr-screenshots/{mobile,desktop}/
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page, visualSafetyMode } from "./fixtures/safe-test";
 import fs from "node:fs";
 import path from "node:path";
-import { getChangedPages } from "./helpers/page-map";
+import { getChangedPages, PAGE_MAP } from "./helpers/page-map";
+import { getGuardedFixtureRequest } from "./helpers/test-user";
+import { VisualSafetyError } from "./helpers/visual-safety";
 
 /* ── Constants ───────────────────────────────────────────────────────────── */
 
@@ -61,11 +63,7 @@ async function stabilizePage(page: Page) {
   await page.waitForTimeout(500);
 }
 
-async function captureScreenshot(
-  page: Page,
-  dir: string,
-  filename: string,
-) {
+async function captureScreenshot(page: Page, dir: string, filename: string) {
   ensureDir(dir);
   const filepath = path.join(dir, filename);
   await page.screenshot({
@@ -81,20 +79,18 @@ async function captureScreenshot(
 let testUserId: string | null = null;
 
 function getSupabaseConfig() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY",
-    );
-  }
-  return { url, key };
+  const runtime = getGuardedFixtureRequest();
+  return {
+    url: runtime.origin,
+    key: runtime.serviceRoleKey,
+    guardedFetch: runtime.fetch,
+  };
 }
 
 async function provisionTestUser(): Promise<string> {
   if (testUserId) return testUserId;
 
-  const { url, key } = getSupabaseConfig();
+  const { url, key, guardedFetch } = getSupabaseConfig();
   const headers = {
     apikey: key,
     Authorization: `Bearer ${key}`,
@@ -102,18 +98,19 @@ async function provisionTestUser(): Promise<string> {
   };
 
   // Check if user already exists
-  const listRes = await fetch(`${url}/auth/v1/admin/users`, { headers });
+  const listRes = await guardedFetch(`${url}/auth/v1/admin/users`, { headers });
+  if (!listRes.ok) {
+    throw new VisualSafetyError("VS_FIXTURE_ADMIN", "pr-screenshot-user-list");
+  }
   const listData = await listRes.json();
-  const existing = listData.users?.find(
-    (u: { email: string }) => u.email === TEST_EMAIL,
-  );
+  const existing = listData.users?.find((u: { email: string }) => u.email === TEST_EMAIL);
   if (existing) {
     testUserId = existing.id;
     return testUserId;
   }
 
   // Create fresh user
-  const createRes = await fetch(`${url}/auth/v1/admin/users`, {
+  const createRes = await guardedFetch(`${url}/auth/v1/admin/users`, {
     method: "POST",
     headers,
     body: JSON.stringify({
@@ -124,11 +121,12 @@ async function provisionTestUser(): Promise<string> {
   });
 
   if (createRes.status === 422) {
-    const retryList = await fetch(`${url}/auth/v1/admin/users`, { headers });
+    const retryList = await guardedFetch(`${url}/auth/v1/admin/users`, { headers });
+    if (!retryList.ok) {
+      throw new VisualSafetyError("VS_FIXTURE_ADMIN", "pr-screenshot-user-retry-list");
+    }
     const retryData = await retryList.json();
-    const found = retryData.users?.find(
-      (u: { email: string }) => u.email === TEST_EMAIL,
-    );
+    const found = retryData.users?.find((u: { email: string }) => u.email === TEST_EMAIL);
     if (found) {
       testUserId = found.id;
       return testUserId;
@@ -136,15 +134,14 @@ async function provisionTestUser(): Promise<string> {
   }
 
   if (!createRes.ok) {
-    const err = await createRes.text();
-    throw new Error(`Failed to create test user: ${createRes.status} ${err}`);
+    throw new Error("[VS_FIXTURE_ADMIN] pr-screenshot-user-create");
   }
 
   const userData = await createRes.json();
   testUserId = userData.id;
 
   // Pre-create preferences (skip onboarding, force English)
-  await fetch(`${url}/rest/v1/user_preferences`, {
+  const preferencesRes = await guardedFetch(`${url}/rest/v1/user_preferences`, {
     method: "POST",
     headers: { ...headers, Prefer: "resolution=merge-duplicates" },
     body: JSON.stringify({
@@ -155,6 +152,12 @@ async function provisionTestUser(): Promise<string> {
       onboarding_skipped: true,
     }),
   });
+  if (!preferencesRes.ok) {
+    throw new VisualSafetyError(
+      "VS_FIXTURE_ADMIN",
+      "pr-screenshot-preferences-upsert",
+    );
+  }
 
   return userData.id;
 }
@@ -177,36 +180,40 @@ async function signInViaUI(page: Page) {
 }
 
 async function cleanupTestUser() {
-  try {
-    const { url, key } = getSupabaseConfig();
-    const headers = {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-    };
-    const listRes = await fetch(`${url}/auth/v1/admin/users`, { headers });
-    const listData = await listRes.json();
-    const user = listData.users?.find(
-      (u: { email: string }) => u.email === TEST_EMAIL,
-    );
-    if (user) {
-      await fetch(`${url}/auth/v1/admin/users/${user.id}`, {
-        method: "DELETE",
-        headers,
-      });
-    }
-  } catch {
-    // Best-effort cleanup
+  const { url, key, guardedFetch } = getSupabaseConfig();
+  const headers = {
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+  };
+  const listRes = await guardedFetch(`${url}/auth/v1/admin/users`, { headers });
+  if (!listRes.ok) {
+    throw new VisualSafetyError("VS_FIXTURE_ADMIN", "pr-screenshot-user-cleanup-list");
   }
+  const listData = await listRes.json();
+  const user = listData.users?.find((u: { email: string }) => u.email === TEST_EMAIL);
+  if (user) {
+    const deleteRes = await guardedFetch(`${url}/auth/v1/admin/users/${user.id}`, {
+      method: "DELETE",
+      headers,
+    });
+    if (!deleteRes.ok) {
+      throw new VisualSafetyError("VS_FIXTURE_ADMIN", "pr-screenshot-user-cleanup-delete");
+    }
+  }
+  testUserId = null;
 }
 
 /* ── Determine which pages to capture ────────────────────────────────────── */
 
-const changedPages = getChangedPages();
-const publicPages = changedPages.filter((p) => !p.auth);
-const authPages = changedPages.filter((p) => p.auth);
+const changedPages = process.env.PR_SCREENSHOTS_ALL === "true" ? PAGE_MAP : getChangedPages();
+const selectedPages = changedPages.filter((page) =>
+  visualSafetyMode === "public" ? !page.auth : page.auth,
+);
+const publicPages = selectedPages.filter((p) => !p.auth);
+const authPages = selectedPages.filter((p) => p.auth);
 console.log(
-  `\n📸 PR Screenshots: ${changedPages.length} page(s) to capture\n` +
-    changedPages.map((p) => `  • ${p.label} → ${p.url}`).join("\n"),
+  `\n📸 PR Screenshots: ${selectedPages.length} ${visualSafetyMode} page(s) to capture\n` +
+    selectedPages.map((p) => `  • ${p.label} → ${p.url}`).join("\n"),
 );
 
 // ── Tests ─────────────────────────────────────────────────────────────────
@@ -250,14 +257,11 @@ if (authPages.length > 0) {
       await cleanupTestUser();
     });
 
-    let isSignedIn = false;
-
     for (const entry of authPages) {
       test(`${entry.label} — mobile`, async ({ page }) => {
-        if (!isSignedIn) {
-          await signInViaUI(page);
-          isSignedIn = true;
-        }
+        // Every Playwright test receives a fresh context/page. Authenticate
+        // each one rather than carrying process-local state across tests.
+        await signInViaUI(page);
         await page.setViewportSize(MOBILE_VIEWPORT);
         await page.goto(entry.url);
         await stabilizePage(page);
@@ -266,6 +270,7 @@ if (authPages.length > 0) {
       });
 
       test(`${entry.label} — desktop`, async ({ page }) => {
+        await signInViaUI(page);
         await page.setViewportSize(DESKTOP_VIEWPORT);
         await page.goto(entry.url);
         await stabilizePage(page);
@@ -278,9 +283,9 @@ if (authPages.length > 0) {
 
 /* ── Skip notice ─────────────────────────────────────────────────────────── */
 
-if (changedPages.length === 0) {
-  test("No pages to screenshot (no matching file changes detected)", () => {
-    console.log("ℹ️  No changed files matched any page pattern. Nothing to capture.");
-    expect(changedPages).toHaveLength(0);
+if (selectedPages.length === 0) {
+  test("No pages to screenshot for the selected safety mode", () => {
+    console.log(`ℹ️  No changed files matched ${visualSafetyMode} pages. Nothing to capture.`);
+    expect(selectedPages).toHaveLength(0);
   });
 }

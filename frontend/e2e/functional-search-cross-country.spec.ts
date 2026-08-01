@@ -6,7 +6,7 @@
 // 9 tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 async function getFirstCategoryHref(
   page: import("@playwright/test").Page,

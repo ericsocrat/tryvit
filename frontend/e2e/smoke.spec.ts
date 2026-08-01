@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 // ─── Smoke tests: verify pages load without crashes ─────────────────────────
 // All tests are public-page only — no Supabase dependency in CI.

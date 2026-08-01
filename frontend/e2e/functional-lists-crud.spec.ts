@@ -5,7 +5,7 @@
 // 8 tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 const UNIQUE_LIST_NAME = `E2E Test List ${Date.now()}`;
 

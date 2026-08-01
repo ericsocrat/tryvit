@@ -1,20 +1,17 @@
 // ─── Global teardown: delete the e2e test user ─────────────────────────────
-// Best-effort cleanup — does not fail the run if deletion errors out.
+// Cleanup is blocking: a rejected or incomplete local deletion fails the run.
 
 import { deleteScopedTestUser } from "./helpers/test-user";
+import { loadSafetyContractFromEnvironment } from "./helpers/visual-safety";
 
 async function globalTeardown() {
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return;
+  const contract = loadSafetyContractFromEnvironment(process.env);
+  if (contract.mode !== "local-authenticated") return;
 
-  try {
-    await Promise.all([
-      deleteScopedTestUser("authenticated"),
-      deleteScopedTestUser("functional"),
-    ]);
-  } catch {
-    // Non-fatal — user may already be gone or may not have been created
-    console.warn("⚠️  Could not delete e2e test user (non-fatal)");
-  }
+  await Promise.all([
+    deleteScopedTestUser("authenticated"),
+    deleteScopedTestUser("functional"),
+  ]);
 }
 
 export default globalTeardown;

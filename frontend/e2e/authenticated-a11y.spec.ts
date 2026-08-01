@@ -1,6 +1,6 @@
 // ─── A11y audit: authenticated pages ────────────────────────────────────────
 // Automated WCAG 2.1 AA compliance gate for auth-required routes.
-// Requires SUPABASE_SERVICE_ROLE_KEY (runs only when auth E2E is enabled).
+// Requires explicit local-authenticated mode and a verified local emulator.
 // Uses pre-authenticated storageState from auth.setup.ts.
 //
 // Critical + Serious violations → build failure (zero-tolerance).
@@ -9,7 +9,7 @@
 // Issue #50 — A11y CI Gate
 // Named authenticated-* to match the "authenticated" Playwright project pattern.
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 import { assertNoA11yViolations, auditA11y } from "./helpers/a11y";
 
 /* ── Auth-required routes to audit ───────────────────────────────────────── */

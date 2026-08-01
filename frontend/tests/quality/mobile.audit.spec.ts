@@ -7,14 +7,19 @@
  *
  * Screenshots are saved to `qa_screenshots/latest/mobile/`.
  *
- * Run on CI via the `quality-mobile` Playwright project or locally:
+ * Run locally through the mandatory safety launcher (from `frontend/`):
  *
- *   QA_MODE_LEVEL=smoke npx playwright test --project quality-mobile
+ *   npm run quality:smoke
+ *   npm run quality:full
+ *
+ * Do not invoke the Playwright project directly. Local-authenticated coverage
+ * requires the explicit local-authenticated launcher and a verified emulator.
  *
  * @see https://github.com/ericsocrat/tryvit/issues/175
  */
 
-import { test, expect } from "@playwright/test";
+// eslint-disable-next-line no-restricted-imports -- quality contexts require the shared automatic egress guard
+import { expect, test } from "../../e2e/fixtures/safe-test";
 import { getRoutes } from "./routes";
 import {
   setupErrorCollectors,
@@ -30,12 +35,10 @@ import { waitForStable } from "./helpers/network";
 const MODE = (process.env.QA_MODE_LEVEL ?? "smoke") as "smoke" | "full";
 
 /**
- * Auth-protected routes require both SUPABASE_SERVICE_ROLE_KEY (for test user
- * provisioning) and NEXT_PUBLIC_SUPABASE_URL (for Supabase client setup).
+ * Auth-protected routes run only in the explicit local-authenticated safety
+ * mode. Credential presence must never select a browser mode.
  */
-const HAS_AUTH =
-  !!process.env.SUPABASE_SERVICE_ROLE_KEY &&
-  !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+const HAS_AUTH = process.env.VISUAL_SAFETY_MODE === "local-authenticated";
 
 /* ── Setup ───────────────────────────────────────────────────────────────── */
 

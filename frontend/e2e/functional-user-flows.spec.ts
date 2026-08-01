@@ -6,7 +6,7 @@
 // 7 tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 async function ensureFullAnalysis(page: import("@playwright/test").Page) {
   const tabBar = page.getByTestId("tab-bar");
