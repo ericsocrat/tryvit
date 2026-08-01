@@ -167,6 +167,10 @@ describe("browser workflow visual-safety contract", () => {
 
   it("keeps Lighthouse local, guarded, and off temporary public storage", () => {
     expect(browserJobs.lighthouse).toContain("npm run visual-safety:lighthouse -- mobile");
+    expect(browserJobs.lighthouse).toContain("npx playwright install --with-deps chromium");
+    expect(browserJobs.lighthouse.indexOf("npx playwright install --with-deps chromium")).toBeLessThan(
+      browserJobs.lighthouse.indexOf("npm run visual-safety:preflight"),
+    );
     expect(workflowSources.lighthouse).not.toContain("temporaryPublicStorage");
     expect(workflowSources.lighthouse).not.toContain("treosh/lighthouse-ci-action");
   });
