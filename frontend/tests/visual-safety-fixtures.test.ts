@@ -114,6 +114,8 @@ describe("Playwright fixture safety contract", () => {
     expect(config).toContain("fstatSync(descriptor, { bigint: true })");
     expect(config).toContain("lstatSync(filename, { bigint: true })");
     expect(config).toContain('readFileSync(descriptor, "utf8")');
+    expect(config).not.toContain("beforeOpen");
+    expect(config).not.toContain("realpathSync.native(invocationLexical)");
     expect(config).not.toContain('readFileSync(invocationLexical, "utf8")');
     expect(config).not.toContain('readFileSync(ownerMarker, "utf8")');
     expect(config.indexOf("lstatSync(lexical)")).toBeLessThan(

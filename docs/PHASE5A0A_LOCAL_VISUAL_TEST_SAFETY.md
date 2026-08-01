@@ -68,10 +68,10 @@ checked before results can be treated as safe.
 
 Within any launcher row, failure prevents every later network-capable step. An
 artifact upload is evidence only when its mandatory safety assertion succeeded.
-Invocation proofs and authenticated-state owner markers are opened without
-following links where the platform supports it, identity-checked with the open
-file descriptor, and read through that descriptor so a path replacement cannot
-race the ownership check.
+Invocation proofs and authenticated-state owner markers are opened with
+no-follow semantics where the platform supports them. The harness compares the
+descriptor and path identities after opening and reads through that descriptor,
+so a later path replacement cannot redirect the read.
 
 ## Modes
 

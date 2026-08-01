@@ -35,10 +35,6 @@ function pathIsWithin(root: string, candidate: string): boolean {
 function readStableRegularFile(filename: string, failureMessage: string): string {
   let descriptor: number | undefined;
   try {
-    const beforeOpen = lstatSync(filename, { bigint: true });
-    if (!beforeOpen.isFile() || beforeOpen.isSymbolicLink()) {
-      throw new Error(failureMessage);
-    }
     const noFollow = process.platform === "win32" ? 0 : fsConstants.O_NOFOLLOW;
     descriptor = openSync(filename, fsConstants.O_RDONLY | noFollow);
     const opened = fstatSync(descriptor, { bigint: true });
@@ -47,8 +43,6 @@ function readStableRegularFile(filename: string, failureMessage: string): string
       !opened.isFile() ||
       !afterOpen.isFile() ||
       afterOpen.isSymbolicLink() ||
-      beforeOpen.dev !== opened.dev ||
-      beforeOpen.ino !== opened.ino ||
       afterOpen.dev !== opened.dev ||
       afterOpen.ino !== opened.ino
     ) {
@@ -102,8 +96,7 @@ if (
   !path.basename(invocationDirectory).startsWith("tryvit-visual-invocation-") ||
   !invocationDirectoryMetadata.isDirectory() ||
   invocationDirectoryMetadata.isSymbolicLink() ||
-  path.basename(invocationLexical) !== "proof.json" ||
-  realpathSync.native(invocationLexical) !== invocationLexical
+  path.basename(invocationLexical) !== "proof.json"
 ) {
   throw new Error("[VS_INVOCATION_PROOF] launcher-proof-invalid");
 }
