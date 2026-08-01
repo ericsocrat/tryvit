@@ -1,8 +1,9 @@
 # Documentation Index
 
-> **Last updated:** 2026-07-30
+> **Last broadly verified:** 2026-07-30
+> **Phase 5A.0a entry and inventory updated:** 2026-08-01
 > **Status:** Active — update when adding, renaming, or archiving docs
-> **Total documents:** 76 in `docs/` + 11 in `docs/decisions/` + 25 in `docs/assets/logo/` + 7 in `docs/assets/banners/` + 7 elsewhere in repo
+> **Tracked inventory:** 65 Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 1 route inventory in `docs/phase5/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
 
 ---
@@ -21,10 +22,10 @@
 | [Security & Compliance](#security--compliance)           | 5     | Root policy, audit report, access audit, privacy checklist, rate limiting                                                                                               |
 | [Observability & Operations](#observability--operations) | 9     | Monitoring, observability, log schema, alerts, on-call policy, SLOs, metrics, incident response, disaster drill                                                         |
 | [DevOps & Environment](#devops--environment)             | 3     | Environment strategy, staging setup, Sonar config                                                                                                                       |
-| [Frontend & UX](#frontend--ux)                           | 11    | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec, product positioning, Phase 5 audit/blueprint/roadmap |
+| [Frontend & UX](#frontend--ux)                           | 12    | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec, product positioning, Phase 5 audit/blueprint/roadmap and local visual-test safety |
 | [Process & Workflow](#process--workflow)                 | 9     | Agent workflow reference, agent review workflow, research workflow, viewing & testing, backfill standard, migration conventions, labels, country expansion, demo script |
 | [Governance & Policy](#governance--policy)               | 6     | Feature sunsetting, performance report, performance guardrails, doc governance, repo governance, this index                                                             |
-| [Architecture Decisions](#architecture-decisions-adrs)   | 10    | MADR template + 9 ADRs (stack, scoring, country isolation, pipeline, API versioning, migrations, ingredients, nutrient density, ingredient language model)              |
+| [Architecture Decisions](#architecture-decisions-adrs)   | 11    | MADR template + 10 ADRs (stack, scoring, country isolation, pipeline, API versioning, migrations, ingredients, nutrient density, scoring calibration, ingredient language model) |
 
 ---
 
@@ -189,7 +190,7 @@
 
 | Document                                           | Purpose                                                                 | Owner Issue   | Last Updated |
 | -------------------------------------------------- | ----------------------------------------------------------------------- | ------------- | ------------ |
-| [ENVIRONMENT_STRATEGY.md](ENVIRONMENT_STRATEGY.md) | Local/staging/production environment strategy                           | DevOps domain | 2026-02-22   |
+| [ENVIRONMENT_STRATEGY.md](ENVIRONMENT_STRATEGY.md) | Local/staging/production environment strategy                           | DevOps domain | 2026-02-22 (Phase 5A.0a section: 2026-08-01) |
 | [STAGING_SETUP.md](STAGING_SETUP.md)               | Staging environment setup guide — scripts, sync workflow, configuration | DevOps domain | 2026-02-24   |
 | [SONAR.md](SONAR.md)                               | SonarCloud configuration & quality gates                                | DevOps domain | 2026-02-23   |
 
@@ -210,13 +211,14 @@
 | [PHASE5_MASTER_EXPERIENCE_AUDIT.md](PHASE5_MASTER_EXPERIENCE_AUDIT.md) | Phase 5 full-route experience audit, screenshot inventory, visual direction, research and prioritized findings         | Frontend domain                                         | 2026-07-30   |
 | [PHASE5_DESIGN_SYSTEM_BLUEPRINT.md](PHASE5_DESIGN_SYSTEM_BLUEPRINT.md) | Living Label Design System V2 architecture, tokens, components, motion, evidence semantics, accessibility and budgets  | Frontend domain                                         | 2026-07-30   |
 | [PHASE5_IMPLEMENTATION_ROADMAP.md](PHASE5_IMPLEMENTATION_ROADMAP.md)   | Staged Phase 5 delivery plan, weighted priority, acceptance gates, rollback boundaries and exact Phase 5A.0 prompt      | Frontend domain                                         | 2026-07-30   |
+| [PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md](PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md) | Fail-closed local build, server, browser, screenshot, fixture and Lighthouse safety contract                         | Phase 5A.0a                                             | 2026-08-01   |
 
 ## Process & Workflow
 
 | Document                                                 | Purpose                                                                                                        | Owner Issue                                                                                                      | Last Updated |
 | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------ |
 | [RESEARCH_WORKFLOW.md](RESEARCH_WORKFLOW.md)             | Data collection lifecycle — manual + automated OFF pipeline                                                    | Process domain                                                                                                   | 2026-02-24   |
-| [VIEWING_AND_TESTING.md](VIEWING_AND_TESTING.md)         | Queries, Studio UI, test runner guide                                                                          | Process domain                                                                                                   | 2026-02-24   |
+| [VIEWING_AND_TESTING.md](VIEWING_AND_TESTING.md)         | Queries, Studio UI, test runner guide                                                                          | Process domain                                                                                                   | 2026-02-24 (Phase 5A.0a section: 2026-08-01) |
 | [BACKFILL_STANDARD.md](BACKFILL_STANDARD.md)             | Backfill orchestration standard — migration templates, validation patterns                                     | [#208](https://github.com/ericsocrat/tryvit/issues/208)                                                          | 2026-03-03   |
 | [MIGRATION_CONVENTIONS.md](MIGRATION_CONVENTIONS.md)     | Migration safety, trigger naming, lock risk, idempotency standards                                             | [#203](https://github.com/ericsocrat/tryvit/issues/203), [#207](https://github.com/ericsocrat/tryvit/issues/207) | 2026-03-02   |
 | [LABELS.md](LABELS.md)                                   | GitHub labeling conventions — issue/PR label taxonomy                                                          | Process domain                                                                                                   | 2026-05-25   |
