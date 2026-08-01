@@ -51,6 +51,8 @@ setup("create user and authenticate via UI", async ({ page }) => {
     )
   ).origin;
   const observedAuthTraffic: string[] = [];
+  const observedPageErrors: string[] = [];
+  const observedConsoleErrors: string[] = [];
   const recordLoopbackAuthTraffic = (
     method: string,
     rawUrl: string,
@@ -83,6 +85,17 @@ setup("create user and authenticate via UI", async ({ page }) => {
       response.status(),
     );
   });
+  page.on("pageerror", (error) => {
+    // Keep diagnostics count-only and name-only; browser errors can contain
+    // credentials, tokens, or source URLs in their messages.
+    observedPageErrors.push(error.name || "Error");
+    if (observedPageErrors.length > 4) observedPageErrors.shift();
+  });
+  page.on("console", (message) => {
+    if (message.type() !== "error") return;
+    observedConsoleErrors.push("console-error");
+    if (observedConsoleErrors.length > 4) observedConsoleErrors.shift();
+  });
   const authTokenResponse = page.waitForResponse(
     (response) => {
       try {
@@ -104,7 +117,7 @@ setup("create user and authenticate via UI", async ({ page }) => {
     tokenResponse = await authTokenResponse;
   } catch {
     throw new Error(
-      `[VS_AUTH] token-response-timeout:${observedAuthTraffic.join(",") || "none"}`,
+      `[VS_AUTH] token-response-timeout:${observedAuthTraffic.join(",") || "none"}:page-errors=${observedPageErrors.join("|") || "none"}:console-errors=${observedConsoleErrors.length}`,
     );
   }
   if (!tokenResponse.ok()) {
