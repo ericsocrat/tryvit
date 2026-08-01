@@ -12,7 +12,10 @@ import {
   TEST_PASSWORD,
   ensureTestUser,
 } from "./helpers/test-user";
-import { loadSafetyContractFromEnvironment } from "./helpers/visual-safety";
+import {
+  discoverLocalSupabaseOrigin,
+  loadSafetyContractFromEnvironment,
+} from "./helpers/visual-safety";
 
 const authStateDirectory = process.env.VISUAL_SAFETY_AUTH_STATE_DIR;
 if (!authStateDirectory || !path.isAbsolute(authStateDirectory)) {
@@ -39,13 +42,14 @@ setup("create user and authenticate via UI", async ({ page }) => {
   // credential, response body, or hosted endpoint.  A local authenticated run
   // must prove that the browser received a successful password-grant response
   // before we interpret a missing redirect as a cookie/middleware problem.
-  const expectedSupabaseOrigin =
-    safetyContract.mode === "local-authenticated"
-      ? safetyContract.supabaseOrigin
-      : null;
-  if (!expectedSupabaseOrigin) {
-    throw new Error("[VS_AUTH] local-origin-missing");
+  if (safetyContract.mode !== "local-authenticated") {
+    throw new Error(`[VS_AUTH] mode-${safetyContract.mode}`);
   }
+  const expectedSupabaseOrigin = (
+    await discoverLocalSupabaseOrigin(
+      path.resolve(process.cwd(), "..", "supabase", "config.toml"),
+    )
+  ).origin;
   const authTokenResponse = page.waitForResponse(
     (response) => {
       try {
