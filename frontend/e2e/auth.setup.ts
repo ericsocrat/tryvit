@@ -50,6 +50,39 @@ setup("create user and authenticate via UI", async ({ page }) => {
       path.resolve(process.cwd(), "..", "supabase", "config.toml"),
     )
   ).origin;
+  const observedAuthTraffic: string[] = [];
+  const recordLoopbackAuthTraffic = (
+    method: string,
+    rawUrl: string,
+    status?: number,
+  ) => {
+    try {
+      const url = new URL(rawUrl);
+      if (
+        !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) ||
+        !url.pathname.startsWith("/auth/")
+      ) {
+        return;
+      }
+      observedAuthTraffic.push(
+        `${method} ${url.pathname}${status === undefined ? "" : ` ${status}`}`,
+      );
+      if (observedAuthTraffic.length > 12) observedAuthTraffic.shift();
+    } catch {
+      // Ignore malformed/non-loopback URLs; the browser safety fixture owns
+      // the authoritative egress assertion.
+    }
+  };
+  page.on("request", (request) => {
+    recordLoopbackAuthTraffic(request.method(), request.url());
+  });
+  page.on("response", (response) => {
+    recordLoopbackAuthTraffic(
+      response.request().method(),
+      response.url(),
+      response.status(),
+    );
+  });
   const authTokenResponse = page.waitForResponse(
     (response) => {
       try {
@@ -66,7 +99,14 @@ setup("create user and authenticate via UI", async ({ page }) => {
     { timeout: 15_000 },
   );
   await page.getByRole("button", { name: "Sign In" }).click();
-  const tokenResponse = await authTokenResponse;
+  let tokenResponse: Awaited<typeof authTokenResponse>;
+  try {
+    tokenResponse = await authTokenResponse;
+  } catch {
+    throw new Error(
+      `[VS_AUTH] token-response-timeout:${observedAuthTraffic.join(",") || "none"}`,
+    );
+  }
   if (!tokenResponse.ok()) {
     throw new Error(`[VS_AUTH] token-status-${tokenResponse.status()}`);
   }
