@@ -8,16 +8,18 @@ import path from "node:path";
 
 import { expect, test as setup } from "./fixtures/safe-test";
 import {
-    TEST_EMAIL,
-    TEST_PASSWORD,
-    ensureTestUser,
+  TEST_EMAIL,
+  TEST_PASSWORD,
+  ensureTestUser,
 } from "./helpers/test-user";
+import { loadSafetyContractFromEnvironment } from "./helpers/visual-safety";
 
 const authStateDirectory = process.env.VISUAL_SAFETY_AUTH_STATE_DIR;
 if (!authStateDirectory || !path.isAbsolute(authStateDirectory)) {
   throw new Error("[VS_AUTH_STATE_DIR] owned-temporary-directory-required");
 }
 const AUTH_STATE_PATH = path.join(authStateDirectory, "user.json");
+const safetyContract = loadSafetyContractFromEnvironment(process.env);
 
 setup("create user and authenticate via UI", async ({ page }) => {
   // Auth flow involves a network round-trip to Supabase (user creation +
@@ -37,7 +39,10 @@ setup("create user and authenticate via UI", async ({ page }) => {
   // credential, response body, or hosted endpoint.  A local authenticated run
   // must prove that the browser received a successful password-grant response
   // before we interpret a missing redirect as a cookie/middleware problem.
-  const expectedSupabaseOrigin = process.env.VISUAL_SAFETY_SUPABASE_ORIGIN;
+  const expectedSupabaseOrigin =
+    safetyContract.mode === "local-authenticated"
+      ? safetyContract.supabaseOrigin
+      : null;
   if (!expectedSupabaseOrigin) {
     throw new Error("[VS_AUTH] local-origin-missing");
   }
