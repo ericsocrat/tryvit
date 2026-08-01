@@ -236,9 +236,10 @@ describe("browser workflow visual-safety contract", () => {
     expect(nextConfigSource).toContain(
       'process.env.VISUAL_SAFETY_MODE === "local-authenticated"',
     );
-    expect(nextConfigSource).toContain('"http://127.0.0.1:55001"');
-    expect(nextConfigSource).toContain('"http://localhost:55001"');
-    expect(nextConfigSource).not.toContain("http://127.0.0.1:54321");
+    expect(nextConfigSource).toContain("process.env.NEXT_PUBLIC_SUPABASE_URL");
+    expect(nextConfigSource).toContain("new URL(raw)");
+    expect(nextConfigSource).toContain("local visual-safety Supabase origin must be loopback HTTP");
+    expect(nextConfigSource).not.toMatch(/55001|54321/u);
   });
 
   it("hard-binds the catalog fixture seeder to the configured guarded loopback runtime", () => {
