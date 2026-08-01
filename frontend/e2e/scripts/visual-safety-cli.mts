@@ -105,6 +105,13 @@ const ARTIFACT_ROOTS = Object.freeze([
 ]);
 const activeOwnedCleanups = new Set<() => Promise<void>>();
 
+function ownedLoopbackOrigins(contract: SafetyContract): readonly string[] {
+  const origins = new Set<string>([contract.appOrigin]);
+  const supabaseOrigin = contract.supabaseOrigin ?? contract.publicBuildAdapter?.supabaseOrigin;
+  if (supabaseOrigin) origins.add(supabaseOrigin);
+  return [...origins];
+}
+
 function registerOwnedCleanup(cleanup: () => Promise<void>): () => void {
   activeOwnedCleanups.add(cleanup);
   return () => activeOwnedCleanups.delete(cleanup);
@@ -1205,6 +1212,7 @@ async function runPlaywright(mode: SafetyMode, args: string[]): Promise<number> 
       violationMarkerPath,
       contract,
       allowedConnectHostnames: REVIEWED_EXTERNAL_CONNECT_HOSTNAMES,
+      allowedLoopbackOrigins: ownedLoopbackOrigins(contract),
     });
     const unregisterProxy = registerOwnedCleanup(proxy.close);
     let authState: ReturnType<typeof createOwnedAuthStateDirectory> | undefined;
@@ -1317,6 +1325,7 @@ async function serveCommand(
     violationMarkerPath,
     contract,
     allowedConnectHostnames: REVIEWED_EXTERNAL_CONNECT_HOSTNAMES,
+    allowedLoopbackOrigins: ownedLoopbackOrigins(contract),
   });
   const unregisterProxy = registerOwnedCleanup(proxy.close);
   let server: Awaited<ReturnType<typeof startOwnedServer>> | undefined;
@@ -1394,9 +1403,10 @@ async function runLighthouse(contract: SafetyContract, requested: string[]): Pro
     violationMarkerPath,
     contract,
     allowedConnectHostnames: REVIEWED_EXTERNAL_CONNECT_HOSTNAMES,
-    // Lighthouse receives an additional path-aware Puppeteer guard below.
-    // Chromium background CONNECTs expose no path, so the proxy contains them
-    // while the page guard is responsible for classifying Supabase attempts.
+    allowedLoopbackOrigins: ownedLoopbackOrigins(contract),
+    // Lighthouse's page guard classifies HTTP and CDP WebSocket events.
+    // Chromium background CONNECTs expose neither a page nor a path, so this
+    // lower layer contains them without treating them as Supabase evidence.
     opaqueConnectPolicy: "contain",
   });
   const unregisterProxy = registerOwnedCleanup(proxy.close);
@@ -1543,6 +1553,7 @@ async function main(): Promise<number> {
       violationMarkerPath,
       contract,
       allowedConnectHostnames: REVIEWED_EXTERNAL_CONNECT_HOSTNAMES,
+      allowedLoopbackOrigins: ownedLoopbackOrigins(contract),
     });
     const unregisterProxy = registerOwnedCleanup(proxy.close);
     try {

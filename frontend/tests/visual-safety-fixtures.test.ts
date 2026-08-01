@@ -23,9 +23,7 @@ function source(filename: string): string {
 describe("Playwright fixture safety contract", () => {
   it("routes every e2e test/setup file through the safe fixture", () => {
     const runnable = filesBelow(e2eRoot).filter((filename) =>
-      /(?:\.spec\.ts|(?:^|[\\/])(?:auth|functional\.auth)\.setup\.ts)$/u.test(
-        filename,
-      ),
+      /(?:\.spec\.ts|(?:^|[\\/])(?:auth|functional\.auth)\.setup\.ts)$/u.test(filename),
     );
     expect(runnable.length).toBeGreaterThan(30);
     for (const filename of runnable) {
@@ -57,9 +55,7 @@ describe("Playwright fixture safety contract", () => {
         !filename.endsWith("visual-safety-auto-fixture-negative.spec.ts"),
     );
     for (const filename of candidates) {
-      expect(source(filename), path.relative(frontendRoot, filename)).not.toMatch(
-        /\bfetch\s*\(/u,
-      );
+      expect(source(filename), path.relative(frontendRoot, filename)).not.toMatch(/\bfetch\s*\(/u);
     }
   });
 
@@ -67,9 +63,7 @@ describe("Playwright fixture safety contract", () => {
     const clientFiles = filesBelow(e2eRoot).filter((filename) =>
       source(filename).includes("createClient("),
     );
-    expect(clientFiles.map((value) => path.basename(value))).toEqual([
-      "test-user.ts",
-    ]);
+    expect(clientFiles.map((value) => path.basename(value))).toEqual(["test-user.ts"]);
     const helper = source(clientFiles[0]);
     expect(helper).toContain("global: { fetch: runtime.fetch }");
     expect(helper).toContain("createGuardedWebSocketConstructor");
@@ -78,22 +72,19 @@ describe("Playwright fixture safety contract", () => {
     );
   });
 
-  it.each([
-    "pr-screenshots.spec.ts",
-    "screenshot-capture.spec.ts",
-    "visual-audit.spec.ts",
-  ])("makes %s cleanup blocking and teardown-owned", (filename) => {
-    const contents = source(path.join(e2eRoot, filename));
-    expect(contents).toContain("test.afterAll");
-    expect(contents).toContain("if (!listRes.ok)");
-    expect(contents).toContain("if (!deleteRes.ok)");
-    expect(contents).not.toMatch(/Best-effort cleanup|best effort/u);
-  });
+  it.each(["pr-screenshots.spec.ts", "screenshot-capture.spec.ts", "visual-audit.spec.ts"])(
+    "makes %s cleanup blocking and teardown-owned",
+    (filename) => {
+      const contents = source(path.join(e2eRoot, filename));
+      expect(contents).toContain("test.afterAll");
+      expect(contents).toContain("if (!listRes.ok)");
+      expect(contents).toContain("if (!deleteRes.ok)");
+      expect(contents).not.toMatch(/Best-effort cleanup|best effort/u);
+    },
+  );
 
   it("does not mask local SDK cleanup failures", () => {
-    const onboarding = source(
-      path.join(e2eRoot, "functional-onboarding.spec.ts"),
-    );
+    const onboarding = source(path.join(e2eRoot, "functional-onboarding.spec.ts"));
     expect(onboarding).toContain("onboarding-user-cleanup-list");
     expect(onboarding).toContain("onboarding-user-cleanup-delete");
     expect(onboarding).toContain("test.afterAll");
@@ -107,9 +98,7 @@ describe("Playwright fixture safety contract", () => {
     const config = source(path.join(frontendRoot, "playwright.config.ts"));
     expect(config).not.toMatch(/HAS_AUTH/u);
     expect(config).not.toMatch(/!!process\.env\.SUPABASE_SERVICE_ROLE_KEY/u);
-    expect(config).toContain(
-      'safetyContract.mode === "local-authenticated"',
-    );
+    expect(config).toContain('safetyContract.mode === "local-authenticated"');
     expect(config).toContain('serviceWorkers: "block"');
     expect(config).toContain("port: 3000");
     expect(config).not.toContain("webServer: {\n    url:");
@@ -121,6 +110,12 @@ describe("Playwright fixture safety contract", () => {
     expect(config).toContain("VISUAL_SAFETY_INVOCATION_FILE");
     expect(config).toContain("VISUAL_SAFETY_INVOCATION_TOKEN");
     expect(config).toContain("validateInvocationProof");
+    expect(config).toContain("readStableRegularFile");
+    expect(config).toContain("fstatSync(descriptor, { bigint: true })");
+    expect(config).toContain("lstatSync(filename, { bigint: true })");
+    expect(config).toContain('readFileSync(descriptor, "utf8")');
+    expect(config).not.toContain('readFileSync(invocationLexical, "utf8")');
+    expect(config).not.toContain('readFileSync(ownerMarker, "utf8")');
     expect(config.indexOf("lstatSync(lexical)")).toBeLessThan(
       config.indexOf("realpathSync.native(lexical)"),
     );
@@ -128,13 +123,9 @@ describe("Playwright fixture safety contract", () => {
 
   it("routes quality audits through the guard and selects auth explicitly", () => {
     for (const filename of ["mobile.audit.spec.ts", "desktop.audit.spec.ts"]) {
-      const contents = source(
-        path.join(frontendRoot, "tests", "quality", filename),
-      );
+      const contents = source(path.join(frontendRoot, "tests", "quality", filename));
       expect(contents).toContain('from "../../e2e/fixtures/safe-test"');
-      expect(contents).toContain(
-        'process.env.VISUAL_SAFETY_MODE === "local-authenticated"',
-      );
+      expect(contents).toContain('process.env.VISUAL_SAFETY_MODE === "local-authenticated"');
       expect(contents).not.toMatch(
         /!!process\.env\.(?:NEXT_PUBLIC_SUPABASE_URL|SUPABASE_SERVICE_ROLE_KEY)/u,
       );

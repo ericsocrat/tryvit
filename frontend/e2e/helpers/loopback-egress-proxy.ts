@@ -9,8 +9,9 @@ import path from "node:path";
 import type { Duplex } from "node:stream";
 
 // Node's type-stripping loader requires the source extension at runtime.
+/* prettier-ignore */
 // @ts-expect-error TS5097: executed by the safety CLI with strip-types.
-import { classifyForbiddenEgress, type VisualSafetyContract } from "./visual-safety.ts";
+import { canonicalizeLoopbackOrigin, classifyForbiddenEgress, type VisualSafetyContract } from "./visual-safety.ts";
 
 const PROXY_CLOSE_TIMEOUT_MS = 2_000;
 
@@ -49,14 +50,12 @@ export async function startLoopbackEgressProxy(
     readonly violationMarkerPath?: string;
     readonly opaqueConnectPolicy?: "violation" | "contain";
     readonly allowedConnectHostnames?: readonly string[];
-    readonly contract?: Pick<
-      VisualSafetyContract,
-      "knownHostedSupabaseOrigins"
-    >;
+    readonly allowedLoopbackOrigins?: readonly string[];
+    readonly contract?: Pick<VisualSafetyContract, "knownHostedSupabaseOrigins">;
   } = {},
 ): Promise<LoopbackEgressProxy> {
   const summary: LoopbackEgressSummary = { total: 0, categories: {} };
-  const allowedConnectHostnames = new Set(
+  const allowedConnectDestinations = new Map(
     (options.allowedConnectHostnames ?? []).map((hostname) => {
       const normalized = hostname.toLowerCase();
       if (
@@ -66,9 +65,40 @@ export async function startLoopbackEgressProxy(
       ) {
         throw new Error("[VS_PROXY_ALLOWLIST] invalid-hostname");
       }
-      return normalized;
+      return [normalized, normalized] as const;
     }),
   );
+  const allowedLoopbackDestinations = new Map<
+    string,
+    {
+      readonly authority: string;
+      readonly connectHostname: "localhost" | "127.0.0.1" | "::1";
+      readonly port: number;
+      readonly protocol: "http:" | "https:";
+    }
+  >();
+  const allowedLoopbackAuthorities = new Map<
+    string,
+    { readonly connectHostname: "localhost" | "127.0.0.1" | "::1"; readonly port: number }
+  >();
+  for (const rawOrigin of options.allowedLoopbackOrigins ?? []) {
+    const canonical = canonicalizeLoopbackOrigin(rawOrigin);
+    const connectHostname = canonical.hostname === "[::1]" ? "::1" : canonical.hostname;
+    const authority =
+      canonical.hostname === "[::1]"
+        ? `[::1]:${canonical.effectivePort}`
+        : `${canonical.hostname}:${canonical.effectivePort}`;
+    allowedLoopbackDestinations.set(canonical.origin, {
+      authority,
+      connectHostname,
+      port: canonical.effectivePort,
+      protocol: canonical.protocol,
+    });
+    allowedLoopbackAuthorities.set(authority, {
+      connectHostname,
+      port: canonical.effectivePort,
+    });
+  }
   const sockets = new Set<Duplex>();
   const trackSocket = <T extends Duplex>(socket: T): T => {
     if (!sockets.has(socket)) {
@@ -88,33 +118,39 @@ export async function startLoopbackEgressProxy(
         throw new Error("[VS_PROXY_MARKER] violation-marker-path-missing");
       }
       mkdirSync(path.dirname(options.violationMarkerPath), { recursive: true });
-      writeFileSync(
-        options.violationMarkerPath,
-        `${JSON.stringify(summary, null, 2)}\n`,
-        { encoding: "utf8", mode: 0o600 },
-      );
+      writeFileSync(options.violationMarkerPath, `${JSON.stringify(summary, null, 2)}\n`, {
+        encoding: "utf8",
+        mode: 0o600,
+      });
     }
   };
 
-  const recordForbidden = (
-    rawUrl: string,
-    transport: "http" | "websocket",
-  ): boolean => {
-    const violation = classifyForbiddenEgress(
-      rawUrl,
-      transport,
-      options.contract,
-    );
+  const recordForbidden = (rawUrl: string, transport: "http" | "websocket"): boolean => {
+    const violation = classifyForbiddenEgress(rawUrl, transport, options.contract);
     if (!violation) return false;
     record(`proxy-${transport}-${violation.category}`);
     return true;
   };
 
   const server = createHttpServer((request, response) => {
+    const rawTarget = request.url ?? "";
     let target: URL;
     try {
-      target = new URL(request.url ?? "");
+      target = new URL(rawTarget);
     } catch {
+      record("proxy-invalid-target");
+      response.writeHead(400).end();
+      return;
+    }
+    const rawAuthority = /^http:\/\/([^/?#]+)(?:[/?#]|$)/u.exec(rawTarget)?.[1];
+    if (
+      target.protocol !== "http:" ||
+      target.username ||
+      target.password ||
+      target.hash ||
+      !rawAuthority ||
+      rawAuthority !== target.host
+    ) {
       record("proxy-invalid-target");
       response.writeHead(400).end();
       return;
@@ -129,9 +165,25 @@ export async function startLoopbackEgressProxy(
       response.writeHead(451).end();
       return;
     }
+    const destination = allowedLoopbackDestinations.get(target.origin);
+    if (!destination || destination.protocol !== "http:") {
+      record("proxy-loopback-target-not-allowed");
+      response.writeHead(451).end();
+      return;
+    }
+    const forwardedHeaders = { ...request.headers };
+    delete forwardedHeaders["proxy-authorization"];
+    delete forwardedHeaders["proxy-connection"];
+    forwardedHeaders.host = destination.authority;
     const forwarded = httpRequest(
-      target,
-      { method: request.method, headers: request.headers },
+      {
+        protocol: "http:",
+        hostname: destination.connectHostname,
+        port: destination.port,
+        path: `${target.pathname}${target.search}`,
+        method: request.method,
+        headers: forwardedHeaders,
+      },
       (upstream) => {
         response.writeHead(upstream.statusCode ?? 502, upstream.headers);
         upstream.pipe(response);
@@ -147,9 +199,7 @@ export async function startLoopbackEgressProxy(
   server.on("connect", (request, socket, head) => {
     trackSocket(socket);
     const authority = request.url ?? "";
-    const match = /^(localhost|127\.0\.0\.1|\[::1\]):([0-9]{1,5})$/u.exec(
-      authority,
-    );
+    const match = /^(localhost|127\.0\.0\.1|\[::1\]):([0-9]{1,5})$/u.exec(authority);
     let connectHostname: string | undefined;
     let connectPort: number | undefined;
     if (!match) {
@@ -179,15 +229,11 @@ export async function startLoopbackEgressProxy(
       else if (
         !forbiddenRecorded &&
         parsedAuthority.effectivePort === 443 &&
-        allowedConnectHostnames.has(parsedAuthority.parsed.hostname)
+        allowedConnectDestinations.has(parsedAuthority.parsed.hostname)
       ) {
-        connectHostname = parsedAuthority.parsed.hostname;
+        connectHostname = allowedConnectDestinations.get(parsedAuthority.parsed.hostname);
         connectPort = parsedAuthority.effectivePort;
-      }
-      else if (
-        !forbiddenRecorded &&
-        options.opaqueConnectPolicy !== "contain"
-      ) {
+      } else if (!forbiddenRecorded && options.opaqueConnectPolicy !== "contain") {
         // CONNECT hides the eventual HTTPS path. A custom-domain Supabase
         // request is therefore indistinguishable from another provider here,
         // so any request that bypasses the path-aware browser guard is fatal.
@@ -198,17 +244,21 @@ export async function startLoopbackEgressProxy(
         return;
       }
     } else {
-      connectHostname = match[1] === "[::1]" ? "::1" : match[1];
-      connectPort = Number(match[2]);
+      const allowedDestination = allowedLoopbackAuthorities.get(authority);
+      if (!allowedDestination) {
+        record("proxy-loopback-target-not-allowed");
+        socket.end("HTTP/1.1 451 Unavailable For Legal Reasons\r\n\r\n");
+        return;
+      }
+      connectHostname = allowedDestination.connectHostname;
+      connectPort = allowedDestination.port;
     }
     if (connectPort < 1 || connectPort > 65_535) {
       record("proxy-invalid-connect-port");
       socket.end("HTTP/1.1 400 Bad Request\r\n\r\n");
       return;
     }
-    const upstream = trackSocket(
-      netConnect(connectPort, connectHostname),
-    );
+    const upstream = trackSocket(netConnect(connectPort, connectHostname));
     upstream.once("connect", () => {
       socket.write("HTTP/1.1 200 Connection Established\r\n\r\n");
       if (head.length > 0) upstream.write(head);
@@ -276,11 +326,7 @@ export async function startLoopbackEgressProxy(
         try {
           server.close((error) => {
             destroyTrackedSockets();
-            finish(
-              error
-                ? new Error("[VS_PROXY_CLOSE] loopback-proxy-close-failed")
-                : undefined,
-            );
+            finish(error ? new Error("[VS_PROXY_CLOSE] loopback-proxy-close-failed") : undefined);
           });
           destroyTrackedSockets();
         } catch {

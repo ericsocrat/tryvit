@@ -413,6 +413,9 @@ describe("public Lighthouse page guard", () => {
     expect(guard.classify("https://api.synthetic.test/functions/v1/check")).toBe(
       "non-loopback-supabase-service",
     );
+    expect(guard.classify("wss://api.synthetic.test/realtime/v1/websocket")).toBe(
+      "non-loopback-supabase-service",
+    );
     expect(guard.classify("https://provider.synthetic.test/widget.js")).toBeNull();
   });
 
@@ -428,8 +431,22 @@ describe("public Lighthouse page guard", () => {
           continue(): Promise<void>;
         }) => Promise<void>)
       | undefined;
+    let websocketCreatedHandler: ((event: { url: string }) => void) | undefined;
+    const cdpOrder: string[] = [];
+    const cdpSession = {
+      send: vi.fn(async (command: string) => {
+        cdpOrder.push(`send:${command}`);
+      }),
+      on: vi.fn((event: string, handler: (event: { url: string }) => void) => {
+        cdpOrder.push(`on:${event}`);
+        if (event === "Network.webSocketCreated") {
+          websocketCreatedHandler = handler;
+        }
+      }),
+    };
     const page = {
       setBypassServiceWorker: vi.fn(async () => undefined),
+      createCDPSession: vi.fn(async () => cdpSession),
       setRequestInterception: vi.fn(async () => undefined),
       on: vi.fn((event: string, handler: typeof requestHandler) => {
         if (event === "request") requestHandler = handler;
@@ -448,6 +465,9 @@ describe("public Lighthouse page guard", () => {
     try {
       await guard(browser);
       expect(requestHandler).toBeTypeOf("function");
+      expect(cdpSession.send).toHaveBeenCalledWith("Network.enable");
+      expect(websocketCreatedHandler).toBeTypeOf("function");
+      expect(cdpOrder).toEqual(["on:Network.webSocketCreated", "send:Network.enable"]);
       const local = request("http://127.0.0.1:3000/auth/login");
       await requestHandler!(local);
       expect(local.continue).toHaveBeenCalledOnce();
@@ -457,13 +477,29 @@ describe("public Lighthouse page guard", () => {
       expect(provider.abort).toHaveBeenCalledWith("blockedbyclient");
       await expect(fs.stat(marker)).rejects.toMatchObject({ code: "ENOENT" });
 
+      websocketCreatedHandler!({
+        url: "wss://provider.synthetic.test/socket",
+      });
+      await expect(fs.stat(marker)).rejects.toMatchObject({ code: "ENOENT" });
+
+      websocketCreatedHandler!({
+        url: "wss://api.synthetic.test/realtime/v1/websocket",
+      });
+      expect(JSON.parse(await fs.readFile(marker, "utf8"))).toEqual({
+        total: 1,
+        categories: {
+          "lighthouse.websocket.non-loopback-supabase-service": 1,
+        },
+      });
+
       const forbidden = request("https://api.synthetic.test/rest/v1/products");
       await requestHandler!(forbidden);
       expect(forbidden.abort).toHaveBeenCalledWith("blockedbyclient");
       expect(JSON.parse(await fs.readFile(marker, "utf8"))).toEqual({
-        total: 1,
+        total: 2,
         categories: {
           "lighthouse.non-loopback-supabase-service": 1,
+          "lighthouse.websocket.non-loopback-supabase-service": 1,
         },
       });
     } finally {
@@ -487,9 +523,7 @@ describe("process ownership and loopback proxy", () => {
       end: vi.fn(),
     };
     containUpstreamProxyFailure(
-      afterHeaders as unknown as Parameters<
-        typeof containUpstreamProxyFailure
-      >[0],
+      afterHeaders as unknown as Parameters<typeof containUpstreamProxyFailure>[0],
     );
     expect(afterHeaders.destroy).toHaveBeenCalledOnce();
     expect(afterHeaders.writeHead).not.toHaveBeenCalled();
@@ -502,9 +536,7 @@ describe("process ownership and loopback proxy", () => {
       end: vi.fn(),
     };
     containUpstreamProxyFailure(
-      beforeHeaders as unknown as Parameters<
-        typeof containUpstreamProxyFailure
-      >[0],
+      beforeHeaders as unknown as Parameters<typeof containUpstreamProxyFailure>[0],
     );
     expect(beforeHeaders.writeHead).toHaveBeenCalledWith(502);
     expect(beforeHeaders.end).toHaveBeenCalledOnce();
@@ -617,6 +649,7 @@ describe("process ownership and loopback proxy", () => {
     if (!address || typeof address === "string") throw new Error("test port");
     const proxy = await startLoopbackEgressProxy({
       writeViolationMarker: false,
+      allowedLoopbackOrigins: [`http://127.0.0.1:${address.port}`],
     });
 
     const status = await new Promise<number>((resolve, reject) => {
@@ -630,6 +663,39 @@ describe("process ownership and loopback proxy", () => {
 
     expect(status).toBe(204);
     expect(proxy.summary).toEqual({ total: 0, categories: {} });
+    await proxy.close();
+    await new Promise<void>((resolve) => target.close(() => resolve()));
+  });
+
+  it("refuses an unapproved loopback HTTP target without opening it", async () => {
+    let accepted = 0;
+    const target = createHttpServer((_request, response) => {
+      accepted += 1;
+      response.writeHead(204).end();
+    });
+    target.listen(0, "127.0.0.1");
+    await once(target, "listening");
+    const address = target.address();
+    if (!address || typeof address === "string") throw new Error("test port");
+    const proxy = await startLoopbackEgressProxy({
+      writeViolationMarker: false,
+    });
+
+    const status = await new Promise<number>((resolve, reject) => {
+      const request = httpRequest(proxy.origin, {
+        path: `http://127.0.0.1:${address.port}/not-owned`,
+      });
+      request.once("response", (response) => resolve(response.statusCode ?? 0));
+      request.once("error", reject);
+      request.end();
+    });
+
+    expect(status).toBe(451);
+    expect(accepted).toBe(0);
+    expect(proxy.summary).toEqual({
+      total: 1,
+      categories: { "proxy-loopback-target-not-allowed": 1 },
+    });
     await proxy.close();
     await new Promise<void>((resolve) => target.close(() => resolve()));
   });
@@ -761,6 +827,39 @@ describe("process ownership and loopback proxy", () => {
     await proxy.close();
   });
 
+  it("refuses an unapproved loopback CONNECT target", async () => {
+    let accepted = 0;
+    const target = createNetServer(() => {
+      accepted += 1;
+    });
+    target.listen(0, "127.0.0.1");
+    await once(target, "listening");
+    const address = target.address();
+    if (!address || typeof address === "string") throw new Error("test port");
+    const proxy = await startLoopbackEgressProxy({
+      writeViolationMarker: false,
+    });
+
+    const response = await rawProxyExchange(
+      proxy.origin,
+      [
+        `CONNECT 127.0.0.1:${address.port} HTTP/1.1`,
+        `Host: 127.0.0.1:${address.port}`,
+        "",
+        "",
+      ].join("\r\n"),
+    );
+
+    expect(response).toContain("451 Unavailable For Legal Reasons");
+    expect(accepted).toBe(0);
+    expect(proxy.summary).toEqual({
+      total: 1,
+      categories: { "proxy-loopback-target-not-allowed": 1 },
+    });
+    await proxy.close();
+    await new Promise<void>((resolve) => target.close(() => resolve()));
+  });
+
   it("destroys both halves of an active CONNECT tunnel during bounded close", async () => {
     const target = createNetServer();
     target.listen(0, "127.0.0.1");
@@ -771,6 +870,7 @@ describe("process ownership and loopback proxy", () => {
     const acceptedPromise = once(target, "connection").then(([socket]) => socket as Socket);
     const proxy = await startLoopbackEgressProxy({
       writeViolationMarker: false,
+      allowedLoopbackOrigins: [`https://127.0.0.1:${address.port}`],
     });
     const proxyUrl = new URL(proxy.origin);
     const client = netConnect(Number(proxyUrl.port), "127.0.0.1");

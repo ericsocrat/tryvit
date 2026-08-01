@@ -1,5 +1,13 @@
 import { createHash, timingSafeEqual } from "node:crypto";
-import { lstatSync, readFileSync, realpathSync } from "node:fs";
+import {
+  closeSync,
+  constants as fsConstants,
+  fstatSync,
+  lstatSync,
+  openSync,
+  readFileSync,
+  realpathSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -20,10 +28,38 @@ function pathIsWithin(root: string, candidate: string): boolean {
   const relative = path.relative(root, candidate);
   return (
     relative === "" ||
-    (!relative.startsWith(`..${path.sep}`) &&
-      relative !== ".." &&
-      !path.isAbsolute(relative))
+    (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative))
   );
+}
+
+function readStableRegularFile(filename: string, failureMessage: string): string {
+  let descriptor: number | undefined;
+  try {
+    const beforeOpen = lstatSync(filename, { bigint: true });
+    if (!beforeOpen.isFile() || beforeOpen.isSymbolicLink()) {
+      throw new Error(failureMessage);
+    }
+    const noFollow = process.platform === "win32" ? 0 : fsConstants.O_NOFOLLOW;
+    descriptor = openSync(filename, fsConstants.O_RDONLY | noFollow);
+    const opened = fstatSync(descriptor, { bigint: true });
+    const afterOpen = lstatSync(filename, { bigint: true });
+    if (
+      !opened.isFile() ||
+      !afterOpen.isFile() ||
+      afterOpen.isSymbolicLink() ||
+      beforeOpen.dev !== opened.dev ||
+      beforeOpen.ino !== opened.ino ||
+      afterOpen.dev !== opened.dev ||
+      afterOpen.ino !== opened.ino
+    ) {
+      throw new Error(failureMessage);
+    }
+    return readFileSync(descriptor, "utf8");
+  } catch {
+    throw new Error(failureMessage);
+  } finally {
+    if (descriptor !== undefined) closeSync(descriptor);
+  }
 }
 
 function enabled(name: string): boolean {
@@ -51,11 +87,7 @@ if (!proxyServer) {
 
 const invocationFile = process.env.VISUAL_SAFETY_INVOCATION_FILE;
 const invocationToken = process.env.VISUAL_SAFETY_INVOCATION_TOKEN;
-if (
-  !invocationFile ||
-  !path.isAbsolute(invocationFile) ||
-  !invocationToken
-) {
+if (!invocationFile || !path.isAbsolute(invocationFile) || !invocationToken) {
   throw new Error("[VS_INVOCATION_PROOF] launcher-proof-required");
 }
 const invocationTemporaryRoot = realpathSync.native(tmpdir());
@@ -65,24 +97,21 @@ if (pathIsWithin(repositoryRoot, invocationTemporaryRoot)) {
 const invocationLexical = path.resolve(invocationFile);
 const invocationDirectory = path.dirname(invocationLexical);
 const invocationDirectoryMetadata = lstatSync(invocationDirectory);
-const invocationFileMetadata = lstatSync(invocationLexical);
 if (
   path.dirname(invocationDirectory) !== invocationTemporaryRoot ||
-  !path.basename(invocationDirectory).startsWith(
-    "tryvit-visual-invocation-",
-  ) ||
+  !path.basename(invocationDirectory).startsWith("tryvit-visual-invocation-") ||
   !invocationDirectoryMetadata.isDirectory() ||
   invocationDirectoryMetadata.isSymbolicLink() ||
   path.basename(invocationLexical) !== "proof.json" ||
-  !invocationFileMetadata.isFile() ||
-  invocationFileMetadata.isSymbolicLink() ||
   realpathSync.native(invocationLexical) !== invocationLexical
 ) {
   throw new Error("[VS_INVOCATION_PROOF] launcher-proof-invalid");
 }
 let invocationProof: unknown;
 try {
-  invocationProof = JSON.parse(readFileSync(invocationLexical, "utf8"));
+  invocationProof = JSON.parse(
+    readStableRegularFile(invocationLexical, "[VS_INVOCATION_PROOF] launcher-proof-invalid"),
+  );
 } catch {
   throw new Error("[VS_INVOCATION_PROOF] launcher-proof-invalid");
 }
@@ -91,10 +120,7 @@ const inheritedRunnerPid = process.env.VISUAL_SAFETY_CONFIG_RUNNER_PID;
 const inheritedSeal = process.env.VISUAL_SAFETY_CONFIG_SEAL;
 const sealFor = (runnerPid: number, serverPid: number): string =>
   createHash("sha256")
-    .update(
-      `${invocationToken}:${runnerPid}:${serverPid}:${invocationLexical}`,
-      "utf8",
-    )
+    .update(`${invocationToken}:${runnerPid}:${serverPid}:${invocationLexical}`, "utf8")
     .digest("hex");
 if (inheritedRunnerPid || inheritedSeal) {
   const runnerPid = Number(inheritedRunnerPid);
@@ -125,10 +151,7 @@ if (inheritedRunnerPid || inheritedSeal) {
     proxyOrigin: proxyServer,
   });
   process.env.VISUAL_SAFETY_CONFIG_RUNNER_PID = String(process.pid);
-  process.env.VISUAL_SAFETY_CONFIG_SEAL = sealFor(
-    process.pid,
-    validated.serverPid,
-  );
+  process.env.VISUAL_SAFETY_CONFIG_SEAL = sealFor(process.pid, validated.serverPid);
 }
 
 const authStateDirectory = process.env.VISUAL_SAFETY_AUTH_STATE_DIR;
@@ -139,9 +162,7 @@ if (LOCAL_AUTHENTICATED) {
     !authStateDirectory ||
     !path.isAbsolute(authStateDirectory) ||
     !authStateOwner ||
-    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
-      authStateOwner,
-    )
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(authStateOwner)
   ) {
     throw new Error("[VS_AUTH_STATE_DIR] owned-temporary-directory-required");
   }
@@ -163,24 +184,19 @@ if (LOCAL_AUTHENTICATED) {
   if (resolved !== lexical) {
     throw new Error("[VS_AUTH_STATE_DIR] owned-temporary-directory-invalid");
   }
-  const ownerMarker = path.join(
-    resolved,
-    ".tryvit-visual-safety-owner",
-  );
-  const ownerMetadata = lstatSync(ownerMarker);
+  const ownerMarker = path.join(resolved, ".tryvit-visual-safety-owner");
   if (
-    !ownerMetadata.isFile() ||
-    ownerMetadata.isSymbolicLink() ||
-    readFileSync(ownerMarker, "utf8").trim() !== authStateOwner
+    readStableRegularFile(
+      ownerMarker,
+      "[VS_AUTH_STATE_DIR] owned-temporary-directory-invalid",
+    ).trim() !== authStateOwner
   ) {
     throw new Error("[VS_AUTH_STATE_DIR] owned-temporary-directory-invalid");
   }
   verifiedAuthStateDirectory = resolved;
 }
 const authStatePath = (filename: string): string | undefined =>
-  verifiedAuthStateDirectory
-    ? path.join(verifiedAuthStateDirectory, filename)
-    : undefined;
+  verifiedAuthStateDirectory ? path.join(verifiedAuthStateDirectory, filename) : undefined;
 
 /* ── Project definitions ─────────────────────────────────────────────────── */
 
@@ -301,15 +317,11 @@ const safetyNegativeProject = {
 };
 
 const projects = [
-  ...(LOCAL_AUTHENTICATED
-    ? [authSetupProject, functionalAuthSetupProject]
-    : []),
+  ...(LOCAL_AUTHENTICATED ? [authSetupProject, functionalAuthSetupProject] : []),
   smokeProject,
   ...(LOCAL_AUTHENTICATED ? [authenticatedProject, functionalProject] : []),
   ...(HAS_VISUAL ? [visualSmokeProject] : []),
-  ...(HAS_VISUAL && LOCAL_AUTHENTICATED
-    ? [visualAuthenticatedProject]
-    : []),
+  ...(HAS_VISUAL && LOCAL_AUTHENTICATED ? [visualAuthenticatedProject] : []),
   ...(HAS_QUALITY ? [qualityMobileProject, qualityDesktopProject] : []),
   ...(HAS_SAFETY_BROWSER_TESTS ? [safetyBrowserProject] : []),
   ...(HAS_SAFETY_NEGATIVE_TESTS ? [safetyNegativeProject] : []),
@@ -342,8 +354,7 @@ export default defineConfig({
       threshold: 0.2,
     },
   },
-  snapshotPathTemplate:
-    "{testDir}/__screenshots__/{testFilePath}/{arg}{ext}",
+  snapshotPathTemplate: "{testDir}/__screenshots__/{testFilePath}/{arg}{ext}",
   ...(LOCAL_AUTHENTICATED && { globalTeardown: "./e2e/global-teardown" }),
   use: {
     baseURL: safetyContract.appOrigin,
@@ -373,12 +384,10 @@ export default defineConfig({
             VISUAL_SAFETY_MODE: safetyContract.mode,
             VISUAL_SAFETY_APP_ORIGIN: safetyContract.appOrigin,
             BASE_URL: safetyContract.appOrigin,
-            VISUAL_SAFETY_SUPABASE_ORIGIN:
-              safetyContract.supabaseOrigin ?? "",
+            VISUAL_SAFETY_SUPABASE_ORIGIN: safetyContract.supabaseOrigin ?? "",
             VISUAL_SAFETY_BUILD_SUPABASE_ORIGIN:
               safetyContract.publicBuildAdapter?.supabaseOrigin ?? "",
-            VISUAL_SAFETY_BUILD_ADAPTER_ID:
-              safetyContract.publicBuildAdapter?.id ?? "",
+            VISUAL_SAFETY_BUILD_ADAPTER_ID: safetyContract.publicBuildAdapter?.id ?? "",
             NEXT_PUBLIC_SUPABASE_URL: safetyContract.supabaseOrigin ?? "",
             NEXT_PUBLIC_SUPABASE_ANON_KEY: "",
             SUPABASE_SERVICE_ROLE_KEY: "",

@@ -35,9 +35,7 @@ function classify(rawUrl) {
   if (
     !isLoopback(hostname) &&
     SERVICE_PREFIXES.some(
-      (prefix) =>
-        target.pathname === prefix ||
-        target.pathname.startsWith(`${prefix}/`),
+      (prefix) => target.pathname === prefix || target.pathname.startsWith(`${prefix}/`),
     )
   ) {
     return "non-loopback-supabase-service";
@@ -68,6 +66,12 @@ function record(category) {
 
 async function installPageGuard(page) {
   await page.setBypassServiceWorker(true);
+  const session = await page.createCDPSession();
+  session.on("Network.webSocketCreated", ({ url }) => {
+    const violation = classify(url);
+    if (violation) record(`websocket.${violation}`);
+  });
+  await session.send("Network.enable");
   await page.setRequestInterception(true);
   page.on("request", async (request) => {
     const rawUrl = request.url();

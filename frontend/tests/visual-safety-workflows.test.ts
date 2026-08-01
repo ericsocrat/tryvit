@@ -168,11 +168,26 @@ describe("browser workflow visual-safety contract", () => {
   it("keeps Lighthouse local, guarded, and off temporary public storage", () => {
     expect(browserJobs.lighthouse).toContain("npm run visual-safety:lighthouse -- mobile");
     expect(browserJobs.lighthouse).toContain("npx playwright install --with-deps chromium");
-    expect(browserJobs.lighthouse.indexOf("npx playwright install --with-deps chromium")).toBeLessThan(
-      browserJobs.lighthouse.indexOf("npm run visual-safety:preflight"),
-    );
+    expect(
+      browserJobs.lighthouse.indexOf("npx playwright install --with-deps chromium"),
+    ).toBeLessThan(browserJobs.lighthouse.indexOf("npm run visual-safety:preflight"));
     expect(workflowSources.lighthouse).not.toContain("temporaryPublicStorage");
     expect(workflowSources.lighthouse).not.toContain("treosh/lighthouse-ci-action");
+  });
+
+  it("contains opaque Chromium CONNECTs only inside the Lighthouse page guard", () => {
+    const serveSection = safetyCliSource.slice(
+      safetyCliSource.indexOf("async function serveCommand("),
+      safetyCliSource.indexOf("async function assertCommand("),
+    );
+    const lighthouseSection = safetyCliSource.slice(
+      safetyCliSource.indexOf("async function runLighthouse("),
+      safetyCliSource.indexOf("async function main()"),
+    );
+
+    expect(serveSection).not.toContain('opaqueConnectPolicy: "contain"');
+    expect(lighthouseSection).toContain('opaqueConnectPolicy: "contain"');
+    expect(lighthouseSection).toContain("lighthouse-public-guard.cjs");
   });
 
   it.each(Object.entries(runnerSources))(

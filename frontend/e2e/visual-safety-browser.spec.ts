@@ -9,18 +9,17 @@ import {
 } from "./helpers/visual-safety";
 import { startLoopbackEgressProxy } from "./helpers/loopback-egress-proxy";
 
-async function expectedViolationProxy() {
+async function expectedViolationProxy(allowedLoopbackOrigins?: readonly string[]) {
   const contract = loadSafetyContractFromEnvironment(process.env);
   return startLoopbackEgressProxy({
     writeViolationMarker: false,
     contract,
+    allowedLoopbackOrigins: allowedLoopbackOrigins ?? [contract.appOrigin],
   });
 }
 
 test.describe("visual-safety browser transport", () => {
-  test("blocks synthetic hosted HTTP before the loopback proxy", async ({
-    browser,
-  }) => {
+  test("blocks synthetic hosted HTTP before the loopback proxy", async ({ browser }) => {
     const contract = loadSafetyContractFromEnvironment(process.env);
     const audit = createEgressAudit();
     const proxy = await expectedViolationProxy();
@@ -53,9 +52,7 @@ test.describe("visual-safety browser transport", () => {
     }
   });
 
-  test("blocks a synthetic custom-domain Supabase service path", async ({
-    browser,
-  }) => {
+  test("blocks a synthetic custom-domain Supabase service path", async ({ browser }) => {
     const contract = loadSafetyContractFromEnvironment(process.env);
     const audit = createEgressAudit();
     const proxy = await expectedViolationProxy();
@@ -82,9 +79,7 @@ test.describe("visual-safety browser transport", () => {
     }
   });
 
-  test("intercepts a loopback redirect before its hosted second hop", async ({
-    browser,
-  }) => {
+  test("intercepts a loopback redirect before its hosted second hop", async ({ browser }) => {
     let firstHopCount = 0;
     const redirector = createServer((_request, response) => {
       firstHopCount += 1;
@@ -102,7 +97,7 @@ test.describe("visual-safety browser transport", () => {
 
     const contract = loadSafetyContractFromEnvironment(process.env);
     const audit = createEgressAudit();
-    const proxy = await expectedViolationProxy();
+    const proxy = await expectedViolationProxy([`http://127.0.0.1:${address.port}`]);
     const context = await browser.newContext({
       serviceWorkers: "block",
       proxy: { server: proxy.origin },
@@ -111,9 +106,7 @@ test.describe("visual-safety browser transport", () => {
       await installBrowserEgressGuards(context, contract, audit);
       const page = await context.newPage();
 
-      await page
-        .goto(`http://127.0.0.1:${address.port}/redirect`)
-        .catch(() => {});
+      await page.goto(`http://127.0.0.1:${address.port}/redirect`).catch(() => {});
 
       expect(firstHopCount).toBe(1);
       expect(audit.summary()).toEqual({ total: 0, categories: {} });
@@ -198,10 +191,7 @@ test.describe("visual-safety browser transport", () => {
     }
   });
 
-  test("keeps service workers blocked in the safety context", async (
-    { browser },
-    testInfo,
-  ) => {
+  test("keeps service workers blocked in the safety context", async ({ browser }, testInfo) => {
     const contract = loadSafetyContractFromEnvironment(process.env);
     const audit = createEgressAudit();
     const proxy = await expectedViolationProxy();
