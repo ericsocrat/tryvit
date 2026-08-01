@@ -32,7 +32,35 @@ setup("create user and authenticate via UI", async ({ page }) => {
   await page.goto("/auth/login");
   await page.getByLabel("Email").fill(TEST_EMAIL);
   await page.getByLabel("Password", { exact: true }).fill(TEST_PASSWORD);
+
+  // Keep authentication failures diagnosable without ever recording a token,
+  // credential, response body, or hosted endpoint.  A local authenticated run
+  // must prove that the browser received a successful password-grant response
+  // before we interpret a missing redirect as a cookie/middleware problem.
+  const expectedSupabaseOrigin = process.env.VISUAL_SAFETY_SUPABASE_ORIGIN;
+  if (!expectedSupabaseOrigin) {
+    throw new Error("[VS_AUTH] local-origin-missing");
+  }
+  const authTokenResponse = page.waitForResponse(
+    (response) => {
+      try {
+        const url = new URL(response.url());
+        return (
+          response.request().method() === "POST" &&
+          url.origin === expectedSupabaseOrigin &&
+          url.pathname === "/auth/v1/token"
+        );
+      } catch {
+        return false;
+      }
+    },
+    { timeout: 15_000 },
+  );
   await page.getByRole("button", { name: "Sign In" }).click();
+  const tokenResponse = await authTokenResponse;
+  if (!tokenResponse.ok()) {
+    throw new Error(`[VS_AUTH] token-status-${tokenResponse.status()}`);
+  }
 
   // After login the user is already onboarded (ensureTestUser pre-creates
   // preferences with onboarding_skipped=true), so we should land on /app/search.
