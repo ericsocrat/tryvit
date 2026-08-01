@@ -24,6 +24,13 @@ const connectSrcAllowlist = [
   "https://*.ingest.de.sentry.io",
 ];
 
+// The authenticated visual-safety runner builds an isolated app against the
+// ephemeral Supabase emulator. Keep this exception opt-in and loopback-only;
+// public/production builds retain the hosted-only CSP contract.
+if (process.env.VISUAL_SAFETY_MODE === "local-authenticated") {
+  connectSrcAllowlist.push("http://127.0.0.1:55001", "http://localhost:55001");
+}
+
 if (process.env.NODE_ENV === "development") {
   // Dev tooling (e.g., HMR/logging extensions) may open localhost websockets.
   connectSrcAllowlist.push("ws://127.0.0.1:*", "ws://localhost:*");

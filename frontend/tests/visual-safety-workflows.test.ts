@@ -26,6 +26,10 @@ const fixtureSeederSource = readFileSync(
   path.join(repoRoot, "frontend", "tests", "quality", "seed-fixtures.mjs"),
   "utf8",
 );
+const nextConfigSource = readFileSync(
+  path.join(repoRoot, "frontend", "next.config.ts"),
+  "utf8",
+);
 
 function readWorkflow(name: string): string {
   return readFileSync(path.join(workflowsRoot, name), "utf8");
@@ -226,6 +230,15 @@ describe("browser workflow visual-safety contract", () => {
     expect(browserJobs.nightly).toContain('> "$fixture_ids"');
     expect(browserJobs.qualityGate).toContain('rm -f -- "$fixture_ids"');
     expect(browserJobs.nightly).toContain('rm -f -- "$fixture_ids"');
+  });
+
+  it("allows only the ephemeral loopback Supabase origin in local-authenticated CSP builds", () => {
+    expect(nextConfigSource).toContain(
+      'process.env.VISUAL_SAFETY_MODE === "local-authenticated"',
+    );
+    expect(nextConfigSource).toContain('"http://127.0.0.1:55001"');
+    expect(nextConfigSource).toContain('"http://localhost:55001"');
+    expect(nextConfigSource).not.toContain("http://127.0.0.1:54321");
   });
 
   it("hard-binds the catalog fixture seeder to the configured guarded loopback runtime", () => {
