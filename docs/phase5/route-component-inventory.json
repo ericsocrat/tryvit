@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "auditedAt": "2026-07-30",
+  "baseSha": "362e0e907b1ea93e25b05a9bb8859bc8a07f4e78",
+  "routeCounts": {
+    "total": 54,
+    "authenticatedApp": 29,
+    "learn": 9,
+    "authentication": 4,
+    "onboarding": 3,
+    "publicShared": 2,
+    "publicAndSystem": 6,
+    "development": 1,
+    "clientPages": 45,
+    "serverPages": 9,
+    "layouts": 26,
+    "routeLoadingBoundaries": 0,
+    "routeErrorBoundaries": 2,
+    "fatalGlobalErrorSurfaces": 1,
+    "notFoundBoundaries": 1
+  },
+  "routes": [
+    { "route": "/", "journey": "public-marketing", "states": "live|demo-paused|content|cta", "priority": "P1", "phase": "5A" },
+    { "route": "/contact", "journey": "legal-support", "states": "placeholder-contact", "priority": "P1", "phase": "5A.0-5A.2" },
+    { "route": "/privacy", "journey": "legal-support", "states": "static-content", "priority": "P1", "phase": "5A.2" },
+    { "route": "/terms", "journey": "legal-support", "states": "static-content", "priority": "P1", "phase": "5A.2" },
+    { "route": "/forbidden", "journey": "system-error", "states": "access-denied|return-action", "priority": "P2", "phase": "5A.2" },
+    { "route": "/offline", "journey": "system-pwa", "states": "offline-fallback|currently-auth-blocked", "priority": "P1", "phase": "5A.0-5A.2" },
+    { "route": "/learn", "journey": "editorial-hub", "states": "topic-grid|disclaimer", "priority": "P2", "phase": "5A.2" },
+    { "route": "/learn/additives", "journey": "editorial-article", "states": "article|sources|disclaimer", "priority": "P2", "phase": "5A.2" },
+    { "route": "/learn/allergens", "journey": "editorial-article", "states": "article|sources|disclaimer", "priority": "P1", "phase": "5A.2" },
+    { "route": "/learn/confidence", "journey": "editorial-article", "states": "article|sources|disclaimer", "priority": "P1", "phase": "5A.2" },
+    { "route": "/learn/healthy-choices", "journey": "editorial-article", "states": "article|sources|disclaimer", "priority": "P2", "phase": "5A.2" },
+    { "route": "/learn/nova-groups", "journey": "editorial-article", "states": "article|sources|disclaimer", "priority": "P2", "phase": "5A.2" },
+    { "route": "/learn/nutri-score", "journey": "editorial-article", "states": "article|sources|disclaimer", "priority": "P2", "phase": "5A.2" },
+    { "route": "/learn/reading-labels", "journey": "editorial-article", "states": "article|sources|disclaimer", "priority": "P2", "phase": "5A.2" },
+    { "route": "/learn/tryvit-score", "journey": "editorial-article", "states": "article|sources|disclaimer", "priority": "P1", "phase": "5A.2" },
+    { "route": "/auth/login", "journey": "authentication", "states": "idle|submitting|toast-error|redirect-success", "priority": "P1", "phase": "5A.1" },
+    { "route": "/auth/signup", "journey": "authentication", "states": "idle|captcha|submitting|toast-error|email-success", "priority": "P1", "phase": "5A.1" },
+    { "route": "/auth/forgot-password", "journey": "authentication", "states": "idle|submitting|toast-error|email-success", "priority": "P2", "phase": "5A.1" },
+    { "route": "/auth/update-password", "journey": "authentication", "states": "idle|validation|submitting|toast-error|success", "priority": "P2", "phase": "5A.1" },
+    { "route": "/onboarding", "journey": "onboarding", "states": "auth-check|redirect|step-progress|saving|toast-error|complete", "priority": "P1", "phase": "5D" },
+    { "route": "/onboarding/region", "journey": "onboarding-legacy", "states": "redirect", "priority": "P3", "phase": "5D" },
+    { "route": "/onboarding/preferences", "journey": "onboarding-legacy", "states": "redirect", "priority": "P3", "phase": "5D" },
+    { "route": "/compare/shared/[token]", "journey": "public-shared", "states": "loading|invalid|error|content|currently-auth-blocked", "priority": "P1", "phase": "5A.0-5C" },
+    { "route": "/lists/shared/[token]", "journey": "public-shared", "states": "loading|invalid|error|content|currently-auth-blocked", "priority": "P1", "phase": "5A.0-5D" },
+    { "route": "/app", "journey": "app-home", "states": "loading|backend-error|new-user|returning", "priority": "P1", "phase": "5B" },
+    { "route": "/app/search", "journey": "discovery-search", "states": "initial|typing|autocomplete|loading|error|empty|results|filtered|pagination", "priority": "P1", "phase": "5C.1" },
+    { "route": "/app/search/saved", "journey": "saved-discovery", "states": "loading|error|empty|items|apply|delete", "priority": "P2", "phase": "5D" },
+    { "route": "/app/categories", "journey": "discovery-index", "states": "loading|error-retry|grid", "priority": "P1", "phase": "5C.1" },
+    { "route": "/app/categories/[slug]", "journey": "discovery-category", "states": "loading|error|empty|results|sort|view-mode|pagination", "priority": "P1", "phase": "5C.1" },
+    { "route": "/app/product/[id]", "journey": "product-decision", "states": "loading|error|summary|tabs|evidence|alternatives|scoring", "priority": "P1", "phase": "5C.2" },
+    { "route": "/app/ingredient/[id]", "journey": "ingredient-detail", "states": "loading|error-including-missing|content|usage|concern-metadata", "priority": "P1", "phase": "5C.2" },
+    { "route": "/app/compare", "journey": "decision-workspace", "states": "empty|loading|error|comparison|mobile-tabs|saved", "priority": "P1", "phase": "5C.2" },
+    { "route": "/app/compare/saved", "journey": "saved-decisions", "states": "loading|error|empty|items|copy|delete", "priority": "P2", "phase": "5D" },
+    { "route": "/app/lists", "journey": "saved-personal", "states": "loading|error|empty|grid|create|delete", "priority": "P1", "phase": "5A.0-5D" },
+    { "route": "/app/lists/[id]", "journey": "saved-list-detail", "states": "loading|error|empty|content|edit|share|remove-item", "priority": "P2", "phase": "5D" },
+    { "route": "/app/watchlist", "journey": "saved-personal", "states": "loading|error|empty|content|pagination|remove", "priority": "P2", "phase": "5D" },
+    { "route": "/app/recipes", "journey": "explore-personal", "states": "loading|error|empty|results|search|filters", "priority": "P2", "phase": "5D" },
+    { "route": "/app/recipes/[slug]", "journey": "explore-detail", "states": "loading|error-including-missing|content|share", "priority": "P2", "phase": "5D" },
+    { "route": "/app/achievements", "journey": "personal-gamification", "states": "loading|error|empty|progress|unlocked|locked", "priority": "P3", "phase": "5D" },
+    { "route": "/app/settings", "journey": "settings-hub", "states": "loading|editable|dirty|saving|toast-error|success|unsaved-confirmation|navigation", "priority": "P2", "phase": "5D" },
+    { "route": "/app/settings/account", "journey": "settings-form", "states": "idle|pending|toast-error|success|delete-dialog", "priority": "P2", "phase": "5D" },
+    { "route": "/app/settings/notifications", "journey": "settings-form", "states": "loading|pending|toast-error|success", "priority": "P2", "phase": "5D" },
+    { "route": "/app/settings/nutrition", "journey": "settings-form", "states": "loading|error-retry|pending|success", "priority": "P1", "phase": "5D" },
+    { "route": "/app/settings/privacy", "journey": "settings-form", "states": "idle|pending|toast-error|success", "priority": "P2", "phase": "5D" },
+    { "route": "/app/scan", "journey": "scanner", "states": "permission|initialization|scanning|manual-entry|lookup|error", "priority": "P2-deferred", "phase": "5E" },
+    { "route": "/app/scan/result/[id]", "journey": "scanner-result", "states": "loading|lookup-error|not-found|result|actions", "priority": "P2-deferred", "phase": "5E" },
+    { "route": "/app/scan/history", "journey": "scanner-history", "states": "loading|error-retry|empty|history", "priority": "P2-deferred", "phase": "5E" },
+    { "route": "/app/scan/submit", "journey": "scanner-contribution", "states": "form|validation|photo|submitting|error|success", "priority": "P2-deferred", "phase": "5E" },
+    { "route": "/app/scan/submissions", "journey": "scanner-contribution-history", "states": "loading|error-retry|empty|status-list", "priority": "P3-deferred", "phase": "5E" },
+    { "route": "/app/image-search", "journey": "experimental-discovery", "states": "image-select|privacy|processing|error|results", "priority": "P3-deferred", "phase": "5E" },
+    { "route": "/app/admin/submissions", "journey": "admin-operations", "states": "loading|error-retry|empty|queue|review|bulk-action", "priority": "P3", "phase": "5F" },
+    { "route": "/app/admin/metrics", "journey": "admin-analytics", "states": "loading|error-retry|no-data|dashboard|export", "priority": "P3", "phase": "5F" },
+    { "route": "/app/admin/monitoring", "journey": "admin-operations", "states": "loading|error-retry|healthy|warning|stale", "priority": "P3", "phase": "5F" },
+    { "route": "/dev/components", "journey": "design-system-laboratory", "states": "catalog|not-found-guard", "priority": "P2", "phase": "5A.1" }
+  ],
+  "freshScreenshotInventory": [
+    { "file": "screenshots/landing-390x844-light.png", "route": "/", "viewport": "390x844", "theme": "light", "bytes": 38796, "sha256": "a5c68bad3e76865de1a6b6f83232a0d8730745cbd4685a6469c295eb9e742476" },
+    { "file": "screenshots/landing-390x844-dark.png", "route": "/", "viewport": "390x844", "theme": "dark", "bytes": 40298, "sha256": "1e656a5c0ef79033b2ca421b18d8b8b32e341b114921ea4254fefe687f84acfb" },
+    { "file": "screenshots/landing-768x1024-light.png", "route": "/", "viewport": "768x1024", "theme": "light", "bytes": 58615, "sha256": "9b42bc8d717be456baae05d0a0a4cd44248aabc8ed36d1c6a8cdf1fd931491b0" },
+    { "file": "screenshots/landing-768x1024-dark.png", "route": "/", "viewport": "768x1024", "theme": "dark", "bytes": 61408, "sha256": "66fe78d09ea9d4d428c7fe0f01be0ff1970b4a3042e1e2e75ea50eb2b92c133d" },
+    { "file": "screenshots/landing-1440x900-light.png", "route": "/", "viewport": "1440x900", "theme": "light", "bytes": 64693, "sha256": "84495c41d41ee3f978fee19a1fd810ddbfeffcbd78a08e05ad99864bdfc49674" },
+    { "file": "screenshots/landing-1440x900-dark.png", "route": "/", "viewport": "1440x900", "theme": "dark", "bytes": 67674, "sha256": "40344bfce4bd7e07e8f1e81c930cc897108d6090854148d5dbece0c2c593788d" },
+    { "file": "screenshots/login-390x844-dark.png", "route": "/auth/login", "viewport": "390x844", "theme": "dark", "bytes": 30830, "sha256": "caf13210791df2b053d247fe99c7aba0a65108acff8565f4de81d617c451db0a" },
+    { "file": "screenshots/login-1440x900-dark.png", "route": "/auth/login", "viewport": "1440x900", "theme": "dark", "bytes": 51745, "sha256": "1c9f0e39c1bc4f45f544e70adebbded3cc99e1b2308b9ecccace591a325242eb" }
+  ],
+  "productionObservation": {
+    "observedAt": "2026-07-30T21:06:26Z",
+    "landingStatus": 200,
+    "landingServerHtml": "contains 'In validation'; no explicit demo, paused, or backend-unavailable wording",
+    "healthStatus": 503,
+    "healthReadiness": {
+      "application": "available",
+      "data_backend": "unavailable",
+      "full_product": "not_ready"
+    },
+    "method": "read-only unauthenticated HTTP GET"
+  },
+  "componentCounts": {
+    "total": 181,
+    "clientComponents": 99,
+    "retain": 10,
+    "restyle": 91,
+    "refactor": 55,
+    "merge": 7,
+    "split": 13,
+    "deprecate": 4,
+    "replace": 1
+  },
+  "componentBasePath": "frontend/src/components",
+  "componentDisposition": {
+    "retain": [
+      "common/LiveRegion", "common/RouteAnnouncer", "common/RouteGuard", "i18n/LanguageHydrator", "layout/AdminHydrator", "layout/GlobalKeyboardShortcuts", "product/ListsHydrator", "Providers", "pwa/CachedTimestamp", "ThemeScript"
+    ],
+    "merge": [
+      "common/NutrientTrafficLight", "common/SectionError", "common/SubmitButton", "common/Tooltip", "compare/CompareCheckbox", "dashboard/HealthInsightsSummary", "dashboard/ScoreSparkline"
+    ],
+    "split": [
+      "common/ErrorBoundary", "compare/ComparisonGrid", "desktop/CommandPalette", "layout/MoreDrawer", "ocr/ImageCapture", "product/AddToListMenu", "product/HealthWarningsCard", "product/ImageLightbox", "product/ScoreBreakdownPanel", "scan/ScanResultView", "search/FilterPanel", "search/SearchAutocomplete", "settings/HealthProfileSection"
+    ],
+    "deprecate": [
+      "common/AchievementBadge", "common/OnboardingIllustration", "dashboard/NovaDistribution", "product/SwapSavingsBadge"
+    ],
+    "replace": [
+      "product/CategoryPlaceholder"
+    ],
+    "refactor": [
+      "auth/SocialLoginButtons", "common/Alert", "common/AllergenBadge", "common/AllergenChips", "common/Badge", "common/Button", "common/Card", "common/CategoryIcon", "common/Checkbox", "common/Chip", "common/ConfidenceBadge", "common/ConfirmDialog", "common/CountryChip", "common/EmptyState", "common/EmptyStateIllustration", "common/ErrorIllustration", "common/FormErrorSummary", "common/FormField", "common/Icon", "common/IconButton", "common/InfoTooltip", "common/Input", "common/Logo", "common/NovaBadge", "common/NutriScoreBadge", "common/ProductThumbnail", "common/ProgressBar", "common/PullToRefresh", "common/ScoreBadge", "common/Select", "common/Skeleton", "common/Textarea", "common/Toggle", "common/TurnstileWidget", "desktop/ComparisonTray", "desktop/ShortcutsHelp", "export/ExportButton", "layout/Breadcrumbs", "layout/DesktopHeaderNav", "layout/DesktopSidebar", "layout/Footer", "layout/Header", "layout/LegalPageShell", "layout/Navigation", "learn/LearnArticleShell", "learn/LearnSidebar", "learn/LearnTopicNav", "product/ActionOverflowMenu", "product/ProductImageTabs", "pwa/InstallPrompt", "pwa/NotificationPrompt", "search/SaveSearchDialog", "settings/DeleteAccountDialog", "settings/SettingsNav", "settings/ThemeToggle"
+    ],
+    "restyle": [
+      "achievements/AchievementCard", "achievements/AchievementGrid", "alternatives/AlternativeProductCard", "alternatives/AlternativesSection", "alternatives/ScoreComparisonBar", "category/CategoryScoreBar", "common/LoadingSpinner", "common/PrintButton", "common/skeletons/AdminDashboardSkeleton", "common/skeletons/CategoryGridSkeleton", "common/skeletons/CategoryListingSkeleton", "common/skeletons/ComparisonGridSkeleton", "common/skeletons/DashboardSkeleton", "common/skeletons/IngredientDetailSkeleton", "common/skeletons/ListDetailSkeleton", "common/skeletons/ListViewSkeleton", "common/skeletons/ProductCardSkeleton", "common/skeletons/ProductProfileSkeleton", "common/skeletons/RecipeGridSkeleton", "common/skeletons/SavedItemsSkeleton", "common/skeletons/ScanHistorySkeleton", "common/skeletons/SearchResultsSkeleton", "common/skeletons/SettingsSkeleton", "common/skeletons/SubmissionsSkeleton", "common/skeletons/WatchlistSkeleton", "compare/CompareFloatingButton", "compare/ShareComparison", "dashboard/AllergenAlert", "dashboard/CategoriesBrowse", "dashboard/CategoryDiversity", "dashboard/DashboardGreeting", "dashboard/HealthInsightsPanel", "dashboard/HealthSummary", "dashboard/NewUserWelcome", "dashboard/NutritionTip", "dashboard/QuickActions", "dashboard/QuickWinCard", "dashboard/RecentComparisons", "dashboard/RecentlyViewed", "ingredient/ConcernBadge", "ingredient/IngredientUsageStats", "ingredient/ProductsContainingList", "ingredient/RelatedIngredientsList", "learn/Disclaimer", "learn/LearnCard", "learn/LearnSectionCard", "learn/SourceCitation", "ocr/OCRResults", "ocr/PrivacyNotice", "product/AllergenMatrix", "product/AllergenQuickBadges", "product/AvoidBadge", "product/ConflictWarnings", "product/CrossCountryLinks", "product/DVLegend", "product/DVReferenceBadge", "product/ImageSourceBadge", "product/IngredientList", "product/NovaIndicator", "product/NutritionDVBar", "product/NutritionHighlights", "product/PercentileBadge", "product/ProductHeroImage", "product/ProductScoreHero", "product/ReformulationBadge", "product/ScoreChangeIndicator", "product/ScoreGauge", "product/ScoreHistoryPanel", "product/ScoreRadarChart", "product/ScoreTrendChart", "product/ShareButton", "product/TrafficLightChip", "product/TrafficLightStrip", "product/WatchButton", "pwa/OfflineIndicator", "recipes/IngredientProductList", "recipes/RecipeCard", "recipes/RecipeScoreBadge", "scan/CategoryPicker", "scan/ContributorBadge", "scan/ScanMissSubmitCTA", "scan/ScannerErrorState", "search/ActiveFilterChips", "search/DidYouMean", "settings/ExportDataSection", "settings/InstallAppSection", "trust/FreshnessIndicator", "trust/ScoringVersionBadge", "trust/SearchRelevanceHint", "trust/SourceAttribution", "trust/TrustBadge"
+    ]
+  }
+}
