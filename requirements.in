@@ -6,7 +6,7 @@
 
 beautifulsoup4>=4.15.0,<5
 requests>=2.34.2,<3
-tqdm>=4.68.3,<5
+tqdm>=4.70.0,<5
 
 # Development / CI tools
 ruff>=0.15.20,<1
