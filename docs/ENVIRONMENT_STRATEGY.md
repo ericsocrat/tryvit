@@ -235,7 +235,7 @@ mutated or wiped:
 #### CI-level guards
 
 - Browser-facing workflows and `qa.yml` do not connect to a hosted Supabase project; `qa.yml` uses an ephemeral PG17 container. Non-browser deployment and data-integrity workflows retain their separately governed hosted contracts.
-- Browser-facing PR, main, quality, nightly, screenshot, and Lighthouse jobs receive no hosted Supabase configuration. Public runs use the Phase 5A.0a loopback-only build adapter; authenticated runs require a verified local emulator.
+- Browser-facing PR, main, quality, nightly, screenshot, and Lighthouse jobs receive no hosted Supabase configuration. Public runs use the Phase 5A.0a loopback-only build adapter. Quality and Nightly create a reduced job-owned emulator for authenticated coverage, derive its port from checked-in configuration, seed through the guarded local fixture launcher, and remove its volumes without backup.
 - Browser-facing and QA jobs never run `supabase db push`, `supabase db reset`, or cloud DDL. The separately governed `sync-cloud-db.yml` deployment workflow remains the cloud schema path.
 - Sanity checks (`RUN_SANITY.ps1`) are **read-only** `SELECT` queries
 

@@ -6,7 +6,7 @@
 # full unit test coverage, and a separate data integrity audit. Authenticated
 # browser coverage fails closed when the verified local emulator is unavailable.
 #
-# Target runtime: < 15 minutes (jobs run in parallel)
+# Target runtime: < 30 minutes for the browser job (jobs run in parallel)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: Nightly Suite
@@ -97,6 +97,9 @@ jobs:
         run: npx playwright install-deps chromium
         timeout-minutes: 8
 
+      - name: Install pinned Supabase CLI
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
+
       - name: Public visual-safety preflight
         run: npm run visual-safety:preflight
         env:
@@ -120,15 +123,34 @@ jobs:
           VISUAL_SAFETY_MODE: public
           BASE_URL: http://127.0.0.1:3000
 
+      - name: Start ephemeral local Supabase
+        id: local_supabase_start
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh start
+
       # Existing authenticated coverage remains blocking, but may run only
-      # against a verified local emulator. Missing local infrastructure fails
-      # closed here and never falls back to hosted staging or production.
+      # after the guarded preflight proves the configured local emulator.
       - name: Local-authenticated visual-safety preflight (blocking)
         id: auth_preflight
         run: npm run visual-safety:preflight
         env:
           VISUAL_SAFETY_MODE: local-authenticated
           BASE_URL: http://127.0.0.1:3000
+
+      - name: Seed guarded local QA fixtures
+        id: local_fixture_seed
+        shell: bash
+        run: |
+          fixture_ids="$RUNNER_TEMP/tryvit-qa-fixture-ids.env"
+          npm run --silent visual-safety:fixtures-seed > "$fixture_ids"
+          if ! grep -Eq '^QA_PRODUCT_ID=[0-9]+$' "$fixture_ids"; then
+            rm -f -- "$fixture_ids"
+            echo "::error::Guarded local fixture seeding did not return deterministic IDs"
+            exit 1
+          fi
+          grep -E '^QA_[A-Z_]+=[A-Za-z0-9_-]+$' "$fixture_ids" >> "$GITHUB_ENV"
+          rm -f -- "$fixture_ids"
+          echo "seeded=true" >> "$GITHUB_OUTPUT"
 
       - name: Local-authenticated Playwright suite
         run: |
@@ -147,9 +169,20 @@ jobs:
           VISUAL_SAFETY_MODE: local-authenticated
           BASE_URL: http://127.0.0.1:3000
 
+      - name: Teardown guarded local QA fixtures
+        id: local_fixture_teardown
+        if: ${{ always() && steps.local_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run --silent visual-safety:fixtures-teardown
+
+      - name: Stop ephemeral local Supabase (no backup)
+        id: local_supabase_stop
+        if: ${{ always() }}
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh stop
+
       - name: Upload Playwright report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ !cancelled() && steps.public_safety_assert.outcome == 'success' && (steps.auth_preflight.outcome != 'success' || steps.auth_safety_assert.outcome == 'success') }}
+        if: ${{ !cancelled() && steps.public_safety_assert.outcome == 'success' && steps.auth_safety_assert.outcome == 'success' && steps.local_fixture_teardown.outcome == 'success' && steps.local_supabase_stop.outcome == 'success' }}
         with:
           name: nightly-playwright-report
           path: |

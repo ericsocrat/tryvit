@@ -18,6 +18,8 @@
     "visual-safety:serve": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts serve",
     "visual-safety:public": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts public",
     "visual-safety:local-authenticated": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts local-authenticated",
+    "visual-safety:fixtures-seed": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts fixtures-seed",
+    "visual-safety:fixtures-teardown": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts fixtures-teardown",
     "visual-safety:lighthouse": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts lighthouse",
     "visual-safety:public-lighthouse": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts public-lighthouse",
     "visual-safety:browser-tests": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts public --project=visual-safety-browser",

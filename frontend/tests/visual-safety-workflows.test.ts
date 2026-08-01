@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -15,6 +16,14 @@ const runnerSources = {
 };
 const safetyCliSource = readFileSync(
   path.join(repoRoot, "frontend", "e2e", "scripts", "visual-safety-cli.mts"),
+  "utf8",
+);
+const localRuntimeSource = readFileSync(
+  path.join(repoRoot, "frontend", "e2e", "scripts", "local-supabase-ci.sh"),
+  "utf8",
+);
+const fixtureSeederSource = readFileSync(
+  path.join(repoRoot, "frontend", "tests", "quality", "seed-fixtures.mjs"),
   "utf8",
 );
 
@@ -82,6 +91,8 @@ describe("browser workflow visual-safety contract", () => {
       "visual-safety:serve",
       "visual-safety:public",
       "visual-safety:local-authenticated",
+      "visual-safety:fixtures-seed",
+      "visual-safety:fixtures-teardown",
       "visual-safety:lighthouse",
       "visual-safety:public-lighthouse",
     ]) {
@@ -155,6 +166,89 @@ describe("browser workflow visual-safety contract", () => {
     expect(job).not.toMatch(/skip(?:ped|ping).*auth/i);
   });
 
+  it.each([
+    ["quality gate", browserJobs.qualityGate],
+    ["nightly", browserJobs.nightly],
+  ])("%s provisions and tears down the same guarded local runtime", (_name, job) => {
+    const setupIndex = job.indexOf(
+      "supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520",
+    );
+    const startIndex = job.indexOf("local-supabase-ci.sh start");
+    const preflightIndex = job.indexOf("Local-authenticated visual-safety preflight");
+    const fixtureIndex = job.indexOf("visual-safety:fixtures-seed");
+    const browserIndex = job.indexOf("visual-safety:local-authenticated");
+    const fixtureTeardownIndex = job.indexOf("visual-safety:fixtures-teardown");
+    const stopIndex = job.indexOf("local-supabase-ci.sh stop");
+
+    expect(setupIndex).toBeGreaterThanOrEqual(0);
+    expect(startIndex).toBeGreaterThan(setupIndex);
+    expect(preflightIndex).toBeGreaterThan(startIndex);
+    expect(fixtureIndex).toBeGreaterThan(preflightIndex);
+    expect(browserIndex).toBeGreaterThan(fixtureIndex);
+    expect(fixtureTeardownIndex).toBeGreaterThan(browserIndex);
+    expect(stopIndex).toBeGreaterThan(fixtureTeardownIndex);
+    expect(job).toMatch(
+      /Teardown guarded local QA fixtures[\s\S]*if: \$\{\{ always\(\) && steps\.local_fixture_seed\.outputs\.seeded == 'true' \}\}/u,
+    );
+    expect(job).toMatch(
+      /Stop ephemeral local Supabase \(no backup\)[\s\S]*if: \$\{\{ always\(\) \}\}/u,
+    );
+    expect(job).not.toContain("supabase status -o env");
+    expect(job).not.toContain("55001");
+    expect(job).not.toContain("tests/quality/seed-fixtures.mjs");
+  });
+
+  it("keeps the CI local runtime ephemeral, reduced, and credential-silent", () => {
+    expect(localRuntimeSource).toContain("supabase start");
+    expect(localRuntimeSource).toContain("supabase stop --workdir");
+    expect(localRuntimeSource).toContain("--no-backup");
+    expect(localRuntimeSource).toContain(
+      "--exclude realtime,storage-api,imgproxy,postgres-meta,studio,mailpit,edge-runtime,logflare,vector,supavisor",
+    );
+    expect(localRuntimeSource).toContain('>"$output_file" 2>&1');
+    expect(localRuntimeSource).toContain("credential-bearing CLI output withheld");
+    expect(localRuntimeSource).not.toMatch(/\b(?:login|link|db push)\b/u);
+    expect(localRuntimeSource).not.toContain("55001");
+    expect(localRuntimeSource).not.toContain("cat \"");
+  });
+
+  it("keeps fixture credentials behind readiness and out of workflow output", () => {
+    const fixtureSection = safetyCliSource.slice(
+      safetyCliSource.indexOf("async function runLocalFixtureCommand("),
+      safetyCliSource.indexOf("async function serveCommand("),
+    );
+    expect(fixtureSection).toContain("runAfterSafetyPreflight");
+    expect(fixtureSection.indexOf("runAfterSafetyPreflight")).toBeLessThan(
+      fixtureSection.indexOf("SUPABASE_SERVICE_ROLE_KEY"),
+    );
+    expect(fixtureSection).toContain("seed-fixtures.mjs");
+    expect(browserJobs.qualityGate).toContain('> "$fixture_ids"');
+    expect(browserJobs.nightly).toContain('> "$fixture_ids"');
+    expect(browserJobs.qualityGate).toContain('rm -f -- "$fixture_ids"');
+    expect(browserJobs.nightly).toContain('rm -f -- "$fixture_ids"');
+  });
+
+  it("hard-binds the catalog fixture seeder to the configured guarded loopback runtime", () => {
+    expect(fixtureSeederSource).toContain("VISUAL_SAFETY_MODE !== \"local-authenticated\"");
+    expect(fixtureSeederSource).toContain("canonicalizeLoopbackOrigin(SUPABASE_URL)");
+    expect(fixtureSeederSource).toContain("discoverLocalSupabaseOrigin");
+    expect(fixtureSeederSource).toContain("requestedOrigin !== configuredOrigin");
+    expect(fixtureSeederSource).toContain("createGuardedFetch");
+    expect(fixtureSeederSource).toContain("global: { fetch: guardedFetch }");
+    expect(fixtureSeederSource).not.toContain("SUPABASE_URL_STAGING");
+    expect(fixtureSeederSource).not.toContain("SUPABASE_SERVICE_ROLE_KEY_STAGING");
+  });
+
+  it("requires both safety assertions and local cleanup before browser artifacts upload", () => {
+    for (const job of [browserJobs.qualityGate, browserJobs.nightly]) {
+      const uploadSection = job.slice(job.indexOf("actions/upload-artifact"));
+      expect(uploadSection).toContain("steps.public_safety_assert.outcome == 'success'");
+      expect(uploadSection).toContain("steps.auth_safety_assert.outcome == 'success'");
+      expect(uploadSection).toContain("steps.local_fixture_teardown.outcome == 'success'");
+      expect(uploadSection).toContain("steps.local_supabase_stop.outcome == 'success'");
+    }
+  });
+
   it("keeps PR screenshots public and states that auth coverage is separate", () => {
     expect(browserJobs.prScreenshots).toContain(
       "npm run visual-safety:public -- --project=pr-screenshots",
@@ -173,6 +267,30 @@ describe("browser workflow visual-safety contract", () => {
     ).toBeLessThan(browserJobs.lighthouse.indexOf("npm run visual-safety:preflight"));
     expect(workflowSources.lighthouse).not.toContain("temporaryPublicStorage");
     expect(workflowSources.lighthouse).not.toContain("treosh/lighthouse-ci-action");
+  });
+
+  it("keeps Phase 5A.0d desktop enforcement out of Quality Gate without a pass claim", () => {
+    expect(browserJobs.qualityGate).not.toContain("visual-safety:lighthouse");
+    expect(browserJobs.qualityGate).toContain(
+      "Guarded Lighthouse Mobile remains enforced by the separate blocking Lighthouse CI workflow",
+    );
+    expect(browserJobs.qualityGate).toContain("0.66, 0.69, 0.64 against 0.75");
+    expect(browserJobs.qualityGate).toContain("not a pass");
+    expect(browserJobs.qualityGate).toContain("skipped both Lighthouse steps");
+  });
+
+  it("pins the unchanged Phase 5A.0d Lighthouse configurations", () => {
+    const expected = {
+      "lighthouserc.mobile.js": "fa45c8b29b23c2657211b95a9214e65c729b951f640e0038e21fa06b3aa5b18b",
+      "lighthouserc.desktop.js": "7ae0868a372b65c37a9458b62dfb252078af9260498ba9ed2b6de9198182fb2b",
+    } as const;
+    for (const [filename, digest] of Object.entries(expected)) {
+      const source = readFileSync(path.join(repoRoot, "frontend", filename), "utf8").replace(
+        /\r\n/gu,
+        "\n",
+      );
+      expect(createHash("sha256").update(source).digest("hex")).toBe(digest);
+    }
   });
 
   it("contains opaque Chromium CONNECTs only inside the Lighthouse page guard", () => {

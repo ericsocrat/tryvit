@@ -1316,6 +1316,47 @@ export async function runAfterSafetyPreflight<T>(
   return action(localCredentials);
 }
 
+async function runLocalFixtureCommand(action: "seed" | "teardown"): Promise<number> {
+  const localOrigin = (
+    await discoverLocalSupabaseOrigin(path.join(repositoryRoot, "supabase", "config.toml"))
+  ).origin;
+  const environment = nonSensitiveEnvironment(process.env);
+  environment.VISUAL_SAFETY_MODE = "local-authenticated";
+  environment.VISUAL_SAFETY_APP_ORIGIN = APP_ORIGIN;
+  environment.BASE_URL = APP_ORIGIN;
+  environment.VISUAL_SAFETY_SUPABASE_ORIGIN = localOrigin;
+  const contract = loadSafetyContractFromEnvironment(environment);
+
+  return runAfterSafetyPreflight(contract, async (localCredentials) => {
+    if (!localCredentials) {
+      throw safetyError("VS_FIXTURE_CREDENTIAL", "local-fixture-credentials-missing");
+    }
+    const fixtureEnvironment = sanitizedChildEnvironment(
+      process.env,
+      "local-authenticated",
+      localOrigin,
+      localCredentials,
+    );
+    fixtureEnvironment.VISUAL_SAFETY_MODE = "local-authenticated";
+    fixtureEnvironment.VISUAL_SAFETY_SUPABASE_ORIGIN = localOrigin;
+    fixtureEnvironment.NEXT_PUBLIC_SUPABASE_URL = localOrigin;
+    fixtureEnvironment.NEXT_PUBLIC_SUPABASE_ANON_KEY = localCredentials.anonKey;
+    fixtureEnvironment.SUPABASE_SERVICE_ROLE_KEY = localCredentials.serviceRoleKey;
+
+    const fixtureScript = path.join(frontendRoot, "tests", "quality", "seed-fixtures.mjs");
+    return runChild(
+      process.execPath,
+      [
+        "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
+        "--experimental-strip-types",
+        fixtureScript,
+        ...(action === "teardown" ? ["--teardown"] : []),
+      ],
+      { cwd: frontendRoot, env: fixtureEnvironment },
+    );
+  });
+}
+
 async function serveCommand(
   contract: SafetyContract,
   localCredentials?: LocalFixtureCredentials,
@@ -1518,6 +1559,10 @@ async function main(): Promise<number> {
   if (command === "public") return runPlaywright("public", args);
   if (command === "local-authenticated") {
     return runPlaywright("local-authenticated", args);
+  }
+  if (command === "fixtures-seed" || command === "fixtures-teardown") {
+    if (args.length > 0) throw safetyError("VS_FIXTURE_ARGUMENT", "fixture-arguments-rejected");
+    return runLocalFixtureCommand(command === "fixtures-seed" ? "seed" : "teardown");
   }
 
   const mode =

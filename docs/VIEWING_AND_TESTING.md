@@ -37,11 +37,17 @@ Do not start or reuse a developer server for these commands and do not invoke
 Playwright or Lighthouse directly. The launchers own the clean build, server,
 browser proxy, provenance checks, final safety assertion, and cleanup.
 
-The standard Quality Gate and Nightly hosted runners currently do not provision
-a local Supabase emulator, so their authenticated stages intentionally block at
-preflight. Authenticated Lighthouse remains blocked even with an emulator until
-a dedicated guarded local fixture exists. Public results must not be described
-as authenticated coverage.
+Quality Gate and Nightly provision a reduced, job-owned local Supabase runtime
+for their authenticated stages. Checked-in migrations run during local startup;
+the guarded fixture launcher then creates only the deterministic browser-test
+catalog. Runtime output and credentials are never printed or uploaded, and the
+runtime is stopped without a backup in unconditional cleanup. Public results
+must still never be described as authenticated coverage.
+
+The separate guarded Lighthouse workflow enforces Mobile. Quality Gate does not
+claim Desktop performance: the observed `/auth/login` desktop scores of 0.66,
+0.69, and 0.64 remain below the unchanged 0.75 threshold and are a Phase 5A.0d
+entry condition.
 
 ## 🔍 How to View Your Data
 
