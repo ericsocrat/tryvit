@@ -2,6 +2,7 @@
 
 > **Last broadly verified:** 2026-02-24
 > **Phase 5A.0a browser-safety section updated:** 2026-08-01
+> **Phase 5A.0d performance/visual-gate evidence updated:** 2026-08-03
 > **Status:** Active
 > **Owner issue:** Process domain
 
@@ -38,16 +39,26 @@ Playwright or Lighthouse directly. The launchers own the clean build, server,
 browser proxy, provenance checks, final safety assertion, and cleanup.
 
 Quality Gate and Nightly provision a reduced, job-owned local Supabase runtime
-for their authenticated stages. Checked-in migrations run during local startup;
-the guarded fixture launcher then creates only the deterministic browser-test
-catalog. Runtime output and credentials are never printed or uploaded, and the
-runtime is stopped without a backup in unconditional cleanup. Public results
-must still never be described as authenticated coverage.
+for their authenticated stages. Phase 5A.0d keeps local Realtime enabled for
+the existing feature-flag subscription; unrelated local services remain
+excluded. Checked-in migrations run during local startup; the guarded fixture
+launcher then creates only the deterministic browser-test catalog. Runtime
+output and credentials are never printed or uploaded, and the runtime is
+stopped without a backup in unconditional cleanup. Public results must still
+never be described as authenticated coverage.
 
-The separate guarded Lighthouse workflow enforces Mobile. Quality Gate does not
-claim Desktop performance: the observed `/auth/login` desktop scores of 0.66,
-0.69, and 0.64 remain below the unchanged 0.75 threshold and are a Phase 5A.0d
-entry condition.
+Quality Gate intentionally contains no Lighthouse execution. The separate
+guarded Phase 5A.0d workflow owns the authoritative five-run public and
+local-authenticated Mobile and Desktop matrix documented in
+[PHASE5A0D_PERFORMANCE_VISUAL_GATES.md](PHASE5A0D_PERFORMANCE_VISUAL_GATES.md).
+The historical `/auth/login` scores of `0.66`, `0.69`, and `0.64` are retained
+as evidence of the corrected desktop measurement-contract defect, not as a
+current pass or current gate result. The exact-head Linux login desktop median
+is `0.99`; real authenticated-mobile performance and product-detail
+accessibility debt remain blocking. Every measured mobile performance
+distribution is also statistically inconclusive under the preserved `0.10`
+range limit, and product-detail mobile exceeds the `900 KiB` cold-transfer
+direction.
 
 ## 🔍 How to View Your Data
 

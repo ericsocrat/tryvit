@@ -357,9 +357,7 @@ describe("browser workflow visual-safety contract", () => {
   });
 
   it("binds the authoritative Lighthouse report to the literal pull-request head", () => {
-    expect(workflowSources.lighthouse).toContain(
-      "ref: ${{ github.event.pull_request.head.sha }}",
-    );
+    expect(workflowSources.lighthouse).toContain("ref: ${{ github.event.pull_request.head.sha }}");
     expect(workflowSources.lighthouse).toContain(
       'test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"',
     );
@@ -625,14 +623,15 @@ describe("browser workflow visual-safety contract", () => {
     }
   });
 
-  it("keeps Phase 5A.0d desktop enforcement out of Quality Gate without a pass claim", () => {
+  it("keeps authoritative Phase 5A.0d Lighthouse enforcement separate from Quality Gate", () => {
     expect(browserJobs.qualityGate).not.toContain("visual-safety:lighthouse");
+    expect(browserJobs.qualityGate).toContain("Quality Gate contains no Lighthouse execution");
     expect(browserJobs.qualityGate).toContain(
-      "Guarded Lighthouse Mobile remains enforced by the separate blocking Lighthouse CI workflow",
+      "separate guarded Phase 5A.0d Lighthouse workflow owns public and local-authenticated Mobile and Desktop five-run enforcement",
     );
-    expect(browserJobs.qualityGate).toContain("0.66, 0.69, 0.64 against 0.75");
-    expect(browserJobs.qualityGate).toContain("not a pass");
-    expect(browserJobs.qualityGate).toContain("skipped both Lighthouse steps");
+    expect(browserJobs.qualityGate).toContain("0.66, 0.69, and 0.64");
+    expect(browserJobs.qualityGate).toContain("corrected measurement-contract defect");
+    expect(browserJobs.qualityGate).toContain("not as a current pass or current gate result");
   });
 
   it("pins the unchanged Phase 5A.0d Lighthouse configurations", () => {

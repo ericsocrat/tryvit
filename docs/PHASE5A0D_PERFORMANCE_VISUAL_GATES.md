@@ -1,7 +1,8 @@
 # Phase 5A.0d — Authoritative Performance and Visual Gates
 
-> **Status:** Draft implementation evidence; authoritative Linux values are
-> accepted only from the blocking Phase 5A.0d workflows
+> **Status:** Draft implementation evidence with reviewed Linux bootstrap
+> screenshots committed; route-JavaScript and Lighthouse results are bound to
+> exact source `aa84b2bd8a22b20e1625d33dede66238c507130f`
 > **Scope:** Measurement, CI, and baseline infrastructure only
 > **Visual redesign:** Not included
 > **Hosted data/deployment services:** Not accessed by the measurement harness
@@ -85,7 +86,8 @@ fixture during guarded builds and owned Next servers, and rejects every other
 `fonts.gstatic.com` URL. The owned egress proxy
 has no external CONNECT allowlist during build, server, Playwright, or
 Lighthouse execution. Product font code and typography remain unchanged while
-the measurement build becomes local-only and content-attested. The adjacent
+both the measurement build and owned runtime remain local-only and
+content-attested. The adjacent
 `inter-bold-c1c6ba11.OFL.txt` records the exact source, checksum, copyright, and
 SIL Open Font License 1.1 redistribution terms.
 
@@ -198,12 +200,45 @@ Its exact URL, status, content type, and body must match the contract. It is
 neither counted as a Next route chunk nor represented as a zero-byte success;
 any near-match, failed request, or unexpected executable response fails.
 
+### Authoritative Linux route-JavaScript evidence
+
+The exact-head Linux run for
+`aa84b2bd8a22b20e1625d33dede66238c507130f` measured identical base and head
+values, so every bootstrap delta is zero:
+
+| Route               | Total gzip | Shared gzip | Route-owned gzip | Head delta | Target status                               |
+| ------------------- | ---------: | ----------: | ---------------: | ---------: | ------------------------------------------- |
+| Landing             |  414.3 KiB |   414.0 KiB |          0.3 KiB |    0 bytes | Above 180 KiB target                        |
+| Login               |  418.5 KiB |   410.8 KiB |          7.7 KiB |    0 bytes | No absolute target                          |
+| Contact             |  416.6 KiB |   414.0 KiB |          2.6 KiB |    0 bytes | Above 150 KiB target                        |
+| Authenticated shell |  760.7 KiB |   746.9 KiB |         13.8 KiB |    0 bytes | No absolute target; material shared-JS debt |
+| Product detail      |  782.2 KiB |   746.9 KiB |         35.3 KiB |    0 bytes | No absolute target; material shared-JS debt |
+
+The bootstrap is evidence-only because the base did not yet contain the
+reviewed harness (`regressionEnforced=false`). After merge, the checked-in
+comparison becomes the base-owned regression authority. The compact comparison
+checksum is
+`2c7732211381cc7e54e0c24163262b15e53c9b65f39be179a44c1dcc57b90ddd`;
+the head-report checksum is
+`a7485256acb4c60a6ebd051ee737e62dfce6d80d26c1aad6283ccac8cab840e1`,
+and the retained GitHub artifact archive digest is
+`19b6cf8de3cb17ae704b16699e811f9d8f22e9f98992d584ee7e9b1a61b0fbc6`.
+These values come from GitHub run `30771067756`, artifact ID `8840638252`
+(`route-js-phase5a0d-evidence`).
+The landing and contact target misses remain explicit debt rather than being
+absorbed into the zero-delta result.
+
 ## Lighthouse contract
 
 The checked-in source configuration files remain byte-for-byte unchanged:
 
 - Mobile: `29B7A7AC0DC3CE98633E1013F57486C878C33DD6271D9D7462E2F4804C32285E`
 - Desktop: `E2C2279410348292CB9744AD8CD12B75E2459A00A7EABA84F9CA36BB5DB0CA9F`
+
+Configuration identity canonicalizes only LF/CRLF representation to the
+documented CRLF byte contract before hashing. Windows and Linux checkouts now
+produce the same two identities without changing either configuration or any
+threshold.
 
 The guarded launcher creates a temporary explicit contract because the source
 desktop configuration was not an effective desktop profile. The correction
@@ -221,10 +256,11 @@ Existing blocking floors are preserved:
 - SEO at least `0.95` for landing and contact; and
 - CLS no greater than `0.10`.
 
-The Living Label blueprint remains separately visible for landing: performance
-`0.90` mobile / `0.95` desktop, LCP `2.5 s`, TBT `200 ms`, TTFB `800 ms`, CLS
-median `0.05` and maximum `0.10`, and mobile transfer `900 KiB`. A miss is debt,
-not permission to lower the target.
+The Living Label blueprint remains separately visible. Landing has the
+route-specific performance targets `0.90` mobile / `0.95` desktop and CLS median
+target `0.05`; every selected route reports the general LCP `2.5 s`, TBT
+`200 ms`, TTFB `800 ms`, CLS maximum `0.10`, and cold-mobile transfer `900 KiB`
+directions. A miss is debt, not permission to lower the target.
 
 ### Fresh local five-run observation
 
@@ -235,13 +271,13 @@ evidence; only the pinned Linux workflow is authoritative.
 | Route/profile          | Performance |      LCP | CLS |    TBT | Transfer | Result                                  |
 | ---------------------- | ----------: | -------: | --: | -----: | -------: | --------------------------------------- |
 | Landing mobile         |        0.94 | 2,939 ms |   0 |  82 ms |  511 KiB | Public floor passes; blueprint LCP debt |
-| Login mobile           |        0.93 | 3,087 ms |   0 | 102 ms |  501 KiB | Pass                                    |
-| Contact mobile         |        0.91 | 3,471 ms |   0 |  83 ms |  509 KiB | Pass                                    |
+| Login mobile           |        0.93 | 3,087 ms |   0 | 102 ms |  501 KiB | Public floor passes; blueprint LCP debt |
+| Contact mobile         |        0.91 | 3,471 ms |   0 |  83 ms |  509 KiB | Public floor passes; blueprint LCP debt |
 | Landing desktop        |        0.99 |   840 ms |   0 |   2 ms |  511 KiB | Pass                                    |
 | Login desktop          |        1.00 |   797 ms |   0 |   0 ms |  501 KiB | Pass                                    |
 | Contact desktop        |        1.00 |   732 ms |   0 |   0 ms |  509 KiB | Pass                                    |
-| App shell mobile       |        0.70 | 6,764 ms |   0 | 312 ms |  880 KiB | **Below preserved 0.85 floor**          |
-| Product detail mobile  |        0.80 | 4,170 ms |   0 | 293 ms |  906 KiB | **Below preserved 0.85 floor**          |
+| App shell mobile       |        0.70 | 6,764 ms |   0 | 312 ms |  880 KiB | **Below floor; LCP/TBT debt**           |
+| Product detail mobile  |        0.80 | 4,170 ms |   0 | 293 ms |  906 KiB | **Below floor; LCP/TBT/transfer debt**  |
 | App shell desktop      |        0.99 |   916 ms |   0 |   0 ms |  924 KiB | Pass                                    |
 | Product detail desktop |        0.99 | 1,037 ms |   0 |   0 ms |  940 KiB | Pass                                    |
 
@@ -250,6 +286,62 @@ was statistically inconclusive. The compact report checksum is
 `6334e8159a56a08a259c75dab3921d4c87bc76a3b1137b5022e24328f23f52ab`.
 The report is lab-only: it provides no field p75 or INP evidence.
 
+### Authoritative exact-head Linux Lighthouse evidence
+
+The pinned Linux workflow attested the literal source commit
+`aa84b2bd8a22b20e1625d33dede66238c507130f` and completed all ten five-run
+route/profile distributions. Medians and median absolute deviations (MAD) are:
+
+| Route/profile          | Perf. | Range | A11y |   BP |  SEO | LCP ± MAD      | TBT ± MAD    | Result                                                |
+| ---------------------- | ----: | ----: | ---: | ---: | ---: | -------------- | ------------ | ----------------------------------------------------- |
+| Landing mobile         |  0.84 |  0.21 | 1.00 | 0.96 | 1.00 | 3,898 ± 271 ms | 413 ± 165 ms | **Gate fails: instability; performance/LCP/TBT debt** |
+| Login mobile           |  0.87 |  0.12 | 1.00 | 0.96 | 1.00 | 3,860 ± 199 ms | 69 ± 10 ms   | **Gate fails: instability; LCP debt**                 |
+| Contact mobile         |  0.86 |  0.16 | 1.00 | 0.96 | 1.00 | 3,891 ± 195 ms | 94 ± 5 ms    | **Gate fails: instability; LCP debt**                 |
+| Landing desktop        |  0.99 |  0.01 | 1.00 | 0.96 | 1.00 | 840 ± 12 ms    | 3 ± 1 ms     | Pass                                                  |
+| Login desktop          |  0.99 |  0.00 | 1.00 | 0.96 | 1.00 | 852 ± 8 ms     | 0 ± 0 ms     | Pass                                                  |
+| Contact desktop        |  0.99 |  0.01 | 1.00 | 0.96 | 1.00 | 830 ± 43 ms    | 0 ± 0 ms     | Pass                                                  |
+| App shell mobile       |  0.62 |  0.19 | 1.00 | 0.96 | 1.00 | 6,878 ± 67 ms  | 552 ± 103 ms | **Fails performance/instability; LCP/TBT debt**       |
+| Product detail mobile  |  0.78 |  0.15 | 0.92 | 0.96 | 1.00 | 3,678 ± 375 ms | 422 ± 28 ms  | **Fails performance/a11y/instability; LCP/TBT debt**  |
+| App shell desktop      |  0.99 |  0.02 | 1.00 | 0.96 | 0.92 | 919 ± 34 ms    | 47 ± 16 ms   | Pass under the applicable authenticated route floors  |
+| Product detail desktop |  0.98 |  0.01 | 0.93 | 0.96 | 1.00 | 1,080 ± 74 ms  | 52 ± 18 ms   | **Below preserved 0.95 accessibility floor**          |
+
+The remaining requested lab metrics are:
+
+| Route/profile          |    CLS median / max |    TTFB ± MAD |  Transfer | Directional budget status           |
+| ---------------------- | ------------------: | ------------: | --------: | ----------------------------------- |
+| Landing mobile         |               0 / 0 | 16.4 ± 0.9 ms | 509.4 KiB | Performance, LCP, and TBT debt      |
+| Login mobile           |               0 / 0 | 12.3 ± 0.8 ms | 499.9 KiB | LCP debt                            |
+| Contact mobile         |               0 / 0 | 11.7 ± 0.5 ms | 504.8 KiB | LCP debt                            |
+| Landing desktop        |               0 / 0 | 14.0 ± 0.9 ms | 509.2 KiB | Meets reported blueprint directions |
+| Login desktop          |               0 / 0 | 12.0 ± 0.7 ms | 499.1 KiB | Meets reported blueprint directions |
+| Contact desktop        |               0 / 0 | 10.4 ± 0.3 ms | 505.4 KiB | Meets reported blueprint directions |
+| App shell mobile       |               0 / 0 | 85.4 ± 3.7 ms | 879.3 KiB | LCP and TBT debt                    |
+| Product detail mobile  |               0 / 0 | 88.0 ± 2.3 ms | 904.8 KiB | LCP, TBT, and cold-transfer debt    |
+| App shell desktop      |               0 / 0 | 80.8 ± 0.8 ms | 912.3 KiB | Meets reported blueprint directions |
+| Product detail desktop | 0.000254 / 0.000254 | 85.3 ± 2.3 ms | 929.1 KiB | Meets reported blueprint directions |
+
+The authoritative job is intentionally red because the app-shell mobile
+performance and product-detail performance/accessibility debts are real. It is
+not an infrastructure failure: exact-head/configuration attestation, all safety
+assertions, credential redaction, fixture teardown, local-runtime shutdown,
+and evidence staging/upload passed; report generation completed and then
+returned nonzero for those debts. All five mobile performance ranges exceed the
+`0.10` stability limit, and landing mobile TBT MAD exceeds its stability
+boundary. These six instability failures are additive to the four category
+floor failures: app-shell mobile performance, product-detail mobile performance
+and accessibility, and product-detail desktop accessibility. The compact report
+checksum is
+`73cf07ed2c265403d5614987bfc6196bb02f9bf314a062a8a5dd5248f68c8605`;
+the retained artifact archive digest is
+`c99dfbc5722fbc698de89cdd6e47619581e3fa1583abaa3185a77540aa9d27ca`.
+These values come from GitHub run `30771067758`, artifact ID `8840696455`.
+That retained artifact predated the final correction that applies general
+timing and cold-mobile transfer directions to every selected route; the raw
+medians above already expose the additional product-detail transfer miss. The
+final exact-head workflow regenerates the compact report under the corrected
+classification without changing a threshold.
+This remains lab evidence only; no field Core Web Vitals or INP claim is made.
+
 ### Historical desktop login investigation
 
 The old `0.66`, `0.69`, and `0.64` values are not normalized or discarded.
@@ -257,8 +349,8 @@ They were produced by a purported desktop setup that retained an inconsistent
 mobile-derived effective environment and used three-run assertion behavior.
 They establish why the correction was necessary, but cannot establish whether
 the login route has desktop performance debt. Only the corrected five-run
-median can answer that question. The corrected desktop login median is `1.00`
-with a `0.99–1.00` observed range, so the historical condition was a
+median can answer that question. The exact-head Linux desktop login median is
+`0.99` with a `0.00` observed range, so the historical condition was a
 measurement-contract defect rather than reproducible desktop login debt.
 
 ## Visual baseline matrix
@@ -304,13 +396,51 @@ points. Candidate upload is staged into a new owned runner-temporary directory
 containing exactly seven manifest-listed PNGs plus the manifest. The two staged
 eight-file sets must be byte-identical.
 
+### Reviewed Linux visual baseline evidence
+
+The exact-head Linux bootstrap ran the complete public and local-authenticated
+capture twice, and the two staged eight-file sets were byte-identical. Each PNG
+was independently downloaded, hash-validated against the manifest, and visually
+reviewed at original resolution before commit:
+
+GitHub run `30771067764` retained artifact ID `8840624978`, named
+`phase5a0d-visual-baseline-candidates-aa84b2bd8a22b20e1625d33dede66238c507130f`.
+The manifest preserves the exact renderer as Ubuntu 24 image
+`20260720.247.2` x64, Node `v22.21.1`, npm `10.9.4`, Next.js `16.2.12`,
+Playwright `1.62.0`, and Chromium `151.0.7922.34`.
+
+| Route/state               | Viewport |   Bytes | PNG SHA-256                                                        |
+| ------------------------- | -------- | ------: | ------------------------------------------------------------------ |
+| Landing, public           | 390×844  |  85,157 | `e5704802156929b1ae99ed1ea8c9570091c9f3afe685ba1c5de544c20cd73c3e` |
+| Landing, public           | 768×1024 | 139,834 | `abd72cef9693d7d87a44a64d7967b4c363739cef59a541c71f76828bbbfff790` |
+| Landing, public           | 1440×900 | 178,825 | `0688d51c24ead7a8642569a68dd1d52189b8f460b7215ca340ed142224609efc` |
+| Login, public             | 390×844  |  49,800 | `dcb24f7d21fbfcd9c2068982c35ce7abc866139fb628eb77e26bae40de4714b9` |
+| Login, public             | 1440×900 | 266,772 | `f73f3d3dbb07b356938ec3222c03708e995b8121e665feb470682a0ee880ab66` |
+| App shell, local new user | 390×844  |  47,056 | `19925c064157c05291ffe4a02b10b66f705268dec916dd26230972b667ad2fa5` |
+| App shell, local new user | 1440×900 |  61,059 | `c1e40efd43128e66c4bb1f87921ffd554c7d2b94b156919f727946f226b8dc2b` |
+
+The reviewed images contain no broken image, clipping, overflow, credential,
+local identifier, hosted data, or content mask. They preserve the existing
+design as a regression reference; they do not endorse it as Design System V2.
+The manifest semantic checksum is
+`12a00dc37191191b788964d1c599d103aa0fedb1c15fa8cc36ad80d746953716`,
+its file SHA-256 is
+`8c17917c60a3b46f087cc5d5cd3a80b34355015ed9e8de0a58e98826f11bdf9c`,
+and the uploaded artifact archive digest is
+`94d28b9e39470d950b5eac30d31cd741d8d76b1dc210079ba929eafd448dd985`.
+The deterministic fixture-contract checksum is
+`12b5fb3bf42f9d969f4bdf248cc142df1c8515b30f793c533c01f82243eea580`.
+
 ## Safety invariants
 
 - Public measurement commands receive no Supabase URL, key, configuration, or
   credentials and fail any hosted/non-loopback Supabase request.
 - Local authenticated measurement derives the emulator origin from checked-in
-  configuration, accepts only loopback HTTP, creates a deterministic local
-  user, and deletes it after the run.
+  configuration, accepts only loopback HTTP input, derives only the exact
+  same-host/port `ws:` Realtime source, creates a deterministic local user, and
+  deletes it after the run. Both checked-in lifecycle wrappers start local
+  Realtime for the existing feature-flag subscription and retain no hosted
+  fallback.
 - Fixture teardown and local-runtime shutdown run after browser or assertion
   failure. Artifacts upload only after the safety assertions and cleanup pass.
 - Same-origin failures, including image-optimizer failures, are blocking. Every
@@ -331,5 +461,8 @@ eight-file sets must be byte-identical.
 Phase 5A.0d makes future Design System V2 work reviewable: visual drift becomes
 explicit, route regressions can no longer hide behind a false zero, and lab
 performance has a reproducible distribution. It does not itself optimize or
-redesign the product. Any current absolute performance debt remains a separate
-scoped prerequisite or acceptance item for the route family that changes it.
+redesign the product. Broad Phase 5A.1 visual implementation should not begin
+while the authoritative Lighthouse check is red: authenticated-mobile
+performance and product-detail accessibility require a separate scoped
+remediation first. The reviewed visual foundation itself is ready; the measured
+product debt, not measurement trust, is the remaining entry blocker.

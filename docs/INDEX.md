@@ -1,7 +1,7 @@
 # Documentation Index
 
 > **Last broadly verified:** 2026-07-30
-> **Phase 5A.0d performance/visual-gate entry and inventory updated:** 2026-08-02
+> **Phase 5A.0d performance/visual-gate evidence updated:** 2026-08-03
 > **Status:** Active — update when adding, renaming, or archiving docs
 > **Tracked inventory:** 68 Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 1 route inventory in `docs/phase5/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
@@ -214,7 +214,7 @@
 | [PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md](PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md)             | Fail-closed local build, server, browser, screenshot, fixture and Lighthouse safety contract                           | Phase 5A.0a                                             | 2026-08-01   |
 | [PHASE5A0B_PUBLIC_ROUTE_PWA_CONTRACT.md](PHASE5A0B_PUBLIC_ROUTE_PWA_CONTRACT.md)           | Typed proxy public-route contract, anonymous-share/system reachability, and corrected PWA manifest semantics           | Phase 5A.0b                                             | 2026-08-02   |
 | [PHASE5A0C_DEMO_PROVIDER_LOCALE_RENDERING.md](PHASE5A0C_DEMO_PROVIDER_LOCALE_RENDERING.md) | Backend-independent public providers, EN/PL/DE request locale and landing Server Component contract                    | Phase 5A.0c                                             | 2026-08-02   |
-| [PHASE5A0D_PERFORMANCE_VISUAL_GATES.md](PHASE5A0D_PERFORMANCE_VISUAL_GATES.md)             | Authoritative route-JavaScript, five-run Lighthouse and deterministic visual-baseline measurement contract             | Phase 5A.0d                                             | 2026-08-02   |
+| [PHASE5A0D_PERFORMANCE_VISUAL_GATES.md](PHASE5A0D_PERFORMANCE_VISUAL_GATES.md)             | Authoritative route-JavaScript, five-run Lighthouse and reviewed deterministic Linux visual-baseline contract/evidence | Phase 5A.0d                                             | 2026-08-03   |
 
 ## Process & Workflow
 

@@ -257,7 +257,7 @@ describe("Phase 5A.0d Lighthouse aggregation", () => {
     );
   });
 
-  it("keeps directional landing debt separate from blocking policy", () => {
+  it("keeps directional blueprint debt separate from blocking policy", () => {
     const runMetadata = metadata("public", "mobile");
     const reports = results("public", "mobile");
     for (const report of reports.filter(
@@ -271,6 +271,28 @@ describe("Phase 5A.0d Lighthouse aggregation", () => {
     expect(aggregate.directionalDebt).toEqual([
       "public/mobile/landing:blueprint:performance-median-below-0.9",
       "public/mobile/landing:blueprint:lcp-median-above-2500ms",
+    ]);
+  });
+
+  it("reports timing and cold-mobile transfer debt for non-landing routes", () => {
+    const runMetadata = metadata("local-authenticated", "mobile");
+    const reports = results("local-authenticated", "mobile");
+    const productUrl = runMetadata.routes.find((route) => route.id === "product-detail")!.url;
+    for (const report of reports.filter((candidate) => candidate.requestedUrl === productUrl)) {
+      report.audits["largest-contentful-paint"].numericValue = 2_600;
+      report.audits["total-blocking-time"].numericValue = 201;
+      report.audits["server-response-time"].numericValue = 801;
+      report.audits["total-byte-weight"].numericValue = 901 * 1024;
+    }
+
+    const aggregate = aggregateLighthouseDirectory(runMetadata, reports).routes.find(
+      (route) => route.id === "product-detail",
+    )!;
+    expect(aggregate.directionalDebt).toEqual([
+      "local-authenticated/mobile/product-detail:blueprint:lcp-median-above-2500ms",
+      "local-authenticated/mobile/product-detail:blueprint:tbt-median-above-200ms",
+      "local-authenticated/mobile/product-detail:blueprint:ttfb-median-above-800ms",
+      "local-authenticated/mobile/product-detail:blueprint:total-byte-weight-median-above-900KiB",
     ]);
   });
 

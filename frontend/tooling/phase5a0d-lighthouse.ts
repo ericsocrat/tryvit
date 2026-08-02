@@ -464,26 +464,30 @@ function summarizeLhrs(
       instabilityFailures.push(`${prefix}:${metric}:mad-over-median-above-20-percent`);
     }
   }
+  const debtChecks: [boolean, string][] = [
+    [metrics.lcp.median > 2_500, "lcp-median-above-2500ms"],
+    [metrics.tbt.median > 200, "tbt-median-above-200ms"],
+    [metrics.ttfb.median > 800, "ttfb-median-above-800ms"],
+    [
+      profile === "mobile" && metrics.totalByteWeight.median > 900 * 1024,
+      "total-byte-weight-median-above-900KiB",
+    ],
+  ];
   if (route.id === "landing") {
     const performanceTarget = profile === "mobile" ? 0.9 : 0.95;
-    const debtChecks: readonly [boolean, string][] = [
-      [
-        categoryScores.performance.median < performanceTarget,
-        `performance-median-below-${performanceTarget}`,
-      ],
-      [metrics.lcp.median > 2_500, "lcp-median-above-2500ms"],
-      [metrics.tbt.median > 200, "tbt-median-above-200ms"],
-      [metrics.ttfb.median > 800, "ttfb-median-above-800ms"],
+    debtChecks.unshift([
+      categoryScores.performance.median < performanceTarget,
+      `performance-median-below-${performanceTarget}`,
+    ]);
+    debtChecks.splice(
+      4,
+      0,
       [metrics.cls.median > 0.05, "cls-median-above-0.05"],
       [metrics.cls.maximum > 0.1, "cls-maximum-above-0.1"],
-      [
-        profile === "mobile" && metrics.totalByteWeight.median > 900 * 1024,
-        "total-byte-weight-median-above-900KiB",
-      ],
-    ];
-    for (const [failed, reason] of debtChecks) {
-      if (failed) directionalDebt.push(`${prefix}:blueprint:${reason}`);
-    }
+    );
+  }
+  for (const [failed, reason] of debtChecks) {
+    if (failed) directionalDebt.push(`${prefix}:blueprint:${reason}`);
   }
   return Object.freeze({
     id: route.id,
