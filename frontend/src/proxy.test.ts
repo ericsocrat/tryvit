@@ -4,13 +4,20 @@ import { proxy } from "./proxy";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
-const mockGetUser = vi.fn();
+const { mockGetUser, mockCreateMiddlewareClient } = vi.hoisted(() => {
+  const mockGetUser = vi.fn();
+  return {
+    mockGetUser,
+    mockCreateMiddlewareClient: vi.fn(() => ({
+      auth: {
+        getUser: () => mockGetUser(),
+      },
+    })),
+  };
+});
+
 vi.mock("@/lib/supabase/middleware", () => ({
-  createMiddlewareClient: () => ({
-    auth: {
-      getUser: () => mockGetUser(),
-    },
-  }),
+  createMiddlewareClient: mockCreateMiddlewareClient,
 }));
 
 const mockLimit = vi.fn();
@@ -94,6 +101,50 @@ describe("proxy", () => {
     });
   });
 
+  describe("backend-independent policy routes", () => {
+    const routes = [
+      "/",
+      "/contact",
+      "/privacy",
+      "/terms",
+      "/forbidden",
+      "/offline",
+      "/learn",
+      "/learn/allergens",
+      "/lists/shared/invalid-token-abc123",
+      "/compare/shared/invalid-token-abc123",
+      "/lists/shared/invalid-token-abc123/opengraph-image",
+      "/compare/shared/invalid-token-abc123/opengraph-image",
+      "/manifest.webmanifest",
+      "/sw.js",
+      "/_vercel/speed-insights/script.js",
+      "/robots.txt",
+      "/sitemap.xml",
+      "/opengraph-image",
+      "/twitter-image",
+      "/favicon.ico",
+      "/icons/icon-192.png",
+      "/auth/callback",
+      "/auth/forgot-password",
+      "/auth/update-password",
+    ];
+
+    it.each(routes)("passes %s without constructing a Supabase client", async (pathname) => {
+      const response = await proxy(createRequest(pathname));
+
+      expect(response.status).not.toBe(307);
+      expect(mockCreateMiddlewareClient).not.toHaveBeenCalled();
+      expect(mockGetUser).not.toHaveBeenCalled();
+    });
+
+    it("does not construct a Supabase client for API rate limiting", async () => {
+      await proxy(createRequest("/api/health"));
+
+      expect(mockCreateMiddlewareClient).not.toHaveBeenCalled();
+      expect(mockGetUser).not.toHaveBeenCalled();
+    });
+  });
+
   describe("authenticated user on auth pages", () => {
     it("redirects logged-in user from /auth/login to /app/search", async () => {
       mockGetUser.mockResolvedValue({
@@ -162,6 +213,24 @@ describe("proxy", () => {
       });
       const response = await proxy(createRequest("/app/search"));
       expect(response.status).not.toBe(307);
+      expect(mockCreateMiddlewareClient).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      "/learned",
+      "/contact-us",
+      "/authentication",
+      "/lists/shared/invalid-token/unexpected",
+      "/compare/shared/invalid-token/unexpected",
+    ])("fails closed for near-match route %s", async (pathname) => {
+      mockGetUser.mockResolvedValue({ data: { user: null } });
+
+      const response = await proxy(createRequest(pathname));
+
+      expect(response.status).toBe(307);
+      expect(response.headers.get("location")).toContain("/auth/login");
+      expect(mockCreateMiddlewareClient).toHaveBeenCalledTimes(1);
+      expect(mockGetUser).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -196,6 +265,7 @@ describe("proxy", () => {
 
     it("does not call Supabase auth for API routes", async () => {
       await proxy(createRequest("/api/health"));
+      expect(mockCreateMiddlewareClient).not.toHaveBeenCalled();
       expect(mockGetUser).not.toHaveBeenCalled();
     });
 
@@ -367,6 +437,17 @@ describe("proxy", () => {
       expect(response.status).toBe(307);
       const location = response.headers.get("location") ?? "";
       expect(location).toContain("/auth/login");
+    });
+
+    it("does not treat /app/administrator as an admin route", async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: "u1", email: "user@example.com" } },
+      });
+
+      const response = await proxy(createRequest("/app/administrator"));
+
+      expect(response.status).not.toBe(303);
+      expect(response.status).not.toBe(307);
     });
 
     it("does not expose x-request-id on redirect to /forbidden", async () => {

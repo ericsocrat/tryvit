@@ -18,24 +18,11 @@ import {
     rateLimitEnabled,
     resolveRateLimitTier,
 } from "@/lib/rate-limiter";
+import { ROUTE_CLASS, getRoutePolicy } from "@/lib/route-policy";
 import { createMiddlewareClient } from "@/lib/supabase/middleware";
 import { type NextRequest, NextResponse } from "next/server";
 
 // ─── Auth Helpers ───────────────────────────────────────────────────────────
-
-const PUBLIC_PATHS = new Set(["/", "/contact", "/privacy", "/terms", "/forbidden"]);
-
-function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATHS.has(pathname) || pathname.startsWith("/auth/") || pathname.startsWith("/learn");
-}
-
-/**
- * Admin route guard (#186). Comma-separated list of admin email addresses.
- * If unset, admin routes are closed to all users (deny-by-default).
- */
-function isAdminPath(pathname: string): boolean {
-  return pathname.startsWith("/app/admin");
-}
 
 function isAdminUser(email: string | undefined): boolean {
   const allowlist = process.env.ADMIN_EMAILS;
@@ -132,13 +119,22 @@ export async function proxy(request: NextRequest) {
   response.headers.set("x-request-id", requestId);
 
   const { pathname } = request.nextUrl;
+  const routePolicy = getRoutePolicy(pathname);
 
   // ── API routes: rate limiting only (no auth enforcement) ──────────────────
-  if (pathname.startsWith("/api/")) {
+  if (routePolicy.routeClass === ROUTE_CLASS.api) {
     return applyRateLimit(request, response);
   }
 
-  // ── Non-API routes: auth enforcement ──────────────────────────────────────
+  // ── Backend-independent routes: no Supabase client or lookup ──────────────
+  // Public pages, shared views, metadata, recovery, and callback routes must
+  // remain reachable while the backend is paused. Auth login/signup are the
+  // only public routes allowed to look up a user for their documented redirect.
+  if (routePolicy.authenticationLookup === "never") {
+    return response;
+  }
+
+  // ── Authenticated routes and signed-in auth entries ───────────────────────
   const supabase = createMiddlewareClient(request, response);
 
   // Refresh session token (important for @supabase/ssr)
@@ -152,12 +148,12 @@ export async function proxy(request: NextRequest) {
     // Supabase unreachable — treat as unauthenticated
   }
 
-  // Allow public routes
-  if (isPublicPath(pathname)) {
-    // If logged in user visits /auth/login or /auth/signup, redirect to app
-    if (user && (pathname === "/auth/login" || pathname === "/auth/signup")) {
-      return NextResponse.redirect(new URL("/app/search", request.url));
-    }
+  if (routePolicy.allowsSignedInRedirect && user) {
+    return NextResponse.redirect(new URL("/app/search", request.url));
+  }
+
+  // Auth-entry routes are public to signed-out visitors.
+  if (routePolicy.requiresAnonymousAccess) {
     return response;
   }
 
@@ -171,7 +167,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // ── Admin routes: require admin email allowlist (#186, #579) ────────────────
-  if (isAdminPath(pathname) && !isAdminUser(user.email)) {
+  if (routePolicy.routeClass === ROUTE_CLASS.protectedAdmin && !isAdminUser(user.email)) {
     const forbiddenUrl = new URL("/forbidden", request.url);
     return NextResponse.redirect(forbiddenUrl, { status: 303 });
   }

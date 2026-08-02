@@ -53,6 +53,7 @@ function jobSection(workflow: string, jobName: string): string {
 }
 
 const workflowSources = {
+  bundleSize: readWorkflow("bundle-size.yml"),
   prScreenshots: readWorkflow("pr-screenshots.yml"),
   prGate: readWorkflow("pr-gate.yml"),
   mainGate: readWorkflow("main-gate.yml"),
@@ -380,6 +381,7 @@ describe("browser workflow visual-safety contract", () => {
   });
 
   it("keeps package entry points explicit and cross-platform", () => {
+    expect(packageScripts.build).toBe("next build --webpack");
     expect(packageScripts["quality:smoke"]).toContain("--quality-level=smoke");
     expect(packageScripts["quality:full"]).toContain("--quality-level=full");
     expect(packageScripts["lighthouse:mobile"]).toContain("visual-safety:public-lighthouse");
@@ -387,6 +389,19 @@ describe("browser workflow visual-safety contract", () => {
     expect(safetyCliSource).toMatch(
       /commandEnvironment\.VISUAL_SAFETY_MODE = mode;[\s\S]*loadSafetyContractFromEnvironment\(commandEnvironment\)/u,
     );
+    expect(safetyCliSource).toContain('resetGeneratedServiceWorker()');
+    expect(safetyCliSource).toContain('assertGeneratedServiceWorker()');
+    expect(safetyCliSource).toContain('[nextCli, "build", "--webpack"]');
+    expect(nextConfigSource).toContain("register: !process.env.VISUAL_SAFETY_MODE");
+    for (const workflow of [
+      workflowSources.bundleSize,
+      workflowSources.prGate,
+      workflowSources.mainGate,
+      workflowSources.nightly,
+    ]) {
+      expect(workflow).toContain("run: npm run build");
+      expect(workflow).not.toContain("run: npx next build");
+    }
   });
 
   it("never stages local authenticated storage state in browser artifacts", () => {

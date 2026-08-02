@@ -60,6 +60,7 @@ const require = createRequire(import.meta.url);
 export const frontendRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const repositoryRoot = path.resolve(frontendRoot, "..");
 export const nextDirectory = path.join(frontendRoot, ".next");
+const generatedServiceWorkerPath = path.join(frontendRoot, "public", "sw.js");
 export const provenancePath = path.join(nextDirectory, "tryvit-visual-safety-provenance.json");
 export const violationMarkerPath = path.join(
   frontendRoot,
@@ -793,6 +794,25 @@ async function buildSupabaseOrigin(contract: SafetyContract): Promise<string> {
     .origin;
 }
 
+/**
+ * Serwist's existing Next integration is webpack-based. Remove only its
+ * explicitly ignored output before an owned build so an old local worker
+ * cannot make a Turbopack build appear PWA-capable.
+ */
+function resetGeneratedServiceWorker(): void {
+  if (!existsSync(generatedServiceWorkerPath)) return;
+  if (!lstatSync(generatedServiceWorkerPath).isFile()) {
+    throw safetyError("VS_PWA_WORKER", "generated-worker-not-file");
+  }
+  unlinkSync(generatedServiceWorkerPath);
+}
+
+function assertGeneratedServiceWorker(): void {
+  if (!existsSync(generatedServiceWorkerPath) || !lstatSync(generatedServiceWorkerPath).isFile()) {
+    throw safetyError("VS_PWA_WORKER", "generated-worker-missing");
+  }
+}
+
 export async function cleanBuild(
   contract: SafetyContract,
   localCredentials?: LocalFixtureCredentials,
@@ -807,6 +827,7 @@ export async function cleanBuild(
   try {
     const target = await safeNextBuildPath(frontendRoot, nextDirectory);
     if (existsSync(target)) rmSync(target, { recursive: true, force: false });
+    resetGeneratedServiceWorker();
 
     const localOrigin = await buildSupabaseOrigin(contract);
     const env = sanitizedChildEnvironment(
@@ -820,11 +841,12 @@ export async function cleanBuild(
       throw safetyError("VS_LOCAL_ANON", "local-anon-key-missing");
     }
     const nextCli = require.resolve("next/dist/bin/next");
-    const code = await runChild(process.execPath, [nextCli, "build"], {
+    const code = await runChild(process.execPath, [nextCli, "build", "--webpack"], {
       cwd: frontendRoot,
       env,
     });
     if (code !== 0) throw safetyError("VS_BUILD_FAILED", "next-build-failed");
+    assertGeneratedServiceWorker();
     return writeBuildProvenance(contract);
   } finally {
     release();

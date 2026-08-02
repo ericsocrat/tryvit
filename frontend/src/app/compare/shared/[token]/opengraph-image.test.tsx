@@ -94,5 +94,24 @@ describe("comparison opengraph-image helpers", () => {
       const mod = await import("./opengraph-image");
       expect(typeof mod.default).toBe("function");
     });
+
+    it("returns a fallback image when public comparison data is unavailable", async () => {
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+        })
+        .mockRejectedValueOnce(new Error("local public adapter unavailable"));
+      vi.stubGlobal("fetch", fetchMock);
+
+      const mod = await import("./opengraph-image");
+      const response = await mod.default({
+        params: Promise.resolve({ token: "invalid-token" }),
+      });
+
+      expect(response).toBeInstanceOf(Response);
+      expect(fetchMock.mock.calls[1]?.[0]).toContain("api_get_shared_comparison");
+    });
   });
 });

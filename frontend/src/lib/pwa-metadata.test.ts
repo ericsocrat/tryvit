@@ -59,6 +59,23 @@ describe("PWA Manifest", () => {
     expect(manifest.categories).toContain("food");
     expect(manifest.categories).toContain("health");
   });
+
+  it("does not force portrait orientation without an approved accessibility exception", () => {
+    expect(manifest.orientation).toBeUndefined();
+  });
+
+  it("uses canonical app routes for its shortcuts", () => {
+    const shortcuts = new Map(
+      manifest.shortcuts.map((shortcut: { short_name: string; url: string }) => [
+        shortcut.short_name,
+        shortcut.url,
+      ]),
+    );
+
+    expect(shortcuts.get("Search")).toBe("/app/search");
+    expect(shortcuts.get("Lists")).toBe("/app/lists");
+    expect(shortcuts.get("Scan")).toBe("/app/scan");
+  });
 });
 
 /* ────────────────────── Icon files ────────────────────── */

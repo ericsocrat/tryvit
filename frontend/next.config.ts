@@ -7,6 +7,10 @@ const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
   swDest: "public/sw.js",
   disable: process.env.NODE_ENV === "development",
+  // Guarded browser tests deliberately block service workers. Keep producing
+  // the worker for reachability checks, but do not inject auto-registration
+  // into those isolated builds.
+  register: !process.env.VISUAL_SAFETY_MODE,
 });
 
 // ── Content Security Policy (#56) ───────────────────────────────────────────

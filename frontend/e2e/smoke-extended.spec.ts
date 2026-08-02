@@ -69,6 +69,28 @@ test.describe("Footer links", () => {
   });
 });
 
+test.describe("Backend-independent public pages", () => {
+  const routes = [
+    "/",
+    "/contact",
+    "/privacy",
+    "/terms",
+    "/forbidden",
+    "/offline",
+    "/learn",
+    "/learn/allergens",
+  ];
+
+  for (const route of routes) {
+    test(`${route} is reachable without an authentication redirect`, async ({ page }) => {
+      const response = await page.goto(route);
+
+      expect(response?.ok(), route).toBe(true);
+      await expect(page).not.toHaveURL(/\/auth\/login/);
+    });
+  }
+});
+
 test.describe("Header", () => {
   test("shows TryVit logo linking to home", async ({ page }) => {
     await page.goto("/contact");
@@ -207,18 +229,62 @@ test.describe("Signup page details", () => {
   });
 });
 
-test.describe("Shared pages behind auth", () => {
-  test("shared list route redirects to login", async ({ page }) => {
-    await page.goto("/lists/shared/invalid-token-abc123");
-    await page.waitForURL(/\/auth\/login/);
-    await expect(page.locator("text=Welcome back")).toBeVisible();
+test.describe("Authentication entry and recovery routes", () => {
+  for (const route of ["/auth/forgot-password", "/auth/update-password"]) {
+    test(`${route} remains reachable while signed out`, async ({ page }) => {
+      const response = await page.goto(route);
+
+      expect(response?.ok(), route).toBe(true);
+      await expect(page).not.toHaveURL(/\/auth\/login/);
+    });
+  }
+});
+
+test.describe("Public shared pages", () => {
+  test("shared list route reaches its truthful invalid-token state without login", async ({ page }) => {
+    const response = await page.goto("/lists/shared/invalid-token-abc123");
+
+    expect(response?.ok()).toBe(true);
+    await expect(page).not.toHaveURL(/\/auth\/login/);
   });
 
-  test("shared comparison route redirects to login", async ({ page }) => {
-    await page.goto("/compare/shared/invalid-token-xyz789");
-    await page.waitForURL(/\/auth\/login/);
-    await expect(page.locator("text=Welcome back")).toBeVisible();
+  test("shared comparison route reaches its truthful invalid-token state without login", async ({ page }) => {
+    const response = await page.goto("/compare/shared/invalid-token-xyz789");
+
+    expect(response?.ok()).toBe(true);
+    await expect(page).not.toHaveURL(/\/auth\/login/);
   });
+});
+
+test.describe("Public system and metadata resources", () => {
+  const browserResources = [
+    "/manifest.webmanifest",
+    "/sw.js",
+    "/robots.txt",
+    "/sitemap.xml",
+    "/opengraph-image",
+    "/twitter-image",
+    "/lists/shared/invalid-token-abc123/opengraph-image",
+    "/compare/shared/invalid-token-abc123/opengraph-image",
+    "/icons/icon-192.png",
+  ];
+
+  for (const resource of browserResources) {
+    test(`${resource} is reachable without an authentication redirect`, async ({ page }) => {
+      const response = await page.goto(resource);
+
+      expect(response?.ok(), resource).toBe(true);
+      await expect(page).not.toHaveURL(/\/auth\/login/);
+    });
+  }
+
+  test("/favicon.ico is reachable without an authentication redirect", async ({ page }) => {
+    const response = await page.request.get("/favicon.ico", { maxRedirects: 0 });
+
+    expect(response.ok()).toBe(true);
+    expect(response.headers()["content-type"]).toMatch(/^image\/x-icon/i);
+  });
+
 });
 
 test.describe("Auth redirect preserves intended URL", () => {
@@ -230,6 +296,11 @@ test.describe("Auth redirect preserves intended URL", () => {
 
   test("visiting /app/scan redirects to login", async ({ page }) => {
     await page.goto("/app/compare");
+    await page.waitForURL(/\/auth\/login/);
+  });
+
+  test("visiting an admin route redirects to login while signed out", async ({ page }) => {
+    await page.goto("/app/admin/monitoring");
     await page.waitForURL(/\/auth\/login/);
   });
 });

@@ -5,6 +5,7 @@
  */
 
 import { describe, it, expect } from "vitest";
+import { ROUTE_CLASS, getRoutePolicy } from "@/lib/route-policy";
 import { ROUTES, getRoutes, getLighthouseRoutes } from "./routes";
 import type { RouteEntry } from "./routes";
 
@@ -59,6 +60,18 @@ describe("ROUTES manifest", () => {
     expect(adminRoutes.length).toBeGreaterThan(0);
     for (const route of adminRoutes) {
       expect(route.desktopOnly).toBe(true);
+    }
+  });
+
+  it("keeps quality-route authentication expectations consistent with the authoritative policy", () => {
+    for (const route of ROUTES) {
+      const pathname = new URL(route.path, "http://tryvit.test").pathname;
+      const policy = getRoutePolicy(pathname);
+      const policyRequiresAuth =
+        policy.routeClass === ROUTE_CLASS.protected ||
+        policy.routeClass === ROUTE_CLASS.protectedAdmin;
+
+      expect(route.requiresAuth, route.path).toBe(policyRequiresAuth);
     }
   });
 });
