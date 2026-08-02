@@ -4,7 +4,7 @@
 //
 // Issue #70 — Visual Regression Baseline
 
-import type { Page } from "@playwright/test";
+import type { ConsoleMessage, Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 
 import type { VisualBaselineCase } from "../../tooling/phase5a0d-contract";
@@ -101,6 +101,44 @@ export function assertNoMeaningfulVisualMasks(mask: readonly string[]): void {
   }
 }
 
+function consoleSourceClass(
+  sourceUrl: string,
+  appOrigin: string,
+  localServiceOrigin: string | null,
+): "app" | "local-service" | "bundled" | "other" | "unattributed" {
+  if (!sourceUrl) return "unattributed";
+  if (sourceUrl.startsWith("webpack-internal:") || sourceUrl.startsWith("blob:")) return "bundled";
+  try {
+    const origin = new URL(sourceUrl).origin;
+    if (origin === appOrigin) return "app";
+    if (origin === localServiceOrigin) return "local-service";
+    return "other";
+  } catch {
+    return "other";
+  }
+}
+
+function safeConsoleErrorCode(
+  message: ConsoleMessage,
+  appOrigin: string,
+  localServiceOrigin: string | null,
+): string {
+  const text = message.text();
+  const classification =
+    /hydration|server rendered html|did not match|didn't match|hydrated but/iu.test(text)
+      ? "react-hydration"
+      : /failed to load resource/iu.test(text)
+        ? "resource-load"
+        : /content security policy|refused to/iu.test(text)
+          ? "content-security-policy"
+          : "console-error";
+  return `${classification}:${consoleSourceClass(
+    message.location().url,
+    appOrigin,
+    localServiceOrigin,
+  )}`;
+}
+
 /**
  * Captures one of the seven Phase 5A.0d baselines. Context-level locale,
  * viewport, theme and motion are applied by `test.use` before this receives a
@@ -120,15 +158,24 @@ export async function assertPhase5VisualBaseline(
   const pageErrors: string[] = [];
   const consoleErrors: string[] = [];
   const firstPartyFailures: number[] = [];
+  const localServiceFailures: number[] = [];
   const appOrigin = new URL(process.env.VISUAL_SAFETY_APP_ORIGIN ?? "http://127.0.0.1:3000").origin;
+  const localServiceOrigin = process.env.VISUAL_SAFETY_SUPABASE_ORIGIN
+    ? new URL(process.env.VISUAL_SAFETY_SUPABASE_ORIGIN).origin
+    : null;
   page.on("pageerror", (error) => pageErrors.push(error.name || "Error"));
   page.on("console", (message) => {
-    if (message.type() === "error") consoleErrors.push("console-error");
+    if (message.type() === "error") {
+      consoleErrors.push(safeConsoleErrorCode(message, appOrigin, localServiceOrigin));
+    }
   });
   page.on("response", (response) => {
     const target = new URL(response.url());
     if (target.origin === appOrigin && response.status() >= 400) {
       firstPartyFailures.push(response.status());
+    }
+    if (target.origin === localServiceOrigin && response.status() >= 400) {
+      localServiceFailures.push(response.status());
     }
   });
 
@@ -153,6 +200,7 @@ export async function assertPhase5VisualBaseline(
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
   expect(firstPartyFailures).toEqual([]);
+  expect(localServiceFailures).toEqual([]);
   expect(await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(
     true,
   );

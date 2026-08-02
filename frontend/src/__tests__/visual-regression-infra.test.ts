@@ -120,6 +120,9 @@ describe("Visual regression test files", () => {
     expect(content).toContain(
       'page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" })',
     );
+    expect(content).toContain("safeConsoleErrorCode(message, appOrigin, localServiceOrigin)");
+    expect(content).toContain("expect(localServiceFailures).toEqual([])");
+    expect(content).not.toContain('consoleErrors.push("console-error")');
   });
 
   it("smoke-visual.spec.ts exists", () => {
