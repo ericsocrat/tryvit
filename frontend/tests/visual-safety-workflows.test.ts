@@ -217,8 +217,9 @@ describe("browser workflow visual-safety contract", () => {
     expect(localRuntimeSource).toContain("supabase stop --workdir");
     expect(localRuntimeSource).toContain("--no-backup");
     expect(localRuntimeSource).toContain(
-      "--exclude realtime,storage-api,imgproxy,postgres-meta,studio,mailpit,edge-runtime,logflare,vector,supavisor",
+      "--exclude storage-api,imgproxy,postgres-meta,studio,mailpit,edge-runtime,logflare,vector,supavisor",
     );
+    expect(localRuntimeSource).not.toContain("--exclude realtime");
     expect(localRuntimeSource).toContain('>"$output_file" 2>&1');
     expect(localRuntimeSource).toContain("credential-bearing CLI output withheld");
     expect(localRuntimeSource).not.toMatch(/\b(?:login|link|db push)\b/u);
