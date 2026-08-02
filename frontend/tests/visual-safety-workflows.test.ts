@@ -248,6 +248,12 @@ describe("browser workflow visual-safety contract", () => {
       '[System.Environment]::SetEnvironmentVariable($name, $null, "Process")',
     );
     expect(localRuntimePowerShellSource).toContain("-WindowStyle Hidden");
+    expect(localRuntimePowerShellSource).toContain(
+      "storage-api,imgproxy,postgres-meta,studio,mailpit,edge-runtime,logflare,vector,supavisor",
+    );
+    expect(localRuntimePowerShellSource).not.toContain(
+      "realtime,storage-api,imgproxy,postgres-meta,studio,mailpit,edge-runtime,logflare,vector,supavisor",
+    );
     expect(localRuntimePowerShellSource).toContain("-RedirectStandardOutput $stdoutPath");
     expect(localRuntimePowerShellSource).toContain("-RedirectStandardError $stderrPath");
     expect(localRuntimePowerShellSource).toContain("credential-bearing CLI output withheld");

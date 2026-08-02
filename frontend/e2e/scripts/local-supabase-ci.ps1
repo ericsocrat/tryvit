@@ -44,7 +44,7 @@ if ($Action -eq "start") {
     "start",
     "--workdir", $repositoryRoot,
     "--exclude",
-    "realtime,storage-api,imgproxy,postgres-meta,studio,mailpit,edge-runtime,logflare,vector,supavisor"
+    "storage-api,imgproxy,postgres-meta,studio,mailpit,edge-runtime,logflare,vector,supavisor"
   )
 } else {
   $arguments = @("stop", "--workdir", $repositoryRoot, "--no-backup")
