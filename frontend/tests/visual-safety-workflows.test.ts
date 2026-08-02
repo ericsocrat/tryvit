@@ -291,8 +291,7 @@ describe("browser workflow visual-safety contract", () => {
   it("allows only the ephemeral loopback Supabase origin in local-authenticated CSP builds", () => {
     expect(nextConfigSource).toContain('process.env.VISUAL_SAFETY_MODE === "local-authenticated"');
     expect(nextConfigSource).toContain("process.env.NEXT_PUBLIC_SUPABASE_URL");
-    expect(nextConfigSource).toContain("new URL(raw)");
-    expect(nextConfigSource).toContain("local visual-safety Supabase origin must be loopback HTTP");
+    expect(nextConfigSource).toContain("localVisualSupabaseCspSources");
     expect(nextConfigSource).not.toMatch(/55001|54321/u);
   });
 
@@ -348,6 +347,15 @@ describe("browser workflow visual-safety contract", () => {
     ).toBeLessThan(browserJobs.lighthouse.indexOf("npm run visual-safety:preflight"));
     expect(workflowSources.lighthouse).not.toContain("temporaryPublicStorage");
     expect(workflowSources.lighthouse).not.toContain("treosh/lighthouse-ci-action");
+  });
+
+  it("binds the authoritative Lighthouse report to the literal pull-request head", () => {
+    expect(workflowSources.lighthouse).toContain(
+      "ref: ${{ github.event.pull_request.head.sha }}",
+    );
+    expect(workflowSources.lighthouse).toContain(
+      'test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"',
+    );
   });
 
   it("pins the Phase 5A.0d workflow runner, Node patch, and checkout credentials", () => {

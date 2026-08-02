@@ -12,6 +12,7 @@ import {
   PHASE5A0D_FIXED_TIME,
   VISUAL_MAX_DIFF_PIXEL_RATIO,
 } from "../../tooling/phase5a0d-contract";
+import { safePhase5VisualConsoleErrorCode } from "../../tooling/phase5a0d-visual-diagnostics";
 
 /* ── Types ───────────────────────────────────────────────────────────────── */
 
@@ -101,42 +102,17 @@ export function assertNoMeaningfulVisualMasks(mask: readonly string[]): void {
   }
 }
 
-function consoleSourceClass(
-  sourceUrl: string,
-  appOrigin: string,
-  localServiceOrigin: string | null,
-): "app" | "local-service" | "bundled" | "other" | "unattributed" {
-  if (!sourceUrl) return "unattributed";
-  if (sourceUrl.startsWith("webpack-internal:") || sourceUrl.startsWith("blob:")) return "bundled";
-  try {
-    const origin = new URL(sourceUrl).origin;
-    if (origin === appOrigin) return "app";
-    if (origin === localServiceOrigin) return "local-service";
-    return "other";
-  } catch {
-    return "other";
-  }
-}
-
 function safeConsoleErrorCode(
   message: ConsoleMessage,
   appOrigin: string,
   localServiceOrigin: string | null,
 ): string {
-  const text = message.text();
-  const classification =
-    /hydration|server rendered html|did not match|didn't match|hydrated but/iu.test(text)
-      ? "react-hydration"
-      : /failed to load resource/iu.test(text)
-        ? "resource-load"
-        : /content security policy|refused to/iu.test(text)
-          ? "content-security-policy"
-          : "console-error";
-  return `${classification}:${consoleSourceClass(
-    message.location().url,
+  return safePhase5VisualConsoleErrorCode({
+    text: message.text(),
+    sourceUrl: message.location().url,
     appOrigin,
     localServiceOrigin,
-  )}`;
+  });
 }
 
 /**
