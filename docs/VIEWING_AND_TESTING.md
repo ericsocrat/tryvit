@@ -55,10 +55,12 @@ The historical `/auth/login` scores of `0.66`, `0.69`, and `0.64` are retained
 as evidence of the corrected desktop measurement-contract defect, not as a
 current pass or current gate result. The exact-head Linux login desktop median
 is `0.99`; real authenticated-mobile performance and product-detail
-accessibility debt remain blocking. Every measured mobile performance
-distribution is also statistically inconclusive under the preserved `0.10`
-range limit, and product-detail mobile exceeds the `900 KiB` cold-transfer
-direction.
+accessibility debt remain blocking. The reviewed `aa84b2bd…` evidence recorded
+all five mobile performance distributions as statistically inconclusive under
+the preserved `0.10` range limit; instability is intentionally classified per
+exact-head rerun rather than treated as a fixed product score. Product-detail
+mobile also exceeds the `900 KiB` cold-transfer direction in both reviewed
+Linux runs.
 
 ## 🔍 How to View Your Data
 
