@@ -4,21 +4,27 @@
 //
 // Issues: #404 (Epic), #430 (Desktop), #431 (Mobile + Dark Mode)
 //
-// Self-contained auth: creates a test user and signs in via the UI, bypassing
-// CSP restrictions (local Supabase URLs blocked by production CSP headers).
-// Does NOT depend on auth-setup — the screenshots project sets bypassCSP: true.
+// Local-authenticated mode creates a test user only after the checked-in local
+// emulator passes the guard. It does not depend on auth-setup; the screenshots
+// project uses the owned local-authenticated context with bypassCSP enabled.
 //
 // Usage:
-//   # Ensure dev server running against LOCAL Supabase
-//   CAPTURE_SCREENSHOTS=true npx playwright test --project=screenshots
+//   # From the repository root; the explicit mode is mandatory:
+//   pwsh ./RUN_SCREENSHOTS.ps1 -Mode LocalAuthenticated
+//
+// Use `-Mode Public` for the public visual-audit subset. The runner owns the
+// clean build, server, browser guard, and cleanup; do not invoke this project
+// through a raw Playwright command.
 //
 // Output: docs/screenshots/{desktop,mobile,dark-mode}/
 //
 // Total: 12 desktop + 4 mobile + 3 dark mode = 19 screenshots
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures/safe-test";
 import fs from "node:fs";
 import path from "node:path";
+import { getGuardedFixtureRequest } from "./helpers/test-user";
+import { VisualSafetyError } from "./helpers/visual-safety";
 
 /* ── Constants ───────────────────────────────────────────────────────────── */
 
@@ -109,14 +115,12 @@ test.setTimeout(60_000);
 let testUserId: string | null = null;
 
 function getSupabaseConfig() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY",
-    );
-  }
-  return { url, key };
+  const runtime = getGuardedFixtureRequest();
+  return {
+    url: runtime.origin,
+    key: runtime.serviceRoleKey,
+    guardedFetch: runtime.fetch,
+  };
 }
 
 /**
@@ -125,7 +129,7 @@ function getSupabaseConfig() {
 async function provisionTestUser(): Promise<string> {
   if (testUserId) return testUserId;
 
-  const { url, key } = getSupabaseConfig();
+  const { url, key, guardedFetch } = getSupabaseConfig();
   const headers = {
     apikey: key,
     Authorization: `Bearer ${key}`,
@@ -133,18 +137,19 @@ async function provisionTestUser(): Promise<string> {
   };
 
   // Check if user already exists
-  const listRes = await fetch(`${url}/auth/v1/admin/users`, { headers });
+  const listRes = await guardedFetch(`${url}/auth/v1/admin/users`, { headers });
+  if (!listRes.ok) {
+    throw new VisualSafetyError("VS_FIXTURE_ADMIN", "screenshot-user-list");
+  }
   const listData = await listRes.json();
-  const existing = listData.users?.find(
-    (u: { email: string }) => u.email === TEST_EMAIL,
-  );
+  const existing = listData.users?.find((u: { email: string }) => u.email === TEST_EMAIL);
   if (existing) {
     testUserId = existing.id;
     return testUserId;
   }
 
   // Create fresh user
-  const createRes = await fetch(`${url}/auth/v1/admin/users`, {
+  const createRes = await guardedFetch(`${url}/auth/v1/admin/users`, {
     method: "POST",
     headers,
     body: JSON.stringify({
@@ -156,11 +161,14 @@ async function provisionTestUser(): Promise<string> {
 
   // Handle race condition: another worker may have created the user
   if (createRes.status === 422) {
-    const retryList = await fetch(`${url}/auth/v1/admin/users`, { headers });
+    const retryList = await guardedFetch(`${url}/auth/v1/admin/users`, {
+      headers,
+    });
+    if (!retryList.ok) {
+      throw new VisualSafetyError("VS_FIXTURE_ADMIN", "screenshot-user-retry-list");
+    }
     const retryData = await retryList.json();
-    const found = retryData.users?.find(
-      (u: { email: string }) => u.email === TEST_EMAIL,
-    );
+    const found = retryData.users?.find((u: { email: string }) => u.email === TEST_EMAIL);
     if (found) {
       testUserId = found.id;
       return testUserId;
@@ -168,15 +176,14 @@ async function provisionTestUser(): Promise<string> {
   }
 
   if (!createRes.ok) {
-    const err = await createRes.text();
-    throw new Error(`Failed to create test user: ${createRes.status} ${err}`);
+    throw new Error("[VS_FIXTURE_ADMIN] screenshot-user-create");
   }
 
   const userData = await createRes.json();
   testUserId = userData.id;
 
   // Pre-create preferences (skip onboarding, force English)
-  await fetch(`${url}/rest/v1/user_preferences`, {
+  const preferencesRes = await guardedFetch(`${url}/rest/v1/user_preferences`, {
     method: "POST",
     headers: { ...headers, Prefer: "resolution=merge-duplicates" },
     body: JSON.stringify({
@@ -187,6 +194,9 @@ async function provisionTestUser(): Promise<string> {
       onboarding_skipped: true,
     }),
   });
+  if (!preferencesRes.ok) {
+    throw new VisualSafetyError("VS_FIXTURE_ADMIN", "screenshot-preferences-upsert");
+  }
 
   return userData.id;
 }
@@ -215,32 +225,35 @@ async function signInViaUI(page: Page) {
   }
 }
 
-/**
- * Clean up test user (best-effort).
- */
+/** Clean up the local test user and fail if the emulator rejects cleanup. */
 async function cleanupTestUser() {
-  try {
-    const { url, key } = getSupabaseConfig();
-    const headers = {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-    };
+  const { url, key, guardedFetch } = getSupabaseConfig();
+  const headers = {
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+  };
 
-    const listRes = await fetch(`${url}/auth/v1/admin/users`, { headers });
-    const listData = await listRes.json();
-    const user = listData.users?.find(
-      (u: { email: string }) => u.email === TEST_EMAIL,
-    );
-    if (user) {
-      await fetch(`${url}/auth/v1/admin/users/${user.id}`, {
-        method: "DELETE",
-        headers,
-      });
-    }
-  } catch {
-    // Best-effort cleanup — don't fail tests
+  const listRes = await guardedFetch(`${url}/auth/v1/admin/users`, { headers });
+  if (!listRes.ok) {
+    throw new VisualSafetyError("VS_FIXTURE_ADMIN", "screenshot-user-cleanup-list");
   }
+  const listData = await listRes.json();
+  const user = listData.users?.find((u: { email: string }) => u.email === TEST_EMAIL);
+  if (user) {
+    const deleteRes = await guardedFetch(`${url}/auth/v1/admin/users/${user.id}`, {
+      method: "DELETE",
+      headers,
+    });
+    if (!deleteRes.ok) {
+      throw new VisualSafetyError("VS_FIXTURE_ADMIN", "screenshot-user-cleanup-delete");
+    }
+  }
+  testUserId = null;
 }
+
+test.afterAll(async () => {
+  await cleanupTestUser();
+});
 
 /* ════════════════════════════════════════════════════════════════════════════
    §1  DESKTOP SCREENSHOTS (12) — Issue #430
@@ -295,9 +308,7 @@ test.describe("Desktop screenshots (1440×900)", () => {
     await stabilizePage(page);
 
     // Try to open score explanation panel if available
-    const scoreTab = page.locator(
-      '[data-testid="tab-score"], [role="tab"]:has-text("Score")',
-    );
+    const scoreTab = page.locator('[data-testid="tab-score"], [role="tab"]:has-text("Score")');
     if (await scoreTab.isVisible().catch(() => false)) {
       await scoreTab.click();
       await page.waitForTimeout(500);
@@ -440,11 +451,7 @@ test.describe("Dark mode screenshots (1440×900)", () => {
     await waitForOptional(page, '[data-testid="product-profile"]');
     await stabilizePage(page);
     await expect(page.locator("body")).toBeVisible();
-    await captureScreenshot(
-      page,
-      DARK_MODE_DIR,
-      "02-product-detail-dark.png",
-    );
+    await captureScreenshot(page, DARK_MODE_DIR, "02-product-detail-dark.png");
   });
 
   test("03 — Comparison Grid (dark)", async ({ page }) => {

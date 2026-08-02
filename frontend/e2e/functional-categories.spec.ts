@@ -6,7 +6,7 @@
 // 9 tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 async function openCategoriesOverview(page: import("@playwright/test").Page) {
   await page.goto("/app/categories");

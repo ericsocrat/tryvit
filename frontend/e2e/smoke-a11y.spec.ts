@@ -6,7 +6,7 @@
 // Issue #50 — A11y CI Gate
 // Named smoke-* to match the "smoke" Playwright project pattern.
 
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures/safe-test";
 import { assertNoA11yViolations, auditA11y } from "./helpers/a11y";
 
 async function settlePage(page: Page): Promise<void> {

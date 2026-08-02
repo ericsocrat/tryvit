@@ -5,16 +5,16 @@
  * data so the quality-gate Playwright tests have real rendered DOM to audit.
  *
  * Usage:
- *   node tests/quality/seed-fixtures.mjs              # seed fixtures
- *   node tests/quality/seed-fixtures.mjs --teardown   # soft-deprecate fixtures
+ *   npm run visual-safety:fixtures-seed
+ *   npm run visual-safety:fixtures-teardown
  *
  * Outputs KEY=VALUE lines to stdout for CI to capture into $GITHUB_ENV.
- * Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY env vars,
- * which MUST point at a staging/local/test instance. The seeder refuses to
- * run against the production project (hard guard) — see PRODUCTION_PROJECT_REF.
+ * Requires NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY values
+ * supplied in-memory by the guarded launcher after it verifies the configured
+ * local runtime. Hosted, redirected, and wrong-port targets are rejected.
  *
- * Missing env: skips with exit 0 locally, but FAILS with exit 1 in CI
- * (CI=true) so a misconfigured staging secret can never pass silently.
+ * Missing credentials are always a hard failure so fixture coverage can never
+ * pass through a silent skip.
  *
  * Idempotent — safe to run multiple times (upserts on unique constraints).
  *
@@ -22,7 +22,16 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
+import { fileURLToPath } from "node:url";
 import ws from "ws";
+
+// Node's type-stripping loader is provided by the visual-safety launcher.
+// @ts-expect-error TS source is intentionally imported by this guarded test tool.
+import {
+  canonicalizeLoopbackOrigin,
+  createGuardedFetch,
+  discoverLocalSupabaseOrigin,
+} from "../../e2e/helpers/visual-safety.ts";
 
 /* ── Environment ─────────────────────────────────────────────────────────── */
 
@@ -40,47 +49,55 @@ const QA_FIXTURE_BRAND = "QA Test Brand";
 // regardless of how the URL was resolved.
 const PRODUCTION_PROJECT_REF = "uskvezwftkkudvksmken";
 
-// Are we running inside CI? GitHub Actions (and most CI providers) set CI=true.
-// In CI, missing fixture env is a hard failure — a silent skip would let the
-// quality-gate/nightly workflow pass green while seeding (or teardown) did
-// nothing, masking misconfigured staging secrets. Locally, a missing env is a
-// legitimate "I just want to run the app" case, so we skip safely.
-const IS_CI = process.env.CI === "true" || process.env.CI === "1";
-
 if (!SUPABASE_URL || !SERVICE_KEY) {
-  if (IS_CI) {
-    console.error(
-      "❌ Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in CI."
-    );
-    console.error(
-      "    QA fixture seeding/teardown requires the *_STAGING secrets. " +
-        "Failing instead of silently skipping — configure " +
-        "SUPABASE_URL_STAGING / SUPABASE_SERVICE_ROLE_KEY_STAGING."
-    );
-    process.exit(1);
-  }
-  console.warn(
-    "⚠️  Skipping QA fixture seeding — missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY"
+  console.error(
+    "❌ Missing guarded local fixture credentials. Use the visual-safety fixture launcher."
   );
-  console.warn(
-    "    QA fixtures require an explicit staging/local/test target. " +
-      "Set the *_STAGING secrets — do not fall back to production."
-  );
-  process.exit(0);
+  process.exit(1);
 }
 
 if (SUPABASE_URL.includes(PRODUCTION_PROJECT_REF)) {
   console.error(
     `❌ Refusing to seed QA fixtures against the production project ` +
       `(${PRODUCTION_PROJECT_REF}). QA fixtures must only target a ` +
-      `staging, local, or test Supabase instance.`
+      `verified local Supabase instance.`
   );
   console.error(
     "    Resolved NEXT_PUBLIC_SUPABASE_URL points at production. " +
-      "Provide SUPABASE_URL_STAGING / SUPABASE_SERVICE_ROLE_KEY_STAGING instead."
+      "Use the guarded local fixture launcher instead."
   );
   process.exit(1);
 }
+
+if (process.env.VISUAL_SAFETY_MODE !== "local-authenticated") {
+  console.error("❌ QA fixtures require explicit local-authenticated safety mode.");
+  process.exit(1);
+}
+
+let requestedOrigin;
+let configuredOrigin;
+try {
+  requestedOrigin = canonicalizeLoopbackOrigin(SUPABASE_URL).origin;
+  configuredOrigin = (
+    await discoverLocalSupabaseOrigin(
+      fileURLToPath(new URL("../../../supabase/config.toml", import.meta.url)),
+    )
+  ).origin;
+} catch {
+  console.error("❌ QA fixture target is not the configured canonical loopback runtime.");
+  process.exit(1);
+}
+
+if (requestedOrigin !== configuredOrigin) {
+  console.error("❌ QA fixture target does not match the configured local API origin.");
+  process.exit(1);
+}
+
+const guardedFetch = createGuardedFetch({
+  allowedOrigin: configuredOrigin,
+  fetchImpl: fetch,
+  maxRedirects: 0,
+});
 
 // The seeder only performs REST queries (upsert/select) — it never opens a
 // realtime channel. However, @supabase/supabase-js still constructs a
@@ -91,6 +108,7 @@ if (SUPABASE_URL.includes(PRODUCTION_PROJECT_REF)) {
 // this, so the fix is forward-compatible.
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY, {
   auth: { autoRefreshToken: false, persistSession: false },
+  global: { fetch: guardedFetch },
   realtime: { transport: ws },
 });
 
@@ -227,7 +245,7 @@ async function upsertIngredient(row) {
 const PRODUCT_FULL = {
   country: "PL",
   brand: "QA Test Brand",
-  product_name: "QA Ser Żółty Gouda 45%",
+  product_name: "QA Dairy Milk Gouda 45%",
   category: "Dairy",
   product_type: "cheese",
   prep_method: "not-applicable",
@@ -376,6 +394,113 @@ const NUTRITION_NO_NS = {
   salt_g: 0.1,
 };
 
+/**
+ * Minimal deterministic catalog extension for the existing Nightly journeys.
+ *
+ * The authenticated functional suite predates Phase 5A.0a and exercises five
+ * Polish categories, two comparable products in the first populated category,
+ * cross-country Chips isolation, broad search terms, and three known scanner
+ * EANs. These rows provide exactly that contract without loading product
+ * pipelines, enrichment batches, or a full catalog.
+ */
+const SUPPORT_PRODUCTS = [
+  {
+    country: "PL",
+    brand: QA_FIXTURE_BRAND,
+    product_name: "QA Doritos Chips Sweet Chili",
+    category: "Chips",
+    product_type: "chips",
+    ean: "5900320001303",
+    unhealthiness_score: 62,
+    nutri_score_label: "D",
+    nova_classification: "4",
+    high_salt_flag: "YES",
+  },
+  {
+    country: "PL",
+    brand: QA_FIXTURE_BRAND,
+    product_name: "QA Classic Potato Chips",
+    category: "Chips",
+    product_type: "chips",
+    ean: "9062300130833",
+    unhealthiness_score: 38,
+    nutri_score_label: "C",
+    nova_classification: "3",
+    high_salt_flag: "YES",
+  },
+  {
+    country: "DE",
+    brand: QA_FIXTURE_BRAND,
+    product_name: "QA Chipsfrisch German Chips",
+    category: "Chips",
+    product_type: "chips",
+    ean: "4003301069048",
+    unhealthiness_score: 55,
+    nutri_score_label: "D",
+    nova_classification: "4",
+    high_salt_flag: "YES",
+  },
+  {
+    country: "PL",
+    brand: QA_FIXTURE_BRAND,
+    product_name: "QA Milk Protein Drink",
+    category: "Drinks",
+    product_type: "milk drink",
+    unhealthiness_score: 18,
+    nutri_score_label: "B",
+    nova_classification: "2",
+    high_sugar_flag: "YES",
+  },
+  {
+    country: "PL",
+    brand: QA_FIXTURE_BRAND,
+    product_name: "QA Chocolate Sweets",
+    category: "Sweets",
+    product_type: "chocolate",
+    unhealthiness_score: 70,
+    nutri_score_label: "E",
+    nova_classification: "4",
+    high_sugar_flag: "YES",
+  },
+  {
+    country: "PL",
+    brand: QA_FIXTURE_BRAND,
+    product_name: "QA Savoury Snacks",
+    category: "Snacks",
+    product_type: "snack",
+    unhealthiness_score: 44,
+    nutri_score_label: "C",
+    nova_classification: "3",
+    high_salt_flag: "YES",
+  },
+].map((product) => ({
+  prep_method: "not-applicable",
+  controversies: "none",
+  nutri_score_source: "manual",
+  confidence: "verified",
+  data_completeness_pct: 85,
+  high_sugar_flag: "NO",
+  high_salt_flag: "NO",
+  high_sat_fat_flag: "NO",
+  high_additive_load: "NO",
+  ingredient_concern_score: 0,
+  source_type: "manual",
+  is_deprecated: false,
+  ...product,
+}));
+
+const NUTRITION_SUPPORT = {
+  calories: 180,
+  total_fat_g: 8.0,
+  saturated_fat_g: 2.0,
+  trans_fat_g: 0.0,
+  carbs_g: 22.0,
+  sugars_g: 5.0,
+  fibre_g: 2.0,
+  protein_g: 4.0,
+  salt_g: 0.8,
+};
+
 /* ── Main ────────────────────────────────────────────────────────────────── */
 
 async function main() {
@@ -400,11 +525,16 @@ async function main() {
   const productNoAltId = await upsertProduct(PRODUCT_NO_ALT);
   const productAllergensId = await upsertProduct(PRODUCT_ALLERGENS);
   const productNoNsId = await upsertProduct(PRODUCT_NO_NS);
+  const supportProductIds = [];
+  for (const product of SUPPORT_PRODUCTS) {
+    supportProductIds.push(await upsertProduct(product));
+  }
 
   console.error(`  ✅ Product (full):       ID ${productFullId}`);
   console.error(`  ✅ Product (no-alt):     ID ${productNoAltId}`);
   console.error(`  ✅ Product (allergens):  ID ${productAllergensId}`);
   console.error(`  ✅ Product (no-ns):      ID ${productNoNsId}`);
+  console.error(`  ✅ Nightly support catalog: ${supportProductIds.length} products`);
 
   // ── Upsert nutrition ───────────────────────────────────────────────────
   await upsertNutrition({ product_id: productFullId, ...NUTRITION_FULL });
@@ -414,7 +544,12 @@ async function main() {
     ...NUTRITION_ALLERGENS,
   });
   await upsertNutrition({ product_id: productNoNsId, ...NUTRITION_NO_NS });
-  console.error("  ✅ Nutrition facts seeded for all 4 products");
+  for (const productId of supportProductIds) {
+    await upsertNutrition({ product_id: productId, ...NUTRITION_SUPPORT });
+  }
+  console.error(
+    `  ✅ Nutrition facts seeded for ${4 + supportProductIds.length} products`,
+  );
 
   // ── Upsert allergens for product 3 ─────────────────────────────────────
   const allergens = [
@@ -498,8 +633,8 @@ async function main() {
  * API filter out is_deprecated rows, so deprecated fixtures stop appearing in
  * any user-facing surface while remaining auditable in the table.
  *
- * Invoke with: node tests/quality/seed-fixtures.mjs --teardown
- *           or: QA_FIXTURE_TEARDOWN=1 node tests/quality/seed-fixtures.mjs
+ * Invoke through the guarded launcher only:
+ *   npm run visual-safety:fixtures-teardown
  */
 async function teardown() {
   console.error(

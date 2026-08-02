@@ -7,7 +7,7 @@
 // 10 tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 // Helper: navigate to the first product in a category listing
 async function navigateToFirstProduct(

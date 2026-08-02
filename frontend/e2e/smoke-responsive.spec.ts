@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Page } from "./fixtures/safe-test";
 
 // ─── Responsive layout e2e tests ────────────────────────────────────────────
 // Issue #59: Verify no horizontal overflow at key breakpoints.

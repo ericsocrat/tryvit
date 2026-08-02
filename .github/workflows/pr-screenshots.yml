@@ -1,7 +1,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# PR Screenshots — Captures screenshots of pages affected by the PR
-# Non-blocking: this workflow provides visual review artifacts but does not
-# block PR merging.
+# PR Screenshots — Captures public screenshots of pages affected by the PR.
+# Authenticated screenshots are a distinct local-emulator-only command and are
+# never allowed to fall back to a hosted Supabase project.
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: PR Screenshots
@@ -12,6 +12,14 @@ on:
     paths:
       - 'frontend/src/**'
       - 'frontend/messages/**'
+      - 'frontend/e2e/**'
+      - 'frontend/tests/visual-safety-workflows.test.ts'
+      - 'frontend/playwright.config.ts'
+      - 'frontend/package.json'
+      - 'RUN_PR_SCREENSHOTS.ps1'
+      - 'RUN_SCREENSHOTS.ps1'
+      - 'supabase/config.toml'
+      - '.github/workflows/pr-screenshots.yml'
 
 permissions:
   contents: read
@@ -23,11 +31,11 @@ concurrency:
 
 jobs:
   capture:
-    name: Capture Screenshots
+    name: Capture Public Screenshots
     runs-on: ubuntu-latest
-    # Skip fork PRs (no secrets available for auth pages)
-    if: github.event.pull_request.head.repo.fork == false
-    timeout-minutes: 10
+    timeout-minutes: 15
+    env:
+      VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
     defaults:
       run:
         working-directory: frontend
@@ -95,20 +103,37 @@ jobs:
         run: npx playwright install-deps chromium
         timeout-minutes: 8
 
-      - name: Capture PR screenshots
+      - name: Public visual-safety preflight
         if: steps.changes.outputs.skip != 'true'
-        run: npx playwright test --project=pr-screenshots --reporter=list
-        timeout-minutes: 5
+        run: npm run visual-safety:preflight
         env:
+          VISUAL_SAFETY_MODE: public
+          BASE_URL: http://127.0.0.1:3000
+
+      - name: Capture public PR screenshots
+        if: steps.changes.outputs.skip != 'true'
+        run: npm run visual-safety:public -- --project=pr-screenshots --reporter=list
+        timeout-minutes: 10
+        env:
+          VISUAL_SAFETY_MODE: public
+          BASE_URL: http://127.0.0.1:3000
           PR_SCREENSHOTS: "true"
           CHANGED_FILES: ${{ steps.changes.outputs.files }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING || secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY_STAGING || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING || secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        continue-on-error: true
+
+      - name: Assert public visual safety
+        id: safety_assert
+        if: ${{ always() && steps.changes.outputs.skip != 'true' }}
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: public
+          BASE_URL: http://127.0.0.1:3000
+
+      - name: Authenticated screenshot coverage status
+        if: ${{ always() && steps.changes.outputs.skip != 'true' }}
+        run: echo "::notice::This workflow captures public routes only. Authenticated PR screenshots require the explicit local-emulator-only runner and are not claimed by this job."
 
       - name: Upload screenshots
-        if: steps.changes.outputs.skip != 'true'
+        if: ${{ always() && steps.changes.outputs.skip != 'true' && steps.safety_assert.outcome == 'success' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: pr-screenshots
@@ -117,7 +142,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Post PR comment
-        if: steps.changes.outputs.skip != 'true'
+        if: ${{ steps.changes.outputs.skip != 'true' && steps.safety_assert.outcome == 'success' && github.event.pull_request.head.repo.fork == false }}
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |

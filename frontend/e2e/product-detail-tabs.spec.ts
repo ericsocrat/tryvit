@@ -5,7 +5,7 @@
 // Requires an authenticated user with a product available in the database.
 // Falls back to smoke-level checks if no product is reachable.
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 // ── Test IDs referenced in acceptance criteria ──────────────────────────────
 

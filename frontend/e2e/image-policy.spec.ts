@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 // ─── Image Policy Compliance E2E Tests (#56) ────────────────────────────────
 // Verifies CSP headers, privacy page content, and image upload prevention.

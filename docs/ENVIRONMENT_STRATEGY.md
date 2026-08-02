@@ -1,8 +1,9 @@
 # Environment Strategy — Phase 8
 
-> **Last updated:** 2026-02-22
+> **Last broadly verified:** 2026-02-22
+> **Phase 5A.0a browser-safety section updated:** 2026-08-01
 > **Status:** Active
-> **Issue:** #13
+> **Owner issue:** #13
 
 ---
 
@@ -71,7 +72,7 @@ This document defines the three-environment strategy for `tryvit`:
 
 | Environment    | Purpose                   | Supabase                                      | Vercel                |
 | -------------- | ------------------------- | --------------------------------------------- | --------------------- |
-| **Local**      | Development & iteration   | Docker (`supabase start`)                     | `next dev`            |
+| **Local**      | Development & iteration   | Docker (`supabase start`)                     | Local Next.js runtime |
 | **Staging**    | Pre-production validation | Cloud `<staging-ref>` (via env var)           | Preview deployments   |
 | **Production** | Live user-facing app      | Cloud `uskvezwftkkudvksmken` (single project) | Production deployment |
 
@@ -95,8 +96,8 @@ This document defines the three-environment strategy for `tryvit`:
 | Setting          | Value                                 |
 | ---------------- | ------------------------------------- |
 | Supabase CLI     | `supabase start`                      |
-| DB host          | `127.0.0.1:54322`                     |
-| API URL          | `http://127.0.0.1:54321`              |
+| DB host          | Read from `supabase/config.toml` (currently `127.0.0.1:55002`) |
+| API URL          | Read from `supabase/config.toml` (currently `http://127.0.0.1:55001`) |
 | Project ID       | `tryvit`                              |
 | Docker container | `supabase_db_tryvit`                  |
 | Data load        | `supabase db reset` → `RUN_LOCAL.ps1` |
@@ -233,9 +234,9 @@ mutated or wiped:
 
 #### CI-level guards
 
-- CI workflows **never** connect to the cloud project — `qa.yml` uses an ephemeral PG17 container
-- `ci.yml` uses **anon key** only (read-level) — no service-role mutations possible from Playwright
-- No CI job runs `supabase db push`, `supabase db reset`, or any DDL against cloud
+- Browser-facing workflows and `qa.yml` do not connect to a hosted Supabase project; `qa.yml` uses an ephemeral PG17 container. Non-browser deployment and data-integrity workflows retain their separately governed hosted contracts.
+- Browser-facing PR, main, quality, nightly, screenshot, and Lighthouse jobs receive no hosted Supabase configuration. Public runs use the Phase 5A.0a loopback-only build adapter. Quality and Nightly create a reduced job-owned emulator for authenticated coverage, derive its port from checked-in configuration, seed through the guarded local fixture launcher, and remove its volumes without backup.
+- Browser-facing and QA jobs never run `supabase db push`, `supabase db reset`, or cloud DDL. The separately governed `sync-cloud-db.yml` deployment workflow remains the cloud schema path.
 - Sanity checks (`RUN_SANITY.ps1`) are **read-only** `SELECT` queries
 
 #### Schema drift prevention
@@ -313,8 +314,8 @@ SUPABASE_STAGING_DB_PASSWORD=
 
 | Workflow            | Backend                           | Purpose                                | Cloud mutation risk                    |
 | ------------------- | --------------------------------- | -------------------------------------- | -------------------------------------- |
-| `qa.yml`            | Ephemeral PostgreSQL 17 container | Schema + pipeline + 777 QA + 17 sanity | **None** — container only              |
-| `ci.yml`            | Production keys (anon-level only) | Lint, build, Playwright E2E            | **Read-only** — anon key cannot mutate |
+| `qa.yml`            | Ephemeral PostgreSQL 17 container | Schema + pipeline + 784 QA + 16 sanity | **None** — container only              |
+| Browser-facing gates | Public loopback adapter or verified local emulator | Build, Playwright, screenshots and Lighthouse | **None** — hosted browser configuration is rejected |
 | `build.yml`         | N/A (build only) + SonarCloud     | Build, unit tests, coverage            | **None**                               |
 | `sync-cloud-db.yml` | Staging then Production           | Auto-apply migrations on merge to main | **Schema only** — `supabase db push`   |
 
@@ -323,16 +324,25 @@ SUPABASE_STAGING_DB_PASSWORD=
 | Workflow    | Backend                             | Change                        |
 | ----------- | ----------------------------------- | ----------------------------- |
 | `qa.yml`    | Ephemeral PostgreSQL 17 container   | No change — fast CI remains   |
-| `ci.yml`    | Staging Supabase for Playwright E2E | Swap prod keys → staging keys |
+| Browser-facing gates | Verified local emulator for authenticated Playwright E2E | Preserve coverage without hosted fallback |
 | `build.yml` | N/A                                 | No change                     |
 
 ### E2E Safety Rules
 
-1. **CI uses anon key only** — Playwright E2E cannot perform admin/service-role operations.
-2. **No CI job targets cloud with DDL** — `supabase db push`, `supabase db reset`, `DROP`, `TRUNCATE` are never run from CI.
-3. **Test user cleanup** — E2E tests must clean up any users they create.
+1. **Public browser CI is secret-free** — it receives no hosted URL, anon key, or service-role key.
+2. **No browser-facing or QA job targets cloud with DDL** — cloud schema changes remain isolated to the separately governed deployment workflow.
+3. **Local authenticated isolation** — fixture users may be created and cleaned up only after the checked-in local emulator origin and readiness response pass the Phase 5A.0a guard.
 4. **Read-only sanity checks** — Only `SELECT`-based sanity checks may run against production from CI.
-5. **When staging is active** — Playwright will switch to staging keys once #141 is wired; production keys will be removed from `ci.yml`.
+5. **No hosted fallback** — missing local emulator tooling or credentials blocks authenticated browser coverage instead of switching to staging or production.
+
+The current Quality Gate and Nightly definitions do not start a local Supabase
+emulator. Their authenticated browser preflights therefore block on standard
+hosted runners by design; public runs are not reported as authenticated
+equivalents. Authenticated Lighthouse is separately blocked until a dedicated
+guarded local fixture exists. These are open infrastructure prerequisites, not
+permission to restore hosted browser credentials or weaken the checks.
+
+See [PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md](PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md) for the executable browser/fixture contract. Public-provider decoupling is intentionally deferred to Phase 5A.0c.
 
 ---
 
@@ -342,7 +352,7 @@ SUPABASE_STAGING_DB_PASSWORD=
 
 ```
 1. ☐ Develop migration locally (supabase db reset to test)
-2. ☐ Run RUN_QA.ps1 locally — all 777+ checks pass
+2. ☐ Run RUN_QA.ps1 locally — all 784 checks pass
 3. ☐ Push to branch → CI green (qa.yml + ci.yml + build.yml)
 4. ☐ Merge to main → sync-cloud-db.yml applies to staging (if enabled), then production
 5. ☐ Run RUN_SANITY.ps1 -Env staging — all checks pass
@@ -353,7 +363,7 @@ SUPABASE_STAGING_DB_PASSWORD=
 
 ```
 1. ☐ Develop migration locally (supabase db reset to test)
-2. ☐ Run RUN_QA.ps1 locally — all 777+ checks pass
+2. ☐ Run RUN_QA.ps1 locally — all 784 checks pass
 3. ☐ Push to branch → CI green (qa.yml + ci.yml + build.yml)
 4. ☐ Merge to main
 5. ☐ Apply to staging: supabase link --project-ref <staging-ref> && supabase db push

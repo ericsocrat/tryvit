@@ -2,18 +2,22 @@
 // Comprehensive visual audit of ALL pages — captures desktop + mobile screenshots
 // of every route for UX quality evaluation.
 //
-// Usage:
-//   # Start dev server against LOCAL Supabase, then:
-//   $env:CAPTURE_SCREENSHOTS="true"
-//   $env:NEXT_PUBLIC_SUPABASE_URL="http://127.0.0.1:54321"
-//   $env:SUPABASE_SERVICE_ROLE_KEY="<local-service-role-key>"
-//   npx playwright test visual-audit --project=screenshots
+// Usage (the runner owns the clean build and server):
+//   RUN_SCREENSHOTS.ps1 -Mode Public
+//   RUN_SCREENSHOTS.ps1 -Mode LocalAuthenticated
 //
 // Output: docs/screenshots/audit/{desktop,mobile}/
 
-import { expect, test, type Page } from "@playwright/test";
+import {
+  expect,
+  test,
+  type Page,
+  visualSafetyMode,
+} from "./fixtures/safe-test";
 import fs from "node:fs";
 import path from "node:path";
+import { getGuardedFixtureRequest } from "./helpers/test-user";
+import { VisualSafetyError } from "./helpers/visual-safety";
 
 /* ── Constants ───────────────────────────────────────────────────────────── */
 
@@ -72,20 +76,17 @@ async function waitFor(page: Page, selector: string, timeout = 8000) {
 let testUserId: string | null = null;
 
 function getSupabaseConfig() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) {
-    throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY.\n" +
-        "Set these env vars to your LOCAL Supabase instance.",
-    );
-  }
-  return { url, key };
+  const runtime = getGuardedFixtureRequest();
+  return {
+    url: runtime.origin,
+    key: runtime.serviceRoleKey,
+    guardedFetch: runtime.fetch,
+  };
 }
 
 async function provisionTestUser(): Promise<string> {
   if (testUserId) return testUserId;
-  const { url, key } = getSupabaseConfig();
+  const { url, key, guardedFetch } = getSupabaseConfig();
   const headers = {
     apikey: key,
     Authorization: `Bearer ${key}`,
@@ -93,7 +94,13 @@ async function provisionTestUser(): Promise<string> {
   };
 
   // Check existing
-  const listRes = await fetch(`${url}/auth/v1/admin/users`, { headers });
+  const listRes = await guardedFetch(`${url}/auth/v1/admin/users`, { headers });
+  if (!listRes.ok) {
+    throw new VisualSafetyError(
+      "VS_FIXTURE_ADMIN",
+      "visual-audit-user-list",
+    );
+  }
   const list = await listRes.json();
   const existing = list.users?.find(
     (u: { email: string }) => u.email === TEST_EMAIL,
@@ -101,7 +108,7 @@ async function provisionTestUser(): Promise<string> {
   if (existing) {
     testUserId = existing.id;
   } else {
-    const createRes = await fetch(`${url}/auth/v1/admin/users`, {
+    const createRes = await guardedFetch(`${url}/auth/v1/admin/users`, {
       method: "POST",
       headers,
       body: JSON.stringify({
@@ -111,7 +118,15 @@ async function provisionTestUser(): Promise<string> {
       }),
     });
     if (createRes.status === 422) {
-      const retryList = await fetch(`${url}/auth/v1/admin/users`, { headers });
+      const retryList = await guardedFetch(`${url}/auth/v1/admin/users`, {
+        headers,
+      });
+      if (!retryList.ok) {
+        throw new VisualSafetyError(
+          "VS_FIXTURE_ADMIN",
+          "visual-audit-user-retry-list",
+        );
+      }
       const retryData = await retryList.json();
       const found = retryData.users?.find(
         (u: { email: string }) => u.email === TEST_EMAIL,
@@ -121,13 +136,22 @@ async function provisionTestUser(): Promise<string> {
       const userData = await createRes.json();
       testUserId = userData.id;
     } else {
-      const err = await createRes.text();
-      throw new Error(`Failed to create user: ${createRes.status} ${err}`);
+      throw new VisualSafetyError(
+        "VS_FIXTURE_ADMIN",
+        "visual-audit-user-create",
+      );
     }
   }
 
+  if (!testUserId) {
+    throw new VisualSafetyError(
+      "VS_FIXTURE_ADMIN",
+      "visual-audit-user-unavailable",
+    );
+  }
+
   // Pre-create preferences (skip onboarding)
-  await fetch(`${url}/rest/v1/user_preferences`, {
+  const preferencesRes = await guardedFetch(`${url}/rest/v1/user_preferences`, {
     method: "POST",
     headers: { ...headers, Prefer: "resolution=merge-duplicates" },
     body: JSON.stringify({
@@ -138,8 +162,14 @@ async function provisionTestUser(): Promise<string> {
       onboarding_skipped: true,
     }),
   });
+  if (!preferencesRes.ok) {
+    throw new VisualSafetyError(
+      "VS_FIXTURE_ADMIN",
+      "visual-audit-preferences-upsert",
+    );
+  }
 
-  return testUserId!;
+  return testUserId;
 }
 
 async function signInViaUI(page: Page) {
@@ -160,26 +190,38 @@ async function signInViaUI(page: Page) {
 }
 
 async function cleanupTestUser() {
-  try {
-    const { url, key } = getSupabaseConfig();
-    const headers = {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
-    };
-    const listRes = await fetch(`${url}/auth/v1/admin/users`, { headers });
-    const listData = await listRes.json();
-    const user = listData.users?.find(
-      (u: { email: string }) => u.email === TEST_EMAIL,
+  const { url, key, guardedFetch } = getSupabaseConfig();
+  const headers = {
+    apikey: key,
+    Authorization: `Bearer ${key}`,
+  };
+  const listRes = await guardedFetch(`${url}/auth/v1/admin/users`, { headers });
+  if (!listRes.ok) {
+    throw new VisualSafetyError(
+      "VS_FIXTURE_ADMIN",
+      "visual-audit-user-cleanup-list",
     );
-    if (user) {
-      await fetch(`${url}/auth/v1/admin/users/${user.id}`, {
+  }
+  const listData = await listRes.json();
+  const user = listData.users?.find(
+    (u: { email: string }) => u.email === TEST_EMAIL,
+  );
+  if (user) {
+    const deleteRes = await guardedFetch(
+      `${url}/auth/v1/admin/users/${user.id}`,
+      {
         method: "DELETE",
         headers,
-      });
+      },
+    );
+    if (!deleteRes.ok) {
+      throw new VisualSafetyError(
+        "VS_FIXTURE_ADMIN",
+        "visual-audit-user-cleanup-delete",
+      );
     }
-  } catch {
-    // best effort
   }
+  testUserId = null;
 }
 
 // Serial mode — shared auth state
@@ -190,6 +232,7 @@ test.setTimeout(90_000);
    §1  PUBLIC PAGES — No auth required
    ════════════════════════════════════════════════════════════════════════ */
 
+if (visualSafetyMode === "public") {
 test.describe("PUBLIC pages — Desktop", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize(DESKTOP_VIEWPORT);
@@ -329,10 +372,16 @@ test.describe("PUBLIC pages — Mobile", () => {
     await capture(page, MOBILE_DIR, "P08-learn-hub-mobile.png");
   });
 });
+}
 
 /* ════════════════════════════════════════════════════════════════════════════
    §2  AUTHENTICATED PAGES — Core app features
    ════════════════════════════════════════════════════════════════════════ */
+
+if (visualSafetyMode === "local-authenticated") {
+test.afterAll(async () => {
+  await cleanupTestUser();
+});
 
 test.describe("AUTHENTICATED pages — Desktop", () => {
   test.beforeEach(async ({ page }) => {
@@ -657,12 +706,4 @@ test.describe("AUTHENTICATED pages — Mobile", () => {
   });
 });
 
-/* ════════════════════════════════════════════════════════════════════════════
-   §4  CLEANUP
-   ════════════════════════════════════════════════════════════════════════ */
-
-test.describe("Cleanup", () => {
-  test("Remove test user", async () => {
-    await expect(cleanupTestUser()).resolves.toBeUndefined();
-  });
-});
+}

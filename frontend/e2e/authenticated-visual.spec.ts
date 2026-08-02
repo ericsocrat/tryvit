@@ -5,10 +5,10 @@
 // Issue #70 — Visual Regression Baseline
 // Total: 7 pages × 2 themes × 2 viewports = 28 baselines
 //
-// These tests require SUPABASE_SERVICE_ROLE_KEY to be set (auth-setup
-// must run first to provision a test user with stored session state).
+// These tests run only in explicit local-authenticated mode. Auth setup first
+// verifies the checked-in local emulator, then provisions stored session state.
 
-import { test } from "@playwright/test";
+import { test } from "./fixtures/safe-test";
 import {
   assertScreenshot,
   buildTestMatrix,

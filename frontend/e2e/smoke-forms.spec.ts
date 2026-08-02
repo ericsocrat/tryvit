@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 // ─── Form Validation UX E2E Tests ──────────────────────────────────────────
 // Issue #69: Verify forms have proper structure, labels, required attributes,

@@ -7,7 +7,7 @@
 // 7 tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/safe-test";
 
 // ─── Recipe Browse ──────────────────────────────────────────────────────────
 

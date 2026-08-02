@@ -1,12 +1,61 @@
 # TryVit — Viewing & Testing Guide
 
+> **Last broadly verified:** 2026-02-24
+> **Phase 5A.0a browser-safety section updated:** 2026-08-01
+> **Status:** Active
+> **Owner issue:** Process domain
+
+## Browser and visual-test safety
+
+Run Playwright, screenshots, visual audits, and Lighthouse through the
+Phase 5A.0a safety launchers documented in
+[PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md](PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md).
+Public runs receive no hosted Supabase configuration. Authenticated runs
+require a verified local Supabase emulator and never fall back to staging or
+production. The checked-in `supabase/config.toml` is authoritative for local
+ports. The launcher requires Node.js with built-in environment-proxy support:
+22.21 or newer in the Node 22 line, 24.5 or newer in the Node 24 line, or Node
+25 or newer. Node 23 and unsupported patch versions fail closed.
+
+Use only the owned safety entry points for browser work:
+
+```powershell
+# From the repository root
+.\RUN_PR_SCREENSHOTS.ps1 -Mode Public
+.\RUN_SCREENSHOTS.ps1 -Mode Public
+.\RUN_SCREENSHOTS.ps1 -Mode LocalAuthenticated # verified emulator required
+```
+
+```text
+# From frontend/
+npm run test:e2e:smoke
+npm run quality:smoke
+npm run lighthouse:mobile
+```
+
+Do not start or reuse a developer server for these commands and do not invoke
+Playwright or Lighthouse directly. The launchers own the clean build, server,
+browser proxy, provenance checks, final safety assertion, and cleanup.
+
+Quality Gate and Nightly provision a reduced, job-owned local Supabase runtime
+for their authenticated stages. Checked-in migrations run during local startup;
+the guarded fixture launcher then creates only the deterministic browser-test
+catalog. Runtime output and credentials are never printed or uploaded, and the
+runtime is stopped without a backup in unconditional cleanup. Public results
+must still never be described as authenticated coverage.
+
+The separate guarded Lighthouse workflow enforces Mobile. Quality Gate does not
+claim Desktop performance: the observed `/auth/login` desktop scores of 0.66,
+0.69, and 0.64 remain below the unchanged 0.75 threshold and are a Phase 5A.0d
+entry condition.
+
 ## 🔍 How to View Your Data
 
 ### Option 1: Supabase Studio (Web UI) — **RECOMMENDED**
 
 The **easiest way** to browse your tables visually:
 
-1. **Open Studio**: http://127.0.0.1:54323
+1. **Open Studio**: http://127.0.0.1:55003
 2. **Navigate**: Click **"Table Editor"** in left sidebar
 3. **Explore tables**:
    - `products` — 1,025 active products across 20 categories (variable size per category)
@@ -90,7 +139,7 @@ Run all pipelines + QA suites automatically:
 ================================================
   Running QA Checks
 ================================================
-  All QA checks passed (777/777 — zero violation rows).
+  All QA checks passed (784/784 — zero violation rows).
 
   Database inventory:
   active_products | deprecated | nutrition | categories
@@ -109,7 +158,7 @@ Runs the full current QA suite set with color-coded output:
 
 **Expected output**:
 ```
-✓ ALL TESTS PASSED (777/777 checks)
+✓ ALL TESTS PASSED (784/784 checks)
 ```
 
 ---
@@ -172,7 +221,7 @@ ORDER BY unhealthiness_score::int DESC;
    supabase start
    ```
 
-2. **Open Studio UI**: http://127.0.0.1:54323
+2. **Open Studio UI**: http://127.0.0.1:55003
 
 3. **Run pipelines** (if data changed):
    ```powershell
@@ -234,10 +283,10 @@ FROM v_master WHERE product_id = 42;
 
 | Service                           | URL                                                       |
 | --------------------------------- | --------------------------------------------------------- |
-| **Supabase Studio** (Database UI) | http://127.0.0.1:54323                                    |
-| **REST API**                      | http://127.0.0.1:54321/rest/v1                            |
-| **GraphQL API**                   | http://127.0.0.1:54321/graphql/v1                         |
-| **Direct Postgres**               | `postgresql://postgres:postgres@127.0.0.1:54322/postgres` |
+| **Supabase Studio** (Database UI) | http://127.0.0.1:55003                                    |
+| **REST API**                      | http://127.0.0.1:55001/rest/v1                            |
+| **GraphQL API**                   | http://127.0.0.1:55001/graphql/v1                         |
+| **Direct Postgres**               | `postgresql://postgres:postgres@127.0.0.1:55002/postgres` |
 
 ---
 

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./fixtures/safe-test";
 
 // ─── Telemetry E2E Tests (#52) — Smoke ──────────────────────────────────────
 // Verifies event bus integration does not break page rendering.

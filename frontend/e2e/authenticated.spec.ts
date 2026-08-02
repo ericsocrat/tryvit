@@ -5,7 +5,7 @@
 // No camera dependency — all interactions are keyboard / click.
 // Deterministic — each run starts from a known auth + onboarding state.
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 // ─── Mobile viewport overflow guard ────────────────────────────────────────
 // Regression test for the mobile "zoomed out" bug fixed in PR #92.
@@ -69,7 +69,7 @@ test.describe("Signup form", () => {
   });
 
   test("submits and shows confirmation message", async ({ page }) => {
-    // Intercept the Supabase signup API to avoid creating a real account
+    // Intercept signup to avoid creating another local fixture account.
     await page.route("**/auth/v1/signup", (route) =>
       route.fulfill({
         status: 200,

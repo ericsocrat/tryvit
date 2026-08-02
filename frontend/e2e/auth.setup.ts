@@ -2,16 +2,27 @@
 // Creates a test user via Supabase Admin API, logs in through the UI, completes
 // onboarding, and saves browser storageState for downstream test projects.
 //
-// Skipped automatically when SUPABASE_SERVICE_ROLE_KEY is not set.
+// Registered only in explicit local-authenticated safety mode.
 
-import { expect, test as setup } from "@playwright/test";
+import path from "node:path";
+
+import { expect, test as setup } from "./fixtures/safe-test";
 import {
-    TEST_EMAIL,
-    TEST_PASSWORD,
-    ensureTestUser,
+  TEST_EMAIL,
+  TEST_PASSWORD,
+  ensureTestUser,
 } from "./helpers/test-user";
+import {
+  discoverLocalSupabaseOrigin,
+  loadSafetyContractFromEnvironment,
+} from "./helpers/visual-safety";
 
-const AUTH_STATE_PATH = "e2e/.auth/user.json";
+const authStateDirectory = process.env.VISUAL_SAFETY_AUTH_STATE_DIR;
+if (!authStateDirectory || !path.isAbsolute(authStateDirectory)) {
+  throw new Error("[VS_AUTH_STATE_DIR] owned-temporary-directory-required");
+}
+const AUTH_STATE_PATH = path.join(authStateDirectory, "user.json");
+const safetyContract = loadSafetyContractFromEnvironment(process.env);
 
 setup("create user and authenticate via UI", async ({ page }) => {
   // Auth flow involves a network round-trip to Supabase (user creation +
@@ -26,7 +37,92 @@ setup("create user and authenticate via UI", async ({ page }) => {
   await page.goto("/auth/login");
   await page.getByLabel("Email").fill(TEST_EMAIL);
   await page.getByLabel("Password", { exact: true }).fill(TEST_PASSWORD);
+
+  // Keep authentication failures diagnosable without ever recording a token,
+  // credential, response body, or hosted endpoint.  A local authenticated run
+  // must prove that the browser received a successful password-grant response
+  // before we interpret a missing redirect as a cookie/middleware problem.
+  if (safetyContract.mode !== "local-authenticated") {
+    throw new Error(`[VS_AUTH] mode-${safetyContract.mode}`);
+  }
+  const expectedSupabaseOrigin = (
+    await discoverLocalSupabaseOrigin(
+      path.resolve(process.cwd(), "..", "supabase", "config.toml"),
+    )
+  ).origin;
+  const observedAuthTraffic: string[] = [];
+  const observedPageErrors: string[] = [];
+  const observedConsoleErrors: string[] = [];
+  const recordLoopbackAuthTraffic = (
+    method: string,
+    rawUrl: string,
+    status?: number,
+  ) => {
+    try {
+      const url = new URL(rawUrl);
+      if (
+        !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) ||
+        !url.pathname.startsWith("/auth/")
+      ) {
+        return;
+      }
+      observedAuthTraffic.push(
+        `${method} ${url.pathname}${status === undefined ? "" : ` ${status}`}`,
+      );
+      if (observedAuthTraffic.length > 12) observedAuthTraffic.shift();
+    } catch {
+      // Ignore malformed/non-loopback URLs; the browser safety fixture owns
+      // the authoritative egress assertion.
+    }
+  };
+  page.on("request", (request) => {
+    recordLoopbackAuthTraffic(request.method(), request.url());
+  });
+  page.on("response", (response) => {
+    recordLoopbackAuthTraffic(
+      response.request().method(),
+      response.url(),
+      response.status(),
+    );
+  });
+  page.on("pageerror", (error) => {
+    // Keep diagnostics count-only and name-only; browser errors can contain
+    // credentials, tokens, or source URLs in their messages.
+    observedPageErrors.push(error.name || "Error");
+    if (observedPageErrors.length > 4) observedPageErrors.shift();
+  });
+  page.on("console", (message) => {
+    if (message.type() !== "error") return;
+    observedConsoleErrors.push("console-error");
+    if (observedConsoleErrors.length > 4) observedConsoleErrors.shift();
+  });
+  const authTokenResponse = page.waitForResponse(
+    (response) => {
+      try {
+        const url = new URL(response.url());
+        return (
+          response.request().method() === "POST" &&
+          url.origin === expectedSupabaseOrigin &&
+          url.pathname === "/auth/v1/token"
+        );
+      } catch {
+        return false;
+      }
+    },
+    { timeout: 15_000 },
+  );
   await page.getByRole("button", { name: "Sign In" }).click();
+  let tokenResponse: Awaited<typeof authTokenResponse>;
+  try {
+    tokenResponse = await authTokenResponse;
+  } catch {
+    throw new Error(
+      `[VS_AUTH] token-response-timeout:${observedAuthTraffic.join(",") || "none"}:page-errors=${observedPageErrors.join("|") || "none"}:console-errors=${observedConsoleErrors.length}`,
+    );
+  }
+  if (!tokenResponse.ok()) {
+    throw new Error(`[VS_AUTH] token-status-${tokenResponse.status()}`);
+  }
 
   // After login the user is already onboarded (ensureTestUser pre-creates
   // preferences with onboarding_skipped=true), so we should land on /app/search.

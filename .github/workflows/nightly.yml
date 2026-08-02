@@ -2,10 +2,11 @@
 # Nightly Suite — Comprehensive test coverage + data integrity
 # CI Architecture Redesign — absorbs data-audit.yml into nightly schedule
 # ═══════════════════════════════════════════════════════════════════════════════
-# Runs all Playwright projects (including visual regression + authenticated),
-# full unit test coverage, and data integrity audit against live Supabase.
+# Runs explicit public and local-emulator-authenticated Playwright suites,
+# full unit test coverage, and a separate data integrity audit. Authenticated
+# browser coverage fails closed when the verified local emulator is unavailable.
 #
-# Target runtime: < 15 minutes (jobs run in parallel)
+# Target runtime: < 30 minutes for the browser job (jobs run in parallel)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: Nightly Suite
@@ -28,7 +29,7 @@ env:
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────
-  # Job 1: Full frontend test suite (unit + all Playwright projects)
+  # Job 1: Full frontend test suite (unit + explicit safe browser modes)
   # ─────────────────────────────────────────────────────────────────────────
   comprehensive:
     name: Full Test Suite
@@ -36,6 +37,8 @@ jobs:
     permissions:
       contents: read
     timeout-minutes: 30
+    env:
+      VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
     defaults:
       run:
         working-directory: frontend
@@ -94,55 +97,99 @@ jobs:
         run: npx playwright install-deps chromium
         timeout-minutes: 8
 
-      - name: Seed QA fixture data
+      - name: Install pinned Supabase CLI
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
+
+      - name: Public visual-safety preflight
+        run: npm run visual-safety:preflight
+        env:
+          VISUAL_SAFETY_MODE: public
+          BASE_URL: http://127.0.0.1:3000
+
+      - name: Public Playwright suite
         run: |
           set -o pipefail
-          # KEY=VALUE lines go to stdout. No `|| true` — a non-zero exit
-          # (missing staging env in CI, or the in-script production guard
-          # tripping) MUST fail the job rather than run tests with nothing
-          # seeded.
-          node tests/quality/seed-fixtures.mjs | tee /tmp/qa-ids.txt
-          grep -E '^[A-Z_]+=' /tmp/qa-ids.txt >> "$GITHUB_ENV" || true
-        env:
-          # Staging-only: QA fixtures must NEVER target production. No fallback
-          # to NEXT_PUBLIC_SUPABASE_URL — if the staging secret is unset the
-          # seeder fails in CI (and the in-script production guard would abort
-          # anyway).
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING }}
-
-      - name: Full Playwright (all projects including visual)
-        run: npx playwright test 2>&1 | tee ../playwright-stdout.log
+          npm run visual-safety:public -- --project=smoke --reporter=list 2>&1 | tee ../playwright-public-stdout.log
         timeout-minutes: 20
         env:
-          # Visual regression disabled until baseline screenshots are generated
-          # and committed from a Linux CI run. Re-enable after running:
-          #   npx playwright test --project=visual-smoke --update-snapshots
-          # VISUAL_REGRESSION: "true"
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING || secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY_STAGING || secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VISUAL_SAFETY_MODE: public
+          BASE_URL: http://127.0.0.1:3000
 
-      # Always runs after the fixture-dependent Playwright suite so staging
-      # never accumulates active QA Test Brand rows. Staging-only secrets; the
-      # in-script production guard makes targeting production impossible. In CI
-      # a missing staging secret fails this step rather than leaking fixtures.
-      - name: Teardown QA fixture data
-        if: always()
-        run: node tests/quality/seed-fixtures.mjs --teardown
+      - name: Assert public visual safety
+        id: public_safety_assert
+        if: ${{ always() }}
+        run: npm run visual-safety:assert
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING }}
+          VISUAL_SAFETY_MODE: public
+          BASE_URL: http://127.0.0.1:3000
+
+      - name: Start ephemeral local Supabase
+        id: local_supabase_start
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh start
+
+      # Existing authenticated coverage remains blocking, but may run only
+      # after the guarded preflight proves the configured local emulator.
+      - name: Local-authenticated visual-safety preflight (blocking)
+        id: auth_preflight
+        run: npm run visual-safety:preflight
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+          BASE_URL: http://127.0.0.1:3000
+
+      - name: Seed guarded local QA fixtures
+        id: local_fixture_seed
+        shell: bash
+        run: |
+          fixture_ids="$RUNNER_TEMP/tryvit-qa-fixture-ids.env"
+          npm run --silent visual-safety:fixtures-seed > "$fixture_ids"
+          if ! grep -Eq '^QA_PRODUCT_ID=[0-9]+$' "$fixture_ids"; then
+            rm -f -- "$fixture_ids"
+            echo "::error::Guarded local fixture seeding did not return deterministic IDs"
+            exit 1
+          fi
+          grep -E '^QA_[A-Z_]+=[A-Za-z0-9_-]+$' "$fixture_ids" >> "$GITHUB_ENV"
+          rm -f -- "$fixture_ids"
+          echo "seeded=true" >> "$GITHUB_OUTPUT"
+
+      - name: Local-authenticated Playwright suite
+        run: |
+          set -o pipefail
+          npm run visual-safety:local-authenticated -- --project=authenticated --project=functional --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
+        timeout-minutes: 20
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+          BASE_URL: http://127.0.0.1:3000
+
+      - name: Assert local-authenticated visual safety
+        id: auth_safety_assert
+        if: ${{ always() && steps.auth_preflight.outcome == 'success' }}
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+          BASE_URL: http://127.0.0.1:3000
+
+      - name: Teardown guarded local QA fixtures
+        id: local_fixture_teardown
+        if: ${{ always() && steps.local_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run --silent visual-safety:fixtures-teardown
+
+      - name: Stop ephemeral local Supabase (no backup)
+        id: local_supabase_stop
+        if: ${{ always() }}
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh stop
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.public_safety_assert.outcome == 'success' && steps.auth_safety_assert.outcome == 'success' && steps.local_fixture_teardown.outcome == 'success' && steps.local_supabase_stop.outcome == 'success' }}
         with:
           name: nightly-playwright-report
           path: |
             frontend/playwright-report/
             frontend/test-results/
-            playwright-stdout.log
+            playwright-public-stdout.log
+            playwright-authenticated-stdout.log
           retention-days: 30
 
       - name: Alert on comprehensive failure

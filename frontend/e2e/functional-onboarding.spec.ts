@@ -3,30 +3,18 @@
 // Uses a fresh test user (without onboarding_skipped) for the wizard tests,
 // and the standard test user for redirect-guard tests.
 //
-// Requires: SUPABASE_SERVICE_ROLE_KEY (creates temp user inline).
+// Requires explicit local-authenticated mode (creates a local temp user).
 // 6 tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { expect, test } from "@playwright/test";
-import type { WebSocketLikeConstructor } from "@supabase/realtime-js";
-import { createClient } from "@supabase/supabase-js";
-import WebSocket from "ws";
+import { expect, test, type Page } from "./fixtures/safe-test";
+import { getAdminClient } from "./helpers/test-user";
+import { VisualSafetyError } from "./helpers/visual-safety";
 
 const ONBOARDING_EMAIL = `e2e-onboarding-${Date.now()}@test.tryvit.local`;
 const ONBOARDING_PASSWORD = "OnboardingTest123!";
-const WebSocketTransport = WebSocket as unknown as WebSocketLikeConstructor;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
-
-function getAdminClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) throw new Error("Missing Supabase env vars");
-  return createClient(url, key, {
-    auth: { autoRefreshToken: false, persistSession: false },
-    realtime: { transport: WebSocketTransport },
-  });
-}
 
 async function createOnboardingUser(): Promise<string> {
   const supabase = getAdminClient();
@@ -39,7 +27,14 @@ async function createOnboardingUser(): Promise<string> {
   while (true) {
     const {
       data: { users },
+      error,
     } = await supabase.auth.admin.listUsers({ page, perPage: PAGE_SIZE });
+    if (error) {
+      throw new VisualSafetyError(
+        "VS_FIXTURE_ADMIN",
+        "onboarding-user-list",
+      );
+    }
     const match = users.find((u) => u.email === ONBOARDING_EMAIL);
     if (match) {
       existingId = match.id;
@@ -48,7 +43,15 @@ async function createOnboardingUser(): Promise<string> {
     if (users.length < PAGE_SIZE) break;
     page++;
   }
-  if (existingId) await supabase.auth.admin.deleteUser(existingId);
+  if (existingId) {
+    const { error } = await supabase.auth.admin.deleteUser(existingId);
+    if (error) {
+      throw new VisualSafetyError(
+        "VS_FIXTURE_ADMIN",
+        "onboarding-user-delete",
+      );
+    }
+  }
 
   // Create fresh user — NO onboarding preferences
   const { data, error } = await supabase.auth.admin.createUser({
@@ -56,13 +59,11 @@ async function createOnboardingUser(): Promise<string> {
     password: ONBOARDING_PASSWORD,
     email_confirm: true,
   });
-  if (error) throw new Error(`Create onboarding user: ${error.message}`);
+  if (error) throw new Error("[VS_FIXTURE_ADMIN] onboarding-user-create");
   return data.user.id;
 }
 
-async function signInOnboardingUser(
-  page: import("@playwright/test").Page,
-) {
+async function signInOnboardingUser(page: Page) {
   await page.goto("/auth/login");
   await page.getByLabel("Email").fill(ONBOARDING_EMAIL);
   await page
@@ -75,25 +76,35 @@ async function signInOnboardingUser(
 }
 
 async function deleteOnboardingUser() {
-  try {
-    const supabase = getAdminClient();
-    const PAGE_SIZE = 50;
-    let page = 1;
-     
-    while (true) {
-      const {
-        data: { users },
-      } = await supabase.auth.admin.listUsers({ page, perPage: PAGE_SIZE });
-      const match = users.find((u) => u.email === ONBOARDING_EMAIL);
-      if (match) {
-        await supabase.auth.admin.deleteUser(match.id);
-        return;
-      }
-      if (users.length < PAGE_SIZE) return;
-      page++;
+  const supabase = getAdminClient();
+  const PAGE_SIZE = 50;
+  let page = 1;
+
+  while (true) {
+    const {
+      data: { users },
+      error,
+    } = await supabase.auth.admin.listUsers({ page, perPage: PAGE_SIZE });
+    if (error) {
+      throw new VisualSafetyError(
+        "VS_FIXTURE_ADMIN",
+        "onboarding-user-cleanup-list",
+      );
     }
-  } catch {
-    // Best-effort cleanup
+    const match = users.find((u) => u.email === ONBOARDING_EMAIL);
+    if (match) {
+      const { error: deleteError } =
+        await supabase.auth.admin.deleteUser(match.id);
+      if (deleteError) {
+        throw new VisualSafetyError(
+          "VS_FIXTURE_ADMIN",
+          "onboarding-user-cleanup-delete",
+        );
+      }
+      return;
+    }
+    if (users.length < PAGE_SIZE) return;
+    page++;
   }
 }
 

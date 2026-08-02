@@ -24,6 +24,38 @@ const connectSrcAllowlist = [
   "https://*.ingest.de.sentry.io",
 ];
 
+// The authenticated visual-safety runner builds an isolated app against the
+// ephemeral Supabase emulator. Keep this exception opt-in and loopback-only;
+// public/production builds retain the hosted-only CSP contract. The origin is
+// supplied by the runner after it discovers the port from supabase/config.toml;
+// this config must never duplicate that port.
+function localVisualSafetySupabaseOrigin(): string {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!raw) throw new Error("local visual-safety Supabase origin is missing");
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    throw new Error("local visual-safety Supabase origin is invalid");
+  }
+  if (
+    parsed.protocol !== "http:" ||
+    !["localhost", "127.0.0.1", "[::1]"].includes(parsed.hostname) ||
+    parsed.username ||
+    parsed.password ||
+    parsed.pathname !== "/" ||
+    parsed.search ||
+    parsed.hash
+  ) {
+    throw new Error("local visual-safety Supabase origin must be loopback HTTP");
+  }
+  return parsed.origin;
+}
+
+if (process.env.VISUAL_SAFETY_MODE === "local-authenticated") {
+  connectSrcAllowlist.push(localVisualSafetySupabaseOrigin());
+}
+
 if (process.env.NODE_ENV === "development") {
   // Dev tooling (e.g., HMR/logging extensions) may open localhost websockets.
   connectSrcAllowlist.push("ws://127.0.0.1:*", "ws://localhost:*");

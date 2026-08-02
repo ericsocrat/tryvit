@@ -1,11 +1,11 @@
 // ─── E2E: Scanner EAN lookup integration tests ──────────────────────────────
-// These tests exercise the REAL scan flow against the live Supabase backend.
+// These tests exercise the real scan flow against the verified local Supabase emulator.
 // They would have caught the nutri_score column mismatch bug before production.
 //
 // Requires: authenticated session (depends on auth-setup project).
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 async function disableNextDevOverlay(page: import("@playwright/test").Page) {
   await page.addStyleTag({

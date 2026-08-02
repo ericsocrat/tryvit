@@ -1,141 +1,118 @@
 <#
 .SYNOPSIS
-  Captures screenshots of pages affected by the current branch's changes.
+  Captures changed-route screenshots through the owned safety harness.
 
-.DESCRIPTION
-  Detects which files have changed (vs main or uncommitted), maps them to
-  page URLs via e2e/helpers/page-map.ts, and captures mobile + desktop
-  screenshots using Playwright.
-
-  Output: frontend/pr-screenshots/{mobile,desktop}/
-
-  Requires:
-  - Dev server running at http://localhost:3000
-  - SUPABASE_SERVICE_ROLE_KEY set (for authenticated pages)
+.PARAMETER Mode
+  Selects public or verified local-authenticated routes. The two classes never
+  run in the same Playwright process.
 
 .PARAMETER All
-  Capture all mapped pages regardless of file changes (useful for full review).
+  Captures every mapped route in the selected safety mode.
 
 .EXAMPLE
-  .\RUN_PR_SCREENSHOTS.ps1            # Only changed pages
-  .\RUN_PR_SCREENSHOTS.ps1 -All       # All pages
+  .\RUN_PR_SCREENSHOTS.ps1 -Mode Public
+
+.EXAMPLE
+  .\RUN_PR_SCREENSHOTS.ps1 -Mode LocalAuthenticated -All
 #>
 [CmdletBinding()]
 param(
+    [Parameter(Mandatory = $true)]
+    [ValidateSet("Public", "LocalAuthenticated")]
+    [string]$Mode,
     [switch]$All
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-Write-Host "`n═══════════════════════════════════════" -ForegroundColor Cyan
-Write-Host "  PR Screenshots — Changed Pages Only" -ForegroundColor Cyan
-Write-Host "═══════════════════════════════════════`n" -ForegroundColor Cyan
+$frontendRoot = Join-Path $PSScriptRoot "frontend"
+$resolvedFrontend = (Resolve-Path -LiteralPath $frontendRoot).Path
+$outputDir = Join-Path $resolvedFrontend "pr-screenshots"
 
-# ── Pre-flight checks ───────────────────────────────────────────────────────
-
-if (-not $env:SUPABASE_SERVICE_ROLE_KEY) {
-    Write-Host "ERROR: SUPABASE_SERVICE_ROLE_KEY not set." -ForegroundColor Red
-    Write-Host "  Set it via: `$env:SUPABASE_SERVICE_ROLE_KEY = 'your-key'" -ForegroundColor Yellow
-    exit 1
+function Invoke-CheckedGitDiff {
+    param([string[]]$DiffArgs)
+    $lines = @(& git -C $PSScriptRoot @DiffArgs 2>$null)
+    if ($LASTEXITCODE -ne 0) {
+        throw "[VS_GIT_DIFF] changed-file-discovery-failed"
+    }
+    return $lines -join "`n"
 }
-
-try {
-    $null = Invoke-WebRequest -Uri "http://localhost:3000" -TimeoutSec 5 -ErrorAction Stop
-    Write-Host "✅ Dev server running at http://localhost:3000" -ForegroundColor Green
-}
-catch {
-    Write-Host "ERROR: Dev server not running at http://localhost:3000" -ForegroundColor Red
-    Write-Host "  Start it via: cd frontend && npm run dev" -ForegroundColor Yellow
-    exit 1
-}
-
-# ── Detect changed files ────────────────────────────────────────────────────
 
 if ($All) {
-    Write-Host "ℹ️  -All flag: capturing all mapped pages" -ForegroundColor Yellow
-    # Leave CHANGED_FILES unset — page-map.ts will fall back to git diff
-    # and if that's empty on main, the spec shows "no pages". Instead, we
-    # pass a wildcard so every pattern matches.
-    $changedFiles = "frontend/src/app/page.tsx`nfrontend/src/styles/globals.css`nfrontend/messages/en.json"
+    $changedFiles = ""
 }
 else {
-    # Try branch diff first, fall back to uncommitted changes
-    $changedFiles = ""
-    try {
-        $changedFiles = git diff --name-only main...HEAD 2>$null
-    }
-    catch { }
-
+    $changedFiles = Invoke-CheckedGitDiff @("diff", "--name-only", "main...HEAD")
     if ([string]::IsNullOrWhiteSpace($changedFiles)) {
-        $changedFiles = git diff --name-only HEAD 2>$null
+        $changedFiles = Invoke-CheckedGitDiff @("diff", "--name-only", "HEAD")
     }
     if ([string]::IsNullOrWhiteSpace($changedFiles)) {
-        # Also check staged files
-        $changedFiles = git diff --name-only --cached 2>$null
+        $changedFiles = Invoke-CheckedGitDiff @("diff", "--name-only", "--cached")
     }
 }
 
-if ([string]::IsNullOrWhiteSpace($changedFiles)) {
-    Write-Host "ℹ️  No changed files detected. Nothing to screenshot." -ForegroundColor Yellow
+if (-not $All -and [string]::IsNullOrWhiteSpace($changedFiles)) {
+    Write-Host "No changed files detected. Nothing to capture." -ForegroundColor Yellow
     exit 0
 }
 
-$fileCount = ($changedFiles -split "`n" | Where-Object { $_.Trim() }).Count
-Write-Host "📂 $fileCount changed file(s) detected" -ForegroundColor White
+$safetyMode = if ($Mode -eq "Public") { "public" } else { "local-authenticated" }
+$scriptName = if ($Mode -eq "Public") { "visual-safety:public" } else { "visual-safety:local-authenticated" }
 
-# ── Clean output directory ──────────────────────────────────────────────────
+$previousMode = $env:VISUAL_SAFETY_MODE
+$previousBaseUrl = $env:BASE_URL
+$previousCapture = $env:PR_SCREENSHOTS
+$previousCaptureAll = $env:PR_SCREENSHOTS_ALL
+$previousChanged = $env:CHANGED_FILES
+$removedSensitiveEnvironment = @{}
+$blockedEnvironmentPattern = "(?i)(SUPABASE|POSTGRES|DATABASE|PASSWORD|TOKEN|SECRET|COOKIE|AUTHORIZATION|API_KEY|STAGING_(URL|SERVICE_KEY)|PRODUCTION_(URL|SERVICE_KEY)|^(ALL_PROXY|BROWSER|CHROME_PATH|DEBUG|DOCKER_(CERT_PATH|CONTEXT|HOST|TLS_VERIFY)|HTTP_PROXY|HTTPS_PROXY|LHCI_.*|LHCITEST_.*|LIGHTHOUSE_.*|NODE_DEBUG(_NATIVE)?|NODE_EXTRA_CA_CERTS|NODE_OPTIONS|NODE_PATH|NODE_REPL_EXTERNAL_MODULE|NODE_TLS_REJECT_UNAUTHORIZED|NODE_USE_ENV_PROXY|NO_PROXY|PLAYWRIGHT_.*|PUPPETEER_.*|PW(?!D$).*|SSLKEYLOGFILE|VISUAL_SAFETY_CONFIG_(RUNNER_PID|SEAL))$)"
 
-$outputDir = Join-Path $PSScriptRoot "frontend\pr-screenshots"
-if (Test-Path $outputDir) {
-    Remove-Item $outputDir -Recurse -Force
-    Write-Host "🧹 Cleaned previous screenshots" -ForegroundColor Gray
+foreach ($entry in Get-ChildItem Env:) {
+    if ($entry.Name -notmatch $blockedEnvironmentPattern) {
+        continue
+    }
+    $removedSensitiveEnvironment[$entry.Name] = $entry.Value
+    Remove-Item -LiteralPath ("Env:" + $entry.Name)
 }
 
-# ── Run Playwright ──────────────────────────────────────────────────────────
-
-Write-Host "`n📸 Capturing PR screenshots...`n" -ForegroundColor Cyan
-
-Push-Location "$PSScriptRoot\frontend"
-
-$env:PR_SCREENSHOTS = "true"
-$env:CHANGED_FILES = $changedFiles
-
+Push-Location $resolvedFrontend
 try {
-    npx playwright test --project=pr-screenshots --reporter=list
+    $env:VISUAL_SAFETY_MODE = $safetyMode
+    $env:BASE_URL = "http://127.0.0.1:3000"
+    $env:PR_SCREENSHOTS = "true"
+    $env:PR_SCREENSHOTS_ALL = if ($All) { "true" } else { "false" }
+    $env:CHANGED_FILES = $changedFiles
+    npm run visual-safety:preflight
+    if ($LASTEXITCODE -ne 0) {
+        throw "[VS_PREFLIGHT] screenshot-runner-preflight-failed"
+    }
+    if (Test-Path -LiteralPath $outputDir) {
+        $item = Get-Item -LiteralPath $outputDir -Force
+        if ($item.FullName -ne $outputDir -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+            throw "[VS_OUTPUT_TARGET] screenshot-output-unproven"
+        }
+        Remove-Item -LiteralPath $outputDir -Recurse -Force
+    }
+    npm run $scriptName -- --project=pr-screenshots --reporter=list
     $exitCode = $LASTEXITCODE
 }
 finally {
-    Remove-Item Env:\PR_SCREENSHOTS -ErrorAction SilentlyContinue
-    Remove-Item Env:\CHANGED_FILES -ErrorAction SilentlyContinue
+    if ($null -eq $previousMode) { Remove-Item Env:\VISUAL_SAFETY_MODE -ErrorAction SilentlyContinue } else { $env:VISUAL_SAFETY_MODE = $previousMode }
+    if ($null -eq $previousBaseUrl) { Remove-Item Env:\BASE_URL -ErrorAction SilentlyContinue } else { $env:BASE_URL = $previousBaseUrl }
+    if ($null -eq $previousCapture) { Remove-Item Env:\PR_SCREENSHOTS -ErrorAction SilentlyContinue } else { $env:PR_SCREENSHOTS = $previousCapture }
+    if ($null -eq $previousCaptureAll) { Remove-Item Env:\PR_SCREENSHOTS_ALL -ErrorAction SilentlyContinue } else { $env:PR_SCREENSHOTS_ALL = $previousCaptureAll }
+    if ($null -eq $previousChanged) { Remove-Item Env:\CHANGED_FILES -ErrorAction SilentlyContinue } else { $env:CHANGED_FILES = $previousChanged }
+    foreach ($name in $removedSensitiveEnvironment.Keys) {
+        Set-Item -LiteralPath ("Env:" + $name) -Value $removedSensitiveEnvironment[$name]
+    }
     Pop-Location
 }
 
-# ── Report results ──────────────────────────────────────────────────────────
-
-Write-Host "`n═══════════════════════════════════════" -ForegroundColor Cyan
-
-if ($exitCode -eq 0) {
-    $mobileCount = (Get-ChildItem "frontend\pr-screenshots\mobile\*.png" -ErrorAction SilentlyContinue).Count
-    $desktopCount = (Get-ChildItem "frontend\pr-screenshots\desktop\*.png" -ErrorAction SilentlyContinue).Count
-    $total = $mobileCount + $desktopCount
-
-    Write-Host "✅ PR screenshots captured!" -ForegroundColor Green
-    Write-Host "`n  Mobile:  $mobileCount" -ForegroundColor White
-    Write-Host "  Desktop: $desktopCount" -ForegroundColor White
-    Write-Host "  Total:   $total`n" -ForegroundColor Cyan
-
-    if ($total -gt 0) {
-        Write-Host "  📁 Output: frontend/pr-screenshots/" -ForegroundColor White
-        Write-Host "     mobile/  — 390×844 viewport" -ForegroundColor Gray
-        Write-Host "     desktop/ — 1440×900 viewport" -ForegroundColor Gray
-    }
-}
-else {
-    Write-Host "⚠️  Some screenshots failed (exit code: $exitCode)" -ForegroundColor Yellow
-    Write-Host "  Check Playwright HTML report: npx playwright show-report" -ForegroundColor Yellow
+if ($exitCode -ne 0) {
+    Write-Host "PR screenshot capture failed closed (exit code $exitCode)." -ForegroundColor Red
+    exit $exitCode
 }
 
-Write-Host "═══════════════════════════════════════`n" -ForegroundColor Cyan
-
-exit $exitCode
+Write-Host "PR screenshot capture completed with zero recorded safety violations." -ForegroundColor Green
+exit 0

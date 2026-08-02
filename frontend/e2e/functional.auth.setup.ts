@@ -2,13 +2,22 @@
 // Uses a dedicated user and storage state so functional tests do not share
 // auth tokens with the authenticated project.
 
-import { expect, test as setup } from "@playwright/test";
+import path from "node:path";
+
+import { expect, test as setup } from "./fixtures/safe-test";
 import {
     ensureScopedTestUser,
     getScopedTestCredentials,
 } from "./helpers/test-user";
 
-const AUTH_STATE_PATH = "e2e/.auth/functional-user.json";
+const authStateDirectory = process.env.VISUAL_SAFETY_AUTH_STATE_DIR;
+if (!authStateDirectory || !path.isAbsolute(authStateDirectory)) {
+  throw new Error("[VS_AUTH_STATE_DIR] owned-temporary-directory-required");
+}
+const AUTH_STATE_PATH = path.join(
+  authStateDirectory,
+  "functional-user.json",
+);
 
 setup("create functional user and authenticate via UI", async ({ page }) => {
   setup.setTimeout(60_000);

@@ -1,12 +1,12 @@
 // ─── Functional E2E: Search interactions ────────────────────────────────────
 // Tests real user search flows: typing, submitting, viewing results, filtering,
-// navigating to product detail. Runs against live Supabase data.
+// navigating to product detail. Runs against verified local-emulator data.
 //
 // Requires: authenticated session (depends on auth-setup project).
 // 11 tests
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 async function expectResultsCountVisible(
   page: import("@playwright/test").Page,

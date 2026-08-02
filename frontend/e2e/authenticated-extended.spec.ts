@@ -2,7 +2,7 @@
 // These tests run with pre-authenticated storageState produced by auth.setup.ts.
 // Covers: navigation bar, scan pages, lists, compare, search features, settings.
 
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 async function disableNextDevOverlay(page: import("@playwright/test").Page) {
   // Next.js dev overlay can intercept clicks during local e2e runs.
