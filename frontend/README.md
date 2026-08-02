@@ -113,7 +113,7 @@ After deploying or starting the dev server, verify these flows:
 
 ## PWA Status
 
-This is a **standard web app**, not a PWA. No service worker, manifest, or offline support is configured. The mobile-first responsive design works well when added to home screen, but there is no offline capability.
+TryVit includes a web app manifest, a Serwist service worker, install prompts, and a document offline fallback at `/offline`. Product API and image caching remain intentionally narrow; the app still requires a network connection for live search, account, and most product-data operations.
 
 ## Operations
 

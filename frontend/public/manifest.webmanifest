@@ -12,7 +12,6 @@
     "window-controls-overlay",
     "standalone"
   ],
-  "orientation": "portrait",
   "theme_color": "#1DB954",
   "background_color": "#F0FAF4",
   "categories": [
@@ -98,7 +97,7 @@
     {
       "name": "Search Products",
       "short_name": "Search",
-      "url": "/app?tab=search",
+      "url": "/app/search",
       "description": "Search for food products",
       "icons": [
         {
@@ -124,7 +123,7 @@
     {
       "name": "My Lists",
       "short_name": "Lists",
-      "url": "/app?tab=lists",
+      "url": "/app/lists",
       "description": "View your saved product lists",
       "icons": [
         {

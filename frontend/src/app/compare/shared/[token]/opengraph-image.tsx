@@ -27,7 +27,7 @@ export function truncate(text: string, max: number): string {
 let interBoldPromise: Promise<ArrayBuffer> | null = null;
 function getInterBoldFont(): Promise<ArrayBuffer> {
   interBoldPromise ??= fetch(
-    "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYAZ9hiA.ttf",
+    "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZhrib2Bg-4.ttf",
   ).then((r) => r.arrayBuffer());
   return interBoldPromise;
 }
@@ -53,7 +53,24 @@ function FallbackCard() {
           alignItems: "center",
         }}
       >
-        <div style={{ fontSize: 64, marginBottom: 16 }}>⚖️</div>
+        {/* Keep the fallback self-contained: ImageResponse resolves emoji as remote assets. */}
+        <div
+          style={{
+            width: 72,
+            height: 72,
+            borderRadius: 16,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "#16a34a",
+            color: "#ffffff",
+            fontSize: 24,
+            fontWeight: 700,
+            marginBottom: 16,
+          }}
+        >
+          TV
+        </div>
         <div style={{ fontSize: 32, fontWeight: 700, color: "#111827" }}>
           TryVit
         </div>
