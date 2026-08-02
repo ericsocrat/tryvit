@@ -378,9 +378,6 @@ export default defineConfig({
             VISUAL_SAFETY_APP_ORIGIN: safetyContract.appOrigin,
             BASE_URL: safetyContract.appOrigin,
             VISUAL_SAFETY_SUPABASE_ORIGIN: safetyContract.supabaseOrigin ?? "",
-            VISUAL_SAFETY_BUILD_SUPABASE_ORIGIN:
-              safetyContract.publicBuildAdapter?.supabaseOrigin ?? "",
-            VISUAL_SAFETY_BUILD_ADAPTER_ID: safetyContract.publicBuildAdapter?.id ?? "",
             NEXT_PUBLIC_SUPABASE_URL: safetyContract.supabaseOrigin ?? "",
             NEXT_PUBLIC_SUPABASE_ANON_KEY: "",
             SUPABASE_SERVICE_ROLE_KEY: "",

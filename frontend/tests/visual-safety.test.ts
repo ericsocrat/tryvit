@@ -2,15 +2,8 @@ import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import type {
-  BrowserContext,
-  Route,
-  WebSocketRoute,
-} from "@playwright/test";
-import type {
-  WebSocketLike,
-  WebSocketLikeConstructor,
-} from "@supabase/realtime-js";
+import type { BrowserContext, Route, WebSocketRoute } from "@playwright/test";
+import type { WebSocketLike, WebSocketLikeConstructor } from "@supabase/realtime-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 // Safety infrastructure intentionally lives outside production src/.
@@ -57,10 +50,7 @@ afterEach(async () => {
   }
 });
 
-function expectSafetyError(
-  action: () => unknown,
-  code: string,
-): VisualSafetyError {
+function expectSafetyError(action: () => unknown, code: string): VisualSafetyError {
   try {
     action();
   } catch (error) {
@@ -126,10 +116,7 @@ describe("canonicalizeLoopbackOrigin", () => {
     "http://localhost:65536",
     "not a url",
   ])("rejects unsafe or noncanonical origin %s", (input) => {
-    const error = expectSafetyError(
-      () => canonicalizeLoopbackOrigin(input),
-      "VS_ORIGIN_INVALID",
-    );
+    const error = expectSafetyError(() => canonicalizeLoopbackOrigin(input), "VS_ORIGIN_INVALID");
     expect(error.message).not.toContain("canary-query");
     expect(error.message).not.toContain("canary-fragment");
     expect(error.message).not.toContain("password");
@@ -166,10 +153,7 @@ describe("launcher invocation proof", () => {
       { ...proof, proxyOrigin: "http://127.0.0.1:43112" },
       { ...proof, extra: true },
     ]) {
-      expectSafetyError(
-        () => validateInvocationProof(mismatch, expected),
-        "VS_INVOCATION_PROOF",
-      );
+      expectSafetyError(() => validateInvocationProof(mismatch, expected), "VS_INVOCATION_PROOF");
     }
   });
 });
@@ -197,10 +181,7 @@ describe("local Supabase configuration discovery", () => {
       '[api]\nport = "55001"',
       "[api]\nport = 55001\n[api.tls]\nenabled = maybe",
     ]) {
-      expectSafetyError(
-        () => parseLocalSupabaseConfig(config),
-        "VS_CONFIG_INVALID",
-      );
+      expectSafetyError(() => parseLocalSupabaseConfig(config), "VS_CONFIG_INVALID");
     }
   });
 
@@ -214,14 +195,10 @@ describe("local Supabase configuration discovery", () => {
   it("discovers a synthetic TLS-enabled configuration without reading env", async () => {
     const root = await makeTempRoot();
     const configPath = path.join(root, "config.toml");
-    await fs.writeFile(
-      configPath,
-      "[api]\nport = 55443\n[api.tls]\nenabled = true\n",
-      "utf8",
-    );
-    await expect(discoverLocalSupabaseOrigin(configPath)).resolves.toMatchObject(
-      { origin: "https://127.0.0.1:55443" },
-    );
+    await fs.writeFile(configPath, "[api]\nport = 55443\n[api.tls]\nenabled = true\n", "utf8");
+    await expect(discoverLocalSupabaseOrigin(configPath)).resolves.toMatchObject({
+      origin: "https://127.0.0.1:55443",
+    });
   });
 });
 
@@ -234,7 +211,7 @@ describe("explicit safety contracts", () => {
     let legacyClientConstructions = 0;
     const legacyHasAuth = Boolean(
       syntheticLegacyEnvironment.NEXT_PUBLIC_SUPABASE_URL &&
-        syntheticLegacyEnvironment.SUPABASE_SERVICE_ROLE_KEY,
+      syntheticLegacyEnvironment.SUPABASE_SERVICE_ROLE_KEY,
     );
     if (legacyHasAuth) legacyClientConstructions += 1;
     expect(legacyClientConstructions).toBe(1);
@@ -244,10 +221,8 @@ describe("explicit safety contracts", () => {
       loadSafetyContractFromEnvironment({
         VISUAL_SAFETY_MODE: "local-authenticated",
         VISUAL_SAFETY_APP_ORIGIN: "http://127.0.0.1:3000",
-        VISUAL_SAFETY_SUPABASE_ORIGIN:
-          syntheticLegacyEnvironment.NEXT_PUBLIC_SUPABASE_URL,
-        SUPABASE_SERVICE_ROLE_KEY:
-          syntheticLegacyEnvironment.SUPABASE_SERVICE_ROLE_KEY,
+        VISUAL_SAFETY_SUPABASE_ORIGIN: syntheticLegacyEnvironment.NEXT_PUBLIC_SUPABASE_URL,
+        SUPABASE_SERVICE_ROLE_KEY: syntheticLegacyEnvironment.SUPABASE_SERVICE_ROLE_KEY,
       });
       guardedClientConstructions += 1;
     }).toThrow(VisualSafetyError);
@@ -255,45 +230,11 @@ describe("explicit safety contracts", () => {
   });
 
   it("bootstraps public mode without any Supabase configuration", () => {
-    expect(
-      createPublicSafetyContract({ appOrigin: "http://localhost:3000" }),
-    ).toMatchObject({
+    expect(createPublicSafetyContract({ appOrigin: "http://localhost:3000" })).toMatchObject({
       mode: "public",
       appOrigin: "http://localhost:3000",
       supabaseOrigin: null,
-      publicBuildAdapter: null,
     });
-  });
-
-  it("accepts only a loopback public build adapter", () => {
-    const contract = createPublicSafetyContract({
-      appOrigin: "http://localhost:3000",
-      publicBuildAdapter: {
-        id: "current-app-loopback-v1",
-        supabaseOrigin: "http://127.0.0.1:55001",
-      },
-    });
-    expect(contract.publicBuildAdapter).toEqual({
-      id: "current-app-loopback-v1",
-      supabaseOrigin: "http://127.0.0.1:55001",
-    });
-    expect(() =>
-      createPublicSafetyContract({
-        appOrigin: "http://localhost:3000",
-        publicBuildAdapter: {
-          supabaseOrigin: "https://synthetic.supabase.co",
-        },
-      }),
-    ).toThrow(VisualSafetyError);
-    expect(() =>
-      createPublicSafetyContract({
-        appOrigin: "http://localhost:3000",
-        publicBuildAdapter: {
-          id: "opaque-4f6a9b2d8c1e7a",
-          supabaseOrigin: "http://127.0.0.1:55001",
-        },
-      }),
-    ).toThrow(VisualSafetyError);
   });
 
   it("loads public mode without Supabase variables", () => {
@@ -314,6 +255,8 @@ describe("explicit safety contracts", () => {
     "STAGING_SERVICE_KEY",
     "PRODUCTION_URL",
     "PRODUCTION_SERVICE_KEY",
+    "VISUAL_SAFETY_BUILD_SUPABASE_ORIGIN",
+    "VISUAL_SAFETY_BUILD_ADAPTER_ID",
   ])("rejects %s in a public browser environment without echoing it", (name) => {
     const error = expectSafetyError(
       () =>
@@ -356,8 +299,7 @@ describe("explicit safety contracts", () => {
         loadSafetyContractFromEnvironment({
           VISUAL_SAFETY_MODE: "local-authenticated",
           VISUAL_SAFETY_APP_ORIGIN: "http://localhost:3000",
-          VISUAL_SAFETY_SUPABASE_ORIGIN:
-            "https://synthetic-hosted.supabase.co",
+          VISUAL_SAFETY_SUPABASE_ORIGIN: "https://synthetic-hosted.supabase.co",
           SUPABASE_SERVICE_ROLE_KEY: "canary-service-role",
         }),
       "VS_ORIGIN_INVALID",
@@ -374,61 +316,30 @@ describe("egress classification and audit", () => {
   });
 
   it.each([
-    [
-      "https://project.supabase.co/rest/v1/products",
-      "http",
-      "hosted-supabase-origin",
-    ],
-    [
-      "wss://project.supabase.co/realtime/v1/websocket",
-      "websocket",
-      "hosted-supabase-origin",
-    ],
-    [
-      "https://custom.synthetic.test/auth/v1/token",
-      "http",
-      "non-loopback-supabase-service",
-    ],
-    [
-      "https://custom.synthetic.test/rest%2fv1/products",
-      "http",
-      "non-loopback-supabase-service",
-    ],
-    [
-      "https://custom.synthetic.test//rest/v1/products",
-      "http",
-      "non-loopback-supabase-service",
-    ],
+    ["https://project.supabase.co/rest/v1/products", "http", "hosted-supabase-origin"],
+    ["wss://project.supabase.co/realtime/v1/websocket", "websocket", "hosted-supabase-origin"],
+    ["https://custom.synthetic.test/auth/v1/token", "http", "non-loopback-supabase-service"],
+    ["https://custom.synthetic.test/rest%2fv1/products", "http", "non-loopback-supabase-service"],
+    ["https://custom.synthetic.test//rest/v1/products", "http", "non-loopback-supabase-service"],
     [
       "wss://custom.synthetic.test/realtime/v1/websocket",
       "websocket",
       "non-loopback-supabase-service",
     ],
-    [
-      "https://data.synthetic.test/anything",
-      "http",
-      "known-hosted-supabase-origin",
-    ],
+    ["https://data.synthetic.test/anything", "http", "known-hosted-supabase-origin"],
   ] as const)("blocks %s", (url, transport, category) => {
-    expect(
-      classifyForbiddenEgress(url, transport, publicContract),
-    ).toEqual({ transport, category });
+    expect(classifyForbiddenEgress(url, transport, publicContract)).toEqual({
+      transport,
+      category,
+    });
   });
 
   it("allows ordinary public traffic and loopback Supabase service paths", () => {
     expect(
-      classifyForbiddenEgress(
-        "https://images.synthetic.test/image.png",
-        "http",
-        publicContract,
-      ),
+      classifyForbiddenEgress("https://images.synthetic.test/image.png", "http", publicContract),
     ).toBeNull();
     expect(
-      classifyForbiddenEgress(
-        "http://127.0.0.1:55001/rest/v1/products",
-        "http",
-        publicContract,
-      ),
+      classifyForbiddenEgress("http://127.0.0.1:55001/rest/v1/products", "http", publicContract),
     ).toBeNull();
   });
 
@@ -447,10 +358,7 @@ describe("egress classification and audit", () => {
       total: 2,
       categories: { "http.hosted-supabase-origin": 2 },
     });
-    const error = expectSafetyError(
-      () => assertNoEgressViolations(audit),
-      "VS_EGRESS_BLOCKED",
-    );
+    const error = expectSafetyError(() => assertNoEgressViolations(audit), "VS_EGRESS_BLOCKED");
     expect(error.message).not.toContain("project.supabase.co");
     expect(error.message).not.toContain("canary");
   });
@@ -466,10 +374,7 @@ describe("guarded fetch", () => {
       fetchImpl,
     });
     await expectAsyncSafetyError(
-      () =>
-        guardedFetch(
-          "https://synthetic-hosted.supabase.co/rest/v1/products",
-        ),
+      () => guardedFetch("https://synthetic-hosted.supabase.co/rest/v1/products"),
       "VS_FETCH_BLOCKED",
     );
     expect(fetchImpl).not.toHaveBeenCalled();
@@ -500,14 +405,14 @@ describe("guarded fetch", () => {
   });
 
   it("does not follow a loopback redirect to a hosted target", async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () =>
-      new Response(null, {
-        status: 307,
-        headers: {
-          location:
-            "https://synthetic-hosted.supabase.co/rest/v1/canary-secret",
-        },
-      }),
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () =>
+        new Response(null, {
+          status: 307,
+          headers: {
+            location: "https://synthetic-hosted.supabase.co/rest/v1/canary-secret",
+          },
+        }),
     );
     const guardedFetch = createGuardedFetch({ allowedOrigin, fetchImpl });
 
@@ -521,14 +426,11 @@ describe("guarded fetch", () => {
   });
 
   it("rejects redirect loops and excessive hops", async () => {
-    const loopFetch = vi.fn<typeof fetch>(async () =>
-      new Response(null, { status: 302, headers: { location: "/loop" } }),
+    const loopFetch = vi.fn<typeof fetch>(
+      async () => new Response(null, { status: 302, headers: { location: "/loop" } }),
     );
     await expectAsyncSafetyError(
-      () =>
-        createGuardedFetch({ allowedOrigin, fetchImpl: loopFetch })(
-          `${allowedOrigin}/loop`,
-        ),
+      () => createGuardedFetch({ allowedOrigin, fetchImpl: loopFetch })(`${allowedOrigin}/loop`),
       "VS_FETCH_REDIRECT",
     );
     expect(loopFetch).toHaveBeenCalledTimes(1);
@@ -554,11 +456,12 @@ describe("guarded fetch", () => {
   });
 
   it("supports a no-redirect readiness policy", async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () =>
-      new Response(null, {
-        status: 302,
-        headers: { location: "/auth/v1/health" },
-      }),
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () =>
+        new Response(null, {
+          status: 302,
+          headers: { location: "/auth/v1/health" },
+        }),
     );
     await expectAsyncSafetyError(
       () =>
@@ -599,15 +502,10 @@ describe("guarded fetch", () => {
 
   it("redacts transport failures", async () => {
     const fetchImpl = vi.fn<typeof fetch>(async () => {
-      throw new Error(
-        "request failed for http://127.0.0.1:55001/?token=canary-token",
-      );
+      throw new Error("request failed for http://127.0.0.1:55001/?token=canary-token");
     });
     const error = await expectAsyncSafetyError(
-      () =>
-        createGuardedFetch({ allowedOrigin, fetchImpl })(
-          `${allowedOrigin}/auth/v1/health`,
-        ),
+      () => createGuardedFetch({ allowedOrigin, fetchImpl })(`${allowedOrigin}/auth/v1/health`),
       "VS_FETCH_FAILED",
     );
     expect(error.message).not.toContain("canary-token");
@@ -651,9 +549,7 @@ describe("guarded Node WebSocket transport", () => {
 
   it("constructs a transport only for the exact local Realtime target", () => {
     const GuardedWebSocket = makeGuardedConstructor();
-    new GuardedWebSocket(
-      "ws://127.0.0.1:55001/realtime/v1/websocket?apikey=local-canary",
-    );
+    new GuardedWebSocket("ws://127.0.0.1:55001/realtime/v1/websocket?apikey=local-canary");
     expect(FakeWebSocket.calls).toHaveLength(1);
   });
 
@@ -664,10 +560,7 @@ describe("guarded Node WebSocket transport", () => {
     "ws://127.0.0.1:55001/not-realtime?apikey=canary-key",
   ])("blocks %s before invoking the underlying constructor", (target) => {
     const GuardedWebSocket = makeGuardedConstructor();
-    const error = expectSafetyError(
-      () => new GuardedWebSocket(target),
-      "VS_WEBSOCKET_BLOCKED",
-    );
+    const error = expectSafetyError(() => new GuardedWebSocket(target), "VS_WEBSOCKET_BLOCKED");
     expect(FakeWebSocket.calls).toHaveLength(0);
     expect(error.message).not.toContain("canary-key");
     expect(error.message).not.toContain("synthetic.supabase.co");
@@ -677,9 +570,7 @@ describe("guarded Node WebSocket transport", () => {
 describe("browser guard installation with transport stubs", () => {
   function mockContext() {
     let httpHandler: ((route: Route) => Promise<void>) | undefined;
-    let websocketHandler:
-      | ((route: WebSocketRoute) => Promise<void>)
-      | undefined;
+    let websocketHandler: ((route: WebSocketRoute) => Promise<void>) | undefined;
     const context = {
       pages: vi.fn(() => []),
       serviceWorkers: vi.fn(() => []),
@@ -796,32 +687,35 @@ describe("browser guard installation with transport stubs", () => {
         supabaseOrigin: "http://127.0.0.1:55001",
       }),
     ],
-  ] as const)("locally fulfills only the exact Turnstile script in %s mode", async (_mode, safetyContract) => {
-    const mocked = mockContext();
-    const audit = createEgressAudit();
-    await installBrowserEgressGuards(mocked.context, safetyContract, audit);
-    const route = {
-      request: () => ({
-        url: () =>
-          "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit",
-        resourceType: () => "script",
-      }),
-      abort: vi.fn(async () => undefined),
-      continue: vi.fn(async () => undefined),
-      fulfill: vi.fn(async () => undefined),
-    } as unknown as Route;
+  ] as const)(
+    "locally fulfills only the exact Turnstile script in %s mode",
+    async (_mode, safetyContract) => {
+      const mocked = mockContext();
+      const audit = createEgressAudit();
+      await installBrowserEgressGuards(mocked.context, safetyContract, audit);
+      const route = {
+        request: () => ({
+          url: () =>
+            "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit",
+          resourceType: () => "script",
+        }),
+        abort: vi.fn(async () => undefined),
+        continue: vi.fn(async () => undefined),
+        fulfill: vi.fn(async () => undefined),
+      } as unknown as Route;
 
-    await mocked.getHttpHandler()(route);
+      await mocked.getHttpHandler()(route);
 
-    expect(route.fulfill).toHaveBeenCalledWith({
-      status: 200,
-      contentType: "application/javascript; charset=utf-8",
-      body: "/* TryVit visual-safety: Cloudflare Turnstile intentionally contained. */",
-    });
-    expect(route.abort).not.toHaveBeenCalled();
-    expect(route.continue).not.toHaveBeenCalled();
-    expect(audit.summary()).toEqual({ total: 0, categories: {} });
-  });
+      expect(route.fulfill).toHaveBeenCalledWith({
+        status: 200,
+        contentType: "application/javascript; charset=utf-8",
+        body: "/* TryVit visual-safety: Cloudflare Turnstile intentionally contained. */",
+      });
+      expect(route.abort).not.toHaveBeenCalled();
+      expect(route.continue).not.toHaveBeenCalled();
+      expect(audit.summary()).toEqual({ total: 0, categories: {} });
+    },
+  );
 
   it.each([
     [
@@ -844,30 +738,27 @@ describe("browser guard installation with transport stubs", () => {
       "https://challenges.cloudflare.com/turnstile/v0/api-alt.js?onload=onloadTurnstileCallback&render=explicit",
       "script",
     ],
-  ])(
-    "continues to contain non-exact Turnstile request: %s",
-    async (_reason, url, resourceType) => {
-      const mocked = mockContext();
-      const audit = createEgressAudit();
-      await installBrowserEgressGuards(mocked.context, contract, audit);
-      const route = {
-        request: () => ({
-          url: () => url,
-          resourceType: () => resourceType,
-        }),
-        abort: vi.fn(async () => undefined),
-        continue: vi.fn(async () => undefined),
-        fulfill: vi.fn(async () => undefined),
-      } as unknown as Route;
+  ])("continues to contain non-exact Turnstile request: %s", async (_reason, url, resourceType) => {
+    const mocked = mockContext();
+    const audit = createEgressAudit();
+    await installBrowserEgressGuards(mocked.context, contract, audit);
+    const route = {
+      request: () => ({
+        url: () => url,
+        resourceType: () => resourceType,
+      }),
+      abort: vi.fn(async () => undefined),
+      continue: vi.fn(async () => undefined),
+      fulfill: vi.fn(async () => undefined),
+    } as unknown as Route;
 
-      await mocked.getHttpHandler()(route);
+    await mocked.getHttpHandler()(route);
 
-      expect(route.abort).toHaveBeenCalledWith("blockedbyclient");
-      expect(route.fulfill).not.toHaveBeenCalled();
-      expect(route.continue).not.toHaveBeenCalled();
-      expect(audit.summary()).toEqual({ total: 0, categories: {} });
-    },
-  );
+    expect(route.abort).toHaveBeenCalledWith("blockedbyclient");
+    expect(route.fulfill).not.toHaveBeenCalled();
+    expect(route.continue).not.toHaveBeenCalled();
+    expect(audit.summary()).toEqual({ total: 0, categories: {} });
+  });
 
   it("refuses installation after page or service-worker creation", async () => {
     for (const override of [
@@ -894,9 +785,7 @@ describe("safe .next path validation", () => {
     const frontend = path.join(root, "frontend");
     const next = path.join(frontend, ".next");
     await fs.mkdir(next, { recursive: true });
-    await expect(safeNextBuildPath(frontend, next)).resolves.toBe(
-      await fs.realpath(next),
-    );
+    await expect(safeNextBuildPath(frontend, next)).resolves.toBe(await fs.realpath(next));
   });
 
   it("returns the exact owned path when .next does not exist", async () => {
@@ -928,15 +817,8 @@ describe("safe .next path validation", () => {
     const next = path.join(frontend, ".next");
     await fs.mkdir(frontend);
     await fs.mkdir(outside);
-    await fs.symlink(
-      outside,
-      next,
-      process.platform === "win32" ? "junction" : "dir",
-    );
-    await expectAsyncSafetyError(
-      () => safeNextBuildPath(frontend, next),
-      "VS_NEXT_PATH_UNSAFE",
-    );
+    await fs.symlink(outside, next, process.platform === "win32" ? "junction" : "dir");
+    await expectAsyncSafetyError(() => safeNextBuildPath(frontend, next), "VS_NEXT_PATH_UNSAFE");
   });
 
   it("rejects a non-directory .next target", async () => {
@@ -945,26 +827,19 @@ describe("safe .next path validation", () => {
     const next = path.join(frontend, ".next");
     await fs.mkdir(frontend);
     await fs.writeFile(next, "not a directory", "utf8");
-    await expectAsyncSafetyError(
-      () => safeNextBuildPath(frontend, next),
-      "VS_NEXT_PATH_UNSAFE",
-    );
+    await expectAsyncSafetyError(() => safeNextBuildPath(frontend, next), "VS_NEXT_PATH_UNSAFE");
   });
 });
 
 describe("build provenance", () => {
   const contract = createPublicSafetyContract({
     appOrigin: "http://localhost:3000",
-    publicBuildAdapter: {
-      id: "current-app-loopback-v1",
-      supabaseOrigin: "http://127.0.0.1:55001",
-    },
   });
   const input = {
     contract,
     sourceGitSha: "f2be7a41d49c579912285a36578b7666decbf5ce",
     buildId: "synthetic-build-id",
-    buildInputIds: ["loopback-placeholder-v1"],
+    buildInputIds: ["assets:0000000000000000000000000000000000000000000000000000000000000000"],
   } as const;
 
   it("creates deterministic non-secret provenance and verifies a match", () => {
@@ -972,6 +847,8 @@ describe("build provenance", () => {
     const second = createBuildProvenance(input);
     expect(first).toEqual(second);
     expect(first.fingerprint).toMatch(/^[0-9a-f]{64}$/u);
+    expect(first.supabaseOrigin).toBe("none");
+    expect(first.publicBuildAdapterId).toBe("none");
     expect(() => verifyBuildProvenance(first, input)).not.toThrow();
     const serialized = JSON.stringify(first);
     expect(serialized).not.toContain("service-role");
@@ -1017,11 +894,7 @@ describe("build provenance", () => {
   it("detects a tampered fingerprint", () => {
     const provenance = createBuildProvenance(input);
     expectSafetyError(
-      () =>
-        verifyBuildProvenance(
-          { ...provenance, fingerprint: "0".repeat(64) },
-          provenance,
-        ),
+      () => verifyBuildProvenance({ ...provenance, fingerprint: "0".repeat(64) }, provenance),
       "VS_PROVENANCE_MISMATCH",
     );
     expectSafetyError(
@@ -1040,18 +913,12 @@ describe("generated client asset scan", () => {
     const root = await makeTempRoot();
     const next = path.join(root, "frontend", ".next");
     await fs.mkdir(path.join(next, "static", "chunks"), { recursive: true });
-    await fs.writeFile(
-      path.join(next, "static", "chunks", "app.js"),
-      contents,
-      "utf8",
-    );
+    await fs.writeFile(path.join(next, "static", "chunks", "app.js"), contents, "utf8");
     return next;
   }
 
   it("passes clean generated assets and returns counts only", async () => {
-    const next = await makeBuild(
-      'const endpoint = "http://127.0.0.1:55001/rest/v1";',
-    );
+    const next = await makeBuild('const endpoint = "http://127.0.0.1:55001/rest/v1";');
     await expect(scanGeneratedAssets(next)).resolves.toMatchObject({
       filesScanned: 1,
     });
@@ -1086,8 +953,7 @@ describe("generated client asset scan", () => {
       "dist",
       "index.mjs.map",
     );
-    const bundledSource =
-      'export const example = "https://myproject.supabase.co";';
+    const bundledSource = 'export const example = "https://myproject.supabase.co";';
     await fs.mkdir(path.dirname(sdkMap), { recursive: true });
     await fs.writeFile(
       sdkMap,
@@ -1100,20 +966,13 @@ describe("generated client asset scan", () => {
       }),
       "utf8",
     );
-    const generatedMap = path.join(
-      next,
-      "server",
-      "chunks",
-      "sdk.js.map",
-    );
+    const generatedMap = path.join(next, "server", "chunks", "sdk.js.map");
     await fs.mkdir(path.dirname(generatedMap), { recursive: true });
     await fs.writeFile(
       generatedMap,
       JSON.stringify({
         version: 3,
-        sources: [
-          "../../../node_modules/shared/tracing/dist/module/validate.js",
-        ],
+        sources: ["../../../node_modules/shared/tracing/dist/module/validate.js"],
         sourcesContent: [bundledSource],
         names: [],
         mappings: "",
@@ -1128,19 +987,14 @@ describe("generated client asset scan", () => {
       generatedMap,
       JSON.stringify({
         version: 3,
-        sources: [
-          "../../../node_modules/shared/tracing/dist/module/validate.js",
-        ],
+        sources: ["../../../node_modules/shared/tracing/dist/module/validate.js"],
         sourcesContent: [`${bundledSource} `],
         names: [],
         mappings: "",
       }),
       "utf8",
     );
-    await expectAsyncSafetyError(
-      () => scanGeneratedAssets(next),
-      "VS_ASSET_FORBIDDEN",
-    );
+    await expectAsyncSafetyError(() => scanGeneratedAssets(next), "VS_ASSET_FORBIDDEN");
   });
 
   it("blocks a hosted origin in an application source map", async () => {
@@ -1156,10 +1010,7 @@ describe("generated client asset scan", () => {
       }),
       "utf8",
     );
-    await expectAsyncSafetyError(
-      () => scanGeneratedAssets(next),
-      "VS_ASSET_FORBIDDEN",
-    );
+    await expectAsyncSafetyError(() => scanGeneratedAssets(next), "VS_ASSET_FORBIDDEN");
   });
 
   it.each([
@@ -1185,10 +1036,7 @@ describe("generated client asset scan", () => {
       'const stale = "https://synthetic.supabase.co";',
       "utf8",
     );
-    await expectAsyncSafetyError(
-      () => scanGeneratedAssets(next),
-      "VS_ASSET_FORBIDDEN",
-    );
+    await expectAsyncSafetyError(() => scanGeneratedAssets(next), "VS_ASSET_FORBIDDEN");
   });
 
   it.each([
@@ -1199,19 +1047,13 @@ describe("generated client asset scan", () => {
     const filename = path.join(next, ...relative.split("/"));
     await fs.mkdir(path.dirname(filename), { recursive: true });
     await fs.writeFile(filename, contents, "utf8");
-    await expectAsyncSafetyError(
-      () => scanGeneratedAssets(next),
-      "VS_ASSET_FORBIDDEN",
-    );
+    await expectAsyncSafetyError(() => scanGeneratedAssets(next), "VS_ASSET_FORBIDDEN");
   });
 
   it("fails closed when no generated client assets exist", async () => {
     const root = await makeTempRoot();
     const next = path.join(root, "frontend", ".next");
     await fs.mkdir(next, { recursive: true });
-    await expectAsyncSafetyError(
-      () => scanGeneratedAssets(next),
-      "VS_ASSET_SCAN_FAILED",
-    );
+    await expectAsyncSafetyError(() => scanGeneratedAssets(next), "VS_ASSET_SCAN_FAILED");
   });
 });

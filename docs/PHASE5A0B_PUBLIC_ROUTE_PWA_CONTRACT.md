@@ -54,10 +54,10 @@ tests prove zero calls for those route classes. Login and signup are the only
 anonymous routes permitted to look up a user, and only to retain the documented
 signed-in redirect.
 
-The change deliberately does not make rendering genuinely Supabase-independent.
-Phase 5A.0c owns provider topology, landing rendering, and removal of the
-loopback-shaped public build adapter. This phase only ensures proxy behavior
-does not incorrectly block a route before that later work can occur.
+This phase deliberately did not make rendering genuinely Supabase-independent.
+It ensured proxy behavior could not incorrectly block a public route before
+Phase 5A.0c separated provider topology and landing rendering, then removed the
+loopback-shaped public build adapter from the guarded visual-test contract.
 
 ## Public metadata fallback correction
 
@@ -117,7 +117,8 @@ authenticated verification environment.
 ## Deferred work
 
 - Phase 5A.0c: genuine provider/public-rendering independence, locale and
-  landing rendering boundaries.
+  landing rendering boundaries, including removal of the temporary public build
+  adapter.
 - Phase 5A.0d: visual baselines and performance remediation. Historical
   desktop Lighthouse scores remain an entry condition, not a passing claim.
 - Phase 5A.1 and later: Design System V2 and any visual redesign.

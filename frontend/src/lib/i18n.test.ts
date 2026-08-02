@@ -1,6 +1,12 @@
-import { renderHook } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { humanizeKey, translate, useTranslation } from "./i18n";
+import { act, renderHook } from "@testing-library/react";
+import { createElement, type ReactNode } from "react";
+import { afterEach, describe, expect, it } from "vitest";
+import { humanizeKey, InitialLanguageContext, translate, useTranslation } from "./i18n";
+import { useLanguageStore } from "@/stores/language-store";
+
+afterEach(() => {
+  act(() => useLanguageStore.getState().reset());
+});
 
 // ─── translate() — pure function tests (no React needed) ───────────────────
 
@@ -19,21 +25,15 @@ describe("translate", () => {
     });
 
     it("interpolates {param} placeholders", () => {
-      expect(translate("en", "common.pageOf", { page: 3, pages: 10 })).toBe(
-        "Page 3 of 10",
-      );
+      expect(translate("en", "common.pageOf", { page: 3, pages: 10 })).toBe("Page 3 of 10");
     });
 
     it("leaves unmatched placeholders intact", () => {
-      expect(translate("en", "common.pageOf", { page: 1 })).toBe(
-        "Page 1 of {pages}",
-      );
+      expect(translate("en", "common.pageOf", { page: 1 })).toBe("Page 1 of {pages}");
     });
 
     it("handles string interpolation params", () => {
-      expect(translate("en", "product.nutriScore", { grade: "A" })).toBe(
-        "Nutri-Score A",
-      );
+      expect(translate("en", "product.nutriScore", { grade: "A" })).toBe("Nutri-Score A");
     });
   });
 
@@ -47,9 +47,7 @@ describe("translate", () => {
     });
 
     it("interpolates Polish strings", () => {
-      expect(translate("pl", "common.pageOf", { page: 2, pages: 5 })).toBe(
-        "Strona 2 z 5",
-      );
+      expect(translate("pl", "common.pageOf", { page: 2, pages: 5 })).toBe("Strona 2 z 5");
     });
   });
 
@@ -102,27 +100,19 @@ describe("translate", () => {
     });
 
     it("uses second-to-last segment when last is 'title'", () => {
-      expect(humanizeKey("recipes.items.overnight_oats.title")).toBe(
-        "Overnight Oats",
-      );
+      expect(humanizeKey("recipes.items.overnight_oats.title")).toBe("Overnight Oats");
     });
 
     it("uses second-to-last segment when last is 'description'", () => {
-      expect(humanizeKey("recipes.items.zupa_pomidorowa.description")).toBe(
-        "Zupa Pomidorowa",
-      );
+      expect(humanizeKey("recipes.items.zupa_pomidorowa.description")).toBe("Zupa Pomidorowa");
     });
 
     it("converts kebab-case to Title Case", () => {
-      expect(humanizeKey("recipes.items.red-lentil-soup.title")).toBe(
-        "Red Lentil Soup",
-      );
+      expect(humanizeKey("recipes.items.red-lentil-soup.title")).toBe("Red Lentil Soup");
     });
 
     it("converts snake_case to Title Case", () => {
-      expect(humanizeKey("recipes.items.overnight_oats.name")).toBe(
-        "Overnight Oats",
-      );
+      expect(humanizeKey("recipes.items.overnight_oats.name")).toBe("Overnight Oats");
     });
 
     it("handles single-segment key", () => {
@@ -157,12 +147,8 @@ describe("translate", () => {
 
     it("handles multiple plural tokens in one string", () => {
       // compare.comparing: "Comparing {count} {count|product|products}"
-      expect(translate("en", "compare.comparing", { count: 1 })).toBe(
-        "Comparing 1 product",
-      );
-      expect(translate("en", "compare.comparing", { count: 3 })).toBe(
-        "Comparing 3 products",
-      );
+      expect(translate("en", "compare.comparing", { count: 1 })).toBe("Comparing 1 product");
+      expect(translate("en", "compare.comparing", { count: 3 })).toBe("Comparing 3 products");
     });
 
     it("handles mixed plural + simple interpolation", () => {
@@ -171,9 +157,7 @@ describe("translate", () => {
         count: 2,
         allergens: "Gluten",
       });
-      expect(result).toBe(
-        "2 products in your Favorites contain Gluten.",
-      );
+      expect(result).toBe("2 products in your Favorites contain Gluten.");
     });
 
     it("handles singular with mixed interpolation", () => {
@@ -181,9 +165,7 @@ describe("translate", () => {
         count: 1,
         allergens: "Milk",
       });
-      expect(result).toBe(
-        "1 product in your Favorites contains Milk.",
-      );
+      expect(result).toBe("1 product in your Favorites contains Milk.");
     });
 
     // Polish 3-form: {count|one|few|many}
@@ -192,44 +174,30 @@ describe("translate", () => {
     });
 
     it("selects Polish few-form for count 2-4", () => {
-      expect(translate("pl", "common.items", { count: 3 })).toBe(
-        "3 elementy",
-      );
+      expect(translate("pl", "common.items", { count: 3 })).toBe("3 elementy");
     });
 
     it("selects Polish many-form for count 5+", () => {
-      expect(translate("pl", "common.items", { count: 5 })).toBe(
-        "5 elementów",
-      );
+      expect(translate("pl", "common.items", { count: 5 })).toBe("5 elementów");
     });
 
     it("selects Polish many-form for count 0", () => {
-      expect(translate("pl", "common.items", { count: 0 })).toBe(
-        "0 elementów",
-      );
+      expect(translate("pl", "common.items", { count: 0 })).toBe("0 elementów");
     });
 
     it("handles Polish teen numbers (12-14) as many-form", () => {
-      expect(translate("pl", "common.items", { count: 12 })).toBe(
-        "12 elementów",
-      );
+      expect(translate("pl", "common.items", { count: 12 })).toBe("12 elementów");
     });
 
     it("handles Polish 22-24 as few-form", () => {
-      expect(translate("pl", "common.items", { count: 22 })).toBe(
-        "22 elementy",
-      );
+      expect(translate("pl", "common.items", { count: 22 })).toBe("22 elementy");
     });
 
     // ── New pluralized keys (Issue #126 audit) ──────────────────────────────
 
     it("pluralizes common.allergenWarnings (en)", () => {
-      expect(translate("en", "common.allergenWarnings", { count: 1 })).toBe(
-        "1 allergen warning",
-      );
-      expect(translate("en", "common.allergenWarnings", { count: 3 })).toBe(
-        "3 allergen warnings",
-      );
+      expect(translate("en", "common.allergenWarnings", { count: 1 })).toBe("1 allergen warning");
+      expect(translate("en", "common.allergenWarnings", { count: 3 })).toBe("3 allergen warnings");
     });
 
     it("pluralizes common.allergenWarnings (pl)", () => {
@@ -245,51 +213,64 @@ describe("translate", () => {
     });
 
     it("pluralizes shared.productsCompared (en)", () => {
-      expect(translate("en", "shared.productsCompared", { count: 1 })).toBe(
-        "1 product compared",
-      );
-      expect(translate("en", "shared.productsCompared", { count: 3 })).toBe(
-        "3 products compared",
-      );
+      expect(translate("en", "shared.productsCompared", { count: 1 })).toBe("1 product compared");
+      expect(translate("en", "shared.productsCompared", { count: 3 })).toBe("3 products compared");
     });
 
     it("pluralizes shared.productsCompared (pl)", () => {
-      expect(translate("pl", "shared.productsCompared", { count: 1 })).toBe(
-        "1 produkt porównany",
-      );
-      expect(translate("pl", "shared.productsCompared", { count: 3 })).toBe(
-        "3 produkty porównane",
-      );
+      expect(translate("pl", "shared.productsCompared", { count: 1 })).toBe("1 produkt porównany");
+      expect(translate("pl", "shared.productsCompared", { count: 3 })).toBe("3 produkty porównane");
       expect(translate("pl", "shared.productsCompared", { count: 5 })).toBe(
         "5 produktów porównanych",
       );
     });
 
     it("pluralizes ingredient.productsContaining (en)", () => {
-      expect(
-        translate("en", "ingredient.productsContaining", { count: 1 }),
-      ).toBe("product contains this ingredient");
-      expect(
-        translate("en", "ingredient.productsContaining", { count: 5 }),
-      ).toBe("products contain this ingredient");
+      expect(translate("en", "ingredient.productsContaining", { count: 1 })).toBe(
+        "product contains this ingredient",
+      );
+      expect(translate("en", "ingredient.productsContaining", { count: 5 })).toBe(
+        "products contain this ingredient",
+      );
     });
 
     it("pluralizes ingredient.productsContaining (pl)", () => {
-      expect(
-        translate("pl", "ingredient.productsContaining", { count: 1 }),
-      ).toBe("produkt zawiera ten składnik");
-      expect(
-        translate("pl", "ingredient.productsContaining", { count: 3 }),
-      ).toBe("produkty zawierają ten składnik");
-      expect(
-        translate("pl", "ingredient.productsContaining", { count: 5 }),
-      ).toBe("produktów zawiera ten składnik");
+      expect(translate("pl", "ingredient.productsContaining", { count: 1 })).toBe(
+        "produkt zawiera ten składnik",
+      );
+      expect(translate("pl", "ingredient.productsContaining", { count: 3 })).toBe(
+        "produkty zawierają ten składnik",
+      );
+      expect(translate("pl", "ingredient.productsContaining", { count: 5 })).toBe(
+        "produktów zawiera ten składnik",
+      );
     });
   });
 
   // ── useTranslation hook ─────────────────────────────────────────────────
 
   describe("useTranslation", () => {
+    it("uses the request language for initial server and hydration rendering", () => {
+      const wrapper = ({ children }: { children: ReactNode }) =>
+        createElement(InitialLanguageContext.Provider, { value: "pl" }, children);
+
+      const { result } = renderHook(() => useTranslation(), { wrapper });
+
+      expect(result.current.language).toBe("pl");
+      expect(result.current.t("layout.contact")).toBe("Kontakt");
+      expect(useLanguageStore.getState().loaded).toBe(false);
+    });
+
+    it("lets an authenticated preference override the request language", () => {
+      useLanguageStore.getState().setLanguage("de");
+      const wrapper = ({ children }: { children: ReactNode }) =>
+        createElement(InitialLanguageContext.Provider, { value: "pl" }, children);
+
+      const { result } = renderHook(() => useTranslation(), { wrapper });
+
+      expect(result.current.language).toBe("de");
+    });
+
     it("returns a t function and language", () => {
       const { result } = renderHook(() => useTranslation());
       expect(typeof result.current.t).toBe("function");

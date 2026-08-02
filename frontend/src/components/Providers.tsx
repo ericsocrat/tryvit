@@ -1,15 +1,14 @@
 "use client";
 
-// ─── TanStack Query + Supabase providers ────────────────────────────────────
-
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
-import { useState, useEffect, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Toaster } from "sonner";
-import { initAchievementMiddleware } from "@/lib/events";
-import { FlagProvider } from "@/lib/flags";
-import { reportWebVitals } from "@/lib/web-vitals";
 import { RouteAnnouncer } from "@/components/common/RouteAnnouncer";
+import { LanguageSynchronizer } from "@/components/i18n/LanguageSynchronizer";
+import {
+  InitialLanguageContext,
+  type InitialLanguage,
+} from "@/lib/initial-language-context";
 
 /** Don't retry on 4xx auth or PostgREST JWT errors; retry up to 2× otherwise */
 export function shouldRetry(failureCount: number, error: Error): boolean {
@@ -20,38 +19,19 @@ export function shouldRetry(failureCount: number, error: Error): boolean {
   return failureCount < 2;
 }
 
-export function Providers({ children }: Readonly<{ children: ReactNode }>) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            // Don't retry on 4xx (auth errors, validation errors)
-            retry: shouldRetry,
-            refetchOnWindowFocus: false,
-          },
-        },
-      }),
-  );
-
-  // Wire event bus → achievement progress tracking (fire-and-forget)
-  useEffect(() => {
-    const unsubscribe = initAchievementMiddleware();
-    return unsubscribe;
-  }, []);
-
-  // Collect Core Web Vitals and report to Sentry (#621)
-  useEffect(() => {
-    reportWebVitals();
-  }, []);
-
+export function Providers({
+  children,
+  initialLanguage,
+}: Readonly<{
+  children: ReactNode;
+  initialLanguage: InitialLanguage;
+}>) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <FlagProvider>
-        <TooltipPrimitive.Provider delayDuration={300} skipDelayDuration={100}>
-          {children}
-        </TooltipPrimitive.Provider>
-      </FlagProvider>
+    <InitialLanguageContext.Provider value={initialLanguage}>
+      <LanguageSynchronizer initialLanguage={initialLanguage} />
+      <TooltipPrimitive.Provider delayDuration={300} skipDelayDuration={100}>
+        {children}
+      </TooltipPrimitive.Provider>
       <RouteAnnouncer />
       <Toaster
         position="top-right"
@@ -62,6 +42,6 @@ export function Providers({ children }: Readonly<{ children: ReactNode }>) {
           duration: 5000,
         }}
       />
-    </QueryClientProvider>
+    </InitialLanguageContext.Provider>
   );
 }

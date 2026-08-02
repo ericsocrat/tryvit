@@ -13,11 +13,12 @@
 //       health (120/min), authenticated (120/min). Sliding window.
 
 import {
-    extractUserIdFromJWT,
-    getLimiter,
-    rateLimitEnabled,
-    resolveRateLimitTier,
+  extractUserIdFromJWT,
+  getLimiter,
+  rateLimitEnabled,
+  resolveRateLimitTier,
 } from "@/lib/rate-limiter";
+import { getDeploymentReadiness } from "@/lib/deployment-readiness";
 import { ROUTE_CLASS, getRoutePolicy } from "@/lib/route-policy";
 import { createMiddlewareClient } from "@/lib/supabase/middleware";
 import { type NextRequest, NextResponse } from "next/server";
@@ -52,10 +53,7 @@ function resolveClientIp(request: NextRequest): string {
  * is exceeded, otherwise adds X-RateLimit-* headers to the pass-through
  * response and returns it.
  */
-async function applyRateLimit(
-  request: NextRequest,
-  response: NextResponse,
-): Promise<NextResponse> {
+async function applyRateLimit(request: NextRequest, response: NextResponse): Promise<NextResponse> {
   // Rate limiting disabled (no Redis) or bypass token present
   if (!rateLimitEnabled || isBypassToken(request)) return response;
 
@@ -68,8 +66,7 @@ async function applyRateLimit(
   const identifier = userId ?? resolveClientIp(request);
 
   // Promote standard → authenticated when a valid JWT is present
-  const effectiveTier =
-    userId && baseTier === "standard" ? "authenticated" : baseTier;
+  const effectiveTier = userId && baseTier === "standard" ? "authenticated" : baseTier;
   const limiter = getLimiter(effectiveTier);
 
   // Limiter is null when Redis is not configured (shouldn't happen if
@@ -134,6 +131,20 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+  // Demo/paused deployments intentionally have no browser Supabase
+  // configuration. Auth-entry pages must still render, while every protected
+  // route remains fail-closed without attempting client construction.
+  if (getDeploymentReadiness().dataBackend === "unavailable") {
+    if (routePolicy.requiresAnonymousAccess) {
+      return response;
+    }
+
+    const loginUrl = new URL("/auth/login", request.url);
+    const redirectTo = request.nextUrl.pathname + request.nextUrl.search;
+    loginUrl.searchParams.set("redirect", redirectTo);
+    return NextResponse.redirect(loginUrl);
+  }
+
   // ── Authenticated routes and signed-in auth entries ───────────────────────
   const supabase = createMiddlewareClient(request, response);
 
@@ -178,7 +189,7 @@ export async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     // Match all paths except static assets (includes /api for rate limiting)
-     
+
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

@@ -8,15 +8,12 @@ import type { WebSocketLikeConstructor } from "@supabase/realtime-js";
 export type VisualSafetyMode = "public" | "local-authenticated";
 
 export const VISUAL_SAFETY_SCHEMA_VERSION = "tryvit-visual-safety/v1";
-export const VISUAL_SAFETY_INVOCATION_SCHEMA_VERSION =
-  "tryvit-visual-safety-invocation/v1";
+export const VISUAL_SAFETY_INVOCATION_SCHEMA_VERSION = "tryvit-visual-safety-invocation/v1";
 
 export const VISUAL_SAFETY_ENV = Object.freeze({
   mode: "VISUAL_SAFETY_MODE",
   appOrigin: "VISUAL_SAFETY_APP_ORIGIN",
   supabaseOrigin: "VISUAL_SAFETY_SUPABASE_ORIGIN",
-  publicBuildSupabaseOrigin: "VISUAL_SAFETY_BUILD_SUPABASE_ORIGIN",
-  publicBuildAdapterId: "VISUAL_SAFETY_BUILD_ADAPTER_ID",
 } as const);
 
 const DEFAULT_HOSTED_SUPABASE_ORIGINS = Object.freeze([
@@ -57,6 +54,8 @@ const PUBLIC_FORBIDDEN_SUPABASE_ENV_NAMES = Object.freeze([
   "STAGING_SERVICE_KEY",
   "PRODUCTION_URL",
   "PRODUCTION_SERVICE_KEY",
+  "VISUAL_SAFETY_BUILD_SUPABASE_ORIGIN",
+  "VISUAL_SAFETY_BUILD_ADAPTER_ID",
 ]);
 const SUPABASE_SERVICE_PREFIXES = Object.freeze([
   "/auth/v1",
@@ -88,11 +87,7 @@ export class VisualSafetyError extends Error {
 
   constructor(code: string, category: string, hostname?: string) {
     const redactedHostname = hostname ? redactHostname(hostname) : undefined;
-    super(
-      redactedHostname
-        ? `${code}:${category}:${redactedHostname}`
-        : `${code}:${category}`,
-    );
+    super(redactedHostname ? `${code}:${category}:${redactedHostname}` : `${code}:${category}`);
     this.name = "VisualSafetyError";
     this.code = code;
     this.category = category;
@@ -104,9 +99,7 @@ export class VisualSafetyError extends Error {
       name: this.name,
       code: this.code,
       category: this.category,
-      ...(this.redactedHostname
-        ? { redactedHostname: this.redactedHostname }
-        : {}),
+      ...(this.redactedHostname ? { redactedHostname: this.redactedHostname } : {}),
     };
   }
 }
@@ -118,16 +111,10 @@ export interface CanonicalLoopbackOrigin {
   readonly effectivePort: number;
 }
 
-export interface PublicBuildAdapter {
-  readonly id: string;
-  readonly supabaseOrigin: string;
-}
-
 interface BaseSafetyContract {
   readonly mode: VisualSafetyMode;
   readonly appOrigin: string;
   readonly supabaseOrigin: string | null;
-  readonly publicBuildAdapter: PublicBuildAdapter | null;
   readonly knownHostedSupabaseOrigins: readonly string[];
 }
 
@@ -139,12 +126,9 @@ export interface PublicSafetyContract extends BaseSafetyContract {
 export interface LocalAuthenticatedSafetyContract extends BaseSafetyContract {
   readonly mode: "local-authenticated";
   readonly supabaseOrigin: string;
-  readonly publicBuildAdapter: null;
 }
 
-export type VisualSafetyContract =
-  | PublicSafetyContract
-  | LocalAuthenticatedSafetyContract;
+export type VisualSafetyContract = PublicSafetyContract | LocalAuthenticatedSafetyContract;
 
 export interface VisualSafetyInvocationProof {
   readonly schemaVersion: typeof VISUAL_SAFETY_INVOCATION_SCHEMA_VERSION;
@@ -190,10 +174,7 @@ export interface BuildProvenance {
 function equalOpaqueText(left: string, right: string): boolean {
   const leftBytes = Buffer.from(left, "utf8");
   const rightBytes = Buffer.from(right, "utf8");
-  return (
-    leftBytes.length === rightBytes.length &&
-    timingSafeEqual(leftBytes, rightBytes)
-  );
+  return leftBytes.length === rightBytes.length && timingSafeEqual(leftBytes, rightBytes);
 }
 
 export function validateInvocationProof(
@@ -218,9 +199,7 @@ export function validateInvocationProof(
     "schemaVersion",
     "serverPid",
   ];
-  if (
-    JSON.stringify(Object.keys(proof).sort()) !== JSON.stringify(expectedKeys)
-  ) {
+  if (JSON.stringify(Object.keys(proof).sort()) !== JSON.stringify(expectedKeys)) {
     fail("VS_INVOCATION_PROOF", "proof.shape");
   }
   if (
@@ -265,11 +244,7 @@ export interface GeneratedAssetScanResult {
 
 function redactHostname(hostname: string): string {
   const normalized = hostname.toLowerCase();
-  if (
-    normalized === "localhost" ||
-    normalized === "127.0.0.1" ||
-    normalized === "[::1]"
-  ) {
+  if (normalized === "localhost" || normalized === "127.0.0.1" || normalized === "[::1]") {
     return normalized;
   }
   return "[redacted]";
@@ -280,16 +255,10 @@ function fail(code: string, category: string, hostname?: string): never {
 }
 
 function isCanonicalLoopbackHostname(hostname: string): boolean {
-  return (
-    hostname === "localhost" ||
-    hostname === "127.0.0.1" ||
-    hostname === "[::1]"
-  );
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
 }
 
-export function canonicalizeLoopbackOrigin(
-  rawOrigin: string,
-): CanonicalLoopbackOrigin {
+export function canonicalizeLoopbackOrigin(rawOrigin: string): CanonicalLoopbackOrigin {
   if (typeof rawOrigin !== "string" || rawOrigin !== rawOrigin.trim()) {
     fail("VS_ORIGIN_INVALID", "origin.syntax");
   }
@@ -300,9 +269,7 @@ export function canonicalizeLoopbackOrigin(
   const explicitPort = match[3] ? Number(match[3]) : undefined;
   if (
     explicitPort !== undefined &&
-    (!Number.isSafeInteger(explicitPort) ||
-      explicitPort < 1 ||
-      explicitPort > 65_535)
+    (!Number.isSafeInteger(explicitPort) || explicitPort < 1 || explicitPort > 65_535)
   ) {
     fail("VS_ORIGIN_INVALID", "origin.port");
   }
@@ -326,8 +293,7 @@ export function canonicalizeLoopbackOrigin(
     fail("VS_ORIGIN_INVALID", "origin.components", parsed.hostname);
   }
 
-  const effectivePort =
-    explicitPort ?? (parsed.protocol === "https:" ? 443 : 80);
+  const effectivePort = explicitPort ?? (parsed.protocol === "https:" ? 443 : 80);
 
   return Object.freeze({
     origin: parsed.origin,
@@ -342,7 +308,7 @@ function stripTomlComment(line: string): string {
   for (let index = 0; index < line.length; index += 1) {
     const character = line[index];
     if ((character === '"' || character === "'") && line[index - 1] !== "\\") {
-      quote = quote === character ? null : quote ?? character;
+      quote = quote === character ? null : (quote ?? character);
     } else if (character === "#" && quote === null) {
       return line.slice(0, index);
     }
@@ -393,12 +359,7 @@ export function parseLocalSupabaseConfig(configToml: string): {
     }
   }
 
-  if (
-    apiPort === undefined ||
-    !Number.isSafeInteger(apiPort) ||
-    apiPort < 1 ||
-    apiPort > 65_535
-  ) {
+  if (apiPort === undefined || !Number.isSafeInteger(apiPort) || apiPort < 1 || apiPort > 65_535) {
     fail("VS_CONFIG_INVALID", "config.api-port");
   }
 
@@ -417,14 +378,10 @@ export async function discoverLocalSupabaseOrigin(
 
   const config = parseLocalSupabaseConfig(configToml);
   const scheme = config.apiTlsEnabled ? "https" : "http";
-  return canonicalizeLoopbackOrigin(
-    `${scheme}://127.0.0.1:${config.apiPort}`,
-  );
+  return canonicalizeLoopbackOrigin(`${scheme}://127.0.0.1:${config.apiPort}`);
 }
 
-function normalizeKnownHostedOrigins(
-  origins: readonly string[] | undefined,
-): readonly string[] {
+function normalizeKnownHostedOrigins(origins: readonly string[] | undefined): readonly string[] {
   const normalized = new Set<string>(DEFAULT_HOSTED_SUPABASE_ORIGINS);
   for (const value of origins ?? []) {
     try {
@@ -447,41 +404,15 @@ function normalizeKnownHostedOrigins(
 
 export function createPublicSafetyContract(input: {
   readonly appOrigin: string;
-  readonly publicBuildAdapter?: {
-    readonly id?: string;
-    readonly supabaseOrigin: string;
-  } | null;
   readonly knownHostedSupabaseOrigins?: readonly string[];
 }): PublicSafetyContract {
   const appOrigin = canonicalizeLoopbackOrigin(input.appOrigin).origin;
-  let publicBuildAdapter: PublicBuildAdapter | null = null;
-
-  if (input.publicBuildAdapter) {
-    const id = input.publicBuildAdapter.id ?? "loopback-placeholder-v1";
-    assertSafeIdentifier(id, "contract.build-adapter-id");
-    if (
-      !/^(?:loopback-placeholder|[a-z][a-z0-9-]*-loopback)-v[1-9][0-9]*$/u.test(
-        id,
-      )
-    ) {
-      fail("VS_PROVENANCE_INVALID", "contract.build-adapter-id");
-    }
-    publicBuildAdapter = Object.freeze({
-      id,
-      supabaseOrigin: canonicalizeLoopbackOrigin(
-        input.publicBuildAdapter.supabaseOrigin,
-      ).origin,
-    });
-  }
 
   return Object.freeze({
     mode: "public",
     appOrigin,
     supabaseOrigin: null,
-    publicBuildAdapter,
-    knownHostedSupabaseOrigins: normalizeKnownHostedOrigins(
-      input.knownHostedSupabaseOrigins,
-    ),
+    knownHostedSupabaseOrigins: normalizeKnownHostedOrigins(input.knownHostedSupabaseOrigins),
   });
 }
 
@@ -494,10 +425,7 @@ export function createLocalAuthenticatedSafetyContract(input: {
     mode: "local-authenticated",
     appOrigin: canonicalizeLoopbackOrigin(input.appOrigin).origin,
     supabaseOrigin: canonicalizeLoopbackOrigin(input.supabaseOrigin).origin,
-    publicBuildAdapter: null,
-    knownHostedSupabaseOrigins: normalizeKnownHostedOrigins(
-      input.knownHostedSupabaseOrigins,
-    ),
+    knownHostedSupabaseOrigins: normalizeKnownHostedOrigins(input.knownHostedSupabaseOrigins),
   });
 }
 
@@ -505,8 +433,7 @@ export function loadSafetyContractFromEnvironment(
   environment: NodeJS.ProcessEnv,
 ): VisualSafetyContract {
   const mode = environment[VISUAL_SAFETY_ENV.mode];
-  const appOrigin =
-    environment[VISUAL_SAFETY_ENV.appOrigin] ?? environment.BASE_URL;
+  const appOrigin = environment[VISUAL_SAFETY_ENV.appOrigin] ?? environment.BASE_URL;
 
   if (!appOrigin) fail("VS_ENV_MISSING", "environment.app-origin");
 
@@ -517,18 +444,8 @@ export function loadSafetyContractFromEnvironment(
       }
     }
 
-    const adapterOrigin =
-      environment[VISUAL_SAFETY_ENV.publicBuildSupabaseOrigin];
     return createPublicSafetyContract({
       appOrigin,
-      publicBuildAdapter: adapterOrigin
-        ? {
-            id:
-              environment[VISUAL_SAFETY_ENV.publicBuildAdapterId] ??
-              "loopback-placeholder-v1",
-            supabaseOrigin: adapterOrigin,
-          }
-        : null,
     });
   }
 
@@ -567,14 +484,8 @@ function safelyDecodedPathnames(pathname: string): readonly string[] {
   return paths;
 }
 
-function pathUsesSupabaseService(
-  pathname: string,
-  transport: "http" | "websocket",
-): boolean {
-  const prefixes =
-    transport === "websocket"
-      ? ["/realtime/v1"]
-      : SUPABASE_SERVICE_PREFIXES;
+function pathUsesSupabaseService(pathname: string, transport: "http" | "websocket"): boolean {
+  const prefixes = transport === "websocket" ? ["/realtime/v1"] : SUPABASE_SERVICE_PREFIXES;
 
   return safelyDecodedPathnames(pathname).some((candidate) =>
     prefixes.some(
@@ -598,8 +509,7 @@ export function classifyForbiddenEgress(
     return Object.freeze({ transport, category: "invalid-url" });
   }
 
-  const expectedProtocols =
-    transport === "websocket" ? ["ws:", "wss:"] : ["http:", "https:"];
+  const expectedProtocols = transport === "websocket" ? ["ws:", "wss:"] : ["http:", "https:"];
   if (!expectedProtocols.includes(parsed.protocol)) {
     return Object.freeze({ transport, category: "invalid-url" });
   }
@@ -618,9 +528,7 @@ export function classifyForbiddenEgress(
         ? parsed.origin.replace(/^wss:/u, "https:")
         : parsed.origin;
 
-  if (
-    contract?.knownHostedSupabaseOrigins.includes(httpEquivalentOrigin)
-  ) {
+  if (contract?.knownHostedSupabaseOrigins.includes(httpEquivalentOrigin)) {
     return Object.freeze({
       transport,
       category: "known-hosted-supabase-origin",
@@ -649,9 +557,7 @@ export function createEgressAudit(): EgressAudit {
     },
     summary(): EgressAuditSummary {
       const categories = Object.fromEntries(
-        [...counts.entries()].sort(([left], [right]) =>
-          left.localeCompare(right),
-        ),
+        [...counts.entries()].sort(([left], [right]) => left.localeCompare(right)),
       );
       return Object.freeze({
         total: [...counts.values()].reduce((sum, count) => sum + count, 0),
@@ -683,10 +589,7 @@ function isNonLoopbackNetworkTarget(rawUrl: string): boolean {
 function isExpectedTurnstileScriptRequest(route: Route): boolean {
   const request = route.request();
   // The runtime method check keeps test doubles fail-closed as well.
-  if (
-    typeof request.resourceType !== "function" ||
-    request.resourceType() !== "script"
-  ) {
+  if (typeof request.resourceType !== "function" || request.resourceType() !== "script") {
     return false;
   }
 
@@ -731,11 +634,7 @@ export async function installBrowserEgressGuards(
   }
 
   await context.route("**/*", async (route) => {
-    const violation = classifyForbiddenEgress(
-      route.request().url(),
-      "http",
-      contract,
-    );
+    const violation = classifyForbiddenEgress(route.request().url(), "http", contract);
     if (violation) {
       audit.record(violation);
       await route.abort("blockedbyclient");
@@ -765,11 +664,7 @@ export async function installBrowserEgressGuards(
   });
 
   await context.routeWebSocket(/.*/u, async (webSocketRoute) => {
-    const violation = classifyForbiddenEgress(
-      webSocketRoute.url(),
-      "websocket",
-      contract,
-    );
+    const violation = classifyForbiddenEgress(webSocketRoute.url(), "websocket", contract);
     if (violation) {
       audit.record(violation);
       await webSocketRoute.close({ code: 1008, reason: "visual safety" });
@@ -870,10 +765,7 @@ export function createGuardedFetch(options: {
     let redirectCount = 0;
 
     while (true) {
-      const parsedTarget = validateAllowedFetchTarget(
-        currentUrl,
-        allowedOrigin,
-      );
+      const parsedTarget = validateAllowedFetchTarget(currentUrl, allowedOrigin);
       const redirectIdentity = parsedTarget.href;
       if (visited.has(redirectIdentity)) {
         fail("VS_FETCH_REDIRECT", "fetch.redirect-loop");
@@ -918,8 +810,7 @@ export function createGuardedFetch(options: {
 
       if (
         response.status === 303 ||
-        ((response.status === 301 || response.status === 302) &&
-          method === "POST")
+        ((response.status === 301 || response.status === 302) && method === "POST")
       ) {
         method = "GET";
         body = undefined;
@@ -932,19 +823,13 @@ export function createGuardedFetch(options: {
   };
 }
 
-function websocketOriginFor(
-  httpOrigin: CanonicalLoopbackOrigin,
-): string {
-  return httpOrigin.origin.replace(
-    /^http(s?):/u,
-    (_match, secure: string) => (secure ? "wss:" : "ws:"),
+function websocketOriginFor(httpOrigin: CanonicalLoopbackOrigin): string {
+  return httpOrigin.origin.replace(/^http(s?):/u, (_match, secure: string) =>
+    secure ? "wss:" : "ws:",
   );
 }
 
-function validateNodeWebSocketTarget(
-  address: string | URL,
-  allowedWebSocketOrigin: string,
-): void {
+function validateNodeWebSocketTarget(address: string | URL, allowedWebSocketOrigin: string): void {
   let target: URL;
   try {
     target = new URL(address);
@@ -1017,8 +902,7 @@ export async function safeNextBuildPath(
   const lexicalCandidate = path.resolve(proposedPath);
   if (
     path.basename(lexicalCandidate) !== ".next" ||
-    comparablePath(path.dirname(lexicalCandidate)) !==
-      comparablePath(lexicalRoot)
+    comparablePath(path.dirname(lexicalCandidate)) !== comparablePath(lexicalRoot)
   ) {
     fail("VS_NEXT_PATH_UNSAFE", "next-path.lexical");
   }
@@ -1063,18 +947,12 @@ function assertSafeIdentifier(value: string, category: string): void {
 }
 
 function assertBuildInputIdentifier(value: string): void {
-  if (
-    !/^(?:assets:[0-9a-f]{64}|local-emulator-v[1-9][0-9]*|loopback-placeholder-v[1-9][0-9]*)$/u.test(
-      value,
-    )
-  ) {
+  if (!/^(?:assets:[0-9a-f]{64}|local-emulator-v[1-9][0-9]*)$/u.test(value)) {
     fail("VS_PROVENANCE_INVALID", "provenance.input-id");
   }
 }
 
-function provenancePayload(
-  provenance: Omit<BuildProvenance, "fingerprint">,
-): string {
+function provenancePayload(provenance: Omit<BuildProvenance, "fingerprint">): string {
   return JSON.stringify({
     schemaVersion: provenance.schemaVersion,
     mode: provenance.mode,
@@ -1087,17 +965,11 @@ function provenancePayload(
   });
 }
 
-function calculateProvenanceFingerprint(
-  provenance: Omit<BuildProvenance, "fingerprint">,
-): string {
-  return createHash("sha256")
-    .update(provenancePayload(provenance), "utf8")
-    .digest("hex");
+function calculateProvenanceFingerprint(provenance: Omit<BuildProvenance, "fingerprint">): string {
+  return createHash("sha256").update(provenancePayload(provenance), "utf8").digest("hex");
 }
 
-export function createBuildProvenance(
-  input: BuildProvenanceInput,
-): BuildProvenance {
+export function createBuildProvenance(input: BuildProvenanceInput): BuildProvenance {
   const schemaVersion = input.schemaVersion ?? VISUAL_SAFETY_SCHEMA_VERSION;
   assertSafeIdentifier(schemaVersion, "provenance.schema");
   if (!/^tryvit-visual-safety\/v[1-9][0-9]*$/u.test(schemaVersion)) {
@@ -1117,11 +989,8 @@ export function createBuildProvenance(
     schemaVersion,
     mode: input.contract.mode,
     appOrigin: input.contract.appOrigin,
-    supabaseOrigin:
-      input.contract.supabaseOrigin ??
-      input.contract.publicBuildAdapter?.supabaseOrigin ??
-      "none",
-    publicBuildAdapterId: input.contract.publicBuildAdapter?.id ?? "none",
+    supabaseOrigin: input.contract.supabaseOrigin ?? "none",
+    publicBuildAdapterId: "none",
     sourceGitSha: input.sourceGitSha,
     buildId: input.buildId,
     buildInputIds: Object.freeze(buildInputIds),
@@ -1157,8 +1026,7 @@ export function verifyBuildProvenance(
       buildInputIds: actual.buildInputIds,
     } satisfies Omit<BuildProvenance, "fingerprint">;
     recomputedActual = calculateProvenanceFingerprint(actualPayload);
-    expectedProvenance =
-      "fingerprint" in expected ? expected : createBuildProvenance(expected);
+    expectedProvenance = "fingerprint" in expected ? expected : createBuildProvenance(expected);
     const expectedPayload = {
       schemaVersion: expectedProvenance.schemaVersion,
       mode: expectedProvenance.mode,
@@ -1177,10 +1045,7 @@ export function verifyBuildProvenance(
 
   if (
     !fingerprintMatches(actual.fingerprint, recomputedActual) ||
-    !fingerprintMatches(
-      expectedProvenance.fingerprint,
-      recomputedExpected,
-    ) ||
+    !fingerprintMatches(expectedProvenance.fingerprint, recomputedExpected) ||
     !fingerprintMatches(recomputedActual, recomputedExpected)
   ) {
     fail("VS_PROVENANCE_MISMATCH", "provenance.fingerprint");
@@ -1263,14 +1128,10 @@ function sourceMapContainsOnlyReviewedSdkDocumentation(
     if (typeof source !== "string" || typeof sourceContent !== "string") {
       continue;
     }
-    const matches = sourceContent
-      .toLowerCase()
-      .match(CONCRETE_HOSTED_ORIGIN_PATTERN) ?? [];
+    const matches = sourceContent.toLowerCase().match(CONCRETE_HOSTED_ORIGIN_PATTERN) ?? [];
     if (matches.length === 0) continue;
     const normalizedSource = source.toLowerCase().replaceAll("%40", "@");
-    const directSupabaseSource = normalizedSource.includes(
-      "node_modules/@supabase/",
-    );
+    const directSupabaseSource = normalizedSource.includes("node_modules/@supabase/");
     const bundledTracingSource =
       /(?:^|\/)node_modules\/shared\/tracing\/dist\/(?:main|module)\/validate\.js$/u.test(
         normalizedSource,
@@ -1286,8 +1147,7 @@ function sourceMapContainsOnlyReviewedSdkDocumentation(
   }
   const rawMatches = contents.toLowerCase().match(CONCRETE_HOSTED_ORIGIN_PATTERN) ?? [];
   return (
-    rawMatches.length > 0 &&
-    rawMatches.sort().join("\0") === reviewedMatches.sort().join("\0")
+    rawMatches.length > 0 && rawMatches.sort().join("\0") === reviewedMatches.sort().join("\0")
   );
 }
 
@@ -1321,26 +1181,18 @@ async function loadReviewedBundledSdkSourceDigests(
         continue;
       }
       if (
-        !/(?:^|\/)shared\/tracing\/dist\/(?:main|module)\/validate\.js$/u.test(
-          source.toLowerCase(),
-        )
+        !/(?:^|\/)shared\/tracing\/dist\/(?:main|module)\/validate\.js$/u.test(source.toLowerCase())
       ) {
         continue;
       }
-      const matches = sourceContent
-        .toLowerCase()
-        .match(CONCRETE_HOSTED_ORIGIN_PATTERN) ?? [];
+      const matches = sourceContent.toLowerCase().match(CONCRETE_HOSTED_ORIGIN_PATTERN) ?? [];
       if (
         matches.length === 0 ||
-        matches.some(
-          (origin) => !REVIEWED_SDK_DOCUMENTATION_ORIGINS.has(origin),
-        )
+        matches.some((origin) => !REVIEWED_SDK_DOCUMENTATION_ORIGINS.has(origin))
       ) {
         fail("VS_ASSET_SCAN_FAILED", "asset-scan.sdk-provenance");
       }
-      digests.add(
-        createHash("sha256").update(sourceContent, "utf8").digest("hex"),
-      );
+      digests.add(createHash("sha256").update(sourceContent, "utf8").digest("hex"));
     }
   }
   return digests;
@@ -1350,21 +1202,16 @@ export async function scanGeneratedAssets(
   nextBuildPath: string,
   options: GeneratedAssetScanOptions = {},
 ): Promise<GeneratedAssetScanResult> {
-  const verifiedNextPath = await safeNextBuildPath(
-    path.dirname(nextBuildPath),
-    nextBuildPath,
-  );
-  const assetRoots = [
-    path.join(verifiedNextPath, "static"),
-    path.join(verifiedNextPath, "server"),
-  ];
+  const verifiedNextPath = await safeNextBuildPath(path.dirname(nextBuildPath), nextBuildPath);
+  const assetRoots = [path.join(verifiedNextPath, "static"), path.join(verifiedNextPath, "server")];
   const forbiddenNeedles = [
     ...DEFAULT_HOSTED_PROJECT_REFERENCES,
     ...(options.knownHostedProjectReferences ?? []),
     ...hostedOriginNeedles(options.forbiddenHostedOrigins ?? []),
   ].map((value) => value.toLowerCase());
-  const reviewedBundledSourceDigests =
-    await loadReviewedBundledSdkSourceDigests(path.dirname(verifiedNextPath));
+  const reviewedBundledSourceDigests = await loadReviewedBundledSdkSourceDigests(
+    path.dirname(verifiedNextPath),
+  );
 
   let filesScanned = 0;
   let bytesScanned = 0;
@@ -1379,8 +1226,7 @@ export async function scanGeneratedAssets(
       filesScanned += 1;
       bytesScanned += contents.byteLength;
       const searchable = contents.toString("utf8").toLowerCase();
-      const containsConcreteHostedOrigin =
-        CONCRETE_HOSTED_ORIGIN_PATTERN.test(searchable);
+      const containsConcreteHostedOrigin = CONCRETE_HOSTED_ORIGIN_PATTERN.test(searchable);
       CONCRETE_HOSTED_ORIGIN_PATTERN.lastIndex = 0;
       const reviewedSdkSourceMap =
         path.extname(file).toLowerCase() === ".map" &&

@@ -1,15 +1,12 @@
 // ─── Public home / landing page (server component) ───────────────────────
 // SEO metadata + JSON-LD structured data.
-// Interactive sections live in LandingSections.tsx (client component).
+// Narrative sections render on the server; only the theme toggle is a client island.
 // Issue #698 — convert to server component with full SEO metadata
 
 import type { Metadata } from "next";
 
-import { Footer } from "@/components/layout/Footer";
-import { Header } from "@/components/layout/Header";
-import { getDeploymentReadiness } from "@/lib/deployment-readiness";
-
-import { LandingSections } from "./LandingSections";
+import { getServerLocale } from "@/lib/server-locale";
+import { HomePageContent } from "./HomePageContent";
 
 // ─── SEO metadata (merged with root layout defaults) ────────────────────────
 
@@ -27,53 +24,12 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "TryVit — Know What You Eat",
-    description:
-      "Compare food products, understand nutrition scores, and make healthier choices.",
+    description: "Compare food products, understand nutrition scores, and make healthier choices.",
     images: ["/opengraph-image"],
   },
 };
 
-// ─── Page ───────────────────────────────────────────────────────────────────
-
-export default function HomePage() {
-  const readiness = getDeploymentReadiness();
-  const dataAvailable = readiness.dataBackend === "available";
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "TryVit",
-    url: "https://tryvit.vercel.app",
-    description:
-      "Compare food products, understand nutrition scores, and make healthier choices.",
-    ...(dataAvailable
-      ? {
-          potentialAction: {
-            "@type": "SearchAction",
-            target: {
-              "@type": "EntryPoint",
-              urlTemplate:
-                "https://tryvit.vercel.app/app/search?q={search_term_string}",
-            },
-            "query-input": "required name=search_term_string",
-          },
-        }
-      : {}),
-  };
-
-  return (
-    <div className="flex min-h-screen flex-col">
-      <Header dataAvailable={dataAvailable} />
-
-      <main id="main-content" className="flex-1">
-        <LandingSections dataAvailable={dataAvailable} />
-      </main>
-
-      <Footer />
-
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-    </div>
-  );
+export default async function HomePage() {
+  const language = await getServerLocale();
+  return <HomePageContent language={language} />;
 }

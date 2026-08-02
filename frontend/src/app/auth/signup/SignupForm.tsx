@@ -16,7 +16,6 @@ import { useCallback, useState } from "react";
 
 export function SignupForm() {
   const router = useRouter();
-  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,32 +45,36 @@ export function SignupForm() {
 
     setLoading(true);
 
-    const verification = await verifyTurnstileToken(supabase, turnstileToken);
-    if (!verification.valid) {
-      setTurnstileToken(null);
+    try {
+      const supabase = createClient();
+      const verification = await verifyTurnstileToken(supabase, turnstileToken);
+      if (!verification.valid) {
+        setTurnstileToken(null);
+        showToast({ type: "error", messageKey: "auth.captchaFailed" });
+        return;
+      }
+
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${globalThis.location.origin}/auth/callback`,
+          captchaToken: turnstileToken,
+        },
+      });
+
+      if (error) {
+        showToast({ type: "error", message: error.message });
+        return;
+      }
+
+      showToast({ type: "success", messageKey: "auth.checkEmail" });
+      router.push("/auth/login?msg=check-email");
+    } catch {
+      showToast({ type: "error", messageKey: "auth.serviceUnavailable" });
+    } finally {
       setLoading(false);
-      showToast({ type: "error", messageKey: "auth.captchaFailed" });
-      return;
     }
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${globalThis.location.origin}/auth/callback`,
-        captchaToken: turnstileToken,
-      },
-    });
-
-    setLoading(false);
-
-    if (error) {
-      showToast({ type: "error", message: error.message });
-      return;
-    }
-
-    showToast({ type: "success", messageKey: "auth.checkEmail" });
-    router.push("/auth/login?msg=check-email");
   }
 
   return (
@@ -141,17 +144,9 @@ export function SignupForm() {
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-foreground-muted transition-colors hover:text-foreground-secondary"
-                aria-label={
-                  showPassword
-                    ? t("auth.hidePassword")
-                    : t("auth.showPassword")
-                }
+                aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             <p id="signup-password-help" className="mt-1.5 text-xs text-foreground-muted">
@@ -172,9 +167,7 @@ export function SignupForm() {
               className="mt-2.5 text-center text-xs text-foreground-muted"
               aria-live="polite"
             >
-              {turnstileToken
-                ? t("auth.captchaVerified")
-                : t("auth.captchaPrompt")}
+              {turnstileToken ? t("auth.captchaVerified") : t("auth.captchaPrompt")}
             </p>
           </div>
 

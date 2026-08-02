@@ -70,7 +70,6 @@ export const violationMarkerPath = path.join(
 
 const APP_PORT = 3000;
 const APP_ORIGIN = `http://127.0.0.1:${APP_PORT}`;
-const PUBLIC_ANON_PLACEHOLDER = "tryvit-local-visual-safety-placeholder";
 const REVIEWED_EXTERNAL_CONNECT_HOSTNAMES = Object.freeze([
   // Required while Next prerenders the existing Open Graph image routes.
   // Removing this build-time font fetch belongs to Phase 5A.0c.
@@ -108,8 +107,7 @@ const activeOwnedCleanups = new Set<() => Promise<void>>();
 
 function ownedLoopbackOrigins(contract: SafetyContract): readonly string[] {
   const origins = new Set<string>([contract.appOrigin]);
-  const supabaseOrigin = contract.supabaseOrigin ?? contract.publicBuildAdapter?.supabaseOrigin;
-  if (supabaseOrigin) origins.add(supabaseOrigin);
+  if (contract.supabaseOrigin) origins.add(contract.supabaseOrigin);
   return [...origins];
 }
 
@@ -307,20 +305,23 @@ function discoverLocalFixtureCredentials(contract: SafetyContract): LocalFixture
 export function sanitizedChildEnvironment(
   source: NodeJS.ProcessEnv,
   mode: SafetyMode,
-  buildSupabaseOrigin: string,
+  localSupabaseOrigin?: string,
   localCredentials?: LocalFixtureCredentials,
 ): NodeJS.ProcessEnv {
   const result = nonSensitiveEnvironment(source);
   // Prevent Next's dotenv loader from restoring repository-local values.
   for (const name of dotenvVariableNames()) result[name] = "";
+  delete result.VISUAL_SAFETY_BUILD_SUPABASE_ORIGIN;
+  delete result.VISUAL_SAFETY_BUILD_ADAPTER_ID;
 
   result.NEXT_TELEMETRY_DISABLED = "1";
   result.VISUAL_SAFETY_MODE = mode;
   result.BASE_URL = APP_ORIGIN;
   result.NEXT_PUBLIC_APP_URL = APP_ORIGIN;
-  result.NEXT_PUBLIC_SUPABASE_URL = buildSupabaseOrigin;
+  result.NEXT_PUBLIC_SUPABASE_URL =
+    mode === "local-authenticated" ? (localSupabaseOrigin ?? "") : "";
   result.NEXT_PUBLIC_SUPABASE_ANON_KEY =
-    mode === "local-authenticated" ? (localCredentials?.anonKey ?? "") : PUBLIC_ANON_PLACEHOLDER;
+    mode === "local-authenticated" ? (localCredentials?.anonKey ?? "") : "";
   result.SUPABASE_SERVICE_ROLE_KEY = "";
   result.QA_TEST_EMAIL = "";
   result.QA_TEST_PASSWORD = "";
@@ -548,7 +549,7 @@ export async function writeBuildProvenance(
       buildId: nextBuildId,
       buildInputIds: [
         `assets:${assetDigest}`,
-        contract.mode === "public" ? "loopback-placeholder-v1" : "local-emulator-v1",
+        ...(contract.mode === "local-authenticated" ? ["local-emulator-v1"] : []),
       ],
     }),
     assetDigest,
@@ -581,7 +582,7 @@ export async function verifyBuildProvenance(
     buildId,
     buildInputIds: [
       `assets:${assetDigest}`,
-      contract.mode === "public" ? "loopback-placeholder-v1" : "local-emulator-v1",
+      ...(contract.mode === "local-authenticated" ? ["local-emulator-v1"] : []),
     ],
   });
   try {
@@ -780,18 +781,12 @@ export function runChild(
   });
 }
 
-async function buildSupabaseOrigin(contract: SafetyContract): Promise<string> {
-  if (contract.mode === "local-authenticated") {
-    if (!contract.supabaseOrigin) {
-      throw safetyError("VS_LOCAL_ORIGIN", "local-supabase-origin-missing");
-    }
-    return contract.supabaseOrigin;
+function localSupabaseOrigin(contract: SafetyContract): string | undefined {
+  if (contract.mode === "public") return undefined;
+  if (!contract.supabaseOrigin) {
+    throw safetyError("VS_LOCAL_ORIGIN", "local-supabase-origin-missing");
   }
-  if (contract.publicBuildAdapter) {
-    return contract.publicBuildAdapter.supabaseOrigin;
-  }
-  return (await discoverLocalSupabaseOrigin(path.join(repositoryRoot, "supabase", "config.toml")))
-    .origin;
+  return contract.supabaseOrigin;
 }
 
 /**
@@ -829,7 +824,7 @@ export async function cleanBuild(
     if (existsSync(target)) rmSync(target, { recursive: true, force: false });
     resetGeneratedServiceWorker();
 
-    const localOrigin = await buildSupabaseOrigin(contract);
+    const localOrigin = localSupabaseOrigin(contract);
     const env = sanitizedChildEnvironment(
       process.env,
       contract.mode,
@@ -974,7 +969,7 @@ export async function startOwnedServer(
   if (!proxyOrigin) {
     throw safetyError("VS_SERVER_PROXY", "owned-egress-proxy-required");
   }
-  const localOrigin = await buildSupabaseOrigin(contract);
+  const localOrigin = localSupabaseOrigin(contract);
   await verifyBuildProvenance(contract);
   await assertPortAvailable();
   const env = sanitizedChildEnvironment(process.env, contract.mode, localOrigin, localCredentials);
@@ -1210,10 +1205,6 @@ async function runPlaywright(mode: SafetyMode, args: string[]): Promise<number> 
   let contract: SafetyContract;
   if (mode === "public") {
     delete sanitized.VISUAL_SAFETY_SUPABASE_ORIGIN;
-    sanitized.VISUAL_SAFETY_BUILD_SUPABASE_ORIGIN = (
-      await discoverLocalSupabaseOrigin(path.join(repositoryRoot, "supabase", "config.toml"))
-    ).origin;
-    sanitized.VISUAL_SAFETY_BUILD_ADAPTER_ID = "loopback-placeholder-v1";
     contract = loadSafetyContractFromEnvironment(sanitized);
   } else {
     const localOrigin = (
@@ -1527,11 +1518,7 @@ async function runLighthouse(contract: SafetyContract, requested: string[]): Pro
         mode: 0o600,
       });
       const lighthouseCli = require.resolve("@lhci/cli/src/cli.js");
-      const env = sanitizedChildEnvironment(
-        process.env,
-        "public",
-        await buildSupabaseOrigin(contract),
-      );
+      const env = sanitizedChildEnvironment(process.env, "public");
       env.VISUAL_SAFETY_PROXY = proxy.origin;
       env.VISUAL_SAFETY_VIOLATION_MARKER = violationMarkerPath;
       // LHCI's platform finder does not discover Playwright's managed browser
@@ -1602,11 +1589,6 @@ async function main(): Promise<number> {
     commandEnvironment.VISUAL_SAFETY_SUPABASE_ORIGIN = (
       await discoverLocalSupabaseOrigin(path.join(repositoryRoot, "supabase", "config.toml"))
     ).origin;
-  } else {
-    commandEnvironment.VISUAL_SAFETY_BUILD_SUPABASE_ORIGIN = (
-      await discoverLocalSupabaseOrigin(path.join(repositoryRoot, "supabase", "config.toml"))
-    ).origin;
-    commandEnvironment.VISUAL_SAFETY_BUILD_ADAPTER_ID = "loopback-placeholder-v1";
   }
   const contract = loadSafetyContractFromEnvironment(commandEnvironment);
   if (command === "preflight") {

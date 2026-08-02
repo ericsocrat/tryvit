@@ -78,10 +78,7 @@ describe("list opengraph-image helpers", () => {
     });
 
     it("rounds to nearest integer", () => {
-      const items = [
-        { unhealthiness_score: 10 },
-        { unhealthiness_score: 11 },
-      ];
+      const items = [{ unhealthiness_score: 10 }, { unhealthiness_score: 11 }];
       expect(averageScore(items)).toBe(11); // (10+11)/2 = 10.5 → 11
     });
   });
@@ -124,13 +121,11 @@ describe("list opengraph-image helpers", () => {
     });
 
     it("returns a fallback image when public list data is unavailable", async () => {
-      const fetchMock = vi
-        .fn()
-        .mockResolvedValueOnce({
-          ok: true,
-          arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
-        })
-        .mockRejectedValueOnce(new Error("local public adapter unavailable"));
+      vi.stubEnv("TRYVIT_DATA_BACKEND_MODE", "demo");
+      const fetchMock = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
+      });
       vi.stubGlobal("fetch", fetchMock);
 
       const mod = await import("./opengraph-image");
@@ -139,7 +134,8 @@ describe("list opengraph-image helpers", () => {
       });
 
       expect(response).toBeInstanceOf(Response);
-      expect(fetchMock.mock.calls[1]?.[0]).toContain("api_get_shared_list");
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock.mock.calls.flat().join(" ")).not.toContain("api_get_shared_list");
     });
   });
 });

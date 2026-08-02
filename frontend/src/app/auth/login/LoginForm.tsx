@@ -24,7 +24,6 @@ function classifyAuthError(message: string): string {
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,20 +44,25 @@ export function LoginForm() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    setLoading(false);
+      if (error) {
+        showToast({ type: "error", messageKey: classifyAuthError(error.message) });
+        return;
+      }
 
-    if (error) {
-      showToast({ type: "error", messageKey: classifyAuthError(error.message) });
-      return;
+      router.push(redirect);
+      router.refresh();
+    } catch {
+      showToast({ type: "error", messageKey: "auth.serviceUnavailable" });
+    } finally {
+      setLoading(false);
     }
-
-    router.push(redirect);
-    router.refresh();
   }
 
   return (
@@ -141,17 +145,9 @@ export function LoginForm() {
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-foreground-muted transition-colors hover:text-foreground-secondary"
-                aria-label={
-                  showPassword
-                    ? t("auth.hidePassword")
-                    : t("auth.showPassword")
-                }
+                aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             <p id="login-password-help" className="mt-1.5 text-xs text-foreground-muted">
@@ -173,7 +169,7 @@ export function LoginForm() {
         </form>
 
         <p className="mt-6 text-center text-sm text-foreground-secondary">
-          {t("auth.noAccount")} {" "}
+          {t("auth.noAccount")}{" "}
           <Link
             href="/auth/signup"
             className="rounded-sm font-semibold text-brand underline-offset-4 transition-colors hover:text-brand-hover hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"

@@ -10,7 +10,6 @@ import Link from "next/link";
 import { useState } from "react";
 
 export function ForgotPasswordForm() {
-  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -20,19 +19,24 @@ export function ForgotPasswordForm() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${globalThis.location.origin}/auth/callback?type=recovery`,
-    });
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${globalThis.location.origin}/auth/callback?type=recovery`,
+      });
 
-    if (error) {
+      if (error) {
+        showToast({ type: "error", messageKey: "auth.resetEmailFailed" });
+        return;
+      }
+
+      setSent(true);
+      showToast({ type: "success", messageKey: "auth.resetEmailSent" });
+    } catch {
+      showToast({ type: "error", messageKey: "auth.serviceUnavailable" });
+    } finally {
       setLoading(false);
-      showToast({ type: "error", messageKey: "auth.resetEmailFailed" });
-      return;
     }
-
-    setLoading(false);
-    setSent(true);
-    showToast({ type: "success", messageKey: "auth.resetEmailSent" });
   }
 
   return (
@@ -85,9 +89,7 @@ export function ForgotPasswordForm() {
             </div>
 
             <Button type="submit" disabled={loading} fullWidth>
-              {loading
-                ? t("auth.sendingResetLink")
-                : t("auth.sendResetLink")}
+              {loading ? t("auth.sendingResetLink") : t("auth.sendResetLink")}
             </Button>
 
             <p className="text-center text-sm text-foreground-secondary">

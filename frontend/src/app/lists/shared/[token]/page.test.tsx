@@ -1,50 +1,33 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import SharedListPage from "./page";
 
-// ─── Mocks ──────────────────────────────────────────────────────────────────
+const { mockReadPublicSharedList } = vi.hoisted(() => ({
+  mockReadPublicSharedList: vi.fn(),
+}));
 
-vi.mock("next/navigation", () => ({
-  useParams: () => ({ token: "abc123" }),
+vi.mock("@/lib/public-shares", () => ({
+  readPublicSharedList: mockReadPublicSharedList,
+}));
+
+vi.mock("@/lib/server-locale", () => ({
+  getServerLocale: () => Promise.resolve("en"),
 }));
 
 vi.mock("next/link", () => ({
-  default: ({
-    href,
-    children,
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => <a href={href}>{children}</a>,
+  default: ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
-
-const mockUseSharedList = vi.fn();
-vi.mock("@/hooks/use-lists", () => ({
-  useSharedList: (...args: unknown[]) => mockUseSharedList(...args),
-}));
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [client] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: { queries: { retry: false, staleTime: 0 } },
-      }),
-  );
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
-}
-
-function createWrapper() {
-  return Wrapper;
-}
 
 const mockListData = {
+  api_version: "1",
   list_name: "My Favorites",
   description: "Best foods I found",
+  list_type: "custom",
   total_count: 2,
+  limit: 50,
+  offset: 0,
   items: [
     {
       product_id: 1,
@@ -65,135 +48,67 @@ const mockListData = {
   ],
 };
 
+async function renderPage(token = "abc123") {
+  render(await SharedListPage({ params: Promise.resolve({ token }) }));
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
 describe("SharedListPage", () => {
-  it("shows loading spinner while loading", () => {
-    mockUseSharedList.mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      error: null,
-    });
+  it("degrades without a backend-dependent provider", async () => {
+    mockReadPublicSharedList.mockResolvedValue({ status: "invalid" });
+    await renderPage();
 
-    render(<SharedListPage />, { wrapper: createWrapper() });
-    // Should render without error during loading
-    expect(document.querySelector(".min-h-screen")).toBeTruthy();
-  });
-
-  it("shows not found message on error", () => {
-    mockUseSharedList.mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      error: new Error("Not found"),
-    });
-
-    render(<SharedListPage />, { wrapper: createWrapper() });
     expect(screen.getByText("List not found")).toBeInTheDocument();
+    expect(screen.getByText("Go home").closest("a")).toHaveAttribute("href", "/");
   });
 
-  it("shows not found when data is null", () => {
-    mockUseSharedList.mockReturnValue({
-      data: null,
-      isLoading: false,
-      error: null,
-    });
+  it("describes unavailable shared data truthfully", async () => {
+    mockReadPublicSharedList.mockResolvedValue({ status: "unavailable" });
+    await renderPage();
 
-    render(<SharedListPage />, { wrapper: createWrapper() });
-    expect(screen.getByText("List not found")).toBeInTheDocument();
+    expect(screen.getByText("Shared data is temporarily unavailable")).toBeInTheDocument();
+    expect(screen.queryByText("List not found")).not.toBeInTheDocument();
   });
 
-  it("shows go home link on error", () => {
-    mockUseSharedList.mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      error: new Error("Not found"),
-    });
+  it("renders list details and product count", async () => {
+    mockReadPublicSharedList.mockResolvedValue({ status: "ok", data: mockListData });
+    await renderPage();
 
-    render(<SharedListPage />, { wrapper: createWrapper() });
-    expect(screen.getByText("Go home").closest("a")).toHaveAttribute(
-      "href",
-      "/",
-    );
-  });
-
-  it("renders list name and description", () => {
-    mockUseSharedList.mockReturnValue({
-      data: mockListData,
-      isLoading: false,
-      error: null,
-    });
-
-    render(<SharedListPage />, { wrapper: createWrapper() });
     expect(screen.getByText("My Favorites")).toBeInTheDocument();
     expect(screen.getByText("Best foods I found")).toBeInTheDocument();
-  });
-
-  it("renders product count", () => {
-    mockUseSharedList.mockReturnValue({
-      data: mockListData,
-      isLoading: false,
-      error: null,
-    });
-
-    render(<SharedListPage />, { wrapper: createWrapper() });
     expect(screen.getByText("2 products")).toBeInTheDocument();
   });
 
-  it("renders singular product count", () => {
-    mockUseSharedList.mockReturnValue({
-      data: { ...mockListData, total_count: 1, items: [mockListData.items[0]] },
-      isLoading: false,
-      error: null,
-    });
+  it("renders products and brands", async () => {
+    mockReadPublicSharedList.mockResolvedValue({ status: "ok", data: mockListData });
+    await renderPage();
 
-    render(<SharedListPage />, { wrapper: createWrapper() });
-    expect(screen.getByText("1 product")).toBeInTheDocument();
-  });
-
-  it("renders product names and brands", () => {
-    mockUseSharedList.mockReturnValue({
-      data: mockListData,
-      isLoading: false,
-      error: null,
-    });
-
-    render(<SharedListPage />, { wrapper: createWrapper() });
     expect(screen.getByText("Chips Original")).toBeInTheDocument();
     expect(screen.getByText("Green Juice")).toBeInTheDocument();
+    expect(screen.getByText(/Lay's/)).toBeInTheDocument();
   });
 
-  it("renders empty list message", () => {
-    mockUseSharedList.mockReturnValue({
+  it("renders empty lists truthfully", async () => {
+    mockReadPublicSharedList.mockResolvedValue({
+      status: "ok",
       data: { ...mockListData, items: [] },
-      isLoading: false,
-      error: null,
     });
-
-    render(<SharedListPage />, { wrapper: createWrapper() });
+    await renderPage();
     expect(screen.getByText("This list is empty.")).toBeInTheDocument();
   });
 
-  it("renders shared list badge", () => {
-    mockUseSharedList.mockReturnValue({
-      data: mockListData,
-      isLoading: false,
-      error: null,
-    });
-
-    render(<SharedListPage />, { wrapper: createWrapper() });
+  it("renders the shared-list label", async () => {
+    mockReadPublicSharedList.mockResolvedValue({ status: "ok", data: mockListData });
+    await renderPage();
     expect(screen.getByText("Shared list")).toBeInTheDocument();
   });
 
-  it("passes token to useSharedList", () => {
-    mockUseSharedList.mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      error: null,
-    });
-
-    render(<SharedListPage />, { wrapper: createWrapper() });
-    expect(mockUseSharedList).toHaveBeenCalledWith("abc123");
+  it("passes the route token to the guarded server read", async () => {
+    mockReadPublicSharedList.mockResolvedValue({ status: "invalid" });
+    await renderPage("safe-token");
+    expect(mockReadPublicSharedList).toHaveBeenCalledWith("safe-token");
   });
 });

@@ -16,13 +16,7 @@ import { useState } from "react";
 
 function GoogleIcon({ className }: { readonly className?: string }) {
   return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
+    <svg className={className} width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
       <path
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
         fill="#4285F4"
@@ -64,28 +58,31 @@ type SocialProvider = "google" | "apple";
 
 export function SocialLoginButtons() {
   const { t } = useTranslation();
-  const supabase = createClient();
-  const [loadingProvider, setLoadingProvider] = useState<SocialProvider | null>(
-    null,
-  );
+  const [loadingProvider, setLoadingProvider] = useState<SocialProvider | null>(null);
 
   async function handleSocialLogin(provider: SocialProvider) {
     setLoadingProvider(provider);
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${globalThis.location.origin}/auth/callback`,
-      },
-    });
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${globalThis.location.origin}/auth/callback`,
+        },
+      });
 
-    if (error) {
+      if (!error) return;
+
       setLoadingProvider(null);
       const providerName = provider === "google" ? "Google" : "Apple";
       showToast({
         type: "error",
         message: t("auth.socialLoginError", { provider: providerName }),
       });
+    } catch {
+      setLoadingProvider(null);
+      showToast({ type: "error", messageKey: "auth.serviceUnavailable" });
     }
     // On success, Supabase redirects to the provider — no further action needed.
   }
@@ -101,9 +98,7 @@ export function SocialLoginButtons() {
           className="flex w-full items-center justify-center gap-3 rounded-xl border border-default bg-surface/95 px-4 py-2.5 text-sm font-medium text-foreground shadow-[0_10px_28px_rgba(15,23,42,0.08)] transition-colors hover:bg-surface-subtle focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50"
         >
           <GoogleIcon />
-          {loadingProvider === "google"
-            ? t("auth.redirecting")
-            : t("auth.continueWithGoogle")}
+          {loadingProvider === "google" ? t("auth.redirecting") : t("auth.continueWithGoogle")}
         </button>
 
         <button
@@ -113,9 +108,7 @@ export function SocialLoginButtons() {
           className="flex w-full items-center justify-center gap-3 rounded-xl border border-foreground bg-foreground px-4 py-2.5 text-sm font-medium text-foreground-inverse shadow-[0_10px_28px_rgba(2,6,23,0.18)] transition-opacity hover:opacity-90 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50"
         >
           <AppleIcon className="text-foreground-inverse" />
-          {loadingProvider === "apple"
-            ? t("auth.redirecting")
-            : t("auth.continueWithApple")}
+          {loadingProvider === "apple" ? t("auth.redirecting") : t("auth.continueWithApple")}
         </button>
       </div>
 
