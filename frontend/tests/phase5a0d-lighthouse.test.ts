@@ -9,6 +9,7 @@ import { LIGHTHOUSE_ROUTES } from "../tooling/phase5a0d-contract";
 import {
   LIGHTHOUSE_SOURCE_CONFIG_SHA256,
   aggregateLighthouseDirectory,
+  canonicalLighthouseConfigSha256,
   compileLighthouseReport,
   computeLighthouseMetadataChecksum,
   expectedLighthouseEffectiveSettings,
@@ -21,6 +22,34 @@ import {
 
 const temporaryDirectories: string[] = [];
 const CHROMIUM_VERSION = "151.0.7922.34";
+
+describe("Lighthouse source configuration identity", () => {
+  it.each(["mobile", "desktop"] as const)(
+    "attests unchanged %s configuration across LF and CRLF checkouts",
+    (profile) => {
+      const source = readFileSync(path.join(process.cwd(), `lighthouserc.${profile}.js`), "utf8");
+      const lf = source.replaceAll("\r\n", "\n").replaceAll("\r", "\n");
+      const crlf = lf.replaceAll("\n", "\r\n");
+
+      expect(canonicalLighthouseConfigSha256(lf)).toBe(LIGHTHOUSE_SOURCE_CONFIG_SHA256[profile]);
+      expect(canonicalLighthouseConfigSha256(Buffer.from(crlf, "utf8"))).toBe(
+        LIGHTHOUSE_SOURCE_CONFIG_SHA256[profile],
+      );
+    },
+  );
+
+  it("requires the guarded launcher to use canonical source checksums", () => {
+    const launcher = readFileSync(
+      path.join(process.cwd(), "e2e/scripts/visual-safety-cli.mts"),
+      "utf8",
+    );
+
+    expect(launcher).toContain("canonicalLighthouseConfigSha256(readFileSync(sourcePath))");
+    expect(launcher).not.toContain(
+      'createHash("sha256").update(readFileSync(sourcePath)).digest("hex")',
+    );
+  });
+});
 
 function routesFor(mode: LighthouseMode) {
   return LIGHTHOUSE_ROUTES.filter(

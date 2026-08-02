@@ -50,6 +50,8 @@ import {
   resolveFixturePath,
 } from "../../tooling/phase5a0d-contract.ts";
 // @ts-expect-error TS5097: executed with `node --experimental-strip-types`.
+import { canonicalLighthouseConfigSha256 } from "../../tooling/phase5a0d-lighthouse.ts";
+// @ts-expect-error TS5097: executed with `node --experimental-strip-types`.
 import { prepareVisualBaselineWriteTargets } from "../../tooling/phase5a0d-visual-baselines.ts";
 /* eslint-enable no-restricted-imports */
 
@@ -1885,7 +1887,7 @@ async function runLighthouse(
         routes: selectedRoutes,
         buildId: buildProvenance.contract.buildId,
         buildFingerprint: buildProvenance.contract.fingerprint,
-        sourceConfigSha256: createHash("sha256").update(readFileSync(sourcePath)).digest("hex"),
+        sourceConfigSha256: canonicalLighthouseConfigSha256(readFileSync(sourcePath)),
         runtime: {
           node: process.version,
           lighthouse: (require("lighthouse/package.json") as { version: string }).version,

@@ -27,6 +27,17 @@ export const LIGHTHOUSE_SOURCE_CONFIG_SHA256 = Object.freeze({
   desktop: "e2c2279410348292cb9744ad8cd12b75e2459a00a7eaba84f9ca36bb5db0ca9f",
 });
 
+/**
+ * The reviewed source-config checksums predate repository LF normalization and
+ * identify canonical CRLF text. Normalize only line endings so Linux and
+ * Windows attest the same unchanged configuration without weakening content
+ * integrity.
+ */
+export function canonicalLighthouseConfigSha256(source: Buffer | string): string {
+  const canonical = source.toString().replaceAll("\r\n", "\n").replaceAll("\r", "\n");
+  return createHash("sha256").update(canonical.replaceAll("\n", "\r\n"), "utf8").digest("hex");
+}
+
 const APP_ORIGIN = "http://127.0.0.1:3000";
 const CATEGORY_IDS: readonly LighthouseCategory[] = Object.freeze([
   "performance",
