@@ -25,6 +25,7 @@ import {
   createEgressAudit,
   createGuardedFetch,
   createGuardedWebSocketConstructor,
+  createLocalAuthenticatedSafetyContract,
   createPublicSafetyContract,
   discoverLocalSupabaseOrigin,
   installBrowserEgressGuards,
@@ -785,6 +786,88 @@ describe("browser guard installation with transport stubs", () => {
     expect(websocketRoute.connectToServer).not.toHaveBeenCalled();
     expect(audit.summary()).toEqual({ total: 0, categories: {} });
   });
+
+  it.each([
+    ["public", contract],
+    [
+      "local-authenticated",
+      createLocalAuthenticatedSafetyContract({
+        appOrigin: "http://localhost:3000",
+        supabaseOrigin: "http://127.0.0.1:55001",
+      }),
+    ],
+  ] as const)("locally fulfills only the exact Turnstile script in %s mode", async (_mode, safetyContract) => {
+    const mocked = mockContext();
+    const audit = createEgressAudit();
+    await installBrowserEgressGuards(mocked.context, safetyContract, audit);
+    const route = {
+      request: () => ({
+        url: () =>
+          "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit",
+        resourceType: () => "script",
+      }),
+      abort: vi.fn(async () => undefined),
+      continue: vi.fn(async () => undefined),
+      fulfill: vi.fn(async () => undefined),
+    } as unknown as Route;
+
+    await mocked.getHttpHandler()(route);
+
+    expect(route.fulfill).toHaveBeenCalledWith({
+      status: 200,
+      contentType: "application/javascript; charset=utf-8",
+      body: "/* TryVit visual-safety: Cloudflare Turnstile intentionally contained. */",
+    });
+    expect(route.abort).not.toHaveBeenCalled();
+    expect(route.continue).not.toHaveBeenCalled();
+    expect(audit.summary()).toEqual({ total: 0, categories: {} });
+  });
+
+  it.each([
+    [
+      "wrong callback",
+      "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=unexpected&render=explicit",
+      "script",
+    ],
+    [
+      "extra query parameter",
+      "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit&extra=1",
+      "script",
+    ],
+    [
+      "wrong resource type",
+      "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback&render=explicit",
+      "xhr",
+    ],
+    [
+      "wrong path",
+      "https://challenges.cloudflare.com/turnstile/v0/api-alt.js?onload=onloadTurnstileCallback&render=explicit",
+      "script",
+    ],
+  ])(
+    "continues to contain non-exact Turnstile request: %s",
+    async (_reason, url, resourceType) => {
+      const mocked = mockContext();
+      const audit = createEgressAudit();
+      await installBrowserEgressGuards(mocked.context, contract, audit);
+      const route = {
+        request: () => ({
+          url: () => url,
+          resourceType: () => resourceType,
+        }),
+        abort: vi.fn(async () => undefined),
+        continue: vi.fn(async () => undefined),
+        fulfill: vi.fn(async () => undefined),
+      } as unknown as Route;
+
+      await mocked.getHttpHandler()(route);
+
+      expect(route.abort).toHaveBeenCalledWith("blockedbyclient");
+      expect(route.fulfill).not.toHaveBeenCalled();
+      expect(route.continue).not.toHaveBeenCalled();
+      expect(audit.summary()).toEqual({ total: 0, categories: {} });
+    },
+  );
 
   it("refuses installation after page or service-worker creation", async () => {
     for (const override of [

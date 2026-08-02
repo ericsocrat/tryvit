@@ -706,6 +706,22 @@ describe("setupErrorCollectors", () => {
     expect(collectors.consoleErrors[0].text).toContain("TypeError");
   });
 
+  it("keeps generic blocked-client console errors blocking", () => {
+    const page = createPageMock();
+    const collectors = setupErrorCollectors(page as never);
+
+    page._emit("console", {
+      type: () => "error",
+      text: () => "Failed to load resource: net::ERR_BLOCKED_BY_CLIENT.Inspector",
+    });
+
+    expect(collectors.consoleErrors).toHaveLength(1);
+    expect(collectors.consoleErrors[0].text).toContain(
+      "ERR_BLOCKED_BY_CLIENT",
+    );
+    expect(CONSOLE_ERROR_ALLOWLIST).not.toContain("ERR_BLOCKED_BY_CLIENT");
+  });
+
   it("ignores transient 403/429 console noise for non-app hosts", () => {
     const page = createPageMock();
     const collectors = setupErrorCollectors(page as never);
