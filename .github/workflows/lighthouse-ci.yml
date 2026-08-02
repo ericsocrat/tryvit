@@ -6,6 +6,7 @@ on:
     paths:
       - "frontend/**"
       - "supabase/config.toml"
+      - "supabase/migrations/**"
       - ".github/workflows/lighthouse-ci.yml"
 
 permissions:
@@ -131,16 +132,24 @@ jobs:
         if: ${{ always() && steps.public_safety_assert.outcome == 'success' && steps.auth_safety_assert.outcome == 'success' && steps.local_fixture_teardown.outcome == 'success' && steps.local_supabase_stop.outcome == 'success' }}
         run: npm run phase5:lighthouse:report
 
-      - name: Upload compact Lighthouse evidence
-        # A truthful budget miss makes the report step fail after writing the
-        # compact evidence. Retain that evidence after safety and cleanup pass;
-        # upload-artifact still fails clearly if no report was produced.
+      - name: Stage complete compact Lighthouse evidence
+        id: lighthouse_evidence_stage
         if: ${{ always() && steps.public_safety_assert.outcome == 'success' && steps.auth_safety_assert.outcome == 'success' && steps.local_fixture_teardown.outcome == 'success' && steps.local_supabase_stop.outcome == 'success' && steps.lighthouse_report.outcome != 'skipped' && steps.lighthouse_report.outcome != 'cancelled' }}
+        shell: bash
+        run: |
+          evidence="$RUNNER_TEMP/phase5a0d-lighthouse-evidence"
+          mkdir -p -- "$evidence"
+          test -s lighthouse-reports/phase5a0d-lighthouse.json
+          test -s lighthouse-reports/phase5a0d-lighthouse.md
+          cp -- lighthouse-reports/phase5a0d-lighthouse.json "$evidence/phase5a0d-lighthouse.json"
+          cp -- lighthouse-reports/phase5a0d-lighthouse.md "$evidence/phase5a0d-lighthouse.md"
+          test "$(find "$evidence" -maxdepth 1 -type f | wc -l)" -eq 2
+
+      - name: Upload compact Lighthouse evidence
+        if: ${{ always() && steps.lighthouse_evidence_stage.outcome == 'success' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: lighthouse-phase5a0d-evidence
-          path: |
-            frontend/lighthouse-reports/phase5a0d-lighthouse.json
-            frontend/lighthouse-reports/phase5a0d-lighthouse.md
+          path: ${{ runner.temp }}/phase5a0d-lighthouse-evidence/
           if-no-files-found: error
           retention-days: 14

@@ -42,6 +42,7 @@ import {
   type RouteJsModeReport,
 } from "../tooling/phase5a0d-route-js";
 import {
+  listPhase5BaselinePngs,
   prepareVisualBaselineWriteTargets,
   validateVisualBaselineManifest,
   visualArtifactRelativeFiles,
@@ -289,6 +290,21 @@ describe("Phase 5A.0d measurement contract", () => {
       if (existsSync(baselineRoot)) rmSync(baselineRoot, { recursive: true, force: false });
       rmSync(frontendRoot, { recursive: true, force: false });
       rmSync(outside, { recursive: true, force: false });
+    }
+  });
+
+  it("finds unlisted Phase 5 PNGs at the root and at arbitrary depth", () => {
+    const root = mkdtempSync(path.join(tmpdir(), "tryvit-visual-extras-"));
+    try {
+      mkdirSync(path.join(root, "nested", "deeper"), { recursive: true });
+      writeFileSync(path.join(root, "p5a0d-root-extra.png"), "root");
+      writeFileSync(path.join(root, "nested", "deeper", "p5a0d-deep-extra.png"), "deep");
+      expect(listPhase5BaselinePngs(root)).toEqual([
+        "nested/deeper/p5a0d-deep-extra.png",
+        "p5a0d-root-extra.png",
+      ]);
+    } finally {
+      rmSync(root, { recursive: true, force: false });
     }
   });
 
@@ -558,7 +574,11 @@ describe("visual baseline manifest contract", () => {
       cases: VISUAL_BASELINE_CASES.map((baseline) => ({
         id: baseline.id,
         mode: baseline.mode,
+        routeId: baseline.routeId,
         path: baseline.path,
+        width: baseline.width,
+        height: baseline.height,
+        fixtureState: baseline.fixtureState,
         relativeFile: visualRelativeFile(baseline),
         sha256: "d".repeat(64),
         bytes: 100,
@@ -580,6 +600,23 @@ describe("visual baseline manifest contract", () => {
     const tampered = structuredClone(visualManifest());
     tampered.cases[0].bytes += 1;
     expect(() => validateVisualBaselineManifest(tampered)).toThrow("manifest-checksum-mismatch");
+  });
+
+  it("rejects a recomputed manifest with viewport or fixture-state drift", () => {
+    for (const mutation of [
+      (candidate: ReturnType<typeof visualManifest>) => {
+        candidate.cases[0].width = 768;
+      },
+      (candidate: ReturnType<typeof visualManifest>) => {
+        candidate.cases[5].fixtureState = "public-static";
+      },
+    ]) {
+      const candidate = structuredClone(visualManifest());
+      mutation(candidate);
+      const { manifestChecksum: _checksum, ...payload } = candidate;
+      const recomputed = { ...payload, manifestChecksum: checksum(payload) };
+      expect(() => validateVisualBaselineManifest(recomputed)).toThrow("manifest-case-invalid");
+    }
   });
 
   it("stages only seven PNGs and the validated manifest", () => {

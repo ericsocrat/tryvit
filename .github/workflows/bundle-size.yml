@@ -6,6 +6,7 @@ on:
     paths:
       - "frontend/**"
       - "supabase/config.toml"
+      - "supabase/migrations/**"
       - ".github/workflows/bundle-size.yml"
 
 permissions:
@@ -75,6 +76,7 @@ jobs:
               frontend/e2e \
               frontend/tooling
             echo "source=pr-base" >> "$GITHUB_OUTPUT"
+            echo "trusted=true" >> "$GITHUB_OUTPUT"
           else
             if [ "$base_sha" != "f03a79c97f9edc495a62fa02e89c45938a42fc6e" ]; then
               echo "::error::The PR base lacks the reviewed route-JS harness; bootstrap is authorized only from the verified Phase 5A.0c SHA."
@@ -82,7 +84,9 @@ jobs:
             fi
             cp -- "$RUNNER_TEMP/phase5a0d-head-package.json" "$RUNNER_TEMP/phase5a0d-reviewed-package.json"
             cp -- "$RUNNER_TEMP/phase5a0d-head-route-js-harness.tar" "$RUNNER_TEMP/phase5a0d-reviewed-route-js-harness.tar"
-            echo "source=exact-phase5a0d-bootstrap" >> "$GITHUB_OUTPUT"
+            echo "source=exact-phase5a0d-bootstrap-informational-only" >> "$GITHUB_OUTPUT"
+            echo "trusted=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::The exact Phase 5A.0d bootstrap may produce illustrative base/head evidence, but cannot enforce a trusted regression until the reviewed harness exists on the PR base."
           fi
 
       - name: Restore identical reviewed measurement harness onto base
@@ -356,17 +360,25 @@ jobs:
           echo "exit_code=$comparison_exit" >> "$GITHUB_OUTPUT"
 
       - name: Stage compact route JavaScript evidence
+        id: route_evidence_stage
         if: ${{ always() && steps.base_public_safety_assert.outcome == 'success' && steps.base_auth_safety_assert.outcome == 'success' && steps.base_fixture_teardown.outcome == 'success' && steps.base_local_supabase_stop.outcome == 'success' && steps.head_public_safety_assert.outcome == 'success' && steps.head_auth_safety_assert.outcome == 'success' && steps.head_fixture_teardown.outcome == 'success' && steps.head_local_supabase_stop.outcome == 'success' }}
         shell: bash
         run: |
           evidence="$RUNNER_TEMP/route-js-evidence"
           mkdir -p -- "$evidence"
+          test -s performance-reports/route-js/base-route-js.json
+          test -s performance-reports/route-js/head-route-js.json
+          test -s performance-reports/route-js/route-js-comparison.md
           cp -- performance-reports/route-js/base-route-js.json "$evidence/base-route-js.json"
           cp -- performance-reports/route-js/head-route-js.json "$evidence/head-route-js.json"
           cp -- performance-reports/route-js/route-js-comparison.md "$evidence/route-js-comparison.md"
+          printf '%s\n' \
+            '{"schemaVersion":1,"baseSha":"${{ github.event.pull_request.base.sha }}","headSha":"${{ github.event.pull_request.head.sha }}","harnessSource":"${{ steps.harness_policy.outputs.source }}","regressionEnforced":${{ steps.harness_policy.outputs.trusted }}}' \
+            > "$evidence/provenance.json"
+          test "$(find "$evidence" -maxdepth 1 -type f | wc -l)" -eq 4
 
       - name: Upload compact route JavaScript evidence
-        if: ${{ always() && steps.base_public_safety_assert.outcome == 'success' && steps.base_auth_safety_assert.outcome == 'success' && steps.base_fixture_teardown.outcome == 'success' && steps.base_local_supabase_stop.outcome == 'success' && steps.head_public_safety_assert.outcome == 'success' && steps.head_auth_safety_assert.outcome == 'success' && steps.head_fixture_teardown.outcome == 'success' && steps.head_local_supabase_stop.outcome == 'success' }}
+        if: ${{ always() && steps.route_evidence_stage.outcome == 'success' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: route-js-phase5a0d-evidence
@@ -378,6 +390,14 @@ jobs:
         if: ${{ !cancelled() }}
         shell: bash
         run: |
+          if [ "${{ steps.route_evidence_stage.outcome }}" != "success" ]; then
+            echo "::error::Complete route-JavaScript evidence was not produced after safety and cleanup."
+            exit 1
+          fi
+          if [ "${{ steps.harness_policy.outputs.trusted }}" != "true" ]; then
+            echo "::notice::Bootstrap evidence is informational because the comparator does not yet exist on the exact PR base. Regression enforcement activates after the reviewed harness lands."
+            exit 0
+          fi
           if [ "${{ steps.route_compare.outputs.exit_code }}" != "0" ]; then
             echo "::error::A representative route grew by more than 10 KiB or 5%."
             exit 1

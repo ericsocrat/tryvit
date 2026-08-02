@@ -22,7 +22,11 @@ export const VISUAL_MANIFEST_FILENAME = "phase5a0d-manifest.json" as const;
 interface VisualManifestCase {
   readonly id: string;
   readonly mode: "public" | "local-authenticated";
+  readonly routeId: "landing" | "login" | "app-shell";
   readonly path: string;
+  readonly width: 390 | 768 | 1440;
+  readonly height: 844 | 1024 | 900;
+  readonly fixtureState: "public-static" | "local-authenticated-new-user";
   readonly relativeFile: string;
   readonly sha256: string;
   readonly bytes: number;
@@ -188,18 +192,25 @@ function assertOwnedBaselinePath(root: string, relativeFile: string): string {
   return resolved;
 }
 
-function exactPhase5PngSet(root: string): string[] {
+export function listPhase5BaselinePngs(root: string): string[] {
   if (!existsSync(root)) return [];
   const result: string[] = [];
-  for (const directoryName of readdirSync(root)) {
-    const directory = path.join(root, directoryName);
-    if (!lstatSync(directory).isDirectory() || lstatSync(directory).isSymbolicLink()) continue;
-    for (const filename of readdirSync(directory)) {
-      if (filename.startsWith("p5a0d-") && filename.endsWith(".png")) {
-        result.push(`${directoryName}/${filename}`);
+  const visit = (directory: string): void => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const candidate = path.join(directory, entry.name);
+      if (entry.isSymbolicLink()) fail("baseline-path-reparse");
+      if (entry.isDirectory()) {
+        visit(candidate);
+      } else if (entry.isFile()) {
+        if (entry.name.startsWith("p5a0d-") && entry.name.endsWith(".png")) {
+          result.push(path.relative(root, candidate).replaceAll(path.sep, "/"));
+        }
+      } else {
+        fail("baseline-entry-invalid");
       }
     }
-  }
+  };
+  visit(root);
   return result.sort();
 }
 
@@ -246,7 +257,7 @@ export async function generateVisualBaselineManifest(
   assertVisualBaselineContract();
   const root = prepareVisualBaselineWriteTargets(frontendRoot);
   const expectedFiles = VISUAL_BASELINE_CASES.map(visualRelativeFile).sort();
-  if (JSON.stringify(exactPhase5PngSet(root)) !== JSON.stringify(expectedFiles)) {
+  if (JSON.stringify(listPhase5BaselinePngs(root)) !== JSON.stringify(expectedFiles)) {
     fail("baseline-file-set-invalid");
   }
   const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], {
@@ -262,7 +273,11 @@ export async function generateVisualBaselineManifest(
     return Object.freeze({
       id: baseline.id,
       mode: baseline.mode,
+      routeId: baseline.routeId,
       path: baseline.path,
+      width: baseline.width,
+      height: baseline.height,
+      fixtureState: baseline.fixtureState,
       relativeFile,
       sha256: sha256(bytes),
       bytes: bytes.byteLength,
@@ -358,7 +373,11 @@ export function validateVisualBaselineManifest(
       !actual ||
       actual.id !== expected.id ||
       actual.mode !== expected.mode ||
+      actual.routeId !== expected.routeId ||
       actual.path !== expected.path ||
+      actual.width !== expected.width ||
+      actual.height !== expected.height ||
+      actual.fixtureState !== expected.fixtureState ||
       actual.relativeFile !== visualRelativeFile(expected) ||
       typeof actual.sha256 !== "string" ||
       !/^[0-9a-f]{64}$/u.test(actual.sha256) ||
@@ -381,7 +400,7 @@ function readVerifiedVisualBaselineFiles(frontendRoot: string): VisualBaselineMa
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   validateVisualBaselineManifest(manifest);
   const expectedFiles = VISUAL_BASELINE_CASES.map(visualRelativeFile).sort();
-  if (JSON.stringify(exactPhase5PngSet(root)) !== JSON.stringify(expectedFiles)) {
+  if (JSON.stringify(listPhase5BaselinePngs(root)) !== JSON.stringify(expectedFiles)) {
     fail("baseline-file-set-invalid");
   }
   for (const baseline of manifest.cases) {

@@ -4,7 +4,8 @@
 > accepted only from the blocking Phase 5A.0d workflows
 > **Scope:** Measurement, CI, and baseline infrastructure only
 > **Visual redesign:** Not included
-> **Hosted services:** Not accessed or modified
+> **Hosted data/deployment services:** Not accessed by the measurement harness
+> or modified by this implementation
 
 ## Decision
 
@@ -40,14 +41,14 @@ authority.
 
 ## Measurement classes
 
-| Class                  | Meaning in this phase                                                                                         | Authority                                                                                               |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| Lighthouse lab         | Synthetic local production-build audit under the pinned profile                                               | Blocking only when provenance, five samples, exact route, no redirect, and variance checks all validate |
-| Route JavaScript       | Independently gzip-compressed first-party `/_next/static/*.js` responses observed by a fresh browser          | Blocking for measurement validity and base/head regression                                              |
-| Encoded transfer       | Browser Resource Timing total when every tracked script exposes a positive value                              | Reported as an observation; unavailable is `null`, never zero                                           |
-| Visual baseline        | Viewport screenshot from the pinned Linux runner, browser, fixture, theme, motion, locale, and clock contract | Blocking after explicit candidate review and committed hash manifest                                    |
-| Historical observation | Old scores or retained screenshots without the full contract                                                  | Context only                                                                                            |
-| Field Core Web Vitals  | Real-user p75 LCP, INP, and CLS                                                                               | Not available; no field claim is made                                                                   |
+| Class                  | Meaning in this phase                                                                                         | Authority                                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Lighthouse lab         | Synthetic local production-build audit under the pinned profile                                               | Blocking only when provenance, five samples, exact route, no redirect, and variance checks all validate             |
+| Route JavaScript       | Independently gzip-compressed first-party `/_next/static/*.js` responses observed by a fresh browser          | Blocking after the reviewed comparator exists on the exact PR base; initial bootstrap evidence is illustrative only |
+| Encoded transfer       | Browser Resource Timing total when every tracked script exposes a positive value                              | Reported as an observation; unavailable is `null`, never zero                                                       |
+| Visual baseline        | Viewport screenshot from the pinned Linux runner, browser, fixture, theme, motion, locale, and clock contract | Blocking after explicit candidate review and committed hash manifest                                                |
+| Historical observation | Old scores or retained screenshots without the full contract                                                  | Context only                                                                                                        |
+| Field Core Web Vitals  | Real-user p75 LCP, INP, and CLS                                                                               | Not available; no field claim is made                                                                               |
 
 Lighthouse cannot measure field INP. TBT is retained as a lab responsiveness
 proxy and is never relabeled as INP.
@@ -75,15 +76,15 @@ lockfile, Playwright-managed Chromium, Lighthouse `12.6.1`, Supabase CLI
 and requires a new reviewed candidate; it is not compared as if it were the
 same renderer.
 
-The existing Open Graph image modules fetch fixed Inter font URLs from
-`fonts.gstatic.com` while Next.js builds those routes. The guarded proxy allows
-only that hostname as a bounded **build-time** HTTPS exception; browser runs
-remain loopback-contained and receive no such exception. Because the proxy does
-not inspect or content-attest the TLS response, this phase does not claim that
-the entire production build is byte-reproducible across time. It binds the
-observed clean-build fingerprint, compares route JavaScript on one runner, and
-requires two byte-identical screenshot passes. Vendoring that font would be a
-separate product-asset change and is not hidden inside this measurement PR.
+The existing Open Graph image modules request a fixed Inter font URL while
+Next.js builds those routes. Phase 5A.0d pins that exact response as a test-only
+font fixture (`344,068` bytes; SHA-256
+`c1c6ba111e8d04d392b741d194ab548186ec3c006ed7cc134be0525402520339`).
+A build-only Node preload fulfills only that exact URL from the checked-in
+fixture and rejects every other `fonts.gstatic.com` URL. The owned egress proxy
+has no external CONNECT allowlist during build, server, Playwright, or
+Lighthouse execution. Product font code and typography remain unchanged while
+the measurement build becomes local-only and content-attested.
 
 ### Cache and run rules
 
@@ -94,11 +95,12 @@ separate product-asset change and is not hidden inside this measurement PR.
   with gzip level 9. Missing attribution, an empty asset set, unexpected script
   origins, redirects, invalid transfer values, or zero-byte output fails.
 - Base and head route measurements execute sequentially on the same Linux
-  runner with the same measurement implementation and browser profile. This
-  bootstrap uses the head harness only when the PR base is exactly the verified
-  Phase 5A.0c SHA, which predates the harness. After merge, the reviewed PR-base
-  harness is restored over both revisions so a PR cannot redefine its own
-  comparator.
+  runner with the same measurement implementation and browser profile. The
+  exact Phase 5A.0c bootstrap predates that implementation, so its head-authored
+  comparison is explicitly **illustrative and non-enforcing**. Once the reviewed
+  harness exists on the exact PR base, that base harness is restored over both
+  revisions and the `+10 KiB OR +5%` regression rule becomes blocking. A PR
+  cannot redefine the comparator that judges it.
 - Lighthouse uses five cold lab runs per route/profile. Reports retain all five
   values, median, minimum, maximum, range, and median absolute deviation.
 - Lighthouse performance-score range above `0.10`, or timing MAD that is both
@@ -112,19 +114,23 @@ separate product-asset change and is not hidden inside this measurement PR.
 ### Baseline approval
 
 For the one-time bootstrap, the PR workflow generates candidates only when it
-proves that the exact base and head both lack a manifest; it uploads but never
-commits them. If a base manifest exists and the head deletes it, the workflow
-fails. After the initial files are committed, future candidate generation is
-manual-only. Every candidate run renders the complete matrix twice from the
-same source and requires byte-identical manifests before upload. Verification
-reads the committed files before and after the browser run, cannot pass an
-update flag, and fails on any hash, file-set, fixture, renderer, or environment
+proves that the exact verified Phase 5A.0c base and head both lack a manifest;
+it uploads but never commits them. The seven PNGs are committed only after
+their artifact hashes and rendered contents are reviewed. If a base manifest
+exists, every manifest and `p5a0d-*.png` byte is immutable relative to that
+exact base; deletion, replacement, or addition fails before browser execution.
+Future candidate generation is manual-only. Every candidate run renders the
+complete matrix twice from the same source and requires byte-identical
+manifests before upload. Verification cannot pass an update flag and fails on
+any hash, file-set, fixture, renderer, viewport, route, or environment
 difference.
 
-An intentional future redesign updates baselines in a dedicated visual PR with
-before/after evidence and human review. A baseline update cannot be used in an
-unrelated PR to hide drift. The 74 retained audit screenshots remain outside
-this system.
+An intentional future redesign first generates manual candidates and receives
+human before/after review. The current PR gate deliberately rejects baseline
+changes relative to its base; accepting a reviewed redesign candidate requires
+a separate, explicitly authorized baseline-update workflow change. A baseline
+update cannot be smuggled into an unrelated product PR. The 74 retained audit
+screenshots remain outside this system.
 
 ## Representative route contract
 
@@ -262,12 +268,12 @@ The threshold is at most `0.3%` differing pixels with a channel threshold of
 `0.2`; no content is masked. Product, allergen, confidence, status, navigation,
 or any other meaningful content may never be hidden to make a comparison pass.
 
-The committed manifest records each filename, byte count, SHA-256, renderer
-identity, fixed settings, a logical fixture-contract checksum, and an overall
-checksum. The fixture contract contains only stable rendered state: anonymous
-public pages plus a fresh local user with English/PL new-user preferences and
-mandatory deletion after the run. It excludes credentials and generated user
-or product IDs.
+The committed manifest records each route identity, path, viewport, fixture
+state, filename, byte count, SHA-256, renderer identity, fixed settings, a
+logical fixture-contract checksum, and an overall checksum. The fixture
+contract contains only stable rendered state: anonymous public pages plus a
+fresh local user with English/PL new-user preferences and mandatory deletion
+after the run. It excludes credentials and generated user or product IDs.
 
 Because this workflow did not exist on the default branch before Phase 5A.0d,
 the first pull-request run may generate candidates only when the manifest is
@@ -301,7 +307,9 @@ eight-file sets must be byte-identical.
   retained; local credentials are redacted from retained raw JSON before its
   checksum or parse, and sensitive values are scanned from changed artifact
   roots before upload. Only the credential-free compact report is uploaded.
-- Neither Vercel nor either hosted Supabase project is queried or modified.
+- The measurement harness does not query Vercel or either hosted Supabase
+  project. It has no hosted fallback, login, link, preview, push, or migration
+  path.
 - The known production `/api/health` 503 state is unchanged and outside this
   local measurement contract.
 

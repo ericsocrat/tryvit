@@ -6,6 +6,7 @@ on:
     paths:
       - "frontend/**"
       - "supabase/config.toml"
+      - "supabase/migrations/**"
       - ".github/workflows/phase5a0d-visual-baselines.yml"
   workflow_dispatch:
 
@@ -51,10 +52,32 @@ jobs:
           fi
           if [ -e e2e/__screenshots__/phase5a0d-manifest.json ] || [ -L e2e/__screenshots__/phase5a0d-manifest.json ]; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
+            if [ "$base_manifest" = "true" ]; then
+              if ! git diff --quiet \
+                "${{ github.event.pull_request.base.sha }}" \
+                "${{ github.event.pull_request.head.sha }}" -- \
+                ':(literal)frontend/e2e/__screenshots__/phase5a0d-manifest.json' \
+                ':(glob)frontend/e2e/__screenshots__/p5a0d-*.png' \
+                ':(glob)frontend/e2e/__screenshots__/**/p5a0d-*.png'; then
+                echo "::error::Committed Phase 5A.0d baselines are immutable relative to the exact PR base. Generate and review candidates in a separately authorized baseline-update process."
+                exit 1
+              fi
+              echo "provenance=immutable-pr-base" >> "$GITHUB_OUTPUT"
+            else
+              if [ "${{ github.event.pull_request.base.sha }}" != "f03a79c97f9edc495a62fa02e89c45938a42fc6e" ]; then
+                echo "::error::Initial baseline bootstrap is authorized only from the verified Phase 5A.0c base."
+                exit 1
+              fi
+              echo "provenance=initial-human-reviewed-candidate" >> "$GITHUB_OUTPUT"
+            fi
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
             if [ "$base_manifest" = "true" ]; then
               echo "::error::The committed visual manifest exists on the PR base but was removed from the exact PR head. Bootstrap generation is forbidden."
+              exit 1
+            fi
+            if [ "${{ github.event.pull_request.base.sha }}" != "f03a79c97f9edc495a62fa02e89c45938a42fc6e" ]; then
+              echo "::error::Initial baseline bootstrap is authorized only from the verified Phase 5A.0c base."
               exit 1
             fi
             echo "Initial baseline verification is deferred until reviewed candidates are committed."
@@ -149,7 +172,7 @@ jobs:
 
       - name: Stop ephemeral local Supabase (no backup)
         id: local_supabase_stop
-        if: ${{ always() && steps.local_supabase_start.outcome == 'success' }}
+        if: ${{ always() }}
         working-directory: .
         run: bash frontend/e2e/scripts/local-supabase-ci.sh stop
 
@@ -204,6 +227,10 @@ jobs:
               fi
               if git cat-file -e "${{ github.event.pull_request.base.sha }}:frontend/e2e/__screenshots__/phase5a0d-manifest.json" 2>/dev/null; then
                 echo "::error::The committed visual manifest exists on the PR base but was removed from the exact PR head. Bootstrap generation is forbidden."
+                exit 1
+              fi
+              if [ "${{ github.event.pull_request.base.sha }}" != "f03a79c97f9edc495a62fa02e89c45938a42fc6e" ]; then
+                echo "::error::Initial candidate bootstrap is authorized only from the verified Phase 5A.0c base."
                 exit 1
               fi
               echo "Initial baseline bootstrap will upload candidates for human review only."
@@ -369,7 +396,7 @@ jobs:
 
       - name: Stop ephemeral local Supabase (no backup)
         id: local_supabase_stop
-        if: ${{ always() && steps.local_supabase_start.outcome == 'success' }}
+        if: ${{ always() }}
         working-directory: .
         run: bash frontend/e2e/scripts/local-supabase-ci.sh stop
 

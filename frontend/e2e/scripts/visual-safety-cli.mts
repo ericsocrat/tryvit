@@ -80,13 +80,13 @@ export const violationMarkerPath = path.join(
 
 const APP_PORT = 3000;
 const APP_ORIGIN = `http://127.0.0.1:${APP_PORT}`;
-const REVIEWED_EXTERNAL_CONNECT_HOSTNAMES = Object.freeze([
-  // Existing Open Graph image modules fetch fixed Inter font URLs while Next
-  // builds them. This is a bounded build-time HTTPS exception, never a browser
-  // or Supabase exception; removing it requires a separately scoped asset/code
-  // change. Phase 5A.0d documents that its TLS payload is not content-attested.
-  "fonts.gstatic.com",
-]);
+const NO_EXTERNAL_CONNECT_HOSTNAMES = Object.freeze([] as string[]);
+const localFontFetchPreload = path.join(
+  frontendRoot,
+  "e2e",
+  "scripts",
+  "phase5a0d-local-font-fetch.mjs",
+);
 const ASSET_EXTENSIONS = new Set([
   ".cjs",
   ".css",
@@ -859,10 +859,14 @@ export async function cleanBuild(
       throw safetyError("VS_LOCAL_ANON", "local-anon-key-missing");
     }
     const nextCli = require.resolve("next/dist/bin/next");
-    const code = await runChild(process.execPath, [nextCli, "build", "--webpack"], {
-      cwd: frontendRoot,
-      env,
-    });
+    const code = await runChild(
+      process.execPath,
+      ["--import", pathToFileURL(localFontFetchPreload).href, nextCli, "build", "--webpack"],
+      {
+        cwd: frontendRoot,
+        env,
+      },
+    );
     if (code !== 0) throw safetyError("VS_BUILD_FAILED", "next-build-failed");
     assertGeneratedServiceWorker();
     return writeBuildProvenance(contract);
@@ -1257,7 +1261,7 @@ async function runPlaywright(
     const proxy = await startLoopbackEgressProxy({
       violationMarkerPath,
       contract,
-      allowedConnectHostnames: REVIEWED_EXTERNAL_CONNECT_HOSTNAMES,
+      allowedConnectHostnames: NO_EXTERNAL_CONNECT_HOSTNAMES,
       allowedLoopbackOrigins: ownedLoopbackOrigins(contract),
     });
     const unregisterProxy = registerOwnedCleanup(proxy.close);
@@ -1411,7 +1415,7 @@ async function serveCommand(
   const proxy = await startLoopbackEgressProxy({
     violationMarkerPath,
     contract,
-    allowedConnectHostnames: REVIEWED_EXTERNAL_CONNECT_HOSTNAMES,
+    allowedConnectHostnames: NO_EXTERNAL_CONNECT_HOSTNAMES,
     allowedLoopbackOrigins: ownedLoopbackOrigins(contract),
   });
   const unregisterProxy = registerOwnedCleanup(proxy.close);
@@ -1662,7 +1666,7 @@ async function runLighthouse(
   const proxy = await startLoopbackEgressProxy({
     violationMarkerPath,
     contract,
-    allowedConnectHostnames: REVIEWED_EXTERNAL_CONNECT_HOSTNAMES,
+    allowedConnectHostnames: NO_EXTERNAL_CONNECT_HOSTNAMES,
     allowedLoopbackOrigins: ownedLoopbackOrigins(contract),
     // Lighthouse's page guard classifies HTTP and CDP WebSocket events.
     // Chromium background CONNECTs expose neither a page nor a path, so this
@@ -1998,7 +2002,7 @@ async function main(): Promise<number> {
     const proxy = await startLoopbackEgressProxy({
       violationMarkerPath,
       contract,
-      allowedConnectHostnames: REVIEWED_EXTERNAL_CONNECT_HOSTNAMES,
+      allowedConnectHostnames: NO_EXTERNAL_CONNECT_HOSTNAMES,
       allowedLoopbackOrigins: ownedLoopbackOrigins(contract),
     });
     const unregisterProxy = registerOwnedCleanup(proxy.close);

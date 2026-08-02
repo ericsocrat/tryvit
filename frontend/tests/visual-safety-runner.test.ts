@@ -85,6 +85,22 @@ afterEach(async () => {
 });
 
 describe("visual-safety runner environment", () => {
+  it("pins the only build-time font fetch locally and exposes no external CONNECT allowlist", async () => {
+    const runner = await fs.readFile(
+      path.resolve(process.cwd(), "e2e", "scripts", "visual-safety-cli.mts"),
+      "utf8",
+    );
+    const preload = await fs.readFile(
+      path.resolve(process.cwd(), "e2e", "scripts", "phase5a0d-local-font-fetch.mjs"),
+      "utf8",
+    );
+    expect(runner).toContain("NO_EXTERNAL_CONNECT_HOSTNAMES");
+    expect(runner).not.toContain("REVIEWED_EXTERNAL_CONNECT_HOSTNAMES");
+    expect(runner).toContain('"--import", pathToFileURL(localFontFetchPreload).href');
+    expect(preload).toContain("c1c6ba111e8d04d392b741d194ab548186ec3c006ed7cc134be0525402520339");
+    expect(preload).toContain("unpinned-font-url-rejected");
+  });
+
   it("fails closed when Node cannot enforce the owned env proxy", () => {
     for (const unsupported of ["21.99.0", "22.20.0", "23.11.1", "24.4.9", "invalid"]) {
       expect(() => assertNodeEnvProxySupported(unsupported)).toThrow(/VS_NODE_PROXY/u);
@@ -817,6 +833,25 @@ describe("process ownership and loopback proxy", () => {
     expect(proxy.summary).toEqual({
       total: 1,
       categories: { "proxy-http-hosted-supabase-origin": 1 },
+    });
+    await proxy.close();
+  });
+
+  it("blocks fonts.gstatic.com at the runtime proxy", async () => {
+    const proxy = await startLoopbackEgressProxy({
+      writeViolationMarker: false,
+    });
+    const response = await rawProxyExchange(
+      proxy.origin,
+      ["CONNECT fonts.gstatic.com:443 HTTP/1.1", "Host: fonts.gstatic.com:443", "", ""].join(
+        "\r\n",
+      ),
+    );
+
+    expect(response).toContain("451 Unavailable For Legal Reasons");
+    expect(proxy.summary).toEqual({
+      total: 1,
+      categories: { "proxy-non-loopback-connect": 1 },
     });
     await proxy.close();
   });

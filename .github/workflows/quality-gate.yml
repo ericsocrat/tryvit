@@ -20,6 +20,7 @@ on:
     paths:
       - "frontend/**"
       - "supabase/config.toml"
+      - "supabase/migrations/**"
       - ".github/workflows/quality-gate.yml"
   schedule:
     - cron: "0 4 * * *" # Nightly at 04:00 UTC (staggered from nightly 02:00 + api-contract 03:30)

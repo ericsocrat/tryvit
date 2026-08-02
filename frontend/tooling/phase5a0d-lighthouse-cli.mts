@@ -68,11 +68,13 @@ function main(): number {
     }
   }
   const report = compileLighthouseReport(reportsDirectory);
-  writeFileSync(jsonOutput, serializeLighthouseReportJson(report), {
+  const serializedJson = serializeLighthouseReportJson(report);
+  const serializedMarkdown = formatLighthouseReportMarkdown(report);
+  writeFileSync(jsonOutput, serializedJson, {
     encoding: "utf8",
     mode: 0o600,
   });
-  writeFileSync(markdownOutput, formatLighthouseReportMarkdown(report), {
+  writeFileSync(markdownOutput, serializedMarkdown, {
     encoding: "utf8",
     mode: 0o600,
   });

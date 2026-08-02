@@ -332,19 +332,43 @@ export function assertRepresentativeRouteContract(): void {
 }
 
 export function assertVisualBaselineContract(): void {
-  const expectedIds = [
-    "landing-390x844",
-    "landing-768x1024",
-    "landing-1440x900",
-    "login-390x844",
-    "login-1440x900",
-    "app-shell-new-user-390x844",
-    "app-shell-new-user-1440x900",
+  const expectedCases = [
+    ["landing-390x844", "public", "landing", "/", 390, 844, "public-static"],
+    ["landing-768x1024", "public", "landing", "/", 768, 1024, "public-static"],
+    ["landing-1440x900", "public", "landing", "/", 1440, 900, "public-static"],
+    ["login-390x844", "public", "login", "/auth/login", 390, 844, "public-static"],
+    ["login-1440x900", "public", "login", "/auth/login", 1440, 900, "public-static"],
+    [
+      "app-shell-new-user-390x844",
+      "local-authenticated",
+      "app-shell",
+      "/app",
+      390,
+      844,
+      "local-authenticated-new-user",
+    ],
+    [
+      "app-shell-new-user-1440x900",
+      "local-authenticated",
+      "app-shell",
+      "/app",
+      1440,
+      900,
+      "local-authenticated-new-user",
+    ],
   ];
-  const ids = VISUAL_BASELINE_CASES.map((candidate) => candidate.id);
+  const actualCases = VISUAL_BASELINE_CASES.map((candidate) => [
+    candidate.id,
+    candidate.mode,
+    candidate.routeId,
+    candidate.path,
+    candidate.width,
+    candidate.height,
+    candidate.fixtureState,
+  ]);
   const filenames = VISUAL_BASELINE_CASES.map((candidate) => candidate.filename);
   if (
-    JSON.stringify(ids) !== JSON.stringify(expectedIds) ||
+    JSON.stringify(actualCases) !== JSON.stringify(expectedCases) ||
     new Set(filenames).size !== filenames.length ||
     VISUAL_BASELINE_CASES.some(
       (candidate) =>

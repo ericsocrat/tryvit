@@ -336,10 +336,9 @@ describe("browser workflow visual-safety contract", () => {
     expect(browserJobs.lighthouse).toContain("local-supabase-ci.sh stop");
     expect(browserJobs.lighthouse).toContain("mobile + desktop, five runs each");
     expect(browserJobs.lighthouse).toContain("npm run phase5:lighthouse:report");
-    expect(browserJobs.lighthouse).toContain(
-      "frontend/lighthouse-reports/phase5a0d-lighthouse.json",
-    );
-    expect(browserJobs.lighthouse).toContain("frontend/lighthouse-reports/phase5a0d-lighthouse.md");
+    expect(browserJobs.lighthouse).toContain("$RUNNER_TEMP/phase5a0d-lighthouse-evidence");
+    expect(browserJobs.lighthouse).toContain("phase5a0d-lighthouse.json");
+    expect(browserJobs.lighthouse).toContain("phase5a0d-lighthouse.md");
     expect(browserJobs.lighthouse.indexOf("npm run phase5:lighthouse:report")).toBeGreaterThan(
       browserJobs.lighthouse.indexOf("local-supabase-ci.sh stop"),
     );
@@ -398,6 +397,12 @@ describe("browser workflow visual-safety contract", () => {
       "${{ github.event.pull_request.base.sha }}:frontend/e2e/__screenshots__/phase5a0d-manifest.json",
     );
     expect(phase5VisualJobs.verify).toContain("baseline_state.outputs.exists == 'true'");
+    expect(phase5VisualJobs.verify).toContain("git diff --quiet");
+    expect(phase5VisualJobs.verify).toContain("provenance=immutable-pr-base");
+    expect(phase5VisualJobs.verify).toContain("provenance=initial-human-reviewed-candidate");
+    expect(phase5VisualJobs.verify).toContain(
+      "baselines are immutable relative to the exact PR base",
+    );
     expect(phase5VisualJobs.verify).toContain("phase5:visual:verify:public");
     expect(phase5VisualJobs.verify).toContain("phase5:visual:verify:authenticated");
     expect(phase5VisualJobs.verify).not.toContain("phase5:visual:generate:");
@@ -445,16 +450,22 @@ describe("browser workflow visual-safety contract", () => {
     expect(workflowSources.bundleSize).not.toContain("actions/github-script");
 
     const lighthouseJob = browserJobs.lighthouse;
-    const uploadIndex = lighthouseJob.indexOf("Upload compact Lighthouse evidence");
-    const uploadSection = lighthouseJob.slice(
-      uploadIndex,
-      lighthouseJob.indexOf("uses:", uploadIndex),
+    const stageIndex = lighthouseJob.indexOf("Stage complete compact Lighthouse evidence");
+    const stageSection = lighthouseJob.slice(
+      stageIndex,
+      lighthouseJob.indexOf("Upload compact Lighthouse evidence", stageIndex),
     );
-    expect(uploadSection).toContain("steps.lighthouse_report.outcome != 'skipped'");
-    expect(uploadSection).toContain("steps.lighthouse_report.outcome != 'cancelled'");
-    expect(uploadSection).not.toContain("steps.lighthouse_report.outcome == 'success'");
-    expect(uploadSection).toContain("steps.local_fixture_teardown.outcome == 'success'");
-    expect(uploadSection).toContain("steps.local_supabase_stop.outcome == 'success'");
+    expect(stageSection).toContain("steps.lighthouse_report.outcome != 'skipped'");
+    expect(stageSection).toContain("steps.lighthouse_report.outcome != 'cancelled'");
+    expect(stageSection).not.toContain("steps.lighthouse_report.outcome == 'success'");
+    expect(stageSection).toContain("steps.local_fixture_teardown.outcome == 'success'");
+    expect(stageSection).toContain("steps.local_supabase_stop.outcome == 'success'");
+    expect(stageSection).toContain("test -s lighthouse-reports/phase5a0d-lighthouse.json");
+    expect(stageSection).toContain("test -s lighthouse-reports/phase5a0d-lighthouse.md");
+    const uploadSection = lighthouseJob.slice(
+      lighthouseJob.indexOf("Upload compact Lighthouse evidence"),
+    );
+    expect(uploadSection).toContain("steps.lighthouse_evidence_stage.outcome == 'success'");
   });
 
   it("keeps visual artifacts behind safety assertions and local cleanup", () => {
@@ -476,6 +487,10 @@ describe("browser workflow visual-safety contract", () => {
     expect(bundle).toContain("Checkout pull-request head on the same runner");
     expect(bundle).toContain("source=pr-base");
     expect(bundle).toContain("source=exact-phase5a0d-bootstrap");
+    expect(bundle).toContain('echo "trusted=true"');
+    expect(bundle).toContain('echo "trusted=false"');
+    expect(bundle).toContain("Bootstrap evidence is informational");
+    expect(bundle).toContain("steps.route_evidence_stage.outcome");
     expect(bundle).toContain("f03a79c97f9edc495a62fa02e89c45938a42fc6e");
     expect(bundle).toContain("phase5a0d-reviewed-route-js-harness.tar");
     expect(bundle).toContain("Restore the reviewed base harness onto head");
@@ -492,6 +507,17 @@ describe("browser workflow visual-safety contract", () => {
     expect(bundle).not.toContain("build-manifest.json");
     expect(bundle).not.toContain("totalBytes");
     expect(bundle).not.toContain("Math.abs");
+  });
+
+  it("runs authenticated visual and performance gates for migration changes", () => {
+    for (const workflow of [
+      workflowSources.lighthouse,
+      workflowSources.bundleSize,
+      workflowSources.phase5Visual,
+      workflowSources.qualityGate,
+    ]) {
+      expect(workflow).toContain('- "supabase/migrations/**"');
+    }
   });
 
   it("keeps Phase 5A.0d desktop enforcement out of Quality Gate without a pass claim", () => {
@@ -601,7 +627,9 @@ describe("browser workflow visual-safety contract", () => {
     );
     expect(safetyCliSource).toContain("resetGeneratedServiceWorker()");
     expect(safetyCliSource).toContain("assertGeneratedServiceWorker()");
-    expect(safetyCliSource).toContain('[nextCli, "build", "--webpack"]');
+    expect(safetyCliSource).toContain(
+      '["--import", pathToFileURL(localFontFetchPreload).href, nextCli, "build", "--webpack"]',
+    );
     expect(nextConfigSource).toContain("register: !process.env.VISUAL_SAFETY_MODE");
     for (const workflow of [
       workflowSources.prGate,
