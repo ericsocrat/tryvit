@@ -714,6 +714,9 @@ describe("browser workflow visual-safety contract", () => {
     expect(safetyCliSource).toContain(
       '["--import", pathToFileURL(localFontFetchPreload).href, nextCli, "build", "--webpack"]',
     );
+    expect(safetyCliSource).toMatch(
+      /pathToFileURL\(localFontFetchPreload\)\.href,\s*nextCli,\s*"start"/u,
+    );
     expect(nextConfigSource).toContain("register: !process.env.VISUAL_SAFETY_MODE");
     for (const workflow of [
       workflowSources.prGate,

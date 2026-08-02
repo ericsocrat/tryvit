@@ -198,7 +198,8 @@ loopback targets are blocked and recorded rather than used as a local-network
 pivot.
 Phase 5A.0d supersedes the original reviewed `fonts.gstatic.com:443` exception.
 The exact Open Graph font response is now a checked-in, content-attested,
-test-only fixture served by a build-only preload. The owned proxy has no
+test-only fixture served by a process-local preload during guarded builds and
+owned Next servers. The owned proxy has no
 external CONNECT allowlist during guarded builds, servers, browser runs, or
 Lighthouse runs. Product font code remains unchanged; every unexpected
 non-loopback CONNECT attempt fails closed.

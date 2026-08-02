@@ -1,5 +1,14 @@
 import { createHash } from "node:crypto";
-import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs";
+import {
+  closeSync,
+  constants,
+  existsSync,
+  fstatSync,
+  lstatSync,
+  openSync,
+  readFileSync,
+  readdirSync,
+} from "node:fs";
 import path from "node:path";
 
 // Node's type-stripping loader requires the source extension at runtime.
@@ -517,10 +526,33 @@ export function aggregateLighthouseDirectory(
 }
 
 function readJsonFile(file: string): unknown {
-  const metadata = lstatSync(file);
-  if (!metadata.isFile() || metadata.isSymbolicLink()) fail("report-file-invalid");
+  let descriptor: number | undefined;
+  let source: string;
   try {
-    return JSON.parse(readFileSync(file, "utf8"));
+    const noFollow = process.platform === "win32" ? 0 : constants.O_NOFOLLOW;
+    descriptor = openSync(file, constants.O_RDONLY | noFollow);
+    const descriptorMetadata = fstatSync(descriptor, { bigint: true });
+    const pathMetadata = lstatSync(file, { bigint: true });
+    if (
+      !descriptorMetadata.isFile() ||
+      !pathMetadata.isFile() ||
+      pathMetadata.isSymbolicLink() ||
+      descriptorMetadata.dev !== pathMetadata.dev ||
+      descriptorMetadata.ino !== pathMetadata.ino
+    ) {
+      fail("report-file-invalid");
+    }
+    source = readFileSync(descriptor, "utf8");
+  } catch (error) {
+    if (error instanceof Error && error.message === "[P5_LIGHTHOUSE] report-file-invalid") {
+      throw error;
+    }
+    fail("report-file-invalid");
+  } finally {
+    if (descriptor !== undefined) closeSync(descriptor);
+  }
+  try {
+    return JSON.parse(source);
   } catch {
     fail("report-json-invalid");
   }

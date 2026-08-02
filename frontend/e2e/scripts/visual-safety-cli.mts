@@ -1005,7 +1005,16 @@ export async function startOwnedServer(
   const nextCli = require.resolve("next/dist/bin/next");
   const child = spawn(
     process.execPath,
-    [nextCli, "start", "-H", "127.0.0.1", "-p", String(APP_PORT)],
+    [
+      "--import",
+      pathToFileURL(localFontFetchPreload).href,
+      nextCli,
+      "start",
+      "-H",
+      "127.0.0.1",
+      "-p",
+      String(APP_PORT),
+    ],
     {
       cwd: frontendRoot,
       env,

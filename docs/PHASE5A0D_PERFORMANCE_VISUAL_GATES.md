@@ -80,8 +80,9 @@ The existing Open Graph image modules request a fixed Inter font URL while
 Next.js builds those routes. Phase 5A.0d pins that exact response as a test-only
 font fixture (`344,068` bytes; SHA-256
 `c1c6ba111e8d04d392b741d194ab548186ec3c006ed7cc134be0525402520339`).
-A build-only Node preload fulfills only that exact URL from the checked-in
-fixture and rejects every other `fonts.gstatic.com` URL. The owned egress proxy
+A process-local Node preload fulfills only that exact URL from the checked-in
+fixture during guarded builds and owned Next servers, and rejects every other
+`fonts.gstatic.com` URL. The owned egress proxy
 has no external CONNECT allowlist during build, server, Playwright, or
 Lighthouse execution. Product font code and typography remain unchanged while
 the measurement build becomes local-only and content-attested. The adjacent

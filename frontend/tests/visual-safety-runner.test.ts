@@ -85,7 +85,7 @@ afterEach(async () => {
 });
 
 describe("visual-safety runner environment", () => {
-  it("pins the only build-time font fetch locally and exposes no external CONNECT allowlist", async () => {
+  it("pins guarded build and runtime font fetches locally with no external CONNECT allowlist", async () => {
     const runner = await fs.readFile(
       path.resolve(process.cwd(), "e2e", "scripts", "visual-safety-cli.mts"),
       "utf8",
@@ -96,9 +96,15 @@ describe("visual-safety runner environment", () => {
     );
     expect(runner).toContain("NO_EXTERNAL_CONNECT_HOSTNAMES");
     expect(runner).not.toContain("REVIEWED_EXTERNAL_CONNECT_HOSTNAMES");
-    expect(runner).toContain('"--import", pathToFileURL(localFontFetchPreload).href');
+    expect(
+      runner.match(/"--import",\s*pathToFileURL\(localFontFetchPreload\)\.href/gu),
+    ).toHaveLength(2);
+    expect(runner).toMatch(/pathToFileURL\(localFontFetchPreload\)\.href,\s*nextCli,\s*"build"/u);
+    expect(runner).toMatch(/pathToFileURL\(localFontFetchPreload\)\.href,\s*nextCli,\s*"start"/u);
     expect(preload).toContain("c1c6ba111e8d04d392b741d194ab548186ec3c006ed7cc134be0525402520339");
     expect(preload).toContain("unpinned-font-url-rejected");
+    expect(preload).toContain("fstatSync(fixtureDescriptor, { bigint: true })");
+    expect(preload).toContain("readFileSync(fixtureDescriptor)");
   });
 
   it("fails closed when Node cannot enforce the owned env proxy", () => {

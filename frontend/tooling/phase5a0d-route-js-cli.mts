@@ -1,7 +1,11 @@
 import {
+  closeSync,
+  constants,
   existsSync,
+  fstatSync,
   lstatSync,
   mkdirSync,
+  openSync,
   readFileSync,
   realpathSync,
   readdirSync,
@@ -148,6 +152,38 @@ function assertKnownArguments(args: readonly string[], names: readonly string[])
   }
 }
 
+function readJsonFileNoFollow(file: string, label: string): unknown {
+  let descriptor: number | undefined;
+  let source: string;
+  try {
+    const noFollow = process.platform === "win32" ? 0 : constants.O_NOFOLLOW;
+    descriptor = openSync(file, constants.O_RDONLY | noFollow);
+    const descriptorMetadata = fstatSync(descriptor, { bigint: true });
+    const pathMetadata = lstatSync(file, { bigint: true });
+    if (
+      !descriptorMetadata.isFile() ||
+      !pathMetadata.isFile() ||
+      pathMetadata.isSymbolicLink() ||
+      descriptorMetadata.dev !== pathMetadata.dev ||
+      descriptorMetadata.ino !== pathMetadata.ino ||
+      !isExactRealPath(file)
+    ) {
+      fail(`${label}-file-reparse`);
+    }
+    source = readFileSync(descriptor, "utf8");
+  } catch (error) {
+    if (error instanceof Error && error.message.startsWith("[P5_BUNDLE]")) throw error;
+    fail(`${label}-file-invalid`);
+  } finally {
+    if (descriptor !== undefined) closeSync(descriptor);
+  }
+  try {
+    return JSON.parse(source);
+  } catch {
+    fail(`${label}-json-invalid`);
+  }
+}
+
 function readJsonFiles(directory: string): unknown[] {
   if (
     !existsSync(directory) ||
@@ -162,11 +198,7 @@ function readJsonFiles(directory: string): unknown[] {
     .sort()
     .map((filename) => {
       const file = path.join(directory, filename);
-      const metadata = lstatSync(file);
-      if (!metadata.isFile() || metadata.isSymbolicLink() || !isExactRealPath(file)) {
-        fail("capture-file-reparse");
-      }
-      return JSON.parse(readFileSync(file, "utf8"));
+      return readJsonFileNoFollow(file, "capture");
     });
 }
 
@@ -198,8 +230,11 @@ async function main(): Promise<number> {
     const output = argumentValue(args, "output");
     if (!publicPath || !authenticatedPath || !output) fail("combine-arguments-required");
     const report = combineModeReports([
-      JSON.parse(readFileSync(ownedInputFile(publicPath, "public-input"), "utf8")),
-      JSON.parse(readFileSync(ownedInputFile(authenticatedPath, "authenticated-input"), "utf8")),
+      readJsonFileNoFollow(ownedInputFile(publicPath, "public-input"), "public-input"),
+      readJsonFileNoFollow(
+        ownedInputFile(authenticatedPath, "authenticated-input"),
+        "authenticated-input",
+      ),
     ]);
     writeFileSync(
       ownedOutputFile(output, "combined-output", ".json"),
@@ -221,8 +256,8 @@ async function main(): Promise<number> {
     const markdownPath = argumentValue(args, "markdown");
     if (!baselinePath || !currentPath || !markdownPath) fail("compare-inputs-required");
     const comparison = compareRouteJsReports(
-      JSON.parse(readFileSync(ownedInputFile(baselinePath, "baseline-input"), "utf8")),
-      JSON.parse(readFileSync(ownedInputFile(currentPath, "current-input"), "utf8")),
+      readJsonFileNoFollow(ownedInputFile(baselinePath, "baseline-input"), "baseline-input"),
+      readJsonFileNoFollow(ownedInputFile(currentPath, "current-input"), "current-input"),
     );
     const markdown = formatRouteJsComparisonMarkdown(comparison);
     writeFileSync(ownedOutputFile(markdownPath, "markdown-output", ".md"), markdown, "utf8");
@@ -236,8 +271,8 @@ async function main(): Promise<number> {
     const markdownPath = argumentValue(args, "markdown");
     if (!baselinePath || !currentPath || !markdownPath) fail("compare-inputs-required");
     const comparison = compareRouteJsModeReports(
-      JSON.parse(readFileSync(ownedInputFile(baselinePath, "baseline-input"), "utf8")),
-      JSON.parse(readFileSync(ownedInputFile(currentPath, "current-input"), "utf8")),
+      readJsonFileNoFollow(ownedInputFile(baselinePath, "baseline-input"), "baseline-input"),
+      readJsonFileNoFollow(ownedInputFile(currentPath, "current-input"), "current-input"),
     );
     const markdown = formatRouteJsComparisonMarkdown(comparison);
     writeFileSync(ownedOutputFile(markdownPath, "markdown-output", ".md"), markdown, "utf8");

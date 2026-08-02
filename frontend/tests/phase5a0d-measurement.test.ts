@@ -484,6 +484,13 @@ describe("cold-browser route JavaScript evidence", () => {
     expect(routeJsCliSource).toContain("!isExactRealPath(reportsRoot)");
     expect(routeJsCliSource).toContain("function ensureOwnedParent(");
     expect(routeJsCliSource).toContain("!isExactRealPath(resolved)");
+    expect(routeJsCliSource).toContain("function readJsonFileNoFollow(");
+    expect(routeJsCliSource).toContain("fstatSync(descriptor, { bigint: true })");
+    expect(routeJsCliSource).toContain('readFileSync(descriptor, "utf8")');
+    expect(routeJsToolSource).toContain("fstatSync(descriptor, { bigint: true })");
+    expect(routeJsToolSource).toContain("ftruncateSync(descriptor, 0)");
+    expect(routeJsToolSource).toContain("writeFileSync(descriptor");
+    expect(routeJsToolSource).not.toContain("writeFileSync(outputFile");
     expect(routeJsCliSource).not.toContain("mkdirSync(parent, { recursive: true })");
   });
 

@@ -1,8 +1,13 @@
 import { createHash } from "node:crypto";
 import {
+  closeSync,
+  constants,
   existsSync,
+  fstatSync,
+  ftruncateSync,
   lstatSync,
   mkdirSync,
+  openSync,
   readFileSync,
   realpathSync,
   rmSync,
@@ -904,17 +909,32 @@ export async function captureRouteJavaScript(options: {
     options.frontendRoot,
   );
   const outputFile = path.join(modeDirectory, `${route.id}.json`);
-  if (existsSync(outputFile)) {
-    const metadata = lstatSync(outputFile);
+  let descriptor: number | undefined;
+  try {
+    const noFollow = process.platform === "win32" ? 0 : constants.O_NOFOLLOW;
+    descriptor = openSync(outputFile, constants.O_WRONLY | constants.O_CREAT | noFollow, 0o600);
+    const descriptorMetadata = fstatSync(descriptor, { bigint: true });
+    const pathMetadata = lstatSync(outputFile, { bigint: true });
     if (
-      !metadata.isFile() ||
-      metadata.isSymbolicLink() ||
+      !descriptorMetadata.isFile() ||
+      !pathMetadata.isFile() ||
+      pathMetadata.isSymbolicLink() ||
+      descriptorMetadata.dev !== pathMetadata.dev ||
+      descriptorMetadata.ino !== pathMetadata.ino ||
       comparablePath(realpathSync.native(outputFile)) !== comparablePath(outputFile)
     ) {
-      fail("capture-output-reparse");
+      fail("capture-output-invalid");
     }
+    ftruncateSync(descriptor, 0);
+    writeFileSync(descriptor, `${JSON.stringify(capture, null, 2)}\n`, "utf8");
+  } catch (error) {
+    if (error instanceof Error && error.message === "[P5_BUNDLE] capture-output-invalid") {
+      throw error;
+    }
+    fail("capture-output-invalid");
+  } finally {
+    if (descriptor !== undefined) closeSync(descriptor);
   }
-  writeFileSync(outputFile, `${JSON.stringify(capture, null, 2)}\n`, "utf8");
   return capture;
 }
 
