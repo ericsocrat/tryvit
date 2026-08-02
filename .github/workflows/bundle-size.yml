@@ -24,6 +24,7 @@ jobs:
     env:
       VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
       BASE_URL: http://127.0.0.1:3000
+      NPM_CONFIG_IGNORE_SCRIPTS: "true"
     defaults:
       run:
         working-directory: frontend
@@ -88,6 +89,8 @@ jobs:
             echo "trusted=false" >> "$GITHUB_OUTPUT"
             echo "::notice::The exact Phase 5A.0d bootstrap may produce illustrative base/head evidence, but cannot enforce a trusted regression until the reviewed harness exists on the PR base."
           fi
+          echo "archive_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-reviewed-route-js-harness.tar" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+          echo "package_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-reviewed-package.json" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
 
       - name: Restore identical reviewed measurement harness onto base
         working-directory: .
@@ -108,7 +111,7 @@ jobs:
           const fs = require("fs");
           const base = JSON.parse(fs.readFileSync("package.json", "utf8"));
           const reviewed = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-reviewed-package.json", "utf8"));
-          for (const name of [
+          const allowedNames = [
             "visual-safety:preflight",
             "visual-safety:assert",
             "visual-safety:public",
@@ -118,7 +121,8 @@ jobs:
             "phase5:route-js",
             "phase5:route-js:public",
             "phase5:route-js:authenticated",
-          ]) {
+          ];
+          for (const name of allowedNames) {
             if (typeof reviewed.scripts?.[name] !== "string") throw new Error(`missing harness script: ${name}`);
             base.scripts[name] = reviewed.scripts[name];
           }
@@ -218,9 +222,12 @@ jobs:
         run: npm run phase5:route-js -- combine --public=performance-reports/route-js/base-public.json --local-authenticated=performance-reports/route-js/base-authenticated.json --output=performance-reports/route-js/base-route-js.json
 
       - name: Preserve validated base report across the head checkout
+        id: preserve_base_report
         if: ${{ !cancelled() }}
         shell: bash
-        run: cp -- performance-reports/route-js/base-route-js.json "$RUNNER_TEMP/base-route-js.json"
+        run: |
+          cp -- performance-reports/route-js/base-route-js.json "$RUNNER_TEMP/base-route-js.json"
+          echo "sha256=$(sha256sum "$RUNNER_TEMP/base-route-js.json" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
 
       - name: Checkout pull-request head on the same runner
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -228,10 +235,30 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
 
-      - name: Restore the reviewed base harness onto head
+      - name: Install head dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install head lockfile-pinned Chromium
+        run: npx playwright install --with-deps chromium
+        timeout-minutes: 8
+
+      - name: Reinstall head dependencies from lockfile after browser setup
+        run: npm ci --ignore-scripts --prefer-offline
+
+      # Head-controlled dependency lifecycle scripts run before this point.
+      # Re-attest and restore the reviewed archive afterwards so they cannot
+      # replace the comparator, fixture contract, or preserved base evidence.
+      - name: Re-attest and restore the reviewed base harness onto head
         working-directory: .
         shell: bash
-        run: tar -xf "$RUNNER_TEMP/phase5a0d-reviewed-route-js-harness.tar"
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+          git diff --quiet HEAD --
+          echo "${{ steps.harness_policy.outputs.archive_sha256 }}  $RUNNER_TEMP/phase5a0d-reviewed-route-js-harness.tar" | sha256sum -c -
+          echo "${{ steps.harness_policy.outputs.package_sha256 }}  $RUNNER_TEMP/phase5a0d-reviewed-package.json" | sha256sum -c -
+          echo "${{ steps.preserve_base_report.outputs.sha256 }}  $RUNNER_TEMP/base-route-js.json" | sha256sum -c -
+          rm -rf -- frontend/e2e frontend/tooling frontend/playwright.config.ts
+          tar -xf "$RUNNER_TEMP/phase5a0d-reviewed-route-js-harness.tar"
 
       - name: Add reviewed measurement-only npm entry points to head
         shell: bash
@@ -240,7 +267,7 @@ jobs:
           const fs = require("fs");
           const current = JSON.parse(fs.readFileSync("package.json", "utf8"));
           const reviewed = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-reviewed-package.json", "utf8"));
-          for (const name of [
+          const allowedNames = [
             "visual-safety:preflight",
             "visual-safety:assert",
             "visual-safety:public",
@@ -250,19 +277,15 @@ jobs:
             "phase5:route-js",
             "phase5:route-js:public",
             "phase5:route-js:authenticated",
-          ]) {
+          ];
+          const scripts = {};
+          for (const name of allowedNames) {
             if (typeof reviewed.scripts?.[name] !== "string") throw new Error(`missing harness script: ${name}`);
-            current.scripts[name] = reviewed.scripts[name];
+            scripts[name] = reviewed.scripts[name];
           }
+          current.scripts = scripts;
           fs.writeFileSync("package.json", JSON.stringify(current, null, 2) + "\n");
           NODE
-
-      - name: Install head dependencies
-        run: npm ci
-
-      - name: Install head lockfile-pinned Chromium
-        run: npx playwright install --with-deps chromium
-        timeout-minutes: 8
 
       - name: Head public visual-safety preflight
         run: npm run visual-safety:preflight
@@ -347,7 +370,9 @@ jobs:
       - name: Restore validated base report into the owned report root
         if: ${{ !cancelled() }}
         shell: bash
-        run: cp -- "$RUNNER_TEMP/base-route-js.json" performance-reports/route-js/base-route-js.json
+        run: |
+          echo "${{ steps.preserve_base_report.outputs.sha256 }}  $RUNNER_TEMP/base-route-js.json" | sha256sum -c -
+          cp -- "$RUNNER_TEMP/base-route-js.json" performance-reports/route-js/base-route-js.json
 
       - name: Compare route JavaScript (+10 KiB OR +5% fails; reductions pass)
         id: route_compare

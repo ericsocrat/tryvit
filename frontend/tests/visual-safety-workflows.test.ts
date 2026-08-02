@@ -399,7 +399,7 @@ describe("browser workflow visual-safety contract", () => {
     expect(phase5VisualJobs.verify).toContain("baseline_state.outputs.exists == 'true'");
     expect(phase5VisualJobs.verify).toContain("git diff --quiet");
     expect(phase5VisualJobs.verify).toContain("provenance=immutable-pr-base");
-    expect(phase5VisualJobs.verify).toContain("provenance=initial-human-reviewed-candidate");
+    expect(phase5VisualJobs.verify).toContain("provenance=initial-candidate-review-required");
     expect(phase5VisualJobs.verify).toContain(
       "baselines are immutable relative to the exact PR base",
     );
@@ -407,6 +407,28 @@ describe("browser workflow visual-safety contract", () => {
     expect(phase5VisualJobs.verify).toContain("phase5:visual:verify:authenticated");
     expect(phase5VisualJobs.verify).not.toContain("phase5:visual:generate:");
     expect(phase5VisualJobs.verify).not.toContain("--update-snapshots");
+    expect(phase5VisualJobs.verify).toContain("Select and seal the exact visual verifier");
+    expect(phase5VisualJobs.verify).toContain('source="pr-base"');
+    expect(phase5VisualJobs.verify).toContain("exact-phase5a0d-bootstrap-review-required");
+    expect(phase5VisualJobs.verify).toContain("Re-attest and restore the exact visual verifier");
+    expect(phase5VisualJobs.verify).toContain("phase5a0d-reviewed-visual-verifier.tar");
+    expect(phase5VisualJobs.verify).toContain("steps.verifier_policy.outputs.archive_sha256");
+    expect(phase5VisualJobs.verify).toContain("steps.verifier_policy.outputs.package_sha256");
+    expect(phase5VisualJobs.verify).toContain("current.scripts = scripts");
+    expect(phase5VisualJobs.verify).toContain("npm ci --ignore-scripts");
+    expect(phase5VisualJobs.verify).toContain("npm ci --ignore-scripts --prefer-offline");
+    expect(phase5VisualJobs.verify).toContain(
+      'test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"',
+    );
+    expect(phase5VisualJobs.verify).toContain("git diff --quiet HEAD --");
+    expect(phase5VisualJobs.verify.indexOf("Install dependencies")).toBeLessThan(
+      phase5VisualJobs.verify.indexOf("Re-attest and restore the exact visual verifier"),
+    );
+    expect(
+      phase5VisualJobs.verify.indexOf("Install lockfile-pinned Playwright Chromium"),
+    ).toBeLessThan(
+      phase5VisualJobs.verify.indexOf("Re-attest and restore the exact visual verifier"),
+    );
     expect(phase5VisualJobs.generate).toContain(
       "ref: ${{ github.event.pull_request.head.sha || github.sha }}",
     );
@@ -428,16 +450,45 @@ describe("browser workflow visual-safety contract", () => {
     expect(phase5VisualJobs.generate).toContain(
       "Initial baseline bootstrap will upload candidates for human review only.",
     );
-    expect(phase5VisualJobs.generate.match(/phase5:visual:generate:public/gu)).toHaveLength(2);
-    expect(phase5VisualJobs.generate.match(/phase5:visual:generate:authenticated/gu)).toHaveLength(
-      2,
-    );
-    expect(phase5VisualJobs.generate.match(/phase5:visual:manifest:generate/gu)).toHaveLength(2);
+    expect(
+      phase5VisualJobs.generate.match(/run: npm run phase5:visual:generate:public/gu),
+    ).toHaveLength(2);
+    expect(
+      phase5VisualJobs.generate.match(/run: npm run phase5:visual:generate:authenticated/gu),
+    ).toHaveLength(2);
+    expect(
+      phase5VisualJobs.generate.match(/^\s+npm run phase5:visual:manifest:generate$/gmu),
+    ).toHaveLength(2);
     expect(phase5VisualJobs.generate).toContain("phase5a0d-first.sha256");
     expect(phase5VisualJobs.generate).toContain("phase5a0d-second.sha256");
     expect(phase5VisualJobs.generate).toContain("cmp --silent");
     expect(phase5VisualJobs.generate).toContain("byte_identical=true");
-    expect(phase5VisualJobs.generate.match(/phase5:visual:artifact:stage/gu)).toHaveLength(2);
+    expect(
+      phase5VisualJobs.generate.match(/^\s+npm run --silent phase5:visual:artifact:stage -- /gmu),
+    ).toHaveLength(2);
+    expect(phase5VisualJobs.generate).toContain(
+      "Seal the exact candidate generator before dependency lifecycle scripts",
+    );
+    expect(phase5VisualJobs.generate).toContain(
+      "Re-attest and restore the exact candidate generator",
+    );
+    expect(phase5VisualJobs.generate).toContain("steps.candidate_harness.outputs.archive_sha256");
+    expect(phase5VisualJobs.generate).toContain("steps.candidate_harness.outputs.package_sha256");
+    expect(phase5VisualJobs.generate).toContain("current.scripts = scripts");
+    expect(phase5VisualJobs.generate).toContain("npm ci --ignore-scripts");
+    expect(phase5VisualJobs.generate).toContain("npm ci --ignore-scripts --prefer-offline");
+    expect(phase5VisualJobs.generate).toContain(
+      'test "$(git rev-parse HEAD)" = "${{ steps.candidate_harness.outputs.source_sha }}"',
+    );
+    expect(phase5VisualJobs.generate).toContain("git diff --quiet HEAD --");
+    expect(phase5VisualJobs.generate.indexOf("Install dependencies")).toBeLessThan(
+      phase5VisualJobs.generate.indexOf("Re-attest and restore the exact candidate generator"),
+    );
+    expect(
+      phase5VisualJobs.generate.indexOf("Install lockfile-pinned Playwright Chromium"),
+    ).toBeLessThan(
+      phase5VisualJobs.generate.indexOf("Re-attest and restore the exact candidate generator"),
+    );
     expect(phase5VisualJobs.generate).toContain("phase5a0d-second-candidates/");
     expect(phase5VisualJobs.generate).not.toContain("path: frontend/e2e/__screenshots__/");
     expect(phase5VisualJobs.generate).not.toContain("git commit");
@@ -493,7 +544,24 @@ describe("browser workflow visual-safety contract", () => {
     expect(bundle).toContain("steps.route_evidence_stage.outcome");
     expect(bundle).toContain("f03a79c97f9edc495a62fa02e89c45938a42fc6e");
     expect(bundle).toContain("phase5a0d-reviewed-route-js-harness.tar");
-    expect(bundle).toContain("Restore the reviewed base harness onto head");
+    expect(bundle).toContain("Re-attest and restore the reviewed base harness onto head");
+    expect(bundle).toContain("steps.harness_policy.outputs.archive_sha256");
+    expect(bundle).toContain("steps.harness_policy.outputs.package_sha256");
+    expect(bundle).toContain("steps.preserve_base_report.outputs.sha256");
+    expect(bundle).toContain("current.scripts = scripts");
+    expect(bundle).toContain('NPM_CONFIG_IGNORE_SCRIPTS: "true"');
+    expect(bundle).toContain("npm ci --ignore-scripts");
+    expect(bundle).toContain("npm ci --ignore-scripts --prefer-offline");
+    expect(bundle).toContain(
+      'test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"',
+    );
+    expect(bundle).toContain("git diff --quiet HEAD --");
+    expect(bundle.indexOf("Install head dependencies")).toBeLessThan(
+      bundle.indexOf("Re-attest and restore the reviewed base harness onto head"),
+    );
+    expect(bundle.indexOf("Install head lockfile-pinned Chromium")).toBeLessThan(
+      bundle.indexOf("Re-attest and restore the reviewed base harness onto head"),
+    );
     expect(bundle).toContain(
       "PR base lacks the reviewed route-JS harness; bootstrap is authorized only",
     );
@@ -507,6 +575,22 @@ describe("browser workflow visual-safety contract", () => {
     expect(bundle).not.toContain("build-manifest.json");
     expect(bundle).not.toContain("totalBytes");
     expect(bundle).not.toContain("Math.abs");
+  });
+
+  it("ships the pinned Inter test fixture with exact source and OFL notice", () => {
+    const fixtureRoot = path.join(repoRoot, "frontend", "e2e", "fixtures", "phase5a0d");
+    const fixture = readFileSync(path.join(fixtureRoot, "inter-bold-c1c6ba11.ttf"));
+    const notice = readFileSync(path.join(fixtureRoot, "inter-bold-c1c6ba11.OFL.txt"), "utf8");
+    expect(fixture).toHaveLength(344_068);
+    expect(createHash("sha256").update(fixture).digest("hex")).toBe(
+      "c1c6ba111e8d04d392b741d194ab548186ec3c006ed7cc134be0525402520339",
+    );
+    expect(notice).toContain("Copyright 2020 The Inter Project Authors");
+    expect(notice).toContain("SIL OPEN FONT LICENSE Version 1.1");
+    expect(notice).toContain(
+      "https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuFuYMZhrib2Bg-4.ttf",
+    );
+    expect(notice).toContain("c1c6ba111e8d04d392b741d194ab548186ec3c006ed7cc134be0525402520339");
   });
 
   it("runs authenticated visual and performance gates for migration changes", () => {

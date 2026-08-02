@@ -27,6 +27,7 @@ jobs:
       CI: "true"
       VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
       BASE_URL: http://127.0.0.1:3000
+      NPM_CONFIG_IGNORE_SCRIPTS: "true"
     defaults:
       run:
         working-directory: frontend
@@ -68,7 +69,7 @@ jobs:
                 echo "::error::Initial baseline bootstrap is authorized only from the verified Phase 5A.0c base."
                 exit 1
               fi
-              echo "provenance=initial-human-reviewed-candidate" >> "$GITHUB_OUTPUT"
+              echo "provenance=initial-candidate-review-required" >> "$GITHUB_OUTPUT"
             fi
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
@@ -83,6 +84,45 @@ jobs:
             echo "Initial baseline verification is deferred until reviewed candidates are committed."
           fi
 
+      # Once Phase 5A.0d is on the PR base, the exact base revision supplies
+      # the verifier that judges the head. The one-time f03 bootstrap remains
+      # explicitly review-required and non-authoritative until it is merged.
+      - name: Select and seal the exact visual verifier
+        id: verifier_policy
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+          source_sha="$base_sha"
+          source="pr-base"
+          trusted=true
+          if ! git cat-file -e "$base_sha:frontend/tooling/phase5a0d-visual-baselines.ts" 2>/dev/null || \
+             ! git cat-file -e "$base_sha:frontend/e2e/scripts/visual-safety-cli.mts" 2>/dev/null; then
+            if [ "$base_sha" != "f03a79c97f9edc495a62fa02e89c45938a42fc6e" ]; then
+              echo "::error::The PR base lacks the reviewed visual verifier; bootstrap is authorized only from the verified Phase 5A.0c SHA."
+              exit 1
+            fi
+            source_sha="$head_sha"
+            source="exact-phase5a0d-bootstrap-review-required"
+            trusted=false
+          fi
+          git archive --format=tar \
+            --output="$RUNNER_TEMP/phase5a0d-reviewed-visual-verifier.tar" \
+            "$source_sha" -- \
+            frontend/playwright.config.ts \
+            frontend/e2e \
+            frontend/tooling
+          git show "$source_sha:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-reviewed-visual-package.json"
+          {
+            echo "archive_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-reviewed-visual-verifier.tar" | awk '{print $1}')"
+            echo "package_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-reviewed-visual-package.json" | awk '{print $1}')"
+            echo "source=$source"
+            echo "source_sha=$source_sha"
+            echo "trusted=$trusted"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Setup Node
         if: ${{ steps.baseline_state.outputs.exists == 'true' }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -93,14 +133,66 @@ jobs:
 
       - name: Install dependencies
         if: ${{ steps.baseline_state.outputs.exists == 'true' }}
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Install lockfile-pinned Playwright Chromium
         if: ${{ steps.baseline_state.outputs.exists == 'true' }}
         run: npx playwright install --with-deps chromium
         timeout-minutes: 8
 
+      - name: Reinstall dependencies from lockfile after browser setup
+        if: ${{ steps.baseline_state.outputs.exists == 'true' }}
+        run: npm ci --ignore-scripts --prefer-offline
+
+      - name: Re-attest and restore the exact visual verifier
+        if: ${{ steps.baseline_state.outputs.exists == 'true' }}
+        working-directory: .
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+          git diff --quiet HEAD --
+          echo "${{ steps.verifier_policy.outputs.archive_sha256 }}  $RUNNER_TEMP/phase5a0d-reviewed-visual-verifier.tar" | sha256sum -c -
+          echo "${{ steps.verifier_policy.outputs.package_sha256 }}  $RUNNER_TEMP/phase5a0d-reviewed-visual-package.json" | sha256sum -c -
+          rm -rf -- frontend/e2e frontend/tooling frontend/playwright.config.ts
+          tar -xf "$RUNNER_TEMP/phase5a0d-reviewed-visual-verifier.tar"
+          cd frontend
+          node <<'NODE'
+          const fs = require("fs");
+          const current = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          const reviewed = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-reviewed-visual-package.json", "utf8"));
+          const allowedNames = [
+            "visual-safety:preflight",
+            "visual-safety:assert",
+            "visual-safety:fixtures-seed",
+            "visual-safety:fixtures-teardown",
+            "phase5:visual:verify:public",
+            "phase5:visual:verify:authenticated",
+          ];
+          const scripts = {};
+          for (const name of allowedNames) {
+            if (typeof reviewed.scripts?.[name] !== "string") throw new Error(`missing visual verifier script: ${name}`);
+            scripts[name] = reviewed.scripts[name];
+          }
+          current.scripts = scripts;
+          fs.writeFileSync("package.json", JSON.stringify(current, null, 2) + "\n");
+          NODE
+
+      - name: Record visual verifier provenance
+        if: ${{ steps.baseline_state.outputs.exists == 'true' }}
+        shell: bash
+        run: |
+          {
+            echo "### Phase 5A.0d visual verifier"
+            echo "- Source: \`${{ steps.verifier_policy.outputs.source }}\`"
+            echo "- Source commit: \`${{ steps.verifier_policy.outputs.source_sha }}\`"
+            echo "- Base-authoritative: \`${{ steps.verifier_policy.outputs.trusted }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "${{ steps.verifier_policy.outputs.trusted }}" != "true" ]; then
+            echo "::notice::Initial bootstrap verification uses the exact-head verifier and still requires explicit human review; base-authoritative enforcement begins after merge."
+          fi
+
       - name: Setup pinned Supabase CLI
+        id: local_supabase_cli
         if: ${{ steps.baseline_state.outputs.exists == 'true' }}
         uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
         with:
@@ -126,7 +218,7 @@ jobs:
 
       - name: Start ephemeral local Supabase
         id: local_supabase_start
-        if: ${{ !cancelled() && steps.baseline_state.outputs.exists == 'true' }}
+        if: ${{ !cancelled() && steps.baseline_state.outputs.exists == 'true' && steps.local_supabase_cli.outcome == 'success' }}
         working-directory: .
         run: bash frontend/e2e/scripts/local-supabase-ci.sh start
 
@@ -172,7 +264,7 @@ jobs:
 
       - name: Stop ephemeral local Supabase (no backup)
         id: local_supabase_stop
-        if: ${{ always() }}
+        if: ${{ always() && steps.local_supabase_cli.outcome == 'success' }}
         working-directory: .
         run: bash frontend/e2e/scripts/local-supabase-ci.sh stop
 
@@ -195,6 +287,7 @@ jobs:
       CI: "true"
       VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
       BASE_URL: http://127.0.0.1:3000
+      NPM_CONFIG_IGNORE_SCRIPTS: "true"
     defaults:
       run:
         working-directory: frontend
@@ -239,6 +332,27 @@ jobs:
           fi
           echo "generate=$generate" >> "$GITHUB_OUTPUT"
 
+      - name: Seal the exact candidate generator before dependency lifecycle scripts
+        id: candidate_harness
+        if: ${{ steps.baseline_state.outputs.generate == 'true' }}
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          source_sha="$(git rev-parse HEAD)"
+          git archive --format=tar \
+            --output="$RUNNER_TEMP/phase5a0d-candidate-generator.tar" \
+            "$source_sha" -- \
+            frontend/playwright.config.ts \
+            frontend/e2e \
+            frontend/tooling
+          git show "$source_sha:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-candidate-package.json"
+          {
+            echo "archive_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-candidate-generator.tar" | awk '{print $1}')"
+            echo "package_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-candidate-package.json" | awk '{print $1}')"
+            echo "source_sha=$source_sha"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Setup Node
         if: ${{ steps.baseline_state.outputs.generate == 'true' }}
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -249,7 +363,7 @@ jobs:
 
       - name: Install dependencies
         if: ${{ steps.baseline_state.outputs.generate == 'true' }}
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       # ubuntu-24.04, the exact Node patch, package lock, and the Playwright-
       # managed Chromium version together define the authoritative renderer.
@@ -258,7 +372,47 @@ jobs:
         run: npx playwright install --with-deps chromium
         timeout-minutes: 8
 
+      - name: Reinstall dependencies from lockfile after browser setup
+        if: ${{ steps.baseline_state.outputs.generate == 'true' }}
+        run: npm ci --ignore-scripts --prefer-offline
+
+      - name: Re-attest and restore the exact candidate generator
+        if: ${{ steps.baseline_state.outputs.generate == 'true' }}
+        working-directory: .
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ steps.candidate_harness.outputs.source_sha }}"
+          git diff --quiet HEAD --
+          echo "${{ steps.candidate_harness.outputs.archive_sha256 }}  $RUNNER_TEMP/phase5a0d-candidate-generator.tar" | sha256sum -c -
+          echo "${{ steps.candidate_harness.outputs.package_sha256 }}  $RUNNER_TEMP/phase5a0d-candidate-package.json" | sha256sum -c -
+          rm -rf -- frontend/e2e frontend/tooling frontend/playwright.config.ts
+          tar -xf "$RUNNER_TEMP/phase5a0d-candidate-generator.tar"
+          cd frontend
+          node <<'NODE'
+          const fs = require("fs");
+          const current = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          const reviewed = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-candidate-package.json", "utf8"));
+          const allowedNames = [
+            "visual-safety:preflight",
+            "visual-safety:assert",
+            "visual-safety:fixtures-seed",
+            "visual-safety:fixtures-teardown",
+            "phase5:visual:generate:public",
+            "phase5:visual:generate:authenticated",
+            "phase5:visual:manifest:generate",
+            "phase5:visual:artifact:stage",
+          ];
+          const scripts = {};
+          for (const name of allowedNames) {
+            if (typeof reviewed.scripts?.[name] !== "string") throw new Error(`missing candidate generator script: ${name}`);
+            scripts[name] = reviewed.scripts[name];
+          }
+          current.scripts = scripts;
+          fs.writeFileSync("package.json", JSON.stringify(current, null, 2) + "\n");
+          NODE
+
       - name: Setup pinned Supabase CLI
+        id: local_supabase_cli
         if: ${{ steps.baseline_state.outputs.generate == 'true' }}
         uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
         with:
@@ -284,7 +438,7 @@ jobs:
 
       - name: Start ephemeral local Supabase
         id: local_supabase_start
-        if: ${{ !cancelled() && steps.baseline_state.outputs.generate == 'true' }}
+        if: ${{ !cancelled() && steps.baseline_state.outputs.generate == 'true' && steps.local_supabase_cli.outcome == 'success' }}
         working-directory: .
         run: bash frontend/e2e/scripts/local-supabase-ci.sh start
 
@@ -396,7 +550,7 @@ jobs:
 
       - name: Stop ephemeral local Supabase (no backup)
         id: local_supabase_stop
-        if: ${{ always() }}
+        if: ${{ always() && steps.local_supabase_cli.outcome == 'success' }}
         working-directory: .
         run: bash frontend/e2e/scripts/local-supabase-ci.sh stop
 

@@ -84,7 +84,9 @@ A build-only Node preload fulfills only that exact URL from the checked-in
 fixture and rejects every other `fonts.gstatic.com` URL. The owned egress proxy
 has no external CONNECT allowlist during build, server, Playwright, or
 Lighthouse execution. Product font code and typography remain unchanged while
-the measurement build becomes local-only and content-attested.
+the measurement build becomes local-only and content-attested. The adjacent
+`inter-bold-c1c6ba11.OFL.txt` records the exact source, checksum, copyright, and
+SIL Open Font License 1.1 redistribution terms.
 
 ### Cache and run rules
 
@@ -101,6 +103,11 @@ the measurement build becomes local-only and content-attested.
   harness exists on the exact PR base, that base harness is restored over both
   revisions and the `+10 KiB OR +5%` regression rule becomes blocking. A PR
   cannot redefine the comparator that judges it.
+- Measurement jobs install from the lockfile with lifecycle scripts disabled,
+  reinstall after Playwright browser setup, verify the exact checkout SHA and a
+  clean tracked tree, and only then restore the SHA-attested verifier archive.
+  Reviewed npm entry points replace the complete script map, so unreviewed
+  `pre*` and `post*` hooks cannot shadow a trusted command.
 - Lighthouse uses five cold lab runs per route/profile. Reports retain all five
   values, median, minimum, maximum, range, and median absolute deviation.
 - Lighthouse performance-score range above `0.10`, or timing MAD that is both
@@ -116,7 +123,9 @@ the measurement build becomes local-only and content-attested.
 For the one-time bootstrap, the PR workflow generates candidates only when it
 proves that the exact verified Phase 5A.0c base and head both lack a manifest;
 it uploads but never commits them. The seven PNGs are committed only after
-their artifact hashes and rendered contents are reviewed. If a base manifest
+their artifact hashes and rendered contents are reviewed. CI labels this
+bootstrap `review-required`; it does not infer human approval from the presence
+of a manifest. If a base manifest
 exists, every manifest and `p5a0d-*.png` byte is immutable relative to that
 exact base; deletion, replacement, or addition fails before browser execution.
 Future candidate generation is manual-only. Every candidate run renders the
@@ -282,8 +291,11 @@ that removes an existing base manifest fails deterministically and cannot enter
 bootstrap mode. The bootstrap checks out the exact pull-request head, runs two
 complete passes, and uploads candidates for explicit human review; it never
 commits or updates snapshots in place. Once a reviewed manifest is committed,
-pull-request generation skips and immutable verification becomes blocking. All
-later candidate generation is manual through `workflow_dispatch`.
+pull-request generation skips and the initial PR verifies the exact committed
+bytes with a SHA-attested but still review-required head verifier. After merge,
+the exact PR-base verifier becomes authoritative for later pull requests, so a
+head revision cannot weaken the comparison that judges it. All later candidate
+generation is manual through `workflow_dispatch`.
 
 Before any snapshot update, the launcher proves that the baseline root and both
 target spec directories are ordinary owned directories, not symlinks or reparse
