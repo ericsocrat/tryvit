@@ -114,6 +114,14 @@ describe("Playwright config (visual regression)", () => {
 /* ── Test files ──────────────────────────────────────────────────────────── */
 
 describe("Visual regression test files", () => {
+  it("applies the authoritative light and reduced-motion context in the shared helper", () => {
+    const content = fs.readFileSync(path.resolve(process.cwd(), "e2e/helpers/visual.ts"), "utf8");
+
+    expect(content).toContain(
+      'page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" })',
+    );
+  });
+
   it("smoke-visual.spec.ts exists", () => {
     const specPath = path.resolve(__dirname, "../../e2e/smoke-visual.spec.ts");
     expect(fs.existsSync(specPath)).toBe(true);
@@ -131,7 +139,7 @@ describe("Visual regression test files", () => {
     expect(content).toContain("VISUAL_BASELINE_CASES");
     expect(content).toContain('candidate.mode === "public"');
     expect(content).toContain('colorScheme: "light"');
-    expect(content).toContain('reducedMotion: "reduce"');
+    expect(content).toContain('contextOptions: { reducedMotion: "reduce" }');
     expect(content).toContain("assertPhase5VisualBaseline");
   });
 
@@ -141,6 +149,7 @@ describe("Visual regression test files", () => {
 
     expect(content).toContain("VISUAL_BASELINE_CASES");
     expect(content).toContain('candidate.mode === "local-authenticated"');
+    expect(content).toContain('contextOptions: { reducedMotion: "reduce" }');
     expect(content).toContain("assertPhase5VisualBaseline");
     expect(content).toContain("retries: 0");
   });

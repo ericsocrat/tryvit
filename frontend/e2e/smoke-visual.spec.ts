@@ -15,7 +15,7 @@ for (const baseline of VISUAL_BASELINE_CASES.filter((candidate) => candidate.mod
       locale: "en-US",
       timezoneId: "UTC",
       colorScheme: "light",
-      reducedMotion: "reduce",
+      contextOptions: { reducedMotion: "reduce" },
     });
 
     test("matches the authoritative public baseline", async ({ page }) => {

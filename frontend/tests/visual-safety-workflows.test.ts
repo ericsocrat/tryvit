@@ -463,6 +463,12 @@ describe("browser workflow visual-safety contract", () => {
     expect(phase5VisualJobs.generate).toContain("phase5a0d-second.sha256");
     expect(phase5VisualJobs.generate).toContain("cmp --silent");
     expect(phase5VisualJobs.generate).toContain("byte_identical=true");
+    expect(phase5VisualJobs.generate).toContain(
+      "!cancelled() && steps.baseline_state.outputs.generate == 'true'",
+    );
+    expect(phase5VisualJobs.generate).toContain(
+      "steps.second_public_generate.outcome != 'skipped'",
+    );
     expect(
       phase5VisualJobs.generate.match(/^\s+npm run --silent phase5:visual:artifact:stage -- /gmu),
     ).toHaveLength(2);
@@ -711,11 +717,11 @@ describe("browser workflow visual-safety contract", () => {
     );
     expect(safetyCliSource).toContain("resetGeneratedServiceWorker()");
     expect(safetyCliSource).toContain("assertGeneratedServiceWorker()");
-    expect(safetyCliSource).toContain(
-      '["--import", pathToFileURL(localFontFetchPreload).href, nextCli, "build", "--webpack"]',
+    expect(safetyCliSource).toMatch(
+      /pathToFileURL\(localFontFetchPreload\)\.href,\s*nextCli,\s*"build"/u,
     );
     expect(safetyCliSource).toMatch(
-      /pathToFileURL\(localFontFetchPreload\)\.href,\s*nextCli,\s*"start"/u,
+      /pathToFileURL\(localFontFetchPreload\)\.href,\s*\.\.\.fixedTimeArguments,\s*nextCli,\s*"start"/u,
     );
     expect(nextConfigSource).toContain("register: !process.env.VISUAL_SAFETY_MODE");
     for (const workflow of [

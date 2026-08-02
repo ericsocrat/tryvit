@@ -1,11 +1,12 @@
 import { once } from "node:events";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { promises as fs } from "node:fs";
 import { createServer as createHttpServer, request as httpRequest } from "node:http";
 import { connect as netConnect, createServer as createNetServer, type Socket } from "node:net";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { tmpdir } from "node:os";
+import { pathToFileURL } from "node:url";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -94,17 +95,65 @@ describe("visual-safety runner environment", () => {
       path.resolve(process.cwd(), "e2e", "scripts", "phase5a0d-local-font-fetch.mjs"),
       "utf8",
     );
+    const fixedTimePreload = path.resolve(
+      process.cwd(),
+      "e2e",
+      "scripts",
+      "phase5a0d-fixed-time.mjs",
+    );
     expect(runner).toContain("NO_EXTERNAL_CONNECT_HOSTNAMES");
     expect(runner).not.toContain("REVIEWED_EXTERNAL_CONNECT_HOSTNAMES");
     expect(
       runner.match(/"--import",\s*pathToFileURL\(localFontFetchPreload\)\.href/gu),
     ).toHaveLength(2);
     expect(runner).toMatch(/pathToFileURL\(localFontFetchPreload\)\.href,\s*nextCli,\s*"build"/u);
-    expect(runner).toMatch(/pathToFileURL\(localFontFetchPreload\)\.href,\s*nextCli,\s*"start"/u);
+    expect(runner).toMatch(
+      /pathToFileURL\(localFontFetchPreload\)\.href,\s*\.\.\.fixedTimeArguments,\s*nextCli,\s*"start"/u,
+    );
     expect(preload).toContain("c1c6ba111e8d04d392b741d194ab548186ec3c006ed7cc134be0525402520339");
     expect(preload).toContain("unpinned-font-url-rejected");
     expect(preload).toContain("fstatSync(fixtureDescriptor, { bigint: true })");
     expect(preload).toContain("readFileSync(fixtureDescriptor)");
+
+    const fixed = spawnSync(
+      process.execPath,
+      [
+        "--import",
+        pathToFileURL(fixedTimePreload).href,
+        "--eval",
+        "class ExtendedDate extends Date {};" +
+          'process.stdout.write(`${Date.now()}|${new Date().toISOString()}|${new Date(0).toISOString()}|${Date() === new Date().toString()}|${new Date() instanceof Date}|${new ExtendedDate() instanceof ExtendedDate}|${new Date().constructor === Date}|${Date.name}|${Date.length}|${Object.getPrototypeOf(Date) === Function.prototype}|${Date.parse("1970-01-01T00:00:00.000Z")}|${Date.UTC(1970, 0, 1)}`)',
+      ],
+      {
+        encoding: "utf8",
+        env: {
+          PATH: process.env.PATH,
+          SystemRoot: process.env.SystemRoot,
+          PHASE5A0D_FIXED_TIME: "2026-07-15T12:00:00.000Z",
+        },
+        windowsHide: true,
+      },
+    );
+    expect(fixed.status).toBe(0);
+    expect(fixed.stdout).toBe(
+      "1784116800000|2026-07-15T12:00:00.000Z|1970-01-01T00:00:00.000Z|true|true|true|true|Date|7|true|0|0",
+    );
+
+    const rejected = spawnSync(
+      process.execPath,
+      ["--import", pathToFileURL(fixedTimePreload).href],
+      {
+        encoding: "utf8",
+        env: {
+          PATH: process.env.PATH,
+          SystemRoot: process.env.SystemRoot,
+          PHASE5A0D_FIXED_TIME: "2026-07-15T12:00:00.001Z",
+        },
+        windowsHide: true,
+      },
+    );
+    expect(rejected.status).not.toBe(0);
+    expect(rejected.stderr).toContain("[P5_FIXED_TIME] exact-authoritative-time-required");
   });
 
   it("fails closed when Node cannot enforce the owned env proxy", () => {
@@ -133,6 +182,7 @@ describe("visual-safety runner environment", () => {
         LHCI_UPLOAD__TARGET: "lhci-canary",
         PW_TEST_CONNECT_WS_ENDPOINT: "pw-canary",
         PUPPETEER_EXECUTABLE_PATH: "puppeteer-canary",
+        PHASE5A0D_FIXED_TIME: "attacker-controlled",
       },
       "public",
     );
@@ -146,6 +196,7 @@ describe("visual-safety runner environment", () => {
     expect(child.LHCI_UPLOAD__TARGET).toBeUndefined();
     expect(child.PW_TEST_CONNECT_WS_ENDPOINT).toBeUndefined();
     expect(child.PUPPETEER_EXECUTABLE_PATH).toBeUndefined();
+    expect(child.PHASE5A0D_FIXED_TIME).toBeUndefined();
   });
 
   it("rejects Playwright config overrides and normalizes wrapper-only flags", () => {
@@ -210,6 +261,7 @@ describe("visual-safety runner environment", () => {
       "LHCI_UPLOAD__TARGET",
       "LHCITEST_MOCK_LHR",
       "LIGHTHOUSE_CHROMIUM_PATH",
+      "PHASE5A0D_FIXED_TIME",
       "PUPPETEER_EXECUTABLE_PATH",
       "CHROME_PATH",
       "VISUAL_SAFETY_CONFIG_RUNNER_PID",

@@ -111,6 +111,7 @@ export async function assertPhase5VisualBaseline(
   baseline: VisualBaselineCase,
 ): Promise<void> {
   assertNoMeaningfulVisualMasks([]);
+  await page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" });
   await page.clock.setFixedTime(new Date(PHASE5A0D_FIXED_TIME));
   await page.addInitScript(() => {
     localStorage.setItem("theme", "light");

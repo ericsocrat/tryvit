@@ -44,6 +44,7 @@ import {
 import { TEST_EMAIL, TEST_PASSWORD, deleteTestUser, ensureTestUser } from "../helpers/test-user.ts";
 // @ts-expect-error TS5097: executed with `node --experimental-strip-types`.
 import {
+  PHASE5A0D_FIXED_TIME,
   LIGHTHOUSE_ROUTES,
   LIGHTHOUSE_RUN_COUNT,
   resolveFixturePath,
@@ -87,6 +88,12 @@ const localFontFetchPreload = path.join(
   "scripts",
   "phase5a0d-local-font-fetch.mjs",
 );
+const phase5FixedTimePreload = path.join(
+  frontendRoot,
+  "e2e",
+  "scripts",
+  "phase5a0d-fixed-time.mjs",
+);
 const ASSET_EXTENSIONS = new Set([
   ".cjs",
   ".css",
@@ -103,7 +110,7 @@ const FORBIDDEN_ASSET_MARKERS = ["uskvezwftkkudvksmken", "rxtaicdpnaqigowdbmsb"]
 const SENSITIVE_ENV_PATTERN =
   /(?:SUPABASE|POSTGRES|DATABASE|PASSWORD|TOKEN|SECRET|COOKIE|AUTHORIZATION|API_KEY|STAGING_(?:URL|SERVICE_KEY)|PRODUCTION_(?:URL|SERVICE_KEY))/i;
 const UNSAFE_PROCESS_ENV_PATTERN =
-  /^(?:ALL_PROXY|BROWSER|CHROME_PATH|DEBUG|DOCKER_(?:CERT_PATH|CONTEXT|HOST|TLS_VERIFY)|HTTP_PROXY|HTTPS_PROXY|LHCI_.*|LHCITEST_.*|LIGHTHOUSE_.*|NODE_DEBUG(?:_NATIVE)?|NODE_EXTRA_CA_CERTS|NODE_OPTIONS|NODE_PATH|NODE_REPL_EXTERNAL_MODULE|NODE_TLS_REJECT_UNAUTHORIZED|NODE_USE_ENV_PROXY|NO_PROXY|PLAYWRIGHT_.*|PUPPETEER_.*|PW(?!D$).*|SSLKEYLOGFILE|VISUAL_SAFETY_CONFIG_(?:RUNNER_PID|SEAL))$/iu;
+  /^(?:ALL_PROXY|BROWSER|CHROME_PATH|DEBUG|DOCKER_(?:CERT_PATH|CONTEXT|HOST|TLS_VERIFY)|HTTP_PROXY|HTTPS_PROXY|LHCI_.*|LHCITEST_.*|LIGHTHOUSE_.*|NODE_DEBUG(?:_NATIVE)?|NODE_EXTRA_CA_CERTS|NODE_OPTIONS|NODE_PATH|NODE_REPL_EXTERNAL_MODULE|NODE_TLS_REJECT_UNAUTHORIZED|NODE_USE_ENV_PROXY|NO_PROXY|PHASE5A0D_FIXED_TIME|PLAYWRIGHT_.*|PUPPETEER_.*|PW(?!D$).*|SSLKEYLOGFILE|VISUAL_SAFETY_CONFIG_(?:RUNNER_PID|SEAL))$/iu;
 const MAX_CHILD_OUTPUT_BYTES = 32 * 1024 * 1024;
 const ARTIFACT_ROOTS = Object.freeze([
   path.join(frontendRoot, "test-results"),
@@ -992,15 +999,24 @@ export async function startOwnedServer(
   contract: SafetyContract,
   localCredentials?: LocalFixtureCredentials,
   proxyOrigin?: string,
+  fixedTime?: string,
 ): Promise<{ child: ChildProcess; stop: () => Promise<void> }> {
   if (!proxyOrigin) {
     throw safetyError("VS_SERVER_PROXY", "owned-egress-proxy-required");
   }
   const localOrigin = localSupabaseOrigin(contract);
+  const fixedTimeArguments: string[] = [];
+  if (fixedTime !== undefined) {
+    if (fixedTime !== PHASE5A0D_FIXED_TIME) {
+      throw safetyError("P5_FIXED_TIME", "exact-authoritative-time-required");
+    }
+    fixedTimeArguments.push("--import", pathToFileURL(phase5FixedTimePreload).href);
+  }
   await verifyBuildProvenance(contract);
   await assertPortAvailable();
   const env = sanitizedChildEnvironment(process.env, contract.mode, localOrigin, localCredentials);
   applyOwnedProxyEnvironment(env, proxyOrigin);
+  if (fixedTime !== undefined) env.PHASE5A0D_FIXED_TIME = fixedTime;
   const sensitiveValues = sensitiveValuesFromEnvironment(env);
   const nextCli = require.resolve("next/dist/bin/next");
   const child = spawn(
@@ -1008,6 +1024,7 @@ export async function startOwnedServer(
     [
       "--import",
       pathToFileURL(localFontFetchPreload).href,
+      ...fixedTimeArguments,
       nextCli,
       "start",
       "-H",
@@ -1229,6 +1246,10 @@ async function runPlaywright(
   if (normalized.projects.has("visual-smoke") || normalized.projects.has("visual-authenticated")) {
     sanitized.VISUAL_REGRESSION = "true";
   }
+  const phase5FixedTime =
+    normalized.projects.has("visual-smoke") || normalized.projects.has("visual-authenticated")
+      ? PHASE5A0D_FIXED_TIME
+      : undefined;
   if (
     normalized.projects.has("phase5-route-js-public") ||
     normalized.projects.has("phase5-route-js-authenticated")
@@ -1287,7 +1308,12 @@ async function runPlaywright(
         sanitized.VISUAL_SAFETY_AUTH_STATE_DIR = authState.directory;
         sanitized.VISUAL_SAFETY_AUTH_STATE_OWNER = authState.ownerToken;
       }
-      ownedServer = await startOwnedServer(contract, localCredentials ?? undefined, proxy.origin);
+      ownedServer = await startOwnedServer(
+        contract,
+        localCredentials ?? undefined,
+        proxy.origin,
+        phase5FixedTime,
+      );
       invocationProof = createInvocationProof(contract, proxy.origin, ownedServer.child.pid);
       unregisterInvocationProof = registerOwnedCleanup(invocationProof.cleanup);
       const playwrightEnv: NodeJS.ProcessEnv = {

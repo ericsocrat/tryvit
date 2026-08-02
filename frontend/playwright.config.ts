@@ -236,7 +236,10 @@ const visualSmokeProject = {
   name: "visual-smoke",
   testMatch: /smoke-visual\.spec\.ts/,
   retries: 0,
-  use: { ...devices["Desktop Chrome"] },
+  use: {
+    ...devices["Desktop Chrome"],
+    contextOptions: { reducedMotion: "reduce" as const },
+  },
 };
 
 const visualAuthenticatedProject = {
@@ -246,6 +249,7 @@ const visualAuthenticatedProject = {
   retries: 0,
   use: {
     ...devices["Desktop Chrome"],
+    contextOptions: { reducedMotion: "reduce" as const },
     storageState: authStatePath("user.json"),
   },
 };
@@ -323,7 +327,7 @@ const phase5RouteJsPublicProject = {
     locale: "en-US",
     timezoneId: "UTC",
     colorScheme: "light" as const,
-    reducedMotion: "reduce" as const,
+    contextOptions: { reducedMotion: "reduce" as const },
   },
 };
 
@@ -339,7 +343,7 @@ const phase5RouteJsAuthenticatedProject = {
     locale: "en-US",
     timezoneId: "UTC",
     colorScheme: "light" as const,
-    reducedMotion: "reduce" as const,
+    contextOptions: { reducedMotion: "reduce" as const },
     storageState: authStatePath("user.json"),
   },
 };

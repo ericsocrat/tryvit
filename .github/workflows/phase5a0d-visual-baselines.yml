@@ -493,12 +493,12 @@ jobs:
 
       - name: Generate second public candidate pass
         id: second_public_generate
-        if: ${{ steps.baseline_state.outputs.generate == 'true' }}
+        if: ${{ !cancelled() && steps.baseline_state.outputs.generate == 'true' }}
         run: npm run phase5:visual:generate:public
 
       - name: Assert second public pass safety
         id: second_public_safety_assert
-        if: ${{ always() && steps.baseline_state.outputs.generate == 'true' }}
+        if: ${{ always() && steps.baseline_state.outputs.generate == 'true' && steps.second_public_generate.outcome != 'skipped' }}
         run: npm run visual-safety:assert
         env:
           VISUAL_SAFETY_MODE: public
