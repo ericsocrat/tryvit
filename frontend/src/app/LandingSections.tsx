@@ -1,17 +1,13 @@
-// ─── Client-side landing page sections ──────────────────────────────────────
-// Extracted from page.tsx to allow the page itself to be a server component
-// with static SEO metadata. All sections use useTranslation() → must be client.
-
-"use client";
+// ─── Server-rendered landing page sections ──────────────────────────────────
 
 import { ButtonLink } from "@/components/common/Button";
 import { Logo } from "@/components/common/Logo";
-import { useTranslation } from "@/lib/i18n";
-import { createClient } from "@/lib/supabase/client";
+import { LiveLandingAuthActions } from "@/components/layout/LivePublicAuthActions";
+import { translate } from "@/lib/i18n-core";
+import type { SupportedLanguage } from "@/stores/language-store";
 import {
   BarChart3,
   Camera,
-  ChevronRight,
   Database,
   Layers,
   Search,
@@ -19,66 +15,21 @@ import {
   ShoppingBasket,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 
-// ─── Auth state ─────────────────────────────────────────────────────────────
-// Mirrors the client-side auth pattern in Header.tsx so the landing CTAs can
-// show a Dashboard link to logged-in users while keeping `/` a static page.
-
-function useIsAuthenticated(enabled: boolean): boolean {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  useEffect(() => {
-    if (!enabled) return;
-
-    let active = true;
-
-    try {
-      const client = createClient();
-
-      client.auth.getUser().then(({ data }) => {
-        if (active) {
-          setIsAuthenticated(!!data.user);
-        }
-      });
-
-      const onAuthStateChange = client.auth.onAuthStateChange;
-      if (typeof onAuthStateChange !== "function") {
-        return () => {
-          active = false;
-        };
-      }
-
-      const authListenerResult = onAuthStateChange((_event, session) => {
-        if (active) {
-          setIsAuthenticated(!!session?.user);
-        }
-      });
-
-      return () => {
-        active = false;
-        authListenerResult.data.subscription.unsubscribe();
-      };
-    } catch {
-      return () => {
-        active = false;
-      };
-    }
-  }, [enabled]);
-
-  return isAuthenticated;
+function getTranslator(language: SupportedLanguage) {
+  return (key: string) => translate(language, key);
 }
 
 // ─── Hero ───────────────────────────────────────────────────────────────────
 
 function HeroSection({
   dataAvailable,
-  isAuthenticated,
+  language,
 }: {
   dataAvailable: boolean;
-  isAuthenticated: boolean;
+  language: SupportedLanguage;
 }) {
-  const { t } = useTranslation();
+  const t = getTranslator(language);
   return (
     <section className="relative isolate overflow-hidden bg-linear-to-b from-brand/12 via-surface to-surface pb-16 pt-16 sm:pb-24 sm:pt-20">
       <div className="pointer-events-none absolute inset-0 -z-10">
@@ -94,7 +45,7 @@ function HeroSection({
             <div>
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-strong/60 bg-surface-subtle px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-foreground-secondary">
                 <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-                Food Health Scanner
+                {t("landing.productLabel")}
               </div>
 
               <div className="mb-5 flex items-center gap-4">
@@ -103,7 +54,9 @@ function HeroSection({
                   <p className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground-secondary">
                     TryVit
                   </p>
-                  <p className="text-sm text-foreground-secondary">Nutrition clarity at a glance</p>
+                  <p className="text-sm text-foreground-secondary">
+                    {t("landing.productSubtitle")}
+                  </p>
                 </div>
               </div>
 
@@ -117,11 +70,7 @@ function HeroSection({
               <div className="flex flex-col gap-3 sm:flex-row">
                 {!dataAvailable ? (
                   <>
-                    <ButtonLink
-                      href="#service-status"
-                      size="lg"
-                      className="w-full px-8 sm:w-auto"
-                    >
+                    <ButtonLink href="#service-status" size="lg" className="w-full px-8 sm:w-auto">
                       {t("landing.viewStatus")}
                     </ButtonLink>
                     <ButtonLink
@@ -133,63 +82,52 @@ function HeroSection({
                       {t("layout.contact")}
                     </ButtonLink>
                   </>
-                ) : isAuthenticated ? (
-                  <ButtonLink
-                    href="/app"
-                    size="lg"
-                    className="w-full px-8 sm:w-auto"
-                    iconRight={<ChevronRight size={18} aria-hidden="true" />}
-                  >
-                    {t("auth.dashboard")}
-                  </ButtonLink>
                 ) : (
-                  <>
-                    <ButtonLink
-                      href="/auth/signup"
-                      size="lg"
-                      className="w-full px-8 sm:w-auto"
-                      iconRight={<ChevronRight size={18} aria-hidden="true" />}
-                    >
-                      {t("landing.getStarted")}
-                    </ButtonLink>
-                    <ButtonLink
-                      href="/auth/login"
-                      variant="secondary"
-                      size="lg"
-                      className="w-full px-8 sm:w-auto"
-                    >
-                      {t("landing.signIn")}
-                    </ButtonLink>
-                  </>
+                  <LiveLandingAuthActions
+                    placement="hero"
+                    getStartedLabel={t("landing.getStarted")}
+                    signInLabel={t("landing.signIn")}
+                    dashboardLabel={t("auth.dashboard")}
+                  />
                 )}
               </div>
             </div>
 
             <aside className="rounded-2xl border border-strong/50 bg-surface-subtle/80 p-4 shadow-sm dark:border-white/12 dark:bg-white/[0.02]">
               <p className="mb-3 text-xs font-semibold uppercase tracking-[0.1em] text-foreground-secondary">
-                Model Snapshot
+                {t("landing.modelSnapshot")}
               </p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl border border-strong/50 bg-surface px-3 py-3 text-center dark:border-white/12 dark:bg-white/[0.03]">
-                  <p className="text-2xl font-bold text-foreground">{t("landing.statProductsValue")}</p>
-                  <p className="text-xs text-foreground-secondary">Products</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {t("landing.statProductsValue")}
+                  </p>
+                  <p className="text-xs text-foreground-secondary">
+                    {t("landing.snapshotProducts")}
+                  </p>
                 </div>
                 <div className="rounded-xl border border-strong/50 bg-surface px-3 py-3 text-center dark:border-white/12 dark:bg-white/[0.03]">
                   <p className="text-2xl font-bold text-foreground">9</p>
-                  <p className="text-xs text-foreground-secondary">Score Factors</p>
+                  <p className="text-xs text-foreground-secondary">
+                    {t("landing.snapshotFactors")}
+                  </p>
                 </div>
                 <div className="rounded-xl border border-strong/50 bg-surface px-3 py-3 text-center dark:border-white/12 dark:bg-white/[0.03]">
                   <p className="text-2xl font-bold text-foreground">2</p>
-                  <p className="text-xs text-foreground-secondary">Countries</p>
+                  <p className="text-xs text-foreground-secondary">
+                    {t("landing.snapshotCountries")}
+                  </p>
                 </div>
                 <div className="rounded-xl border border-strong/50 bg-surface px-3 py-3 text-center dark:border-white/12 dark:bg-white/[0.03]">
                   <p className="text-2xl font-bold text-foreground">A-E</p>
-                  <p className="text-xs text-foreground-secondary">Nutri-Score</p>
+                  <p className="text-xs text-foreground-secondary">
+                    {t("landing.snapshotNutriScore")}
+                  </p>
                 </div>
               </div>
 
               <div className="mt-4 rounded-xl border border-brand/25 bg-brand/10 px-3 py-2 text-xs text-foreground-secondary">
-                Built for fast scanner decisions, ingredient transparency, and healthier swaps.
+                {t("landing.snapshotDescription")}
               </div>
             </aside>
           </div>
@@ -199,8 +137,8 @@ function HeroSection({
   );
 }
 
-function ServiceStatusBanner() {
-  const { t } = useTranslation();
+function ServiceStatusBanner({ language }: { language: SupportedLanguage }) {
+  const t = getTranslator(language);
 
   return (
     <section
@@ -241,15 +179,18 @@ function ServiceStatusBanner() {
 
 // ─── Features ───────────────────────────────────────────────────────────────
 
-function FeaturesSection() {
-  const { t } = useTranslation();
+function FeaturesSection({ language }: { language: SupportedLanguage }) {
+  const t = getTranslator(language);
   const features: { icon: LucideIcon; title: string; desc: string }[] = [
     { icon: Search, title: t("landing.featureSearch"), desc: t("landing.featureSearchDesc") },
     { icon: Camera, title: t("landing.featureScan"), desc: t("landing.featureScanDesc") },
     { icon: BarChart3, title: t("landing.featureCompare"), desc: t("landing.featureCompareDesc") },
   ];
   return (
-    <section aria-labelledby="features-heading" className="relative isolate overflow-hidden py-16 sm:py-20">
+    <section
+      aria-labelledby="features-heading"
+      className="relative isolate overflow-hidden py-16 sm:py-20"
+    >
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-10 top-10 h-44 w-44 rounded-full bg-brand/12 blur-3xl" />
         <div className="absolute bottom-8 right-10 h-40 w-40 rounded-full bg-brand/10 blur-3xl" />
@@ -257,16 +198,25 @@ function FeaturesSection() {
       </div>
 
       <div className="mx-auto max-w-5xl px-4">
-        <h2 id="features-heading" className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl">
+        <h2
+          id="features-heading"
+          className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl"
+        >
           {t("landing.featuresHeading")}
         </h2>
         <p className="mx-auto mb-8 max-w-2xl text-center text-sm text-foreground-secondary sm:text-base">
-          Search, scan, and compare with the same scoring logic across products and categories.
+          {t("landing.featuresDescription")}
         </p>
         <div className="mb-8 flex flex-wrap items-center justify-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-foreground-secondary">
-          <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">Search First</span>
-          <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">Scan Fast</span>
-          <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">Compare Clearly</span>
+          <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">
+            {t("landing.searchFirst")}
+          </span>
+          <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">
+            {t("landing.scanFast")}
+          </span>
+          <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">
+            {t("landing.compareClearly")}
+          </span>
         </div>
         <div className="grid gap-6 sm:grid-cols-3">
           {features.map((f, idx) => (
@@ -301,15 +251,18 @@ function FeaturesSection() {
 
 // ─── How It Works ───────────────────────────────────────────────────────────
 
-function HowItWorksSection() {
-  const { t } = useTranslation();
+function HowItWorksSection({ language }: { language: SupportedLanguage }) {
+  const t = getTranslator(language);
   const steps: { num: number; icon: LucideIcon; title: string; desc: string }[] = [
     { num: 1, icon: Search, title: t("landing.step1Title"), desc: t("landing.step1Desc") },
     { num: 2, icon: Shield, title: t("landing.step2Title"), desc: t("landing.step2Desc") },
     { num: 3, icon: ShoppingBasket, title: t("landing.step3Title"), desc: t("landing.step3Desc") },
   ];
   return (
-    <section aria-labelledby="how-it-works-heading" className="relative isolate overflow-hidden bg-surface-subtle py-16 sm:py-20">
+    <section
+      aria-labelledby="how-it-works-heading"
+      className="relative isolate overflow-hidden bg-surface-subtle py-16 sm:py-20"
+    >
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-0 top-12 h-40 w-40 rounded-full bg-brand/12 blur-3xl" />
         <div className="absolute right-0 top-20 h-48 w-48 rounded-full bg-brand/10 blur-3xl" />
@@ -317,19 +270,22 @@ function HowItWorksSection() {
       </div>
 
       <div className="mx-auto max-w-5xl px-4">
-        <h2 id="how-it-works-heading" className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl">
+        <h2
+          id="how-it-works-heading"
+          className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl"
+        >
           {t("landing.howItWorksHeading")}
         </h2>
         <p className="mx-auto mb-10 max-w-2xl text-center text-sm text-foreground-secondary sm:text-base">
-          Three quick steps from discovery to confident choices.
+          {t("landing.howItWorksDescription")}
         </p>
 
         <div className="mb-8 flex items-center justify-center gap-3 text-xs font-medium uppercase tracking-[0.08em] text-foreground-secondary">
-          <span>Discover</span>
+          <span>{t("landing.discover")}</span>
           <span className="h-px w-8 bg-brand/45" />
-          <span>Evaluate</span>
+          <span>{t("landing.evaluate")}</span>
           <span className="h-px w-8 bg-brand/45" />
-          <span>Choose</span>
+          <span>{t("landing.choose")}</span>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-3">
@@ -344,7 +300,7 @@ function HowItWorksSection() {
 
               <div className="mb-4 flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase tracking-[0.08em] text-foreground-secondary">
-                  Step
+                  {t("landing.stepLabel")}
                 </span>
                 <span className="rounded-full border border-brand/30 bg-brand/10 px-2 py-0.5 text-xs font-bold text-brand">
                   {s.num}
@@ -369,16 +325,29 @@ function HowItWorksSection() {
 
 // ─── Data Stats ─────────────────────────────────────────────────────────────
 
-function DataStatsSection({ dataAvailable }: { dataAvailable: boolean }) {
-  const { t } = useTranslation();
+function DataStatsSection({
+  dataAvailable,
+  language,
+}: {
+  dataAvailable: boolean;
+  language: SupportedLanguage;
+}) {
+  const t = getTranslator(language);
   const stats: { icon: LucideIcon; value: string; label: string }[] = [
-    { icon: ShoppingBasket, value: t("landing.statProductsValue"), label: t("landing.statProducts") },
+    {
+      icon: ShoppingBasket,
+      value: t("landing.statProductsValue"),
+      label: t("landing.statProducts"),
+    },
     { icon: Layers, value: t("landing.statCategoriesValue"), label: t("landing.statCategories") },
     { icon: Database, value: t("landing.statFactorsValue"), label: t("landing.statFactors") },
     { icon: Shield, value: t("landing.statCountriesValue"), label: t("landing.statCountries") },
   ];
   return (
-    <section aria-labelledby="stats-heading" className="relative isolate overflow-hidden py-16 sm:py-20">
+    <section
+      aria-labelledby="stats-heading"
+      className="relative isolate overflow-hidden py-16 sm:py-20"
+    >
       <div className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute -left-8 bottom-4 h-44 w-44 rounded-full bg-brand/12 blur-3xl" />
         <div className="absolute -right-8 top-4 h-52 w-52 rounded-full bg-brand/10 blur-3xl" />
@@ -386,11 +355,14 @@ function DataStatsSection({ dataAvailable }: { dataAvailable: boolean }) {
       </div>
 
       <div className="mx-auto max-w-5xl px-4">
-        <h2 id="stats-heading" className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl">
+        <h2
+          id="stats-heading"
+          className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl"
+        >
           {t("landing.statsHeading")}
         </h2>
         <p className="mx-auto mb-8 max-w-2xl text-center text-sm text-foreground-secondary sm:text-base">
-          Transparent data scale across products, categories, and scoring factors.
+          {t("landing.statsDescription")}
         </p>
 
         <div className="mx-auto mb-8 max-w-3xl rounded-2xl border border-strong/60 bg-surface/90 px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.08em] text-foreground-secondary shadow-sm dark:border-white/12 dark:bg-white/[0.03]">
@@ -413,8 +385,12 @@ function DataStatsSection({ dataAvailable }: { dataAvailable: boolean }) {
                 <s.icon size={22} aria-hidden="true" />
               </div>
 
-              <span className="block text-3xl font-extrabold leading-none text-foreground sm:text-4xl">{s.value}</span>
-              <span className="mt-2 block text-xs font-medium uppercase tracking-[0.06em] text-foreground-secondary sm:text-sm">{s.label}</span>
+              <span className="block text-3xl font-extrabold leading-none text-foreground sm:text-4xl">
+                {s.value}
+              </span>
+              <span className="mt-2 block text-xs font-medium uppercase tracking-[0.06em] text-foreground-secondary sm:text-sm">
+                {s.label}
+              </span>
 
               <div className="mt-4 h-1 w-16 rounded-full bg-brand/30 transition-all duration-300 group-hover:w-24 group-hover:bg-brand/55" />
             </article>
@@ -429,12 +405,12 @@ function DataStatsSection({ dataAvailable }: { dataAvailable: boolean }) {
 
 function CtaRepeatSection({
   dataAvailable,
-  isAuthenticated,
+  language,
 }: {
   dataAvailable: boolean;
-  isAuthenticated: boolean;
+  language: SupportedLanguage;
 }) {
-  const { t } = useTranslation();
+  const t = getTranslator(language);
   return (
     <section className="relative isolate overflow-hidden bg-linear-to-b from-brand/10 via-surface to-surface py-16 sm:py-20">
       <div className="pointer-events-none absolute inset-0 -z-10">
@@ -463,9 +439,15 @@ function CtaRepeatSection({
 
           {dataAvailable && (
             <div className="mb-8 flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-foreground-secondary">
-              <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">No credit card</span>
-              <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">Fast onboarding</span>
-              <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">Transparent scoring</span>
+              <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">
+                {t("landing.noCreditCard")}
+              </span>
+              <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">
+                {t("landing.fastOnboarding")}
+              </span>
+              <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">
+                {t("landing.transparentScoring")}
+              </span>
             </div>
           )}
 
@@ -475,38 +457,22 @@ function CtaRepeatSection({
                 <ButtonLink href="#service-status" size="lg" className="w-full px-10 sm:w-auto">
                   {t("landing.viewStatus")}
                 </ButtonLink>
-                <ButtonLink href="/contact" variant="secondary" size="lg" className="w-full px-10 sm:w-auto">
-                  {t("layout.contact")}
-                </ButtonLink>
-              </>
-            ) : isAuthenticated ? (
-              <ButtonLink
-                href="/app"
-                size="lg"
-                className="w-full px-10 sm:w-auto"
-                iconRight={<ChevronRight size={18} aria-hidden="true" />}
-              >
-                {t("auth.dashboard")}
-              </ButtonLink>
-            ) : (
-              <>
                 <ButtonLink
-                  href="/auth/signup"
-                  size="lg"
-                  className="w-full px-10 sm:w-auto"
-                  iconRight={<ChevronRight size={18} aria-hidden="true" />}
-                >
-                  {t("landing.getStarted")}
-                </ButtonLink>
-                <ButtonLink
-                  href="/auth/login"
+                  href="/contact"
                   variant="secondary"
                   size="lg"
                   className="w-full px-10 sm:w-auto"
                 >
-                  {t("landing.signIn")}
+                  {t("layout.contact")}
                 </ButtonLink>
               </>
+            ) : (
+              <LiveLandingAuthActions
+                placement="closing"
+                getStartedLabel={t("landing.getStarted")}
+                signInLabel={t("landing.signIn")}
+                dashboardLabel={t("auth.dashboard")}
+              />
             )}
           </div>
         </div>
@@ -517,16 +483,21 @@ function CtaRepeatSection({
 
 // ─── Combined export ────────────────────────────────────────────────────────
 
-export function LandingSections({ dataAvailable = true }: { dataAvailable?: boolean }) {
-  const isAuthenticated = useIsAuthenticated(dataAvailable);
+export function LandingSections({
+  dataAvailable = true,
+  language,
+}: {
+  dataAvailable?: boolean;
+  language: SupportedLanguage;
+}) {
   return (
     <>
-      {!dataAvailable && <ServiceStatusBanner />}
-      <HeroSection dataAvailable={dataAvailable} isAuthenticated={isAuthenticated} />
-      <FeaturesSection />
-      <HowItWorksSection />
-      <DataStatsSection dataAvailable={dataAvailable} />
-      <CtaRepeatSection dataAvailable={dataAvailable} isAuthenticated={isAuthenticated} />
+      {!dataAvailable && <ServiceStatusBanner language={language} />}
+      <HeroSection dataAvailable={dataAvailable} language={language} />
+      <FeaturesSection language={language} />
+      <HowItWorksSection language={language} />
+      <DataStatsSection dataAvailable={dataAvailable} language={language} />
+      <CtaRepeatSection dataAvailable={dataAvailable} language={language} />
     </>
   );
 }

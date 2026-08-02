@@ -4,6 +4,7 @@
 
 import { ImageResponse } from "next/og";
 import { getScoreHex } from "@/lib/score-utils";
+import { fetchPublicSharedComparison } from "@/lib/public-shares";
 
 /* ---------- route configuration ---------- */
 export const runtime = "nodejs";
@@ -71,12 +72,8 @@ function FallbackCard() {
         >
           TV
         </div>
-        <div style={{ fontSize: 32, fontWeight: 700, color: "#111827" }}>
-          TryVit
-        </div>
-        <div style={{ fontSize: 18, color: "#6b7280", marginTop: 8 }}>
-          Comparison not available
-        </div>
+        <div style={{ fontSize: 32, fontWeight: 700, color: "#111827" }}>TryVit</div>
+        <div style={{ fontSize: 18, color: "#6b7280", marginTop: 8 }}>Comparison not available</div>
       </div>
     </div>
   );
@@ -141,9 +138,7 @@ function ProductRow({ name, brand, score, scoreColor }: ProductRowProps) {
           {truncate(name, 45)}
         </div>
         {brand && (
-          <div style={{ fontSize: 16, color: "#6b7280", marginTop: 4 }}>
-            {truncate(brand, 35)}
-          </div>
+          <div style={{ fontSize: 16, color: "#6b7280", marginTop: 4 }}>{truncate(brand, 35)}</div>
         )}
       </div>
 
@@ -173,34 +168,12 @@ function ProductRow({ name, brand, score, scoreColor }: ProductRowProps) {
 }
 
 /* ---------- main image handler ---------- */
-export default async function OGImage({
-  params,
-}: {
-  params: Promise<{ token: string }>;
-}) {
+export default async function OGImage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const fontData = await getInterBoldFont();
 
-  /* ---- fetch comparison data (anon key — public read) ---- */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let comparison: any;
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/api_get_shared_comparison`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""}`,
-        },
-        body: JSON.stringify({ p_share_token: token }),
-        next: { revalidate: 3600 },
-      },
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    comparison = await res.json();
-  } catch {
+  const comparison = await fetchPublicSharedComparison(token);
+  if (!comparison) {
     return new ImageResponse(<FallbackCard />, {
       ...size,
       fonts: [
@@ -349,9 +322,7 @@ export default async function OGImage({
           Compare on TryVit →
         </div>
 
-        <div style={{ fontSize: 16, color: "#9ca3af" }}>
-          {products.length} products compared
-        </div>
+        <div style={{ fontSize: 16, color: "#9ca3af" }}>{products.length} products compared</div>
       </div>
     </div>,
     {

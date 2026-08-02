@@ -7,25 +7,10 @@ vi.mock("sonner", () => ({
   Toaster: () => <div data-testid="toaster" />,
 }));
 
-// Mock web-vitals to avoid `document is not defined` in CI (flaky dynamic import)
-vi.mock("@/lib/web-vitals", () => ({
-  reportWebVitals: vi.fn(),
-}));
-
-// Mock Supabase client used by FlagProvider
-vi.mock("@/lib/supabase/client", () => ({
-  createClient: () => ({
-    channel: () => ({
-      on: () => ({ subscribe: () => ({ unsubscribe: vi.fn() }) }),
-    }),
-    removeChannel: vi.fn(),
-  }),
-}));
-
 describe("Providers", () => {
   it("renders children", () => {
     render(
-      <Providers>
+      <Providers initialLanguage="en">
         <p>Hello</p>
       </Providers>,
     );
@@ -34,7 +19,7 @@ describe("Providers", () => {
 
   it("renders Toaster", () => {
     render(
-      <Providers>
+      <Providers initialLanguage="en">
         <span />
       </Providers>,
     );
@@ -43,7 +28,7 @@ describe("Providers", () => {
 
   it("renders multiple children", () => {
     render(
-      <Providers>
+      <Providers initialLanguage="en">
         <p>A</p>
         <p>B</p>
       </Providers>,

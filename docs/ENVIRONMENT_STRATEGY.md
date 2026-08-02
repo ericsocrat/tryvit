@@ -235,7 +235,7 @@ mutated or wiped:
 #### CI-level guards
 
 - Browser-facing workflows and `qa.yml` do not connect to a hosted Supabase project; `qa.yml` uses an ephemeral PG17 container. Non-browser deployment and data-integrity workflows retain their separately governed hosted contracts.
-- Browser-facing PR, main, quality, nightly, screenshot, and Lighthouse jobs receive no hosted Supabase configuration. Public runs use the Phase 5A.0a loopback-only build adapter. Quality and Nightly create a reduced job-owned emulator for authenticated coverage, derive its port from checked-in configuration, seed through the guarded local fixture launcher, and remove its volumes without backup.
+- Browser-facing PR, main, quality, nightly, screenshot, and Lighthouse jobs receive no hosted Supabase configuration. Phase 5A.0c public runs are Supabase-independent and pass no Supabase URL, key, adapter, or adapter allowlist. Quality and Nightly create a reduced job-owned emulator for authenticated coverage, derive its port from checked-in configuration, seed through the guarded local fixture launcher, and remove its volumes without backup.
 - Browser-facing and QA jobs never run `supabase db push`, `supabase db reset`, or cloud DDL. The separately governed `sync-cloud-db.yml` deployment workflow remains the cloud schema path.
 - Sanity checks (`RUN_SANITY.ps1`) are **read-only** `SELECT` queries
 
@@ -315,7 +315,7 @@ SUPABASE_STAGING_DB_PASSWORD=
 | Workflow            | Backend                           | Purpose                                | Cloud mutation risk                    |
 | ------------------- | --------------------------------- | -------------------------------------- | -------------------------------------- |
 | `qa.yml`            | Ephemeral PostgreSQL 17 container | Schema + pipeline + 784 QA + 16 sanity | **None** — container only              |
-| Browser-facing gates | Public loopback adapter or verified local emulator | Build, Playwright, screenshots and Lighthouse | **None** — hosted browser configuration is rejected |
+| Browser-facing gates | Supabase-independent public contract or verified local emulator | Build, Playwright, screenshots and Lighthouse | **None** — hosted browser configuration is rejected |
 | `build.yml`         | N/A (build only) + SonarCloud     | Build, unit tests, coverage            | **None**                               |
 | `sync-cloud-db.yml` | Staging then Production           | Auto-apply migrations on merge to main | **Schema only** — `supabase db push`   |
 
@@ -342,7 +342,7 @@ equivalents. Authenticated Lighthouse is separately blocked until a dedicated
 guarded local fixture exists. These are open infrastructure prerequisites, not
 permission to restore hosted browser credentials or weaken the checks.
 
-See [PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md](PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md) for the executable browser/fixture contract. Public-provider decoupling is intentionally deferred to Phase 5A.0c.
+See [PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md](PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md) for the executable browser/fixture contract. Phase 5A.0c makes the public path Supabase-independent; local-authenticated coverage continues to use only the guarded job-owned emulator.
 
 ---
 

@@ -95,7 +95,7 @@ describe("visual-safety runner environment", () => {
     expect(() => assertNodeEnvProxySupported()).not.toThrow();
   });
 
-  it("removes inherited canary credentials from a public child", () => {
+  it("removes inherited credentials and Supabase configuration from a public child", () => {
     const canary = "CANARY_DO_NOT_EMIT_9f30";
     const child = sanitizedChildEnvironment(
       {
@@ -103,6 +103,8 @@ describe("visual-safety runner environment", () => {
         SUPABASE_SERVICE_ROLE_KEY: canary,
         NEXT_PUBLIC_SUPABASE_URL: "https://synthetic.supabase.co",
         NEXT_PUBLIC_SUPABASE_ANON_KEY: canary,
+        VISUAL_SAFETY_BUILD_SUPABASE_ORIGIN: "http://127.0.0.1:55001",
+        VISUAL_SAFETY_BUILD_ADAPTER_ID: "loopback-placeholder-v1",
         DATABASE_URL: canary,
         STAGING_URL: canary,
         STAGING_SERVICE_KEY: canary,
@@ -111,13 +113,14 @@ describe("visual-safety runner environment", () => {
         PUPPETEER_EXECUTABLE_PATH: "puppeteer-canary",
       },
       "public",
-      "http://127.0.0.1:55001",
     );
 
     expect(JSON.stringify(child)).not.toContain(canary);
     expect(child.SUPABASE_SERVICE_ROLE_KEY).toBe("");
-    expect(child.NEXT_PUBLIC_SUPABASE_URL).toBe("http://127.0.0.1:55001");
-    expect(child.NEXT_PUBLIC_SUPABASE_ANON_KEY).toBe("tryvit-local-visual-safety-placeholder");
+    expect(child.NEXT_PUBLIC_SUPABASE_URL).toBe("");
+    expect(child.NEXT_PUBLIC_SUPABASE_ANON_KEY).toBe("");
+    expect(child.VISUAL_SAFETY_BUILD_SUPABASE_ORIGIN).toBeUndefined();
+    expect(child.VISUAL_SAFETY_BUILD_ADAPTER_ID).toBeUndefined();
     expect(child.LHCI_UPLOAD__TARGET).toBeUndefined();
     expect(child.PW_TEST_CONNECT_WS_ENDPOINT).toBeUndefined();
     expect(child.PUPPETEER_EXECUTABLE_PATH).toBeUndefined();

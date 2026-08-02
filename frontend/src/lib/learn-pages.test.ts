@@ -300,13 +300,15 @@ describe("i18n: German learn keys", () => {
 /* ────────────────────── Footer link ────────────────────── */
 
 describe("Footer includes Learn link", () => {
-  const footer = readFileSync(
-    join(frontendDir, "src/components/layout/Footer.tsx"),
+  const footer = readFileSync(join(frontendDir, "src/components/layout/Footer.tsx"), "utf-8");
+  const publicFooter = readFileSync(
+    join(frontendDir, "src/components/layout/PublicFooter.tsx"),
     "utf-8",
   );
 
   it("links to /learn", () => {
-    expect(footer).toContain('href="/learn"');
+    expect(footer).toContain("<PublicFooter");
+    expect(publicFooter).toContain('href="/learn"');
   });
 });
 

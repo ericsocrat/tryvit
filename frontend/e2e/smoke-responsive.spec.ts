@@ -27,9 +27,7 @@ for (const viewport of VIEWPORTS) {
       test(`${path} has no horizontal scroll`, async ({ page }) => {
         await page.goto(path, { waitUntil: "domcontentloaded" });
         await settlePublicPage(page);
-        const scrollWidth = await page.evaluate(
-          () => document.documentElement.scrollWidth,
-        );
+        const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
         const innerWidth = await page.evaluate(() => window.innerWidth);
         expect(scrollWidth).toBeLessThanOrEqual(innerWidth);
       });
@@ -43,7 +41,7 @@ test.describe("Landing page responsive behavior", () => {
     await page.goto("/");
     // Should still render hero and CTAs
     await expect(page.locator("text=healthier choices")).toBeVisible();
-    await expect(page.locator('a[href="/auth/signup"]').first()).toBeVisible();
+    await expect(page.locator('a[href="#service-status"]').first()).toBeVisible();
   });
 
   test("desktop layout at 1440px", async ({ page }) => {
@@ -54,9 +52,7 @@ test.describe("Landing page responsive behavior", () => {
 });
 
 test.describe("Header responsive behavior", () => {
-  test("header renders and has appropriate height on mobile", async ({
-    page,
-  }) => {
+  test("header renders and has appropriate height on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
     const header = page.locator("header").first();

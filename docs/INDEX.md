@@ -1,9 +1,9 @@
 # Documentation Index
 
 > **Last broadly verified:** 2026-07-30
-> **Phase 5A.0b route/PWA entry and inventory updated:** 2026-08-02
+> **Phase 5A.0c provider/locale/rendering entry and inventory updated:** 2026-08-02
 > **Status:** Active — update when adding, renaming, or archiving docs
-> **Tracked inventory:** 66 Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 1 route inventory in `docs/phase5/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
+> **Tracked inventory:** 67 Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 1 route inventory in `docs/phase5/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
 
 ---
@@ -22,7 +22,7 @@
 | [Security & Compliance](#security--compliance)           | 5     | Root policy, audit report, access audit, privacy checklist, rate limiting                                                                                               |
 | [Observability & Operations](#observability--operations) | 9     | Monitoring, observability, log schema, alerts, on-call policy, SLOs, metrics, incident response, disaster drill                                                         |
 | [DevOps & Environment](#devops--environment)             | 3     | Environment strategy, staging setup, Sonar config                                                                                                                       |
-| [Frontend & UX](#frontend--ux)                           | 13    | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec, product positioning, Phase 5 audit/blueprint/roadmap, visual-test safety, and route/PWA policy |
+| [Frontend & UX](#frontend--ux)                           | 14    | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec, product positioning, Phase 5 audit/blueprint/roadmap, visual-test safety, route/PWA policy, and provider/locale/rendering contract |
 | [Process & Workflow](#process--workflow)                 | 9     | Agent workflow reference, agent review workflow, research workflow, viewing & testing, backfill standard, migration conventions, labels, country expansion, demo script |
 | [Governance & Policy](#governance--policy)               | 6     | Feature sunsetting, performance report, performance guardrails, doc governance, repo governance, this index                                                             |
 | [Architecture Decisions](#architecture-decisions-adrs)   | 11    | MADR template + 10 ADRs (stack, scoring, country isolation, pipeline, API versioning, migrations, ingredients, nutrient density, scoring calibration, ingredient language model) |
@@ -213,6 +213,7 @@
 | [PHASE5_IMPLEMENTATION_ROADMAP.md](PHASE5_IMPLEMENTATION_ROADMAP.md)   | Staged Phase 5 delivery plan, weighted priority, acceptance gates, rollback boundaries and exact Phase 5A.0 prompt      | Frontend domain                                         | 2026-07-30   |
 | [PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md](PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md) | Fail-closed local build, server, browser, screenshot, fixture and Lighthouse safety contract                         | Phase 5A.0a                                             | 2026-08-01   |
 | [PHASE5A0B_PUBLIC_ROUTE_PWA_CONTRACT.md](PHASE5A0B_PUBLIC_ROUTE_PWA_CONTRACT.md) | Typed proxy public-route contract, anonymous-share/system reachability, and corrected PWA manifest semantics          | Phase 5A.0b                                             | 2026-08-02   |
+| [PHASE5A0C_DEMO_PROVIDER_LOCALE_RENDERING.md](PHASE5A0C_DEMO_PROVIDER_LOCALE_RENDERING.md) | Backend-independent public providers, EN/PL/DE request locale and landing Server Component contract                 | Phase 5A.0c                                             | 2026-08-02   |
 
 ## Process & Workflow
 

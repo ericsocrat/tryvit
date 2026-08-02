@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { proxy } from "./proxy";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -24,7 +24,11 @@ const mockLimit = vi.fn();
 vi.mock("@/lib/rate-limiter", () => ({
   rateLimitEnabled: true,
   resolveRateLimitTier: (pathname: string) => {
-    if (pathname.includes("/login") || pathname.includes("/signup") || pathname.startsWith("/auth/callback"))
+    if (
+      pathname.includes("/login") ||
+      pathname.includes("/signup") ||
+      pathname.startsWith("/auth/callback")
+    )
       return "auth";
     if (pathname.startsWith("/api/health")) return "health";
     if (pathname.includes("/search")) return "search";
@@ -36,6 +40,9 @@ vi.mock("@/lib/rate-limiter", () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubEnv("TRYVIT_DATA_BACKEND_MODE", "live");
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "http://127.0.0.1:54321");
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "test-anon-key");
   // Default: allow through rate limit
   mockLimit.mockResolvedValue({
     success: true,
@@ -43,6 +50,10 @@ beforeEach(() => {
     remaining: 59,
     reset: Date.now() + 60_000,
   });
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 function createRequest(pathname: string, origin = "http://localhost:3000") {
@@ -152,9 +163,7 @@ describe("proxy", () => {
       });
       const response = await proxy(createRequest("/auth/login"));
       expect(response.status).toBe(307);
-      expect(response.headers.get("location")).toBe(
-        "http://localhost:3000/app/search",
-      );
+      expect(response.headers.get("location")).toBe("http://localhost:3000/app/search");
     });
 
     it("redirects logged-in user from /auth/signup to /app/search", async () => {
@@ -163,9 +172,7 @@ describe("proxy", () => {
       });
       const response = await proxy(createRequest("/auth/signup"));
       expect(response.status).toBe(307);
-      expect(response.headers.get("location")).toBe(
-        "http://localhost:3000/app/search",
-      );
+      expect(response.headers.get("location")).toBe("http://localhost:3000/app/search");
     });
 
     it("does not redirect logged-in user from /", async () => {
@@ -174,6 +181,32 @@ describe("proxy", () => {
       });
       const response = await proxy(createRequest("/"));
       expect(response.status).not.toBe(307);
+    });
+  });
+
+  describe("demo-mode authentication boundary", () => {
+    it("renders auth-entry routes without constructing a Supabase client", async () => {
+      vi.stubEnv("TRYVIT_DATA_BACKEND_MODE", "demo");
+
+      const response = await proxy(createRequest("/auth/login"));
+
+      expect(response.status).not.toBe(307);
+      expect(mockCreateMiddlewareClient).not.toHaveBeenCalled();
+      expect(mockGetUser).not.toHaveBeenCalled();
+    });
+
+    it("fails protected routes closed without constructing a Supabase client", async () => {
+      vi.stubEnv("TRYVIT_DATA_BACKEND_MODE", "demo");
+
+      const response = await proxy(createRequest("/app/search?q=milk"));
+
+      expect(response.status).toBe(307);
+      expect(response.headers.get("location")).toContain("/auth/login");
+      expect(decodeURIComponent(response.headers.get("location") ?? "")).toContain(
+        "/app/search?q=milk",
+      );
+      expect(mockCreateMiddlewareClient).not.toHaveBeenCalled();
+      expect(mockGetUser).not.toHaveBeenCalled();
     });
   });
 
@@ -197,9 +230,7 @@ describe("proxy", () => {
 
     it("preserves query string in redirect parameter", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await proxy(
-        createRequest("/app/search?q=test&page=2"),
-      );
+      const response = await proxy(createRequest("/app/search?q=test&page=2"));
       expect(response.status).toBe(307);
       const location = response.headers.get("location") ?? "";
       // Redirect param should include both path and query
@@ -300,12 +331,9 @@ describe("proxy", () => {
         reset: Date.now() + 60_000,
       });
 
-      const req = new NextRequest(
-        new URL("/api/health", "http://localhost:3000"),
-        {
-          headers: { "x-rate-limit-bypass": "test-bypass-secret" },
-        },
-      );
+      const req = new NextRequest(new URL("/api/health", "http://localhost:3000"), {
+        headers: { "x-rate-limit-bypass": "test-bypass-secret" },
+      });
       const response = await proxy(req);
       // Should NOT be 429 because bypass token is valid
       expect(response.status).toBe(200);
@@ -324,12 +352,9 @@ describe("proxy", () => {
         reset: Date.now() + 60_000,
       });
 
-      const req = new NextRequest(
-        new URL("/api/health", "http://localhost:3000"),
-        {
-          headers: { "x-rate-limit-bypass": "wrong-secret" },
-        },
-      );
+      const req = new NextRequest(new URL("/api/health", "http://localhost:3000"), {
+        headers: { "x-rate-limit-bypass": "wrong-secret" },
+      });
       const response = await proxy(req);
       expect(response.status).toBe(429);
 
@@ -344,9 +369,7 @@ describe("proxy", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1", email: "user@example.com" } },
       });
-      const response = await proxy(
-        createRequest("/app/admin/submissions"),
-      );
+      const response = await proxy(createRequest("/app/admin/submissions"));
       expect(response.status).toBe(303);
       const location = response.headers.get("location") ?? "";
       expect(location).toContain("/forbidden");
@@ -356,9 +379,7 @@ describe("proxy", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1", email: "user@example.com" } },
       });
-      const response = await proxy(
-        createRequest("/app/admin/monitoring"),
-      );
+      const response = await proxy(createRequest("/app/admin/monitoring"));
       expect(response.status).toBe(303);
       const location = response.headers.get("location") ?? "";
       expect(location).toContain("/forbidden");
@@ -371,9 +392,7 @@ describe("proxy", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1", email: "admin@example.com" } },
       });
-      const response = await proxy(
-        createRequest("/app/admin/submissions"),
-      );
+      const response = await proxy(createRequest("/app/admin/submissions"));
       expect(response.status).toBe(303);
       const location = response.headers.get("location") ?? "";
       expect(location).toContain("/forbidden");
@@ -388,9 +407,7 @@ describe("proxy", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1", email: "admin@example.com" } },
       });
-      const response = await proxy(
-        createRequest("/app/admin/submissions"),
-      );
+      const response = await proxy(createRequest("/app/admin/submissions"));
       expect(response.status).not.toBe(303);
       expect(response.status).not.toBe(307);
 
@@ -404,9 +421,7 @@ describe("proxy", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1", email: "admin@example.com" } },
       });
-      const response = await proxy(
-        createRequest("/app/admin/monitoring"),
-      );
+      const response = await proxy(createRequest("/app/admin/monitoring"));
       expect(response.status).not.toBe(303);
 
       process.env.ADMIN_EMAILS = originalEnv;
@@ -419,9 +434,7 @@ describe("proxy", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1" } },
       });
-      const response = await proxy(
-        createRequest("/app/admin/submissions"),
-      );
+      const response = await proxy(createRequest("/app/admin/submissions"));
       expect(response.status).toBe(303);
       const location = response.headers.get("location") ?? "";
       expect(location).toContain("/forbidden");
@@ -431,9 +444,7 @@ describe("proxy", () => {
 
     it("redirects unauthenticated user from admin route to login", async () => {
       mockGetUser.mockResolvedValue({ data: { user: null } });
-      const response = await proxy(
-        createRequest("/app/admin/submissions"),
-      );
+      const response = await proxy(createRequest("/app/admin/submissions"));
       expect(response.status).toBe(307);
       const location = response.headers.get("location") ?? "";
       expect(location).toContain("/auth/login");
@@ -454,9 +465,7 @@ describe("proxy", () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1", email: "user@example.com" } },
       });
-      const response = await proxy(
-        createRequest("/app/admin/submissions"),
-      );
+      const response = await proxy(createRequest("/app/admin/submissions"));
       expect(response.status).toBe(303);
       const location = response.headers.get("location") ?? "";
       expect(location).toContain("/forbidden");

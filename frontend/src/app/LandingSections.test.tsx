@@ -1,42 +1,23 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { describe, expect, it, vi } from "vitest";
 import { LandingSections } from "./LandingSections";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
-const mockGetUser = vi.fn();
-const mockUnsubscribe = vi.fn();
-const mockOnAuthStateChange = vi.fn(() => ({
-  data: { subscription: { unsubscribe: mockUnsubscribe } },
-}));
-
-vi.mock("@/lib/supabase/client", () => ({
-  createClient: () => ({
-    auth: {
-      getUser: () => mockGetUser(),
-      onAuthStateChange: mockOnAuthStateChange,
-    },
-  }),
-}));
-
 vi.mock("@/components/common/Button", () => ({
-  ButtonLink: ({
-    children,
-    href,
-  }: {
-    children: React.ReactNode;
-    href: string;
-  }) => <a href={href}>{children}</a>,
+  ButtonLink: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
 vi.mock("@/components/common/Logo", () => ({
   Logo: () => <div data-testid="logo" />,
 }));
 
-vi.mock("@/lib/i18n", () => ({
-  useTranslation: () => ({
-    t: (key: string) => key,
-  }),
+vi.mock("@/lib/i18n-core", () => ({
+  translate: (_language: string, key: string) => key,
 }));
 
 vi.mock("lucide-react", () => ({
@@ -53,29 +34,29 @@ vi.mock("lucide-react", () => ({
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
 describe("LandingSections", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockGetUser.mockResolvedValue({ data: { user: null } });
+  it("remains a server component without auth or browser hooks", () => {
+    const source = readFileSync(join(process.cwd(), "src/app/LandingSections.tsx"), "utf8");
+    expect(source).not.toMatch(/^\s*["']use client["'];/mu);
+    expect(source).not.toContain("@/lib/supabase");
+    expect(source).not.toContain("useEffect");
+    expect(source).not.toContain("useState");
   });
 
   it("renders the hero tagline", () => {
-    render(<LandingSections />);
+    render(<LandingSections language="en" />);
     expect(screen.getByText("landing.tagline")).toBeInTheDocument();
   });
 
   it("renders the hero description", () => {
-    render(<LandingSections />);
+    render(<LandingSections language="en" />);
     expect(screen.getByText("landing.description")).toBeInTheDocument();
   });
 
   it("renders sign-up and sign-in links", () => {
-    render(<LandingSections />);
+    render(<LandingSections language="en" />);
     const signupLinks = screen.getAllByText("landing.getStarted");
     expect(signupLinks.length).toBeGreaterThanOrEqual(1);
-    expect(signupLinks[0].closest("a")).toHaveAttribute(
-      "href",
-      "/auth/signup",
-    );
+    expect(signupLinks[0].closest("a")).toHaveAttribute("href", "/auth/signup");
 
     const signInLinks = screen.queryAllByText("landing.signIn");
     expect(signInLinks.length).toBeGreaterThanOrEqual(1);
@@ -84,44 +65,30 @@ describe("LandingSections", () => {
     ).toBe(true);
   });
 
-  it("shows Dashboard CTAs linking to /app when authenticated", async () => {
-    mockGetUser.mockResolvedValue({ data: { user: { id: "u1" } } });
-    render(<LandingSections />);
-
-    // Both CTA clusters (hero + repeat) switch to the Dashboard link.
-    const dashboardLinks = await screen.findAllByText("auth.dashboard");
-    expect(dashboardLinks.length).toBeGreaterThanOrEqual(2);
-    dashboardLinks.forEach((link) => {
-      expect(link.closest("a")).toHaveAttribute("href", "/app");
-    });
-
-    // Public CTAs are hidden for authenticated users.
-    expect(screen.queryByText("landing.getStarted")).not.toBeInTheDocument();
-    expect(screen.queryByText("landing.signIn")).not.toBeInTheDocument();
+  it("keeps signed-out actions as the hydration-safe live default", () => {
+    render(<LandingSections language="en" />);
+    expect(screen.queryByText("auth.dashboard")).not.toBeInTheDocument();
+    expect(screen.getAllByText("landing.getStarted")).toHaveLength(2);
   });
 
   it("renders features heading and 3 feature cards", () => {
-    render(<LandingSections />);
-    expect(
-      screen.getByText("landing.featuresHeading"),
-    ).toBeInTheDocument();
+    render(<LandingSections language="en" />);
+    expect(screen.getByText("landing.featuresHeading")).toBeInTheDocument();
     expect(screen.getByText("landing.featureSearch")).toBeInTheDocument();
     expect(screen.getByText("landing.featureScan")).toBeInTheDocument();
     expect(screen.getByText("landing.featureCompare")).toBeInTheDocument();
   });
 
   it("renders how-it-works heading and 3 steps", () => {
-    render(<LandingSections />);
-    expect(
-      screen.getByText("landing.howItWorksHeading"),
-    ).toBeInTheDocument();
+    render(<LandingSections language="en" />);
+    expect(screen.getByText("landing.howItWorksHeading")).toBeInTheDocument();
     expect(screen.getByText("landing.step1Title")).toBeInTheDocument();
     expect(screen.getByText("landing.step2Title")).toBeInTheDocument();
     expect(screen.getByText("landing.step3Title")).toBeInTheDocument();
   });
 
   it("renders stats heading and 4 stat values", () => {
-    render(<LandingSections />);
+    render(<LandingSections language="en" />);
     expect(screen.getByText("landing.statsHeading")).toBeInTheDocument();
     // Product count is intentionally reused in both the hero "Model Snapshot" aside and the stats section
     expect(screen.queryAllByText("landing.statProductsValue").length).toBeGreaterThanOrEqual(2);
@@ -131,32 +98,29 @@ describe("LandingSections", () => {
   });
 
   it("renders CTA repeat section", () => {
-    render(<LandingSections />);
+    render(<LandingSections language="en" />);
     expect(screen.getByText("landing.ctaHeading")).toBeInTheDocument();
-    expect(
-      screen.getByText("landing.ctaDescription"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("landing.ctaDescription")).toBeInTheDocument();
   });
 
   it("renders the logo in hero section", () => {
-    render(<LandingSections />);
+    render(<LandingSections language="en" />);
     expect(screen.queryAllByTestId("logo").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders all heading elements", () => {
-    render(<LandingSections />);
+    render(<LandingSections language="en" />);
     const headings = screen.getAllByRole("heading");
     // h1 (tagline) + h2 (features, howItWorks, stats, cta) + h3 (3 features + 3 steps) = 11
     expect(headings.length).toBeGreaterThanOrEqual(5);
   });
 
   it("shows an explicit demo state and disables live-data CTAs", () => {
-    render(<LandingSections dataAvailable={false} />);
+    render(<LandingSections dataAvailable={false} language="en" />);
 
     expect(screen.getByText("landing.serviceStatusTitle")).toBeInTheDocument();
     expect(screen.getByText("landing.demoDescription")).toBeInTheDocument();
     expect(screen.queryByText("landing.getStarted")).not.toBeInTheDocument();
     expect(screen.queryByText("landing.signIn")).not.toBeInTheDocument();
-    expect(mockGetUser).not.toHaveBeenCalled();
   });
 });

@@ -1,14 +1,56 @@
-import { expect, test } from "./fixtures/safe-test";
+import { expect, test, type Page } from "./fixtures/safe-test";
 
 // ─── Smoke tests: verify pages load without crashes ─────────────────────────
 // All tests are public-page only — no Supabase dependency in CI.
 
+function observeHydrationErrors(page: Page): string[] {
+  const hydrationErrors: string[] = [];
+  page.on("console", (message) => {
+    if (
+      message.type() === "error" &&
+      /hydration|did not match|server rendered html/iu.test(message.text())
+    ) {
+      hydrationErrors.push(message.text());
+    }
+  });
+  page.on("pageerror", (error) => {
+    if (/hydration|did not match|server rendered html/iu.test(error.message)) {
+      hydrationErrors.push(error.message);
+    }
+  });
+  return hydrationErrors;
+}
+
 test.describe("Public pages", () => {
-  test("landing page renders hero", async ({ page }) => {
-    await page.goto("/");
+  test("landing page renders a backend-independent demo from server HTML", async ({ page }) => {
+    const forbiddenRequests: string[] = [];
+    page.on("request", (request) => {
+      const pathname = new URL(request.url()).pathname;
+      if (
+        /\/(?:auth|rest|realtime|storage|functions|graphql)\/v1(?:\/|$)/iu.test(pathname) ||
+        pathname === "/api/flags"
+      ) {
+        forbiddenRequests.push(`${request.method()} ${pathname}`);
+      }
+    });
+
+    const response = await page.goto("/");
+    expect(response).not.toBeNull();
+    const serverHtml = await response!.text();
+    expect(serverHtml).toContain("healthier choices, made simple");
+    expect(serverHtml).toMatch(/<html[^>]+lang="en"/u);
+
+    await page.waitForLoadState("networkidle");
     await expect(page.locator("text=healthier choices")).toBeVisible();
-    await expect(page.locator('a[href="/auth/signup"]').first()).toBeVisible();
-    await expect(page.locator('a[href="/auth/login"]').first()).toBeVisible();
+    await expect(page.getByText("Demo mode").first()).toBeVisible();
+    expect(forbiddenRequests).toEqual([]);
+  });
+
+  test("landing content remains visible with reduced motion", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "How it works" })).toBeVisible();
   });
 
   test("landing page has correct title", async ({ page }) => {
@@ -78,16 +120,10 @@ test.describe("Auth-protected redirects", () => {
 });
 
 test.describe("Navigation links", () => {
-  test("landing page sign-in navigates to login", async ({ page }) => {
+  test("landing page demo CTA links to the truthful service status", async ({ page }) => {
     await page.goto("/");
-    await page.locator('a[href="/auth/login"]').first().click();
-    await expect(page.getByRole("heading", { name: "Welcome back" })).toBeVisible();
-  });
-
-  test("landing page get-started navigates to signup", async ({ page }) => {
-    await page.goto("/");
-    await page.locator('a[href="/auth/signup"]').first().click();
-    await expect(page.getByRole("heading", { name: "Create your account" })).toBeVisible();
+    await page.locator('a[href="#service-status"]').first().click();
+    await expect(page.locator("#service-status")).toBeVisible();
   });
 
   test("login page has link to signup", async ({ page }) => {
@@ -98,6 +134,89 @@ test.describe("Navigation links", () => {
   test("signup page has link to login", async ({ page }) => {
     await page.goto("/auth/signup");
     await expect(page.locator('a[href="/auth/login"]')).toBeVisible();
+  });
+});
+
+test.describe("Polish public locale", () => {
+  test.use({ locale: "pl-PL" });
+
+  test("landing locale and document language stay hydration-safe", async ({ page }) => {
+    const hydrationErrors = observeHydrationErrors(page);
+
+    const response = await page.goto("/");
+    expect(await response!.text()).toContain("zdrowsze wybory, po prostu");
+    await expect(page.locator("html")).toHaveAttribute("lang", "pl");
+    await expect(page.getByRole("heading", { name: "zdrowsze wybory, po prostu" })).toBeVisible();
+    expect(hydrationErrors).toEqual([]);
+  });
+
+  test("client-rendered contact copy matches the Polish server locale after hydration", async ({
+    page,
+  }) => {
+    const hydrationErrors = observeHydrationErrors(page);
+    const response = await page.goto("/contact");
+    expect(response).not.toBeNull();
+
+    const serverHtml = await response!.text();
+    expect(serverHtml).toMatch(/<html[^>]+lang="pl"/u);
+    expect(serverHtml).toContain(
+      "Masz pytania, uwagi lub chcesz zgłosić problem z danymi? Skontaktuj się z nami.",
+    );
+
+    await page.waitForLoadState("networkidle");
+    await expect(
+      page.getByText(
+        "Masz pytania, uwagi lub chcesz zgłosić problem z danymi? Skontaktuj się z nami.",
+      ),
+    ).toBeVisible();
+    expect(hydrationErrors).toEqual([]);
+  });
+});
+
+test.describe("German public locale", () => {
+  test.use({ locale: "de-DE" });
+
+  test("regional preference resolves server content and document language", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("html")).toHaveAttribute("lang", "de");
+    await expect(
+      page.getByRole("heading", {
+        name: "Gesündere Entscheidungen, einfach gemacht",
+      }),
+    ).toBeVisible();
+  });
+
+  test("client-rendered contact copy matches the German server locale after hydration", async ({
+    page,
+  }) => {
+    const hydrationErrors = observeHydrationErrors(page);
+    const response = await page.goto("/contact");
+    expect(response).not.toBeNull();
+
+    const serverHtml = await response!.text();
+    expect(serverHtml).toMatch(/<html[^>]+lang="de"/u);
+    expect(serverHtml).toContain(
+      "Haben Sie Fragen, Feedback oder möchten Sie einen Datenfehler melden? Kontaktieren Sie uns.",
+    );
+
+    await page.waitForLoadState("networkidle");
+    await expect(
+      page.getByText(
+        "Haben Sie Fragen, Feedback oder möchten Sie einen Datenfehler melden? Kontaktieren Sie uns.",
+      ),
+    ).toBeVisible();
+    expect(hydrationErrors).toEqual([]);
+  });
+});
+
+test.describe("Server-rendered landing without JavaScript", () => {
+  test.use({ javaScriptEnabled: false });
+
+  test("preserves meaningful paused-mode content", async ({ page }) => {
+    const response = await page.goto("/");
+    expect(await response!.text()).toContain("healthier choices, made simple");
+    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByText("Demo mode").first()).toBeVisible();
   });
 });
 
@@ -141,9 +260,7 @@ test.describe("Page accessibility basics", () => {
     const count = await images.count();
     for (let i = 0; i < count; i++) {
       const img = images.nth(i);
-      const naturalWidth = await img.evaluate(
-        (el: HTMLImageElement) => el.naturalWidth,
-      );
+      const naturalWidth = await img.evaluate((el: HTMLImageElement) => el.naturalWidth);
       expect(naturalWidth).toBeGreaterThan(0);
     }
   });

@@ -15,6 +15,10 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
+- Document the Phase 5A.0c backend-independent public-provider topology,
+  EN/PL/DE request-locale and `html[lang]` contract, landing Server Component
+  boundary, anonymous-share degradation, and removal of the public visual-test
+  Supabase adapter.
 - Add the Phase 5 master experience audit, Living Label design-system
   blueprint, staged implementation roadmap, and complete 54-route / 181-component
   supporting inventory.

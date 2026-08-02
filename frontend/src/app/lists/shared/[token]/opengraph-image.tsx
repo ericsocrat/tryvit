@@ -4,6 +4,7 @@
 
 import { ImageResponse } from "next/og";
 import { getScoreHex } from "@/lib/score-utils";
+import { fetchPublicSharedList } from "@/lib/public-shares";
 
 /* ---------- route configuration ---------- */
 export const runtime = "nodejs";
@@ -24,9 +25,7 @@ export function truncate(text: string, max: number): string {
 }
 
 /** Compute average score from an array of items. */
-export function averageScore(
-  items: { unhealthiness_score: number }[],
-): number {
+export function averageScore(items: { unhealthiness_score: number }[]): number {
   if (items.length === 0) return 0;
   const sum = items.reduce((acc, it) => acc + it.unhealthiness_score, 0);
   return Math.round(sum / items.length);
@@ -80,12 +79,8 @@ function FallbackCard() {
         >
           TV
         </div>
-        <div style={{ fontSize: 32, fontWeight: 700, color: "#111827" }}>
-          TryVit
-        </div>
-        <div style={{ fontSize: 18, color: "#6b7280", marginTop: 8 }}>
-          List not available
-        </div>
+        <div style={{ fontSize: 32, fontWeight: 700, color: "#111827" }}>TryVit</div>
+        <div style={{ fontSize: 18, color: "#6b7280", marginTop: 8 }}>List not available</div>
       </div>
     </div>
   );
@@ -147,9 +142,7 @@ function ItemRow({ name, brand, score, scoreColor }: ItemRowProps) {
           {truncate(name, 50)}
         </div>
         {brand && (
-          <div style={{ fontSize: 14, color: "#6b7280", marginTop: 2 }}>
-            {truncate(brand, 40)}
-          </div>
+          <div style={{ fontSize: 14, color: "#6b7280", marginTop: 2 }}>{truncate(brand, 40)}</div>
         )}
       </div>
     </div>
@@ -157,34 +150,12 @@ function ItemRow({ name, brand, score, scoreColor }: ItemRowProps) {
 }
 
 /* ---------- main image handler ---------- */
-export default async function OGImage({
-  params,
-}: {
-  params: Promise<{ token: string }>;
-}) {
+export default async function OGImage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const fontData = await getInterBoldFont();
 
-  /* ---- fetch list data (anon key — public read) ---- */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let listData: any;
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/api_get_shared_list`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""}`,
-        },
-        body: JSON.stringify({ p_share_token: token }),
-        next: { revalidate: 3600 },
-      },
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    listData = await res.json();
-  } catch {
+  const listData = await fetchPublicSharedList(token);
+  if (!listData) {
     return new ImageResponse(<FallbackCard />, {
       ...size,
       fonts: [

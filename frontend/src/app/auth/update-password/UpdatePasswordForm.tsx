@@ -13,7 +13,6 @@ import { useState } from "react";
 
 export function UpdatePasswordForm() {
   const router = useRouter();
-  const supabase = createClient();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,17 +30,22 @@ export function UpdatePasswordForm() {
 
     setLoading(true);
 
-    const { error } = await supabase.auth.updateUser({ password });
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({ password });
 
-    setLoading(false);
+      if (error) {
+        showToast({ type: "error", message: error.message });
+        return;
+      }
 
-    if (error) {
-      showToast({ type: "error", message: error.message });
-      return;
+      showToast({ type: "success", messageKey: "auth.passwordUpdated" });
+      router.push("/auth/login?msg=password-updated");
+    } catch {
+      showToast({ type: "error", messageKey: "auth.serviceUnavailable" });
+    } finally {
+      setLoading(false);
     }
-
-    showToast({ type: "success", messageKey: "auth.passwordUpdated" });
-    router.push("/auth/login?msg=password-updated");
   }
 
   return (
@@ -85,17 +89,9 @@ export function UpdatePasswordForm() {
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-foreground-muted transition-colors hover:text-foreground-secondary"
-                aria-label={
-                  showPassword
-                    ? t("auth.hidePassword")
-                    : t("auth.showPassword")
-                }
+                aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             <p id="update-password-help" className="mt-1.5 text-xs text-foreground-muted">
@@ -127,25 +123,15 @@ export function UpdatePasswordForm() {
                 type="button"
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
                 className="absolute inset-y-0 right-0 flex items-center pr-3 text-foreground-muted transition-colors hover:text-foreground-secondary"
-                aria-label={
-                  showConfirmPassword
-                    ? t("auth.hidePassword")
-                    : t("auth.showPassword")
-                }
+                aria-label={showConfirmPassword ? t("auth.hidePassword") : t("auth.showPassword")}
               >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
           </div>
 
           <Button type="submit" disabled={loading} fullWidth className="mt-1">
-            {loading
-              ? t("auth.updatingPassword")
-              : t("auth.updatePassword")}
+            {loading ? t("auth.updatingPassword") : t("auth.updatePassword")}
           </Button>
         </form>
 

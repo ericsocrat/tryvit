@@ -2,180 +2,96 @@ import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import SharedComparisonPage from "./page";
 
-// ─── Mocks ──────────────────────────────────────────────────────────────────
+const { mockReadPublicSharedComparison } = vi.hoisted(() => ({
+  mockReadPublicSharedComparison: vi.fn(),
+}));
 
-vi.mock("next/navigation", () => ({
-  useParams: () => ({ token: "comp-token-xyz" }),
+vi.mock("@/lib/public-shares", () => ({
+  readPublicSharedComparison: mockReadPublicSharedComparison,
+}));
+
+vi.mock("@/lib/server-locale", () => ({
+  getServerLocale: () => Promise.resolve("en"),
 }));
 
 vi.mock("next/link", () => ({
-  default: ({
-    href,
-    children,
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => <a href={href}>{children}</a>,
+  default: ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
-const mockUseSharedComparison = vi.fn();
-vi.mock("@/hooks/use-compare", () => ({
-  useSharedComparison: (...args: unknown[]) => mockUseSharedComparison(...args),
-}));
-
-// Stub ComparisonGrid since it's complex and tested separately
 vi.mock("@/components/compare/ComparisonGrid", () => ({
   ComparisonGrid: ({ products }: { products: unknown[] }) => (
     <div data-testid="comparison-grid">{products.length} products</div>
   ),
 }));
 
+const comparison = {
+  api_version: "1",
+  comparison_id: "cmp-1",
+  title: "Chips vs Drinks",
+  product_count: 2,
+  created_at: "2025-01-15T10:00:00Z",
+  products: [{ product_id: 1 }, { product_id: 2 }],
+};
+
+async function renderPage(token = "comp-token-xyz") {
+  render(await SharedComparisonPage({ params: Promise.resolve({ token }) }));
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
 describe("SharedComparisonPage", () => {
-  it("shows loading spinner while loading", () => {
-    mockUseSharedComparison.mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      error: null,
-    });
+  it("degrades without a backend-dependent provider", async () => {
+    mockReadPublicSharedComparison.mockResolvedValue({ status: "invalid" });
+    await renderPage();
 
-    render(<SharedComparisonPage />);
-    // Should render without crashing
-    expect(screen.getByAltText("TryVit")).toBeInTheDocument();
-  });
-
-  it("shows error message on error", () => {
-    mockUseSharedComparison.mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      error: new Error("Invalid link"),
-    });
-
-    render(<SharedComparisonPage />);
     expect(screen.getByText(/invalid or has expired/i)).toBeInTheDocument();
+    expect(screen.getByText("Go to TryVit").closest("a")).toHaveAttribute("href", "/");
   });
 
-  it("shows go to TryVit link on error", () => {
-    mockUseSharedComparison.mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      error: new Error("Bad link"),
-    });
+  it("describes unavailable shared data truthfully", async () => {
+    mockReadPublicSharedComparison.mockResolvedValue({ status: "unavailable" });
+    await renderPage();
 
-    render(<SharedComparisonPage />);
-    expect(screen.getByText("Go to TryVit").closest("a")).toHaveAttribute(
-      "href",
-      "/",
-    );
+    expect(screen.getByText(/shared product data cannot be loaded/i)).toBeInTheDocument();
+    expect(screen.queryByText(/invalid or has expired/i)).not.toBeInTheDocument();
   });
 
-  it("renders comparison data with title", () => {
-    mockUseSharedComparison.mockReturnValue({
-      data: {
-        title: "Chips vs Drinks",
-        product_count: 3,
-        created_at: "2025-01-15T10:00:00Z",
-        products: [
-          { id: 1, name: "A" },
-          { id: 2, name: "B" },
-          { id: 3, name: "C" },
-        ],
-      },
-      isLoading: false,
-      error: null,
-    });
+  it("renders comparison data through a narrow client grid", async () => {
+    mockReadPublicSharedComparison.mockResolvedValue({ status: "ok", data: comparison });
+    await renderPage();
 
-    render(<SharedComparisonPage />);
-    expect(screen.getByText(/Chips vs Drinks/)).toBeInTheDocument();
-    expect(screen.getByText(/3 products compared/)).toBeInTheDocument();
+    expect(screen.getByText("Chips vs Drinks")).toBeInTheDocument();
+    expect(screen.getByText(/2 products compared/)).toBeInTheDocument();
+    expect(screen.getByTestId("comparison-grid")).toHaveTextContent("2 products");
   });
 
-  it("renders ComparisonGrid with products", () => {
-    mockUseSharedComparison.mockReturnValue({
-      data: {
-        title: null,
-        product_count: 2,
-        created_at: "2025-01-15T10:00:00Z",
-        products: [
-          { id: 1, name: "A" },
-          { id: 2, name: "B" },
-        ],
-      },
-      isLoading: false,
-      error: null,
+  it("uses the localized default title", async () => {
+    mockReadPublicSharedComparison.mockResolvedValue({
+      status: "ok",
+      data: { ...comparison, title: null },
     });
-
-    render(<SharedComparisonPage />);
-    expect(screen.getByTestId("comparison-grid")).toBeInTheDocument();
-    expect(screen.getByText("2 products")).toBeInTheDocument();
+    await renderPage();
+    expect(screen.getByText("Product Comparison")).toBeInTheDocument();
   });
 
-  it("uses default title when none provided", () => {
-    mockUseSharedComparison.mockReturnValue({
-      data: {
-        title: null,
-        product_count: 2,
-        created_at: "2025-01-15T10:00:00Z",
-        products: [
-          { id: 1, name: "A" },
-          { id: 2, name: "B" },
-        ],
-      },
-      isLoading: false,
-      error: null,
-    });
+  it("renders the public label and CTA", async () => {
+    mockReadPublicSharedComparison.mockResolvedValue({ status: "ok", data: comparison });
+    await renderPage();
 
-    render(<SharedComparisonPage />);
-    expect(screen.getByText(/Product Comparison/)).toBeInTheDocument();
-  });
-
-  it("renders shared comparison badge", () => {
-    mockUseSharedComparison.mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      error: null,
-    });
-
-    render(<SharedComparisonPage />);
     expect(screen.getByText("Shared comparison")).toBeInTheDocument();
-  });
-
-  it("renders CTA section", () => {
-    mockUseSharedComparison.mockReturnValue({
-      data: {
-        title: "Test",
-        product_count: 2,
-        created_at: "2025-01-15T10:00:00Z",
-        products: [
-          { id: 1, name: "A" },
-          { id: 2, name: "B" },
-        ],
-      },
-      isLoading: false,
-      error: null,
-    });
-
-    render(<SharedComparisonPage />);
-    expect(
-      screen.getByText("Want to compare your own products?"),
-    ).toBeInTheDocument();
     expect(screen.getByText("Sign up for free").closest("a")).toHaveAttribute(
       "href",
       "/auth/login",
     );
   });
 
-  it("passes token to useSharedComparison", () => {
-    mockUseSharedComparison.mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      error: null,
-    });
-
-    render(<SharedComparisonPage />);
-    expect(mockUseSharedComparison).toHaveBeenCalledWith("comp-token-xyz");
+  it("passes the route token to the guarded server read", async () => {
+    mockReadPublicSharedComparison.mockResolvedValue({ status: "invalid" });
+    await renderPage("safe-comparison-token");
+    expect(mockReadPublicSharedComparison).toHaveBeenCalledWith("safe-comparison-token");
   });
 });

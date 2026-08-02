@@ -1,53 +1,40 @@
-"use client";
-
 // ─── Shared list page (public) ──────────────────────────────────────────────
-// Accessible without authentication via share token URL.
-// Shows read-only view of a shared list with product details.
+// Server-led and read-only. In demo mode it degrades without touching Supabase.
 
 import { ButtonLink } from "@/components/common/Button";
 import { Logo } from "@/components/common/Logo";
-import { ListDetailSkeleton } from "@/components/common/skeletons";
-import { useSharedList } from "@/hooks/use-lists";
 import { NUTRI_COLORS, SCORE_BANDS, scoreBandFromScore } from "@/lib/constants";
-import { useTranslation } from "@/lib/i18n";
+import { translate } from "@/lib/i18n-core";
+import { readPublicSharedList } from "@/lib/public-shares";
 import { toTryVitScore } from "@/lib/score-utils";
-import { useParams } from "next/navigation";
+import { getServerLocale } from "@/lib/server-locale";
 
-export default function SharedListPage() {
-  const params = useParams();
-  const token = String(params.token ?? "");
+export default async function SharedListPage({ params }: { params: Promise<{ token: string }> }) {
+  const [{ token }, language] = await Promise.all([params, getServerLocale()]);
+  const result = await readPublicSharedList(token);
+  const t = (key: string, values?: Record<string, string | number>) =>
+    translate(language, key, values);
 
-  const { data, isLoading, error } = useSharedList(token);
-  const { t } = useTranslation();
-
-  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-surface-subtle">
-        <ListDetailSkeleton />
-      </div>
-    );
-  }
-
-  if (error || !data) {
+  if (result.status !== "ok") {
+    const invalid = result.status === "invalid";
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-surface-subtle px-4">
-        <p className="mb-2 text-4xl">🔒</p>
+        <p className="mb-2 text-4xl">{invalid ? "🔒" : "⏸️"}</p>
         <h1 className="mb-1 text-lg font-bold text-foreground">
-          {t("shared.listNotFound")}
+          {t(invalid ? "shared.listNotFound" : "shared.serviceUnavailableTitle")}
         </h1>
         <p className="mb-6 text-sm text-foreground-secondary">
-          {t("shared.listNotFoundMessage")}
+          {t(invalid ? "shared.listNotFoundMessage" : "shared.serviceUnavailableMessage")}
         </p>
-        <ButtonLink href="/">
-          {t("error.goHome")}
-        </ButtonLink>
+        <ButtonLink href="/">{t("error.goHome")}</ButtonLink>
       </div>
     );
   }
+
+  const data = result.data;
 
   return (
     <div className="min-h-screen bg-surface-subtle">
-      {/* Header */}
       <header className="border-b border bg-surface backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
           <Logo variant="lockup" size={28} />
@@ -59,63 +46,43 @@ export default function SharedListPage() {
 
       <main id="main-content" className="mx-auto max-w-3xl px-4 py-6">
         <div className="space-y-4">
-          {/* List info */}
           <div className="card">
-            <h1 className="text-lg font-bold text-foreground">
-              {data.list_name}
-            </h1>
+            <h1 className="text-lg font-bold text-foreground">{data.list_name}</h1>
             {data.description && (
-              <p className="mt-1 text-sm text-foreground-secondary">
-                {data.description}
-              </p>
+              <p className="mt-1 text-sm text-foreground-secondary">{data.description}</p>
             )}
             <p className="mt-1 text-xs text-foreground-muted">
               {t("common.products", { count: data.total_count })}
             </p>
           </div>
 
-          {/* Items */}
           {data.items.length === 0 ? (
             <div className="py-12 text-center">
-              <p className="text-sm text-foreground-muted">
-                {t("shared.listEmpty")}
-              </p>
+              <p className="text-sm text-foreground-muted">{t("shared.listEmpty")}</p>
             </div>
           ) : (
             <ul className="space-y-2">
               {data.items.map((item) => {
-                const score = item.unhealthiness_score;
-                const bandKey = scoreBandFromScore(score);
-                const band = SCORE_BANDS[bandKey];
+                const band = SCORE_BANDS[scoreBandFromScore(item.unhealthiness_score)];
                 const nutriClass = item.nutri_score_label
                   ? (NUTRI_COLORS[item.nutri_score_label] ??
                     "bg-surface-muted text-foreground-secondary")
                   : "bg-surface-muted text-foreground-secondary";
 
                 return (
-                  <li
-                    key={item.product_id}
-                    className="card flex items-center gap-3"
-                  >
-                    {/* Score badge */}
+                  <li key={item.product_id} className="card flex items-center gap-3">
                     <div
                       className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-lg font-bold ${band.bg} ${band.color}`}
                     >
                       {toTryVitScore(item.unhealthiness_score)}
                     </div>
-
-                    {/* Product info */}
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-foreground">
-                        {item.product_name}
-                      </p>
+                      <p className="truncate font-medium text-foreground">{item.product_name}</p>
                       <p className="truncate text-sm text-foreground-secondary">
                         {item.brand}
                         {item.category && ` · ${item.category}`}
                       </p>
                     </div>
-
-                    {/* Nutri badge */}
                     <span
                       className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${nutriClass}`}
                     >

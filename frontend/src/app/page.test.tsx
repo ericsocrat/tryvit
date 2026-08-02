@@ -1,6 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import HomePage, { metadata } from "./page";
+import { HomePageContent } from "./HomePageContent";
+import { metadata } from "./page";
+
+function HomePage() {
+  return <HomePageContent language="en" />;
+}
 
 // ─── i18n translations map ──────────────────────────────────────────────────
 
@@ -11,10 +16,8 @@ const tMap: Record<string, string> = {
   "landing.getStarted": "Get started",
   "landing.signIn": "Sign in",
   "landing.demoMode": "Demo mode",
-  "landing.demoDescription":
-    "Explore the scoring approach. Live data features are paused.",
-  "landing.serviceStatusTitle":
-    "The TryVit website is available; live data features are paused",
+  "landing.demoDescription": "Explore the scoring approach. Live data features are paused.",
+  "landing.serviceStatusTitle": "The TryVit website is available; live data features are paused",
   "landing.serviceStatusDescription": "Live data will return after readiness checks.",
   "landing.applicationStatus": "Website",
   "landing.dataStatus": "Data backend",
@@ -30,23 +33,18 @@ const tMap: Record<string, string> = {
   "landing.demoCtaDescription": "Live catalog and account features are paused.",
   "landing.featuresHeading": "Everything you need to eat healthier",
   "landing.featureSearch": "Search",
-  "landing.featureSearchDesc":
-    "Find products by name, brand, or category",
+  "landing.featureSearchDesc": "Find products by name, brand, or category",
   "landing.featureScan": "Scan",
   "landing.featureScanDesc": "Scan barcodes for instant product info",
   "landing.featureCompare": "Compare",
-  "landing.featureCompareDesc":
-    "See health scores and find better alternatives",
+  "landing.featureCompareDesc": "See health scores and find better alternatives",
   "landing.howItWorksHeading": "How it works",
   "landing.step1Title": "Search or scan",
-  "landing.step1Desc":
-    "Find any product by name, brand, or barcode scan.",
+  "landing.step1Desc": "Find any product by name, brand, or barcode scan.",
   "landing.step2Title": "Get your score",
-  "landing.step2Desc":
-    "See a clear 1–100 health score based on 9 nutrition factors.",
+  "landing.step2Desc": "See a clear 1–100 health score based on 9 nutrition factors.",
   "landing.step3Title": "Find better",
-  "landing.step3Desc":
-    "Discover healthier alternatives in the same category.",
+  "landing.step3Desc": "Discover healthier alternatives in the same category.",
   "landing.statsHeading": "Trusted data you can rely on",
   "landing.statProducts": "Live catalog",
   "landing.statCategories": "Food categories",
@@ -64,6 +62,7 @@ const tMap: Record<string, string> = {
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
 vi.mock("@/lib/i18n", () => ({
+  translate: (_language: string, key: string) => tMap[key] ?? key,
   useTranslation: () => ({
     t: (key: string) => tMap[key] ?? key,
   }),
@@ -91,12 +90,12 @@ vi.mock("@/components/common/Logo", () => ({
   ),
 }));
 
-vi.mock("@/components/layout/Header", () => ({
-  Header: () => <header data-testid="header">Header</header>,
+vi.mock("@/components/layout/PublicHeader", () => ({
+  PublicHeader: () => <header data-testid="header">Header</header>,
 }));
 
-vi.mock("@/components/layout/Footer", () => ({
-  Footer: () => <footer data-testid="footer">Footer</footer>,
+vi.mock("@/components/layout/PublicFooter", () => ({
+  PublicFooter: () => <footer data-testid="footer">Footer</footer>,
 }));
 
 beforeEach(() => {
@@ -122,9 +121,7 @@ describe("HomePage — Hero section", () => {
 
   it("renders the description", () => {
     render(<HomePage />);
-    expect(
-      screen.getByText(/Search, scan, and compare food products/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Search, scan, and compare food products/)).toBeInTheDocument();
   });
 
   it("renders Logo icon in the hero", () => {
@@ -166,9 +163,7 @@ describe("HomePage — Hero section", () => {
 describe("HomePage — Features section", () => {
   it("renders feature section heading", () => {
     render(<HomePage />);
-    expect(
-      screen.getByText("Everything you need to eat healthier"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Everything you need to eat healthier")).toBeInTheDocument();
   });
 
   it("renders three feature highlights", () => {
@@ -180,15 +175,9 @@ describe("HomePage — Features section", () => {
 
   it("renders feature descriptions", () => {
     render(<HomePage />);
-    expect(
-      screen.getByText("Find products by name, brand, or category"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Scan barcodes for instant product info"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("See health scores and find better alternatives"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Find products by name, brand, or category")).toBeInTheDocument();
+    expect(screen.getByText("Scan barcodes for instant product info")).toBeInTheDocument();
+    expect(screen.getByText("See health scores and find better alternatives")).toBeInTheDocument();
   });
 
   it("renders feature icons as SVGs", () => {
@@ -215,15 +204,9 @@ describe("HomePage — How It Works section", () => {
 
   it("renders step descriptions", () => {
     render(<HomePage />);
-    expect(
-      screen.getByText(/Find any product by name, brand, or barcode/),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/clear 1–100 health score/),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/healthier alternatives in the same category/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Find any product by name, brand, or barcode/)).toBeInTheDocument();
+    expect(screen.getByText(/clear 1–100 health score/)).toBeInTheDocument();
+    expect(screen.getByText(/healthier alternatives in the same category/)).toBeInTheDocument();
   });
 
   it("renders step numbers 1, 2, 3", () => {
@@ -240,18 +223,22 @@ describe("HomePage — How It Works section", () => {
 describe("HomePage — Data Stats section", () => {
   it("renders stats heading", () => {
     render(<HomePage />);
-    expect(
-      screen.getByText("Trusted data you can rely on"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Trusted data you can rely on")).toBeInTheDocument();
   });
 
   it("renders four stat values", () => {
     render(<HomePage />);
     // Product count is intentionally reused in both the hero "Model Snapshot" aside and the stats section
-    expect(screen.queryAllByText(tMap["landing.statProductsValue"]).length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryAllByText(tMap["landing.statProductsValue"]).length).toBeGreaterThanOrEqual(
+      2,
+    );
     expect(screen.getByText(tMap["landing.statCategoriesValue"])).toBeInTheDocument();
-    expect(screen.queryAllByText(tMap["landing.statFactorsValue"]).length).toBeGreaterThanOrEqual(1);
-    expect(screen.queryAllByText(tMap["landing.statCountriesValue"]).length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryAllByText(tMap["landing.statFactorsValue"]).length).toBeGreaterThanOrEqual(
+      1,
+    );
+    expect(screen.queryAllByText(tMap["landing.statCountriesValue"]).length).toBeGreaterThanOrEqual(
+      1,
+    );
   });
 
   it("renders stat labels", () => {
@@ -268,16 +255,12 @@ describe("HomePage — Data Stats section", () => {
 describe("HomePage — CTA Repeat section", () => {
   it("renders CTA heading", () => {
     render(<HomePage />);
-    expect(
-      screen.getByText("Ready to eat healthier?"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Ready to eat healthier?")).toBeInTheDocument();
   });
 
   it("renders CTA description", () => {
     render(<HomePage />);
-    expect(
-      screen.getByText(/informed food choices backed by real nutrition/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/informed food choices backed by real nutrition/)).toBeInTheDocument();
   });
 
   it("renders second Get started CTA linking to signup", () => {

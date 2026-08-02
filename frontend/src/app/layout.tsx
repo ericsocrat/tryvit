@@ -1,6 +1,7 @@
 ﻿import { Providers } from "@/components/Providers";
 import { ThemeScript } from "@/components/ThemeScript";
 import { IS_QA_MODE } from "@/lib/qa-mode";
+import { getServerLocale } from "@/lib/server-locale";
 import "@/styles/globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
@@ -83,8 +84,7 @@ export const metadata: Metadata = {
     siteName: "TryVit",
     locale: "en_US",
     title: "TryVit — Food Health Scanner",
-    description:
-      "Scan barcodes and see a health score for food products sold in Poland.",
+    description: "Scan barcodes and see a health score for food products sold in Poland.",
     url: "https://tryvit.vercel.app",
     images: [
       {
@@ -98,8 +98,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "TryVit",
-    description:
-      "Scan barcodes and see a health score for food products sold in Poland.",
+    description: "Scan barcodes and see a health score for food products sold in Poland.",
     images: ["/opengraph-image"],
   },
   robots: {
@@ -109,16 +108,15 @@ export const metadata: Metadata = {
   other: {
     "msapplication-TileColor": "#1DB954",
   },
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://tryvit.vercel.app",
-  ),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://tryvit.vercel.app"),
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const language = await getServerLocale();
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
@@ -138,7 +136,7 @@ export default function RootLayout({
 
   return (
     <html
-      lang="en"
+      lang={language}
       suppressHydrationWarning
       {...(IS_QA_MODE ? { "data-qa-mode": "true" } : {})}
     >
@@ -158,7 +156,7 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <Providers initialLanguage={language}>{children}</Providers>
         {!IS_QA_MODE && <SpeedInsights />}
       </body>
     </html>

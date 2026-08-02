@@ -8,8 +8,9 @@
 
 Phase 5A.0a secures TryVit's existing Playwright, screenshot, visual-audit,
 quality, and Lighthouse infrastructure. It does not change routes, providers,
-product behavior, or presentation. Public-provider decoupling remains a
-Phase 5A.0c prerequisite.
+product behavior, or presentation. Its original public build compatibility
+adapter was removed by Phase 5A.0c after public rendering became genuinely
+Supabase-independent.
 
 The safety boundary applies to every browser-facing command, including commands
 that intend to visit only public pages. Non-browser hosted integration and data
@@ -46,7 +47,7 @@ checked before results can be treated as safe.
 
 | Entry point                                                                                                                                            | Classification                                | Actual guarded call order                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | Remaining status or risk                                                                                                                                                                                                                                                                                     |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `npm run visual-safety:public -- …` (`smoke`, `visual-smoke`, public `screenshots`, public `pr-screenshots`, and the dedicated browser-safety project) | Backend-independent public                    | Reject proxy/preload/debug controls → require supported Node environment-proxy behavior → sanitize inherited environment → load explicit public contract → discover the checked-in loopback build adapter → prove the app port and `.next` ownership → start the owned proxy → clean build through that proxy → scan defined generated text/code assets → write/verify provenance → start and verify the owned Next server through the proxy → guarded manual-redirect readiness → write invocation proof/load Playwright config → guard context → create page → navigate/test/capture → close context → final proxy/provenance/artifact assert → stop owned server/proxy → remove owned temporary files                                                                                                 | The application still needs a loopback-shaped Supabase build adapter and reviewed build-time font egress; removing that coupling belongs to Phase 5A.0c.                                                                                                                                                     |
+| `npm run visual-safety:public -- …` (`smoke`, `visual-smoke`, public `screenshots`, public `pr-screenshots`, and the dedicated browser-safety project) | Backend-independent public                    | Reject proxy/preload/debug controls → require supported Node environment-proxy behavior → sanitize inherited environment → load explicit public contract → prove the app port and `.next` ownership → start the owned proxy → clean Supabase-empty build through that proxy → scan defined generated text/code assets → write/verify provenance → start and verify the owned Next server through the proxy → guarded manual-redirect readiness → write invocation proof/load Playwright config → guard context → create page → navigate/test/capture → close context → final proxy/provenance/artifact assert → stop owned server/proxy → remove owned temporary files                                                                                                 | Public mode performs no Supabase configuration discovery and supplies no Supabase URL, key, adapter, or adapter allowlist. The separately reviewed build-time font egress remains unchanged.                                                                                                                                                     |
 | `npm run visual-safety:local-authenticated -- …` launcher                                                                                              | Local-authenticated                           | Reject process controls and strip all ambient credentials → require supported Node environment-proxy behavior → discover and canonicalize the emulator origin from `supabase/config.toml` → guarded, no-redirect emulator readiness → query `supabase status -o env` and require its API origin to equal that verified origin → only then retain the returned local anon/service keys in memory → prove port/`.next` ownership → start the owned proxy → clean build/scan/provenance through the proxy → create an invocation-owned external storage-state directory → start/verify the owned server through the proxy → write invocation proof/load Playwright config → run the selected project sequence below → assert proxy/provenance/artifacts → stop owned resources → delete owned storage state | Missing emulator, CLI status, or local credentials blocks before browser/client/user creation. Ambient staging or production keys are ignored. There is no hosted fallback.                                                                                                                                  |
 | `auth-setup` and `functional-auth-setup`                                                                                                               | Local-authenticated                           | Launcher preflight/build/server sequence → create context and install automatic guard → create page → construct guarded local admin client → provision fixture → navigate/login → persist state only to the owned external directory → close page/context → mandatory fixture assertion                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Dependent projects cannot start until setup succeeds.                                                                                                                                                                                                                                                        |
 | Authenticated, functional, and authenticated visual projects                                                                                           | Local-authenticated                           | Successful setup dependency → load owned storage state → create context/install guard → create page → navigate/test → close page/context → mandatory fixture assertion → guarded global fixture deletion                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | Storage state is never written inside the repository or uploaded as evidence.                                                                                                                                                                                                                                |
@@ -78,12 +79,11 @@ so a later path replacement cannot redirect the read.
 ### Public
 
 Public mode requires a loopback application origin and initializes without
-Supabase configuration. The launcher removes inherited Supabase variables.
-Because the current production client factory is not yet provider-independent,
-the isolated Next.js build child receives only the checked-in loopback emulator
-origin and a fixed non-secret placeholder. That compatibility adapter is a
-temporary Phase 5A.0c prerequisite; it is not exposed as an input to the public
-safety contract.
+Supabase configuration. The launcher removes inherited Supabase variables and
+passes empty Supabase URL and anonymous-key values to isolated build, server,
+Playwright, and Lighthouse child processes. It does not inspect
+`supabase/config.toml`, discover a Supabase origin, synthesize a placeholder
+credential, or add a Supabase adapter target to the owned-loopback allowlist.
 
 Public commands never receive or use a service-role key and never provision or
 delete a user.
@@ -192,10 +192,10 @@ beneath the browser. A synthetic loopback-to-hosted redirect is allowed to reach
 the local proxy, which rejects the hosted second hop before DNS resolution or
 remote transmission and writes the same blocking, redacted violation marker.
 The proxy forwards HTTP or CONNECT traffic to a loopback target only when its
-exact canonical origin and effective port belong to the invocation-owned app,
-the verified local emulator contract, or the explicit loopback-only public
-build adapter; other loopback targets are blocked and recorded rather than used
-as a local-network pivot.
+exact canonical origin and effective port belong to the invocation-owned app or,
+for local-authenticated mode only, the verified local emulator contract. Other
+loopback targets are blocked and recorded rather than used as a local-network
+pivot.
 The proxy has one reviewed external CONNECT exception, `fonts.gstatic.com:443`,
 needed by the existing Open Graph image build. That external font request may
 be transmitted; it is not Supabase traffic. Removing the dependency belongs to
@@ -205,7 +205,7 @@ Generated text/code assets under `.next/static` and `.next/server` are scanned
 before navigation for the defined `.cjs`, `.css`, `.html`, `.js`, `.json`,
 `.map`, `.mjs`, `.rsc`, and `.txt` extensions. This is not a claim that opaque
 binary formats are semantically decoded. Provenance contains only the
-mode, canonical loopback origins, source revision, schema/adapter identifiers,
+mode, canonical loopback origins, source revision, schema identifier,
 build identifier, and generated-asset digest. It never contains or hashes a
 credential. Trace, output-directory, and snapshot overrides are rejected.
 Reporter overrides are restricted to the reviewed `list` and `html,list`
@@ -282,8 +282,9 @@ explicit Phase 5A.0d prerequisite.
 ## Deferred work
 
 - Phase 5A.0b owns public-route and PWA policy.
-- Phase 5A.0c owns genuine Supabase-independent public rendering and removal of
-  the loopback-shaped build adapter.
+- Phase 5A.0c removed the loopback-shaped public build adapter after establishing
+  genuine Supabase-independent public rendering. Local-authenticated emulator
+  discovery and fixture behavior remain unchanged.
 - Phase 5A.0d owns authoritative visual baselines and performance gates.
 - Design System V2, Living Label, and all visual redesign remain outside this
   infrastructure PR.

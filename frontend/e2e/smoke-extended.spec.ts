@@ -40,18 +40,14 @@ test.describe("Footer links", () => {
 
   test("footer has Contact link", async ({ page }) => {
     await page.goto("/");
-    const link = page
-      .locator("footer")
-      .getByRole("link", { name: "Contact" });
+    const link = page.locator("footer").getByRole("link", { name: "Contact" });
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute("href", "/contact");
   });
 
   test("footer shows copyright text", async ({ page }) => {
     await page.goto("/");
-    await expect(
-      page.locator("footer").getByText("TryVit", { exact: false }),
-    ).toBeVisible();
+    await expect(page.locator("footer").getByText("TryVit", { exact: false })).toBeVisible();
   });
 
   test("Privacy Policy link navigates correctly", async ({ page }) => {
@@ -101,20 +97,16 @@ test.describe("Header", () => {
 
   test("has Contact nav link", async ({ page }) => {
     await page.goto("/");
-    const link = page
-      .locator("header")
-      .getByRole("link", { name: "Contact" });
+    const link = page.locator("header").getByRole("link", { name: "Contact" });
     await expect(link).toBeVisible();
     await expect(link).toHaveAttribute("href", "/contact");
   });
 
-  test("has Sign In button linking to login", async ({ page }) => {
+  test("shows the truthful demo-status action while data is paused", async ({ page }) => {
     await page.goto("/");
-    const signIn = page
-      .locator("header")
-      .getByRole("link", { name: "Sign In" });
-    await expect(signIn).toBeVisible();
-    await expect(signIn).toHaveAttribute("href", "/auth/login");
+    const demoAction = page.locator("header").getByRole("link", { name: "Demo mode" });
+    await expect(demoAction).toBeVisible();
+    await expect(demoAction).toHaveAttribute("href", "#service-status");
   });
 
   test("logo navigates to landing from contact page", async ({ page }) => {
@@ -125,10 +117,10 @@ test.describe("Header", () => {
 });
 
 test.describe("Landing page features", () => {
-  test("hero subtitle describes the app", async ({ page }) => {
+  test("hero subtitle describes the paused demo truthfully", async ({ page }) => {
     await page.goto("/");
     await expect(
-      page.getByText("Search, scan, and compare food products", {
+      page.getByText("Live catalog, scanning, and account features are temporarily paused", {
         exact: false,
       }),
     ).toBeVisible();
@@ -136,71 +128,51 @@ test.describe("Landing page features", () => {
 
   test("renders Search feature card", async ({ page }) => {
     await page.goto("/");
-    await expect(
-      page.getByText("Find products by name, brand, or category"),
-    ).toBeVisible();
+    await expect(page.getByText("Find products by name, brand, or category")).toBeVisible();
   });
 
   test("renders Scan feature card", async ({ page }) => {
     await page.goto("/");
-    await expect(
-      page.getByText("Scan barcodes for instant product info"),
-    ).toBeVisible();
+    await expect(page.getByText("Scan barcodes for instant product info")).toBeVisible();
   });
 
   test("renders Compare feature card", async ({ page }) => {
     await page.goto("/");
-    await expect(
-      page.getByText("See health scores and find better alternatives"),
-    ).toBeVisible();
+    await expect(page.getByText("See health scores and find better alternatives")).toBeVisible();
   });
 
-  test("Get started CTA links to signup", async ({ page }) => {
+  test("demo CTA links to the service-status explanation", async ({ page }) => {
     await page.goto("/");
-    const cta = page.getByRole("link", { name: "Get started" }).first();
+    const cta = page.getByRole("link", { name: "View service status" }).first();
     await expect(cta).toBeVisible();
-    await expect(cta).toHaveAttribute("href", "/auth/signup");
+    await expect(cta).toHaveAttribute("href", "#service-status");
   });
 });
 
 test.describe("Login page details", () => {
-  test("shows session expired message when reason=expired", async ({
-    page,
-  }) => {
+  test("shows session expired message when reason=expired", async ({ page }) => {
     await page.goto("/auth/login?reason=expired");
-    await expect(
-      page.getByText("Your session has expired", { exact: false }),
-    ).toBeVisible();
+    await expect(page.getByText("Your session has expired", { exact: false })).toBeVisible();
   });
 
-  test("does not show expired message without query param", async ({
-    page,
-  }) => {
+  test("does not show expired message without query param", async ({ page }) => {
     await page.goto("/auth/login");
-    await expect(
-      page.getByText("Your session has expired", { exact: false }),
-    ).not.toBeVisible();
+    await expect(page.getByText("Your session has expired", { exact: false })).not.toBeVisible();
   });
 
   test("shows subtitle text", async ({ page }) => {
     await page.goto("/auth/login");
-    await expect(
-      page.getByText("Sign in to your TryVit account"),
-    ).toBeVisible();
+    await expect(page.getByText("Sign in to your TryVit account")).toBeVisible();
   });
 
   test("Sign In button is present", async ({ page }) => {
     await page.goto("/auth/login");
-    await expect(
-      page.getByRole("button", { name: /Sign In/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /Sign In/i })).toBeVisible();
   });
 
   test("has Sign up link for new users", async ({ page }) => {
     await page.goto("/auth/login");
-    await expect(
-      page.getByText("Don't have an account?", { exact: false }),
-    ).toBeVisible();
+    await expect(page.getByText("Don't have an account?", { exact: false })).toBeVisible();
   });
 });
 
@@ -208,24 +180,17 @@ test.describe("Signup page details", () => {
   test("password field has correct placeholder", async ({ page }) => {
     await page.goto("/auth/signup");
     const passwordInput = page.getByLabel("Password", { exact: true });
-    await expect(passwordInput).toHaveAttribute(
-      "placeholder",
-      "At least 6 characters",
-    );
+    await expect(passwordInput).toHaveAttribute("placeholder", "At least 6 characters");
   });
 
   test("Sign Up button is present", async ({ page }) => {
     await page.goto("/auth/signup");
-    await expect(
-      page.getByRole("button", { name: /Sign Up/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /Sign Up/i })).toBeVisible();
   });
 
   test("has Sign in link for existing users", async ({ page }) => {
     await page.goto("/auth/signup");
-    await expect(
-      page.getByRole("link", { name: /Sign in/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("link", { name: /Sign in/i })).toBeVisible();
   });
 });
 
@@ -241,14 +206,18 @@ test.describe("Authentication entry and recovery routes", () => {
 });
 
 test.describe("Public shared pages", () => {
-  test("shared list route reaches its truthful invalid-token state without login", async ({ page }) => {
+  test("shared list route reaches its truthful invalid-token state without login", async ({
+    page,
+  }) => {
     const response = await page.goto("/lists/shared/invalid-token-abc123");
 
     expect(response?.ok()).toBe(true);
     await expect(page).not.toHaveURL(/\/auth\/login/);
   });
 
-  test("shared comparison route reaches its truthful invalid-token state without login", async ({ page }) => {
+  test("shared comparison route reaches its truthful invalid-token state without login", async ({
+    page,
+  }) => {
     const response = await page.goto("/compare/shared/invalid-token-xyz789");
 
     expect(response?.ok()).toBe(true);
@@ -284,7 +253,6 @@ test.describe("Public system and metadata resources", () => {
     expect(response.ok()).toBe(true);
     expect(response.headers()["content-type"]).toMatch(/^image\/x-icon/i);
   });
-
 });
 
 test.describe("Auth redirect preserves intended URL", () => {
