@@ -83,6 +83,22 @@ caching, offline fallback, and push behavior remain unchanged. The frontend
 README now accurately describes the existing manifest, Serwist worker, install
 support, and intentionally narrow caching behavior.
 
+### Clean-build worker guarantee
+
+TryVit's checked-in Serwist integration is webpack-based. Because Next.js 16
+uses Turbopack by default, a plain `next build` can omit the ignored generated
+`public/sw.js` file even while a stale local worker makes an ad-hoc browser run
+appear healthy. The canonical frontend build and every tracked CI build now use
+`next build --webpack`. The guarded visual-safety build removes only that known
+generated worker before building and fails if the fresh webpack output does not
+recreate it. This restores the existing worker contract; it does not change
+caching rules, PWA UI, or Lighthouse thresholds.
+
+The Phase 5A.0a browser contract continues to block service workers. In those
+explicitly guarded builds only, Serwist generates `/sw.js` but does not inject
+automatic registration, preventing a blocked-worker page error without changing
+normal production registration.
+
 ## Verification boundary
 
 Phase 5A.0b verifies its public matrix only through the Phase 5A.0a guarded

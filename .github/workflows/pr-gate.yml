@@ -210,7 +210,7 @@ jobs:
             next-cache-${{ runner.os }}-
 
       - name: Build
-        run: npx next build
+        run: npm run build
         timeout-minutes: 5
 
       - name: CI runtime summary

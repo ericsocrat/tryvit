@@ -72,7 +72,7 @@ jobs:
           key: next-baseline-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Build main
-        run: npx next build
+        run: npm run build
         timeout-minutes: 5
         env:
           # Skip Sentry upload for baseline — we only need sizes
@@ -169,7 +169,7 @@ jobs:
             next-pr-${{ github.event.pull_request.number }}-
 
       - name: Build PR
-        run: npx next build
+        run: npm run build
         timeout-minutes: 5
         env:
           SENTRY_AUTH_TOKEN: ""

@@ -202,7 +202,7 @@ jobs:
             next-cache-${{ runner.os }}-
 
       - name: Build (+ Sentry sourcemap upload)
-        run: npx next build
+        run: npm run build
         timeout-minutes: 5
         env:
           SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
