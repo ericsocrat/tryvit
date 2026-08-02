@@ -1,96 +1,27 @@
-// ─── Visual regression tests — Authenticated pages ──────────────────────────
-// Captures baseline screenshots for auth-protected app pages in both
-// light and dark themes at desktop and mobile viewports.
-//
-// Issue #70 — Visual Regression Baseline
-// Total: 7 pages × 2 themes × 2 viewports = 28 baselines
-//
-// These tests run only in explicit local-authenticated mode. Auth setup first
-// verifies the checked-in local emulator, then provisions stored session state.
-
 import { test } from "./fixtures/safe-test";
-import {
-  assertScreenshot,
-  buildTestMatrix,
-  type PageConfig,
-} from "./helpers/visual";
+import { assertPhase5VisualBaseline } from "./helpers/visual";
+// Node's type-stripping loader requires the source extension at runtime.
+// prettier-ignore
+// @ts-expect-error TS5097: executed through the guarded Playwright launcher.
+import { VISUAL_BASELINE_CASES } from "../tooling/phase5a0d-contract.ts";
 
-/* ── Dynamic content masks ───────────────────────────────────────────────── */
+test.describe.configure({ mode: "serial", retries: 0 });
 
-// CSS selectors for content that changes between runs (timestamps,
-// user-specific data, dynamic counts). Masked to prevent false diffs.
-const COMMON_MASKS = [
-  '[data-testid="timestamp"]',
-  '[data-testid="avatar"]',
-  '[data-testid="user-email"]',
-  "time",
-];
-
-/* ── Pages under test ────────────────────────────────────────────────────── */
-
-const APP_PAGES: PageConfig[] = [
-  {
-    name: "dashboard",
-    path: "/app",
-    mask: [...COMMON_MASKS, '[data-testid="greeting"]'],
-    waitFor: '[data-testid="dashboard"]',
-  },
-  {
-    name: "search",
-    path: "/app/search?q=mleko",
-    mask: [...COMMON_MASKS, '[data-testid="result-count"]'],
-    waitFor: '[data-testid="search-results"]',
-  },
-  {
-    name: "product",
-    path: "/app/product/5900617043375",
-    mask: [...COMMON_MASKS, '[data-testid="updated-at"]'],
-    waitFor: '[data-testid="product-profile"]',
-  },
-  {
-    name: "compare",
-    path: "/app/compare",
-    mask: COMMON_MASKS,
-  },
-  {
-    name: "settings",
-    path: "/app/settings",
-    mask: [...COMMON_MASKS, '[data-testid="user-email"]'],
-    waitFor: '[data-testid="settings-page"]',
-  },
-  {
-    name: "categories",
-    path: "/app/categories",
-    mask: [...COMMON_MASKS, '[data-testid="product-count"]'],
-  },
-  {
-    name: "lists-empty",
-    path: "/app/lists",
-    mask: COMMON_MASKS,
-  },
-];
-
-/* ── Generate test matrix ────────────────────────────────────────────────── */
-
-const matrix = buildTestMatrix(APP_PAGES);
-
-test.describe("Visual regression — Authenticated pages", () => {
-  for (const entry of matrix) {
-    test(entry.testName, async ({ page }) => {
-      await page.goto(entry.page.path);
-
-      // Wait for a specific selector if specified (indicates page loaded)
-      if (entry.page.waitFor) {
-        await page.waitForSelector(entry.page.waitFor, { timeout: 15_000 });
-      }
-
-      await assertScreenshot({
-        name: entry.page.name,
-        page,
-        theme: entry.theme,
-        viewport: entry.viewport,
-        mask: entry.page.mask,
-      });
+for (const baseline of VISUAL_BASELINE_CASES.filter(
+  (candidate) => candidate.mode === "local-authenticated",
+)) {
+  test.describe(baseline.id, () => {
+    test.use({
+      viewport: { width: baseline.width, height: baseline.height },
+      deviceScaleFactor: 1,
+      locale: "en-US",
+      timezoneId: "UTC",
+      colorScheme: "light",
+      reducedMotion: "reduce",
     });
-  }
-});
+
+    test("matches the authoritative local-authenticated baseline", async ({ page }) => {
+      await assertPhase5VisualBaseline(page, baseline);
+    });
+  });
+}

@@ -1,0 +1,383 @@
+name: Phase 5A.0d Visual Baselines
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "supabase/config.toml"
+      - ".github/workflows/phase5a0d-visual-baselines.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase5a0d-visual-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify immutable visual baselines
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      CI: "true"
+      VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
+      BASE_URL: http://127.0.0.1:3000
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Detect committed visual manifest on the exact PR head
+        id: baseline_state
+        shell: bash
+        run: |
+          if ! git cat-file -e "${{ github.event.pull_request.base.sha }}^{commit}" 2>/dev/null; then
+            echo "::error::The exact PR base commit is unavailable; baseline bootstrap cannot be proven."
+            exit 1
+          fi
+          base_manifest=false
+          if git cat-file -e "${{ github.event.pull_request.base.sha }}:frontend/e2e/__screenshots__/phase5a0d-manifest.json" 2>/dev/null; then
+            base_manifest=true
+          fi
+          if [ -e e2e/__screenshots__/phase5a0d-manifest.json ] || [ -L e2e/__screenshots__/phase5a0d-manifest.json ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            if [ "$base_manifest" = "true" ]; then
+              echo "::error::The committed visual manifest exists on the PR base but was removed from the exact PR head. Bootstrap generation is forbidden."
+              exit 1
+            fi
+            echo "Initial baseline verification is deferred until reviewed candidates are committed."
+          fi
+
+      - name: Setup Node
+        if: ${{ steps.baseline_state.outputs.exists == 'true' }}
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.21.1
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        if: ${{ steps.baseline_state.outputs.exists == 'true' }}
+        run: npm ci
+
+      - name: Install lockfile-pinned Playwright Chromium
+        if: ${{ steps.baseline_state.outputs.exists == 'true' }}
+        run: npx playwright install --with-deps chromium
+        timeout-minutes: 8
+
+      - name: Setup pinned Supabase CLI
+        if: ${{ steps.baseline_state.outputs.exists == 'true' }}
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
+        with:
+          version: 2.111.0
+
+      - name: Public visual-safety preflight
+        if: ${{ steps.baseline_state.outputs.exists == 'true' }}
+        run: npm run visual-safety:preflight
+        env:
+          VISUAL_SAFETY_MODE: public
+
+      - name: Verify committed public baselines without mutation
+        id: public_visual_verify
+        if: ${{ steps.baseline_state.outputs.exists == 'true' }}
+        run: npm run phase5:visual:verify:public
+
+      - name: Assert public visual safety
+        id: public_safety_assert
+        if: ${{ always() && steps.baseline_state.outputs.exists == 'true' }}
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: public
+
+      - name: Start ephemeral local Supabase
+        id: local_supabase_start
+        if: ${{ !cancelled() && steps.baseline_state.outputs.exists == 'true' }}
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh start
+
+      - name: Local-authenticated visual-safety preflight (blocking)
+        id: auth_preflight
+        if: ${{ !cancelled() && steps.local_supabase_start.outcome == 'success' }}
+        run: npm run visual-safety:preflight
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+
+      - name: Seed guarded local QA fixtures
+        id: local_fixture_seed
+        if: ${{ !cancelled() && steps.auth_preflight.outcome == 'success' }}
+        shell: bash
+        run: |
+          fixture_ids="$RUNNER_TEMP/tryvit-visual-verify-fixture-ids.env"
+          npm run --silent visual-safety:fixtures-seed > "$fixture_ids"
+          if ! grep -Eq '^QA_PRODUCT_ID=[0-9]+$' "$fixture_ids"; then
+            rm -f -- "$fixture_ids"
+            echo "::error::Guarded local fixture seeding did not return deterministic IDs"
+            exit 1
+          fi
+          grep -E '^QA_[A-Z_]+=[A-Za-z0-9_-]+$' "$fixture_ids" >> "$GITHUB_ENV"
+          rm -f -- "$fixture_ids"
+          echo "seeded=true" >> "$GITHUB_OUTPUT"
+
+      - name: Verify committed authenticated baselines without mutation
+        id: auth_visual_verify
+        if: ${{ !cancelled() && steps.local_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run phase5:visual:verify:authenticated
+
+      - name: Assert local-authenticated visual safety
+        id: auth_safety_assert
+        if: ${{ always() && steps.auth_preflight.outcome == 'success' }}
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+
+      - name: Teardown guarded local QA fixtures
+        id: local_fixture_teardown
+        if: ${{ always() && steps.local_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run --silent visual-safety:fixtures-teardown
+
+      - name: Stop ephemeral local Supabase (no backup)
+        id: local_supabase_stop
+        if: ${{ always() && steps.local_supabase_start.outcome == 'success' }}
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh stop
+
+      - name: Upload compact visual diffs after safety and cleanup
+        if: ${{ always() && steps.public_safety_assert.outcome == 'success' && steps.auth_safety_assert.outcome == 'success' && steps.local_fixture_teardown.outcome == 'success' && steps.local_supabase_stop.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase5a0d-visual-diffs
+          path: |
+            frontend/test-results/**/*-actual.png
+            frontend/test-results/**/*-diff.png
+          if-no-files-found: ignore
+          retention-days: 7
+
+  generate-candidates:
+    name: Generate deterministic baseline candidates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      CI: "true"
+      VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
+      BASE_URL: http://127.0.0.1:3000
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Detect whether candidate generation is authorized
+        id: baseline_state
+        shell: bash
+        run: |
+          generate=false
+          if [ -e e2e/__screenshots__/phase5a0d-manifest.json ] || [ -L e2e/__screenshots__/phase5a0d-manifest.json ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              echo "Committed baselines exist; PR candidate generation is disabled."
+            else
+              generate=true
+            fi
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              if ! git cat-file -e "${{ github.event.pull_request.base.sha }}^{commit}" 2>/dev/null; then
+                echo "::error::The exact PR base commit is unavailable; baseline bootstrap cannot be proven."
+                exit 1
+              fi
+              if git cat-file -e "${{ github.event.pull_request.base.sha }}:frontend/e2e/__screenshots__/phase5a0d-manifest.json" 2>/dev/null; then
+                echo "::error::The committed visual manifest exists on the PR base but was removed from the exact PR head. Bootstrap generation is forbidden."
+                exit 1
+              fi
+              echo "Initial baseline bootstrap will upload candidates for human review only."
+            fi
+            generate=true
+          fi
+          echo "generate=$generate" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Node
+        if: ${{ steps.baseline_state.outputs.generate == 'true' }}
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.21.1
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        if: ${{ steps.baseline_state.outputs.generate == 'true' }}
+        run: npm ci
+
+      # ubuntu-24.04, the exact Node patch, package lock, and the Playwright-
+      # managed Chromium version together define the authoritative renderer.
+      - name: Install lockfile-pinned Playwright Chromium
+        if: ${{ steps.baseline_state.outputs.generate == 'true' }}
+        run: npx playwright install --with-deps chromium
+        timeout-minutes: 8
+
+      - name: Setup pinned Supabase CLI
+        if: ${{ steps.baseline_state.outputs.generate == 'true' }}
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
+        with:
+          version: 2.111.0
+
+      - name: First public visual-safety preflight
+        if: ${{ steps.baseline_state.outputs.generate == 'true' }}
+        run: npm run visual-safety:preflight
+        env:
+          VISUAL_SAFETY_MODE: public
+
+      - name: Generate first public candidate pass
+        id: first_public_generate
+        if: ${{ steps.baseline_state.outputs.generate == 'true' }}
+        run: npm run phase5:visual:generate:public
+
+      - name: Assert first public pass safety
+        id: first_public_safety_assert
+        if: ${{ always() && steps.baseline_state.outputs.generate == 'true' }}
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: public
+
+      - name: Start ephemeral local Supabase
+        id: local_supabase_start
+        if: ${{ !cancelled() && steps.baseline_state.outputs.generate == 'true' }}
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh start
+
+      - name: Local-authenticated visual-safety preflight (blocking)
+        id: auth_preflight
+        if: ${{ !cancelled() && steps.local_supabase_start.outcome == 'success' }}
+        run: npm run visual-safety:preflight
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+
+      - name: Seed guarded first-pass fixtures
+        id: first_fixture_seed
+        if: ${{ !cancelled() && steps.auth_preflight.outcome == 'success' }}
+        shell: bash
+        run: |
+          fixture_ids="$RUNNER_TEMP/tryvit-visual-first-fixture-ids.env"
+          npm run --silent visual-safety:fixtures-seed > "$fixture_ids"
+          if ! grep -Eq '^QA_PRODUCT_ID=[0-9]+$' "$fixture_ids"; then
+            rm -f -- "$fixture_ids"
+            echo "::error::Guarded first-pass fixture seeding did not return deterministic IDs"
+            exit 1
+          fi
+          grep -E '^QA_[A-Z_]+=[A-Za-z0-9_-]+$' "$fixture_ids" >> "$GITHUB_ENV"
+          rm -f -- "$fixture_ids"
+          echo "seeded=true" >> "$GITHUB_OUTPUT"
+
+      - name: Generate first authenticated candidate pass
+        id: first_auth_generate
+        if: ${{ !cancelled() && steps.first_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run phase5:visual:generate:authenticated
+
+      - name: Assert first authenticated pass safety
+        id: first_auth_safety_assert
+        if: ${{ always() && steps.auth_preflight.outcome == 'success' }}
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+
+      - name: Teardown guarded first-pass fixtures
+        id: first_fixture_teardown
+        if: ${{ always() && steps.first_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run --silent visual-safety:fixtures-teardown
+
+      - name: Seal and hash first exact seven-image candidate set
+        if: ${{ !cancelled() && steps.first_public_generate.outcome == 'success' && steps.first_auth_generate.outcome == 'success' && steps.first_public_safety_assert.outcome == 'success' && steps.first_auth_safety_assert.outcome == 'success' && steps.first_fixture_teardown.outcome == 'success' }}
+        shell: bash
+        run: |
+          npm run phase5:visual:manifest:generate
+          npm run --silent phase5:visual:artifact:stage -- "$RUNNER_TEMP/phase5a0d-first-candidates"
+          (cd "$RUNNER_TEMP/phase5a0d-first-candidates" && find . -type f -print0 | sort -z | xargs -0 sha256sum) > "$RUNNER_TEMP/phase5a0d-first.sha256"
+          test "$(find "$RUNNER_TEMP/phase5a0d-first-candidates" -type f | wc -l)" -eq 8
+
+      - name: Generate second public candidate pass
+        id: second_public_generate
+        if: ${{ steps.baseline_state.outputs.generate == 'true' }}
+        run: npm run phase5:visual:generate:public
+
+      - name: Assert second public pass safety
+        id: second_public_safety_assert
+        if: ${{ always() && steps.baseline_state.outputs.generate == 'true' }}
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: public
+
+      - name: Seed guarded second-pass fixtures
+        id: second_fixture_seed
+        if: ${{ !cancelled() && steps.auth_preflight.outcome == 'success' }}
+        shell: bash
+        run: |
+          fixture_ids="$RUNNER_TEMP/tryvit-visual-second-fixture-ids.env"
+          npm run --silent visual-safety:fixtures-seed > "$fixture_ids"
+          if ! grep -Eq '^QA_PRODUCT_ID=[0-9]+$' "$fixture_ids"; then
+            rm -f -- "$fixture_ids"
+            echo "::error::Guarded second-pass fixture seeding did not return deterministic IDs"
+            exit 1
+          fi
+          grep -E '^QA_[A-Z_]+=[A-Za-z0-9_-]+$' "$fixture_ids" >> "$GITHUB_ENV"
+          rm -f -- "$fixture_ids"
+          echo "seeded=true" >> "$GITHUB_OUTPUT"
+
+      - name: Generate second authenticated candidate pass
+        id: second_auth_generate
+        if: ${{ !cancelled() && steps.second_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run phase5:visual:generate:authenticated
+
+      - name: Assert second authenticated pass safety
+        id: second_auth_safety_assert
+        if: ${{ always() && steps.auth_preflight.outcome == 'success' }}
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+
+      - name: Teardown guarded second-pass fixtures
+        id: second_fixture_teardown
+        if: ${{ always() && steps.second_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run --silent visual-safety:fixtures-teardown
+
+      - name: Seal second exact seven-image candidate set
+        id: deterministic_candidates
+        if: ${{ !cancelled() && steps.second_public_generate.outcome == 'success' && steps.second_auth_generate.outcome == 'success' && steps.second_public_safety_assert.outcome == 'success' && steps.second_auth_safety_assert.outcome == 'success' && steps.second_fixture_teardown.outcome == 'success' }}
+        shell: bash
+        run: |
+          npm run phase5:visual:manifest:generate
+          npm run --silent phase5:visual:artifact:stage -- "$RUNNER_TEMP/phase5a0d-second-candidates"
+          (cd "$RUNNER_TEMP/phase5a0d-second-candidates" && find . -type f -print0 | sort -z | xargs -0 sha256sum) > "$RUNNER_TEMP/phase5a0d-second.sha256"
+          test "$(find "$RUNNER_TEMP/phase5a0d-second-candidates" -type f | wc -l)" -eq 8
+          cmp --silent "$RUNNER_TEMP/phase5a0d-first.sha256" "$RUNNER_TEMP/phase5a0d-second.sha256"
+          echo "byte_identical=true" >> "$GITHUB_OUTPUT"
+
+      - name: Stop ephemeral local Supabase (no backup)
+        id: local_supabase_stop
+        if: ${{ always() && steps.local_supabase_start.outcome == 'success' }}
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh stop
+
+      - name: Upload exact deterministic baseline candidates
+        if: ${{ always() && steps.first_public_safety_assert.outcome == 'success' && steps.first_auth_safety_assert.outcome == 'success' && steps.first_fixture_teardown.outcome == 'success' && steps.second_public_safety_assert.outcome == 'success' && steps.second_auth_safety_assert.outcome == 'success' && steps.second_fixture_teardown.outcome == 'success' && steps.deterministic_candidates.outputs.byte_identical == 'true' && steps.local_supabase_stop.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase5a0d-visual-baseline-candidates-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/phase5a0d-second-candidates/
+          if-no-files-found: error
+          retention-days: 7

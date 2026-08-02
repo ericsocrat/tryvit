@@ -33,6 +33,17 @@
     "lighthouse:mobile": "npm run visual-safety:public-lighthouse -- mobile",
     "lighthouse:desktop": "npm run visual-safety:public-lighthouse -- desktop",
     "lighthouse": "npm run lighthouse:mobile && npm run lighthouse:desktop",
+    "phase5:route-js": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/phase5a0d-route-js-cli.mts",
+    "phase5:route-js:public": "npm run visual-safety:public -- --project=phase5-route-js-public --reporter=list",
+    "phase5:route-js:authenticated": "npm run visual-safety:local-authenticated -- --project=phase5-route-js-authenticated --reporter=list",
+    "phase5:lighthouse:report": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/phase5a0d-lighthouse-cli.mts aggregate",
+    "phase5:visual:generate:public": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts phase5-visual-generate public",
+    "phase5:visual:generate:authenticated": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts phase5-visual-generate local-authenticated",
+    "phase5:visual:verify:public": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts phase5-visual-verify public",
+    "phase5:visual:verify:authenticated": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts phase5-visual-verify local-authenticated",
+    "phase5:visual:manifest:generate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/phase5a0d-visual-baselines-cli.mts generate",
+    "phase5:visual:manifest:verify": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/phase5a0d-visual-baselines-cli.mts verify",
+    "phase5:visual:artifact:stage": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/phase5a0d-visual-baselines-cli.mts stage",
     "optimize:svg": "svgo -r -f public/icons --config svgo.config.js"
   },
   "dependencies": {

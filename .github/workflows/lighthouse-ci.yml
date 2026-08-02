@@ -1,13 +1,3 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# Lighthouse CI — Performance & Accessibility Gate (#621)
-# ═══════════════════════════════════════════════════════════════════════════════
-# Runs Lighthouse CI (mobile budget) on PRs that touch frontend code.
-# Fails if scores drop below thresholds defined in lighthouserc.mobile.js:
-#   Performance ≥ 85, Accessibility ≥ 95, Best Practices ≥ 90, CLS < 0.1
-#
-# Results uploaded as artifacts for investigation.
-# ═══════════════════════════════════════════════════════════════════════════════
-
 name: Lighthouse CI
 
 on:
@@ -27,56 +17,130 @@ concurrency:
 
 jobs:
   lighthouse:
-    name: Lighthouse (Mobile)
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    name: Guarded Lighthouse (public + local)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
     env:
       VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
+      BASE_URL: http://127.0.0.1:3000
     defaults:
       run:
         working-directory: frontend
+
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 22
+          node-version: 22.21.1
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright Chromium
+      # Chromium is resolved from the lockfile-pinned Playwright package. The
+      # workflow never accepts an ambient CHROME_PATH or hosted browser.
+      - name: Install pinned Playwright Chromium
         run: npx playwright install --with-deps chromium
         timeout-minutes: 8
+
+      - name: Setup pinned Supabase CLI
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
+        with:
+          version: 2.111.0
 
       - name: Public visual-safety preflight
         run: npm run visual-safety:preflight
         env:
           VISUAL_SAFETY_MODE: public
-          BASE_URL: http://127.0.0.1:3000
 
-      - name: Run public Lighthouse CI
-        run: npm run visual-safety:lighthouse -- mobile
+      - name: Run public Lighthouse (mobile + desktop, five runs each)
+        id: public_lighthouse
+        run: npm run visual-safety:lighthouse -- all
         env:
           VISUAL_SAFETY_MODE: public
-          BASE_URL: http://127.0.0.1:3000
 
       - name: Assert public visual safety
-        id: safety_assert
+        id: public_safety_assert
         if: ${{ always() }}
         run: npm run visual-safety:assert
         env:
           VISUAL_SAFETY_MODE: public
-          BASE_URL: http://127.0.0.1:3000
 
-      - name: Upload reports
-        if: ${{ always() && steps.safety_assert.outcome == 'success' }}
+      - name: Start ephemeral local Supabase
+        id: local_supabase_start
+        if: ${{ !cancelled() }}
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh start
+
+      - name: Local-authenticated visual-safety preflight (blocking)
+        id: auth_preflight
+        if: ${{ !cancelled() && steps.local_supabase_start.outcome == 'success' }}
+        run: npm run visual-safety:preflight
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+
+      - name: Seed guarded local QA fixtures
+        id: local_fixture_seed
+        if: ${{ !cancelled() && steps.auth_preflight.outcome == 'success' }}
+        shell: bash
+        run: |
+          fixture_ids="$RUNNER_TEMP/tryvit-lighthouse-fixture-ids.env"
+          npm run --silent visual-safety:fixtures-seed > "$fixture_ids"
+          if ! grep -Eq '^QA_PRODUCT_ID=[0-9]+$' "$fixture_ids"; then
+            rm -f -- "$fixture_ids"
+            echo "::error::Guarded local fixture seeding did not return deterministic IDs"
+            exit 1
+          fi
+          grep -E '^QA_[A-Z_]+=[A-Za-z0-9_-]+$' "$fixture_ids" >> "$GITHUB_ENV"
+          rm -f -- "$fixture_ids"
+          echo "seeded=true" >> "$GITHUB_OUTPUT"
+
+      - name: Run local-authenticated Lighthouse (mobile + desktop, five runs each)
+        id: auth_lighthouse
+        if: ${{ !cancelled() && steps.local_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run visual-safety:lighthouse -- all
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+
+      - name: Assert local-authenticated visual safety
+        id: auth_safety_assert
+        if: ${{ always() && steps.auth_preflight.outcome == 'success' }}
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+
+      - name: Teardown guarded local QA fixtures
+        id: local_fixture_teardown
+        if: ${{ always() && steps.local_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run --silent visual-safety:fixtures-teardown
+
+      - name: Stop ephemeral local Supabase (no backup)
+        id: local_supabase_stop
+        if: ${{ always() }}
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh stop
+
+      - name: Build compact Phase 5A.0d Lighthouse report
+        id: lighthouse_report
+        if: ${{ always() && steps.public_safety_assert.outcome == 'success' && steps.auth_safety_assert.outcome == 'success' && steps.local_fixture_teardown.outcome == 'success' && steps.local_supabase_stop.outcome == 'success' }}
+        run: npm run phase5:lighthouse:report
+
+      - name: Upload compact Lighthouse evidence
+        # A truthful budget miss makes the report step fail after writing the
+        # compact evidence. Retain that evidence after safety and cleanup pass;
+        # upload-artifact still fails clearly if no report was produced.
+        if: ${{ always() && steps.public_safety_assert.outcome == 'success' && steps.auth_safety_assert.outcome == 'success' && steps.local_fixture_teardown.outcome == 'success' && steps.local_supabase_stop.outcome == 'success' && steps.lighthouse_report.outcome != 'skipped' && steps.lighthouse_report.outcome != 'cancelled' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: lighthouse-reports
-          path: frontend/lighthouse-reports/
+          name: lighthouse-phase5a0d-evidence
+          path: |
+            frontend/lighthouse-reports/phase5a0d-lighthouse.json
+            frontend/lighthouse-reports/phase5a0d-lighthouse.md
+          if-no-files-found: error
           retention-days: 14

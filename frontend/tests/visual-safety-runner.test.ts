@@ -159,6 +159,18 @@ describe("visual-safety runner environment", () => {
         reporter,
       ]);
     }
+    expect(normalizePlaywrightArguments(["--update-snapshots=all"], true).playwrightArgs).toEqual([
+      "--update-snapshots=all",
+    ]);
+    for (const unsafeInternalValue of [
+      "--update-snapshots=changed",
+      "--update-snapshots=missing",
+      "-u",
+    ]) {
+      expect(() => normalizePlaywrightArguments([unsafeInternalValue], true)).toThrow(
+        /VS_PLAYWRIGHT_ARGUMENT/u,
+      );
+    }
   });
 
   it("rejects process controls that could preload, proxy, or debug child traffic", () => {
@@ -510,6 +522,69 @@ describe("public Lighthouse page guard", () => {
         delete process.env.VISUAL_SAFETY_VIOLATION_MARKER;
       } else {
         process.env.VISUAL_SAFETY_VIOLATION_MARKER = previousMarker;
+      }
+    }
+  });
+});
+
+describe("local-authenticated Lighthouse session guard", () => {
+  const guardModulePath = path.resolve(
+    process.cwd(),
+    "e2e/scripts/lighthouse-local-auth-guard.cjs",
+  );
+  const guard = requireFromTest(guardModulePath) as (browser: unknown) => Promise<void>;
+
+  it("reuses an authenticated browser session without submitting credentials again", async () => {
+    const previous = new Map<string, string | undefined>();
+    const environment = {
+      VISUAL_SAFETY_MODE: "local-authenticated",
+      VISUAL_SAFETY_APP_ORIGIN: "http://127.0.0.1:3000",
+      VISUAL_SAFETY_SUPABASE_ORIGIN: "http://127.0.0.1:54321",
+      QA_TEST_EMAIL: "fixture.user@example.test",
+      QA_TEST_PASSWORD: "fixture-password-canary",
+      VISUAL_SAFETY_VIOLATION_MARKER: path.join(tmpdir(), "unused-lighthouse-marker.json"),
+    };
+    for (const [name, value] of Object.entries(environment)) {
+      previous.set(name, process.env[name]);
+      process.env[name] = value;
+    }
+    const cdpSession = {
+      on: vi.fn(),
+      send: vi.fn(async () => undefined),
+    };
+    const page = {
+      setBypassServiceWorker: vi.fn(async () => undefined),
+      createCDPSession: vi.fn(async () => cdpSession),
+      setRequestInterception: vi.fn(async () => undefined),
+      on: vi.fn(),
+      goto: vi.fn(async () => ({ ok: () => true })),
+      waitForFunction: vi.fn(async () => undefined),
+      url: vi.fn(() => "http://127.0.0.1:3000/app"),
+      type: vi.fn(async () => undefined),
+      click: vi.fn(async () => undefined),
+      waitForResponse: vi.fn(),
+      close: vi.fn(async () => undefined),
+    };
+    const browser = {
+      pages: vi.fn(async () => [page]),
+      newPage: vi.fn(async () => page),
+      on: vi.fn(),
+    };
+
+    try {
+      await guard(browser);
+      expect(page.goto).toHaveBeenCalledWith("http://127.0.0.1:3000/auth/login", {
+        waitUntil: "domcontentloaded",
+        timeout: 30_000,
+      });
+      expect(page.type).not.toHaveBeenCalled();
+      expect(page.click).not.toHaveBeenCalled();
+      expect(page.waitForResponse).not.toHaveBeenCalled();
+      expect(page.close).toHaveBeenCalledOnce();
+    } finally {
+      for (const [name, value] of previous) {
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
       }
     }
   });

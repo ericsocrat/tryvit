@@ -760,6 +760,120 @@ describe("browser guard installation with transport stubs", () => {
     expect(audit.summary()).toEqual({ total: 0, categories: {} });
   });
 
+  it.each([
+    ["public", contract],
+    [
+      "local-authenticated",
+      createLocalAuthenticatedSafetyContract({
+        appOrigin: "http://localhost:3000",
+        supabaseOrigin: "http://127.0.0.1:55001",
+      }),
+    ],
+  ] as const)(
+    "locally fulfills the exact Speed Insights script in %s mode",
+    async (_mode, safetyContract) => {
+      const mocked = mockContext();
+      const audit = createEgressAudit();
+      await installBrowserEgressGuards(mocked.context, safetyContract, audit);
+      const route = {
+        request: () => ({
+          url: () => "http://localhost:3000/_vercel/speed-insights/script.js",
+          resourceType: () => "script",
+        }),
+        abort: vi.fn(async () => undefined),
+        continue: vi.fn(async () => undefined),
+        fulfill: vi.fn(async () => undefined),
+      } as unknown as Route;
+
+      await mocked.getHttpHandler()(route);
+
+      expect(route.fulfill).toHaveBeenCalledWith({
+        status: 200,
+        contentType: "application/javascript; charset=utf-8",
+        body: "/* TryVit visual-safety: local Vercel Speed Insights intentionally contained. */",
+      });
+      expect(route.abort).not.toHaveBeenCalled();
+      expect(route.continue).not.toHaveBeenCalled();
+      expect(audit.summary()).toEqual({ total: 0, categories: {} });
+    },
+  );
+
+  it.each([
+    [
+      "query string",
+      "http://localhost:3000/_vercel/speed-insights/script.js?debug=1",
+      "script",
+      "continue",
+    ],
+    [
+      "fragment",
+      "http://localhost:3000/_vercel/speed-insights/script.js#canary",
+      "script",
+      "continue",
+    ],
+    [
+      "credentials",
+      "http://user:password@localhost:3000/_vercel/speed-insights/script.js",
+      "script",
+      "continue",
+    ],
+    [
+      "another /_vercel path",
+      "http://localhost:3000/_vercel/analytics/script.js",
+      "script",
+      "continue",
+    ],
+    [
+      "path suffix",
+      "http://localhost:3000/_vercel/speed-insights/script.js.map",
+      "script",
+      "continue",
+    ],
+    [
+      "wrong resource type",
+      "http://localhost:3000/_vercel/speed-insights/script.js",
+      "fetch",
+      "continue",
+    ],
+    [
+      "different loopback origin",
+      "http://127.0.0.1:3000/_vercel/speed-insights/script.js",
+      "script",
+      "continue",
+    ],
+    [
+      "external origin",
+      "https://insights.synthetic.test/_vercel/speed-insights/script.js",
+      "script",
+      "abort",
+    ],
+  ] as const)(
+    "does not fulfill a non-exact Speed Insights request: %s",
+    async (_reason, url, resourceType, disposition) => {
+      const mocked = mockContext();
+      const audit = createEgressAudit();
+      await installBrowserEgressGuards(mocked.context, contract, audit);
+      const route = {
+        request: () => ({ url: () => url, resourceType: () => resourceType }),
+        abort: vi.fn(async () => undefined),
+        continue: vi.fn(async () => undefined),
+        fulfill: vi.fn(async () => undefined),
+      } as unknown as Route;
+
+      await mocked.getHttpHandler()(route);
+
+      expect(route.fulfill).not.toHaveBeenCalled();
+      if (disposition === "abort") {
+        expect(route.abort).toHaveBeenCalledWith("blockedbyclient");
+        expect(route.continue).not.toHaveBeenCalled();
+      } else {
+        expect(route.continue).toHaveBeenCalledOnce();
+        expect(route.abort).not.toHaveBeenCalled();
+      }
+      expect(audit.summary()).toEqual({ total: 0, categories: {} });
+    },
+  );
+
   it("refuses installation after page or service-worker creation", async () => {
     for (const override of [
       { pages: () => [{}], serviceWorkers: () => [] },

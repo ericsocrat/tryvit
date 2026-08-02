@@ -7,6 +7,12 @@
 import type { Page } from "@playwright/test";
 import { expect } from "@playwright/test";
 
+import type { VisualBaselineCase } from "../../tooling/phase5a0d-contract";
+import {
+  PHASE5A0D_FIXED_TIME,
+  VISUAL_MAX_DIFF_PIXEL_RATIO,
+} from "../../tooling/phase5a0d-contract";
+
 /* ── Types ───────────────────────────────────────────────────────────────── */
 
 export interface ScreenshotOptions {
@@ -39,6 +45,125 @@ export type ViewportName = keyof typeof VIEWPORTS;
 
 export const THEMES = ["light", "dark"] as const;
 export type ThemeName = (typeof THEMES)[number];
+
+async function assertStableViewportImages(page: Page): Promise<void> {
+  const failedImageIndexes = await page.evaluate(async () => {
+    await document.fonts.ready;
+    const visibleViewportImages = [...document.images].filter((image) => {
+      const rect = image.getBoundingClientRect();
+      const style = getComputedStyle(image);
+      return (
+        rect.width > 0 &&
+        rect.height > 0 &&
+        rect.bottom > 0 &&
+        rect.right > 0 &&
+        rect.top < innerHeight &&
+        rect.left < innerWidth &&
+        style.display !== "none" &&
+        style.visibility !== "hidden"
+      );
+    });
+    const failed: number[] = [];
+    await Promise.all(
+      visibleViewportImages.map(async (image, index) => {
+        if (!image.complete) {
+          await new Promise<void>((resolve) => {
+            const timeout = setTimeout(resolve, 10_000);
+            image.addEventListener("load", () => resolve(), { once: true });
+            image.addEventListener("error", () => resolve(), { once: true });
+            image.addEventListener("load", () => clearTimeout(timeout), { once: true });
+            image.addEventListener("error", () => clearTimeout(timeout), { once: true });
+          });
+        }
+        try {
+          await image.decode();
+        } catch {
+          failed.push(index);
+          return;
+        }
+        if (!image.complete || image.naturalWidth <= 0 || image.naturalHeight <= 0) {
+          failed.push(index);
+        }
+      }),
+    );
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+    window.scrollTo(0, 0);
+    return failed.sort((left, right) => left - right);
+  });
+  expect(failedImageIndexes).toEqual([]);
+}
+
+export function assertNoMeaningfulVisualMasks(mask: readonly string[]): void {
+  if (mask.length > 0) {
+    throw new Error("[P5_VISUAL] meaningful-content-masking-prohibited");
+  }
+}
+
+/**
+ * Captures one of the seven Phase 5A.0d baselines. Context-level locale,
+ * viewport, theme and motion are applied by `test.use` before this receives a
+ * page. This helper owns the remaining deterministic state and never masks UI.
+ */
+export async function assertPhase5VisualBaseline(
+  page: Page,
+  baseline: VisualBaselineCase,
+): Promise<void> {
+  assertNoMeaningfulVisualMasks([]);
+  await page.clock.setFixedTime(new Date(PHASE5A0D_FIXED_TIME));
+  await page.addInitScript(() => {
+    localStorage.setItem("theme", "light");
+  });
+
+  const pageErrors: string[] = [];
+  const consoleErrors: string[] = [];
+  const firstPartyFailures: number[] = [];
+  const appOrigin = new URL(process.env.VISUAL_SAFETY_APP_ORIGIN ?? "http://127.0.0.1:3000").origin;
+  page.on("pageerror", (error) => pageErrors.push(error.name || "Error"));
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push("console-error");
+  });
+  page.on("response", (response) => {
+    const target = new URL(response.url());
+    if (target.origin === appOrigin && response.status() >= 400) {
+      firstPartyFailures.push(response.status());
+    }
+  });
+
+  const navigation = await page.goto(baseline.path, { waitUntil: "load" });
+  expect(navigation?.ok()).toBe(true);
+  expect(new URL(page.url()).pathname).toBe(baseline.path);
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+
+  if (baseline.routeId === "landing") {
+    await expect(page.locator("#main-content h1")).toBeVisible();
+    await expect(page.locator("#service-status-heading")).toBeAttached();
+  } else if (baseline.routeId === "login") {
+    await expect(page.locator("#main-content h1")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Sign In" })).toBeVisible();
+  } else {
+    await expect(page.getByTestId("new-user-welcome")).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId("error-boundary-page")).toHaveCount(0);
+  }
+
+  await assertStableViewportImages(page);
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+  expect(firstPartyFailures).toEqual([]);
+  expect(await page.evaluate(() => matchMedia("(prefers-reduced-motion: reduce)").matches)).toBe(
+    true,
+  );
+
+  await expect(page).toHaveScreenshot(baseline.filename, {
+    animations: "disabled",
+    fullPage: false,
+    mask: [],
+    maxDiffPixelRatio: VISUAL_MAX_DIFF_PIXEL_RATIO,
+    threshold: 0.2,
+  });
+}
 
 /* ── Core screenshot assertion ───────────────────────────────────────────── */
 
