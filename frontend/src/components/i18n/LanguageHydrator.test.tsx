@@ -12,7 +12,7 @@ vi.mock("@/stores/language-store", () => ({
   ) => selector({ setLanguage: mockSetLanguage, loaded: mockLoaded }),
 }));
 
-vi.mock("@/lib/constants", () => ({
+vi.mock("@/lib/country-config", () => ({
   COUNTRY_DEFAULT_LANGUAGES: { PL: "pl", DE: "de" },
 }));
 

@@ -172,9 +172,16 @@ Implemented remediation is limited to:
    navigation and the two new-user dashboard CTAs. Click navigation is
    unchanged;
 7. on exactly `/app`, defer the list badge, avoid-list, and favorites queries
-   until the existing dashboard query settles. Nested authenticated routes
-   retain immediate hydration, and the cache-only observer neither creates nor
-   mutates the dashboard query.
+   until the existing dashboard query settles and the primary dashboard
+   response has had a two-frame paint opportunity. The release is tied to the
+   exact dashboard query instance, re-arms after cache replacement, and is
+   cancelled during navigation. Nested authenticated routes retain immediate
+   hydration, and the cache-only observer neither creates nor mutates the
+   dashboard query;
+8. split country and default-language metadata from the broad product-domain
+   constants module while preserving reference-identical compatibility exports.
+   Persistent shell consumers therefore avoid loading allergen, scoring,
+   category, and health-goal constants that they never use.
 
 Dashboard data remains client-only. A server-prefetch/dehydration experiment
 was rejected because the existing service-worker runtime cache could retain
@@ -220,15 +227,32 @@ at 0.88, but app mobile remained the sole blocker at 0.84 against the unchanged
 `d860b7cbfc39123233822287f52547e28a4b8bba2cf73f73b0de7e47e807c0a8`.
 
 The retained trace showed three list-domain RPCs still starting before the
-new-user LCP. The last local correction therefore delays only those queries on
-exactly `/app` until the existing dashboard query succeeds or fails. It does
-not skip list hydration, add another dashboard request, serialize user data,
-or alter other authenticated routes. The exact-head five-run gate remains the
-authority for whether this final correction clears the remaining 0.01 gap.
+new-user LCP. Exact head `2fb3ccb7bedd26850360bae139449732187145cd`
+first delayed those queries until the dashboard cache reported success or
+error. Every other exact-head check passed, but the authoritative Lighthouse
+run proved that settlement alone was not a paint boundary: the list queries
+could still begin in the same render commit as the welcome content. App mobile
+remained the sole blocker at 0.83, with a stable 0.02 range, median LCP of
+4,159.2 ms, and median TBT of 211 ms. Product mobile passed at 0.89 and no
+instability failure remained. The compact report checksum is
+`822304fafcd23f3d5d43d21b0f10dac301e3420c670a3faa947cfa0d4bd522cc`.
+
+The final local correction keeps the same cache-only observer but releases the
+three list-domain queries only after two animation frames following dashboard
+success or error. It keys that release to the exact TanStack dashboard query
+instance, so query removal, cache garbage collection, navigation, and later
+query recreation cannot inherit stale readiness. It also moves the small
+country/default-language contract out of the broad product constants module.
+An isolated production-build comparison against `2fb3ccb7…` reduced the
+initial `/app` client set by 6,173 raw bytes and 2,595 gzip bytes; the app-layout
+entry itself fell by 6,362 raw bytes and 1,569 gzip bytes. It does not skip list
+hydration, add another dashboard request, serialize user data, or alter other
+authenticated routes. The exact-head five-run gate remains the authority for
+whether this final correction clears the unchanged 0.85 floor.
 
 Local verification of the final source includes:
 
-- 6,379 frontend tests passed, with 19 intentional skips;
+- 6,385 frontend tests passed, with 19 intentional skips;
 - TypeScript type-check and ESLint passed;
 - the production build and fresh `/sw.js` generation passed;
 - focused locale, persistence, toast, race, prefetch, provider-boundary, query

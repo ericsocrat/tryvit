@@ -10,7 +10,7 @@
 // fall back to their country's default language (e.g. PL → "pl", DE → "de").
 
 import { useEffect } from "react";
-import { COUNTRY_DEFAULT_LANGUAGES } from "@/lib/constants";
+import { COUNTRY_DEFAULT_LANGUAGES } from "@/lib/country-config";
 import { useLanguageStore, type SupportedLanguage } from "@/stores/language-store";
 
 const SUPPORTED = new Set<SupportedLanguage>(["en", "pl", "de"]);
