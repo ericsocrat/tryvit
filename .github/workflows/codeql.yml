@@ -19,7 +19,7 @@ name: CodeQL Security Analysis
 
 on:
   push:
-    branches: [main, codex/phase-5a0d-performance-visual-gates]
+    branches: [main]
     paths:
       - "frontend/**"
       - ".github/workflows/**"
@@ -27,7 +27,7 @@ on:
       - "**.ts"
       - "**.tsx"
   pull_request:
-    branches: [main]
+    branches: [main, codex/phase-5a0d-performance-visual-gates]
     # No paths filter — the code_scanning ruleset rule requires CodeQL to
     # report results for every PR commit.  On non-code PRs the analysis
     # completes in seconds (nothing to scan) and uploads an empty SARIF.
