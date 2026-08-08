@@ -150,20 +150,7 @@ jobs:
               fi
               git show "$reviewed_phase5a0d_head:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-approved-visual-package.json"
               git show "$head_sha:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-synchronized-visual-package.json"
-              node <<'NODE'
-              const fs = require("fs");
-              const approved = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-approved-visual-package.json", "utf8"));
-              const synchronized = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-synchronized-visual-package.json", "utf8"));
-              const withoutDependencies = (value) => {
-                const copy = structuredClone(value);
-                delete copy.dependencies;
-                delete copy.devDependencies;
-                return copy;
-              };
-              if (JSON.stringify(withoutDependencies(approved)) !== JSON.stringify(withoutDependencies(synchronized))) {
-                throw new Error("synchronized visual package changed outside dependency versions");
-              }
-              NODE
+              node -e 'const fs = require("fs"); const strip = (value) => { const copy = structuredClone(value); delete copy.dependencies; delete copy.devDependencies; return copy; }; const approved = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-approved-visual-package.json", "utf8")); const synchronized = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-synchronized-visual-package.json", "utf8")); if (JSON.stringify(strip(approved)) !== JSON.stringify(strip(synchronized))) throw new Error("synchronized visual package changed outside dependency versions");'
               if ! cmp --silent \
                 <(git show "$base_sha:frontend/package-lock.json") \
                 <(git show "$head_sha:frontend/package-lock.json"); then
