@@ -64,6 +64,7 @@ export function Navigation() {
 
   // Highlight "More" if active route lives in the drawer
   const isMoreActive = MORE_ROUTE_KEYS.has(activeRoute);
+  const compareBadgeText = compareCount > 9 ? "9+" : String(compareCount);
 
   return (
     <>
@@ -76,14 +77,12 @@ export function Navigation() {
           {NAV_ITEMS.map((item) => {
             const isActive = activeRoute === item.routeKey;
             const label = t(item.labelKey);
-            const badge = item.routeKey
-              ? badgeCounts[item.routeKey]
-              : undefined;
+            const badge = item.routeKey ? badgeCounts[item.routeKey] : undefined;
+            const badgeText = badge != null ? (badge > 99 ? "99+" : String(badge)) : "";
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                aria-label={label}
                 aria-current={isActive ? "page" : undefined}
                 className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 min-w-16 rounded-xl py-2 landscape:py-1 text-xs transition-colors ${
                   isActive
@@ -104,12 +103,11 @@ export function Navigation() {
                     <span
                       className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-xxs font-bold leading-none text-white"
                       data-testid={`nav-badge-${item.routeKey}`}
-                      aria-label={`${badge}`}
                     >
-                      {badge > 99 ? "99+" : badge}
+                      {badgeText}
                     </span>
                   )}
-                </span>
+                </span>{" "}
                 <span>{label}</span>
               </Link>
             );
@@ -128,10 +126,7 @@ export function Navigation() {
             }`}
           >
             {isMoreActive && (
-              <span
-                className="absolute top-1 h-1 w-6 rounded-full bg-brand"
-                aria-hidden="true"
-              />
+              <span className="absolute top-1 h-1 w-6 rounded-full bg-brand" aria-hidden="true" />
             )}
             <span className="relative">
               <Icon icon={MoreHorizontal} size="md" />
@@ -139,12 +134,11 @@ export function Navigation() {
                 <span
                   className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-xxs font-bold leading-none text-white"
                   data-testid="nav-badge-compare"
-                  aria-label={`${compareCount}`}
                 >
-                  {compareCount > 9 ? "9+" : compareCount}
+                  {compareBadgeText}
                 </span>
               )}
-            </span>
+            </span>{" "}
             <span>{t("nav.more")}</span>
           </button>
         </div>

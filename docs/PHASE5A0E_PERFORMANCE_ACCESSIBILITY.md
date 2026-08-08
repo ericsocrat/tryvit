@@ -90,10 +90,15 @@ The parent authenticated layout already has a per-request server Supabase
 client and Query provider, and the product route already proves the repository's
 dehydration pattern.
 
-The smallest behavior-preserving correction is to server-prefetch only the
-existing dashboard RPC into the existing `queryKeys.dashboard` cache key. A
-failed server prefetch must remain a cache miss so the existing client retry,
-skeleton, and error behavior is preserved.
+The existing product route demonstrates that server-prefetching would remove
+this waterfall, but Phase 5A.0e deliberately does not apply that pattern to the
+dashboard. The production service worker's inherited default runtime cache can
+retain same-origin HTML and RSC responses. Dehydrating recent views, favorites,
+and user statistics into `/app` would therefore widen a pre-existing private
+cache risk on shared browsers. The client-only dashboard boundary remains
+unchanged; any future personalization prefetch must follow a separate PWA
+private-cache safety correction. This phase first tests whether removing the
+much larger disabled-telemetry cost is sufficient to clear the gate.
 
 ### Authenticated shared JavaScript
 
@@ -143,15 +148,17 @@ variance rule will not be weakened.
 
 Authorized implementation is limited to:
 
-1. hydrate the existing dashboard query without changing its API, data, copy,
-   layout, or client fallback behavior;
-2. defer browser Sentry loading behind the existing public DSN while preserving
+1. defer browser Sentry loading behind the existing public DSN while preserving
    configured telemetry semantics;
-3. correct the two semantic accessibility defects and extend guarded tests.
+2. correct the two semantic accessibility defects and extend guarded tests.
+
+Dashboard prefetch and service-worker cache-policy changes are explicitly
+excluded from this PR. The former would introduce private data into cacheable
+responses; the latter needs its own security/PWA contract and offline-behavior
+verification.
 
 The source Lighthouse hashes, category floors, variance rule, route-JS
 regression rule, visual threshold, routes, fixture contract, and seven reviewed
 PNG files remain immutable. The visual manifest file SHA-256 remains
 `8c17917c60a3b46f087cc5d5cd3a80b34355015ed9e8de0a58e98826f11bdf9c`.
 No hosted Supabase or Vercel operation is part of this phase.
-

@@ -6,8 +6,8 @@
 "use client";
 
 import { translate } from "@/lib/i18n";
+import { captureClientException } from "@/lib/client-sentry";
 import type { SupportedLanguage } from "@/stores/language-store";
-import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
 /** Detect locale from browser language (no React context available in global error boundary). */
@@ -29,7 +29,7 @@ export default function GlobalError({
   const locale = detectClientLocale();
 
   useEffect(() => {
-    Sentry.captureException(error, {
+    captureClientException(error, {
       tags: { boundary: "global-error" },
     });
   }, [error]);
