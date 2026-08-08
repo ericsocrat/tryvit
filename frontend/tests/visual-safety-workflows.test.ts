@@ -57,6 +57,19 @@ function jobSection(workflow: string, jobName: string): string {
   );
 }
 
+function workflowEventSection(workflow: string, eventName: string): string {
+  const eventPattern = new RegExp(`^  ${escapeRegExp(eventName)}:\\s*$`, "m");
+  const match = eventPattern.exec(workflow);
+  if (!match) throw new Error(`Missing workflow event: ${eventName}`);
+
+  const tail = workflow.slice(match.index + match[0].length);
+  const nextEvent = /^  [A-Za-z0-9_-]+:\s*$/m.exec(tail);
+  return workflow.slice(
+    match.index,
+    nextEvent ? match.index + match[0].length + nextEvent.index : undefined,
+  );
+}
+
 const workflowSources = {
   bundleSize: readWorkflow("bundle-size.yml"),
   codeql: readWorkflow("codeql.yml"),
@@ -559,7 +572,7 @@ describe("browser workflow visual-safety contract", () => {
     };
 
     for (const [name, workflow] of Object.entries(stackedGateWorkflows)) {
-      expect(workflow, name).toContain(stackedBase);
+      expect(workflowEventSection(workflow, "pull_request"), name).toContain(stackedBase);
     }
   });
 
