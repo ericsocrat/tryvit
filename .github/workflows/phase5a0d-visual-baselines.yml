@@ -43,7 +43,35 @@ jobs:
         id: baseline_state
         shell: bash
         run: |
-          if ! git cat-file -e "${{ github.event.pull_request.base.sha }}^{commit}" 2>/dev/null; then
+          set -euo pipefail
+          base_sha="${{ github.event.pull_request.base.sha }}"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+          phase5a0c_base="f03a79c97f9edc495a62fa02e89c45938a42fc6e"
+          reviewed_phase5a0d_head="2b097bbe9eb0b3501421f1250972c98ce24ce60b"
+          assert_synchronized_bootstrap() {
+            if [ "$base_sha" = "$phase5a0c_base" ]; then
+              return 0
+            fi
+            if ! git merge-base --is-ancestor "$phase5a0c_base" "$base_sha" || \
+               ! git merge-base --is-ancestor "$base_sha" "$head_sha" || \
+               ! git merge-base --is-ancestor "$reviewed_phase5a0d_head" "$head_sha"; then
+              echo "::error::Synchronized visual-bootstrap ancestry cannot be proven."
+              exit 1
+            fi
+            unexpected_base_paths="$(git diff --name-only "$phase5a0c_base" "$base_sha" -- | grep -Ev '^frontend/package(-lock)?\.json$' || true)"
+            if [ -n "$unexpected_base_paths" ]; then
+              echo "::error::The synchronized PR base contains changes outside the two dependency manifests."
+              exit 1
+            fi
+            if ! git diff --quiet "$reviewed_phase5a0d_head" "$head_sha" -- \
+              ':(literal)frontend/e2e/__screenshots__/phase5a0d-manifest.json' \
+              ':(glob)frontend/e2e/__screenshots__/p5a0d-*.png' \
+              ':(glob)frontend/e2e/__screenshots__/**/p5a0d-*.png'; then
+              echo "::error::Reviewed Phase 5A.0d visual baseline bytes changed after synchronization."
+              exit 1
+            fi
+          }
+          if ! git cat-file -e "$base_sha^{commit}" 2>/dev/null; then
             echo "::error::The exact PR base commit is unavailable; baseline bootstrap cannot be proven."
             exit 1
           fi
@@ -65,11 +93,12 @@ jobs:
               fi
               echo "provenance=immutable-pr-base" >> "$GITHUB_OUTPUT"
             else
-              if [ "${{ github.event.pull_request.base.sha }}" != "f03a79c97f9edc495a62fa02e89c45938a42fc6e" ]; then
-                echo "::error::Initial baseline bootstrap is authorized only from the verified Phase 5A.0c base."
-                exit 1
+              assert_synchronized_bootstrap
+              if [ "$base_sha" = "$phase5a0c_base" ]; then
+                echo "provenance=initial-candidate-review-required" >> "$GITHUB_OUTPUT"
+              else
+                echo "provenance=synchronized-candidate-review-required" >> "$GITHUB_OUTPUT"
               fi
-              echo "provenance=initial-candidate-review-required" >> "$GITHUB_OUTPUT"
             fi
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
@@ -95,17 +124,55 @@ jobs:
           set -euo pipefail
           base_sha="${{ github.event.pull_request.base.sha }}"
           head_sha="${{ github.event.pull_request.head.sha }}"
+          phase5a0c_base="f03a79c97f9edc495a62fa02e89c45938a42fc6e"
+          reviewed_phase5a0d_head="2b097bbe9eb0b3501421f1250972c98ce24ce60b"
           source_sha="$base_sha"
           source="pr-base"
           trusted=true
           if ! git cat-file -e "$base_sha:frontend/tooling/phase5a0d-visual-baselines.ts" 2>/dev/null || \
              ! git cat-file -e "$base_sha:frontend/e2e/scripts/visual-safety-cli.mts" 2>/dev/null; then
-            if [ "$base_sha" != "f03a79c97f9edc495a62fa02e89c45938a42fc6e" ]; then
-              echo "::error::The PR base lacks the reviewed visual verifier; bootstrap is authorized only from the verified Phase 5A.0c SHA."
-              exit 1
+            if [ "$base_sha" != "$phase5a0c_base" ]; then
+              if ! git merge-base --is-ancestor "$phase5a0c_base" "$base_sha" || \
+                 ! git merge-base --is-ancestor "$base_sha" "$head_sha" || \
+                 ! git merge-base --is-ancestor "$reviewed_phase5a0d_head" "$head_sha"; then
+                echo "::error::Synchronized visual-verifier ancestry cannot be proven."
+                exit 1
+              fi
+              unexpected_base_paths="$(git diff --name-only "$phase5a0c_base" "$base_sha" -- | grep -Ev '^frontend/package(-lock)?\.json$' || true)"
+              if [ -n "$unexpected_base_paths" ]; then
+                echo "::error::The synchronized PR base contains changes outside the two dependency manifests."
+                exit 1
+              fi
+              if ! git diff --quiet "$reviewed_phase5a0d_head" "$head_sha" -- \
+                frontend/playwright.config.ts frontend/e2e frontend/tooling; then
+                echo "::error::The reviewed Phase 5A.0d visual verifier changed after synchronization."
+                exit 1
+              fi
+              git show "$reviewed_phase5a0d_head:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-approved-visual-package.json"
+              git show "$head_sha:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-synchronized-visual-package.json"
+              node <<'NODE'
+              const fs = require("fs");
+              const approved = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-approved-visual-package.json", "utf8"));
+              const synchronized = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-synchronized-visual-package.json", "utf8"));
+              const withoutDependencies = (value) => {
+                const copy = structuredClone(value);
+                delete copy.dependencies;
+                delete copy.devDependencies;
+                return copy;
+              };
+              if (JSON.stringify(withoutDependencies(approved)) !== JSON.stringify(withoutDependencies(synchronized))) {
+                throw new Error("synchronized visual package changed outside dependency versions");
+              }
+              NODE
+              if ! cmp --silent \
+                <(git show "$base_sha:frontend/package-lock.json") \
+                <(git show "$head_sha:frontend/package-lock.json"); then
+                echo "::error::The synchronized visual head does not preserve the exact current-main lockfile."
+                exit 1
+              fi
             fi
             source_sha="$head_sha"
-            source="exact-phase5a0d-bootstrap-review-required"
+            source="synchronized-phase5a0d-bootstrap-review-required"
             trusted=false
           fi
           git archive --format=tar \

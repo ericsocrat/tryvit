@@ -137,6 +137,17 @@ manifests before upload. Verification cannot pass an update flag and fails on
 any hash, file-set, fixture, renderer, viewport, route, or environment
 difference.
 
+If `main` advances before the Phase 5A.0d draft merges, verification may retain
+the reviewed bootstrap only when the new base is a proven descendant of the
+verified Phase 5A.0c commit, every intervening tree change is confined to
+`frontend/package.json` and `frontend/package-lock.json`, the head preserves
+the exact current-main lockfile, and the approved Phase 5A.0d harness and
+baseline bytes remain identical to reviewed commit
+`2b097bbe9eb0b3501421f1250972c98ce24ce60b`. This synchronized path remains
+review-required and non-authoritative. Any unrelated base change, harness
+change, lifecycle-script change, lockfile mismatch, or baseline-byte drift
+fails closed.
+
 An intentional future redesign first generates manual candidates and receives
 human before/after review. The current PR gate deliberately rejects baseline
 changes relative to its base; accepting a reviewed redesign candidate requires

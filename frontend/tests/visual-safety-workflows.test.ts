@@ -422,7 +422,13 @@ describe("browser workflow visual-safety contract", () => {
     expect(phase5VisualJobs.verify).not.toContain("--update-snapshots");
     expect(phase5VisualJobs.verify).toContain("Select and seal the exact visual verifier");
     expect(phase5VisualJobs.verify).toContain('source="pr-base"');
-    expect(phase5VisualJobs.verify).toContain("exact-phase5a0d-bootstrap-review-required");
+    expect(phase5VisualJobs.verify).toContain("synchronized-phase5a0d-bootstrap-review-required");
+    expect(phase5VisualJobs.verify).toContain("Synchronized visual-bootstrap ancestry cannot be proven");
+    expect(phase5VisualJobs.verify).toContain("Reviewed Phase 5A.0d visual baseline bytes changed");
+    expect(phase5VisualJobs.verify).toContain("The synchronized PR base contains changes outside");
+    expect(phase5VisualJobs.verify).toContain("2b097bbe9eb0b3501421f1250972c98ce24ce60b");
+    expect(phase5VisualJobs.verify).toContain("synchronized visual package changed outside dependency versions");
+    expect(phase5VisualJobs.verify).toContain("does not preserve the exact current-main lockfile");
     expect(phase5VisualJobs.verify).toContain("Re-attest and restore the exact visual verifier");
     expect(phase5VisualJobs.verify).toContain("phase5a0d-reviewed-visual-verifier.tar");
     expect(phase5VisualJobs.verify).toContain("steps.verifier_policy.outputs.archive_sha256");
@@ -556,12 +562,16 @@ describe("browser workflow visual-safety contract", () => {
     expect(bundle).toContain("Checkout pull-request base");
     expect(bundle).toContain("Checkout pull-request head on the same runner");
     expect(bundle).toContain("source=pr-base");
-    expect(bundle).toContain("source=exact-phase5a0d-bootstrap");
+    expect(bundle).toContain("source=synchronized-phase5a0d-bootstrap");
     expect(bundle).toContain('echo "trusted=true"');
     expect(bundle).toContain('echo "trusted=false"');
     expect(bundle).toContain("Bootstrap evidence is informational");
     expect(bundle).toContain("steps.route_evidence_stage.outcome");
     expect(bundle).toContain("f03a79c97f9edc495a62fa02e89c45938a42fc6e");
+    expect(bundle).toContain("2b097bbe9eb0b3501421f1250972c98ce24ce60b");
+    expect(bundle).toContain("Synchronized bootstrap ancestry cannot be proven");
+    expect(bundle).toContain("synchronized package changed outside dependency versions");
+    expect(bundle).toContain("does not preserve the exact current-main lockfile");
     expect(bundle).toContain("phase5a0d-reviewed-route-js-harness.tar");
     expect(bundle).toContain("Re-attest and restore the reviewed base harness onto head");
     expect(bundle).toContain("steps.harness_policy.outputs.archive_sha256");
@@ -581,9 +591,7 @@ describe("browser workflow visual-safety contract", () => {
     expect(bundle.indexOf("Install head lockfile-pinned Chromium")).toBeLessThan(
       bundle.indexOf("Re-attest and restore the reviewed base harness onto head"),
     );
-    expect(bundle).toContain(
-      "PR base lacks the reviewed route-JS harness; bootstrap is authorized only",
-    );
+    expect(bundle).toContain("The synchronized PR base contains changes outside");
     expect(bundle.match(/run: npm run phase5:route-js:public/gu)).toHaveLength(2);
     expect(bundle.match(/run: npm run phase5:route-js:authenticated/gu)).toHaveLength(2);
     expect(bundle).toContain("--mode=public");

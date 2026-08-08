@@ -37,6 +37,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
           persist-credentials: false
 
       # Preserve the head copy only for the one-time bootstrap from the exact
@@ -57,6 +58,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Select the reviewed base harness or exact one-time bootstrap
@@ -66,6 +68,9 @@ jobs:
         run: |
           set -euo pipefail
           base_sha="$(git rev-parse HEAD)"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+          phase5a0c_base="f03a79c97f9edc495a62fa02e89c45938a42fc6e"
+          reviewed_phase5a0d_head="2b097bbe9eb0b3501421f1250972c98ce24ce60b"
           if [ -f frontend/tooling/phase5a0d-route-js.ts ] && \
              [ -f frontend/tooling/phase5a0d-route-js-cli.mts ] && \
              [ -f frontend/tooling/phase5a0d-contract.ts ] && \
@@ -79,15 +84,50 @@ jobs:
             echo "source=pr-base" >> "$GITHUB_OUTPUT"
             echo "trusted=true" >> "$GITHUB_OUTPUT"
           else
-            if [ "$base_sha" != "f03a79c97f9edc495a62fa02e89c45938a42fc6e" ]; then
-              echo "::error::The PR base lacks the reviewed route-JS harness; bootstrap is authorized only from the verified Phase 5A.0c SHA."
-              exit 1
+            if [ "$base_sha" != "$phase5a0c_base" ]; then
+              if ! git merge-base --is-ancestor "$phase5a0c_base" "$base_sha" || \
+                 ! git merge-base --is-ancestor "$base_sha" "$head_sha" || \
+                 ! git merge-base --is-ancestor "$reviewed_phase5a0d_head" "$head_sha"; then
+                echo "::error::Synchronized bootstrap ancestry cannot be proven."
+                exit 1
+              fi
+              unexpected_base_paths="$(git diff --name-only "$phase5a0c_base" "$base_sha" -- | grep -Ev '^frontend/package(-lock)?\.json$' || true)"
+              if [ -n "$unexpected_base_paths" ]; then
+                echo "::error::The synchronized PR base contains changes outside the two dependency manifests."
+                exit 1
+              fi
+              if ! git diff --quiet "$reviewed_phase5a0d_head" "$head_sha" -- \
+                frontend/playwright.config.ts frontend/e2e frontend/tooling; then
+                echo "::error::The reviewed Phase 5A.0d route-JS harness changed after synchronization."
+                exit 1
+              fi
+              git show "$reviewed_phase5a0d_head:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-approved-package.json"
+              node <<'NODE'
+              const fs = require("fs");
+              const approved = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-approved-package.json", "utf8"));
+              const synchronized = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-head-package.json", "utf8"));
+              const withoutDependencies = (value) => {
+                const copy = structuredClone(value);
+                delete copy.dependencies;
+                delete copy.devDependencies;
+                return copy;
+              };
+              if (JSON.stringify(withoutDependencies(approved)) !== JSON.stringify(withoutDependencies(synchronized))) {
+                throw new Error("synchronized package changed outside dependency versions");
+              }
+              NODE
+              if ! cmp --silent \
+                <(git show "$base_sha:frontend/package-lock.json") \
+                <(git show "$head_sha:frontend/package-lock.json"); then
+                echo "::error::The synchronized head does not preserve the exact current-main lockfile."
+                exit 1
+              fi
             fi
             cp -- "$RUNNER_TEMP/phase5a0d-head-package.json" "$RUNNER_TEMP/phase5a0d-reviewed-package.json"
             cp -- "$RUNNER_TEMP/phase5a0d-head-route-js-harness.tar" "$RUNNER_TEMP/phase5a0d-reviewed-route-js-harness.tar"
-            echo "source=exact-phase5a0d-bootstrap-informational-only" >> "$GITHUB_OUTPUT"
+            echo "source=synchronized-phase5a0d-bootstrap-informational-only" >> "$GITHUB_OUTPUT"
             echo "trusted=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::The exact Phase 5A.0d bootstrap may produce illustrative base/head evidence, but cannot enforce a trusted regression until the reviewed harness exists on the PR base."
+            echo "::notice::The attested Phase 5A.0d bootstrap may produce illustrative base/head evidence, but cannot enforce a trusted regression until the reviewed harness exists on the PR base."
           fi
           echo "archive_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-reviewed-route-js-harness.tar" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
           echo "package_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-reviewed-package.json" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
