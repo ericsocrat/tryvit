@@ -6,6 +6,7 @@
 import { Icon } from "@/components/common/Icon";
 import { useActiveRoute, type PrimaryRouteKey } from "@/hooks/use-active-route";
 import { useLists } from "@/hooks/use-lists";
+import { useNoncriticalAppQueriesEnabled } from "@/hooks/use-noncritical-app-queries";
 import { useTranslation } from "@/lib/i18n";
 import { useCompareStore } from "@/stores/compare-store";
 import { Camera, ClipboardList, Home, MoreHorizontal, Search, type LucideIcon } from "lucide-react";
@@ -54,7 +55,8 @@ const NAV_ITEMS: NavItem[] = [
 export function Navigation() {
   const activeRoute = useActiveRoute();
   const { t } = useTranslation();
-  const { data: lists } = useLists();
+  const noncriticalQueriesEnabled = useNoncriticalAppQueriesEnabled();
+  const { data: lists } = useLists(noncriticalQueriesEnabled);
   const compareCount = useCompareStore((s) => s.count());
   const [moreOpen, setMoreOpen] = useState(false);
 

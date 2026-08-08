@@ -10,8 +10,10 @@
 
 Phase 5A.0e is a narrow remediation phase. It reduces unnecessary client work,
 defers disabled telemetry and closed UI, corrects verified accessibility
-semantics, and delivers only the active client message dictionary at startup.
-It does not authorize a redesign, new copy, layout changes, dependency changes,
+semantics, and removes inactive locale dictionaries from eager client
+JavaScript. The serialized message contract passes the request-matched
+dictionary and, for non-English requests, the reviewed English fallback. It
+does not authorize a redesign, new copy, layout changes, dependency changes,
 new product-data behavior, or weaker gates.
 
 The final stacked base is synchronized Phase 5A.0d head
@@ -168,7 +170,11 @@ Implemented remediation is limited to:
    `html[lang]`, store state, and toast translation coherently;
 6. suppress speculative pre-LCP RSC prefetches for the persistent mobile
    navigation and the two new-user dashboard CTAs. Click navigation is
-   unchanged.
+   unchanged;
+7. on exactly `/app`, defer the list badge, avoid-list, and favorites queries
+   until the existing dashboard query settles. Nested authenticated routes
+   retain immediate hydration, and the cache-only observer neither creates nor
+   mutates the dashboard query.
 
 Dashboard data remains client-only. A server-prefetch/dehydration experiment
 was rejected because the existing service-worker runtime cache could retain
@@ -194,22 +200,39 @@ improved from 0.58 to 0.81 but remained the sole performance-floor blocker.
 The exact five-run report checksum is
 `332b44ca9a52c6bcfd9719084e68e32910e92341db4151639351c27086d8cd71`.
 
-The final diagnosis found that the English fixture still downloaded a
+The next diagnosis found that the English fixture still downloaded a
 101,483-byte gzip client chunk containing all three EN/PL/DE dictionaries and
 issued nine irrelevant authenticated RSC prefetches before the new-user LCP.
-The final correction splits those dictionaries and disables only those
+The subsequent correction splits those dictionaries and disables only those
 speculative prefetches. A local production build emits separate EN, PL, and DE
 chunks of 31,298, 35,247, and 35,315 gzip bytes. None is referenced by any of
 the 66 initial client-reference manifests, all three are present in the fresh
 `/sw.js` precache, and no combined-locale chunk remains.
 
+Exact head `13978e9e1d86b007e8b097c79a4b71ef428207bc` passed PR Gate,
+Quality Gate, visual-baseline verification, Bundle Size Guard, CodeQL,
+repository hygiene, exact-head Main Gate, and SonarCloud. Its route-JavaScript
+evidence reduced the authenticated app route to 290,174 bytes gzip and product
+detail to 319,800 bytes gzip. The authoritative Lighthouse rerun completed all
+five samples and cleanup with zero instability failures. Product mobile passed
+at 0.88, but app mobile remained the sole blocker at 0.84 against the unchanged
+0.85 floor; its median LCP was 4,153.6 ms and TBT was 175 ms. Report checksum:
+`d860b7cbfc39123233822287f52547e28a4b8bba2cf73f73b0de7e47e807c0a8`.
+
+The retained trace showed three list-domain RPCs still starting before the
+new-user LCP. The last local correction therefore delays only those queries on
+exactly `/app` until the existing dashboard query succeeds or fails. It does
+not skip list hydration, add another dashboard request, serialize user data,
+or alter other authenticated routes. The exact-head five-run gate remains the
+authority for whether this final correction clears the remaining 0.01 gap.
+
 Local verification of the final source includes:
 
-- 6,363 frontend tests passed, with 19 intentional skips;
+- 6,379 frontend tests passed, with 19 intentional skips;
 - TypeScript type-check and ESLint passed;
 - the production build and fresh `/sw.js` generation passed;
-- focused locale, persistence, toast, race, prefetch, and provider-boundary
-  tests passed;
+- focused locale, persistence, toast, race, prefetch, provider-boundary, query
+  deferral, and dashboard-refetch tests passed;
 - `git diff --check` passed.
 
 These local results do not replace the exact-head Linux five-run gate. PR #1260

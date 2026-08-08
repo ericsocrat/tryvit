@@ -1,6 +1,6 @@
 import { assertComponentA11y } from "@/utils/test/a11y";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Navigation } from "./Navigation";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -42,7 +42,12 @@ vi.mock("next/link", () => ({
 
 const mockUseLists = vi.fn().mockReturnValue({ data: undefined });
 vi.mock("@/hooks/use-lists", () => ({
-  useLists: () => mockUseLists(),
+  useLists: (enabled?: boolean) => mockUseLists(enabled),
+}));
+
+const mockNoncriticalQueriesEnabled = vi.fn().mockReturnValue(true);
+vi.mock("@/hooks/use-noncritical-app-queries", () => ({
+  useNoncriticalAppQueriesEnabled: () => mockNoncriticalQueriesEnabled(),
 }));
 
 const mockCompareCount = vi.fn().mockReturnValue(0);
@@ -52,6 +57,14 @@ vi.mock("@/stores/compare-store", () => ({
 }));
 
 describe("Navigation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockPathname.mockReturnValue("/app/search");
+    mockUseLists.mockReturnValue({ data: undefined });
+    mockNoncriticalQueriesEnabled.mockReturnValue(true);
+    mockCompareCount.mockReturnValue(0);
+  });
+
   it("renders all 5 nav items", () => {
     render(<Navigation />);
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
@@ -59,6 +72,13 @@ describe("Navigation", () => {
     expect(screen.getByText("Scan")).toBeInTheDocument();
     expect(screen.getByText("Lists")).toBeInTheDocument();
     expect(screen.getByText("More")).toBeInTheDocument();
+  });
+
+  it("passes the app-startup gate to the lists query", () => {
+    mockNoncriticalQueriesEnabled.mockReturnValue(false);
+    render(<Navigation />);
+
+    expect(mockUseLists).toHaveBeenCalledWith(false);
   });
 
   it("has correct hrefs", () => {
