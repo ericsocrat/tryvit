@@ -1,0 +1,157 @@
+# Phase 5A.0e — Performance and Product Accessibility Remediation
+
+> **Status:** Synchronized pre-change diagnosis recorded on the stacked Phase
+> 5A.0e branch. Product remediation must preserve the Phase 5A.0d measurement
+> contract and immutable visual baselines.
+
+## Scope
+
+Phase 5A.0e is a narrow remediation phase. It may reduce unnecessary client
+work, improve an existing server/client boundary, defer disabled telemetry, and
+correct verified semantics. It does not authorize a redesign, new copy,
+layout changes, dependency changes, new data behavior, or weaker gates.
+
+The starting point is synchronized Phase 5A.0d head
+`959c0ac7e5a8b3c8894d9c63edd330b962497794`. It contains a normal merge of
+current `main` at `958baec8ffff7dd3f9a8ca639b27da7bfd2c303a` and preserves that
+commit's `frontend/package-lock.json` byte-for-byte. The synchronization did
+not alter product behavior; it retained only the reviewed Phase 5A.0d scripts
+and measurement infrastructure.
+
+## Authoritative synchronized baseline
+
+GitHub Lighthouse run
+[`31261014258`](https://github.com/ericsocrat/tryvit/actions/runs/31261014258)
+measured five runs for every route/profile combination on the exact synchronized
+head. Artifact `9022959345` has archive digest
+`sha256:c294e39039b121d3b9c482868119282fb050279c5618b83a44b40949ea1cb6f1`.
+The compact report checksum is
+`97be2e5f8d7a229f317c0ca207c83f27ba3a77b553facf4f00462dd8dc2e81d6`.
+All four provenance entries identify the exact head, Node `v22.21.1`, and
+Chromium `151.0.7922.34`.
+
+| Route/profile | Performance median (range) | Accessibility | LCP | TBT | Transfer |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Landing mobile | 0.92 (0.05) | 1.00 | 3,025.3 ms | 144.0 ms | 511.1 KiB |
+| Login mobile | 0.92 (0.16) | 1.00 | 3,125.3 ms | 134.0 ms | 503.2 KiB |
+| Contact mobile | 0.90 (0.04) | 1.00 | 3,499.5 ms | 132.0 ms | 507.2 KiB |
+| App shell mobile | 0.58 (0.04) | 1.00 | 6,833.0 ms | 794.0 ms | 881.1 KiB |
+| Product detail mobile | 0.71 (0.10) | 0.92 | 4,082.4 ms | 796.8 ms | 907.8 KiB |
+| App shell desktop | 0.98 (0.01) | 1.00 | 1,098.3 ms | 52.4 ms | 921.6 KiB |
+| Product detail desktop | 0.98 (0.01) | 0.93 | 1,127.8 ms | 56.5 ms | 937.7 KiB |
+
+Blocking failures are:
+
+- app-shell mobile performance below 0.85;
+- product-detail mobile performance below 0.85;
+- product-detail mobile accessibility below 0.95;
+- product-detail desktop accessibility below 0.95.
+
+Login mobile also has a 0.16 performance range, above the preserved 0.10
+stability limit. Directional debt remains visible for public mobile LCP,
+authenticated mobile LCP/TBT, and product mobile transfer size.
+
+The exact-head route-JavaScript run
+[`31261014255`](https://github.com/ericsocrat/tryvit/actions/runs/31261014255)
+passed and retained artifact `9022858376` with archive digest
+`sha256:bbcaadd8ac93486e5a3bf9599d322ae015edda56c193f49c0db7e9e42877a083`.
+Its head report checksum is
+`0f9f96976aa254b96b3c981dee53aad63b5ce6eb764c8e4cff1a910da02c4b56`.
+
+| Route | Initial gzip | Shared gzip | Route-owned gzip |
+| --- | ---: | ---: | ---: |
+| Landing | 415.3 KiB | 415.0 KiB | 0.3 KiB |
+| Login | 419.6 KiB | 411.8 KiB | 7.7 KiB |
+| Contact | 417.6 KiB | 415.0 KiB | 2.6 KiB |
+| App shell | 761.9 KiB | 748.1 KiB | 13.8 KiB |
+| Product detail | 783.4 KiB | 748.1 KiB | 35.3 KiB |
+
+The landing 180 KiB and contact 150 KiB goals remain directional debt. They are
+not relabeled as passing.
+
+## Root-cause evidence
+
+Detailed raw Lighthouse reports and traces were captured after dependency
+synchronization at `60ce8044d63d628bb34385839598aea5c1b05319`. The production
+source and dependency trees are byte-identical between that diagnostic commit
+and the authoritative `959c0ac7…` head; intervening changes affect only the
+visual workflow, its test, and Phase 5A.0d documentation. The authoritative
+Linux cohort above remains the numeric baseline.
+
+### Authenticated app shell
+
+All five mobile diagnostics select the existing `NutritionTip` paragraph as
+LCP. The representative trace attributes 93% of its 6.76-second LCP to render
+delay. The browser dashboard RPC itself completes in approximately 7–43 ms.
+The delay is therefore not database latency: `/app` is a wholly client-side
+page that first renders `DashboardSkeleton`, starts `api_get_dashboard_data`
+after hydration, and only then replaces the skeleton with the new-user view.
+The parent authenticated layout already has a per-request server Supabase
+client and Query provider, and the product route already proves the repository's
+dehydration pattern.
+
+The smallest behavior-preserving correction is to server-prefetch only the
+existing dashboard RPC into the existing `queryKeys.dashboard` cache key. A
+failed server prefetch must remain a cache miss so the existing client retry,
+skeleton, and error behavior is preserved.
+
+### Authenticated shared JavaScript
+
+Mobile traces attribute most main-thread work to script evaluation. The
+authenticated app and product routes share about 748 KiB gzip before
+route-owned code. Signature-based chunk inspection found approximately 440 KiB
+gzip of requested Sentry SDK, replay, tracing, and semantic-convention code—
+about 58% of the retained authenticated shared-JavaScript baseline—even though
+the measurement build has an empty `NEXT_PUBLIC_SENTRY_DSN`.
+
+The source confirms why: client instrumentation initializes Sentry eagerly,
+the web-vitals handler uses a static `require`, and browser error boundaries
+statically import the SDK. `enabled: false` disables delivery but does not
+remove download, parse, or evaluation cost. The correction must use one shared,
+memoized, DSN-guarded dynamic client adapter. Configured telemetry must preserve
+the existing sampling, PII scrubbing, error context, message metadata, and
+router transition contract; disabled telemetry must not evaluate the SDK.
+Server-only Sentry paths are outside this change.
+
+### Product-detail accessibility
+
+The accessibility failures are deterministic across all five runs:
+
+- `CategoryPlaceholder` applies `aria-label` to a roleless `div`, producing
+  `aria-prohibited-attr` on mobile and desktop. The container represents one
+  graphical placeholder and requires `role="img"` with its existing label.
+- The mobile Lists navigation link visibly renders a count before “Lists” but
+  forces the accessible name to only “Lists”, producing
+  `label-content-name-mismatch`. The same risk exists for the compare count on
+  More. The accessible name should derive from the visible count and label in
+  the same order.
+
+Current authenticated accessibility E2E omits product detail, so the regression
+must be added at mobile and desktop viewports using the guarded local fixture.
+
+### Public variability
+
+The obsolete historical desktop login scores are not reproduced. Current
+desktop scores are stable and high. The synchronized Linux cohort did reproduce
+one mobile login score-range failure while public category medians remained
+above their floors. No login-specific optimization is authorized without a
+repeatable product cause. The five-run post-change cohort must determine whether
+that range is persistent measurement variance or a current runtime defect; the
+variance rule will not be weakened.
+
+## Remediation and verification boundary
+
+Authorized implementation is limited to:
+
+1. hydrate the existing dashboard query without changing its API, data, copy,
+   layout, or client fallback behavior;
+2. defer browser Sentry loading behind the existing public DSN while preserving
+   configured telemetry semantics;
+3. correct the two semantic accessibility defects and extend guarded tests.
+
+The source Lighthouse hashes, category floors, variance rule, route-JS
+regression rule, visual threshold, routes, fixture contract, and seven reviewed
+PNG files remain immutable. The visual manifest file SHA-256 remains
+`8c17917c60a3b46f087cc5d5cd3a80b34355015ed9e8de0a58e98826f11bdf9c`.
+No hosted Supabase or Vercel operation is part of this phase.
+

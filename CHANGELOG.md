@@ -15,6 +15,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
+- Record the synchronized Phase 5A.0e five-run Lighthouse and route-JavaScript
+  baseline, traced performance causes, deterministic product accessibility
+  defects, and the narrow remediation/verification boundary.
 - Document the Phase 5A.0d authoritative route-JavaScript, five-run Lighthouse,
   lab-versus-field, and deterministic seven-image visual-baseline protocol,
   including the reviewed exact-head Linux evidence, immutable image hashes, and

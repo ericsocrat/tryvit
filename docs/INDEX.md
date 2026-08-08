@@ -215,6 +215,7 @@
 | [PHASE5A0B_PUBLIC_ROUTE_PWA_CONTRACT.md](PHASE5A0B_PUBLIC_ROUTE_PWA_CONTRACT.md)           | Typed proxy public-route contract, anonymous-share/system reachability, and corrected PWA manifest semantics           | Phase 5A.0b                                             | 2026-08-02   |
 | [PHASE5A0C_DEMO_PROVIDER_LOCALE_RENDERING.md](PHASE5A0C_DEMO_PROVIDER_LOCALE_RENDERING.md) | Backend-independent public providers, EN/PL/DE request locale and landing Server Component contract                    | Phase 5A.0c                                             | 2026-08-02   |
 | [PHASE5A0D_PERFORMANCE_VISUAL_GATES.md](PHASE5A0D_PERFORMANCE_VISUAL_GATES.md)             | Authoritative route-JavaScript, five-run Lighthouse and reviewed deterministic Linux visual-baseline contract/evidence | Phase 5A.0d                                             | 2026-08-03   |
+| [PHASE5A0E_PERFORMANCE_ACCESSIBILITY.md](PHASE5A0E_PERFORMANCE_ACCESSIBILITY.md)           | Synchronized performance/accessibility diagnosis, evidence-backed remediation boundary and verification contract      | Phase 5A.0e                                             | 2026-08-08   |
 
 ## Process & Workflow
 
