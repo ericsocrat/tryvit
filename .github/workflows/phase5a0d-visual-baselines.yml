@@ -2,7 +2,9 @@ name: Phase 5A.0d Visual Baselines
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
+      - codex/phase-5a0d-performance-visual-gates
     paths:
       - "frontend/**"
       - "supabase/config.toml"
@@ -126,7 +128,11 @@ jobs:
           head_sha="${{ github.event.pull_request.head.sha }}"
           phase5a0c_base="f03a79c97f9edc495a62fa02e89c45938a42fc6e"
           reviewed_phase5a0d_head="2b097bbe9eb0b3501421f1250972c98ce24ce60b"
-          baseline_runtime_sha="aa84b2bd8a22b20e1625d33dede66238c507130f"
+          baseline_runtime_sha="$(node -e 'const manifest = require("./frontend/e2e/__screenshots__/phase5a0d-manifest.json"); if (typeof manifest.sourceCommit !== "string" || !/^[0-9a-f]{40}$/.test(manifest.sourceCommit)) process.exit(1); process.stdout.write(manifest.sourceCommit);')"
+          if ! git cat-file -e "$baseline_runtime_sha^{commit}" 2>/dev/null; then
+            echo "::error::The immutable visual manifest references an unavailable baseline runtime commit."
+            exit 1
+          fi
           source_sha="$base_sha"
           source="pr-base"
           trusted=true

@@ -451,7 +451,11 @@ attests the current tracked manifests before running the sealed verifier. This
 keeps the seven reviewed PNGs and their hashes authoritative without pretending
 that a different renderer is byte-comparable. Candidate generation,
 Lighthouse, and route-JavaScript accounting continue to exercise the actual
-current-main dependencies.
+current-main dependencies. The ephemeral runtime commit is derived directly
+from the immutable manifest's validated `sourceCommit` and must exist in the
+fetched repository. Immutable verification is also enabled for the authorized
+Phase 5A.0e stacked-PR base so that the separate remediation PR cannot bypass
+the visual contract while Phase 5A.0d remains unmerged.
 
 ## Safety invariants
 

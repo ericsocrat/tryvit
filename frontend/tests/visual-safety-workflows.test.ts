@@ -403,6 +403,9 @@ describe("browser workflow visual-safety contract", () => {
   it("separates immutable PR verification from reviewed initial or manual candidates", () => {
     expect(workflowSources.phase5Visual).toContain("pull_request:");
     expect(workflowSources.phase5Visual).toContain("workflow_dispatch:");
+    expect(workflowSources.phase5Visual).toContain(
+      "codex/phase-5a0d-performance-visual-gates",
+    );
     expect(phase5VisualJobs.verify).toContain("github.event_name == 'pull_request'");
     expect(phase5VisualJobs.verify).toContain("ref: ${{ github.event.pull_request.head.sha }}");
     expect(phase5VisualJobs.verify).toContain("fetch-depth: 0");
@@ -433,7 +436,12 @@ describe("browser workflow visual-safety contract", () => {
     expect(phase5VisualJobs.verify).toContain("phase5a0d-reviewed-visual-verifier.tar");
     expect(phase5VisualJobs.verify).toContain("steps.verifier_policy.outputs.archive_sha256");
     expect(phase5VisualJobs.verify).toContain("steps.verifier_policy.outputs.package_sha256");
-    expect(phase5VisualJobs.verify).toContain("aa84b2bd8a22b20e1625d33dede66238c507130f");
+    expect(phase5VisualJobs.verify).toContain(
+      "manifest.sourceCommit !== \"string\"",
+    );
+    expect(phase5VisualJobs.verify).toContain(
+      "immutable visual manifest references an unavailable baseline runtime commit",
+    );
     expect(phase5VisualJobs.verify).toContain("phase5a0d-baseline-runtime-package-lock.json");
     expect(phase5VisualJobs.verify).toContain(
       "Install the manifest-attested baseline runtime without manifest mutation",
