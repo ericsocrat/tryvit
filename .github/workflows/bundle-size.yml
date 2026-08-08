@@ -2,7 +2,7 @@ name: Route JavaScript Regression Guard
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, codex/phase-5a0d-performance-visual-gates]
     paths:
       - "frontend/**"
       - "supabase/config.toml"

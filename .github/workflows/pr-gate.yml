@@ -15,7 +15,7 @@ name: PR Gate
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, codex/phase-5a0d-performance-visual-gates]
 
 permissions:
   contents: read

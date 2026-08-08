@@ -3,7 +3,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main ]
+    branches: [main, codex/phase-5a0d-performance-visual-gates]
   schedule:
     - cron: "30 5 * * 1" # Weekly Monday 05:30 UTC
   workflow_dispatch:
