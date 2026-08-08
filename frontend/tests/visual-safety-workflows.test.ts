@@ -59,11 +59,14 @@ function jobSection(workflow: string, jobName: string): string {
 
 const workflowSources = {
   bundleSize: readWorkflow("bundle-size.yml"),
+  codeql: readWorkflow("codeql.yml"),
   phase5Visual: readWorkflow("phase5a0d-visual-baselines.yml"),
   prScreenshots: readWorkflow("pr-screenshots.yml"),
   prGate: readWorkflow("pr-gate.yml"),
+  prTitle: readWorkflow("pr-title-lint.yml"),
   mainGate: readWorkflow("main-gate.yml"),
   qualityGate: readWorkflow("quality-gate.yml"),
+  repoVerify: readWorkflow("repo-verify.yml"),
   nightly: readWorkflow("nightly.yml"),
   lighthouse: readWorkflow("lighthouse-ci.yml"),
 };
@@ -539,6 +542,25 @@ describe("browser workflow visual-safety contract", () => {
     expect(phase5VisualJobs.generate).not.toContain("path: frontend/e2e/__screenshots__/");
     expect(phase5VisualJobs.generate).not.toContain("git commit");
     expect(phase5VisualJobs.generate).not.toContain("git push");
+  });
+
+  it("runs every required Phase 5A.0e PR gate on the reviewed stacked base", () => {
+    const stackedBase = "codex/phase-5a0d-performance-visual-gates";
+    const stackedGateWorkflows = {
+      bundleSize: workflowSources.bundleSize,
+      codeql: workflowSources.codeql,
+      lighthouse: workflowSources.lighthouse,
+      phase5Visual: workflowSources.phase5Visual,
+      prGate: workflowSources.prGate,
+      prScreenshots: workflowSources.prScreenshots,
+      prTitle: workflowSources.prTitle,
+      qualityGate: workflowSources.qualityGate,
+      repoVerify: workflowSources.repoVerify,
+    };
+
+    for (const [name, workflow] of Object.entries(stackedGateWorkflows)) {
+      expect(workflow, name).toContain(stackedBase);
+    }
   });
 
   it("keeps route measurement read-only and retains truthful Lighthouse debt evidence", () => {

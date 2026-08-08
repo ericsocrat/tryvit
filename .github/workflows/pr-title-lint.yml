@@ -13,7 +13,7 @@ name: PR Title Lint
 on:
   pull_request:
     types: [opened, edited, synchronize, reopened]
-    branches: [main]
+    branches: [main, codex/phase-5a0d-performance-visual-gates]
 
 permissions:
   contents: read
