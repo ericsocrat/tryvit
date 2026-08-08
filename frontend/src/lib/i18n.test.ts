@@ -1,8 +1,40 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { createElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it } from "vitest";
-import { humanizeKey, InitialLanguageContext, translate, useTranslation } from "./i18n";
-import { useLanguageStore } from "@/stores/language-store";
+import de from "@/../messages/de.json";
+import en from "@/../messages/en.json";
+import pl from "@/../messages/pl.json";
+import { ClientMessagesProvider } from "@/components/i18n/ClientMessagesProvider";
+import { LanguageSynchronizer } from "@/components/i18n/LanguageSynchronizer";
+import { InitialLanguageContext } from "@/lib/initial-language-context";
+import { humanizeKey, translate } from "@/lib/i18n-core";
+import { useTranslation } from "./i18n";
+import { useLanguageStore, type SupportedLanguage } from "@/stores/language-store";
+
+const TEST_DICTIONARIES = { en, pl, de } as const;
+
+function createI18nWrapper(initialLanguage: SupportedLanguage) {
+  function I18nTestWrapper({ children }: { children: ReactNode }) {
+    return createElement(
+      InitialLanguageContext.Provider,
+      { value: initialLanguage },
+      createElement(
+        ClientMessagesProvider,
+        {
+          initialMessages: {
+            language: initialLanguage,
+            active: TEST_DICTIONARIES[initialLanguage],
+            englishFallback: initialLanguage === "en" ? undefined : TEST_DICTIONARIES.en,
+          },
+        },
+        createElement(LanguageSynchronizer, { initialLanguage }),
+        children,
+      ),
+    );
+  }
+
+  return I18nTestWrapper;
+}
 
 afterEach(() => {
   act(() => useLanguageStore.getState().reset());
@@ -251,39 +283,44 @@ describe("translate", () => {
 
   describe("useTranslation", () => {
     it("uses the request language for initial server and hydration rendering", () => {
-      const wrapper = ({ children }: { children: ReactNode }) =>
-        createElement(InitialLanguageContext.Provider, { value: "pl" }, children);
-
-      const { result } = renderHook(() => useTranslation(), { wrapper });
+      const { result } = renderHook(() => useTranslation(), {
+        wrapper: createI18nWrapper("pl"),
+      });
 
       expect(result.current.language).toBe("pl");
       expect(result.current.t("layout.contact")).toBe("Kontakt");
       expect(useLanguageStore.getState().loaded).toBe(false);
     });
 
-    it("lets an authenticated preference override the request language", () => {
+    it("lets an authenticated preference override the request language", async () => {
       useLanguageStore.getState().setLanguage("de");
-      const wrapper = ({ children }: { children: ReactNode }) =>
-        createElement(InitialLanguageContext.Provider, { value: "pl" }, children);
+      const { result } = renderHook(() => useTranslation(), {
+        wrapper: createI18nWrapper("pl"),
+      });
 
-      const { result } = renderHook(() => useTranslation(), { wrapper });
-
-      expect(result.current.language).toBe("de");
+      await waitFor(() => expect(result.current.language).toBe("de"));
+      expect(result.current.t("nav.settings")).toBe("Einstellungen");
     });
 
     it("returns a t function and language", () => {
-      const { result } = renderHook(() => useTranslation());
+      const { result } = renderHook(() => useTranslation(), {
+        wrapper: createI18nWrapper("en"),
+      });
       expect(typeof result.current.t).toBe("function");
       expect(typeof result.current.language).toBe("string");
     });
 
     it("t() resolves known keys", () => {
-      const { result } = renderHook(() => useTranslation());
+      const { result } = renderHook(() => useTranslation(), {
+        wrapper: createI18nWrapper("en"),
+      });
       expect(result.current.t("nav.home")).toBe("Dashboard");
     });
 
     it("t() returns humanized fallback for missing keys", () => {
-      const { result } = renderHook(() => useTranslation());
+      const { result } = renderHook(() => useTranslation(), {
+        wrapper: createI18nWrapper("en"),
+      });
       const missing = result.current.t("totally.unknown.title");
       expect(missing).toBe("Unknown");
       expect(missing).not.toContain(".");

@@ -1,7 +1,8 @@
 import { useLanguageStore } from "@/stores/language-store";
+import { translate } from "@/lib/i18n-core";
 import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { isRateLimited, resetRateLimiter, showToast } from "./toast";
+import { isRateLimited, registerToastTranslator, resetRateLimiter, showToast } from "./toast";
 
 // ─── Mock Sonner ────────────────────────────────────────────────────────────
 
@@ -16,13 +17,19 @@ vi.mock("sonner", () => ({
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
+let unregisterTranslator: () => void;
+
 beforeEach(() => {
   vi.clearAllMocks();
   resetRateLimiter();
   useLanguageStore.getState().setLanguage("en");
+  unregisterTranslator = registerToastTranslator((key, params) =>
+    translate(useLanguageStore.getState().language, key, params),
+  );
 });
 
 afterEach(() => {
+  unregisterTranslator();
   useLanguageStore.getState().reset();
 });
 
@@ -31,7 +38,10 @@ afterEach(() => {
 describe("showToast", () => {
   it("dispatches toast.success for type 'success'", () => {
     showToast({ type: "success", message: "Done!" });
-    expect(toast.success).toHaveBeenCalledWith("Done!", expect.objectContaining({ duration: 5000 }));
+    expect(toast.success).toHaveBeenCalledWith(
+      "Done!",
+      expect.objectContaining({ duration: 5000 }),
+    );
   });
 
   it("dispatches toast.error for type 'error'", () => {
@@ -41,7 +51,10 @@ describe("showToast", () => {
 
   it("dispatches toast.warning for type 'warning'", () => {
     showToast({ type: "warning", message: "Watch out" });
-    expect(toast.warning).toHaveBeenCalledWith("Watch out", expect.objectContaining({ duration: 6000 }));
+    expect(toast.warning).toHaveBeenCalledWith(
+      "Watch out",
+      expect.objectContaining({ duration: 6000 }),
+    );
   });
 
   it("dispatches toast.info for type 'info'", () => {
@@ -51,12 +64,21 @@ describe("showToast", () => {
 
   it("allows a custom duration override", () => {
     showToast({ type: "success", message: "Quick", duration: 2000 });
-    expect(toast.success).toHaveBeenCalledWith("Quick", expect.objectContaining({ duration: 2000 }));
+    expect(toast.success).toHaveBeenCalledWith(
+      "Quick",
+      expect.objectContaining({ duration: 2000 }),
+    );
   });
 
   it("resolves messageKey via i18n", () => {
     showToast({ type: "success", messageKey: "nav.home" });
     expect(toast.success).toHaveBeenCalledWith("Dashboard", expect.any(Object));
+  });
+
+  it("uses a readable defensive fallback before the provider registers", () => {
+    unregisterTranslator();
+    showToast({ type: "success", messageKey: "nav.home" });
+    expect(toast.success).toHaveBeenCalledWith("Home", expect.any(Object));
   });
 
   it("resolves messageKey in Polish", () => {

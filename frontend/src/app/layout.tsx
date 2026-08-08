@@ -1,6 +1,7 @@
 ﻿import { Providers } from "@/components/Providers";
 import { ThemeScript } from "@/components/ThemeScript";
 import { IS_QA_MODE } from "@/lib/qa-mode";
+import { getInitialClientMessages } from "@/lib/i18n-server";
 import { getServerLocale } from "@/lib/server-locale";
 import "@/styles/globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -117,6 +118,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const language = await getServerLocale();
+  const initialMessages = getInitialClientMessages(language);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
@@ -156,7 +158,9 @@ export default async function RootLayout({
         />
       </head>
       <body>
-        <Providers initialLanguage={language}>{children}</Providers>
+        <Providers initialLanguage={language} initialMessages={initialMessages}>
+          {children}
+        </Providers>
         {!IS_QA_MODE && <SpeedInsights />}
       </body>
     </html>

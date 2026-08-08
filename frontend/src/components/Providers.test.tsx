@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import en from "@/../messages/en.json";
 import { Providers, shouldRetry } from "./Providers";
+
+const initialMessages = { language: "en" as const, active: en };
 
 // Mock sonner Toaster — lightweight stub
 vi.mock("sonner", () => ({
@@ -10,7 +13,7 @@ vi.mock("sonner", () => ({
 describe("Providers", () => {
   it("renders children", () => {
     render(
-      <Providers initialLanguage="en">
+      <Providers initialLanguage="en" initialMessages={initialMessages}>
         <p>Hello</p>
       </Providers>,
     );
@@ -19,7 +22,7 @@ describe("Providers", () => {
 
   it("renders Toaster", () => {
     render(
-      <Providers initialLanguage="en">
+      <Providers initialLanguage="en" initialMessages={initialMessages}>
         <span />
       </Providers>,
     );
@@ -28,7 +31,7 @@ describe("Providers", () => {
 
   it("renders multiple children", () => {
     render(
-      <Providers initialLanguage="en">
+      <Providers initialLanguage="en" initialMessages={initialMessages}>
         <p>A</p>
         <p>B</p>
       </Providers>,

@@ -4,7 +4,7 @@
 
 "use client";
 
-import { COUNTRIES } from "@/lib/constants";
+import { COUNTRIES } from "@/lib/country-config";
 import { useTranslation } from "@/lib/i18n";
 import type { ReactElement } from "react";
 

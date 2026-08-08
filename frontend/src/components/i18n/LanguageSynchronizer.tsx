@@ -2,11 +2,8 @@
 
 import { useEffect } from "react";
 
+import { useClientMessages } from "@/components/i18n/ClientMessagesProvider";
 import { useLanguageStore, type SupportedLanguage } from "@/stores/language-store";
-
-function synchronizeDocumentLanguage(language: SupportedLanguage) {
-  document.documentElement.lang = language;
-}
 
 /**
  * Hydrate the client language from the server-resolved request locale without
@@ -18,21 +15,29 @@ export function LanguageSynchronizer({
 }: {
   readonly initialLanguage: SupportedLanguage;
 }) {
+  const { activateLanguage } = useClientMessages();
+
   useEffect(() => {
-    const unsubscribe = useLanguageStore.subscribe((state) => {
-      synchronizeDocumentLanguage(state.loaded ? state.language : initialLanguage);
-    });
+    const synchronize = (language: SupportedLanguage) => {
+      void activateLanguage(language);
+    };
+
+    const unsubscribe = useLanguageStore.subscribe((state) =>
+      synchronize(state.loaded ? state.language : initialLanguage),
+    );
 
     const currentState = useLanguageStore.getState();
     if (!currentState.loaded) {
       useLanguageStore.setState({ language: initialLanguage });
-      synchronizeDocumentLanguage(initialLanguage);
+      synchronize(initialLanguage);
     } else {
-      synchronizeDocumentLanguage(currentState.language);
+      synchronize(currentState.language);
     }
 
-    return unsubscribe;
-  }, [initialLanguage]);
+    return () => {
+      unsubscribe();
+    };
+  }, [activateLanguage, initialLanguage]);
 
   return null;
 }

@@ -6,8 +6,8 @@
 //   import { reportBoundaryError } from "@/lib/error-reporter";
 //   reportBoundaryError(error, errorInfo, { ean: "5900617043375" });
 
-import * as Sentry from "@sentry/nextjs";
 import type { ErrorInfo } from "react";
+import { captureClientException } from "@/lib/client-sentry";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -68,7 +68,7 @@ export function reportBoundaryError(
   }
 
   // Production: send to Sentry telemetry (#183)
-  Sentry.captureException(error, {
+  captureClientException(error, {
     contexts: {
       react: { componentStack: errorInfo.componentStack },
       app: context,

@@ -9,10 +9,18 @@
 // Issue #50 — A11y CI Gate
 // Named authenticated-* to match the "authenticated" Playwright project pattern.
 
-import { expect, test } from "./fixtures/safe-test";
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test, type Page } from "./fixtures/safe-test";
 import { assertNoA11yViolations, auditA11y } from "./helpers/a11y";
 
 /* ── Auth-required routes to audit ───────────────────────────────────────── */
+
+const fixtureProductId = process.env.QA_PRODUCT_ID;
+if (!fixtureProductId || !/^[1-9][0-9]*$/u.test(fixtureProductId)) {
+  throw new Error("[A11Y_FIXTURE] positive-product-id-required");
+}
+
+const PRODUCT_DETAIL_PATH = `/app/product/${fixtureProductId}`;
 
 const AUTH_PAGES = [
   { name: "Search", path: "/app/search" },
@@ -21,6 +29,18 @@ const AUTH_PAGES = [
   { name: "Lists", path: "/app/lists" },
   { name: "Dashboard", path: "/app" },
 ];
+
+async function settleProductDetail(page: Page) {
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+}
+
+async function assertNoProductSemanticRegressions(page: Page) {
+  const result = await new AxeBuilder({ page })
+    .withRules(["aria-prohibited-attr", "label-content-name-mismatch"])
+    .analyze();
+
+  expect(result.violations).toEqual([]);
+}
 
 /* ── Per-page WCAG audits ────────────────────────────────────────────────── */
 
@@ -33,6 +53,15 @@ test.describe("A11y audit — authenticated pages", () => {
       await assertNoA11yViolations(page);
     });
   }
+});
+
+test.describe("A11y audit — product-detail semantic regressions", () => {
+  test("product detail has no Phase 5A.0e semantic blockers", async ({ page }) => {
+    await page.goto(PRODUCT_DETAIL_PATH);
+    await page.waitForLoadState("domcontentloaded");
+    await settleProductDetail(page);
+    await assertNoProductSemanticRegressions(page);
+  });
 });
 
 /* ── Mobile viewport for authenticated pages ─────────────────────────────── */
@@ -52,6 +81,13 @@ test.describe("A11y audit — authenticated mobile", () => {
     await page.waitForLoadState("domcontentloaded");
     await expect(page.locator("body")).toBeVisible();
     await assertNoA11yViolations(page);
+  });
+
+  test("product detail has no Phase 5A.0e semantic blockers on mobile", async ({ page }) => {
+    await page.goto(PRODUCT_DETAIL_PATH);
+    await page.waitForLoadState("domcontentloaded");
+    await settleProductDetail(page);
+    await assertNoProductSemanticRegressions(page);
   });
 });
 

@@ -9,8 +9,7 @@
 //   showToast({ type: "success", message: "✓ Chips Lay's" }); // raw string, no i18n
 
 import { toast, type ExternalToast } from "sonner";
-import { translate } from "@/lib/i18n";
-import { useLanguageStore } from "@/stores/language-store";
+import { humanizeKey, type InterpolationParams } from "@/lib/i18n-format";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -45,6 +44,22 @@ interface RawToastOptions extends BaseToastOptions {
 }
 
 export type ToastOptions = I18nToastOptions | RawToastOptions;
+
+type ToastTranslator = (key: string, params?: InterpolationParams) => string;
+
+let activeTranslator: ToastTranslator = humanizeKey;
+
+/**
+ * Install the request-safe translator after the client message provider mounts.
+ * Registration happens in an effect, so this module never stores request data
+ * while rendering on the server.
+ */
+export function registerToastTranslator(translator: ToastTranslator): () => void {
+  activeTranslator = translator;
+  return () => {
+    if (activeTranslator === translator) activeTranslator = humanizeKey;
+  };
+}
 
 // ─── Default durations per type ─────────────────────────────────────────────
 
@@ -135,15 +150,13 @@ export function showToast(options: ToastOptions): void {
   const { type, descriptionKey, descriptionParams, duration, action } = options;
 
   // Resolve message
-  const language = useLanguageStore.getState().language;
   const message =
     "messageKey" in options && options.messageKey
-      ? translate(language, options.messageKey, options.messageParams)
+      ? activeTranslator(options.messageKey, options.messageParams)
       : (options as RawToastOptions).message;
 
   // Dedupe key: prefer messageKey for i18n toasts, fall back to raw message
-  const dedupKey =
-    "messageKey" in options && options.messageKey ? options.messageKey : message;
+  const dedupKey = "messageKey" in options && options.messageKey ? options.messageKey : message;
 
   // Rate limiting
   if (isRateLimited(dedupKey)) return;
@@ -151,7 +164,7 @@ export function showToast(options: ToastOptions): void {
 
   // Resolve optional description
   const description = descriptionKey
-    ? translate(language, descriptionKey, descriptionParams)
+    ? activeTranslator(descriptionKey, descriptionParams)
     : undefined;
 
   // Build Sonner options

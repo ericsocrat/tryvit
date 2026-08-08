@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ListsHydrator } from "./ListsHydrator";
@@ -10,8 +10,13 @@ const mockUseAvoidProductIds = vi.fn();
 const mockUseFavoriteProductIds = vi.fn();
 
 vi.mock("@/hooks/use-lists", () => ({
-  useAvoidProductIds: () => mockUseAvoidProductIds(),
-  useFavoriteProductIds: () => mockUseFavoriteProductIds(),
+  useAvoidProductIds: (enabled?: boolean) => mockUseAvoidProductIds(enabled),
+  useFavoriteProductIds: (enabled?: boolean) => mockUseFavoriteProductIds(enabled),
+}));
+
+const mockNoncriticalQueriesEnabled = vi.fn().mockReturnValue(true);
+vi.mock("@/hooks/use-noncritical-app-queries", () => ({
+  useNoncriticalAppQueriesEnabled: () => mockNoncriticalQueriesEnabled(),
 }));
 
 function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -26,10 +31,23 @@ function createWrapper() {
 }
 
 describe("ListsHydrator", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockNoncriticalQueriesEnabled.mockReturnValue(true);
+  });
+
   it("calls both hooks on mount", () => {
     render(<ListsHydrator />, { wrapper: createWrapper() });
-    expect(mockUseAvoidProductIds).toHaveBeenCalled();
-    expect(mockUseFavoriteProductIds).toHaveBeenCalled();
+    expect(mockUseAvoidProductIds).toHaveBeenCalledWith(true);
+    expect(mockUseFavoriteProductIds).toHaveBeenCalledWith(true);
+  });
+
+  it("passes the app-startup gate to both hydration hooks", () => {
+    mockNoncriticalQueriesEnabled.mockReturnValue(false);
+    render(<ListsHydrator />, { wrapper: createWrapper() });
+
+    expect(mockUseAvoidProductIds).toHaveBeenCalledWith(false);
+    expect(mockUseFavoriteProductIds).toHaveBeenCalledWith(false);
   });
 
   it("renders nothing visible", () => {

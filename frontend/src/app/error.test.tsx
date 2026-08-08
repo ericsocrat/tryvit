@@ -1,6 +1,12 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import ErrorPage from "./error";
+
+const mockCaptureClientException = vi.hoisted(() => vi.fn());
+
+vi.mock("@/lib/client-sentry", () => ({
+  captureClientException: mockCaptureClientException,
+}));
 
 vi.mock("next/image", () => ({
   default: ({ priority, ...props }: Record<string, unknown>) => (
@@ -10,6 +16,10 @@ vi.mock("next/image", () => ({
 }));
 
 describe("ErrorPage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("renders heading", () => {
     render(<ErrorPage error={new Error("test")} reset={vi.fn()} />);
     expect(screen.getByText("Something went wrong")).toBeInTheDocument();
@@ -17,9 +27,7 @@ describe("ErrorPage", () => {
 
   it("renders try again button", () => {
     render(<ErrorPage error={new Error("test")} reset={vi.fn()} />);
-    expect(
-      screen.getByRole("button", { name: "Try again" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeInTheDocument();
   });
 
   it("calls reset when clicking try again", () => {
@@ -38,12 +46,17 @@ describe("ErrorPage", () => {
   });
 
   it("renders error illustration", () => {
-    const { container } = render(
-      <ErrorPage error={new Error("test")} reset={vi.fn()} />,
-    );
-    const img = container.querySelector(
-      "img[data-illustration='server-error']",
-    );
+    const { container } = render(<ErrorPage error={new Error("test")} reset={vi.fn()} />);
+    const img = container.querySelector("img[data-illustration='server-error']");
     expect(img).toBeTruthy();
+  });
+
+  it("preserves the route-error telemetry context", () => {
+    const error = new Error("route crash");
+    render(<ErrorPage error={error} reset={vi.fn()} />);
+
+    expect(mockCaptureClientException).toHaveBeenCalledWith(error, {
+      tags: { boundary: "route-error" },
+    });
   });
 });

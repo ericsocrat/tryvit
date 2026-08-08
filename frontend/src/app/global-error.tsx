@@ -5,10 +5,30 @@
 
 "use client";
 
-import { translate } from "@/lib/i18n";
+import { captureClientException } from "@/lib/client-sentry";
 import type { SupportedLanguage } from "@/stores/language-store";
-import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
+
+const ERROR_MESSAGES: Record<
+  SupportedLanguage,
+  { readonly title: string; readonly description: string; readonly retry: string }
+> = {
+  en: {
+    title: "Something went wrong",
+    description: "A critical error occurred. Please try again.",
+    retry: "Try again",
+  },
+  pl: {
+    title: "Coś poszło nie tak",
+    description: "Wystąpił krytyczny błąd. Spróbuj ponownie.",
+    retry: "Spróbuj ponownie",
+  },
+  de: {
+    title: "Etwas ist schiefgelaufen",
+    description: "Ein kritischer Fehler ist aufgetreten. Bitte versuchen Sie es erneut.",
+    retry: "Erneut versuchen",
+  },
+};
 
 /** Detect locale from browser language (no React context available in global error boundary). */
 function detectClientLocale(): SupportedLanguage {
@@ -27,9 +47,10 @@ export default function GlobalError({
   reset: () => void;
 }>) {
   const locale = detectClientLocale();
+  const messages = ERROR_MESSAGES[locale];
 
   useEffect(() => {
-    Sentry.captureException(error, {
+    captureClientException(error, {
       tags: { boundary: "global-error" },
     });
   }, [error]);
@@ -54,11 +75,9 @@ export default function GlobalError({
               marginBottom: "0.5rem",
             }}
           >
-            {translate(locale, "error.somethingWrong")}
+            {messages.title}
           </h1>
-          <p style={{ color: "#6b7280", marginBottom: "1.5rem" }}>
-            {translate(locale, "error.critical")}
-          </p>
+          <p style={{ color: "#6b7280", marginBottom: "1.5rem" }}>{messages.description}</p>
           <button
             onClick={reset}
             style={{
@@ -72,7 +91,7 @@ export default function GlobalError({
               fontWeight: 500,
             }}
           >
-            {translate(locale, "common.tryAgain")}
+            {messages.retry}
           </button>
         </div>
       </body>
