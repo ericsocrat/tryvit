@@ -72,6 +72,7 @@ export default async function AppLayout({
   const prefs = data as {
     onboarding_complete: boolean;
     country: string | null;
+    preferred_language: string | null;
   };
 
   if (!prefs.onboarding_complete) {
@@ -111,7 +112,10 @@ export default async function AppLayout({
             className="mx-auto w-full max-w-5xl flex-1 px-4 py-4 md:py-6 lg:py-8"
           >
             <ListsHydrator />
-            <LanguageHydrator />
+            <LanguageHydrator
+              preferredLanguage={prefs.preferred_language}
+              country={prefs.country}
+            />
             <AdminHydrator isAdmin={isAdmin} />
             {children}
           </main>

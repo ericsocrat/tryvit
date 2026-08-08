@@ -4,20 +4,18 @@ import { describe, expect, it } from "vitest";
 
 const sourceRoot = join(process.cwd(), "src");
 const providersPath = join(sourceRoot, "components/Providers.tsx");
-const initialLanguageContextPath = join(
-  sourceRoot,
-  "lib/initial-language-context.ts",
-);
+const initialLanguageContextPath = join(sourceRoot, "lib/initial-language-context.ts");
 const providersSource = readFileSync(providersPath, "utf8");
-const initialLanguageContextSource = readFileSync(
-  initialLanguageContextPath,
-  "utf8",
-);
+const initialLanguageContextSource = readFileSync(initialLanguageContextPath, "utf8");
 const authenticatedSource = readFileSync(
   join(process.cwd(), "src/components/AuthenticatedProviders.tsx"),
   "utf8",
 );
 const appLayoutSource = readFileSync(join(process.cwd(), "src/app/app/layout.tsx"), "utf8");
+const languageHydratorSource = readFileSync(
+  join(process.cwd(), "src/components/i18n/LanguageHydrator.tsx"),
+  "utf8",
+);
 
 const localImportPattern =
   /\b(?:import|export)\s+(?:type\s+)?(?:[^"']*?\s+from\s+)?["']([^"']+)["']/gu;
@@ -74,8 +72,8 @@ describe("provider route boundaries", () => {
   });
 
   it("keeps the root provider import graph free of translation dictionaries", () => {
-    const dependencyPaths = [...collectLocalDependencyGraph(providersPath)].map(
-      (dependency) => relative(process.cwd(), dependency).replaceAll("\\", "/"),
+    const dependencyPaths = [...collectLocalDependencyGraph(providersPath)].map((dependency) =>
+      relative(process.cwd(), dependency).replaceAll("\\", "/"),
     );
 
     expect(providersSource).toContain("@/lib/initial-language-context");
@@ -92,5 +90,12 @@ describe("provider route boundaries", () => {
     expect(authenticatedSource).toContain("FlagProvider");
     expect(authenticatedSource).toContain("initAchievementMiddleware");
     expect(appLayoutSource).toContain("<AuthenticatedProviders>");
+  });
+
+  it("reuses server-resolved language preferences without a duplicate browser RPC", () => {
+    expect(appLayoutSource).toContain("preferredLanguage={prefs.preferred_language}");
+    expect(languageHydratorSource).not.toContain("getUserPreferences");
+    expect(languageHydratorSource).not.toContain("@/lib/supabase");
+    expect(languageHydratorSource).not.toContain("@tanstack/react-query");
   });
 });
