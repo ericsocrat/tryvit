@@ -126,6 +126,7 @@ jobs:
           head_sha="${{ github.event.pull_request.head.sha }}"
           phase5a0c_base="f03a79c97f9edc495a62fa02e89c45938a42fc6e"
           reviewed_phase5a0d_head="2b097bbe9eb0b3501421f1250972c98ce24ce60b"
+          baseline_runtime_sha="aa84b2bd8a22b20e1625d33dede66238c507130f"
           source_sha="$base_sha"
           source="pr-base"
           trusted=true
@@ -169,9 +170,14 @@ jobs:
             frontend/e2e \
             frontend/tooling
           git show "$source_sha:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-reviewed-visual-package.json"
+          git show "$baseline_runtime_sha:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-baseline-runtime-package.json"
+          git show "$baseline_runtime_sha:frontend/package-lock.json" > "$RUNNER_TEMP/phase5a0d-baseline-runtime-package-lock.json"
           {
             echo "archive_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-reviewed-visual-verifier.tar" | awk '{print $1}')"
             echo "package_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-reviewed-visual-package.json" | awk '{print $1}')"
+            echo "runtime_package_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-baseline-runtime-package.json" | awk '{print $1}')"
+            echo "runtime_lock_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-baseline-runtime-package-lock.json" | awk '{print $1}')"
+            echo "runtime_sha=$baseline_runtime_sha"
             echo "source=$source"
             echo "source_sha=$source_sha"
             echo "trusted=$trusted"
@@ -185,18 +191,32 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Install dependencies
+      # Pixel verification must use the exact dependency graph that created the
+      # immutable manifest. Current-main dependencies are measured separately
+      # by candidate generation, Lighthouse, and route-JS accounting.
+      - name: Install the manifest-attested baseline runtime without manifest mutation
         if: ${{ steps.baseline_state.outputs.exists == 'true' }}
-        run: npm ci --ignore-scripts
-
-      - name: Install lockfile-pinned Playwright Chromium
-        if: ${{ steps.baseline_state.outputs.exists == 'true' }}
-        run: npx playwright install --with-deps chromium
-        timeout-minutes: 8
-
-      - name: Reinstall dependencies from lockfile after browser setup
-        if: ${{ steps.baseline_state.outputs.exists == 'true' }}
-        run: npm ci --ignore-scripts --prefer-offline
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+          echo "${{ steps.verifier_policy.outputs.runtime_package_sha256 }}  $RUNNER_TEMP/phase5a0d-baseline-runtime-package.json" | sha256sum -c -
+          echo "${{ steps.verifier_policy.outputs.runtime_lock_sha256 }}  $RUNNER_TEMP/phase5a0d-baseline-runtime-package-lock.json" | sha256sum -c -
+          git show "${{ github.event.pull_request.head.sha }}:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-current-package.json"
+          git show "${{ github.event.pull_request.head.sha }}:frontend/package-lock.json" > "$RUNNER_TEMP/phase5a0d-current-package-lock.json"
+          cp -- "$RUNNER_TEMP/phase5a0d-baseline-runtime-package.json" frontend/package.json
+          cp -- "$RUNNER_TEMP/phase5a0d-baseline-runtime-package-lock.json" frontend/package-lock.json
+          cd frontend
+          npm ci --ignore-scripts
+          npx playwright install --with-deps chromium
+          cd ..
+          cp -- "$RUNNER_TEMP/phase5a0d-current-package.json" frontend/package.json
+          cp -- "$RUNNER_TEMP/phase5a0d-current-package-lock.json" frontend/package-lock.json
+          git diff --quiet HEAD -- frontend/package.json frontend/package-lock.json
+          cd frontend
+          node -e 'const manifest = require("./e2e/__screenshots__/phase5a0d-manifest.json"); const installed = require("@playwright/test/package.json").version; if (installed !== manifest.versions.playwright) throw new Error("manifest-attested Playwright package was not installed");'
+        timeout-minutes: 10
 
       - name: Re-attest and restore the exact visual verifier
         if: ${{ steps.baseline_state.outputs.exists == 'true' }}
@@ -240,6 +260,7 @@ jobs:
             echo "- Source: \`${{ steps.verifier_policy.outputs.source }}\`"
             echo "- Source commit: \`${{ steps.verifier_policy.outputs.source_sha }}\`"
             echo "- Base-authoritative: \`${{ steps.verifier_policy.outputs.trusted }}\`"
+            echo "- Immutable baseline runtime: \`${{ steps.verifier_policy.outputs.runtime_sha }}\`"
           } >> "$GITHUB_STEP_SUMMARY"
           if [ "${{ steps.verifier_policy.outputs.trusted }}" != "true" ]; then
             echo "::notice::Initial bootstrap verification uses the exact-head verifier and still requires explicit human review; base-authoritative enforcement begins after merge."

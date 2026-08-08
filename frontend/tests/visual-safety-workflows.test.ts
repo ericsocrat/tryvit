@@ -433,9 +433,20 @@ describe("browser workflow visual-safety contract", () => {
     expect(phase5VisualJobs.verify).toContain("phase5a0d-reviewed-visual-verifier.tar");
     expect(phase5VisualJobs.verify).toContain("steps.verifier_policy.outputs.archive_sha256");
     expect(phase5VisualJobs.verify).toContain("steps.verifier_policy.outputs.package_sha256");
+    expect(phase5VisualJobs.verify).toContain("aa84b2bd8a22b20e1625d33dede66238c507130f");
+    expect(phase5VisualJobs.verify).toContain("phase5a0d-baseline-runtime-package-lock.json");
+    expect(phase5VisualJobs.verify).toContain(
+      "Install the manifest-attested baseline runtime without manifest mutation",
+    );
+    expect(phase5VisualJobs.verify).toContain(
+      "manifest-attested Playwright package was not installed",
+    );
+    expect(phase5VisualJobs.verify).toContain(
+      "git diff --quiet HEAD -- frontend/package.json frontend/package-lock.json",
+    );
     expect(phase5VisualJobs.verify).toContain("current.scripts = scripts");
     expect(phase5VisualJobs.verify).toContain("npm ci --ignore-scripts");
-    expect(phase5VisualJobs.verify).toContain("npm ci --ignore-scripts --prefer-offline");
+    expect(phase5VisualJobs.verify).toContain("npx playwright install --with-deps chromium");
     expect(phase5VisualJobs.verify).toContain(
       'test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"',
     );
@@ -444,7 +455,9 @@ describe("browser workflow visual-safety contract", () => {
       phase5VisualJobs.verify.indexOf("Re-attest and restore the exact visual verifier"),
     );
     expect(
-      phase5VisualJobs.verify.indexOf("Install lockfile-pinned Playwright Chromium"),
+      phase5VisualJobs.verify.indexOf(
+        "Install the manifest-attested baseline runtime without manifest mutation",
+      ),
     ).toBeLessThan(
       phase5VisualJobs.verify.indexOf("Re-attest and restore the exact visual verifier"),
     );

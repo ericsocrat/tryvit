@@ -442,6 +442,17 @@ and the uploaded artifact archive digest is
 The deterministic fixture-contract checksum is
 `12b5fb3bf42f9d969f4bdf248cc142df1c8515b30f793c533c01f82243eea580`.
 
+After the dependency-only synchronization with current `main`, the tracked
+package manifests retain the current-main dependency graph (including
+`@playwright/test` 1.62.1). Immutable pixel verification deliberately installs
+the exact manifest-producing dependency graph from `aa84b2bd…` in the ephemeral
+runner only, verifies Playwright 1.62.0 and Chromium 151, then restores and
+attests the current tracked manifests before running the sealed verifier. This
+keeps the seven reviewed PNGs and their hashes authoritative without pretending
+that a different renderer is byte-comparable. Candidate generation,
+Lighthouse, and route-JavaScript accounting continue to exercise the actual
+current-main dependencies.
+
 ## Safety invariants
 
 - Public measurement commands receive no Supabase URL, key, configuration, or
