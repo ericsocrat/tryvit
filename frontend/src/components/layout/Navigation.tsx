@@ -4,14 +4,19 @@
 // Issue #67 — replaced Settings with "More" drawer to surface all nav items.
 
 import { Icon } from "@/components/common/Icon";
-import { MoreDrawer } from "@/components/layout/MoreDrawer";
 import { useActiveRoute, type PrimaryRouteKey } from "@/hooks/use-active-route";
 import { useLists } from "@/hooks/use-lists";
 import { useTranslation } from "@/lib/i18n";
 import { useCompareStore } from "@/stores/compare-store";
 import { Camera, ClipboardList, Home, MoreHorizontal, Search, type LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
+
+const MoreDrawer = lazy(() =>
+  import("@/components/layout/MoreDrawer").then((module) => ({
+    default: module.MoreDrawer,
+  })),
+);
 
 interface NavItem {
   href: string;
@@ -145,7 +150,11 @@ export function Navigation() {
       </nav>
 
       {/* More drawer */}
-      <MoreDrawer open={moreOpen} onClose={closeMore} />
+      {moreOpen && (
+        <Suspense fallback={null}>
+          <MoreDrawer open onClose={closeMore} />
+        </Suspense>
+      )}
     </>
   );
 }

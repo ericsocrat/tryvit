@@ -1,5 +1,5 @@
 import { assertComponentA11y } from "@/utils/test/a11y";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { Navigation } from "./Navigation";
 
@@ -142,14 +142,16 @@ describe("Navigation", () => {
     expect(moreBtn).toHaveAttribute("aria-haspopup", "dialog");
   });
 
-  it("More button toggles drawer open/close", () => {
+  it("More button toggles drawer open/close", async () => {
     render(<Navigation />);
     const moreBtn = screen.getByText("More").closest("button")!;
     expect(moreBtn).toHaveAttribute("aria-expanded", "false");
 
     fireEvent.click(moreBtn);
     expect(moreBtn).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
   });
 
   it("highlights More button when active route is in drawer", () => {
