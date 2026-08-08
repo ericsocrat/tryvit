@@ -5,6 +5,10 @@ import { describe, expect, it } from "vitest";
 const sourceRoot = join(process.cwd(), "src");
 const providersPath = join(sourceRoot, "components/Providers.tsx");
 const initialLanguageContextPath = join(sourceRoot, "lib/initial-language-context.ts");
+const clientI18nPath = join(sourceRoot, "lib/i18n.ts");
+const clientMessagesPath = join(sourceRoot, "components/i18n/ClientMessagesProvider.tsx");
+const toastPath = join(sourceRoot, "lib/toast.ts");
+const globalErrorPath = join(sourceRoot, "app/global-error.tsx");
 const providersSource = readFileSync(providersPath, "utf8");
 const initialLanguageContextSource = readFileSync(initialLanguageContextPath, "utf8");
 const authenticatedSource = readFileSync(
@@ -93,6 +97,30 @@ describe("provider route boundaries", () => {
     expect(dependencyPaths).not.toContain("src/lib/i18n.ts");
     expect(dependencyPaths).not.toContain("src/lib/i18n-core.ts");
     expect(dependencyPaths.some((dependency) => dependency.includes("messages/"))).toBe(false);
+  });
+
+  it("keeps eager client translation graphs out of the server dictionary registry", () => {
+    const eagerClientDependencies = [
+      clientI18nPath,
+      clientMessagesPath,
+      toastPath,
+      globalErrorPath,
+    ].flatMap((entry) => [...collectLocalDependencyGraph(entry)]);
+    const relativeDependencies = new Set(
+      eagerClientDependencies.map((dependency) =>
+        relative(process.cwd(), dependency).replaceAll("\\", "/"),
+      ),
+    );
+    const clientMessagesSource = readFileSync(clientMessagesPath, "utf8");
+
+    expect(relativeDependencies).not.toContain("src/lib/i18n-core.ts");
+    expect(relativeDependencies).not.toContain("src/lib/i18n-server.ts");
+    expect([...relativeDependencies].some((dependency) => dependency.startsWith("messages/"))).toBe(
+      false,
+    );
+    expect(clientMessagesSource).toContain('import("@/../messages/en.json")');
+    expect(clientMessagesSource).toContain('import("@/../messages/pl.json")');
+    expect(clientMessagesSource).toContain('import("@/../messages/de.json")');
   });
 
   it("keeps backend providers behind the authenticated app layout", () => {

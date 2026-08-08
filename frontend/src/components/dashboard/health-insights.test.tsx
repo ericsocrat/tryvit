@@ -6,13 +6,26 @@ import { CategoryDiversity } from "./CategoryDiversity";
 import { HealthInsightsSummary } from "./HealthInsightsSummary";
 import { RecentComparisons } from "./RecentComparisons";
 import { getSeasonKey } from "./DashboardGreeting";
-import { translate } from "@/lib/i18n";
+import { translate } from "@/lib/i18n-core";
+import type * as I18nCoreModule from "@/lib/i18n-core";
 import type {
   NovaDistribution,
   DashboardAllergenAlerts,
   DashboardCategoryDiversity,
   DashboardRecentComparison,
 } from "@/lib/types";
+
+vi.mock("@/lib/i18n", async () => {
+  const { translate: translateMessage } =
+    await vi.importActual<typeof I18nCoreModule>("@/lib/i18n-core");
+  return {
+    useTranslation: () => ({
+      language: "en",
+      t: (key: string, params?: Record<string, string | number>) =>
+        translateMessage("en", key, params),
+    }),
+  };
+});
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -40,9 +53,7 @@ describe("NovaDistributionChart", () => {
   it("renders an SVG bar chart", () => {
     render(<NovaDistributionChart distribution={distribution} />);
     expect(screen.getByTestId("nova-distribution")).toBeInTheDocument();
-    expect(
-      screen.getByTestId("nova-distribution").querySelector("svg"),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("nova-distribution").querySelector("svg")).toBeInTheDocument();
   });
 
   it("renders 4 bars for NOVA groups", () => {
@@ -65,12 +76,8 @@ describe("NovaDistributionChart", () => {
 
   it("returns null when all counts are zero", () => {
     const empty: NovaDistribution = {};
-    const { container } = render(
-      <NovaDistributionChart distribution={empty} />,
-    );
-    expect(
-      container.querySelector('[data-testid="nova-distribution"]'),
-    ).not.toBeInTheDocument();
+    const { container } = render(<NovaDistributionChart distribution={empty} />);
+    expect(container.querySelector('[data-testid="nova-distribution"]')).not.toBeInTheDocument();
   });
 
   it("shows percentage labels", () => {
@@ -131,9 +138,7 @@ describe("AllergenAlert", () => {
   it("returns null when count is 0", () => {
     const empty: DashboardAllergenAlerts = { count: 0, products: [] };
     const { container } = render(<AllergenAlert alerts={empty} />);
-    expect(
-      container.querySelector('[data-testid="allergen-alert"]'),
-    ).not.toBeInTheDocument();
+    expect(container.querySelector('[data-testid="allergen-alert"]')).not.toBeInTheDocument();
   });
 });
 
@@ -167,12 +172,8 @@ describe("CategoryDiversity", () => {
   });
 
   it("returns null when explored is 0", () => {
-    const { container } = render(
-      <CategoryDiversity diversity={{ explored: 0, total: 20 }} />,
-    );
-    expect(
-      container.querySelector('[data-testid="category-diversity"]'),
-    ).not.toBeInTheDocument();
+    const { container } = render(<CategoryDiversity diversity={{ explored: 0, total: 20 }} />);
+    expect(container.querySelector('[data-testid="category-diversity"]')).not.toBeInTheDocument();
   });
 });
 
@@ -250,17 +251,13 @@ describe("RecentComparisons", () => {
   it("links to comparisons page", () => {
     render(<RecentComparisons comparisons={comparisons} />);
     const links = screen.getAllByRole("link");
-    const compareLink = links.find((l) =>
-      l.getAttribute("href")?.includes("compare"),
-    );
+    const compareLink = links.find((l) => l.getAttribute("href")?.includes("compare"));
     expect(compareLink).toBeDefined();
   });
 
   it("returns null for empty array", () => {
     const { container } = render(<RecentComparisons comparisons={[]} />);
-    expect(
-      container.querySelector('[data-testid="recent-comparisons"]'),
-    ).not.toBeInTheDocument();
+    expect(container.querySelector('[data-testid="recent-comparisons"]')).not.toBeInTheDocument();
   });
 });
 

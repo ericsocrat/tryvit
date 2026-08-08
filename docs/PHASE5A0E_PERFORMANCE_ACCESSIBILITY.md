@@ -1,22 +1,25 @@
 # Phase 5A.0e — Performance and Product Accessibility Remediation
 
-> **Status:** Synchronized pre-change diagnosis recorded on the stacked Phase
-> 5A.0e branch. Product remediation must preserve the Phase 5A.0d measurement
-> contract and immutable visual baselines.
+> **Status:** Remediation is implemented on draft stacked PR #1260. The last
+> published exact head removed three of four blockers; the final app-shell
+> correction is locally verified and still requires the authoritative five-run
+> exact-head gate. The Phase 5A.0d measurement contract and immutable visual
+> baselines remain unchanged.
 
 ## Scope
 
-Phase 5A.0e is a narrow remediation phase. It may reduce unnecessary client
-work, improve an existing server/client boundary, defer disabled telemetry, and
-correct verified semantics. It does not authorize a redesign, new copy,
-layout changes, dependency changes, new data behavior, or weaker gates.
+Phase 5A.0e is a narrow remediation phase. It reduces unnecessary client work,
+defers disabled telemetry and closed UI, corrects verified accessibility
+semantics, and delivers only the active client message dictionary at startup.
+It does not authorize a redesign, new copy, layout changes, dependency changes,
+new product-data behavior, or weaker gates.
 
-The starting point is synchronized Phase 5A.0d head
-`959c0ac7e5a8b3c8894d9c63edd330b962497794`. It contains a normal merge of
-current `main` at `958baec8ffff7dd3f9a8ca639b27da7bfd2c303a` and preserves that
-commit's `frontend/package-lock.json` byte-for-byte. The synchronization did
-not alter product behavior; it retained only the reviewed Phase 5A.0d scripts
-and measurement infrastructure.
+The final stacked base is synchronized Phase 5A.0d head
+`a8645fb27aac77ea491cc89290b70a94665a6876`. Its ancestry contains the normal
+merge of `main` at `958baec8ffff7dd3f9a8ca639b27da7bfd2c303a`; the later commits
+only repair the trusted stacked-PR gate triggers. The synchronization did not
+alter product behavior or dependency versions and preserves the reviewed
+Phase 5A.0d scripts, thresholds, fixtures, and measurement infrastructure.
 
 ## Authoritative synchronized baseline
 
@@ -146,19 +149,76 @@ variance rule will not be weakened.
 
 ## Remediation and verification boundary
 
-Authorized implementation is limited to:
+Implemented remediation is limited to:
 
-1. defer browser Sentry loading behind the existing public DSN while preserving
-   configured telemetry semantics;
-2. correct the two semantic accessibility defects and extend guarded tests.
+1. defer browser Sentry loading behind the existing public DSN, with a single
+   memoized adapter and the configured sampling, filtering, context, and router
+   contract retained;
+2. give the product placeholder valid image semantics, align visible navigation
+   badge text with its accessible name, and audit product detail at both guarded
+   authenticated viewports;
+3. lazy-load returning-dashboard sections, closed authenticated overlays, and
+   collapsed product full-analysis code while retaining the original fallback,
+   focus, tab, refresh, offline-precache, and error-containment behavior;
+4. reuse the preferences already resolved by the authenticated server layout
+   instead of issuing the same browser preferences RPC, and remove the
+   demonstrably unused FlagProvider startup without deleting its dormant API;
+5. serve a request-matched message dictionary synchronously for SSR/hydration,
+   load later locale choices as public static chunks, and commit copy,
+   `html[lang]`, store state, and toast translation coherently;
+6. suppress speculative pre-LCP RSC prefetches for the persistent mobile
+   navigation and the two new-user dashboard CTAs. Click navigation is
+   unchanged.
 
-Dashboard prefetch and service-worker cache-policy changes are explicitly
-excluded from this PR. The former would introduce private data into cacheable
-responses; the latter needs its own security/PWA contract and offline-behavior
-verification.
+Dashboard data remains client-only. A server-prefetch/dehydration experiment
+was rejected because the existing service-worker runtime cache could retain
+private dashboard data. The locale payload contains public copy only. Service-
+worker policy itself is unchanged and its broader authenticated-cache boundary
+is a separate security follow-up.
+
+## Published remediation evidence
+
+Exact head `51931c8bca1df76320bb463846500e770cb52a10` passed PR Gate,
+Quality Gate, the immutable visual verifier, route-JavaScript guard, CodeQL,
+repository hygiene, screenshots, exact-head Main Gate, and SonarCloud. The
+visual verifier retained semantic checksum
+`12a00dc37191191b788964d1c599d103aa0fedb1c15fa8cc36ad80d746953716`
+with no diff images. SonarCloud reported Quality Gate OK, Security A,
+Reliability A, zero vulnerabilities, zero bugs, and zero hotspots.
+
+That head reduced the authenticated app route from 761.9 to 376.7 KiB gzip and
+product detail from 783.4 to 405.8 KiB gzip relative to the synchronized base.
+Product mobile performance reached the blocking floor at 0.85, and product
+accessibility rose from 0.92/0.93 to 0.96/0.96 on mobile/desktop. App mobile
+improved from 0.58 to 0.81 but remained the sole performance-floor blocker.
+The exact five-run report checksum is
+`332b44ca9a52c6bcfd9719084e68e32910e92341db4151639351c27086d8cd71`.
+
+The final diagnosis found that the English fixture still downloaded a
+101,483-byte gzip client chunk containing all three EN/PL/DE dictionaries and
+issued nine irrelevant authenticated RSC prefetches before the new-user LCP.
+The final correction splits those dictionaries and disables only those
+speculative prefetches. A local production build emits separate EN, PL, and DE
+chunks of 31,298, 35,247, and 35,315 gzip bytes. None is referenced by any of
+the 66 initial client-reference manifests, all three are present in the fresh
+`/sw.js` precache, and no combined-locale chunk remains.
+
+Local verification of the final source includes:
+
+- 6,363 frontend tests passed, with 19 intentional skips;
+- TypeScript type-check and ESLint passed;
+- the production build and fresh `/sw.js` generation passed;
+- focused locale, persistence, toast, race, prefetch, and provider-boundary
+  tests passed;
+- `git diff --check` passed.
+
+These local results do not replace the exact-head Linux five-run gate. PR #1260
+remains draft until the final pushed head proves zero blocking or instability
+failures and all cleanup assertions complete.
 
 The source Lighthouse hashes, category floors, variance rule, route-JS
 regression rule, visual threshold, routes, fixture contract, and seven reviewed
 PNG files remain immutable. The visual manifest file SHA-256 remains
 `8c17917c60a3b46f087cc5d5cd3a80b34355015ed9e8de0a58e98826f11bdf9c`.
-No hosted Supabase or Vercel operation is part of this phase.
+No hosted Supabase write, Vercel configuration change, dependency change,
+database/API change, scanner change, or Phase 5 redesign is part of this phase.

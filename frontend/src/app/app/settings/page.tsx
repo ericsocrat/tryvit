@@ -7,22 +7,16 @@ import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { SettingsSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ThemeToggle } from "@/components/settings/ThemeToggle";
+import { useClientMessages } from "@/components/i18n/ClientMessagesProvider";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { getUserPreferences, setUserPreferences } from "@/lib/api";
-import {
-    COUNTRIES,
-    COUNTRY_DEFAULT_LANGUAGES,
-    getLanguagesForCountry,
-} from "@/lib/constants";
+import { COUNTRIES, COUNTRY_DEFAULT_LANGUAGES, getLanguagesForCountry } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
-import {
-    useLanguageStore,
-    type SupportedLanguage,
-} from "@/stores/language-store";
+import { useLanguageStore, type SupportedLanguage } from "@/stores/language-store";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 
@@ -31,6 +25,7 @@ export default function ProfileSettingsPage() {
   const queryClient = useQueryClient();
   const { track } = useAnalytics();
   const { t } = useTranslation();
+  const { activateLanguage, prepareLanguage } = useClientMessages();
   const setStoreLanguage = useLanguageStore((s) => s.setLanguage);
 
   const { data: prefs, isLoading } = useQuery({
@@ -48,8 +43,7 @@ export default function ProfileSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
 
-  const { showConfirmDialog, confirmNavigation, cancelNavigation } =
-    useUnsavedChanges(dirty);
+  const { showConfirmDialog, confirmNavigation, cancelNavigation } = useUnsavedChanges(dirty);
 
   // Populate from fetched prefs — adjust state during render when the
   // upstream query result changes (avoids react-hooks/set-state-in-effect).
@@ -84,6 +78,14 @@ export default function ProfileSettingsPage() {
 
   async function handleSave() {
     setSaving(true);
+
+    const prepared = await prepareLanguage(language);
+    if (!prepared) {
+      setSaving(false);
+      showToast({ type: "error", messageKey: "common.error" });
+      return;
+    }
+
     const result = await setUserPreferences(supabase, {
       p_country: country,
       p_preferred_language: language,
@@ -95,17 +97,23 @@ export default function ProfileSettingsPage() {
           : undefined,
       p_strict_diet: prefs?.strict_diet ?? false,
       p_strict_allergen: prefs?.strict_allergen ?? false,
-      p_treat_may_contain_as_unsafe:
-        prefs?.treat_may_contain_as_unsafe ?? false,
+      p_treat_may_contain_as_unsafe: prefs?.treat_may_contain_as_unsafe ?? false,
     });
-    setSaving(false);
-
     if (!result.ok) {
+      setSaving(false);
       showToast({ type: "error", message: result.error.message });
       return;
     }
 
-    // Sync the language store so the entire UI re-renders in the new language
+    // The target is cache-hot, so this changes content, <html lang>, and the
+    // toast translator atomically without showing an unpersisted preview.
+    const languageActivated = await activateLanguage(language);
+    if (!languageActivated) {
+      setSaving(false);
+      showToast({ type: "error", messageKey: "common.error" });
+      return;
+    }
+
     setStoreLanguage(language);
 
     // Invalidate caches since country/language may have changed
@@ -117,6 +125,7 @@ export default function ProfileSettingsPage() {
     });
 
     setDirty(false);
+    setSaving(false);
     track("preferences_updated", { country, language });
     showToast({ type: "success", messageKey: "settings.preferencesSaved" });
   }
@@ -134,9 +143,7 @@ export default function ProfileSettingsPage() {
           { labelKey: "settings.tabProfile" },
         ]}
       />
-      <h1 className="text-xl font-bold text-foreground lg:text-2xl">
-        {t("settings.tabProfile")}
-      </h1>
+      <h1 className="text-xl font-bold text-foreground lg:text-2xl">{t("settings.tabProfile")}</h1>
 
       {/* Country */}
       <section className="card">
@@ -150,8 +157,7 @@ export default function ProfileSettingsPage() {
               onClick={() => {
                 setCountry(c.code);
                 // Auto-switch language to new country's default
-                const newDefault = (COUNTRY_DEFAULT_LANGUAGES[c.code] ??
-                  "en") as SupportedLanguage;
+                const newDefault = (COUNTRY_DEFAULT_LANGUAGES[c.code] ?? "en") as SupportedLanguage;
                 setLanguage(newDefault);
                 markDirty();
               }}
@@ -207,11 +213,7 @@ export default function ProfileSettingsPage() {
           <p className="mb-2 text-center text-xs font-medium text-warning">
             {t("settings.unsavedIndicator")}
           </p>
-          <Button
-            onClick={handleSave}
-            disabled={saving}
-            fullWidth
-          >
+          <Button onClick={handleSave} disabled={saving} fullWidth>
             {saving ? t("common.saving") : t("settings.saveChanges")}
           </Button>
         </div>

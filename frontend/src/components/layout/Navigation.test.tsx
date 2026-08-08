@@ -8,9 +8,33 @@ import { Navigation } from "./Navigation";
 const mockPathname = vi.fn<() => string>().mockReturnValue("/app/search");
 vi.mock("next/navigation", () => ({ usePathname: () => mockPathname() }));
 
+const translations: Record<string, string> = {
+  "a11y.mainNavigation": "Main navigation",
+  "nav.home": "Dashboard",
+  "nav.search": "Search",
+  "nav.scan": "Scan",
+  "nav.lists": "Lists",
+  "nav.more": "More",
+};
+vi.mock("@/lib/i18n", () => ({
+  useTranslation: () => ({
+    language: "en",
+    t: (key: string) => translations[key] ?? key,
+  }),
+}));
+
 vi.mock("next/link", () => ({
-  default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
-    <a href={href} {...rest}>
+  default: ({
+    href,
+    children,
+    prefetch,
+    ...rest
+  }: {
+    href: string;
+    children: React.ReactNode;
+    prefetch?: boolean;
+  }) => (
+    <a href={href} data-prefetch={String(prefetch)} {...rest}>
       {children}
     </a>
   ),
@@ -42,6 +66,14 @@ describe("Navigation", () => {
     expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/app");
     expect(screen.getByRole("link", { name: "Search" })).toHaveAttribute("href", "/app/search");
     expect(screen.getByRole("link", { name: "Scan" })).toHaveAttribute("href", "/app/scan");
+  });
+
+  it("does not prefetch persistent authenticated destinations", () => {
+    render(<Navigation />);
+
+    for (const link of screen.getAllByRole("link")) {
+      expect(link).toHaveAttribute("data-prefetch", "false");
+    }
   });
 
   it("marks active item with aria-current=page", () => {

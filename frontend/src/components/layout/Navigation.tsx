@@ -88,6 +88,7 @@ export function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 aria-current={isActive ? "page" : undefined}
                 className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 min-h-12 min-w-16 rounded-xl py-2 landscape:py-1 text-xs transition-colors ${
                   isActive
