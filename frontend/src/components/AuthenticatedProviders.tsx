@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { shouldRetry } from "@/components/Providers";
 import { initAchievementMiddleware } from "@/lib/events";
-import { FlagProvider } from "@/lib/flags";
 
 /** Backend-dependent providers mounted exclusively inside authenticated `/app`. */
 export function AuthenticatedProviders({ children }: Readonly<{ children: ReactNode }>) {
@@ -39,9 +38,5 @@ export function AuthenticatedProviders({ children }: Readonly<{ children: ReactN
     };
   }, []);
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <FlagProvider>{children}</FlagProvider>
-    </QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }

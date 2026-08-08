@@ -15,19 +15,13 @@ vi.mock("@/lib/web-vitals", () => ({
   reportWebVitals: mockReportWebVitals,
 }));
 
-vi.mock("@/lib/flags", () => ({
-  FlagProvider: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="flag-provider">{children}</div>
-  ),
-}));
-
 beforeEach(() => {
   vi.clearAllMocks();
   vi.unstubAllEnvs();
 });
 
 describe("AuthenticatedProviders", () => {
-  it("retains app-only query, flag, achievement, and configured telemetry behavior", async () => {
+  it("retains app-only query, achievement, and configured telemetry behavior", async () => {
     vi.stubEnv("NEXT_PUBLIC_SENTRY_DSN", "https://public@example.invalid/1");
     render(
       <AuthenticatedProviders>
@@ -35,7 +29,6 @@ describe("AuthenticatedProviders", () => {
       </AuthenticatedProviders>,
     );
 
-    expect(screen.getByTestId("flag-provider")).toBeInTheDocument();
     expect(screen.getByText("Authenticated application")).toBeInTheDocument();
     expect(mockInitAchievements).toHaveBeenCalledOnce();
     await waitFor(() => {

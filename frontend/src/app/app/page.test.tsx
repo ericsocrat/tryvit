@@ -180,12 +180,12 @@ describe("DashboardPage", () => {
 
   it("renders a time-aware greeting", async () => {
     render(<DashboardPage />, { wrapper: createWrapper() });
-    await waitFor(() => {
-      // The greeting is time-dependent, so check for any of the possible greetings
-      const greetingEl = screen.getByRole("heading", { level: 1 });
-      expect(greetingEl).toBeInTheDocument();
-      expect(greetingEl.textContent).toMatch(/Good morning|Good afternoon|Good evening|Good night/);
-    });
+    // getUser runs only after the returning-user branch has invoked its lazy loader.
+    await waitFor(() => expect(mockGetUser).toHaveBeenCalled());
+    await vi.dynamicImportSettled();
+
+    const greetingEl = await screen.findByRole("heading", { level: 1 });
+    expect(greetingEl.textContent).toMatch(/Good morning|Good afternoon|Good evening|Good night/);
   });
 
   it("passes display name from auth to greeting", async () => {

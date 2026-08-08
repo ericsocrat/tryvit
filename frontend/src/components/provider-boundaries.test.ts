@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, extname, join, relative, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -62,6 +62,16 @@ function collectLocalDependencyGraph(entry: string): Set<string> {
   return visited;
 }
 
+function collectProductionSourceFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = join(directory, entry.name);
+    if (entry.isDirectory()) return collectProductionSourceFiles(entryPath);
+    if (!entry.isFile() || !/\.[jt]sx?$/u.test(entry.name)) return [];
+    if (/\.(?:test|spec)\.[jt]sx?$/u.test(entry.name)) return [];
+    return [entryPath];
+  });
+}
+
 describe("provider route boundaries", () => {
   it("keeps the root provider free of backend and authenticated dependencies", () => {
     expect(providersSource).not.toContain("@tanstack/react-query");
@@ -87,9 +97,26 @@ describe("provider route boundaries", () => {
 
   it("keeps backend providers behind the authenticated app layout", () => {
     expect(authenticatedSource).toContain("QueryClientProvider");
-    expect(authenticatedSource).toContain("FlagProvider");
     expect(authenticatedSource).toContain("initAchievementMiddleware");
     expect(appLayoutSource).toContain("<AuthenticatedProviders>");
+  });
+
+  it("keeps the dormant flag subsystem out of the authenticated startup path", () => {
+    const flagSubsystem = `${join(sourceRoot, "lib", "flags")}${process.platform === "win32" ? "\\" : "/"}`;
+    const flagApiRoute = join(sourceRoot, "app", "api", "flags", "route.ts");
+    const unexpectedFlagImports = collectProductionSourceFiles(sourceRoot)
+      .filter((sourcePath) => !sourcePath.startsWith(flagSubsystem) && sourcePath !== flagApiRoute)
+      .flatMap((sourcePath) => {
+        const source = readFileSync(sourcePath, "utf8");
+        const importsFlagSubsystem = [...source.matchAll(localImportPattern)].some((match) => {
+          const dependency = resolveLocalModule(sourcePath, match[1]);
+          return dependency?.startsWith(flagSubsystem) ?? false;
+        });
+        return importsFlagSubsystem ? [relative(sourceRoot, sourcePath).replaceAll("\\", "/")] : [];
+      });
+
+    expect(authenticatedSource).not.toContain("FlagProvider");
+    expect(unexpectedFlagImports).toEqual([]);
   });
 
   it("reuses server-resolved language preferences without a duplicate browser RPC", () => {
