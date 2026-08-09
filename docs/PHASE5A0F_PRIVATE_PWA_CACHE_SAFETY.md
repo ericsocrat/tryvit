@@ -156,8 +156,8 @@ account transition. It:
 1. seeds synthetic private sentinels into the former private-bearing cache names;
 2. installs the freshly generated worker and proves activation removes them;
 3. verifies authenticated user-A requests do not enter CacheStorage;
-4. signs out user A through the real account UI, loads user B into the same
-   browser context, and keeps the same controlled page, worker, and CacheStorage;
+4. signs out user A and signs in user B through the real account UI in the same
+   browser context, keeping the same controlled page, worker, and CacheStorage;
 5. goes offline and proves protected document/RSC, Supabase Auth, and
    PostgREST GETs never replay user-A content;
 6. proves the public `/offline` fallback remains available;

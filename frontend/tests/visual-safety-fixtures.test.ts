@@ -160,9 +160,14 @@ describe("Playwright fixture safety contract", () => {
     expect(regression).toContain('getByRole("button", { name: "Sign Out" })');
     expect(regression).toContain('getScopedTestSession("functional")');
     expect(regression).toContain('getScopedTestSession("authenticated")');
-    expect(regression).toContain("context.setStorageState(AUTHENTICATED_AUTH_STATE)");
+    expect(regression).toContain('getByLabel("Email").fill(TEST_EMAIL)');
+    expect(regression).toContain('getByLabel("Password", { exact: true }).fill(TEST_PASSWORD)');
     expect(regression.indexOf('getByRole("button", { name: "Sign Out" })')).toBeLessThan(
-      regression.indexOf("context.setStorageState(AUTHENTICATED_AUTH_STATE)"),
+      regression.indexOf('getByLabel("Email").fill(TEST_EMAIL)'),
+    );
+    expect(regression.match(/context\.setStorageState\(/gu)).toHaveLength(1);
+    expect(regression).toContain(
+      "await context.setStorageState({ cookies: [], origins: [] })",
     );
     expect(regression).not.toContain("await page.close()");
     expect(regression).not.toMatch(/console\.(?:log|info|warn|error)/u);

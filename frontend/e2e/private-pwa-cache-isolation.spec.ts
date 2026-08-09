@@ -7,6 +7,7 @@ import { expect, test } from "./fixtures/safe-test";
 import {
   getScopedTestSession,
   TEST_EMAIL,
+  TEST_PASSWORD,
   type ScopedTestSession,
 } from "./helpers/test-user";
 import { VisualSafetyError, loadSafetyContractFromEnvironment } from "./helpers/visual-safety";
@@ -25,7 +26,6 @@ if (!authStateDirectory || !path.isAbsolute(authStateDirectory)) {
   throw new VisualSafetyError("VS_AUTH_STATE_DIR", "owned-temporary-directory-required");
 }
 
-const AUTHENTICATED_AUTH_STATE = path.join(authStateDirectory, "user.json");
 const APP_PRIVATE_HTML_PATH = "/app/settings?phase5a0f=private-cache-isolation";
 const APP_PRIVATE_RSC_PATH = "/app/settings/account";
 const AUTH_USER_URL = new URL("/auth/v1/user", safetyContract.supabaseOrigin).toString();
@@ -447,7 +447,30 @@ test.describe("private PWA cache account isolation", () => {
       await page.getByRole("button", { name: "Sign Out" }).click();
       await page.waitForURL(/\/auth\/login(?:[?#]|$)/u, { timeout: 15_000 });
 
-      await context.setStorageState(AUTHENTICATED_AUTH_STATE);
+      await page.getByLabel("Email").fill(TEST_EMAIL);
+      await page.getByLabel("Password", { exact: true }).fill(TEST_PASSWORD);
+      const userBTokenResponsePromise = page.waitForResponse(
+        (response) => {
+          const request = response.request();
+          const target = new URL(response.url());
+          return (
+            request.method() === "POST" &&
+            target.origin === new URL(AUTH_USER_URL).origin &&
+            target.pathname === "/auth/v1/token"
+          );
+        },
+        { timeout: 15_000 },
+      );
+      await page.getByRole("button", { name: "Sign In" }).click();
+      const userBTokenResponse = await userBTokenResponsePromise.catch(() => null);
+      if (!userBTokenResponse) fail("user-b-login-token-missing");
+      if (!userBTokenResponse.ok()) fail("user-b-login-token-non-success");
+      const userBLoginCompleted = await page
+        .waitForURL(/\/app\/search(?:[?#]|$)/u, { timeout: 30_000 })
+        .then(() => true)
+        .catch(() => false);
+      if (!userBLoginCompleted) fail("user-b-login-redirect-invalid");
+
       const userBPage = page;
       await userBPage.goto("/offline", { waitUntil: "domcontentloaded" });
       const workerSurvivedAccountSwitch = await userBPage
