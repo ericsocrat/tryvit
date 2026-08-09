@@ -1,9 +1,9 @@
 # Documentation Index
 
-> **Last broadly verified:** 2026-07-30
+> **Last broadly verified:** 2026-08-09
 > **Phase 5A.0d performance/visual-gate evidence updated:** 2026-08-03
 > **Status:** Active — update when adding, renaming, or archiving docs
-> **Tracked inventory:** 68 Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 1 route inventory in `docs/phase5/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
+> **Tracked inventory:** 71 top-level Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 3 generated/historical artifacts in `docs/phase5/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
 
 ---
@@ -22,7 +22,7 @@
 | [Security & Compliance](#security--compliance)           | 5     | Root policy, audit report, access audit, privacy checklist, rate limiting                                                                                                                                                                                                             |
 | [Observability & Operations](#observability--operations) | 9     | Monitoring, observability, log schema, alerts, on-call policy, SLOs, metrics, incident response, disaster drill                                                                                                                                                                       |
 | [DevOps & Environment](#devops--environment)             | 3     | Environment strategy, staging setup, Sonar config                                                                                                                                                                                                                                     |
-| [Frontend & UX](#frontend--ux)                           | 16    | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec, product positioning, Phase 5 audit/blueprint/roadmap, visual-test safety, route/PWA policy, provider/locale/rendering contract, performance/visual gates, private PWA cache safety |
+| [Frontend & UX](#frontend--ux)                           | 18    | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec, product positioning, Phase 5 audit/blueprint/roadmap, visual-test safety, route/PWA policy, provider/locale/rendering contract, performance/visual gates, private PWA cache safety, Design System V2 foundations |
 | [Process & Workflow](#process--workflow)                 | 9     | Agent workflow reference, agent review workflow, research workflow, viewing & testing, backfill standard, migration conventions, labels, country expansion, demo script                                                                                                               |
 | [Governance & Policy](#governance--policy)               | 6     | Feature sunsetting, performance report, performance guardrails, doc governance, repo governance, this index                                                                                                                                                                           |
 | [Architecture Decisions](#architecture-decisions-adrs)   | 11    | MADR template + 10 ADRs (stack, scoring, country isolation, pipeline, API versioning, migrations, ingredients, nutrient density, scoring calibration, ingredient language model)                                                                                                      |
@@ -217,6 +217,7 @@
 | [PHASE5A0D_PERFORMANCE_VISUAL_GATES.md](PHASE5A0D_PERFORMANCE_VISUAL_GATES.md)             | Authoritative route-JavaScript, five-run Lighthouse and reviewed deterministic Linux visual-baseline contract/evidence | Phase 5A.0d                                             | 2026-08-03   |
 | [PHASE5A0E_PERFORMANCE_ACCESSIBILITY.md](PHASE5A0E_PERFORMANCE_ACCESSIBILITY.md)           | Synchronized performance/accessibility diagnosis, evidence-backed remediation boundary and verification contract      | Phase 5A.0e                                             | 2026-08-08   |
 | [PHASE5A0F_PRIVATE_PWA_CACHE_SAFETY.md](PHASE5A0F_PRIVATE_PWA_CACHE_SAFETY.md)             | Protected response exclusion, targeted legacy-cache migration and guarded offline account-switch proof                 | Phase 5A.0f                                             | 2026-08-09   |
+| [PHASE5A1_DESIGN_SYSTEM_FOUNDATIONS.md](PHASE5A1_DESIGN_SYSTEM_FOUNDATIONS.md)             | Living Label generated tokens, V1 parity, theme/accessibility contracts, live inventory, and guarded catalog foundation | Phase 5A.1a                                             | 2026-08-09   |
 
 ## Process & Workflow
 

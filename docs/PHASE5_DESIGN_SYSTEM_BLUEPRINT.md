@@ -1,7 +1,7 @@
 # Phase 5 Design System Blueprint
 
 > **Last updated:** 2026-07-30
-> **Status:** Active — target architecture; no implementation is included
+> **Status:** Active target architecture — Phase 5A.1a foundations are recorded in `PHASE5A1_DESIGN_SYSTEM_FOUNDATIONS.md`
 > **Owner issue:** Frontend domain
 
 ## Purpose

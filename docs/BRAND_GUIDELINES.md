@@ -1,11 +1,15 @@
 # Brand Guidelines — TryVit
 
 > **Last updated:** 2026-03-14
-> **Status:** Active (incremental — updates as #407/#408 complete)
+> **Status:** Active for retained mark and asset governance; V1 palette/type guidance is historical for Phase 5
 > **Owner issue:** [#410](https://github.com/ericsocrat/tryvit/issues/410)
 > **Parent epic:** [#397](https://github.com/ericsocrat/tryvit/issues/397) — Brand Identity Foundation
 
-This document is the single source of truth for the project's visual identity. It enables any contributor or designer to produce on-brand assets without guessing. All color values are sourced from `docs/assets/design-tokens.json` and `frontend/src/styles/globals.css`.
+This document governs the retained mark and brand-asset usage. Phase 5 visual-system
+decisions are governed by `PHASE5_MASTER_EXPERIENCE_AUDIT.md`,
+`PHASE5_DESIGN_SYSTEM_BLUEPRINT.md`, `PHASE5_IMPLEMENTATION_ROADMAP.md`, and the active
+phase record. `docs/assets/design-tokens.json` is now generated from the typed Design
+System V2 manifest; older palette and typography guidance below remains a V1 reference.
 
 ---
 
