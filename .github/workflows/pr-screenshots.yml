@@ -8,7 +8,7 @@ name: PR Screenshots
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, codex/phase-5a0d-performance-visual-gates]
     paths:
       - 'frontend/src/**'
       - 'frontend/messages/**'

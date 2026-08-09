@@ -4,6 +4,23 @@ import { NewUserWelcome } from "./NewUserWelcome";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
+vi.mock("next/link", () => ({
+  default: ({
+    href,
+    children,
+    prefetch,
+    ...rest
+  }: {
+    href: string;
+    children: React.ReactNode;
+    prefetch?: boolean;
+  }) => (
+    <a href={href} data-prefetch={String(prefetch)} {...rest}>
+      {children}
+    </a>
+  ),
+}));
+
 vi.mock("@/lib/i18n", () => ({
   useTranslation: () => ({
     t: (key: string) => {
@@ -36,9 +53,7 @@ describe("NewUserWelcome", () => {
   it("renders welcome title and subtitle", () => {
     render(<NewUserWelcome />);
     expect(screen.getByText("Welcome to TryVit")).toBeInTheDocument();
-    expect(
-      screen.getByText("Start exploring healthier food choices."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Start exploring healthier food choices.")).toBeInTheDocument();
   });
 
   it("renders scan CTA linking to /app/scan", () => {
@@ -55,14 +70,19 @@ describe("NewUserWelcome", () => {
     expect(screen.getByText("Browse categories")).toBeInTheDocument();
   });
 
+  it("does not prefetch authenticated CTA destinations", () => {
+    render(<NewUserWelcome />);
+
+    expect(screen.getByTestId("new-user-scan-cta")).toHaveAttribute("data-prefetch", "false");
+    expect(screen.getByTestId("new-user-browse-cta")).toHaveAttribute("data-prefetch", "false");
+  });
+
   it("renders fun fact section with tip text", () => {
     render(<NewUserWelcome />);
     const funFact = screen.getByTestId("new-user-fun-fact");
     expect(funFact).toBeInTheDocument();
     expect(screen.getByText("Fun Fact")).toBeInTheDocument();
-    expect(
-      screen.getByText("Reading labels can save lives!"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Reading labels can save lives!")).toBeInTheDocument();
   });
 
   it("has section aria-label", () => {

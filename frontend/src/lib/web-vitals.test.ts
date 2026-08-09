@@ -1,22 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const sentryMock = vi.hoisted(() => ({
-  captureMessage: vi.fn(),
+  captureClientMessage: vi.fn(),
 }));
 
-vi.mock("@sentry/nextjs", () => sentryMock);
+vi.mock("@/lib/client-sentry", () => sentryMock);
 
 // ─── Web Vitals Tests (#621) ────────────────────────────────────────────────
 // Tests the web-vitals collection module: rateMetric classification,
 // reportWebVitals initialization, and handler invocation.
 
 import {
-    defaultMetricHandler,
-    rateMetric,
-    reportWebVitals,
-    shouldCaptureWebVital,
-    WEB_VITAL_THRESHOLDS,
-    type MetricHandler,
+  defaultMetricHandler,
+  rateMetric,
+  reportWebVitals,
+  shouldCaptureWebVital,
+  WEB_VITAL_THRESHOLDS,
+  type MetricHandler,
 } from "./web-vitals";
 
 // ─── rateMetric classification ──────────────────────────────────────────────
@@ -272,9 +272,7 @@ describe("defaultMetricHandler", () => {
       rating: "good",
     });
 
-    expect(spy).toHaveBeenCalledWith(
-      "[Web Vital] LCP: 2000 (good)",
-    );
+    expect(spy).toHaveBeenCalledWith("[Web Vital] LCP: 2000 (good)");
 
     process.env.NODE_ENV = originalEnv;
     spy.mockRestore();
@@ -301,6 +299,39 @@ describe("defaultMetricHandler", () => {
     process.env.NODE_ENV = originalEnv;
     globalThis.window = originalWindow;
     spy.mockRestore();
+  });
+
+  it("preserves the Sentry message context in production", () => {
+    const originalEnv = process.env.NODE_ENV;
+    const originalWindow = globalThis.window;
+    process.env.NODE_ENV = "production";
+    // @ts-expect-error -- minimal location stub for the production path.
+    globalThis.window = { location: { pathname: "/app/product/1" } };
+
+    try {
+      defaultMetricHandler({
+        name: "LCP",
+        value: 4200,
+        id: "lcp-production",
+        rating: "poor",
+      });
+
+      expect(sentryMock.captureClientMessage).toHaveBeenCalledWith("Web Vital: LCP", {
+        level: "warning",
+        tags: {
+          web_vital: "LCP",
+          rating: "poor",
+        },
+        extra: {
+          value: 4200,
+          id: "lcp-production",
+          threshold: 2500,
+        },
+      });
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+      globalThis.window = originalWindow;
+    }
   });
 
   it("is exported as a function", () => {

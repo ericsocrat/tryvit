@@ -1,306 +1,472 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# Bundle Size Guard — Prevent silent frontend bloat
-# ═══════════════════════════════════════════════════════════════════════════════
-# Measures Next.js production bundle sizes on every PR and compares against
-# the baseline from main. Posts a size report as a PR comment and FAILS the
-# build if total JS shipped to the client exceeds the hard threshold.
-#
-# Why: Next.js bundles grow silently. A new dependency or unguarded dynamic
-# import can add 50-200 KB without anyone noticing until Lighthouse scores
-# drop. This gate catches it at PR time.
-#
-# Thresholds:
-#   WARN:  +5% total JS size increase vs baseline
-#   FAIL:  +15% total JS size increase vs baseline  OR  > 4000 KB total JS
-#
-# The baseline is captured from the main branch build. PR builds are compared.
-# ═══════════════════════════════════════════════════════════════════════════════
-
-name: Bundle Size Guard
+name: Route JavaScript Regression Guard
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, codex/phase-5a0d-performance-visual-gates]
     paths:
       - "frontend/**"
+      - "supabase/config.toml"
+      - "supabase/migrations/**"
+      - ".github/workflows/bundle-size.yml"
 
 permissions:
   contents: read
-  pull-requests: write # Required to post size comment
 
 concurrency:
-  group: bundle-size-${{ github.event.pull_request.number }}
+  group: route-js-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-env:
-  # Hard limits — adjust as codebase evolves
-  TOTAL_BUNDLE_LIMIT_KB: 4000 # Absolute cap on total JS shipped (KB)
-  TOTAL_SIZE_WARN_PCT: 5 # Warn if total increases by this %
-  TOTAL_SIZE_FAIL_PCT: 15 # Fail if total increases by this %
-
 jobs:
-  # ─────────────────────────────────────────────────────────────────────────
-  # Build main baseline (cached aggressively)
-  # ─────────────────────────────────────────────────────────────────────────
-  baseline:
-    name: Build Baseline (main)
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    timeout-minutes: 8
+  compare:
+    name: Cold route JS (base vs head)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
+      BASE_URL: http://127.0.0.1:3000
+      NPM_CONFIG_IGNORE_SCRIPTS: "true"
     defaults:
       run:
         working-directory: frontend
 
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Base and head are deliberately measured serially on this one runner.
+      # The guarded Playwright project creates a fresh browser context per
+      # representative route and inventories gzip-compressed response bytes.
+      - name: Checkout pull-request measurement harness
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      # Preserve the head copy only for the one-time bootstrap from the exact
+      # verified Phase 5A.0c base. After this phase lands, the reviewed PR-base
+      # harness is authoritative for both revisions and PR code cannot redefine
+      # the comparator that judges itself.
+      - name: Preserve head harness for guarded bootstrap only
+        working-directory: .
+        shell: bash
+        run: |
+          cp -- frontend/package.json "$RUNNER_TEMP/phase5a0d-head-package.json"
+          tar -cf "$RUNNER_TEMP/phase5a0d-head-route-js-harness.tar" \
+            frontend/playwright.config.ts \
+            frontend/e2e \
+            frontend/tooling
+
+      - name: Checkout pull-request base
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: 22
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Select the reviewed base harness or exact one-time bootstrap
+        id: harness_policy
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          base_sha="$(git rev-parse HEAD)"
+          head_sha="${{ github.event.pull_request.head.sha }}"
+          phase5a0c_base="f03a79c97f9edc495a62fa02e89c45938a42fc6e"
+          reviewed_phase5a0d_head="2b097bbe9eb0b3501421f1250972c98ce24ce60b"
+          # Phase 5A.0e was reviewed separately before this stack was collapsed.
+          # Its product-detail a11y regression spec is not imported by either
+          # route-JS capture command. Permit only this exact approved blob while
+          # the Phase 5A.0d harness is still absent from the PR base.
+          approved_phase5a0e_authenticated_a11y_blob="d2cec5ed670a6d7b31372b1fd3499f544c2d77d1"
+          # A separately reviewed production-audit fix may synchronize this exact
+          # override from main. No other package metadata change is permitted.
+          approved_security_nanoid_override="3.3.17"
+          if [ -f frontend/tooling/phase5a0d-route-js.ts ] && \
+             [ -f frontend/tooling/phase5a0d-route-js-cli.mts ] && \
+             [ -f frontend/tooling/phase5a0d-contract.ts ] && \
+             [ -f frontend/e2e/phase5a0d-route-js.spec.ts ] && \
+             [ ! -L frontend/tooling ] && [ ! -L frontend/e2e ]; then
+            cp -- frontend/package.json "$RUNNER_TEMP/phase5a0d-reviewed-package.json"
+            tar -cf "$RUNNER_TEMP/phase5a0d-reviewed-route-js-harness.tar" \
+              frontend/playwright.config.ts \
+              frontend/e2e \
+              frontend/tooling
+            echo "source=pr-base" >> "$GITHUB_OUTPUT"
+            echo "trusted=true" >> "$GITHUB_OUTPUT"
+          else
+            if [ "$base_sha" != "$phase5a0c_base" ]; then
+              if ! git merge-base --is-ancestor "$phase5a0c_base" "$base_sha" || \
+                 ! git merge-base --is-ancestor "$base_sha" "$head_sha" || \
+                 ! git merge-base --is-ancestor "$reviewed_phase5a0d_head" "$head_sha"; then
+                echo "::error::Synchronized bootstrap ancestry cannot be proven."
+                exit 1
+              fi
+              unexpected_base_paths="$(git diff --name-only "$phase5a0c_base" "$base_sha" -- | grep -Ev '^frontend/package(-lock)?\.json$' || true)"
+              if [ -n "$unexpected_base_paths" ]; then
+                echo "::error::The synchronized PR base contains changes outside the two dependency manifests."
+                exit 1
+              fi
+              unexpected_route_js_harness_paths="$(git diff --name-only "$reviewed_phase5a0d_head" "$head_sha" -- \
+                frontend/playwright.config.ts frontend/e2e frontend/tooling | \
+                grep -Ev '^frontend/e2e/authenticated-a11y\.spec\.ts$' || true)"
+              if [ -n "$unexpected_route_js_harness_paths" ]; then
+                echo "::error::The reviewed Phase 5A.0d route-JS harness changed after synchronization."
+                exit 1
+              fi
+              if ! git cat-file -e "$head_sha:frontend/e2e/authenticated-a11y.spec.ts" 2>/dev/null || \
+                 [ "$(git rev-parse "$head_sha:frontend/e2e/authenticated-a11y.spec.ts")" != "$approved_phase5a0e_authenticated_a11y_blob" ]; then
+                echo "::error::The approved Phase 5A.0e authenticated accessibility spec changed after synchronization."
+                exit 1
+              fi
+              git show "$reviewed_phase5a0d_head:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-approved-package.json"
+              git show "$base_sha:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-synchronized-base-package.json"
+              APPROVED_SECURITY_NANOID_OVERRIDE="$approved_security_nanoid_override" node -e 'const fs = require("fs"); const expectedNanoid = process.env.APPROVED_SECURITY_NANOID_OVERRIDE; const read = (name) => JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/" + name, "utf8")); const strip = (value, label) => { const copy = structuredClone(value); delete copy.dependencies; delete copy.devDependencies; if (copy.overrides?.nanoid !== undefined) { if (copy.overrides.nanoid !== expectedNanoid) throw new Error(label + " package contains an unapproved nanoid override"); delete copy.overrides.nanoid; if (Object.keys(copy.overrides).length === 0) delete copy.overrides; } return copy; }; const approved = read("phase5a0d-approved-package.json"); const base = read("phase5a0d-synchronized-base-package.json"); const synchronized = read("phase5a0d-head-package.json"); if (base.overrides?.nanoid !== expectedNanoid || synchronized.overrides?.nanoid !== expectedNanoid) throw new Error("synchronized package does not preserve the approved nanoid security override"); if (JSON.stringify(strip(approved, "reviewed")) !== JSON.stringify(strip(synchronized, "synchronized"))) throw new Error("synchronized package changed outside dependency versions or the approved nanoid security override");'
+              if ! cmp --silent \
+                <(git show "$base_sha:frontend/package-lock.json") \
+                <(git show "$head_sha:frontend/package-lock.json"); then
+                echo "::error::The synchronized head does not preserve the exact current-main lockfile."
+                exit 1
+              fi
+            fi
+            cp -- "$RUNNER_TEMP/phase5a0d-head-package.json" "$RUNNER_TEMP/phase5a0d-reviewed-package.json"
+            cp -- "$RUNNER_TEMP/phase5a0d-head-route-js-harness.tar" "$RUNNER_TEMP/phase5a0d-reviewed-route-js-harness.tar"
+            echo "source=synchronized-phase5a0d-bootstrap-informational-only" >> "$GITHUB_OUTPUT"
+            echo "trusted=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::The attested Phase 5A.0d bootstrap may produce illustrative base/head evidence, but cannot enforce a trusted regression until the reviewed harness exists on the PR base."
+          fi
+          echo "archive_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-reviewed-route-js-harness.tar" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+          echo "package_sha256=$(sha256sum "$RUNNER_TEMP/phase5a0d-reviewed-package.json" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Restore identical reviewed measurement harness onto base
+        working-directory: .
+        shell: bash
+        run: tar -xf "$RUNNER_TEMP/phase5a0d-reviewed-route-js-harness.tar"
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.21.1
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - run: npm ci
-
-      - name: Cache Next.js build (main)
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: frontend/.next/cache
-          key: next-baseline-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
-
-      - name: Build main
-        run: npm run build
-        timeout-minutes: 5
-        env:
-          # Skip Sentry upload for baseline — we only need sizes
-          SENTRY_AUTH_TOKEN: ""
-
-      - name: Extract bundle sizes
+      - name: Add measurement-only npm entry points to base
+        shell: bash
         run: |
-          # Next.js writes route manifest with sizes to .next/routes-manifest.json
-          # and build output to stdout. We'll parse the build output.
-          node -e "
-            const fs = require('fs');
-            const manifest = JSON.parse(fs.readFileSync('.next/build-manifest.json', 'utf8'));
+          node <<'NODE'
+          const fs = require("fs");
+          const base = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          const reviewed = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-reviewed-package.json", "utf8"));
+          const allowedNames = [
+            "visual-safety:preflight",
+            "visual-safety:assert",
+            "visual-safety:public",
+            "visual-safety:local-authenticated",
+            "visual-safety:fixtures-seed",
+            "visual-safety:fixtures-teardown",
+            "phase5:route-js",
+            "phase5:route-js:public",
+            "phase5:route-js:authenticated",
+          ];
+          for (const name of allowedNames) {
+            if (typeof reviewed.scripts?.[name] !== "string") throw new Error(`missing harness script: ${name}`);
+            base.scripts[name] = reviewed.scripts[name];
+          }
+          fs.writeFileSync("package.json", JSON.stringify(base, null, 2) + "\n");
+          NODE
 
-            // Collect all unique JS chunks from Pages Router
-            const chunks = new Set();
-            for (const [route, files] of Object.entries(manifest.pages || {})) {
-              for (const file of files) {
-                if (file.endsWith('.js')) chunks.add(file);
-              }
-            }
+      - name: Install base dependencies
+        run: npm ci
 
-            // Also collect App Router chunks (Next.js 13+/15)
-            try {
-              const appManifest = JSON.parse(fs.readFileSync('.next/app-build-manifest.json', 'utf8'));
-              for (const [route, entry] of Object.entries(appManifest.pages || {})) {
-                for (const file of entry) {
-                  if (typeof file === 'string' && file.endsWith('.js')) chunks.add(file);
-                }
-              }
-            } catch {}
+      - name: Install base lockfile-pinned Chromium
+        run: npx playwright install --with-deps chromium
+        timeout-minutes: 8
 
-            // Measure total size of unique JS files
-            let totalBytes = 0;
-            const sizes = {};
-            for (const chunk of chunks) {
-              try {
-                const stat = fs.statSync('.next/' + chunk);
-                sizes[chunk] = stat.size;
-                totalBytes += stat.size;
-              } catch {}
-            }
+      - name: Setup pinned Supabase CLI
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
+        with:
+          version: 2.111.0
 
-            const report = {
-              totalBytes,
-              totalKB: Math.round(totalBytes / 1024),
-              chunkCount: chunks.size,
-              routeCount: Object.keys(manifest.pages || {}).length,
-            };
+      - name: Base public visual-safety preflight
+        run: npm run visual-safety:preflight
+        env:
+          VISUAL_SAFETY_MODE: public
 
-            fs.writeFileSync('../baseline-sizes.json', JSON.stringify(report, null, 2));
-            console.log('Baseline:', JSON.stringify(report));
-          "
+      - name: Capture base public routes in cold browsers
+        id: base_public_capture
+        run: npm run phase5:route-js:public
 
-      - name: Upload baseline
+      - name: Assert base public visual safety
+        id: base_public_safety_assert
+        if: ${{ always() }}
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: public
+
+      - name: Compile base public route report
+        if: ${{ steps.base_public_capture.outcome == 'success' && steps.base_public_safety_assert.outcome == 'success' }}
+        run: npm run phase5:route-js -- compile-mode --mode=public --capture-directory=performance-reports/route-js-captures/public --output=performance-reports/route-js/base-public.json
+
+      - name: Start base ephemeral local Supabase
+        id: base_local_supabase_start
+        if: ${{ !cancelled() && steps.base_public_capture.outcome == 'success' && steps.base_public_safety_assert.outcome == 'success' }}
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh start
+
+      - name: Base local-authenticated visual-safety preflight (blocking)
+        id: base_auth_preflight
+        if: ${{ !cancelled() && steps.base_local_supabase_start.outcome == 'success' }}
+        run: npm run visual-safety:preflight
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+
+      - name: Seed guarded base fixtures
+        id: base_fixture_seed
+        if: ${{ !cancelled() && steps.base_auth_preflight.outcome == 'success' }}
+        shell: bash
+        run: |
+          fixture_ids="$RUNNER_TEMP/tryvit-base-route-js-fixture-ids.env"
+          npm run --silent visual-safety:fixtures-seed > "$fixture_ids"
+          if ! grep -Eq '^QA_PRODUCT_ID=[0-9]+$' "$fixture_ids"; then
+            rm -f -- "$fixture_ids"
+            echo "::error::Guarded base fixture seeding did not return deterministic IDs"
+            exit 1
+          fi
+          grep -E '^QA_[A-Z_]+=[A-Za-z0-9_-]+$' "$fixture_ids" >> "$GITHUB_ENV"
+          rm -f -- "$fixture_ids"
+          echo "seeded=true" >> "$GITHUB_OUTPUT"
+
+      - name: Capture base authenticated routes in cold browsers
+        id: base_auth_capture
+        if: ${{ !cancelled() && steps.base_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run phase5:route-js:authenticated
+
+      - name: Assert base local-authenticated visual safety
+        id: base_auth_safety_assert
+        if: ${{ always() && steps.base_auth_preflight.outcome == 'success' }}
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+
+      - name: Compile base authenticated route report
+        if: ${{ steps.base_auth_capture.outcome == 'success' && steps.base_auth_safety_assert.outcome == 'success' }}
+        run: npm run phase5:route-js -- compile-mode --mode=local-authenticated --capture-directory=performance-reports/route-js-captures/local-authenticated --output=performance-reports/route-js/base-authenticated.json
+
+      - name: Teardown guarded base fixtures
+        id: base_fixture_teardown
+        if: ${{ always() && steps.base_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run --silent visual-safety:fixtures-teardown
+
+      - name: Stop base ephemeral local Supabase (no backup)
+        id: base_local_supabase_stop
+        if: ${{ always() }}
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh stop
+
+      - name: Combine complete base route matrix
+        if: ${{ steps.base_public_safety_assert.outcome == 'success' && steps.base_auth_safety_assert.outcome == 'success' && steps.base_fixture_teardown.outcome == 'success' && steps.base_local_supabase_stop.outcome == 'success' }}
+        run: npm run phase5:route-js -- combine --public=performance-reports/route-js/base-public.json --local-authenticated=performance-reports/route-js/base-authenticated.json --output=performance-reports/route-js/base-route-js.json
+
+      - name: Preserve validated base report across the head checkout
+        id: preserve_base_report
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          cp -- performance-reports/route-js/base-route-js.json "$RUNNER_TEMP/base-route-js.json"
+          echo "sha256=$(sha256sum "$RUNNER_TEMP/base-route-js.json" | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout pull-request head on the same runner
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+
+      - name: Install head dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Install head lockfile-pinned Chromium
+        run: npx playwright install --with-deps chromium
+        timeout-minutes: 8
+
+      - name: Reinstall head dependencies from lockfile after browser setup
+        run: npm ci --ignore-scripts --prefer-offline
+
+      # Head-controlled dependency lifecycle scripts run before this point.
+      # Re-attest and restore the reviewed archive afterwards so they cannot
+      # replace the comparator, fixture contract, or preserved base evidence.
+      - name: Re-attest and restore the reviewed base harness onto head
+        working-directory: .
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+          git diff --quiet HEAD --
+          echo "${{ steps.harness_policy.outputs.archive_sha256 }}  $RUNNER_TEMP/phase5a0d-reviewed-route-js-harness.tar" | sha256sum -c -
+          echo "${{ steps.harness_policy.outputs.package_sha256 }}  $RUNNER_TEMP/phase5a0d-reviewed-package.json" | sha256sum -c -
+          echo "${{ steps.preserve_base_report.outputs.sha256 }}  $RUNNER_TEMP/base-route-js.json" | sha256sum -c -
+          rm -rf -- frontend/e2e frontend/tooling frontend/playwright.config.ts
+          tar -xf "$RUNNER_TEMP/phase5a0d-reviewed-route-js-harness.tar"
+
+      - name: Add reviewed measurement-only npm entry points to head
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require("fs");
+          const current = JSON.parse(fs.readFileSync("package.json", "utf8"));
+          const reviewed = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-reviewed-package.json", "utf8"));
+          const allowedNames = [
+            "visual-safety:preflight",
+            "visual-safety:assert",
+            "visual-safety:public",
+            "visual-safety:local-authenticated",
+            "visual-safety:fixtures-seed",
+            "visual-safety:fixtures-teardown",
+            "phase5:route-js",
+            "phase5:route-js:public",
+            "phase5:route-js:authenticated",
+          ];
+          const scripts = {};
+          for (const name of allowedNames) {
+            if (typeof reviewed.scripts?.[name] !== "string") throw new Error(`missing harness script: ${name}`);
+            scripts[name] = reviewed.scripts[name];
+          }
+          current.scripts = scripts;
+          fs.writeFileSync("package.json", JSON.stringify(current, null, 2) + "\n");
+          NODE
+
+      - name: Head public visual-safety preflight
+        run: npm run visual-safety:preflight
+        env:
+          VISUAL_SAFETY_MODE: public
+
+      - name: Capture head public routes in cold browsers
+        id: head_public_capture
+        run: npm run phase5:route-js:public
+
+      - name: Assert head public visual safety
+        id: head_public_safety_assert
+        if: ${{ always() }}
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: public
+
+      - name: Compile head public route report
+        if: ${{ steps.head_public_capture.outcome == 'success' && steps.head_public_safety_assert.outcome == 'success' }}
+        run: npm run phase5:route-js -- compile-mode --mode=public --capture-directory=performance-reports/route-js-captures/public --output=performance-reports/route-js/head-public.json
+
+      - name: Start head ephemeral local Supabase
+        id: head_local_supabase_start
+        if: ${{ !cancelled() && steps.head_public_capture.outcome == 'success' && steps.head_public_safety_assert.outcome == 'success' }}
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh start
+
+      - name: Head local-authenticated visual-safety preflight (blocking)
+        id: head_auth_preflight
+        if: ${{ !cancelled() && steps.head_local_supabase_start.outcome == 'success' }}
+        run: npm run visual-safety:preflight
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+
+      - name: Seed guarded head fixtures
+        id: head_fixture_seed
+        if: ${{ !cancelled() && steps.head_auth_preflight.outcome == 'success' }}
+        shell: bash
+        run: |
+          fixture_ids="$RUNNER_TEMP/tryvit-head-route-js-fixture-ids.env"
+          npm run --silent visual-safety:fixtures-seed > "$fixture_ids"
+          if ! grep -Eq '^QA_PRODUCT_ID=[0-9]+$' "$fixture_ids"; then
+            rm -f -- "$fixture_ids"
+            echo "::error::Guarded head fixture seeding did not return deterministic IDs"
+            exit 1
+          fi
+          grep -E '^QA_[A-Z_]+=[A-Za-z0-9_-]+$' "$fixture_ids" >> "$GITHUB_ENV"
+          rm -f -- "$fixture_ids"
+          echo "seeded=true" >> "$GITHUB_OUTPUT"
+
+      - name: Capture head authenticated routes in cold browsers
+        id: head_auth_capture
+        if: ${{ !cancelled() && steps.head_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run phase5:route-js:authenticated
+
+      - name: Assert head local-authenticated visual safety
+        id: head_auth_safety_assert
+        if: ${{ always() && steps.head_auth_preflight.outcome == 'success' }}
+        run: npm run visual-safety:assert
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+
+      - name: Compile head authenticated route report
+        if: ${{ steps.head_auth_capture.outcome == 'success' && steps.head_auth_safety_assert.outcome == 'success' }}
+        run: npm run phase5:route-js -- compile-mode --mode=local-authenticated --capture-directory=performance-reports/route-js-captures/local-authenticated --output=performance-reports/route-js/head-authenticated.json
+
+      - name: Teardown guarded head fixtures
+        id: head_fixture_teardown
+        if: ${{ always() && steps.head_fixture_seed.outputs.seeded == 'true' }}
+        run: npm run --silent visual-safety:fixtures-teardown
+
+      - name: Stop head ephemeral local Supabase (no backup)
+        id: head_local_supabase_stop
+        if: ${{ always() }}
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh stop
+
+      - name: Combine complete head route matrix
+        if: ${{ steps.head_public_safety_assert.outcome == 'success' && steps.head_auth_safety_assert.outcome == 'success' && steps.head_fixture_teardown.outcome == 'success' && steps.head_local_supabase_stop.outcome == 'success' }}
+        run: npm run phase5:route-js -- combine --public=performance-reports/route-js/head-public.json --local-authenticated=performance-reports/route-js/head-authenticated.json --output=performance-reports/route-js/head-route-js.json
+
+      - name: Restore validated base report into the owned report root
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          echo "${{ steps.preserve_base_report.outputs.sha256 }}  $RUNNER_TEMP/base-route-js.json" | sha256sum -c -
+          cp -- "$RUNNER_TEMP/base-route-js.json" performance-reports/route-js/base-route-js.json
+
+      - name: Compare route JavaScript (+10 KiB OR +5% fails; reductions pass)
+        id: route_compare
+        shell: bash
+        run: |
+          set +e
+          npm run phase5:route-js -- compare --baseline=performance-reports/route-js/base-route-js.json --current=performance-reports/route-js/head-route-js.json --markdown=performance-reports/route-js/route-js-comparison.md
+          comparison_exit=$?
+          set -e
+          echo "exit_code=$comparison_exit" >> "$GITHUB_OUTPUT"
+
+      - name: Stage compact route JavaScript evidence
+        id: route_evidence_stage
+        if: ${{ always() && steps.base_public_safety_assert.outcome == 'success' && steps.base_auth_safety_assert.outcome == 'success' && steps.base_fixture_teardown.outcome == 'success' && steps.base_local_supabase_stop.outcome == 'success' && steps.head_public_safety_assert.outcome == 'success' && steps.head_auth_safety_assert.outcome == 'success' && steps.head_fixture_teardown.outcome == 'success' && steps.head_local_supabase_stop.outcome == 'success' }}
+        shell: bash
+        run: |
+          evidence="$RUNNER_TEMP/route-js-evidence"
+          mkdir -p -- "$evidence"
+          test -s performance-reports/route-js/base-route-js.json
+          test -s performance-reports/route-js/head-route-js.json
+          test -s performance-reports/route-js/route-js-comparison.md
+          cp -- performance-reports/route-js/base-route-js.json "$evidence/base-route-js.json"
+          cp -- performance-reports/route-js/head-route-js.json "$evidence/head-route-js.json"
+          cp -- performance-reports/route-js/route-js-comparison.md "$evidence/route-js-comparison.md"
+          printf '%s\n' \
+            '{"schemaVersion":1,"baseSha":"${{ github.event.pull_request.base.sha }}","headSha":"${{ github.event.pull_request.head.sha }}","harnessSource":"${{ steps.harness_policy.outputs.source }}","regressionEnforced":${{ steps.harness_policy.outputs.trusted }}}' \
+            > "$evidence/provenance.json"
+          test "$(find "$evidence" -maxdepth 1 -type f | wc -l)" -eq 4
+
+      - name: Upload compact route JavaScript evidence
+        if: ${{ always() && steps.route_evidence_stage.outcome == 'success' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: bundle-baseline
-          path: baseline-sizes.json
-          retention-days: 1
+          name: route-js-phase5a0d-evidence
+          path: ${{ runner.temp }}/route-js-evidence/
+          if-no-files-found: error
+          retention-days: 14
 
-  # ─────────────────────────────────────────────────────────────────────────
-  # Build PR and compare
-  # ─────────────────────────────────────────────────────────────────────────
-  compare:
-    name: Compare Bundle Size
-    runs-on: ubuntu-latest
-    needs: baseline
-    permissions:
-      contents: read
-      pull-requests: write
-    timeout-minutes: 8
-    defaults:
-      run:
-        working-directory: frontend
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 22
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-
-      - run: npm ci
-
-      - name: Cache Next.js build (PR)
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: frontend/.next/cache
-          key: next-pr-${{ github.event.pull_request.number }}-${{ hashFiles('frontend/package-lock.json') }}-${{ hashFiles('frontend/src/**') }}
-          restore-keys: |
-            next-pr-${{ github.event.pull_request.number }}-${{ hashFiles('frontend/package-lock.json') }}-
-            next-pr-${{ github.event.pull_request.number }}-
-
-      - name: Build PR
-        run: npm run build
-        timeout-minutes: 5
-        env:
-          SENTRY_AUTH_TOKEN: ""
-
-      - name: Download baseline
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: bundle-baseline
-          path: .
-
-      - name: Compare and report
-        id: compare
+      - name: Enforce route regression threshold
+        if: ${{ !cancelled() }}
+        shell: bash
         run: |
-          node -e "
-            const fs = require('fs');
-
-            // Parse PR sizes
-            const manifest = JSON.parse(fs.readFileSync('.next/build-manifest.json', 'utf8'));
-            const chunks = new Set();
-            for (const [route, files] of Object.entries(manifest.pages || {})) {
-              for (const file of files) {
-                if (file.endsWith('.js')) chunks.add(file);
-              }
-            }
-
-            // Also collect App Router chunks (Next.js 13+/15)
-            try {
-              const appManifest = JSON.parse(fs.readFileSync('.next/app-build-manifest.json', 'utf8'));
-              for (const [route, entry] of Object.entries(appManifest.pages || {})) {
-                for (const file of entry) {
-                  if (typeof file === 'string' && file.endsWith('.js')) chunks.add(file);
-                }
-              }
-            } catch {}
-
-            let totalBytes = 0;
-            for (const chunk of chunks) {
-              try {
-                const stat = fs.statSync('.next/' + chunk);
-                totalBytes += stat.size;
-              } catch {}
-            }
-            const prKB = Math.round(totalBytes / 1024);
-
-            // Parse baseline
-            const baseline = JSON.parse(fs.readFileSync('../baseline-sizes.json', 'utf8'));
-            const baseKB = baseline.totalKB;
-            const diffKB = prKB - baseKB;
-            const diffPct = baseKB > 0 ? ((diffKB / baseKB) * 100).toFixed(1) : 0;
-
-            const warnPct = Number(process.env.TOTAL_SIZE_WARN_PCT);
-            const failPct = Number(process.env.TOTAL_SIZE_FAIL_PCT);
-            const totalLimit = Number(process.env.TOTAL_BUNDLE_LIMIT_KB);
-
-            let status = '✅';
-            let exitCode = 0;
-            if (Math.abs(diffPct) >= failPct) {
-              status = '❌';
-              exitCode = 1;
-            } else if (Math.abs(diffPct) >= warnPct) {
-              status = '⚠️';
-            }
-
-            // Absolute cap on total bundle size
-            if (prKB > totalLimit) {
-              status = '❌';
-              exitCode = 1;
-            }
-
-            const sign = diffKB >= 0 ? '+' : '';
-            const report = [
-              '## Bundle Size Report',
-              '',
-              '| Metric | Value |',
-              '|--------|-------|',
-              '| Main baseline | **' + baseKB + ' KB** |',
-              '| This PR | **' + prKB + ' KB** |',
-              '| Delta | ' + status + ' **' + sign + diffKB + ' KB** (' + sign + diffPct + '%) |',
-              '| JS chunks | ' + chunks.size + ' |',
-              '| Hard limit | ' + totalLimit + ' KB |',
-              '',
-              exitCode ? '❌ **Bundle size exceeds threshold. Please investigate.**' : '✅ Bundle size is within acceptable limits.',
-            ].join('\n');
-
-            // Write to step summary
-            fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, report + '\n');
-
-            // Write comment body for PR
-            fs.writeFileSync('../bundle-comment.md', report);
-
-            // Signal exit code
-            fs.writeFileSync('../bundle-exit-code.txt', String(exitCode));
-
-            console.log(report);
-          "
-
-      - name: Post PR comment
-        if: ${{ !cancelled() && github.event.pull_request.head.repo.fork != true }}
-        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
-        with:
-          script: |
-            const fs = require('fs');
-            const body = fs.readFileSync('bundle-comment.md', 'utf8');
-            const marker = '<!-- bundle-size-guard -->';
-            const fullBody = marker + '\n' + body;
-
-            // Find existing comment
-            const { data: comments } = await github.rest.issues.listComments({
-              ...context.repo,
-              issue_number: context.issue.number,
-            });
-            const existing = comments.find(c => c.body?.includes(marker));
-
-            if (existing) {
-              await github.rest.issues.updateComment({
-                ...context.repo,
-                comment_id: existing.id,
-                body: fullBody,
-              });
-            } else {
-              await github.rest.issues.createComment({
-                ...context.repo,
-                issue_number: context.issue.number,
-                body: fullBody,
-              });
-            }
-
-      - name: Enforce threshold
-        run: |
-          exit_code=$(cat ../bundle-exit-code.txt 2>/dev/null || echo "0")
-          if [ "$exit_code" -ne 0 ]; then
-            echo "::error::Bundle size exceeds threshold — see report above."
+          if [ "${{ steps.route_evidence_stage.outcome }}" != "success" ]; then
+            echo "::error::Complete route-JavaScript evidence was not produced after safety and cleanup."
+            exit 1
+          fi
+          if [ "${{ steps.harness_policy.outputs.trusted }}" != "true" ]; then
+            echo "::notice::Bootstrap evidence is informational because the comparator does not yet exist on the exact PR base. Regression enforcement activates after the reviewed harness lands."
+            exit 0
+          fi
+          if [ "${{ steps.route_compare.outputs.exit_code }}" != "0" ]; then
+            echo "::error::A representative route grew by more than 10 KiB or 5%."
             exit 1
           fi

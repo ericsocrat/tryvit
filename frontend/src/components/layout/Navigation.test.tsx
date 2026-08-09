@@ -1,5 +1,6 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { assertComponentA11y } from "@/utils/test/a11y";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Navigation } from "./Navigation";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -7,16 +8,33 @@ import { Navigation } from "./Navigation";
 const mockPathname = vi.fn<() => string>().mockReturnValue("/app/search");
 vi.mock("next/navigation", () => ({ usePathname: () => mockPathname() }));
 
+const translations: Record<string, string> = {
+  "a11y.mainNavigation": "Main navigation",
+  "nav.home": "Dashboard",
+  "nav.search": "Search",
+  "nav.scan": "Scan",
+  "nav.lists": "Lists",
+  "nav.more": "More",
+};
+vi.mock("@/lib/i18n", () => ({
+  useTranslation: () => ({
+    language: "en",
+    t: (key: string) => translations[key] ?? key,
+  }),
+}));
+
 vi.mock("next/link", () => ({
   default: ({
     href,
     children,
+    prefetch,
     ...rest
   }: {
     href: string;
     children: React.ReactNode;
+    prefetch?: boolean;
   }) => (
-    <a href={href} {...rest}>
+    <a href={href} data-prefetch={String(prefetch)} {...rest}>
       {children}
     </a>
   ),
@@ -24,7 +42,12 @@ vi.mock("next/link", () => ({
 
 const mockUseLists = vi.fn().mockReturnValue({ data: undefined });
 vi.mock("@/hooks/use-lists", () => ({
-  useLists: () => mockUseLists(),
+  useLists: (enabled?: boolean) => mockUseLists(enabled),
+}));
+
+const mockNoncriticalQueriesEnabled = vi.fn().mockReturnValue(true);
+vi.mock("@/hooks/use-noncritical-app-queries", () => ({
+  useNoncriticalAppQueriesEnabled: () => mockNoncriticalQueriesEnabled(),
 }));
 
 const mockCompareCount = vi.fn().mockReturnValue(0);
@@ -34,6 +57,14 @@ vi.mock("@/stores/compare-store", () => ({
 }));
 
 describe("Navigation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockPathname.mockReturnValue("/app/search");
+    mockUseLists.mockReturnValue({ data: undefined });
+    mockNoncriticalQueriesEnabled.mockReturnValue(true);
+    mockCompareCount.mockReturnValue(0);
+  });
+
   it("renders all 5 nav items", () => {
     render(<Navigation />);
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
@@ -43,54 +74,51 @@ describe("Navigation", () => {
     expect(screen.getByText("More")).toBeInTheDocument();
   });
 
+  it("passes the app-startup gate to the lists query", () => {
+    mockNoncriticalQueriesEnabled.mockReturnValue(false);
+    render(<Navigation />);
+
+    expect(mockUseLists).toHaveBeenCalledWith(false);
+  });
+
   it("has correct hrefs", () => {
     render(<Navigation />);
-    expect(screen.getByLabelText("Dashboard").closest("a")).toHaveAttribute(
-      "href",
-      "/app",
-    );
-    expect(screen.getByLabelText("Search").closest("a")).toHaveAttribute(
-      "href",
-      "/app/search",
-    );
-    expect(screen.getByLabelText("Scan").closest("a")).toHaveAttribute(
-      "href",
-      "/app/scan",
-    );
+    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/app");
+    expect(screen.getByRole("link", { name: "Search" })).toHaveAttribute("href", "/app/search");
+    expect(screen.getByRole("link", { name: "Scan" })).toHaveAttribute("href", "/app/scan");
+  });
+
+  it("does not prefetch persistent authenticated destinations", () => {
+    render(<Navigation />);
+
+    for (const link of screen.getAllByRole("link")) {
+      expect(link).toHaveAttribute("data-prefetch", "false");
+    }
   });
 
   it("marks active item with aria-current=page", () => {
     mockPathname.mockReturnValue("/app/search");
     render(<Navigation />);
-    expect(screen.getByLabelText("Search")).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
-    expect(screen.getByLabelText("Dashboard")).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: "Search" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Dashboard" })).not.toHaveAttribute("aria-current");
   });
 
   it("matches nested route as active", () => {
     mockPathname.mockReturnValue("/app/search/results");
     render(<Navigation />);
-    expect(screen.getByLabelText("Search")).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
+    expect(screen.getByRole("link", { name: "Search" })).toHaveAttribute("aria-current", "page");
   });
 
   it("marks Dashboard active only on exact /app path", () => {
     mockPathname.mockReturnValue("/app");
     render(<Navigation />);
-    expect(screen.getByLabelText("Dashboard")).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
+    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("aria-current", "page");
   });
 
   it("does not mark Dashboard active for nested paths", () => {
     mockPathname.mockReturnValue("/app/search");
     render(<Navigation />);
-    expect(screen.getByLabelText("Dashboard")).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: "Dashboard" })).not.toHaveAttribute("aria-current");
   });
 
   it("no item active for unmatched path", () => {
@@ -104,9 +132,7 @@ describe("Navigation", () => {
 
   it("renders the nav landmark", () => {
     render(<Navigation />);
-    expect(
-      screen.getByRole("navigation", { name: "Main navigation" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "Main navigation" })).toBeInTheDocument();
   });
 
   it("is hidden on desktop (lg+ breakpoint)", () => {
@@ -131,6 +157,7 @@ describe("Navigation", () => {
     render(<Navigation />);
     const badge = screen.getByTestId("nav-badge-lists");
     expect(badge).toHaveTextContent("3");
+    expect(screen.getByRole("link", { name: "3 Lists" })).toHaveAttribute("href", "/app/lists");
   });
 
   it("hides badge on Lists when user has no lists", () => {
@@ -156,6 +183,7 @@ describe("Navigation", () => {
     render(<Navigation />);
     const badge = screen.getByTestId("nav-badge-lists");
     expect(badge).toHaveTextContent("99+");
+    expect(screen.getByRole("link", { name: "99+ Lists" })).toBeInTheDocument();
   });
 
   // ── More button & drawer (§67) ──────────────────────────────────────────
@@ -166,14 +194,16 @@ describe("Navigation", () => {
     expect(moreBtn).toHaveAttribute("aria-haspopup", "dialog");
   });
 
-  it("More button toggles drawer open/close", () => {
+  it("More button toggles drawer open/close", async () => {
     render(<Navigation />);
     const moreBtn = screen.getByText("More").closest("button")!;
     expect(moreBtn).toHaveAttribute("aria-expanded", "false");
 
     fireEvent.click(moreBtn);
     expect(moreBtn).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
   });
 
   it("highlights More button when active route is in drawer", () => {
@@ -190,6 +220,7 @@ describe("Navigation", () => {
     render(<Navigation />);
     const badge = screen.getByTestId("nav-badge-compare");
     expect(badge).toHaveTextContent("3");
+    expect(screen.getByRole("button", { name: "3 More" })).toBeInTheDocument();
   });
 
   it("hides compare badge when no products are selected", () => {
@@ -203,5 +234,22 @@ describe("Navigation", () => {
     render(<Navigation />);
     const badge = screen.getByTestId("nav-badge-compare");
     expect(badge).toHaveTextContent("9+");
+    expect(screen.getByRole("button", { name: "9+ More" })).toBeInTheDocument();
+  });
+
+  it("passes axe with visible Lists and compare badge names", async () => {
+    mockUseLists.mockReturnValue({
+      data: {
+        api_version: "1.0",
+        lists: [
+          { list_id: "1", name: "Favorites" },
+          { list_id: "2", name: "Avoid" },
+          { list_id: "3", name: "Keto" },
+        ],
+      },
+    });
+    mockCompareCount.mockReturnValue(3);
+
+    await assertComponentA11y(<Navigation />);
   });
 });

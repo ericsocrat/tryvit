@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, fireEvent } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GlobalKeyboardShortcuts } from "./GlobalKeyboardShortcuts";
 
@@ -18,8 +18,7 @@ vi.mock("@/lib/supabase/client", () => ({
 }));
 
 vi.mock("@/lib/api", () => ({
-  getRecentlyViewed: () =>
-    Promise.resolve({ ok: true, data: { products: [] } }),
+  getRecentlyViewed: () => Promise.resolve({ ok: true, data: { products: [] } }),
 }));
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -129,36 +128,44 @@ describe("GlobalKeyboardShortcuts", () => {
 
   // ─── Ctrl+K (command palette) ─────────────────────────────────────
 
-  it("opens command palette on Ctrl+K", () => {
+  it("opens command palette on Ctrl+K", async () => {
     renderShortcuts();
     fireEvent.keyDown(document, { key: "k", ctrlKey: true });
-    expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalled();
+    });
   });
 
-  it("opens command palette on Meta+K (Mac)", () => {
+  it("opens command palette on Meta+K (Mac)", async () => {
     renderShortcuts();
     fireEvent.keyDown(document, { key: "k", metaKey: true });
-    expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalled();
+    });
   });
 
-  it("Ctrl+K works even when typing in an input", () => {
+  it("Ctrl+K works even when typing in an input", async () => {
     renderShortcuts();
     const input = document.createElement("input");
     document.body.appendChild(input);
 
     fireEvent.keyDown(input, { key: "k", ctrlKey: true });
-    expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalled();
+    });
 
     document.body.removeChild(input);
   });
 
   // ─── ? key (shortcuts help) ──────────────────────────────────────
 
-  it("opens shortcuts help on ? key", () => {
+  it("opens shortcuts help on ? key", async () => {
     renderShortcuts();
     fireEvent.keyDown(document, { key: "?" });
     // When shortcuts open, showModal is called for the shortcuts dialog
-    expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(HTMLDialogElement.prototype.showModal).toHaveBeenCalled();
+    });
   });
 
   // ─── input guard ─────────────────────────────────────────────────

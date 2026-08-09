@@ -5,12 +5,14 @@
 import type { WebSocketLikeConstructor } from "@supabase/realtime-js";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
-import {
-  VisualSafetyError,
-  createGuardedFetch,
-  createGuardedWebSocketConstructor,
-  loadSafetyContractFromEnvironment,
-} from "./visual-safety";
+// Node's type-stripping loader requires the source extension when this helper
+// is invoked by the guarded Lighthouse launcher.
+// prettier-ignore
+// @ts-expect-error TS5097: also bundled normally by Playwright.
+import { VisualSafetyError, createGuardedFetch, createGuardedWebSocketConstructor, loadSafetyContractFromEnvironment } from "./visual-safety.ts";
+// prettier-ignore
+// @ts-expect-error TS5097: also executed by the guarded Node launcher.
+import { VISUAL_FIXTURE_CONTRACT } from "../../tooling/phase5a0d-contract.ts";
 
 export const TEST_EMAIL = "e2e-playwright-auth@test.tryvit.local";
 export const FUNCTIONAL_TEST_EMAIL = "e2e-playwright-functional@test.tryvit.local";
@@ -35,10 +37,7 @@ export function getGuardedFixtureRequest(): {
   // Read the credential only after the canonical local origin guard passes.
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!serviceRoleKey) {
-    throw new VisualSafetyError(
-      "VS_FIXTURE_CREDENTIAL",
-      "fixture.local-service-role-missing",
-    );
+    throw new VisualSafetyError("VS_FIXTURE_CREDENTIAL", "fixture.local-service-role-missing");
   }
   return {
     origin: contract.supabaseOrigin,
@@ -65,14 +64,10 @@ export function getAdminClient(): SupabaseClient {
  * Find the test user by email using paginated search.
  * Stops early when found instead of loading all users.
  */
-async function findTestUserById(
-  supabase: SupabaseClient,
-  email: string,
-): Promise<string | null> {
+async function findTestUserById(supabase: SupabaseClient, email: string): Promise<string | null> {
   const PAGE_SIZE = 50;
   let page = 1;
 
-   
   while (true) {
     const {
       data: { users },
@@ -93,9 +88,7 @@ async function findTestUserById(
 }
 
 /** Delete any existing test user, then create a fresh auto-confirmed one. */
-export async function ensureScopedTestUser(
-  scope: TestUserScope,
-): Promise<string> {
+export async function ensureScopedTestUser(scope: TestUserScope): Promise<string> {
   const supabase = getAdminClient();
   const email = getScopeEmail(scope);
 
@@ -124,15 +117,16 @@ export async function ensureScopedTestUser(
   // Pre-create preferences: skip onboarding + force English so E2E tests
   // see English text (api_skip_onboarding sets country=PL which triggers
   // LanguageHydrator to switch to Polish, breaking English-only assertions).
-  const { error: prefError } = await supabase
-    .from("user_preferences")
-    .upsert({
-      user_id: userId,
-      country: "PL",
-      preferred_language: "en",
-      onboarding_completed: false,
-      onboarding_skipped: true,
-    });
+  const { error: prefError } = await supabase.from("user_preferences").upsert({
+    user_id: userId,
+    country: VISUAL_FIXTURE_CONTRACT.localAuthenticatedNewUser.preferences.country,
+    preferred_language:
+      VISUAL_FIXTURE_CONTRACT.localAuthenticatedNewUser.preferences.preferredLanguage,
+    onboarding_completed:
+      VISUAL_FIXTURE_CONTRACT.localAuthenticatedNewUser.preferences.onboardingCompleted,
+    onboarding_skipped:
+      VISUAL_FIXTURE_CONTRACT.localAuthenticatedNewUser.preferences.onboardingSkipped,
+  });
 
   if (prefError) {
     throw new VisualSafetyError("VS_FIXTURE_ADMIN", "fixture.preferences");

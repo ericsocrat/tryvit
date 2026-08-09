@@ -7,7 +7,8 @@
 #   • Path traversal                      • Cryptographic misuse
 #   • Incomplete URL validation           • Regex denial of service (ReDoS)
 #
-# Triggers: every push to main, every PR to main, weekly Monday 06:00 UTC.
+# Triggers: every push to main, every PR to main or the reviewed Phase 5A.0d
+# stacked base, and weekly Monday 06:00 UTC.
 # Weekly scheduled scan catches vulnerabilities introduced by dependency
 # updates that land outside normal PR flow (e.g. Dependabot auto-merge).
 #
@@ -26,7 +27,7 @@ on:
       - "**.ts"
       - "**.tsx"
   pull_request:
-    branches: [main]
+    branches: [main, codex/phase-5a0d-performance-visual-gates]
     # No paths filter — the code_scanning ruleset rule requires CodeQL to
     # report results for every PR commit.  On non-code PRs the analysis
     # completes in seconds (nothing to scan) and uploads an empty SARIF.

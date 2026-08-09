@@ -32,15 +32,15 @@ import { useEffect } from "react";
 // ─── Queries ────────────────────────────────────────────────────────────────
 
 /** Fetch all lists for the authenticated user */
-export function useLists() {
-  const supabase = createClient();
+export function useLists(enabled: boolean = true) {
   return useQuery({
     queryKey: queryKeys.lists,
     queryFn: async () => {
-      const result = await getLists(supabase);
+      const result = await getLists(createClient());
       if (!result.ok) throw new Error(result.error.message);
       return result.data;
     },
+    enabled,
     staleTime: staleTimes.lists,
   });
 }
@@ -100,17 +100,17 @@ export function useSharedList(token: string | undefined) {
 }
 
 /** Fetch avoided product IDs and sync to Zustand store */
-export function useAvoidProductIds() {
-  const supabase = createClient();
+export function useAvoidProductIds(enabled: boolean = true) {
   const setAvoidedIds = useAvoidStore((s) => s.setAvoidedIds);
 
   const query = useQuery({
     queryKey: queryKeys.avoidProductIds,
     queryFn: async () => {
-      const result = await getAvoidProductIds(supabase);
+      const result = await getAvoidProductIds(createClient());
       if (!result.ok) throw new Error(result.error.message);
       return result.data;
     },
+    enabled,
     staleTime: staleTimes.avoidProductIds,
   });
 
@@ -125,17 +125,17 @@ export function useAvoidProductIds() {
 }
 
 /** Fetch favorite product IDs and sync to Zustand store */
-export function useFavoriteProductIds() {
-  const supabase = createClient();
+export function useFavoriteProductIds(enabled: boolean = true) {
   const setFavoriteIds = useFavoritesStore((s) => s.setFavoriteIds);
 
   const query = useQuery({
     queryKey: queryKeys.favoriteProductIds,
     queryFn: async () => {
-      const result = await getFavoriteProductIds(supabase);
+      const result = await getFavoriteProductIds(createClient());
       if (!result.ok) throw new Error(result.error.message);
       return result.data;
     },
+    enabled,
     staleTime: staleTimes.favoriteProductIds,
   });
 

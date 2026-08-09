@@ -1,6 +1,34 @@
 import "@testing-library/jest-dom/vitest";
+import de from "@/../messages/de.json";
+import en from "@/../messages/en.json";
+import pl from "@/../messages/pl.json";
+import { translateFromMessages } from "@/lib/i18n-format";
+import { useLanguageStore, type SupportedLanguage } from "@/stores/language-store";
 import { expect, vi } from "vitest";
 import * as vitestAxeMatchers from "vitest-axe/matchers";
+
+// ─── Global test contract: root client messages ────────────────────────────
+// Production fails closed without ClientMessagesProvider. Isolated component
+// tests intentionally omit the full app shell, so install a locale-aware test
+// contract here without adding any static dictionary import to production.
+// Language-transition and loading-race tests must mount the real provider.
+const testDictionaries = { en, pl, de } as const;
+const testMessages = {
+  get language(): SupportedLanguage {
+    return useLanguageStore.getState().language;
+  },
+  get t() {
+    const language = useLanguageStore.getState().language;
+    return (key: string, params?: Record<string, string | number>) =>
+      translateFromMessages(testDictionaries[language], en, key, params);
+  },
+  prepareLanguage: async () => true,
+  activateLanguage: async () => true,
+};
+
+Object.assign(globalThis, {
+  __TRYVIT_CLIENT_MESSAGES_TEST_FALLBACK__: testMessages,
+});
 
 // ─── vitest-axe: register toHaveNoViolations matcher ────────────────────────
 // The vitest-axe/extend-expect auto-registration is broken in v0.1.0.
@@ -64,7 +92,16 @@ if (!globalThis.DOMRect) {
       this.left = x;
     }
     toJSON() {
-      return { x: this.x, y: this.y, width: this.width, height: this.height, top: this.top, right: this.right, bottom: this.bottom, left: this.left };
+      return {
+        x: this.x,
+        y: this.y,
+        width: this.width,
+        height: this.height,
+        top: this.top,
+        right: this.right,
+        bottom: this.bottom,
+        left: this.left,
+      };
     }
     static fromRect(rect?: { x?: number; y?: number; width?: number; height?: number }) {
       return new DOMRect(rect?.x, rect?.y, rect?.width, rect?.height);

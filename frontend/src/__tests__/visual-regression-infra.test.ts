@@ -114,72 +114,67 @@ describe("Playwright config (visual regression)", () => {
 /* ── Test files ──────────────────────────────────────────────────────────── */
 
 describe("Visual regression test files", () => {
-  it("smoke-visual.spec.ts exists", () => {
-    const specPath = path.resolve(
-      __dirname,
-      "../../e2e/smoke-visual.spec.ts",
+  it("applies the authoritative light and reduced-motion context in the shared helper", () => {
+    const content = fs.readFileSync(path.resolve(process.cwd(), "e2e/helpers/visual.ts"), "utf8");
+
+    expect(content).toContain(
+      'page.emulateMedia({ colorScheme: "light", reducedMotion: "reduce" })',
     );
+    expect(content).toContain("safeConsoleErrorCode(message, appOrigin, localServiceOrigin)");
+    expect(content).toContain("expect(localServiceFailures).toEqual([])");
+    expect(content).not.toContain('consoleErrors.push("console-error")');
+  });
+
+  it("smoke-visual.spec.ts exists", () => {
+    const specPath = path.resolve(__dirname, "../../e2e/smoke-visual.spec.ts");
     expect(fs.existsSync(specPath)).toBe(true);
   });
 
   it("authenticated-visual.spec.ts exists", () => {
-    const specPath = path.resolve(
-      __dirname,
-      "../../e2e/authenticated-visual.spec.ts",
-    );
+    const specPath = path.resolve(__dirname, "../../e2e/authenticated-visual.spec.ts");
     expect(fs.existsSync(specPath)).toBe(true);
   });
 
-  it("smoke-visual covers public pages in both themes", () => {
-    const specPath = path.resolve(
-      __dirname,
-      "../../e2e/smoke-visual.spec.ts",
-    );
+  it("smoke-visual consumes the authoritative public Phase 5A.0d matrix", () => {
+    const specPath = path.resolve(__dirname, "../../e2e/smoke-visual.spec.ts");
     const content = fs.readFileSync(specPath, "utf-8");
 
-    // Public pages
-    expect(content).toContain("landing");
-    expect(content).toContain("login");
-    expect(content).toContain("signup");
-    expect(content).toContain("contact");
-    expect(content).toContain("privacy");
-    expect(content).toContain("terms");
-
-    // Uses buildTestMatrix (which covers both themes + both viewports)
-    expect(content).toContain("buildTestMatrix");
+    expect(content).toContain("VISUAL_BASELINE_CASES");
+    expect(content).toContain('candidate.mode === "public"');
+    expect(content).toContain('colorScheme: "light"');
+    expect(content).toContain('contextOptions: { reducedMotion: "reduce" }');
+    expect(content).toContain("assertPhase5VisualBaseline");
   });
 
-  it("authenticated-visual covers all required app pages", () => {
-    const specPath = path.resolve(
-      __dirname,
-      "../../e2e/authenticated-visual.spec.ts",
-    );
+  it("authenticated-visual consumes only the guarded local-authenticated matrix", () => {
+    const specPath = path.resolve(__dirname, "../../e2e/authenticated-visual.spec.ts");
     const content = fs.readFileSync(specPath, "utf-8");
 
-    // Issue #70 required pages
-    expect(content).toContain("dashboard");
-    expect(content).toContain("search");
-    expect(content).toContain("product");
-    expect(content).toContain("compare");
-    expect(content).toContain("settings");
-    expect(content).toContain("categories");
-    expect(content).toContain("lists");
-
-    // Uses buildTestMatrix
-    expect(content).toContain("buildTestMatrix");
+    expect(content).toContain("VISUAL_BASELINE_CASES");
+    expect(content).toContain('candidate.mode === "local-authenticated"');
+    expect(content).toContain('contextOptions: { reducedMotion: "reduce" }');
+    expect(content).toContain("assertPhase5VisualBaseline");
+    expect(content).toContain("retries: 0");
   });
 
-  it("authenticated-visual masks dynamic content", () => {
-    const specPath = path.resolve(
-      __dirname,
-      "../../e2e/authenticated-visual.spec.ts",
-    );
-    const content = fs.readFileSync(specPath, "utf-8");
+  it("the authoritative helper prohibits meaningful-content masks", () => {
+    const helperPath = path.resolve(__dirname, "../../e2e/helpers/visual.ts");
+    const content = fs.readFileSync(helperPath, "utf-8");
 
-    // Common dynamic elements must be masked
-    expect(content).toContain("timestamp");
-    expect(content).toContain("avatar");
-    expect(content).toContain("user-email");
+    expect(content).toContain("assertNoMeaningfulVisualMasks");
+    expect(content).toContain("meaningful-content-masking-prohibited");
+    expect(content).toContain("mask: []");
+    expect(content).toContain("maxDiffPixelRatio: VISUAL_MAX_DIFF_PIXEL_RATIO");
+  });
+
+  it("fails broken first-party images instead of blessing them into a baseline", () => {
+    const helperPath = path.resolve(__dirname, "../../e2e/helpers/visual.ts");
+    const content = fs.readFileSync(helperPath, "utf-8");
+
+    expect(content).not.toContain('target.pathname.startsWith("/_next/image")');
+    expect(content).toContain("image.naturalWidth <= 0");
+    expect(content).toContain("image.naturalHeight <= 0");
+    expect(content).toContain("await image.decode()");
   });
 });
 

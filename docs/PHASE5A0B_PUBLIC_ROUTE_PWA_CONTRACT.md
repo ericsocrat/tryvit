@@ -103,8 +103,10 @@ normal production registration.
 
 Phase 5A.0b verifies its public matrix only through the Phase 5A.0a guarded
 local visual-test infrastructure. Browser service workers remain blocked in
-that context, and public browser traffic is contained to loopback plus the
-already reviewed build-time font dependency. No hosted Supabase project,
+that context. Phase 5A.0d supersedes the former reviewed font-egress exception:
+the exact font response is now supplied from a content-attested local fixture
+during guarded builds and owned Next servers, leaving browser traffic and the
+owned proxy loopback-only. No hosted Supabase project,
 Vercel configuration, production endpoint, migration, dependency, threshold,
 or Phase 4 artifact is part of this contract.
 

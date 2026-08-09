@@ -15,6 +15,13 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
+- Record the synchronized Phase 5A.0e five-run Lighthouse and route-JavaScript
+  baseline, traced performance causes, deterministic product accessibility
+  defects, and the narrow remediation/verification boundary.
+- Document the Phase 5A.0d authoritative route-JavaScript, five-run Lighthouse,
+  lab-versus-field, and deterministic seven-image visual-baseline protocol,
+  including the reviewed exact-head Linux evidence, immutable image hashes, and
+  truthful current performance/accessibility debt.
 - Document the Phase 5A.0c backend-independent public-provider topology,
   EN/PL/DE request-locale and `html[lang]` contract, landing Server Component
   boundary, anonymous-share degradation, and removal of the public visual-test
@@ -28,6 +35,13 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### CI
 
+- Replace the false-zero Bundle Size Guard with cold route-specific gzip,
+  shared/owned and base/head regression evidence; add five-run guarded public
+  and local-authenticated Lighthouse reports plus immutable Linux visual gates.
+- Keep the local-authenticated browser gates fail-closed while enabling only the
+  loopback Realtime service and exact derived `ws:` CSP source required by the
+  existing feature-flag subscription; retain deterministic cleanup and no
+  hosted fallback.
 - Add a versioned data-quality report and regression gate to deterministic DB
   QA, with JSON/Markdown artifacts and one source of truth for confidence
   thresholds.

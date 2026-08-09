@@ -80,6 +80,15 @@ const TURNSTILE_RENDER_MODE = "explicit";
 const CONTAINED_TURNSTILE_SCRIPT =
   "/* TryVit visual-safety: Cloudflare Turnstile intentionally contained. */";
 
+/**
+ * Speed Insights is injected as a same-origin script in production builds.
+ * Visual runs retain the request shape while keeping the instrumentation inert
+ * and deterministic; this is deliberately not a general /_vercel allowlist.
+ */
+const SPEED_INSIGHTS_SCRIPT_PATH = "/_vercel/speed-insights/script.js";
+const CONTAINED_SPEED_INSIGHTS_SCRIPT =
+  "/* TryVit visual-safety: local Vercel Speed Insights intentionally contained. */";
+
 export class VisualSafetyError extends Error {
   readonly code: string;
   readonly category: string;
@@ -621,6 +630,29 @@ function isExpectedTurnstileScriptRequest(route: Route): boolean {
   );
 }
 
+function isExpectedLocalSpeedInsightsScriptRequest(route: Route, appOrigin: string): boolean {
+  const request = route.request();
+  if (typeof request.resourceType !== "function" || request.resourceType() !== "script") {
+    return false;
+  }
+
+  let target: URL;
+  try {
+    target = new URL(request.url());
+  } catch {
+    return false;
+  }
+
+  return (
+    target.origin === appOrigin &&
+    target.username === "" &&
+    target.password === "" &&
+    target.pathname === SPEED_INSIGHTS_SCRIPT_PATH &&
+    target.search === "" &&
+    target.hash === ""
+  );
+}
+
 export async function installBrowserEgressGuards(
   context: BrowserContext,
   contract: VisualSafetyContract,
@@ -638,6 +670,14 @@ export async function installBrowserEgressGuards(
     if (violation) {
       audit.record(violation);
       await route.abort("blockedbyclient");
+      return;
+    }
+    if (isExpectedLocalSpeedInsightsScriptRequest(route, contract.appOrigin)) {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/javascript; charset=utf-8",
+        body: CONTAINED_SPEED_INSIGHTS_SCRIPT,
+      });
       return;
     }
     // The checked-in Turnstile wrapper injects exactly one public script.  We

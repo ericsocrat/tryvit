@@ -108,3 +108,4 @@ module.exports = async function publicLighthouseSafetyGuard(browser) {
 };
 
 module.exports.classify = classify;
+module.exports.installPageGuard = installPageGuard;

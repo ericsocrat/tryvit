@@ -125,6 +125,15 @@ describe("useLists", () => {
     expect(result.current.data).toEqual(data);
   });
 
+  it("does not fetch lists while disabled", () => {
+    const { result } = renderHook(() => useLists(false), {
+      wrapper: createWrapper(),
+    });
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(mockGetLists).not.toHaveBeenCalled();
+  });
+
   it("throws on error", async () => {
     mockGetLists.mockResolvedValue({
       ok: false,
@@ -200,6 +209,16 @@ describe("useAvoidProductIds", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(mockSetAvoidedIds).toHaveBeenCalledWith([1, 2, 3]);
   });
+
+  it("does not fetch or update the avoid store while disabled", () => {
+    const { result } = renderHook(() => useAvoidProductIds(false), {
+      wrapper: createWrapper(),
+    });
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(mockGetAvoidProductIds).not.toHaveBeenCalled();
+    expect(mockSetAvoidedIds).not.toHaveBeenCalled();
+  });
 });
 
 describe("useFavoriteProductIds", () => {
@@ -215,6 +234,16 @@ describe("useFavoriteProductIds", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(mockSetFavoriteIds).toHaveBeenCalledWith([10, 20]);
+  });
+
+  it("does not fetch or update the favorites store while disabled", () => {
+    const { result } = renderHook(() => useFavoriteProductIds(false), {
+      wrapper: createWrapper(),
+    });
+
+    expect(result.current.fetchStatus).toBe("idle");
+    expect(mockGetFavoriteProductIds).not.toHaveBeenCalled();
+    expect(mockSetFavoriteIds).not.toHaveBeenCalled();
   });
 });
 

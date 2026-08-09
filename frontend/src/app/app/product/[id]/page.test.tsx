@@ -1679,6 +1679,33 @@ describe("ProductDetailPage", () => {
       expect(screen.queryByTestId("tab-bar")).not.toBeInTheDocument();
     });
 
+    it("preserves the selected tab across collapse and reopen", async () => {
+      const user = userEvent.setup();
+      render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getByTestId("quick-summary")).toBeInTheDocument();
+      });
+      await user.click(screen.getByTestId("toggle-analysis"));
+
+      const scoringTab = await screen.findByRole("tab", { name: "Scoring" });
+      await user.click(scoringTab);
+      expect(scoringTab).toHaveAttribute("aria-selected", "true");
+
+      await user.click(screen.getByTestId("toggle-analysis"));
+      await waitFor(() => {
+        expect(screen.getByTestId("quick-summary")).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByTestId("toggle-analysis"));
+      await waitFor(() => {
+        expect(screen.getByRole("tab", { name: "Scoring" })).toHaveAttribute(
+          "aria-selected",
+          "true",
+        );
+      });
+    });
+
     it("persists full-analysis preference to localStorage", async () => {
       const user = userEvent.setup();
       render(<ProductDetailPage />, { wrapper: createWrapper() });

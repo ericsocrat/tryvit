@@ -70,6 +70,7 @@ const HAS_QUALITY = Boolean(process.env.QA_MODE_LEVEL);
 const HAS_SAFETY_BROWSER_TESTS = enabled("VISUAL_SAFETY_BROWSER_TESTS");
 const HAS_SAFETY_NEGATIVE_TESTS = enabled("VISUAL_SAFETY_NEGATIVE_TESTS");
 const HAS_OWNED_SERVER = enabled("VISUAL_SAFETY_OWNED_SERVER");
+const HAS_PHASE5_ROUTE_JS = enabled("PHASE5_ROUTE_JS_CAPTURE");
 
 const proxyServer = process.env.VISUAL_SAFETY_PROXY
   ? canonicalizeLoopbackOrigin(process.env.VISUAL_SAFETY_PROXY).origin
@@ -234,15 +235,21 @@ const functionalProject = {
 const visualSmokeProject = {
   name: "visual-smoke",
   testMatch: /smoke-visual\.spec\.ts/,
-  use: { ...devices["Desktop Chrome"] },
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    contextOptions: { reducedMotion: "reduce" as const },
+  },
 };
 
 const visualAuthenticatedProject = {
   name: "visual-authenticated",
   testMatch: /authenticated-visual\.spec\.ts/,
   dependencies: ["auth-setup"],
+  retries: 0,
   use: {
     ...devices["Desktop Chrome"],
+    contextOptions: { reducedMotion: "reduce" as const },
     storageState: authStatePath("user.json"),
   },
 };
@@ -309,6 +316,38 @@ const safetyNegativeProject = {
   use: { ...devices["Desktop Chrome"] },
 };
 
+const phase5RouteJsPublicProject = {
+  name: "phase5-route-js-public",
+  testMatch: /phase5a0d-route-js\.spec\.ts/,
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    viewport: { width: 1440, height: 900 },
+    deviceScaleFactor: 1,
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    contextOptions: { reducedMotion: "reduce" as const },
+  },
+};
+
+const phase5RouteJsAuthenticatedProject = {
+  name: "phase5-route-js-authenticated",
+  testMatch: /phase5a0d-route-js\.spec\.ts/,
+  dependencies: ["auth-setup"],
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    viewport: { width: 1440, height: 900 },
+    deviceScaleFactor: 1,
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    contextOptions: { reducedMotion: "reduce" as const },
+    storageState: authStatePath("user.json"),
+  },
+};
+
 const projects = [
   ...(LOCAL_AUTHENTICATED ? [authSetupProject, functionalAuthSetupProject] : []),
   smokeProject,
@@ -318,6 +357,8 @@ const projects = [
   ...(HAS_QUALITY ? [qualityMobileProject, qualityDesktopProject] : []),
   ...(HAS_SAFETY_BROWSER_TESTS ? [safetyBrowserProject] : []),
   ...(HAS_SAFETY_NEGATIVE_TESTS ? [safetyNegativeProject] : []),
+  ...(HAS_PHASE5_ROUTE_JS && !LOCAL_AUTHENTICATED ? [phase5RouteJsPublicProject] : []),
+  ...(HAS_PHASE5_ROUTE_JS && LOCAL_AUTHENTICATED ? [phase5RouteJsAuthenticatedProject] : []),
   ...(HAS_SCREENSHOTS ? [screenshotsProject] : []),
   ...(HAS_PR_SCREENSHOTS ? [prScreenshotsProject] : []),
 ];

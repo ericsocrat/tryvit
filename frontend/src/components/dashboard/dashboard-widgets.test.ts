@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
-import { translate } from "@/lib/i18n";
+import { translate } from "@/lib/i18n-core";
 import { getTimeOfDay } from "./DashboardGreeting";
 import { tipIndexForToday } from "./NutritionTip";
 
@@ -14,7 +14,6 @@ describe("getTimeOfDay", () => {
 
   function mockHour(hour: number) {
     globalThis.Date = class extends origDate {
-       
       constructor(...args: any[]) {
         if (args.length === 0) {
           super(2026, 1, 10, hour, 0, 0);
@@ -82,12 +81,8 @@ describe("DashboardGreeting i18n keys", () => {
   }
 
   it("has subtitle key", () => {
-    expect(translate("en", "dashboard.subtitle")).not.toBe(
-      "dashboard.subtitle",
-    );
-    expect(translate("pl", "dashboard.subtitle")).not.toBe(
-      "dashboard.subtitle",
-    );
+    expect(translate("en", "dashboard.subtitle")).not.toBe("dashboard.subtitle");
+    expect(translate("pl", "dashboard.subtitle")).not.toBe("dashboard.subtitle");
   });
 });
 
@@ -109,9 +104,7 @@ describe("QuickActions i18n keys", () => {
   }
 
   it("has quickActions section label", () => {
-    expect(translate("en", "dashboard.quickActions")).not.toBe(
-      "dashboard.quickActions",
-    );
+    expect(translate("en", "dashboard.quickActions")).not.toBe("dashboard.quickActions");
   });
 });
 
@@ -133,21 +126,13 @@ describe("tipIndexForToday", () => {
 
 describe("NutritionTip i18n keys", () => {
   it("has tipTitle key", () => {
-    expect(translate("en", "dashboard.tipTitle")).not.toBe(
-      "dashboard.tipTitle",
-    );
-    expect(translate("pl", "dashboard.tipTitle")).not.toBe(
-      "dashboard.tipTitle",
-    );
+    expect(translate("en", "dashboard.tipTitle")).not.toBe("dashboard.tipTitle");
+    expect(translate("pl", "dashboard.tipTitle")).not.toBe("dashboard.tipTitle");
   });
 
   it("has tipLearnMore key in both languages", () => {
-    expect(translate("en", "dashboard.tipLearnMore")).not.toBe(
-      "dashboard.tipLearnMore",
-    );
-    expect(translate("pl", "dashboard.tipLearnMore")).not.toBe(
-      "dashboard.tipLearnMore",
-    );
+    expect(translate("en", "dashboard.tipLearnMore")).not.toBe("dashboard.tipLearnMore");
+    expect(translate("pl", "dashboard.tipLearnMore")).not.toBe("dashboard.tipLearnMore");
   });
 
   for (let i = 0; i < 14; i++) {
@@ -169,11 +154,7 @@ describe("NutritionTip i18n keys", () => {
 
 describe("CategoriesBrowse i18n keys", () => {
   it("has categoriesTitle key", () => {
-    expect(translate("en", "dashboard.categoriesTitle")).not.toBe(
-      "dashboard.categoriesTitle",
-    );
-    expect(translate("pl", "dashboard.categoriesTitle")).not.toBe(
-      "dashboard.categoriesTitle",
-    );
+    expect(translate("en", "dashboard.categoriesTitle")).not.toBe("dashboard.categoriesTitle");
+    expect(translate("pl", "dashboard.categoriesTitle")).not.toBe("dashboard.categoriesTitle");
   });
 });

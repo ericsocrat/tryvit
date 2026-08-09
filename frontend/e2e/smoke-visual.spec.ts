@@ -1,73 +1,25 @@
-// ─── Visual regression tests — Public pages (smoke) ─────────────────────────
-// Captures baseline screenshots for public (unauthenticated) pages in
-// both light and dark themes at desktop and mobile viewports.
-//
-// Issue #70 — Visual Regression Baseline
-// Total: 6 pages × 2 themes × 2 viewports = 24 baselines
-
 import { test } from "./fixtures/safe-test";
-import {
-  assertScreenshot,
-  buildTestMatrix,
-  type PageConfig,
-} from "./helpers/visual";
+import { assertPhase5VisualBaseline } from "./helpers/visual";
+// Node's type-stripping loader requires the source extension at runtime.
+// prettier-ignore
+// @ts-expect-error TS5097: executed through the guarded Playwright launcher.
+import { VISUAL_BASELINE_CASES } from "../tooling/phase5a0d-contract.ts";
 
-/* ── Pages under test ────────────────────────────────────────────────────── */
+test.describe.configure({ mode: "serial", retries: 0 });
 
-const PUBLIC_PAGES: PageConfig[] = [
-  {
-    name: "landing",
-    path: "/",
-    mask: [],
-  },
-  {
-    name: "login",
-    path: "/auth/login",
-    mask: [],
-  },
-  {
-    name: "signup",
-    path: "/auth/signup",
-    mask: [],
-  },
-  {
-    name: "contact",
-    path: "/contact",
-    mask: [],
-  },
-  {
-    name: "privacy",
-    path: "/privacy",
-    mask: [],
-  },
-  {
-    name: "terms",
-    path: "/terms",
-    mask: [],
-  },
-];
-
-/* ── Generate test matrix ────────────────────────────────────────────────── */
-
-const matrix = buildTestMatrix(PUBLIC_PAGES);
-
-test.describe("Visual regression — Public pages", () => {
-  for (const entry of matrix) {
-    test(entry.testName, async ({ page }) => {
-      await page.goto(entry.page.path);
-
-      // Wait for a specific selector if specified
-      if (entry.page.waitFor) {
-        await page.waitForSelector(entry.page.waitFor);
-      }
-
-      await assertScreenshot({
-        name: entry.page.name,
-        page,
-        theme: entry.theme,
-        viewport: entry.viewport,
-        mask: entry.page.mask,
-      });
+for (const baseline of VISUAL_BASELINE_CASES.filter((candidate) => candidate.mode === "public")) {
+  test.describe(baseline.id, () => {
+    test.use({
+      viewport: { width: baseline.width, height: baseline.height },
+      deviceScaleFactor: 1,
+      locale: "en-US",
+      timezoneId: "UTC",
+      colorScheme: "light",
+      contextOptions: { reducedMotion: "reduce" },
     });
-  }
-});
+
+    test("matches the authoritative public baseline", async ({ page }) => {
+      await assertPhase5VisualBaseline(page, baseline);
+    });
+  });
+}

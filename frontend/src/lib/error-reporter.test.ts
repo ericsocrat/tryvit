@@ -4,11 +4,11 @@ import type { ErrorInfo } from "react";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
-vi.mock("@sentry/nextjs", () => ({
-  captureException: vi.fn(),
-}));
+const mockCaptureClientException = vi.hoisted(() => vi.fn());
 
-import * as Sentry from "@sentry/nextjs";
+vi.mock("@/lib/client-sentry", () => ({
+  captureClientException: mockCaptureClientException,
+}));
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -26,10 +26,7 @@ function makeErrorInfo(componentStack?: string): ErrorInfo {
 
 describe("buildErrorReport", () => {
   it("captures error message", () => {
-    const report = buildErrorReport(
-      makeError("Test error"),
-      makeErrorInfo(),
-    );
+    const report = buildErrorReport(makeError("Test error"), makeErrorInfo());
     expect(report.message).toBe("Test error");
   });
 
@@ -50,19 +47,17 @@ describe("buildErrorReport", () => {
   });
 
   it("sets componentStack to undefined when absent", () => {
-    const report = buildErrorReport(
-      makeError("Test"),
-      { componentStack: null } as unknown as ErrorInfo,
-    );
+    const report = buildErrorReport(makeError("Test"), {
+      componentStack: null,
+    } as unknown as ErrorInfo);
     expect(report.componentStack).toBeUndefined();
   });
 
   it("includes context in report", () => {
-    const report = buildErrorReport(
-      makeError("Test"),
-      makeErrorInfo(),
-      { level: "section", ean: "5900617043375" },
-    );
+    const report = buildErrorReport(makeError("Test"), makeErrorInfo(), {
+      level: "section",
+      ean: "5900617043375",
+    });
     expect(report.context.level).toBe("section");
     expect(report.context.ean).toBe("5900617043375");
   });
@@ -91,6 +86,7 @@ describe("reportBoundaryError", () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     return () => {
       consoleErrorSpy.mockRestore();
@@ -116,11 +112,10 @@ describe("reportBoundaryError", () => {
   });
 
   it("passes context through to report", () => {
-    const report = reportBoundaryError(
-      makeError("Context test"),
-      makeErrorInfo(),
-      { level: "page", boundary: "AppError" },
-    );
+    const report = reportBoundaryError(makeError("Context test"), makeErrorInfo(), {
+      level: "page",
+      boundary: "AppError",
+    });
     expect(report.context.level).toBe("page");
     expect(report.context.boundary).toBe("AppError");
   });
@@ -139,7 +134,7 @@ describe("reportBoundaryError", () => {
     const errorInfo = makeErrorInfo("\n  at BrokenWidget");
     reportBoundaryError(error, errorInfo, { level: "section", ean: "123" });
 
-    expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+    expect(mockCaptureClientException).toHaveBeenCalledWith(error, {
       contexts: {
         react: { componentStack: "\n  at BrokenWidget" },
         app: { level: "section", ean: "123" },
@@ -151,7 +146,7 @@ describe("reportBoundaryError", () => {
     const error = makeError("No context");
     reportBoundaryError(error, makeErrorInfo());
 
-    expect(Sentry.captureException).toHaveBeenCalledWith(error, {
+    expect(mockCaptureClientException).toHaveBeenCalledWith(error, {
       contexts: {
         react: { componentStack: "\n  at TestComponent" },
         app: {},

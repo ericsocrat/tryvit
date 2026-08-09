@@ -44,12 +44,13 @@ run_without_output() {
 
 case "$action" in
   start)
-    # Browser coverage requires only Postgres, Kong/API, GoTrue, and PostgREST.
-    # Excluding unrelated services reduces runner startup time and image usage.
+    # Browser coverage requires Postgres, Kong/API, GoTrue, PostgREST, and the
+    # existing feature-flag Realtime subscription. Every unrelated service
+    # remains excluded to reduce runner startup time and image usage.
     run_without_output "supabase-start" \
       supabase start \
         --workdir "$repository_root" \
-        --exclude realtime,storage-api,imgproxy,postgres-meta,studio,mailpit,edge-runtime,logflare,vector,supavisor
+        --exclude storage-api,imgproxy,postgres-meta,studio,mailpit,edge-runtime,logflare,vector,supavisor
     printf '[VS_LOCAL_RUNTIME] started; guarded readiness is still required\n'
     ;;
   stop)

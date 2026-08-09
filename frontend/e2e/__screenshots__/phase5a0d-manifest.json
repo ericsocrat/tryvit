@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a0d-visual-baselines",
+  "sourceCommit": "aa84b2bd8a22b20e1625d33dede66238c507130f",
+  "rendererClass": "ci-linux-authoritative",
+  "runner": {
+    "imageOS": "ubuntu24",
+    "imageVersion": "20260720.247.2",
+    "arch": "x64"
+  },
+  "versions": {
+    "node": "v22.21.1",
+    "npm": "10.9.4",
+    "next": "16.2.12",
+    "playwright": "1.62.0",
+    "chromium": "151.0.7922.34"
+  },
+  "settings": {
+    "locale": "en-US",
+    "timezoneId": "UTC",
+    "deviceScaleFactor": 1,
+    "colorScheme": "light",
+    "reducedMotion": "reduce",
+    "fixedTime": "2026-07-15T12:00:00.000Z",
+    "fullPage": false,
+    "masks": [],
+    "maxDiffPixelRatio": 0.003,
+    "channelThreshold": 0.2
+  },
+  "fixtureContractChecksum": "12b5fb3bf42f9d969f4bdf248cc142df1c8515b30f793c533c01f82243eea580",
+  "cases": [
+    {
+      "id": "landing-390x844",
+      "mode": "public",
+      "routeId": "landing",
+      "path": "/",
+      "width": 390,
+      "height": 844,
+      "fixtureState": "public-static",
+      "relativeFile": "smoke-visual.spec.ts/p5a0d-landing-390x844-light-reduced.png",
+      "sha256": "e5704802156929b1ae99ed1ea8c9570091c9f3afe685ba1c5de544c20cd73c3e",
+      "bytes": 85157
+    },
+    {
+      "id": "landing-768x1024",
+      "mode": "public",
+      "routeId": "landing",
+      "path": "/",
+      "width": 768,
+      "height": 1024,
+      "fixtureState": "public-static",
+      "relativeFile": "smoke-visual.spec.ts/p5a0d-landing-768x1024-light-reduced.png",
+      "sha256": "abd72cef9693d7d87a44a64d7967b4c363739cef59a541c71f76828bbbfff790",
+      "bytes": 139834
+    },
+    {
+      "id": "landing-1440x900",
+      "mode": "public",
+      "routeId": "landing",
+      "path": "/",
+      "width": 1440,
+      "height": 900,
+      "fixtureState": "public-static",
+      "relativeFile": "smoke-visual.spec.ts/p5a0d-landing-1440x900-light-reduced.png",
+      "sha256": "0688d51c24ead7a8642569a68dd1d52189b8f460b7215ca340ed142224609efc",
+      "bytes": 178825
+    },
+    {
+      "id": "login-390x844",
+      "mode": "public",
+      "routeId": "login",
+      "path": "/auth/login",
+      "width": 390,
+      "height": 844,
+      "fixtureState": "public-static",
+      "relativeFile": "smoke-visual.spec.ts/p5a0d-login-390x844-light-reduced.png",
+      "sha256": "dcb24f7d21fbfcd9c2068982c35ce7abc866139fb628eb77e26bae40de4714b9",
+      "bytes": 49800
+    },
+    {
+      "id": "login-1440x900",
+      "mode": "public",
+      "routeId": "login",
+      "path": "/auth/login",
+      "width": 1440,
+      "height": 900,
+      "fixtureState": "public-static",
+      "relativeFile": "smoke-visual.spec.ts/p5a0d-login-1440x900-light-reduced.png",
+      "sha256": "f73f3d3dbb07b356938ec3222c03708e995b8121e665feb470682a0ee880ab66",
+      "bytes": 266772
+    },
+    {
+      "id": "app-shell-new-user-390x844",
+      "mode": "local-authenticated",
+      "routeId": "app-shell",
+      "path": "/app",
+      "width": 390,
+      "height": 844,
+      "fixtureState": "local-authenticated-new-user",
+      "relativeFile": "authenticated-visual.spec.ts/p5a0d-app-shell-new-user-390x844-light-reduced.png",
+      "sha256": "19925c064157c05291ffe4a02b10b66f705268dec916dd26230972b667ad2fa5",
+      "bytes": 47056
+    },
+    {
+      "id": "app-shell-new-user-1440x900",
+      "mode": "local-authenticated",
+      "routeId": "app-shell",
+      "path": "/app",
+      "width": 1440,
+      "height": 900,
+      "fixtureState": "local-authenticated-new-user",
+      "relativeFile": "authenticated-visual.spec.ts/p5a0d-app-shell-new-user-1440x900-light-reduced.png",
+      "sha256": "c1e40efd43128e66c4bb1f87921ffd554c7d2b94b156919f727946f226b8dc2b",
+      "bytes": 61059
+    }
+  ],
+  "manifestChecksum": "12a00dc37191191b788964d1c599d103aa0fedb1c15fa8cc36ad80d746953716"
+}

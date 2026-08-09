@@ -26,9 +26,7 @@ export function NewUserWelcome() {
       {/* Header */}
       <div className="text-center">
         <h2 className="text-lg font-semibold">{t("dashboard.newUserTitle")}</h2>
-        <p className="text-sm text-foreground-secondary">
-          {t("dashboard.newUserSubtitle")}
-        </p>
+        <p className="text-sm text-foreground-secondary">{t("dashboard.newUserSubtitle")}</p>
       </div>
 
       {/* Action cards */}
@@ -36,6 +34,7 @@ export function NewUserWelcome() {
         {/* Scan CTA */}
         <Link
           href="/app/scan"
+          prefetch={false}
           className="card hover-lift-press flex items-center gap-4 rounded-xl border bg-surface p-4 shadow-sm"
           data-testid="new-user-scan-cta"
         >
@@ -43,18 +42,15 @@ export function NewUserWelcome() {
             <Camera size={24} className="text-brand" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold">
-              {t("dashboard.newUserScanTitle")}
-            </p>
-            <p className="text-xs text-foreground-secondary">
-              {t("dashboard.newUserScanDesc")}
-            </p>
+            <p className="text-sm font-semibold">{t("dashboard.newUserScanTitle")}</p>
+            <p className="text-xs text-foreground-secondary">{t("dashboard.newUserScanDesc")}</p>
           </div>
         </Link>
 
         {/* Browse CTA */}
         <Link
           href="/app/categories"
+          prefetch={false}
           className="card hover-lift-press flex items-center gap-4 rounded-xl border bg-surface p-4 shadow-sm"
           data-testid="new-user-browse-cta"
         >
@@ -62,21 +58,14 @@ export function NewUserWelcome() {
             <Grid3X3 size={24} className="text-brand" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold">
-              {t("dashboard.newUserBrowseTitle")}
-            </p>
-            <p className="text-xs text-foreground-secondary">
-              {t("dashboard.newUserBrowseDesc")}
-            </p>
+            <p className="text-sm font-semibold">{t("dashboard.newUserBrowseTitle")}</p>
+            <p className="text-xs text-foreground-secondary">{t("dashboard.newUserBrowseDesc")}</p>
           </div>
         </Link>
       </div>
 
       {/* Fun fact */}
-      <div
-        className="rounded-xl border bg-surface p-4 shadow-sm"
-        data-testid="new-user-fun-fact"
-      >
+      <div className="rounded-xl border bg-surface p-4 shadow-sm" data-testid="new-user-fun-fact">
         <p className="text-xs font-semibold uppercase tracking-wide text-foreground-secondary">
           {t("dashboard.newUserFunFact")}
         </p>

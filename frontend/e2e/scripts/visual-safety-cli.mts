@@ -40,6 +40,19 @@ import {
   startLoopbackEgressProxy,
   type LoopbackEgressProxy,
 } from "../helpers/loopback-egress-proxy.ts";
+// @ts-expect-error TS5097: executed with `node --experimental-strip-types`.
+import { TEST_EMAIL, TEST_PASSWORD, deleteTestUser, ensureTestUser } from "../helpers/test-user.ts";
+// @ts-expect-error TS5097: executed with `node --experimental-strip-types`.
+import {
+  PHASE5A0D_FIXED_TIME,
+  LIGHTHOUSE_ROUTES,
+  LIGHTHOUSE_RUN_COUNT,
+  resolveFixturePath,
+} from "../../tooling/phase5a0d-contract.ts";
+// @ts-expect-error TS5097: executed with `node --experimental-strip-types`.
+import { canonicalLighthouseConfigSha256 } from "../../tooling/phase5a0d-lighthouse.ts";
+// @ts-expect-error TS5097: executed with `node --experimental-strip-types`.
+import { prepareVisualBaselineWriteTargets } from "../../tooling/phase5a0d-visual-baselines.ts";
 /* eslint-enable no-restricted-imports */
 
 type SafetyMode = "public" | "local-authenticated";
@@ -70,11 +83,19 @@ export const violationMarkerPath = path.join(
 
 const APP_PORT = 3000;
 const APP_ORIGIN = `http://127.0.0.1:${APP_PORT}`;
-const REVIEWED_EXTERNAL_CONNECT_HOSTNAMES = Object.freeze([
-  // Required while Next prerenders the existing Open Graph image routes.
-  // Removing this build-time font fetch belongs to Phase 5A.0c.
-  "fonts.gstatic.com",
-]);
+const NO_EXTERNAL_CONNECT_HOSTNAMES = Object.freeze([] as string[]);
+const localFontFetchPreload = path.join(
+  frontendRoot,
+  "e2e",
+  "scripts",
+  "phase5a0d-local-font-fetch.mjs",
+);
+const phase5FixedTimePreload = path.join(
+  frontendRoot,
+  "e2e",
+  "scripts",
+  "phase5a0d-fixed-time.mjs",
+);
 const ASSET_EXTENSIONS = new Set([
   ".cjs",
   ".css",
@@ -83,6 +104,7 @@ const ASSET_EXTENSIONS = new Set([
   ".json",
   ".map",
   ".mjs",
+  ".png",
   ".rsc",
   ".txt",
 ]);
@@ -90,14 +112,17 @@ const FORBIDDEN_ASSET_MARKERS = ["uskvezwftkkudvksmken", "rxtaicdpnaqigowdbmsb"]
 const SENSITIVE_ENV_PATTERN =
   /(?:SUPABASE|POSTGRES|DATABASE|PASSWORD|TOKEN|SECRET|COOKIE|AUTHORIZATION|API_KEY|STAGING_(?:URL|SERVICE_KEY)|PRODUCTION_(?:URL|SERVICE_KEY))/i;
 const UNSAFE_PROCESS_ENV_PATTERN =
-  /^(?:ALL_PROXY|BROWSER|CHROME_PATH|DEBUG|DOCKER_(?:CERT_PATH|CONTEXT|HOST|TLS_VERIFY)|HTTP_PROXY|HTTPS_PROXY|LHCI_.*|LHCITEST_.*|LIGHTHOUSE_.*|NODE_DEBUG(?:_NATIVE)?|NODE_EXTRA_CA_CERTS|NODE_OPTIONS|NODE_PATH|NODE_REPL_EXTERNAL_MODULE|NODE_TLS_REJECT_UNAUTHORIZED|NODE_USE_ENV_PROXY|NO_PROXY|PLAYWRIGHT_.*|PUPPETEER_.*|PW(?!D$).*|SSLKEYLOGFILE|VISUAL_SAFETY_CONFIG_(?:RUNNER_PID|SEAL))$/iu;
+  /^(?:ALL_PROXY|BROWSER|CHROME_PATH|DEBUG|DOCKER_(?:CERT_PATH|CONTEXT|HOST|TLS_VERIFY)|HTTP_PROXY|HTTPS_PROXY|LHCI_.*|LHCITEST_.*|LIGHTHOUSE_.*|NODE_DEBUG(?:_NATIVE)?|NODE_EXTRA_CA_CERTS|NODE_OPTIONS|NODE_PATH|NODE_REPL_EXTERNAL_MODULE|NODE_TLS_REJECT_UNAUTHORIZED|NODE_USE_ENV_PROXY|NO_PROXY|PHASE5A0D_FIXED_TIME|PLAYWRIGHT_.*|PUPPETEER_.*|PW(?!D$).*|SSLKEYLOGFILE|VISUAL_SAFETY_CONFIG_(?:RUNNER_PID|SEAL))$/iu;
 const MAX_CHILD_OUTPUT_BYTES = 32 * 1024 * 1024;
 const ARTIFACT_ROOTS = Object.freeze([
   path.join(frontendRoot, "test-results"),
   path.join(frontendRoot, "playwright-report"),
   path.join(frontendRoot, "pr-screenshots"),
   path.join(frontendRoot, "qa_screenshots"),
+  path.join(frontendRoot, ".lighthouseci"),
   path.join(frontendRoot, "lighthouse-reports"),
+  path.join(frontendRoot, "performance-reports"),
+  path.join(frontendRoot, "e2e", "__screenshots__"),
   path.join(repositoryRoot, "docs", "screenshots"),
   path.join(repositoryRoot, "playwright-stdout.log"),
   path.join(repositoryRoot, "playwright-public-stdout.log"),
@@ -170,7 +195,10 @@ function parseMode(value: string | undefined): SafetyMode {
   throw safetyError("VS_MODE_INVALID", "explicit-mode-required");
 }
 
-export function normalizePlaywrightArguments(args: readonly string[]): {
+export function normalizePlaywrightArguments(
+  args: readonly string[],
+  allowInternalSnapshotUpdate = false,
+): {
   playwrightArgs: string[];
   qualityLevel?: "smoke" | "full";
   projects: Set<string>;
@@ -183,6 +211,10 @@ export function normalizePlaywrightArguments(args: readonly string[]): {
     const argument = args[index];
     if (argument === "--config" || argument.startsWith("-c") || argument.startsWith("--config=")) {
       throw safetyError("VS_PLAYWRIGHT_ARGUMENT", "config-override-rejected");
+    }
+    if (allowInternalSnapshotUpdate && argument === "--update-snapshots=all") {
+      playwrightArgs.push(argument);
+      continue;
     }
     const unsafeFlag = [
       "--debug",
@@ -836,10 +868,14 @@ export async function cleanBuild(
       throw safetyError("VS_LOCAL_ANON", "local-anon-key-missing");
     }
     const nextCli = require.resolve("next/dist/bin/next");
-    const code = await runChild(process.execPath, [nextCli, "build", "--webpack"], {
-      cwd: frontendRoot,
-      env,
-    });
+    const code = await runChild(
+      process.execPath,
+      ["--import", pathToFileURL(localFontFetchPreload).href, nextCli, "build", "--webpack"],
+      {
+        cwd: frontendRoot,
+        env,
+      },
+    );
     if (code !== 0) throw safetyError("VS_BUILD_FAILED", "next-build-failed");
     assertGeneratedServiceWorker();
     return writeBuildProvenance(contract);
@@ -965,20 +1001,39 @@ export async function startOwnedServer(
   contract: SafetyContract,
   localCredentials?: LocalFixtureCredentials,
   proxyOrigin?: string,
+  fixedTime?: string,
 ): Promise<{ child: ChildProcess; stop: () => Promise<void> }> {
   if (!proxyOrigin) {
     throw safetyError("VS_SERVER_PROXY", "owned-egress-proxy-required");
   }
   const localOrigin = localSupabaseOrigin(contract);
+  const fixedTimeArguments: string[] = [];
+  if (fixedTime !== undefined) {
+    if (fixedTime !== PHASE5A0D_FIXED_TIME) {
+      throw safetyError("P5_FIXED_TIME", "exact-authoritative-time-required");
+    }
+    fixedTimeArguments.push("--import", pathToFileURL(phase5FixedTimePreload).href);
+  }
   await verifyBuildProvenance(contract);
   await assertPortAvailable();
   const env = sanitizedChildEnvironment(process.env, contract.mode, localOrigin, localCredentials);
   applyOwnedProxyEnvironment(env, proxyOrigin);
+  if (fixedTime !== undefined) env.PHASE5A0D_FIXED_TIME = fixedTime;
   const sensitiveValues = sensitiveValuesFromEnvironment(env);
   const nextCli = require.resolve("next/dist/bin/next");
   const child = spawn(
     process.execPath,
-    [nextCli, "start", "-H", "127.0.0.1", "-p", String(APP_PORT)],
+    [
+      "--import",
+      pathToFileURL(localFontFetchPreload).href,
+      ...fixedTimeArguments,
+      nextCli,
+      "start",
+      "-H",
+      "127.0.0.1",
+      "-p",
+      String(APP_PORT),
+    ],
     {
       cwd: frontendRoot,
       env,
@@ -1173,8 +1228,12 @@ function createInvocationProof(
   };
 }
 
-async function runPlaywright(mode: SafetyMode, args: string[]): Promise<number> {
-  const normalized = normalizePlaywrightArguments(args);
+async function runPlaywright(
+  mode: SafetyMode,
+  args: string[],
+  allowInternalSnapshotUpdate = false,
+): Promise<number> {
+  const normalized = normalizePlaywrightArguments(args, allowInternalSnapshotUpdate);
   const sanitized = nonSensitiveEnvironment(process.env);
   for (const name of dotenvVariableNames()) sanitized[name] = "";
   sanitized.VISUAL_SAFETY_MODE = mode;
@@ -1186,8 +1245,18 @@ async function runPlaywright(mode: SafetyMode, args: string[]): Promise<number> 
   if (normalized.projects.has("visual-safety-negative")) {
     sanitized.VISUAL_SAFETY_NEGATIVE_TESTS = "true";
   }
-  if (normalized.projects.has("visual-smoke")) {
+  if (normalized.projects.has("visual-smoke") || normalized.projects.has("visual-authenticated")) {
     sanitized.VISUAL_REGRESSION = "true";
+  }
+  const phase5FixedTime =
+    normalized.projects.has("visual-smoke") || normalized.projects.has("visual-authenticated")
+      ? PHASE5A0D_FIXED_TIME
+      : undefined;
+  if (
+    normalized.projects.has("phase5-route-js-public") ||
+    normalized.projects.has("phase5-route-js-authenticated")
+  ) {
+    sanitized.PHASE5_ROUTE_JS_CAPTURE = "true";
   }
   if (normalized.projects.has("screenshots")) {
     sanitized.CAPTURE_SCREENSHOTS = "true";
@@ -1224,7 +1293,7 @@ async function runPlaywright(mode: SafetyMode, args: string[]): Promise<number> 
     const proxy = await startLoopbackEgressProxy({
       violationMarkerPath,
       contract,
-      allowedConnectHostnames: REVIEWED_EXTERNAL_CONNECT_HOSTNAMES,
+      allowedConnectHostnames: NO_EXTERNAL_CONNECT_HOSTNAMES,
       allowedLoopbackOrigins: ownedLoopbackOrigins(contract),
     });
     const unregisterProxy = registerOwnedCleanup(proxy.close);
@@ -1241,7 +1310,12 @@ async function runPlaywright(mode: SafetyMode, args: string[]): Promise<number> 
         sanitized.VISUAL_SAFETY_AUTH_STATE_DIR = authState.directory;
         sanitized.VISUAL_SAFETY_AUTH_STATE_OWNER = authState.ownerToken;
       }
-      ownedServer = await startOwnedServer(contract, localCredentials ?? undefined, proxy.origin);
+      ownedServer = await startOwnedServer(
+        contract,
+        localCredentials ?? undefined,
+        proxy.origin,
+        phase5FixedTime,
+      );
       invocationProof = createInvocationProof(contract, proxy.origin, ownedServer.child.pid);
       unregisterInvocationProof = registerOwnedCleanup(invocationProof.cleanup);
       const playwrightEnv: NodeJS.ProcessEnv = {
@@ -1378,7 +1452,7 @@ async function serveCommand(
   const proxy = await startLoopbackEgressProxy({
     violationMarkerPath,
     contract,
-    allowedConnectHostnames: REVIEWED_EXTERNAL_CONNECT_HOSTNAMES,
+    allowedConnectHostnames: NO_EXTERNAL_CONNECT_HOSTNAMES,
     allowedLoopbackOrigins: ownedLoopbackOrigins(contract),
   });
   const unregisterProxy = registerOwnedCleanup(proxy.close);
@@ -1420,35 +1494,208 @@ async function assertCommand(
   );
 }
 
-function installedPlaywrightChromiumPath(): string {
+async function installedPlaywrightChromiumIdentity(): Promise<{
+  readonly path: string;
+  readonly version: string;
+  readonly major: string;
+}> {
   try {
     const playwright = require("@playwright/test") as {
-      chromium: { executablePath: () => string };
+      chromium: {
+        executablePath: () => string;
+        launch: (options: { headless: boolean }) => Promise<{
+          version: () => string;
+          close: () => Promise<void>;
+        }>;
+      };
     };
     const resolved = realpathSync.native(playwright.chromium.executablePath());
     if (!lstatSync(resolved).isFile()) {
       throw new Error("not a file");
     }
-    return resolved;
+    const browser = await playwright.chromium.launch({ headless: true });
+    let version: string;
+    try {
+      version = browser.version();
+    } finally {
+      await browser.close();
+    }
+    const match = /^([0-9]+)(?:\.[0-9]+){3}$/u.exec(version);
+    if (!match) throw new Error("version unavailable");
+    return Object.freeze({
+      path: resolved,
+      version,
+      major: match[1],
+    });
   } catch {
     throw safetyError("VS_LIGHTHOUSE_CHROME", "playwright-chromium-unavailable");
   }
 }
 
-async function runLighthouse(contract: SafetyContract, requested: string[]): Promise<number> {
-  if (contract.mode !== "public") {
-    throw safetyError(
-      "VS_LIGHTHOUSE_AUTH_BLOCKED",
-      "authenticated-lighthouse-requires-dedicated-local-fixture",
-    );
+function resetLighthouseOutputDirectory(mode: SafetyMode, variant: string): string {
+  const root = path.resolve(frontendRoot, "lighthouse-reports");
+  const target = path.resolve(root, mode, variant);
+  if (!pathIsWithin(root, target) || target === root) {
+    throw safetyError("P5_LIGHTHOUSE_OUTPUT", "output-path-invalid");
   }
-  const variants =
-    requested.length === 0 || requested[0] === "all" ? ["mobile", "desktop"] : requested;
+  if (existsSync(target)) {
+    const metadata = lstatSync(target);
+    if (!metadata.isDirectory() || metadata.isSymbolicLink()) {
+      throw safetyError("P5_LIGHTHOUSE_OUTPUT", "output-path-reparse");
+    }
+    rmSync(target, { recursive: true, force: false });
+  }
+  return path.relative(frontendRoot, target).replaceAll(path.sep, "/");
+}
+
+function sanitizeLighthouseOutputDirectory(
+  relativeDirectory: string,
+  sensitiveValues: readonly string[],
+): void {
+  const root = path.resolve(frontendRoot, "lighthouse-reports");
+  const target = path.resolve(frontendRoot, relativeDirectory);
+  if (!pathIsWithin(root, target) || target === root) {
+    throw safetyError("P5_LIGHTHOUSE_OUTPUT", "output-path-invalid");
+  }
+  const replacement = "[redacted-local-credential]";
+  for (const filename of filesAtOrBelow(target)) {
+    if (filename.endsWith(".report.html")) {
+      unlinkSync(filename);
+      continue;
+    }
+    if (!filename.endsWith(".report.json")) continue;
+    let contents = readFileSync(filename, "utf8");
+    for (const value of sensitiveValues) {
+      if (value.length >= 4) contents = contents.replaceAll(value, replacement);
+    }
+    writeFileSync(filename, contents, { encoding: "utf8", mode: 0o600 });
+  }
+}
+
+function removeLighthouseWorkingDirectory(): void {
+  const target = path.resolve(frontendRoot, ".lighthouseci");
+  if (!existsSync(target)) return;
+  const metadata = lstatSync(target);
+  if (!metadata.isDirectory() || metadata.isSymbolicLink()) {
+    throw safetyError("P5_LIGHTHOUSE_OUTPUT", "working-directory-reparse");
+  }
+  rmSync(target, { recursive: true, force: false });
+}
+
+function lighthouseProfileSettings(variant: "mobile" | "desktop", chromiumMajor: string) {
+  if (!/^[1-9][0-9]*$/u.test(chromiumMajor)) {
+    throw safetyError("P5_LIGHTHOUSE_PROFILE", "chromium-major-invalid");
+  }
+  if (variant === "mobile") {
+    return {
+      formFactor: "mobile",
+      throttlingMethod: "simulate",
+      throttling: {
+        rttMs: 150,
+        throughputKbps: 1638.4,
+        requestLatencyMs: 562.5,
+        downloadThroughputKbps: 1474.56,
+        uploadThroughputKbps: 675,
+        cpuSlowdownMultiplier: 4,
+      },
+      screenEmulation: {
+        mobile: true,
+        width: 412,
+        height: 823,
+        deviceScaleFactor: 1.75,
+        disabled: false,
+      },
+      emulatedUserAgent: `Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromiumMajor}.0.0.0 Mobile Safari/537.36`,
+    };
+  }
+  return {
+    preset: "desktop",
+    formFactor: "desktop",
+    throttlingMethod: "simulate",
+    throttling: {
+      rttMs: 40,
+      throughputKbps: 10_240,
+      requestLatencyMs: 0,
+      downloadThroughputKbps: 0,
+      uploadThroughputKbps: 0,
+      cpuSlowdownMultiplier: 1,
+    },
+    screenEmulation: {
+      mobile: false,
+      width: 1350,
+      height: 940,
+      deviceScaleFactor: 1,
+      disabled: false,
+    },
+    emulatedUserAgent: `Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${chromiumMajor}.0.0.0 Safari/537.36`,
+  };
+}
+
+function escapeRegularExpression(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
+function lighthouseAssertionMatrix(
+  mode: SafetyMode,
+  variant: "mobile" | "desktop",
+  urls: readonly { id: string; url: string; seoApplicable: boolean }[],
+) {
+  return urls.map((route) => {
+    const performanceMinimum =
+      mode === "local-authenticated" ? (variant === "mobile" ? 0.85 : 0.9) : 0.75;
+    const assertions: Record<string, unknown> = {
+      "categories:performance": ["error", { minScore: performanceMinimum }],
+      "categories:accessibility": ["error", { minScore: 0.95 }],
+      "categories:best-practices": ["error", { minScore: 0.9 }],
+      "cumulative-layout-shift": ["error", { maxNumericValue: 0.1 }],
+    };
+    if (route.seoApplicable) {
+      assertions["categories:seo"] = ["error", { minScore: 0.95 }];
+    }
+    return {
+      matchingUrlPattern: `^${escapeRegularExpression(route.url)}$`,
+      aggregationMethod: "median",
+      assertions,
+    };
+  });
+}
+
+async function runLighthouse(
+  contract: SafetyContract,
+  requested: string[],
+  localCredentials: LocalFixtureCredentials | null,
+): Promise<number> {
+  const variants = (
+    requested.length === 0 || requested[0] === "all" ? ["mobile", "desktop"] : requested
+  ) as Array<"mobile" | "desktop">;
   if (
     variants.length === 0 ||
     variants.some((value) => value !== "mobile" && value !== "desktop")
   ) {
     throw safetyError("VS_LIGHTHOUSE_MODE", "lighthouse-variant-invalid");
+  }
+  if (requested[0] === "all" && requested.length !== 1) {
+    throw safetyError("VS_LIGHTHOUSE_MODE", "lighthouse-arguments-invalid");
+  }
+  const fixtureProductId = process.env.QA_PRODUCT_ID;
+  if (
+    contract.mode === "local-authenticated" &&
+    (!fixtureProductId || !/^[1-9][0-9]*$/u.test(fixtureProductId))
+  ) {
+    throw safetyError("P5_LIGHTHOUSE_FIXTURE", "positive-product-id-required");
+  }
+  if (contract.mode === "local-authenticated" && !localCredentials) {
+    throw safetyError("P5_LIGHTHOUSE_FIXTURE", "local-credentials-required");
+  }
+  const selectedRoutes = LIGHTHOUSE_ROUTES.filter(
+    (route) => route.requiresLocalFixture === (contract.mode === "local-authenticated"),
+  ).map((route) => ({
+    id: route.id,
+    seoApplicable: route.seoApplicable,
+    url: `${APP_ORIGIN}${resolveFixturePath(route.path, fixtureProductId)}`,
+  }));
+  if (selectedRoutes.length !== (contract.mode === "public" ? 3 : 2)) {
+    throw safetyError("P5_LIGHTHOUSE_ROUTES", "route-matrix-incomplete");
   }
 
   clearViolationMarker();
@@ -1456,7 +1703,7 @@ async function runLighthouse(contract: SafetyContract, requested: string[]): Pro
   const proxy = await startLoopbackEgressProxy({
     violationMarkerPath,
     contract,
-    allowedConnectHostnames: REVIEWED_EXTERNAL_CONNECT_HOSTNAMES,
+    allowedConnectHostnames: NO_EXTERNAL_CONNECT_HOSTNAMES,
     allowedLoopbackOrigins: ownedLoopbackOrigins(contract),
     // Lighthouse's page guard classifies HTTP and CDP WebSocket events.
     // Chromium background CONNECTs expose neither a page nor a path, so this
@@ -1464,21 +1711,43 @@ async function runLighthouse(contract: SafetyContract, requested: string[]): Pro
     opaqueConnectPolicy: "contain",
   });
   const unregisterProxy = registerOwnedCleanup(proxy.close);
-  const chromiumPath = installedPlaywrightChromiumPath();
+  const chromium = await installedPlaywrightChromiumIdentity();
   let ownedServer: Awaited<ReturnType<typeof startOwnedServer>> | undefined;
   const temporaryConfigs: string[] = [];
+  const parentEnvironment = new Map<string, string | undefined>();
+  let localUserCleanupRequired = false;
+  let artifactSensitiveValues = sensitiveValuesFromEnvironment(process.env);
   let exitCode = 0;
   try {
-    await cleanBuild(contract, undefined, proxy.origin);
-    ownedServer = await startOwnedServer(contract, undefined, proxy.origin);
+    if (contract.mode === "local-authenticated" && localCredentials) {
+      for (const [name, value] of Object.entries({
+        VISUAL_SAFETY_MODE: "local-authenticated",
+        VISUAL_SAFETY_APP_ORIGIN: APP_ORIGIN,
+        VISUAL_SAFETY_SUPABASE_ORIGIN: contract.supabaseOrigin,
+        NEXT_PUBLIC_SUPABASE_URL: contract.supabaseOrigin,
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: localCredentials.anonKey,
+        SUPABASE_SERVICE_ROLE_KEY: localCredentials.serviceRoleKey,
+      })) {
+        parentEnvironment.set(name, process.env[name]);
+        process.env[name] = value ?? "";
+      }
+      // The Admin API can create the user before a later preference upsert
+      // fails. Arm cleanup before creation so every partial fixture state is
+      // removed as well as a fully initialized user.
+      localUserCleanupRequired = true;
+      await ensureTestUser();
+    }
+    const buildProvenance = await cleanBuild(contract, localCredentials ?? undefined, proxy.origin);
+    ownedServer = await startOwnedServer(contract, localCredentials ?? undefined, proxy.origin);
     for (const variant of variants) {
       const sourcePath = path.join(frontendRoot, `lighthouserc.${variant}.js`);
-      // The checked-in configuration is read-only in this phase. Generate a
-      // temporary public-only copy with the owned server and loopback proxy.
+      // Historical source configurations remain byte-for-byte unchanged.
+      // Generate the explicit five-run median contract in a temporary file.
       delete require.cache[sourcePath];
       const source = require(sourcePath) as {
         ci: {
           collect: Record<string, unknown>;
+          assert?: Record<string, unknown>;
           upload?: Record<string, unknown>;
         };
       };
@@ -1488,9 +1757,17 @@ async function runLighthouse(contract: SafetyContract, requested: string[]): Pro
       delete config.ci.collect.startServerReadyTimeout;
       config.ci.collect.puppeteerScript = path.relative(
         frontendRoot,
-        path.join(frontendRoot, "e2e", "scripts", "lighthouse-public-guard.cjs"),
+        path.join(
+          frontendRoot,
+          "e2e",
+          "scripts",
+          contract.mode === "public"
+            ? "lighthouse-public-guard.cjs"
+            : "lighthouse-local-auth-guard.cjs",
+        ),
       );
-      config.ci.collect.url = [`${APP_ORIGIN}/auth/login`];
+      config.ci.collect.url = selectedRoutes.map((route) => route.url);
+      config.ci.collect.numberOfRuns = LIGHTHOUSE_RUN_COUNT;
       const launchOptions =
         (config.ci.collect.puppeteerLaunchOptions as
           | {
@@ -1500,15 +1777,25 @@ async function runLighthouse(contract: SafetyContract, requested: string[]): Pro
       const proxyArguments = [`--proxy-server=${proxy.origin}`, "--proxy-bypass-list=<-loopback>"];
       launchOptions.args = [...(launchOptions.args ?? []), ...proxyArguments];
       config.ci.collect.puppeteerLaunchOptions = launchOptions;
-      const settings = (config.ci.collect.settings as Record<string, unknown> | undefined) ?? {};
+      const settings = {
+        ...(config.ci.collect.settings as Record<string, unknown> | undefined),
+        ...lighthouseProfileSettings(variant, chromium.major),
+        locale: "en-US",
+        onlyCategories: ["performance", "accessibility", "best-practices", "seo"],
+        skipAudits: ["uses-http2"],
+      };
       // Puppeteer owns Chrome when the safety script is active; LHCI ignores
       // settings.chromeFlags in that mode. Equivalent launch flags already
       // live in puppeteerLaunchOptions above.
       delete settings.chromeFlags;
       config.ci.collect.settings = settings;
+      config.ci.assert = {
+        assertMatrix: lighthouseAssertionMatrix(contract.mode, variant, selectedRoutes),
+      };
+      const outputDirectory = resetLighthouseOutputDirectory(contract.mode, variant);
       config.ci.upload = {
         target: "filesystem",
-        outputDir: "lighthouse-reports",
+        outputDir: outputDirectory,
       };
 
       const temporaryPath = path.join(tmpdir(), `tryvit-lighthouse-${variant}-${process.pid}.cjs`);
@@ -1518,40 +1805,139 @@ async function runLighthouse(contract: SafetyContract, requested: string[]): Pro
         mode: 0o600,
       });
       const lighthouseCli = require.resolve("@lhci/cli/src/cli.js");
-      const env = sanitizedChildEnvironment(process.env, "public");
+      const env = sanitizedChildEnvironment(
+        process.env,
+        contract.mode,
+        contract.supabaseOrigin ?? undefined,
+        localCredentials ?? undefined,
+      );
+      delete env.SUPABASE_SERVICE_ROLE_KEY;
       env.VISUAL_SAFETY_PROXY = proxy.origin;
       env.VISUAL_SAFETY_VIOLATION_MARKER = violationMarkerPath;
+      env.VISUAL_SAFETY_APP_ORIGIN = APP_ORIGIN;
+      if (contract.mode === "local-authenticated") {
+        env.VISUAL_SAFETY_SUPABASE_ORIGIN = contract.supabaseOrigin;
+        env.QA_TEST_EMAIL = TEST_EMAIL;
+        env.QA_TEST_PASSWORD = TEST_PASSWORD;
+      }
       // LHCI's platform finder does not discover Playwright's managed browser
       // on every host. Use the exact installed executable already exercised by
       // Playwright rather than accepting an ambient browser-path override.
-      env.CHROME_PATH = chromiumPath;
-      const code = await runChild(
-        process.execPath,
-        [lighthouseCli, "autorun", `--config=${temporaryPath}`],
-        { cwd: frontendRoot, env },
-      );
+      env.CHROME_PATH = chromium.path;
+      artifactSensitiveValues = [
+        ...new Set([...artifactSensitiveValues, ...sensitiveValuesFromEnvironment(env)]),
+      ];
+      let code: number | undefined;
+      let lighthouseFailure: Error | undefined;
+      try {
+        code = await runChild(
+          process.execPath,
+          [lighthouseCli, "autorun", `--config=${temporaryPath}`],
+          { cwd: frontendRoot, env },
+        );
+      } catch (error) {
+        lighthouseFailure =
+          error instanceof Error ? error : new Error("Lighthouse child process failed");
+      }
+      let cleanupFailure: Error | undefined;
+      try {
+        removeLighthouseWorkingDirectory();
+      } catch (error) {
+        cleanupFailure =
+          error instanceof Error ? error : new Error("Lighthouse working-directory cleanup failed");
+      }
+      try {
+        // LHCI's HTML and JSON reports can retain a public local anon key
+        // inside script-source diagnostics. HTML is not retained; redact every
+        // guarded credential from JSON before checksumming, parsing, or any
+        // later artifact scan, including when the child process throws.
+        sanitizeLighthouseOutputDirectory(outputDirectory, artifactSensitiveValues);
+      } catch (error) {
+        const sanitizationFailure =
+          error instanceof Error ? error : new Error("Lighthouse report sanitization failed");
+        cleanupFailure = cleanupFailure
+          ? new AggregateError(
+              [cleanupFailure, sanitizationFailure],
+              "Lighthouse artifact cleanup failed",
+              { cause: cleanupFailure },
+            )
+          : sanitizationFailure;
+      }
+      if (lighthouseFailure) {
+        if (cleanupFailure) {
+          throw new AggregateError(
+            [lighthouseFailure, cleanupFailure],
+            "Lighthouse failed and its artifact cleanup was incomplete",
+            { cause: lighthouseFailure },
+          );
+        }
+        throw lighthouseFailure;
+      }
+      if (cleanupFailure) throw cleanupFailure;
+      if (code === undefined) {
+        throw safetyError("P5_LIGHTHOUSE_RUN", "child-exit-code-unavailable");
+      }
       if (code !== 0) exitCode = code;
+      const metadataWithoutChecksum = {
+        schemaVersion: "phase5a0d-lighthouse-run/v1",
+        sourceCommit: buildProvenance.contract.sourceGitSha,
+        mode: contract.mode,
+        profile: variant,
+        runCount: LIGHTHOUSE_RUN_COUNT,
+        routes: selectedRoutes,
+        buildId: buildProvenance.contract.buildId,
+        buildFingerprint: buildProvenance.contract.fingerprint,
+        sourceConfigSha256: canonicalLighthouseConfigSha256(readFileSync(sourcePath)),
+        runtime: {
+          node: process.version,
+          lighthouse: (require("lighthouse/package.json") as { version: string }).version,
+          chromium: chromium.version,
+        },
+        effectiveSettings: settings,
+      };
+      writeFileSync(
+        path.join(frontendRoot, outputDirectory, "phase5a0d-run-metadata.json"),
+        `${JSON.stringify(
+          {
+            ...metadataWithoutChecksum,
+            metadataChecksum: createHash("sha256")
+              .update(JSON.stringify(metadataWithoutChecksum), "utf8")
+              .digest("hex"),
+          },
+          null,
+          2,
+        )}\n`,
+        "utf8",
+      );
       assertProxyClean(proxy);
     }
     await verifyBuildProvenance(contract);
     return exitCode;
   } finally {
     try {
-      scanChangedArtifacts(artifactsBefore, sensitiveValuesFromEnvironment(process.env));
+      scanChangedArtifacts(artifactsBefore, artifactSensitiveValues);
     } finally {
       try {
         if (ownedServer) await ownedServer.stop();
       } finally {
         try {
-          assertProxyClean(proxy);
+          if (localUserCleanupRequired) await deleteTestUser();
         } finally {
-          unregisterProxy();
-          await proxy.close();
-          for (const temporaryPath of temporaryConfigs) {
-            try {
-              unlinkSync(temporaryPath);
-            } catch {
-              // Generated outside the repository; cleanup is best effort.
+          for (const [name, value] of parentEnvironment) {
+            if (value === undefined) delete process.env[name];
+            else process.env[name] = value;
+          }
+          try {
+            assertProxyClean(proxy);
+          } finally {
+            unregisterProxy();
+            await proxy.close();
+            for (const temporaryPath of temporaryConfigs) {
+              try {
+                unlinkSync(temporaryPath);
+              } catch {
+                // Generated outside the repository; cleanup is best effort.
+              }
             }
           }
         }
@@ -1568,6 +1954,58 @@ async function main(): Promise<number> {
   if (command === "public") return runPlaywright("public", args);
   if (command === "local-authenticated") {
     return runPlaywright("local-authenticated", args);
+  }
+  if (command === "phase5-visual-generate" || command === "phase5-visual-verify") {
+    if (
+      process.env.CI !== "true" ||
+      process.platform !== "linux" ||
+      args.length !== 1 ||
+      (args[0] !== "public" && args[0] !== "local-authenticated")
+    ) {
+      throw safetyError("P5_VISUAL_MODE", "authoritative-linux-mode-required");
+    }
+    const visualMode = args[0] as SafetyMode;
+    const project = visualMode === "public" ? "visual-smoke" : "visual-authenticated";
+    const manifestCli = path.join(frontendRoot, "tooling", "phase5a0d-visual-baselines-cli.mts");
+    if (command === "phase5-visual-generate") {
+      // This must precede Playwright's snapshot update. Manifest generation is
+      // intentionally later and therefore cannot be the first ownership check.
+      prepareVisualBaselineWriteTargets(frontendRoot);
+    }
+    if (command === "phase5-visual-verify") {
+      const before = await runChild(
+        process.execPath,
+        [
+          "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
+          "--experimental-strip-types",
+          manifestCli,
+          "verify",
+        ],
+        { cwd: frontendRoot, env: nonSensitiveEnvironment(process.env) },
+      );
+      if (before !== 0) return before;
+    }
+    const code = await runPlaywright(
+      visualMode,
+      [
+        `--project=${project}`,
+        "--workers=1",
+        "--reporter=list",
+        ...(command === "phase5-visual-generate" ? ["--update-snapshots=all"] : []),
+      ],
+      command === "phase5-visual-generate",
+    );
+    if (code !== 0 || command === "phase5-visual-generate") return code;
+    return runChild(
+      process.execPath,
+      [
+        "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
+        "--experimental-strip-types",
+        manifestCli,
+        "verify",
+      ],
+      { cwd: frontendRoot, env: nonSensitiveEnvironment(process.env) },
+    );
   }
   if (command === "fixtures-seed" || command === "fixtures-teardown") {
     if (args.length > 0) throw safetyError("VS_FIXTURE_ARGUMENT", "fixture-arguments-rejected");
@@ -1601,7 +2039,7 @@ async function main(): Promise<number> {
     const proxy = await startLoopbackEgressProxy({
       violationMarkerPath,
       contract,
-      allowedConnectHostnames: REVIEWED_EXTERNAL_CONNECT_HOSTNAMES,
+      allowedConnectHostnames: NO_EXTERNAL_CONNECT_HOSTNAMES,
       allowedLoopbackOrigins: ownedLoopbackOrigins(contract),
     });
     const unregisterProxy = registerOwnedCleanup(proxy.close);
@@ -1619,7 +2057,9 @@ async function main(): Promise<number> {
     return serveCommand(contract, localCredentials ?? undefined);
   }
   if (command === "lighthouse" || command === "public-lighthouse") {
-    return runLighthouse(contract, args);
+    return runAfterSafetyPreflight(contract, (localCredentials) =>
+      runLighthouse(contract, args, localCredentials),
+    );
   }
   if (command === "assert") {
     const localCredentials = await preflightLocalEmulator(contract);

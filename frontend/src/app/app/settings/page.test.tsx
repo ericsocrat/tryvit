@@ -1,6 +1,7 @@
 import { useLanguageStore } from "@/stores/language-store";
+import type * as I18nCoreModule from "@/lib/i18n-core";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -19,7 +20,27 @@ HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) {
 
 const mockConfirmNav = vi.fn();
 const mockCancelNav = vi.fn();
+const mockActivateLanguage = vi.hoisted(() => vi.fn());
+const mockPrepareLanguage = vi.hoisted(() => vi.fn());
 let mockShowDialog = false;
+
+vi.mock("@/components/i18n/ClientMessagesProvider", () => ({
+  useClientMessages: () => ({
+    activateLanguage: mockActivateLanguage,
+    prepareLanguage: mockPrepareLanguage,
+    language: "en",
+  }),
+}));
+
+vi.mock("@/lib/i18n", async () => {
+  const { translate } = await vi.importActual<typeof I18nCoreModule>("@/lib/i18n-core");
+  return {
+    useTranslation: () => ({
+      language: "en",
+      t: (key: string, params?: Record<string, string | number>) => translate("en", key, params),
+    }),
+  };
+});
 
 vi.mock("@/hooks/use-unsaved-changes", () => ({
   useUnsavedChanges: () => ({
@@ -83,6 +104,8 @@ beforeEach(() => {
   useLanguageStore.getState().reset();
   localStorage.clear();
   mockGetPrefs.mockResolvedValue({ ok: true, data: mockPrefsData });
+  mockPrepareLanguage.mockResolvedValue(true);
+  mockActivateLanguage.mockResolvedValue(true);
   mockShowDialog = false;
 });
 
@@ -93,9 +116,7 @@ describe("ProfileSettingsPage", () => {
     render(<ProfileSettingsPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: /Profile & Preferences/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Profile & Preferences/i })).toBeInTheDocument();
     });
   });
 
@@ -112,13 +133,9 @@ describe("ProfileSettingsPage", () => {
     render(<ProfileSettingsPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: /Profile & Preferences/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Profile & Preferences/i })).toBeInTheDocument();
     });
-    expect(
-      screen.queryByRole("button", { name: "Save changes" }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Save changes" })).not.toBeInTheDocument();
   });
 
   it("shows save button after changing country", async () => {
@@ -131,9 +148,7 @@ describe("ProfileSettingsPage", () => {
 
     await user.click(screen.getByText("Deutschland"));
 
-    expect(
-      screen.getByRole("button", { name: "Save changes" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeInTheDocument();
   });
 
   it("shows only 2 language options for selected country (native + English)", async () => {
@@ -234,6 +249,8 @@ describe("ProfileSettingsPage", () => {
     await user.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() => {
+      expect(mockPrepareLanguage).toHaveBeenCalledWith("de");
+      expect(mockActivateLanguage).toHaveBeenCalledWith("de");
       expect(showToast).toHaveBeenCalledWith(
         expect.objectContaining({
           type: "success",
@@ -241,6 +258,91 @@ describe("ProfileSettingsPage", () => {
         }),
       );
     });
+  });
+
+  it("waits for the committed language before updating the store or showing success", async () => {
+    const { showToast } = await import("@/lib/toast");
+    let finishActivation: ((activated: boolean) => void) | undefined;
+    mockActivateLanguage.mockReturnValueOnce(
+      new Promise<boolean>((resolve) => {
+        finishActivation = resolve;
+      }),
+    );
+    mockSetPrefs.mockResolvedValue({ ok: true });
+    render(<ProfileSettingsPage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    await waitFor(() => {
+      expect(screen.getByText("Deutschland")).toBeInTheDocument();
+    });
+    await user.click(screen.getByText("Deutschland"));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(mockActivateLanguage).toHaveBeenCalledWith("de"));
+    expect(mockSetPrefs).toHaveBeenCalled();
+    expect(useLanguageStore.getState().loaded).toBe(false);
+    expect(showToast).not.toHaveBeenCalledWith(expect.objectContaining({ type: "success" }));
+
+    await act(async () => finishActivation?.(true));
+
+    await waitFor(() => {
+      expect(useLanguageStore.getState()).toMatchObject({
+        language: "de",
+        loaded: true,
+      });
+      expect(showToast).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: "success",
+          messageKey: "settings.preferencesSaved",
+        }),
+      );
+    });
+  });
+
+  it("does not persist when the target dictionary cannot be prepared", async () => {
+    const { showToast } = await import("@/lib/toast");
+    mockPrepareLanguage.mockResolvedValueOnce(false);
+    render(<ProfileSettingsPage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    await waitFor(() => {
+      expect(screen.getByText("Deutschland")).toBeInTheDocument();
+    });
+    await user.click(screen.getByText("Deutschland"));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => {
+      expect(showToast).toHaveBeenCalledWith({
+        type: "error",
+        messageKey: "common.error",
+      });
+    });
+    expect(mockSetPrefs).not.toHaveBeenCalled();
+    expect(mockActivateLanguage).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeEnabled();
+  });
+
+  it("retains dirty state and avoids success when a newer activation wins", async () => {
+    const { showToast } = await import("@/lib/toast");
+    mockSetPrefs.mockResolvedValue({ ok: true });
+    mockActivateLanguage.mockResolvedValueOnce(false);
+    render(<ProfileSettingsPage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    await waitFor(() => {
+      expect(screen.getByText("Deutschland")).toBeInTheDocument();
+    });
+    await user.click(screen.getByText("Deutschland"));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => expect(mockActivateLanguage).toHaveBeenCalledTimes(1));
+    expect(useLanguageStore.getState().loaded).toBe(false);
+    expect(showToast).not.toHaveBeenCalledWith(expect.objectContaining({ type: "success" }));
+    expect(showToast).toHaveBeenCalledWith({
+      type: "error",
+      messageKey: "common.error",
+    });
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeEnabled();
   });
 
   it("shows error toast on save failure", async () => {
@@ -305,9 +407,7 @@ describe("ProfileSettingsPage", () => {
     render(<ProfileSettingsPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: /Profile & Preferences/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Profile & Preferences/i })).toBeInTheDocument();
     });
 
     expect(screen.queryByText("Unsaved changes")).not.toBeInTheDocument();
@@ -318,9 +418,7 @@ describe("ProfileSettingsPage", () => {
     render(<ProfileSettingsPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Unsaved changes", { selector: "h3" }),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Unsaved changes", { selector: "h3" })).toBeInTheDocument();
     });
   });
 });

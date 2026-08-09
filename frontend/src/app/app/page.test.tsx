@@ -9,18 +9,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mockGetDashboardData = vi.fn();
 const mockGetCategoryOverview = vi.fn();
 const mockGetDashboardInsights = vi.fn();
+const mockGetUser = vi.fn(() =>
+  Promise.resolve({
+    data: {
+      user: {
+        user_metadata: { full_name: "Jan Kowalski" },
+      },
+    },
+  }),
+);
 
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
     auth: {
-      getUser: () =>
-        Promise.resolve({
-          data: {
-            user: {
-              user_metadata: { full_name: "Jan Kowalski" },
-            },
-          },
-        }),
+      getUser: mockGetUser,
     },
   }),
 }));
@@ -32,7 +34,6 @@ vi.mock("@/lib/api", () => ({
 }));
 
 vi.mock("next/link", () => ({
-
   default: ({ href, children, className, ...rest }: any) => (
     <a href={href} className={className} {...rest}>
       {children}
@@ -67,9 +68,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
         defaultOptions: { queries: { retry: false, staleTime: 0 } },
       }),
   );
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }
 
 function createWrapper() {
@@ -84,15 +83,9 @@ function createWrapper() {
 
 // Use relative dates so tests work regardless of when they run
 const now = new Date();
-const oneDayAgo = new Date(
-  now.getTime() - 1 * 24 * 60 * 60 * 1000,
-).toISOString();
-const twoDaysAgo = new Date(
-  now.getTime() - 2 * 24 * 60 * 60 * 1000,
-).toISOString();
-const threeDaysAgo = new Date(
-  now.getTime() - 3 * 24 * 60 * 60 * 1000,
-).toISOString();
+const oneDayAgo = new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000).toISOString();
+const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString();
+const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString();
 
 const mockDashboard: DashboardData = {
   api_version: "1.0",
@@ -187,14 +180,12 @@ describe("DashboardPage", () => {
 
   it("renders a time-aware greeting", async () => {
     render(<DashboardPage />, { wrapper: createWrapper() });
-    await waitFor(() => {
-      // The greeting is time-dependent, so check for any of the possible greetings
-      const greetingEl = screen.getByRole("heading", { level: 1 });
-      expect(greetingEl).toBeInTheDocument();
-      expect(greetingEl.textContent).toMatch(
-        /Good morning|Good afternoon|Good evening|Good night/,
-      );
-    });
+    // getUser runs only after the returning-user branch has invoked its lazy loader.
+    await waitFor(() => expect(mockGetUser).toHaveBeenCalled());
+    await vi.dynamicImportSettled();
+
+    const greetingEl = await screen.findByRole("heading", { level: 1 });
+    expect(greetingEl.textContent).toMatch(/Good morning|Good afternoon|Good evening|Good night/);
   });
 
   it("passes display name from auth to greeting", async () => {
@@ -229,9 +220,7 @@ describe("DashboardPage", () => {
   it("renders recently viewed products", async () => {
     render(<DashboardPage />, { wrapper: createWrapper() });
     await waitFor(() => {
-      expect(
-        screen.getAllByText("Lay's Classic").length,
-      ).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Lay's Classic").length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText("Pepsi Max").length).toBeGreaterThanOrEqual(1);
     });
   });
@@ -239,9 +228,7 @@ describe("DashboardPage", () => {
   it("renders product links with correct hrefs", async () => {
     render(<DashboardPage />, { wrapper: createWrapper() });
     await waitFor(() => {
-      expect(
-        screen.getAllByText("Lay's Classic").length,
-      ).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Lay's Classic").length).toBeGreaterThanOrEqual(1);
     });
     const link = screen.getAllByText("Lay's Classic")[0].closest("a");
     expect(link).toHaveAttribute("href", "/app/product/1");
@@ -266,13 +253,31 @@ describe("DashboardPage", () => {
         recently_viewed: [],
         favorites_preview: [],
         new_products: [],
-        stats: { total_scanned: 0, total_viewed: 0, lists_count: 0, favorites_count: 0, most_viewed_category: null },
+        stats: {
+          total_scanned: 0,
+          total_viewed: 0,
+          lists_count: 0,
+          favorites_count: 0,
+          most_viewed_category: null,
+        },
       },
     });
     render(<DashboardPage />, { wrapper: createWrapper() });
     await waitFor(() => {
       expect(screen.getByTestId("new-user-welcome")).toBeInTheDocument();
     });
+    expect(mockGetUser).not.toHaveBeenCalled();
+    expect(mockGetCategoryOverview).not.toHaveBeenCalled();
+    expect(mockGetDashboardInsights).not.toHaveBeenCalled();
+  });
+
+  it("loads the display name only for a returning user", async () => {
+    render(<DashboardPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Jan Kowalski");
+    });
+    expect(mockGetUser).toHaveBeenCalledTimes(1);
   });
 
   it("shows scan CTA on new user welcome", async () => {
@@ -283,7 +288,13 @@ describe("DashboardPage", () => {
         recently_viewed: [],
         favorites_preview: [],
         new_products: [],
-        stats: { total_scanned: 0, total_viewed: 0, lists_count: 0, favorites_count: 0, most_viewed_category: null },
+        stats: {
+          total_scanned: 0,
+          total_viewed: 0,
+          lists_count: 0,
+          favorites_count: 0,
+          most_viewed_category: null,
+        },
       },
     });
     render(<DashboardPage />, { wrapper: createWrapper() });
@@ -308,9 +319,7 @@ describe("DashboardPage", () => {
       // Health summary should still render (with no scored products)
       expect(screen.getByTestId("health-summary")).toBeInTheDocument();
     });
-    expect(
-      screen.queryByTestId("recently-viewed-compact"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("recently-viewed-compact")).not.toBeInTheDocument();
   });
 
   it("renders quick actions section", async () => {
@@ -323,9 +332,7 @@ describe("DashboardPage", () => {
   it("renders HealthInsightsPanel when insights data is available", async () => {
     render(<DashboardPage />, { wrapper: createWrapper() });
     await waitFor(() => {
-      expect(
-        screen.getByTestId("health-insights-panel"),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("health-insights-panel")).toBeInTheDocument();
     });
   });
 
@@ -375,9 +382,7 @@ describe("DashboardPage", () => {
     const animated = container.querySelectorAll(".animate-fade-in-up");
     expect(animated.length).toBeGreaterThanOrEqual(8);
     // First section (greeting) has no delay; subsequent have staggered delays
-    const delays = Array.from(animated).map(
-      (el) => (el as HTMLElement).style.animationDelay,
-    );
+    const delays = Array.from(animated).map((el) => (el as HTMLElement).style.animationDelay);
     expect(delays[0]).toBe(""); // no explicit delay
     expect(delays[1]).toBe("50ms");
     expect(delays[2]).toBe("100ms");

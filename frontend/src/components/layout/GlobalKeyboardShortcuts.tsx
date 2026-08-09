@@ -9,10 +9,19 @@
 // closed <dialog> elements, inflating the layout viewport on mobile devices.
 // See PR #92. A unit test guards this — see GlobalKeyboardShortcuts.test.tsx.
 
-import { useEffect, useState, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { CommandPalette } from "@/components/desktop/CommandPalette";
-import { ShortcutsHelp } from "@/components/desktop/ShortcutsHelp";
+import { usePathname, useRouter } from "next/navigation";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+
+const CommandPalette = lazy(() =>
+  import("@/components/desktop/CommandPalette").then((module) => ({
+    default: module.CommandPalette,
+  })),
+);
+const ShortcutsHelp = lazy(() =>
+  import("@/components/desktop/ShortcutsHelp").then((module) => ({
+    default: module.ShortcutsHelp,
+  })),
+);
 
 /**
  * Global keyboard shortcuts:
@@ -46,9 +55,7 @@ export function GlobalKeyboardShortcuts() {
 
     function handleSlash() {
       if (pathname === "/app/search") {
-        const input = document.querySelector<HTMLInputElement>(
-          'input[type="text"][aria-label]',
-        );
+        const input = document.querySelector<HTMLInputElement>('input[type="text"][aria-label]');
         input?.focus();
       } else {
         router.push("/app/search");
@@ -105,8 +112,16 @@ export function GlobalKeyboardShortcuts() {
 
   return (
     <>
-      {paletteOpen && <CommandPalette open onClose={closePalette} />}
-      {shortcutsOpen && <ShortcutsHelp open onClose={closeShortcuts} />}
+      {paletteOpen && (
+        <Suspense fallback={null}>
+          <CommandPalette open onClose={closePalette} />
+        </Suspense>
+      )}
+      {shortcutsOpen && (
+        <Suspense fallback={null}>
+          <ShortcutsHelp open onClose={closeShortcuts} />
+        </Suspense>
+      )}
     </>
   );
 }

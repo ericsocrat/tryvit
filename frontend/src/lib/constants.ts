@@ -3,46 +3,16 @@
 
 import type { ScoreBand } from "@/lib/types";
 
-export const COUNTRIES = [
-  { code: "DE", name: "Germany", native: "Deutschland", flag: "🇩🇪" },
-  { code: "PL", name: "Poland", native: "Polska", flag: "🇵🇱" },
-] as const;
-
-export const LANGUAGES = [
-  { code: "en", name: "English", native: "English" },
-  { code: "pl", name: "Polish", native: "Polski" },
-  { code: "de", name: "German", native: "Deutsch" },
-] as const;
-
-/**
- * Maps country codes to their default (native) language.
- * Each country offers exactly 2 languages: its native language + English.
- * Kept in sync with country_ref.default_language in the database.
- */
-export const COUNTRY_DEFAULT_LANGUAGES: Record<string, string> = {
-  PL: "pl",
-  DE: "de",
-} as const;
-
-/** Get flag emoji for any ISO 3166-1 alpha-2 country code via regional indicator symbols. */
-export function getCountryFlag(code: string): string {
-  if (!/^[A-Z]{2}$/i.test(code)) return "🌐";
-  const upper = code.toUpperCase();
-  return String.fromCodePoint(
-    ...([...upper].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65)),
-  );
-}
-
-/** Get English display name for a country code. Falls back to the code itself. */
-export function getCountryName(code: string): string {
-  return COUNTRIES.find((c) => c.code === code)?.name ?? code;
-}
-
-/** Get the available languages for a country: [native, English]. */
-export function getLanguagesForCountry(countryCode: string) {
-  const nativeLang = COUNTRY_DEFAULT_LANGUAGES[countryCode] ?? "en";
-  return LANGUAGES.filter((l) => l.code === nativeLang || l.code === "en");
-}
+// Compatibility exports. Persistent shell consumers import country-config
+// directly so they do not pull this broader product-domain module at startup.
+export {
+  COUNTRIES,
+  COUNTRY_DEFAULT_LANGUAGES,
+  getCountryFlag,
+  getCountryName,
+  getLanguagesForCountry,
+  LANGUAGES,
+} from "@/lib/country-config";
 
 export const ALLERGEN_TAGS = [
   { tag: "gluten", labelKey: "allergens.gluten" },

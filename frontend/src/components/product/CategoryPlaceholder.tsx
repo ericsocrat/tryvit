@@ -44,6 +44,7 @@ export function CategoryPlaceholder({
     <div
       aria-label={`${productName} — no image available`}
       className={`flex items-center justify-center rounded-xl bg-surface-muted text-foreground-muted ${sizeClasses[size]}`}
+      role="img"
     >
       {useLucide ? (
         <CategoryIcon slug={categorySlug} size={ICON_SIZE_MAP[size]} />
