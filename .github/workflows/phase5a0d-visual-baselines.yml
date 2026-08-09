@@ -137,6 +137,12 @@ jobs:
           # override from main. No other package metadata change is permitted.
           approved_security_nanoid_override="3.3.17"
           baseline_runtime_sha="$(node -e 'const manifest = require("./frontend/e2e/__screenshots__/phase5a0d-manifest.json"); if (typeof manifest.sourceCommit !== "string" || !/^[0-9a-f]{40}$/.test(manifest.sourceCommit)) process.exit(1); process.stdout.write(manifest.sourceCommit);')"
+          # Squash-merging can leave the immutable manifest's reviewed runtime
+          # reachable only by exact object ID after its source branch is removed.
+          # Fetch that already-attested SHA without creating a mutable ref.
+          if ! git cat-file -e "$baseline_runtime_sha^{commit}" 2>/dev/null; then
+            git fetch --no-tags --no-write-fetch-head origin "$baseline_runtime_sha"
+          fi
           if ! git cat-file -e "$baseline_runtime_sha^{commit}" 2>/dev/null; then
             echo "::error::The immutable visual manifest references an unavailable baseline runtime commit."
             exit 1

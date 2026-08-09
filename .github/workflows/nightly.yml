@@ -155,7 +155,7 @@ jobs:
       - name: Local-authenticated Playwright suite
         run: |
           set -o pipefail
-          npm run visual-safety:local-authenticated -- --project=authenticated --project=functional --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
+          npm run visual-safety:local-authenticated -- --project=authenticated --project=functional --project=private-pwa-cache --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
         timeout-minutes: 20
         env:
           VISUAL_SAFETY_MODE: local-authenticated

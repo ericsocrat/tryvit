@@ -19,7 +19,13 @@ export const FUNCTIONAL_TEST_EMAIL = "e2e-playwright-functional@test.tryvit.loca
 export const TEST_PASSWORD = "PlaywrightTest123!";
 const WebSocketImplementation = WebSocket as unknown as WebSocketLikeConstructor;
 
-type TestUserScope = "authenticated" | "functional";
+export type TestUserScope = "authenticated" | "functional";
+
+export type ScopedTestSession = Readonly<{
+  accessToken: string;
+  anonKey: string;
+  userId: string;
+}>;
 
 function getScopeEmail(scope: TestUserScope): string {
   return scope === "functional" ? FUNCTIONAL_TEST_EMAIL : TEST_EMAIL;
@@ -57,6 +63,42 @@ export function getAdminClient(): SupabaseClient {
     auth: { autoRefreshToken: false, persistSession: false },
     global: { fetch: runtime.fetch },
     realtime: { transport: WebSocketTransport },
+  });
+}
+
+/**
+ * Create an in-memory user session for guarded browser transport probes.
+ *
+ * The session is intentionally never persisted or logged. The local-origin
+ * contract is proven before the public anon key is read, and the guarded
+ * transport prevents any hosted fallback.
+ */
+export async function getScopedTestSession(scope: TestUserScope): Promise<ScopedTestSession> {
+  const runtime = getGuardedFixtureRequest();
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!anonKey) {
+    throw new VisualSafetyError("VS_FIXTURE_CREDENTIAL", "fixture.local-anon-key-missing");
+  }
+
+  const WebSocketTransport = createGuardedWebSocketConstructor({
+    allowedOrigin: runtime.origin,
+    WebSocketImpl: WebSocketImplementation,
+  });
+  const client = createClient(runtime.origin, anonKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+    global: { fetch: runtime.fetch },
+    realtime: { transport: WebSocketTransport },
+  });
+  const { data, error } = await client.auth.signInWithPassword(getScopedTestCredentials(scope));
+
+  if (error || !data.session?.access_token || !data.user?.id) {
+    throw new VisualSafetyError("VS_FIXTURE_AUTH", "fixture.user-session");
+  }
+
+  return Object.freeze({
+    accessToken: data.session.access_token,
+    anonKey,
+    userId: data.user.id,
   });
 }
 

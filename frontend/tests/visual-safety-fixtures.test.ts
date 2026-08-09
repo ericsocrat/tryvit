@@ -52,6 +52,9 @@ describe("Playwright fixture safety contract", () => {
         !filename.endsWith("visual-safety.ts") &&
         !filename.endsWith("visual-safety-cli.mts") &&
         !filename.endsWith("visual-safety-browser.spec.ts") &&
+        // This one Chromium-only regression must make real browser fetches so
+        // the service worker can prove it never replays private responses.
+        !filename.endsWith("private-pwa-cache-isolation.spec.ts") &&
         !filename.endsWith("visual-safety-auto-fixture-negative.spec.ts"),
     );
     for (const filename of candidates) {
@@ -121,6 +124,57 @@ describe("Playwright fixture safety contract", () => {
     expect(config.indexOf("lstatSync(lexical)")).toBeLessThan(
       config.indexOf("realpathSync.native(lexical)"),
     );
+  });
+
+  it("allows service workers only in the dedicated private-cache regression", () => {
+    const config = source(path.join(frontendRoot, "playwright.config.ts"));
+    const regression = source(path.join(e2eRoot, "private-pwa-cache-isolation.spec.ts"));
+    const allowOccurrences = config.match(/serviceWorkers: "allow"/gu) ?? [];
+
+    expect(allowOccurrences).toHaveLength(1);
+    expect(config).toMatch(
+      /name: "private-pwa-cache"[\s\S]*dependencies: \["auth-setup", "functional-auth-setup"\][\s\S]*retries: 0[\s\S]*storageState: authStatePath\("functional-user\.json"\)[\s\S]*serviceWorkers: "allow"/u,
+    );
+    expect(config).toMatch(
+      /name: "private-pwa-cache"[\s\S]*trace: "off"[\s\S]*screenshot: "off"[\s\S]*video: "off"/u,
+    );
+    expect(config).toContain('serviceWorkers: "block"');
+    expect(regression).toContain('from "./fixtures/safe-test"');
+    expect(regression).toContain("loadSafetyContractFromEnvironment");
+    expect(regression).toContain('safetyContract.mode !== "local-authenticated"');
+    expect(regression).toContain('test.use({ serviceWorkers: "allow" })');
+    expect(regression).toContain('credentials: "same-origin"');
+    expect(regression).not.toContain('credentials: "include"');
+    expect(regression).toContain("finally {");
+    expect(regression).toContain("test.afterEach");
+    expect(regression).toContain("testInfo.setTimeout(CLEANUP_TIMEOUT_MS)");
+    expect(regression).toContain("cleanupBrowserPrivateState");
+    expect(regression).toContain("worker-activation-timeout");
+    expect(regression).toContain("account-switch-worker-control-invalid");
+    expect(regression).toContain("account-switch-worker-cardinality-invalid");
+    expect(regression).toContain("online-reload-timeout");
+    expect(regression).toContain("online-reload-url-invalid");
+    expect(regression).toContain("online-recovery-worker-control-invalid");
+    expect(regression).toContain('controller?.state === "activated"');
+    expect(regression).not.toContain("navigator.serviceWorker.ready");
+    expect(regression).toContain("LEGACY_PRIVATE_CACHE_NAMES");
+    expect(regression).toContain("synthetic-private-cache-sentinel");
+    expect(regression).toContain("synthetic-unrelated-cache-sentinel");
+    expect(regression).toContain('getByRole("button", { name: "Sign Out" })');
+    expect(regression).toContain('getScopedTestSession("functional")');
+    expect(regression).toContain('getScopedTestSession("authenticated")');
+    expect(regression).toContain('getByLabel("Email").fill(TEST_EMAIL)');
+    expect(regression).toContain('getByLabel("Password", { exact: true }).fill(TEST_PASSWORD)');
+    expect(regression.indexOf('getByRole("button", { name: "Sign Out" })')).toBeLessThan(
+      regression.indexOf('getByLabel("Email").fill(TEST_EMAIL)'),
+    );
+    expect(regression.match(/context\.setStorageState\(/gu)).toHaveLength(1);
+    expect(regression).toContain(
+      "await context.setStorageState({ cookies: [], origins: [] })",
+    );
+    expect(regression).not.toContain("await page.close()");
+    expect(regression).not.toMatch(/console\.(?:log|info|warn|error)/u);
+    expect(regression).not.toMatch(/storageState\(\{\s*path:/u);
   });
 
   it("routes quality audits through the guard and selects auth explicitly", () => {
