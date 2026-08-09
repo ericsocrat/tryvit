@@ -5,8 +5,8 @@ import type { BrowserContext, Page } from "@playwright/test";
 
 import { expect, test } from "./fixtures/safe-test";
 import {
-  FUNCTIONAL_TEST_EMAIL,
   getScopedTestSession,
+  TEST_EMAIL,
   type ScopedTestSession,
 } from "./helpers/test-user";
 import { VisualSafetyError, loadSafetyContractFromEnvironment } from "./helpers/visual-safety";
@@ -25,7 +25,7 @@ if (!authStateDirectory || !path.isAbsolute(authStateDirectory)) {
   throw new VisualSafetyError("VS_AUTH_STATE_DIR", "owned-temporary-directory-required");
 }
 
-const FUNCTIONAL_AUTH_STATE = path.join(authStateDirectory, "functional-user.json");
+const AUTHENTICATED_AUTH_STATE = path.join(authStateDirectory, "user.json");
 const APP_PRIVATE_HTML_PATH = "/app/settings?phase5a0f=private-cache-isolation";
 const APP_PRIVATE_RSC_PATH = "/app/settings/account";
 const AUTH_USER_URL = new URL("/auth/v1/user", safetyContract.supabaseOrigin).toString();
@@ -369,8 +369,10 @@ test.describe("private PWA cache account isolation", () => {
     try {
       await registerAndControlWorker(page);
 
-      const userA = await getScopedTestSession("authenticated");
-      const userB = await getScopedTestSession("functional");
+      // User A is the dedicated functional fixture so its real global sign-out
+      // cannot revoke the authenticated fixture used by companion audit projects.
+      const userA = await getScopedTestSession("functional");
+      const userB = await getScopedTestSession("authenticated");
 
       const rscResponsePromise = page.waitForResponse(
         (response) => {
@@ -445,15 +447,23 @@ test.describe("private PWA cache account isolation", () => {
       await page.getByRole("button", { name: "Sign Out" }).click();
       await page.waitForURL(/\/auth\/login(?:[?#]|$)/u, { timeout: 15_000 });
 
-      await page.close();
-      await context.setStorageState(FUNCTIONAL_AUTH_STATE);
-      const userBPage = await context.newPage();
+      await context.setStorageState(AUTHENTICATED_AUTH_STATE);
+      const userBPage = page;
       await userBPage.goto("/offline", { waitUntil: "domcontentloaded" });
-      await userBPage.waitForFunction(
-        () => navigator.serviceWorker.controller !== null,
-        undefined,
-        { timeout: 15_000 },
-      );
+      const workerSurvivedAccountSwitch = await userBPage
+        .waitForFunction(
+          () =>
+            navigator.serviceWorker.controller?.state === "activated" &&
+            navigator.serviceWorker.controller.scriptURL === new URL("/sw.js", location.href).href,
+          undefined,
+          { timeout: WORKER_CONTROL_TIMEOUT_MS },
+        )
+        .then(() => true)
+        .catch(() => false);
+      if (!workerSurvivedAccountSwitch) fail("account-switch-worker-control-invalid");
+      if (context.serviceWorkers().length !== 1) {
+        fail("account-switch-worker-cardinality-invalid");
+      }
 
       await context.setOffline(true);
       offline = true;
@@ -532,16 +542,16 @@ test.describe("private PWA cache account isolation", () => {
       await userBPage.goto(APP_PRIVATE_RSC_PATH, {
         waitUntil: "domcontentloaded",
       });
-      const functionalIdentityVisible = await userBPage
+      const authenticatedIdentityVisible = await userBPage
         .waitForFunction(
           (email) => document.body.textContent?.includes(email) === true,
-          FUNCTIONAL_TEST_EMAIL,
+          TEST_EMAIL,
           { timeout: 10_000 },
         )
         .then(() => true)
         .catch(() => false);
       expect(
-        functionalIdentityVisible,
+        authenticatedIdentityVisible,
         "[PWA_CACHE_ISOLATION] browser-session-switch-invalid",
       ).toBe(true);
 

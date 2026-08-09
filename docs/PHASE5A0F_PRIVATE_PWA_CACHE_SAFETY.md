@@ -144,8 +144,11 @@ Serwist rule may have classified before the generic cross-origin rule.
 
 The dedicated `private-pwa-cache` Playwright project is the only guarded
 project permitted to enable service workers. It runs against the ephemeral
-loopback Supabase runtime and two scoped fixture users. All other browser,
-visual, screenshot, and Lighthouse projects continue to block service workers.
+loopback Supabase runtime and two scoped fixture users. The isolated functional
+fixture is user A, whose real global sign-out therefore cannot revoke the
+authenticated fixture used by companion audits; that authenticated fixture is
+user B. All other browser, visual, screenshot, and Lighthouse projects continue
+to block service workers.
 
 The proof uses one browser context so the worker and CacheStorage survive the
 account transition. It:
@@ -153,8 +156,8 @@ account transition. It:
 1. seeds synthetic private sentinels into the former private-bearing cache names;
 2. installs the freshly generated worker and proves activation removes them;
 3. verifies authenticated user-A requests do not enter CacheStorage;
-4. signs out user A through the real account UI and loads user B into the same
-   browser context without replacing its worker or CacheStorage;
+4. signs out user A through the real account UI, loads user B into the same
+   browser context, and keeps the same controlled page, worker, and CacheStorage;
 5. goes offline and proves protected document/RSC, Supabase Auth, and
    PostgREST GETs never replay user-A content;
 6. proves the public `/offline` fallback remains available;

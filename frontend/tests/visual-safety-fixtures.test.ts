@@ -133,7 +133,7 @@ describe("Playwright fixture safety contract", () => {
 
     expect(allowOccurrences).toHaveLength(1);
     expect(config).toMatch(
-      /name: "private-pwa-cache"[\s\S]*dependencies: \["auth-setup", "functional-auth-setup"\][\s\S]*retries: 0[\s\S]*serviceWorkers: "allow"/u,
+      /name: "private-pwa-cache"[\s\S]*dependencies: \["auth-setup", "functional-auth-setup"\][\s\S]*retries: 0[\s\S]*storageState: authStatePath\("functional-user\.json"\)[\s\S]*serviceWorkers: "allow"/u,
     );
     expect(config).toMatch(
       /name: "private-pwa-cache"[\s\S]*trace: "off"[\s\S]*screenshot: "off"[\s\S]*video: "off"/u,
@@ -150,16 +150,21 @@ describe("Playwright fixture safety contract", () => {
     expect(regression).toContain("testInfo.setTimeout(CLEANUP_TIMEOUT_MS)");
     expect(regression).toContain("cleanupBrowserPrivateState");
     expect(regression).toContain("worker-activation-timeout");
+    expect(regression).toContain("account-switch-worker-control-invalid");
+    expect(regression).toContain("account-switch-worker-cardinality-invalid");
     expect(regression).toContain('controller?.state === "activated"');
     expect(regression).not.toContain("navigator.serviceWorker.ready");
     expect(regression).toContain("LEGACY_PRIVATE_CACHE_NAMES");
     expect(regression).toContain("synthetic-private-cache-sentinel");
     expect(regression).toContain("synthetic-unrelated-cache-sentinel");
     expect(regression).toContain('getByRole("button", { name: "Sign Out" })');
-    expect(regression).toContain("context.setStorageState(FUNCTIONAL_AUTH_STATE)");
+    expect(regression).toContain('getScopedTestSession("functional")');
+    expect(regression).toContain('getScopedTestSession("authenticated")');
+    expect(regression).toContain("context.setStorageState(AUTHENTICATED_AUTH_STATE)");
     expect(regression.indexOf('getByRole("button", { name: "Sign Out" })')).toBeLessThan(
-      regression.indexOf("context.setStorageState(FUNCTIONAL_AUTH_STATE)"),
+      regression.indexOf("context.setStorageState(AUTHENTICATED_AUTH_STATE)"),
     );
+    expect(regression).not.toContain("await page.close()");
     expect(regression).not.toMatch(/console\.(?:log|info|warn|error)/u);
     expect(regression).not.toMatch(/storageState\(\{\s*path:/u);
   });

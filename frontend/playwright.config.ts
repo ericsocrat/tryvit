@@ -355,7 +355,9 @@ const privatePwaCacheProject = {
   retries: 0,
   use: {
     ...devices["Desktop Chrome"],
-    storageState: authStatePath("user.json"),
+    // This project performs a real global sign-out. Start from the isolated
+    // functional identity so companion authenticated audits remain valid.
+    storageState: authStatePath("functional-user.json"),
     // Every other project inherits the fail-closed global/fixture default.
     // This one Chromium security regression must exercise the real worker.
     serviceWorkers: "allow" as const,
