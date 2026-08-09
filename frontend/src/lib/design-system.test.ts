@@ -146,6 +146,7 @@ const REQUIRED_NON_COLOR_TOKENS = [
 
 describe("Design System — Token Existence", () => {
   const css = readSource("src/styles/globals.css");
+  const generatedCss = readSource("src/design-system/generated/tokens.css");
 
   it("defines all required color tokens in :root", () => {
     for (const token of REQUIRED_COLOR_TOKENS) {
@@ -164,7 +165,19 @@ describe("Design System — Token Existence", () => {
   });
 
   it("defines system preference fallback via prefers-color-scheme", () => {
-    expect(css).toContain("prefers-color-scheme: dark");
+    expect(generatedCss).toContain("prefers-color-scheme: dark");
+  });
+
+  it("imports generated tokens and preserves an opt-in V1 compatibility scope", () => {
+    expect(css).toContain("@import '../design-system/generated/tokens.css';");
+    expect(generatedCss).toContain('[data-design-system="v1"]');
+    expect(generatedCss).toContain('[data-design-system="v2"]');
+  });
+
+  it("provides explicit theme variants and forced-color contracts", () => {
+    expect(css).toContain("@custom-variant dark");
+    expect(css).toContain("@media (forced-colors: active)");
+    expect(generatedCss).toContain("@media (forced-colors: active)");
   });
 
   it("every :root color token has a dark mode override", () => {
@@ -184,6 +197,11 @@ describe("Design System — Token Existence", () => {
 describe("Design System — Theme Token Mapping (v4)", () => {
   // In Tailwind v4, config mappings live in the @theme block of globals.css
   const css = readSource("src/styles/globals.css");
+
+  it("uses inline theme mappings so runtime aliases do not emit self-cycles", () => {
+    expect(css).toContain("@theme inline {");
+    expect(css).not.toMatch(/\n@theme\s*\{/u);
+  });
 
   const EXPECTED_COLOR_GROUPS = [
     "surface",
@@ -274,20 +292,20 @@ describe("Design System — WCAG AA Contrast Compliance", () => {
     {
       name: "inverse text on brand",
       fg: "#ffffff",
-      bg: "#16a34a",
+      bg: "#15803d",
       darkFg: "#111827",
       darkBg: "#4ade80",
     },
     {
       name: "error text on surface",
-      fg: "#ef4444",
+      fg: "#b91c1c",
       bg: "#ffffff",
       darkFg: "#f87171",
       darkBg: "#111827",
     },
     {
       name: "success text on surface",
-      fg: "#22c55e",
+      fg: "#15803d",
       bg: "#ffffff",
       darkFg: "#4ade80",
       darkBg: "#111827",
@@ -296,20 +314,20 @@ describe("Design System — WCAG AA Contrast Compliance", () => {
 
   describe("Light mode", () => {
     it.each(NORMAL_TEXT_PAIRS)(
-      "$name — ratio ≥ 2:1 (accent colors meet large-text threshold)",
+      "$name — ratio ≥ 4.5:1",
       ({ fg, bg }) => {
         const ratio = contrastRatio(fg, bg);
-        expect(ratio).toBeGreaterThanOrEqual(2);
+        expect(ratio).toBeGreaterThanOrEqual(4.5);
       }
     );
   });
 
   describe("Dark mode", () => {
     it.each(NORMAL_TEXT_PAIRS)(
-      "$name — ratio ≥ 2:1 (accent colors meet large-text threshold)",
+      "$name — ratio ≥ 4.5:1",
       ({ darkFg, darkBg }) => {
         const ratio = contrastRatio(darkFg, darkBg);
-        expect(ratio).toBeGreaterThanOrEqual(2);
+        expect(ratio).toBeGreaterThanOrEqual(4.5);
       }
     );
   });

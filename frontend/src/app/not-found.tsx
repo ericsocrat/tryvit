@@ -9,7 +9,10 @@ import { useTranslation } from "@/lib/i18n";
 export default function NotFound() {
   const { t } = useTranslation();
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4">
+    <div
+      id="main-content"
+      className="flex min-h-screen flex-col items-center justify-center px-4"
+    >
       <ErrorIllustration type="not-found" priority className="mb-6" />
       <h1 className="mb-2 text-6xl font-bold text-foreground">
         {t("error.notFoundCode")}

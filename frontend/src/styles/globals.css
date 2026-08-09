@@ -1,6 +1,22 @@
 @import 'tailwindcss';
+@import '../design-system/generated/tokens.css';
 
-@theme {
+@custom-variant dark {
+  &:where([data-theme='dark'], [data-theme='dark'] *) {
+    @slot;
+  }
+
+  /* When scripting is disabled ThemeScript cannot stamp data-theme. Keep
+     every existing dark: utility aligned with the generated token fallback,
+     while an explicit light preference continues to win. */
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme]) *) {
+      @slot;
+    }
+  }
+}
+
+@theme inline {
   --breakpoint-*: initial;
   --breakpoint-xs: 375px;
   --breakpoint-sm: 640px;
@@ -800,6 +816,35 @@
 /* Remove default outline when :focus-visible is not active */
 *:focus:not(:focus-visible) {
   outline: none;
+}
+
+/* Forced-colors keeps every V1 shell operable while V2 components use the
+   complete generated high-contrast token set. Status meaning remains in text
+   and icons; decorative elevation is deliberately removed. */
+@media (forced-colors: active) {
+  :root {
+    --color-surface: Canvas;
+    --color-surface-subtle: Canvas;
+    --color-surface-muted: Canvas;
+    --color-surface-overlay: Canvas;
+    --color-text-primary: CanvasText;
+    --color-text-secondary: CanvasText;
+    --color-text-muted: GrayText;
+    --color-text-inverse: CanvasText;
+    --color-border: CanvasText;
+    --color-border-strong: CanvasText;
+    --color-brand: LinkText;
+    --color-brand-hover: LinkText;
+    --color-brand-subtle: Canvas;
+    --color-focus: Highlight;
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+  }
+
+  *:focus-visible {
+    outline-color: Highlight;
+  }
 }
 
 @keyframes slideUp {

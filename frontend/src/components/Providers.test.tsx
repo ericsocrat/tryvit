@@ -29,6 +29,18 @@ describe("Providers", () => {
     expect(screen.getByTestId("toaster")).toBeInTheDocument();
   });
 
+  it("renders the localized skip link before application content", () => {
+    render(
+      <Providers initialLanguage="en" initialMessages={initialMessages}>
+        <main id="main-content">Content</main>
+      </Providers>,
+    );
+    expect(screen.getByRole("link", { name: "Skip to content" })).toHaveAttribute(
+      "href",
+      "#main-content",
+    );
+  });
+
   it("renders multiple children", () => {
     render(
       <Providers initialLanguage="en" initialMessages={initialMessages}>

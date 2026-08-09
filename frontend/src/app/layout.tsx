@@ -3,14 +3,15 @@ import { ThemeScript } from "@/components/ThemeScript";
 import { IS_QA_MODE } from "@/lib/qa-mode";
 import { getInitialClientMessages } from "@/lib/i18n-server";
 import { getServerLocale } from "@/lib/server-locale";
+import { THEME_CHROME_COLORS } from "@/design-system/accessibility/theme-contract";
 import "@/styles/globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata, Viewport } from "next";
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#1DB954" },
-    { media: "(prefers-color-scheme: dark)", color: "#0A2E1A" },
+    { media: "(prefers-color-scheme: light)", color: THEME_CHROME_COLORS.light },
+    { media: "(prefers-color-scheme: dark)", color: THEME_CHROME_COLORS.dark },
   ],
   width: "device-width",
   initialScale: 1,
@@ -139,6 +140,7 @@ export default async function RootLayout({
   return (
     <html
       lang={language}
+      data-design-system="v1"
       suppressHydrationWarning
       {...(IS_QA_MODE ? { "data-qa-mode": "true" } : {})}
     >

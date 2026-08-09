@@ -1,5 +1,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render } from "@testing-library/react";
+import pl from "@/../messages/pl.json";
+import { ClientMessagesProvider } from "@/components/i18n/ClientMessagesProvider";
 
 // ─── Mock next/navigation ───────────────────────────────────────────────────
 
@@ -126,13 +128,32 @@ describe("RouteAnnouncer", () => {
     );
   });
 
-  it("falls back to capitalized segment for unknown routes", () => {
+  it("uses a localized generic label for unknown routes", () => {
     const { container, rerender } = render(<RouteAnnouncer />);
     mockPathname = "/app/unknown-page";
     rerender(<RouteAnnouncer />);
 
     expect(container.querySelector("[aria-live]")?.textContent).toBe(
-      "Navigated to Unknown-page",
+      "Navigated to Page",
+    );
+  });
+
+  it("announces route changes in the active language", () => {
+    const { container, rerender } = render(
+      <ClientMessagesProvider initialMessages={{ language: "pl", active: pl }}>
+        <RouteAnnouncer />
+      </ClientMessagesProvider>,
+    );
+
+    mockPathname = "/app/settings";
+    rerender(
+      <ClientMessagesProvider initialMessages={{ language: "pl", active: pl }}>
+        <RouteAnnouncer />
+      </ClientMessagesProvider>,
+    );
+
+    expect(container.querySelector("[aria-live]")?.textContent).toBe(
+      "Przejście do: Ustawienia",
     );
   });
 });

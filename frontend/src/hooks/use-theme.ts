@@ -7,21 +7,27 @@
 // via the Settings page save flow (not handled here — this is the client-only
 // primitive that the ThemeToggle component and Settings sync build on).
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-export type ThemeMode = "light" | "dark" | "system";
-export type ResolvedTheme = "light" | "dark";
+import {
+  applyResolvedTheme,
+  isThemeMode,
+  resolveThemeMode,
+  THEME_MEDIA_QUERY,
+  THEME_MODE_CHANGE_EVENT,
+  THEME_STORAGE_KEY,
+  type ResolvedTheme,
+  type ThemeMode,
+} from "@/design-system/accessibility/theme-contract";
 
-const STORAGE_KEY = "theme";
+export type { ResolvedTheme, ThemeMode } from "@/design-system/accessibility/theme-contract";
 
 /** Read the persisted theme mode from localStorage. */
 function getStoredTheme(): ThemeMode {
   if (globalThis.window === undefined) return "system";
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === "light" || stored === "dark" || stored === "system") {
-      return stored;
-    }
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (isThemeMode(stored)) return stored;
   } catch {
     // localStorage blocked (e.g. Safari private browsing)
   }
@@ -30,23 +36,15 @@ function getStoredTheme(): ThemeMode {
 
 /** Resolve the actual theme (light or dark) from a mode. */
 function resolveTheme(mode: ThemeMode): ResolvedTheme {
-  if (mode === "light" || mode === "dark") return mode;
-  // 'system' — check OS preference
-  if (globalThis.window === undefined) return "light";
-  return globalThis.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  const prefersDark =
+    globalThis.window !== undefined && globalThis.matchMedia(THEME_MEDIA_QUERY).matches;
+  return resolveThemeMode(mode, prefersDark);
 }
 
 /** Apply the resolved theme to the document. */
 function applyTheme(resolved: ResolvedTheme) {
   if (typeof document === "undefined") return;
-  document.documentElement.dataset.theme = resolved;
-  // Update meta theme-color for mobile browsers
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) {
-    meta.setAttribute("content", resolved === "dark" ? "#111827" : "#16a34a");
-  }
+  applyResolvedTheme(resolved);
 }
 
 /**
@@ -72,20 +70,52 @@ export function useTheme() {
   const updateMode = useCallback((newMode: ThemeMode) => {
     setMode(newMode);
     try {
-      localStorage.setItem(STORAGE_KEY, newMode);
+      localStorage.setItem(THEME_STORAGE_KEY, newMode);
     } catch {
       // localStorage unavailable
     }
     const newResolved = resolveTheme(newMode);
     setResolved(newResolved);
     applyTheme(newResolved);
+    globalThis.dispatchEvent(
+      new CustomEvent<ThemeMode>(THEME_MODE_CHANGE_EVENT, { detail: newMode }),
+    );
+  }, []);
+
+  // Keep independent hook consumers coherent in the current document and
+  // across tabs. A same-window custom event is required because browsers do
+  // not dispatch `storage` back to the tab that performed the write.
+  useEffect(() => {
+    const synchronizeMode = (nextMode: ThemeMode) => {
+      const nextResolved = resolveTheme(nextMode);
+      setMode(nextMode);
+      setResolved(nextResolved);
+      applyTheme(nextResolved);
+    };
+    const handleModeChange = (event: Event) => {
+      if (event instanceof CustomEvent && isThemeMode(event.detail)) {
+        synchronizeMode(event.detail);
+      }
+    };
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === THEME_STORAGE_KEY || event.key === null) {
+        synchronizeMode(getStoredTheme());
+      }
+    };
+
+    globalThis.addEventListener(THEME_MODE_CHANGE_EVENT, handleModeChange);
+    globalThis.addEventListener("storage", handleStorage);
+    return () => {
+      globalThis.removeEventListener(THEME_MODE_CHANGE_EVENT, handleModeChange);
+      globalThis.removeEventListener("storage", handleStorage);
+    };
   }, []);
 
   // Listen to system preference changes when mode = 'system'
   useEffect(() => {
     if (mode !== "system") return;
 
-    const mql = globalThis.matchMedia("(prefers-color-scheme: dark)");
+    const mql = globalThis.matchMedia(THEME_MEDIA_QUERY);
     const handler = (e: MediaQueryListEvent) => {
       const newResolved = e.matches ? "dark" : "light";
       setResolved(newResolved);
@@ -101,5 +131,8 @@ export function useTheme() {
     applyTheme(resolved);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return useMemo(() => ({ mode, resolved, setMode: updateMode }), [mode, resolved, updateMode]);
+  return useMemo(
+    () => ({ mode, resolved, setMode: updateMode }),
+    [mode, resolved, updateMode],
+  );
 }
