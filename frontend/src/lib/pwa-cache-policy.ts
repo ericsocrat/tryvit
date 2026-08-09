@@ -164,12 +164,20 @@ function manifestEntryIdentity(entry: PrecacheEntry | string): string {
   return `${entry.url}:${entry.revision ?? ""}`;
 }
 
+function compareManifestIdentity(left: string, right: string): number {
+  if (left === right) return 0;
+  return left < right ? -1 : 1;
+}
+
 function fingerprintManifest(entries: readonly (PrecacheEntry | string)[]): string {
   // A compact deterministic FNV-1a fingerprint avoids a constant revision and
   // changes whenever the injected build asset manifest changes.
   let fingerprint = 0x811c9dc5;
-  for (const character of entries.map(manifestEntryIdentity).sort().join("\n")) {
-    fingerprint ^= character.charCodeAt(0);
+  for (const character of entries
+    .map(manifestEntryIdentity)
+    .sort(compareManifestIdentity)
+    .join("\n")) {
+    fingerprint ^= character.codePointAt(0) ?? 0;
     fingerprint = Math.imul(fingerprint, 0x01000193) >>> 0;
   }
   return fingerprint.toString(16).padStart(8, "0");

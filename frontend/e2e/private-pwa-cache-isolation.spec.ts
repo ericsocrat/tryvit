@@ -3,7 +3,7 @@ import path from "node:path";
 
 import type { BrowserContext, Page } from "@playwright/test";
 
-import { test } from "./fixtures/safe-test";
+import { expect, test } from "./fixtures/safe-test";
 import {
   FUNCTIONAL_TEST_EMAIL,
   getScopedTestSession,
@@ -42,6 +42,9 @@ const LEGACY_PRIVATE_CACHE_NAMES = [
 ] as const;
 const UNRELATED_SENTINEL_CACHE = "static-image-assets";
 const UNRELATED_SENTINEL_PATH = "/phase5a0f-unrelated-sentinel.txt";
+const WORKER_ACTIVATION_TIMEOUT_MS = 20_000;
+const WORKER_CONTROL_TIMEOUT_MS = 15_000;
+const CLEANUP_TIMEOUT_MS = 20_000;
 
 type IdentityKind = "auth-user" | "preferences" | "none";
 type BrowserProbeResult =
@@ -179,9 +182,6 @@ async function registerAndControlWorker(page: Page): Promise<void> {
         migration.privateEntryUrl,
         new Response("synthetic-private-cache-sentinel"),
       );
-
-      await navigator.serviceWorker.register("/sw.js", { scope: "/" });
-      await navigator.serviceWorker.ready;
       return true;
     },
     {
@@ -193,10 +193,72 @@ async function registerAndControlWorker(page: Page): Promise<void> {
   );
   if (!cleanStart) fail("browser-storage-not-clean-at-start");
 
+  const activationOutcome = await page.evaluate(
+    async ({ activationTimeoutMs }) => {
+      type ActivationOutcome =
+        | "activated"
+        | "worker-activation-timeout"
+        | "worker-install-redundant"
+        | "worker-missing"
+        | "worker-register-rejected"
+        | "worker-scope-invalid"
+        | "worker-script-invalid";
+
+      const registration = await navigator.serviceWorker
+        .register("/sw.js", { scope: "/" })
+        .catch(() => null);
+      if (registration === null) return "worker-register-rejected" as const;
+      if (registration.scope !== new URL("/", location.href).href) {
+        return "worker-scope-invalid" as const;
+      }
+
+      const worker = registration.installing ?? registration.waiting ?? registration.active;
+      if (!worker) return "worker-missing" as const;
+      if (worker.scriptURL !== new URL("/sw.js", location.href).href) {
+        return "worker-script-invalid" as const;
+      }
+      if (worker.state === "activated") return "activated" as const;
+      if (worker.state === "redundant") return "worker-install-redundant" as const;
+
+      return new Promise<ActivationOutcome>((resolve) => {
+        let settled = false;
+        const finish = (outcome: ActivationOutcome) => {
+          if (settled) return;
+          settled = true;
+          window.clearTimeout(timer);
+          worker.removeEventListener("statechange", handleStateChange);
+          resolve(outcome);
+        };
+        const handleStateChange = () => {
+          if (worker.state === "activated") finish("activated");
+          if (worker.state === "redundant") finish("worker-install-redundant");
+        };
+        const timer = window.setTimeout(
+          () => finish("worker-activation-timeout"),
+          activationTimeoutMs,
+        );
+        worker.addEventListener("statechange", handleStateChange);
+        handleStateChange();
+      });
+    },
+    {
+      activationTimeoutMs: WORKER_ACTIVATION_TIMEOUT_MS,
+    },
+  );
+  if (activationOutcome !== "activated") fail(activationOutcome);
+
   await page.reload({ waitUntil: "domcontentloaded" });
-  await page.waitForFunction(() => navigator.serviceWorker.controller !== null, undefined, {
-    timeout: 15_000,
-  });
+  const exactWorkerControlsPage = await page
+    .waitForFunction(
+      () =>
+        navigator.serviceWorker.controller?.state === "activated" &&
+        navigator.serviceWorker.controller.scriptURL === new URL("/sw.js", location.href).href,
+      undefined,
+      { timeout: WORKER_CONTROL_TIMEOUT_MS },
+    )
+    .then(() => true)
+    .catch(() => false);
+  if (!exactWorkerControlsPage) fail("service-worker-control-timeout");
   if (page.context().serviceWorkers().length !== 1) {
     fail("service-worker-control-not-established");
   }
@@ -227,10 +289,7 @@ async function registerAndControlWorker(page: Page): Promise<void> {
   if (!migrationPassed) fail("legacy-private-cache-migration-invalid");
 }
 
-async function cleanupBrowserPrivateState(
-  context: BrowserContext,
-  preferredPage: Page | undefined,
-): Promise<void> {
+async function cleanupBrowserPrivateState(context: BrowserContext): Promise<void> {
   let cleanupFailed = false;
   try {
     await context.setOffline(false);
@@ -238,7 +297,7 @@ async function cleanupBrowserPrivateState(
     cleanupFailed = true;
   }
 
-  let page = preferredPage;
+  let page = context.pages().find((candidate) => !candidate.isClosed());
   try {
     if (!page || page.isClosed()) {
       page = await context.newPage();
@@ -277,13 +336,17 @@ async function cleanupBrowserPrivateState(
 }
 
 test.describe("private PWA cache account isolation", () => {
+  test.afterEach(async ({ context }, testInfo) => {
+    testInfo.setTimeout(CLEANUP_TIMEOUT_MS);
+    await cleanupBrowserPrivateState(context);
+  });
+
   test("does not replay user A HTML, RSC, Auth, or PostgREST to user B", async ({
     context,
     page,
   }) => {
     test.setTimeout(90_000);
 
-    let cleanupPage: Page | undefined = page;
     let offline = false;
     try {
       await registerAndControlWorker(page);
@@ -367,7 +430,6 @@ test.describe("private PWA cache account isolation", () => {
       await page.close();
       await context.setStorageState(FUNCTIONAL_AUTH_STATE);
       const userBPage = await context.newPage();
-      cleanupPage = userBPage;
       await userBPage.goto("/offline", { waitUntil: "domcontentloaded" });
       await userBPage.waitForFunction(
         () => navigator.serviceWorker.controller !== null,
@@ -460,7 +522,10 @@ test.describe("private PWA cache account isolation", () => {
         )
         .then(() => true)
         .catch(() => false);
-      if (!functionalIdentityVisible) fail("browser-session-switch-invalid");
+      expect(
+        functionalIdentityVisible,
+        "[PWA_CACHE_ISOLATION] browser-session-switch-invalid",
+      ).toBe(true);
 
       await assertNoPrivateCacheKeys(userBPage, privateUrls);
     } finally {
@@ -469,7 +534,6 @@ test.describe("private PWA cache account isolation", () => {
         // blocking; this early restore keeps page evaluation available.
         await context.setOffline(false).catch(() => undefined);
       }
-      await cleanupBrowserPrivateState(context, cleanupPage);
     }
   });
 });

@@ -311,6 +311,29 @@ describe("PWA cache lifecycle", () => {
     expect(ensureOfflineFallbackPrecache(first)).toEqual(first);
   });
 
+  it("derives the same offline revision from every manifest permutation", () => {
+    const manifest = [
+      "/_next/static/chunks/café.js",
+      { url: "/_next/static/chunks/cafe\u0301.js", revision: "decomposed" },
+      { url: "/_next/static/chunks/app.js", revision: null },
+    ] as const;
+    const permutations = [
+      manifest,
+      [...manifest].reverse(),
+      [manifest[1], manifest[2], manifest[0]],
+    ];
+
+    const revisions = permutations.map((entries) => {
+      const offline = ensureOfflineFallbackPrecache(entries).find(
+        (entry) => typeof entry !== "string" && entry.url === OFFLINE_FALLBACK_PATH,
+      );
+      return offline && typeof offline !== "string" ? offline.revision : undefined;
+    });
+
+    expect(new Set(revisions)).toEqual(new Set([revisions[0]]));
+    expect(revisions[0]).toMatch(/^build-[a-f0-9]{8}$/u);
+  });
+
   it("purges only legacy private or obsolete TryVit runtime caches", () => {
     expect(
       selectRuntimeCachesForMigration(

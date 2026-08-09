@@ -158,8 +158,9 @@ account transition. It:
 5. goes offline and proves protected document/RSC, Supabase Auth, and
    PostgREST GETs never replay user-A content;
 6. proves the public `/offline` fallback remains available;
-7. restores the network, unregisters workers, and deletes test caches in a
-   mandatory `finally` block.
+7. restores the network in a mandatory `finally` block, then unregisters
+   workers, deletes test caches, and clears browser storage in a blocking
+   `afterEach` teardown with an independent timeout budget.
 
 Credentials and response bodies are never written to logs or artifacts. The
 existing browser egress guard is installed before worker registration, fixture
@@ -175,10 +176,14 @@ Completed local verification:
   19 skipped;
 - TypeScript type-check and lint: passed;
 - clean production build and fresh `/sw.js` generation: passed;
+- guarded-loopback proxy lifecycle diagnostic: exact root-scoped `/sw.js`
+  activation, exact active controller, legacy migration, unrelated public-cache
+  preservation, and zero egress violations passed;
 - generated worker SHA-256:
-  `7174454b7815f1013d689a1f6991b2ba77ff2e6532dfb2154583aec56ff6b4ec`;
-- generated-worker inspection: no runtime `process.env`, no dead product-RPC
-  cache, no broad `includes("v3")` cleanup, and the offline fallback present.
+  `78a411b4357fbf3d82b84a3b95b12e5729dccb359decf63738ff5b078a189488`;
+- generated-worker inspection: no runtime `process.env`, no product-RPC runtime
+  route (only its legacy cache-name migration remains), no broad
+  `includes("v3")` cleanup, and the offline fallback present.
 
 The dedicated browser proof was attempted twice against newly created local
 Windows Supabase runtimes. Both attempts stopped before the PWA test at the
