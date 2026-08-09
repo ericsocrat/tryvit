@@ -26,6 +26,8 @@ concurrency:
 env:
   BASELINE_COMPREHENSIVE: 900
   BASELINE_DATA_AUDIT: 300
+  NEXT_PUBLIC_QA_MODE: "1"
+  PHASE5A1_CATALOG: "1"
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────
@@ -155,7 +157,7 @@ jobs:
       - name: Local-authenticated Playwright suite
         run: |
           set -o pipefail
-          npm run visual-safety:local-authenticated -- --project=authenticated --project=functional --project=private-pwa-cache --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
+          npm run visual-safety:local-authenticated -- --project=authenticated --project=functional --project=private-pwa-cache --project=phase5a1-catalog --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
         timeout-minutes: 20
         env:
           VISUAL_SAFETY_MODE: local-authenticated

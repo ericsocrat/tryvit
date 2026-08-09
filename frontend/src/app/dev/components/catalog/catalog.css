@@ -1,0 +1,73 @@
+.catalog-v2-canvas {
+  background: var(--color-canvas);
+  color: var(--color-content-primary);
+  font-family: var(--ds-type-family-sans);
+}
+
+.catalog-v2-panel {
+  display: grid;
+  gap: var(--density-focused-gap);
+  padding: var(--ds-space-6);
+  color: var(--color-content-primary);
+  background: var(--color-surface-1);
+  border: var(--ds-border-standard) solid var(--color-border-default);
+  border-radius: var(--ds-radius-large);
+  box-shadow: var(--ds-elevation-raised);
+}
+
+.catalog-v2-status {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: var(--ds-size-control-small);
+  padding-inline: var(--ds-space-3);
+  color: var(--domain-provenance-explicit-foreground);
+  background: var(--domain-provenance-explicit-surface);
+  border: var(--ds-border-standard) solid var(--color-border-default);
+  border-radius: var(--ds-radius-label);
+  font-size: var(--ds-type-size-1);
+  font-weight: var(--ds-type-weight-semibold);
+}
+
+.catalog-v2-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: var(--density-compact-gap);
+}
+
+.catalog-v2-swatch {
+  min-height: var(--ds-size-media-thumbnail);
+  padding: var(--ds-space-3);
+  border: var(--ds-border-standard) solid var(--color-border-default);
+  border-radius: var(--ds-radius-medium);
+  font-size: var(--ds-type-size-1);
+  font-weight: var(--ds-type-weight-semibold);
+}
+
+.catalog-v2-swatch[data-tone="canvas"] {
+  color: var(--color-content-primary);
+  background: var(--color-canvas);
+}
+
+.catalog-v2-swatch[data-tone="surface"] {
+  color: var(--color-content-primary);
+  background: var(--color-surface-1);
+}
+
+.catalog-v2-swatch[data-tone="action"] {
+  color: var(--color-action-primary-foreground);
+  background: var(--color-action-primary-background);
+}
+
+.catalog-v2-swatch[data-tone="evidence"] {
+  color: var(--domain-allergen-derived-foreground);
+  background: var(--domain-allergen-derived-surface);
+}
+
+@media (forced-colors: active) {
+  .catalog-v2-panel,
+  .catalog-v2-swatch,
+  .catalog-v2-status {
+    box-shadow: none;
+  }
+}

@@ -44,6 +44,7 @@ concurrency:
 
 env:
   NEXT_PUBLIC_QA_MODE: "1"
+  PHASE5A1_CATALOG: "1"
   # Browser safety mode is explicit per step. Authenticated coverage is valid
   # only when the local-emulator preflight succeeds.
 
@@ -181,7 +182,7 @@ jobs:
 
       - name: Run local-authenticated Desktop Audit
         working-directory: frontend
-        run: npm run visual-safety:local-authenticated -- --project=quality-desktop --project=private-pwa-cache --reporter=html,list
+        run: npm run visual-safety:local-authenticated -- --project=quality-desktop --project=private-pwa-cache --project=phase5a1-catalog --reporter=html,list
         env:
           VISUAL_SAFETY_MODE: local-authenticated
           QA_MODE_LEVEL: ${{ steps.mode.outputs.mode }}
@@ -226,6 +227,15 @@ jobs:
           path: frontend/playwright-report/
           retention-days: 14
           if-no-files-found: ignore
+
+      - name: Upload Phase 5A.1 catalog candidates
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() && steps.public_safety_assert.outcome == 'success' && steps.auth_safety_assert.outcome == 'success' && steps.local_fixture_teardown.outcome == 'success' && steps.local_supabase_stop.outcome == 'success' }}
+        with:
+          name: phase5a1-catalog-candidates
+          path: frontend/test-results/**/phase5a1-catalog-candidates/**
+          retention-days: 14
+          if-no-files-found: error
 
       # ── Step Summary ─────────────────────────────────────────────────────
       - name: Quality Gate Summary

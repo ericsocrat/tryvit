@@ -44,6 +44,11 @@
     "phase5:visual:manifest:generate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/phase5a0d-visual-baselines-cli.mts generate",
     "phase5:visual:manifest:verify": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/phase5a0d-visual-baselines-cli.mts verify",
     "phase5:visual:artifact:stage": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/phase5a0d-visual-baselines-cli.mts stage",
+    "design-system:tokens:generate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/tokens/generate.mts",
+    "design-system:tokens:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/tokens/generate.mts --check",
+    "design-system:inventory:generate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/phase5a1a-live-inventory-cli.mts",
+    "design-system:check": "npm run design-system:tokens:check && vitest run src/design-system tests/phase5a1a-live-inventory.test.ts tests/phase5a1-catalog-contract.test.ts tests/phase5a1-catalog-gate.test.ts",
+    "phase5:catalog": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/catalog/run.mts",
     "optimize:svg": "svgo -r -f public/icons --config svgo.config.js"
   },
   "dependencies": {
