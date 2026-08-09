@@ -181,7 +181,7 @@ jobs:
 
       - name: Run local-authenticated Desktop Audit
         working-directory: frontend
-        run: npm run visual-safety:local-authenticated -- --project=quality-desktop --reporter=html,list
+        run: npm run visual-safety:local-authenticated -- --project=quality-desktop --project=private-pwa-cache --reporter=html,list
         env:
           VISUAL_SAFETY_MODE: local-authenticated
           QA_MODE_LEVEL: ${{ steps.mode.outputs.mode }}

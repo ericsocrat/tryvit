@@ -15,6 +15,8 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
+- Document the Phase 5A.0f private service-worker response boundary, targeted
+  legacy-cache migration, offline fallback, and guarded account-switch proof.
 - Record the synchronized Phase 5A.0e five-run Lighthouse and route-JavaScript
   baseline, traced performance causes, deterministic product accessibility
   defects, and the narrow remediation/verification boundary.
@@ -35,6 +37,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### CI
 
+- Add one loopback-only service-worker browser project that proves protected
+  content cannot cross logout/account boundaries while every existing visual
+  and Lighthouse project retains its service-worker block.
 - Replace the false-zero Bundle Size Guard with cold route-specific gzip,
   shared/owned and base/head regression evidence; add five-run guarded public
   and local-authenticated Lighthouse reports plus immutable Linux visual gates.
@@ -48,6 +53,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Route protected HTML/RSC, same-origin APIs, and configured-Supabase GETs
+  through a first-match NetworkOnly service-worker policy; replace broad cache
+  deletion with targeted private-cache migration and precache the offline page.
 - Resolve 6 React Compiler violations (Phase 1 of 2): `static-components`
   in `lists/page.tsx`, `purity` in `scan/page.tsx`,
   `preserve-manual-memoization` in `settings/account/page.tsx`, and

@@ -52,6 +52,9 @@ describe("Playwright fixture safety contract", () => {
         !filename.endsWith("visual-safety.ts") &&
         !filename.endsWith("visual-safety-cli.mts") &&
         !filename.endsWith("visual-safety-browser.spec.ts") &&
+        // This one Chromium-only regression must make real browser fetches so
+        // the service worker can prove it never replays private responses.
+        !filename.endsWith("private-pwa-cache-isolation.spec.ts") &&
         !filename.endsWith("visual-safety-auto-fixture-negative.spec.ts"),
     );
     for (const filename of candidates) {
@@ -121,6 +124,36 @@ describe("Playwright fixture safety contract", () => {
     expect(config.indexOf("lstatSync(lexical)")).toBeLessThan(
       config.indexOf("realpathSync.native(lexical)"),
     );
+  });
+
+  it("allows service workers only in the dedicated private-cache regression", () => {
+    const config = source(path.join(frontendRoot, "playwright.config.ts"));
+    const regression = source(path.join(e2eRoot, "private-pwa-cache-isolation.spec.ts"));
+    const allowOccurrences = config.match(/serviceWorkers: "allow"/gu) ?? [];
+
+    expect(allowOccurrences).toHaveLength(1);
+    expect(config).toMatch(
+      /name: "private-pwa-cache"[\s\S]*dependencies: \["auth-setup", "functional-auth-setup"\][\s\S]*retries: 0[\s\S]*serviceWorkers: "allow"/u,
+    );
+    expect(config).toMatch(
+      /name: "private-pwa-cache"[\s\S]*trace: "off"[\s\S]*screenshot: "off"[\s\S]*video: "off"/u,
+    );
+    expect(config).toContain('serviceWorkers: "block"');
+    expect(regression).toContain('from "./fixtures/safe-test"');
+    expect(regression).toContain("loadSafetyContractFromEnvironment");
+    expect(regression).toContain('safetyContract.mode !== "local-authenticated"');
+    expect(regression).toContain("finally {");
+    expect(regression).toContain("cleanupBrowserPrivateState");
+    expect(regression).toContain("LEGACY_PRIVATE_CACHE_NAMES");
+    expect(regression).toContain("synthetic-private-cache-sentinel");
+    expect(regression).toContain("synthetic-unrelated-cache-sentinel");
+    expect(regression).toContain('getByRole("button", { name: "Sign Out" })');
+    expect(regression).toContain("context.setStorageState(FUNCTIONAL_AUTH_STATE)");
+    expect(regression.indexOf('getByRole("button", { name: "Sign Out" })')).toBeLessThan(
+      regression.indexOf("context.setStorageState(FUNCTIONAL_AUTH_STATE)"),
+    );
+    expect(regression).not.toMatch(/console\.(?:log|info|warn|error)/u);
+    expect(regression).not.toMatch(/storageState\(\{\s*path:/u);
   });
 
   it("routes quality audits through the guard and selects auth explicitly", () => {

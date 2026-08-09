@@ -348,10 +348,28 @@ const phase5RouteJsAuthenticatedProject = {
   },
 };
 
+const privatePwaCacheProject = {
+  name: "private-pwa-cache",
+  testMatch: /private-pwa-cache-isolation\.spec\.ts/,
+  dependencies: ["auth-setup", "functional-auth-setup"],
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    storageState: authStatePath("user.json"),
+    // Every other project inherits the fail-closed global/fixture default.
+    // This one Chromium security regression must exercise the real worker.
+    serviceWorkers: "allow" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
 const projects = [
   ...(LOCAL_AUTHENTICATED ? [authSetupProject, functionalAuthSetupProject] : []),
   smokeProject,
   ...(LOCAL_AUTHENTICATED ? [authenticatedProject, functionalProject] : []),
+  ...(LOCAL_AUTHENTICATED ? [privatePwaCacheProject] : []),
   ...(HAS_VISUAL ? [visualSmokeProject] : []),
   ...(HAS_VISUAL && LOCAL_AUTHENTICATED ? [visualAuthenticatedProject] : []),
   ...(HAS_QUALITY ? [qualityMobileProject, qualityDesktopProject] : []),

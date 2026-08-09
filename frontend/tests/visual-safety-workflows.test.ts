@@ -201,6 +201,22 @@ describe("browser workflow visual-safety contract", () => {
   it.each([
     ["quality gate", browserJobs.qualityGate],
     ["nightly", browserJobs.nightly],
+  ])("%s runs the private PWA cache regression inside guarded local coverage", (_name, job) => {
+    const projectIndex = job.indexOf("--project=private-pwa-cache");
+    const safetyIndex = job.lastIndexOf("npm run visual-safety:assert");
+    const fixtureTeardownIndex = job.indexOf("visual-safety:fixtures-teardown");
+    const runtimeStopIndex = job.indexOf("local-supabase-ci.sh stop");
+
+    expect(projectIndex).toBeGreaterThan(job.indexOf("visual-safety:fixtures-seed"));
+    expect(safetyIndex).toBeGreaterThan(projectIndex);
+    expect(fixtureTeardownIndex).toBeGreaterThan(projectIndex);
+    expect(runtimeStopIndex).toBeGreaterThan(fixtureTeardownIndex);
+    expect(job.match(/--project=private-pwa-cache/gu)).toHaveLength(1);
+  });
+
+  it.each([
+    ["quality gate", browserJobs.qualityGate],
+    ["nightly", browserJobs.nightly],
   ])("%s provisions and tears down the same guarded local runtime", (_name, job) => {
     const setupIndex = job.indexOf("supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520");
     const startIndex = job.indexOf("local-supabase-ci.sh start");
