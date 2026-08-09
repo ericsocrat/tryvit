@@ -71,6 +71,11 @@ jobs:
           head_sha="${{ github.event.pull_request.head.sha }}"
           phase5a0c_base="f03a79c97f9edc495a62fa02e89c45938a42fc6e"
           reviewed_phase5a0d_head="2b097bbe9eb0b3501421f1250972c98ce24ce60b"
+          # Phase 5A.0e was reviewed separately before this stack was collapsed.
+          # Its product-detail a11y regression spec is not imported by either
+          # route-JS capture command. Permit only this exact approved blob while
+          # the Phase 5A.0d harness is still absent from the PR base.
+          approved_phase5a0e_authenticated_a11y_blob="d2cec5ed670a6d7b31372b1fd3499f544c2d77d1"
           if [ -f frontend/tooling/phase5a0d-route-js.ts ] && \
              [ -f frontend/tooling/phase5a0d-route-js-cli.mts ] && \
              [ -f frontend/tooling/phase5a0d-contract.ts ] && \
@@ -96,9 +101,16 @@ jobs:
                 echo "::error::The synchronized PR base contains changes outside the two dependency manifests."
                 exit 1
               fi
-              if ! git diff --quiet "$reviewed_phase5a0d_head" "$head_sha" -- \
-                frontend/playwright.config.ts frontend/e2e frontend/tooling; then
+              unexpected_route_js_harness_paths="$(git diff --name-only "$reviewed_phase5a0d_head" "$head_sha" -- \
+                frontend/playwright.config.ts frontend/e2e frontend/tooling | \
+                grep -Ev '^frontend/e2e/authenticated-a11y\.spec\.ts$' || true)"
+              if [ -n "$unexpected_route_js_harness_paths" ]; then
                 echo "::error::The reviewed Phase 5A.0d route-JS harness changed after synchronization."
+                exit 1
+              fi
+              if ! git cat-file -e "$head_sha:frontend/e2e/authenticated-a11y.spec.ts" 2>/dev/null || \
+                 [ "$(git rev-parse "$head_sha:frontend/e2e/authenticated-a11y.spec.ts")" != "$approved_phase5a0e_authenticated_a11y_blob" ]; then
+                echo "::error::The approved Phase 5A.0e authenticated accessibility spec changed after synchronization."
                 exit 1
               fi
               git show "$reviewed_phase5a0d_head:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-approved-package.json"

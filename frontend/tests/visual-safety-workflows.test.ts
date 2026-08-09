@@ -446,6 +446,15 @@ describe("browser workflow visual-safety contract", () => {
     expect(phase5VisualJobs.verify).toContain("Reviewed Phase 5A.0d visual baseline bytes changed");
     expect(phase5VisualJobs.verify).toContain("The synchronized PR base contains changes outside");
     expect(phase5VisualJobs.verify).toContain("2b097bbe9eb0b3501421f1250972c98ce24ce60b");
+    expect(phase5VisualJobs.verify).toContain(
+      'approved_phase5a0e_authenticated_a11y_blob="d2cec5ed670a6d7b31372b1fd3499f544c2d77d1"',
+    );
+    expect(phase5VisualJobs.verify).toContain(
+      "The approved Phase 5A.0e authenticated accessibility spec changed after synchronization.",
+    );
+    expect(phase5VisualJobs.verify).toContain(
+      "^frontend/e2e/authenticated-a11y\\.spec\\.ts$",
+    );
     expect(phase5VisualJobs.verify).toContain("synchronized visual package changed outside dependency versions");
     expect(phase5VisualJobs.verify).toContain("does not preserve the exact current-main lockfile");
     expect(phase5VisualJobs.verify).toContain("Re-attest and restore the exact visual verifier");
@@ -625,6 +634,13 @@ describe("browser workflow visual-safety contract", () => {
     expect(bundle).toContain("steps.route_evidence_stage.outcome");
     expect(bundle).toContain("f03a79c97f9edc495a62fa02e89c45938a42fc6e");
     expect(bundle).toContain("2b097bbe9eb0b3501421f1250972c98ce24ce60b");
+    expect(bundle).toContain(
+      'approved_phase5a0e_authenticated_a11y_blob="d2cec5ed670a6d7b31372b1fd3499f544c2d77d1"',
+    );
+    expect(bundle).toContain(
+      "The approved Phase 5A.0e authenticated accessibility spec changed after synchronization.",
+    );
+    expect(bundle).toContain("^frontend/e2e/authenticated-a11y\\.spec\\.ts$");
     expect(bundle).toContain("Synchronized bootstrap ancestry cannot be proven");
     expect(bundle).toContain("synchronized package changed outside dependency versions");
     expect(bundle).toContain("does not preserve the exact current-main lockfile");

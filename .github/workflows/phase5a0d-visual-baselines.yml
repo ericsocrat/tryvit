@@ -128,6 +128,11 @@ jobs:
           head_sha="${{ github.event.pull_request.head.sha }}"
           phase5a0c_base="f03a79c97f9edc495a62fa02e89c45938a42fc6e"
           reviewed_phase5a0d_head="2b097bbe9eb0b3501421f1250972c98ce24ce60b"
+          # Phase 5A.0e was reviewed separately before this stack was collapsed.
+          # Its product-detail a11y regression spec is not imported by either
+          # visual-baseline command. Permit only this exact approved blob while
+          # the Phase 5A.0d verifier is still absent from the PR base.
+          approved_phase5a0e_authenticated_a11y_blob="d2cec5ed670a6d7b31372b1fd3499f544c2d77d1"
           baseline_runtime_sha="$(node -e 'const manifest = require("./frontend/e2e/__screenshots__/phase5a0d-manifest.json"); if (typeof manifest.sourceCommit !== "string" || !/^[0-9a-f]{40}$/.test(manifest.sourceCommit)) process.exit(1); process.stdout.write(manifest.sourceCommit);')"
           if ! git cat-file -e "$baseline_runtime_sha^{commit}" 2>/dev/null; then
             echo "::error::The immutable visual manifest references an unavailable baseline runtime commit."
@@ -150,9 +155,16 @@ jobs:
                 echo "::error::The synchronized PR base contains changes outside the two dependency manifests."
                 exit 1
               fi
-              if ! git diff --quiet "$reviewed_phase5a0d_head" "$head_sha" -- \
-                frontend/playwright.config.ts frontend/e2e frontend/tooling; then
+              unexpected_visual_verifier_paths="$(git diff --name-only "$reviewed_phase5a0d_head" "$head_sha" -- \
+                frontend/playwright.config.ts frontend/e2e frontend/tooling | \
+                grep -Ev '^frontend/e2e/authenticated-a11y\.spec\.ts$' || true)"
+              if [ -n "$unexpected_visual_verifier_paths" ]; then
                 echo "::error::The reviewed Phase 5A.0d visual verifier changed after synchronization."
+                exit 1
+              fi
+              if ! git cat-file -e "$head_sha:frontend/e2e/authenticated-a11y.spec.ts" 2>/dev/null || \
+                 [ "$(git rev-parse "$head_sha:frontend/e2e/authenticated-a11y.spec.ts")" != "$approved_phase5a0e_authenticated_a11y_blob" ]; then
+                echo "::error::The approved Phase 5A.0e authenticated accessibility spec changed after synchronization."
                 exit 1
               fi
               git show "$reviewed_phase5a0d_head:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-approved-visual-package.json"
