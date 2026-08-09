@@ -449,13 +449,19 @@ describe("browser workflow visual-safety contract", () => {
     expect(phase5VisualJobs.verify).toContain(
       'approved_phase5a0e_authenticated_a11y_blob="d2cec5ed670a6d7b31372b1fd3499f544c2d77d1"',
     );
+    expect(phase5VisualJobs.verify).toContain('approved_security_nanoid_override="3.3.17"');
     expect(phase5VisualJobs.verify).toContain(
       "The approved Phase 5A.0e authenticated accessibility spec changed after synchronization.",
     );
     expect(phase5VisualJobs.verify).toContain(
       "^frontend/e2e/authenticated-a11y\\.spec\\.ts$",
     );
-    expect(phase5VisualJobs.verify).toContain("synchronized visual package changed outside dependency versions");
+    expect(phase5VisualJobs.verify).toContain(
+      "synchronized visual package changed outside dependency versions or the approved nanoid security override",
+    );
+    expect(phase5VisualJobs.verify).toContain(
+      "synchronized visual package does not preserve the approved nanoid security override",
+    );
     expect(phase5VisualJobs.verify).toContain("does not preserve the exact current-main lockfile");
     expect(phase5VisualJobs.verify).toContain("Re-attest and restore the exact visual verifier");
     expect(phase5VisualJobs.verify).toContain("phase5a0d-reviewed-visual-verifier.tar");
@@ -637,12 +643,16 @@ describe("browser workflow visual-safety contract", () => {
     expect(bundle).toContain(
       'approved_phase5a0e_authenticated_a11y_blob="d2cec5ed670a6d7b31372b1fd3499f544c2d77d1"',
     );
+    expect(bundle).toContain('approved_security_nanoid_override="3.3.17"');
     expect(bundle).toContain(
       "The approved Phase 5A.0e authenticated accessibility spec changed after synchronization.",
     );
     expect(bundle).toContain("^frontend/e2e/authenticated-a11y\\.spec\\.ts$");
     expect(bundle).toContain("Synchronized bootstrap ancestry cannot be proven");
-    expect(bundle).toContain("synchronized package changed outside dependency versions");
+    expect(bundle).toContain(
+      "synchronized package changed outside dependency versions or the approved nanoid security override",
+    );
+    expect(bundle).toContain("synchronized package does not preserve the approved nanoid security override");
     expect(bundle).toContain("does not preserve the exact current-main lockfile");
     expect(bundle).toContain("phase5a0d-reviewed-route-js-harness.tar");
     expect(bundle).toContain("Re-attest and restore the reviewed base harness onto head");

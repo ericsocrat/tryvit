@@ -133,6 +133,9 @@ jobs:
           # visual-baseline command. Permit only this exact approved blob while
           # the Phase 5A.0d verifier is still absent from the PR base.
           approved_phase5a0e_authenticated_a11y_blob="d2cec5ed670a6d7b31372b1fd3499f544c2d77d1"
+          # A separately reviewed production-audit fix may synchronize this exact
+          # override from main. No other package metadata change is permitted.
+          approved_security_nanoid_override="3.3.17"
           baseline_runtime_sha="$(node -e 'const manifest = require("./frontend/e2e/__screenshots__/phase5a0d-manifest.json"); if (typeof manifest.sourceCommit !== "string" || !/^[0-9a-f]{40}$/.test(manifest.sourceCommit)) process.exit(1); process.stdout.write(manifest.sourceCommit);')"
           if ! git cat-file -e "$baseline_runtime_sha^{commit}" 2>/dev/null; then
             echo "::error::The immutable visual manifest references an unavailable baseline runtime commit."
@@ -168,8 +171,35 @@ jobs:
                 exit 1
               fi
               git show "$reviewed_phase5a0d_head:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-approved-visual-package.json"
+              git show "$base_sha:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-synchronized-visual-base-package.json"
               git show "$head_sha:frontend/package.json" > "$RUNNER_TEMP/phase5a0d-synchronized-visual-package.json"
-              node -e 'const fs = require("fs"); const strip = (value) => { const copy = structuredClone(value); delete copy.dependencies; delete copy.devDependencies; return copy; }; const approved = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-approved-visual-package.json", "utf8")); const synchronized = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-synchronized-visual-package.json", "utf8")); if (JSON.stringify(strip(approved)) !== JSON.stringify(strip(synchronized))) throw new Error("synchronized visual package changed outside dependency versions");'
+              node - "$approved_security_nanoid_override" <<'NODE'
+              const fs = require("fs");
+              const expectedNanoid = process.argv[2];
+              const read = (name) => JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/" + name, "utf8"));
+              const strip = (value, label) => {
+                const copy = structuredClone(value);
+                delete copy.dependencies;
+                delete copy.devDependencies;
+                if (copy.overrides?.nanoid !== undefined) {
+                  if (copy.overrides.nanoid !== expectedNanoid) {
+                    throw new Error(`${label} package contains an unapproved nanoid override`);
+                  }
+                  delete copy.overrides.nanoid;
+                  if (Object.keys(copy.overrides).length === 0) delete copy.overrides;
+                }
+                return copy;
+              };
+              const approved = read("phase5a0d-approved-visual-package.json");
+              const base = read("phase5a0d-synchronized-visual-base-package.json");
+              const synchronized = read("phase5a0d-synchronized-visual-package.json");
+              if (base.overrides?.nanoid !== expectedNanoid || synchronized.overrides?.nanoid !== expectedNanoid) {
+                throw new Error("synchronized visual package does not preserve the approved nanoid security override");
+              }
+              if (JSON.stringify(strip(approved, "reviewed")) !== JSON.stringify(strip(synchronized, "synchronized"))) {
+                throw new Error("synchronized visual package changed outside dependency versions or the approved nanoid security override");
+              }
+              NODE
               if ! cmp --silent \
                 <(git show "$base_sha:frontend/package-lock.json") \
                 <(git show "$head_sha:frontend/package-lock.json"); then
