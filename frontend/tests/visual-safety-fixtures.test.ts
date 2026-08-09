@@ -143,6 +143,8 @@ describe("Playwright fixture safety contract", () => {
     expect(regression).toContain("loadSafetyContractFromEnvironment");
     expect(regression).toContain('safetyContract.mode !== "local-authenticated"');
     expect(regression).toContain('test.use({ serviceWorkers: "allow" })');
+    expect(regression).toContain('credentials: "same-origin"');
+    expect(regression).not.toContain('credentials: "include"');
     expect(regression).toContain("finally {");
     expect(regression).toContain("test.afterEach");
     expect(regression).toContain("testInfo.setTimeout(CLEANUP_TIMEOUT_MS)");

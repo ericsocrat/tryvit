@@ -62,6 +62,11 @@ type BrowserProbeResult =
     }>;
 
 type SafeRequestHeaders = Readonly<Record<string, string>>;
+type ProbeFailureCodes = Readonly<{
+  identityMismatch: string;
+  nonSuccess: string;
+  rejected: string;
+}>;
 
 function fail(code: string): never {
   throw new Error(`[PWA_CACHE_ISOLATION] ${code}`);
@@ -69,6 +74,12 @@ function fail(code: string): never {
 
 function responseDigest(responseBody: Buffer): string {
   return createHash("sha256").update(responseBody).digest("hex");
+}
+
+function assertSuccessfulIdentityProbe(result: BrowserProbeResult, codes: ProbeFailureCodes): void {
+  if (result.kind === "rejected") fail(codes.rejected);
+  if (!result.ok) fail(codes.nonSuccess);
+  if (!result.identityMatches) fail(codes.identityMismatch);
 }
 
 function sessionHeaders(session: ScopedTestSession): SafeRequestHeaders {
@@ -91,7 +102,9 @@ async function runBrowserProbe(
   return page.evaluate(async (input) => {
     try {
       const response = await fetch(input.url, {
-        credentials: "include",
+        // Match the installed Supabase SDK's default browser fetch semantics:
+        // bearer/apikey headers bind identity; cross-origin cookies are omitted.
+        credentials: "same-origin",
         headers: input.headers,
         method: "GET",
       });
@@ -407,9 +420,11 @@ test.describe("private PWA cache account isolation", () => {
         identityKind: "auth-user",
         url: AUTH_USER_URL,
       });
-      if (userAAuth.kind !== "response" || !userAAuth.ok || !userAAuth.identityMatches) {
-        fail("user-a-auth-warmup-invalid");
-      }
+      assertSuccessfulIdentityProbe(userAAuth, {
+        identityMismatch: "user-a-auth-identity-mismatch",
+        nonSuccess: "user-a-auth-non-success",
+        rejected: "user-a-auth-request-rejected",
+      });
 
       const userAPreferences = await runObservedOnlineProbe(page, {
         expectedUserId: userA.userId,
@@ -417,13 +432,11 @@ test.describe("private PWA cache account isolation", () => {
         identityKind: "preferences",
         url: USER_PREFERENCES_URL,
       });
-      if (
-        userAPreferences.kind !== "response" ||
-        !userAPreferences.ok ||
-        !userAPreferences.identityMatches
-      ) {
-        fail("user-a-postgrest-warmup-invalid");
-      }
+      assertSuccessfulIdentityProbe(userAPreferences, {
+        identityMismatch: "user-a-postgrest-identity-mismatch",
+        nonSuccess: "user-a-postgrest-non-success",
+        rejected: "user-a-postgrest-request-rejected",
+      });
 
       const privateUrls = [htmlResponse.url(), rscUrl, AUTH_USER_URL, USER_PREFERENCES_URL];
       await assertNoPrivateCacheKeys(page, privateUrls);
@@ -498,9 +511,11 @@ test.describe("private PWA cache account isolation", () => {
         identityKind: "auth-user",
         url: AUTH_USER_URL,
       });
-      if (userBAuth.kind !== "response" || !userBAuth.ok || !userBAuth.identityMatches) {
-        fail("user-b-auth-recovery-invalid");
-      }
+      assertSuccessfulIdentityProbe(userBAuth, {
+        identityMismatch: "user-b-auth-identity-mismatch",
+        nonSuccess: "user-b-auth-non-success",
+        rejected: "user-b-auth-request-rejected",
+      });
 
       const userBPreferences = await runObservedOnlineProbe(userBPage, {
         expectedUserId: userB.userId,
@@ -508,13 +523,11 @@ test.describe("private PWA cache account isolation", () => {
         identityKind: "preferences",
         url: USER_PREFERENCES_URL,
       });
-      if (
-        userBPreferences.kind !== "response" ||
-        !userBPreferences.ok ||
-        !userBPreferences.identityMatches
-      ) {
-        fail("user-b-postgrest-recovery-invalid");
-      }
+      assertSuccessfulIdentityProbe(userBPreferences, {
+        identityMismatch: "user-b-postgrest-identity-mismatch",
+        nonSuccess: "user-b-postgrest-non-success",
+        rejected: "user-b-postgrest-request-rejected",
+      });
 
       await userBPage.goto(APP_PRIVATE_RSC_PATH, {
         waitUntil: "domcontentloaded",
