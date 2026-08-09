@@ -11,6 +11,10 @@ import {
 } from "./helpers/test-user";
 import { VisualSafetyError, loadSafetyContractFromEnvironment } from "./helpers/visual-safety";
 
+// The shared safe fixture blocks workers by default. This one audited proof is
+// the sole file-level override and still installs its egress guards first.
+test.use({ serviceWorkers: "allow" });
+
 const safetyContract = loadSafetyContractFromEnvironment(process.env);
 if (safetyContract.mode !== "local-authenticated") {
   throw new VisualSafetyError("VS_PWA_MODE", "private-cache.local-only");
@@ -200,14 +204,15 @@ async function registerAndControlWorker(page: Page): Promise<void> {
         | "worker-activation-timeout"
         | "worker-install-redundant"
         | "worker-missing"
+        | "worker-register-invalid"
         | "worker-register-rejected"
         | "worker-scope-invalid"
         | "worker-script-invalid";
 
-      const registration = await navigator.serviceWorker
-        .register("/sw.js", { scope: "/" })
-        .catch(() => null);
+      const registration: ServiceWorkerRegistration | null | undefined =
+        await navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(() => null);
       if (registration === null) return "worker-register-rejected" as const;
+      if (registration === undefined) return "worker-register-invalid" as const;
       if (registration.scope !== new URL("/", location.href).href) {
         return "worker-scope-invalid" as const;
       }
