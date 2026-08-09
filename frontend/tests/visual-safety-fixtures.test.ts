@@ -152,6 +152,9 @@ describe("Playwright fixture safety contract", () => {
     expect(regression).toContain("worker-activation-timeout");
     expect(regression).toContain("account-switch-worker-control-invalid");
     expect(regression).toContain("account-switch-worker-cardinality-invalid");
+    expect(regression).toContain("online-reload-timeout");
+    expect(regression).toContain("online-reload-url-invalid");
+    expect(regression).toContain("online-recovery-worker-control-invalid");
     expect(regression).toContain('controller?.state === "activated"');
     expect(regression).not.toContain("navigator.serviceWorker.ready");
     expect(regression).toContain("LEGACY_PRIVATE_CACHE_NAMES");

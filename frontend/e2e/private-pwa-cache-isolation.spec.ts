@@ -535,8 +535,32 @@ test.describe("private PWA cache account isolation", () => {
         .catch(() => false);
       if (!offlineHeadingVisible) fail("offline-protected-fallback-not-neutral");
 
+      await protectedNavigation.close();
+      const onlineReloadPromise = userBPage
+        .waitForEvent("domcontentloaded", { timeout: WORKER_CONTROL_TIMEOUT_MS })
+        .then(() => true)
+        .catch(() => false);
       await context.setOffline(false);
       offline = false;
+      const onlineReloadCompleted = await onlineReloadPromise;
+      if (!onlineReloadCompleted) fail("online-reload-timeout");
+      if (new URL(userBPage.url()).pathname !== "/offline") {
+        fail("online-reload-url-invalid");
+      }
+
+      // Serwist reloads the current document on the online event. Wait for that
+      // expected lifecycle before evaluating the recovered page.
+      const recoveryWorkerControlsPage = await userBPage
+        .waitForFunction(
+          () =>
+            navigator.serviceWorker.controller?.state === "activated" &&
+            navigator.serviceWorker.controller.scriptURL === new URL("/sw.js", location.href).href,
+          undefined,
+          { timeout: WORKER_CONTROL_TIMEOUT_MS },
+        )
+        .then(() => true)
+        .catch(() => false);
+      if (!recoveryWorkerControlsPage) fail("online-recovery-worker-control-invalid");
 
       const userBAuth = await runObservedOnlineProbe(userBPage, {
         expectedUserId: userB.userId,
