@@ -487,6 +487,9 @@ describe("browser workflow visual-safety contract", () => {
       "manifest.sourceCommit !== \"string\"",
     );
     expect(phase5VisualJobs.verify).toContain(
+      'git fetch --no-tags --no-write-fetch-head origin "$baseline_runtime_sha"',
+    );
+    expect(phase5VisualJobs.verify).toContain(
       "immutable visual manifest references an unavailable baseline runtime commit",
     );
     expect(phase5VisualJobs.verify).toContain("phase5a0d-baseline-runtime-package-lock.json");
