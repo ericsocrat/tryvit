@@ -1,12 +1,18 @@
 # Phase 5 Design System Blueprint
 
-> **Last updated:** 2026-07-30
+> **Last updated:** 2026-08-10
 > **Status:** Active target architecture — Phase 5A.1a foundations are recorded in `PHASE5A1_DESIGN_SYSTEM_FOUNDATIONS.md`
 > **Owner issue:** Frontend domain
 
 ## Purpose
 
-This document defines Design System V2 for TryVit’s recommended **Living Label** direction. It is the architectural contract for future Phase 5 implementation, not permission for a big-bang rewrite. Existing components remain available through compatibility facades and migrate route by route.
+This document defines a direction-resilient Design System V2 architecture using
+**Living Label** as the strongest current working hypothesis. It is not final approval
+of the art direction, typography, iconography, imagery, or identity; the current mark
+is also provisional. Phase 5A.2 must challenge and approve those decisions through the
+non-production Golden Reference gate before production routes migrate. Existing
+components remain available through compatibility facades and migrate route by route
+only after that approval.
 
 The system must support two expressions of the same brand:
 
@@ -17,9 +23,9 @@ Both use the same semantic tokens, evidence language, accessibility primitives, 
 
 ## Current-system assessment
 
-### Inventory
+### Audited baseline inventory
 
-| Measure | Current result |
+| Measure | Audit-baseline result |
 |---|---:|
 | Production component modules | 181 |
 | Client production components | 99 / 181 (54.7%) |
@@ -33,7 +39,12 @@ Both use the same semantic tokens, evidence language, accessibility primitives, 
 | Shadow tokens | 3 |
 | Motion/easing/transition tokens | 11 |
 
-The full component disposition is recorded in [`phase5/route-component-inventory.json`](phase5/route-component-inventory.json).
+These figures describe the original master-audit snapshot and remain useful as the
+migration baseline; they are not a claim that the working tree has remained static. The
+historical component disposition is recorded in
+[`phase5/route-component-inventory.json`](phase5/route-component-inventory.json). The
+current deterministic dependency, route-reachability, boundary, disposition, and debt
+report is [`phase5/live-route-component-inventory.json`](phase5/live-route-component-inventory.json).
 
 ### Findings that shape V2
 
@@ -260,13 +271,22 @@ Non-negotiable rules:
 
 ## Typography
 
-### Recommended families
+### Candidate families
 
 - **Primary UI:** Manrope variable, Latin + Latin Extended.
 - **Optional display/editorial:** Source Serif 4 variable, used only for marketing headlines, editorial pull statements and selected evidence-story moments.
 - **Fallback:** `Manrope, "Segoe UI", Arial, sans-serif`; display falls back to `Georgia, "Times New Roman", serif`.
 
-This pairing balances approachable consumer utility with editorial credibility. It must be tested with Polish diacritics, German compounds, tabular figures and bold weights before adoption. If the font transfer budget cannot be met, use the system stack until a compliant subset is available. No dependency is added by this blueprint.
+This unadopted pairing may balance approachable consumer utility with editorial
+credibility, but Phase 5A.2 must compare it in the complete identity and Golden
+References. It must be tested with Polish diacritics, German compounds, tabular figures
+and bold weights before any selection. If the font transfer budget cannot be met, use
+the system stack until a compliant subset is available. No dependency is added by this
+blueprint.
+
+Phase 5A.1 keeps Manrope assay-only and adopts neither family. Serif selection and the
+complete production type pairing are deferred to the non-production Phase 5A.2 Golden
+Reference gate and Eric's explicit approval.
 
 Delivery contract:
 
@@ -315,7 +335,13 @@ Rules:
 | Replace | 1 | Substitute a new domain pattern |
 | **Total** | **181** | Mutually exclusive classification |
 
-The JSON is the complete mutually exclusive audit taxonomy; it is not yet a generated import graph. Phase 5A.1 must add a deterministic route/component dependency report containing direct consumers, client-boundary status, target phase and removal gate before any compatibility facade is deleted.
+The historical JSON is the complete mutually exclusive audit taxonomy; it is not a
+generated import graph. Phase 5A.1a adds the separate deterministic
+[`phase5/live-route-component-inventory.json`](phase5/live-route-component-inventory.json),
+which records direct and inverse consumers, transitive route consumers, client-entry and
+reachable boundaries, target phases, disposition, migration/removal gates, V1/V2
+status, and classified debt. That live report must remain green before any compatibility
+facade is deleted.
 
 Notable decisions:
 
@@ -409,12 +435,21 @@ Rules:
 |---|---:|---|
 | instant | 0ms | reduced-motion substitution, state reset |
 | feedback | 120ms | press, check, icon state |
-| fast | 180ms | hover, focus-adjacent visual response |
-| standard | 240ms | disclosure, small panel transition |
-| deliberate | 360ms | sheet/dialog/page-section entrance |
+| fast | 180ms | hover/focus response, disclosure exit, overlay exit |
+| standard | 240ms | disclosure entrance, determinate progress |
+| deliberate | 360ms | overlay entrance, section/evidence reveal, spatial continuity |
 | narrative max | 500ms | landing shared-label transition only |
 
-Use standard, emphasized-decelerate, emphasized-accelerate and linear-progress easing roles. Avoid `transition-all`.
+These are the only approved transition durations: **0, 120, 180, 240, 360, and
+500ms**. Use 120ms for press/direct-manipulation and icon-state feedback; 180ms for
+hover/focus response and disclosure or overlay exits; 240ms for disclosure entrances
+and determinate progress; and 360ms for overlay entrances, section/evidence reveals,
+and spatial continuity. The 500ms duration is reserved exclusively for an approved
+landing narrative; no authenticated, scanner, system, or general component transition
+uses it. Determinate progress uses the 240ms standard duration and linear-progress
+easing tied truthfully to work rather than a decorative fixed-duration loop. Use
+standard, emphasized-decelerate, emphasized-accelerate and linear-progress easing
+roles. Avoid `transition-all`.
 
 ### Performance constraints
 
@@ -428,6 +463,10 @@ Use standard, emphasized-decelerate, emphasized-accelerate and linear-progress e
 - `prefers-reduced-motion: reduce` renders the final state immediately; behavioral tests cover it separately.
 
 ## Icons, photography and illustration
+
+The accessibility, licensing, performance, and library-discipline rules below are
+architectural. Living Label-specific stroke, texture, and illustration choices are
+working candidates until Phase 5A.2 approves the complete identity and art direction.
 
 ### Icons
 
@@ -443,7 +482,9 @@ Use standard, emphasized-decelerate, emphasized-accelerate and linear-progress e
 - Use `next/image`, stable aspect ratios, responsive `sizes`, and optimized AVIF/WebP.
 - Never crop away a label detail required to identify a product.
 - `ProductMedia` owns missing, loading, error, user-submitted and source-badge states.
-- The fallback is a restrained Living Label illustration, not category emoji or a falsely realistic package.
+- The fallback uses the approved direction's restrained illustration language—not
+  category emoji or a falsely realistic package. Living Label line work is the current
+  candidate, not a frozen production decision.
 
 ### Food photography and illustration
 
@@ -535,14 +576,29 @@ Record a baseline with exact Next.js route analysis before enforcement. Then:
 2. Contrast matrix: every documented text/surface, icon/surface, border/surface and focus/surface pair.
 3. Primitive contract tests: semantic roles, keyboard, focus restoration, reduced motion, disabled/loading and accessible names.
 4. Evidence contract tests: all five display statuses plus the three evidence bases, no green unknown, no inferred absence, preservation of legacy contains/may-contain type, and EN/PL/DE parity.
-5. Visual catalog: `/dev/components` becomes the canonical fixture gallery; do not add Storybook unless the existing catalog demonstrably cannot serve CI/review needs.
-6. Visual baselines: 390×844, 768×1024 and 1440×900, light/dark, reduced-motion stable snapshots, pinned Linux renderer.
+5. Visual catalog: `/dev/components` is the canonical foundation-candidate fixture
+   gallery; its 5A.1 captures are review candidates, not Golden References or approved
+   production baselines. Do not add Storybook unless the existing catalog demonstrably
+   cannot serve CI/review needs.
+6. Visual evidence and baselines: preserve the immutable Phase 5A.0d baseline namespace.
+   Phase 5A.2 Golden stills and recordings are approval evidence, not production
+   regression baselines. Route-level 390×844, 768×1024 and 1440×900 light/dark and
+   reduced-motion stable baselines begin with separately authorized production
+   migrations in Phase 5A.3+ and use the pinned renderer.
 7. Ratchet checks: legacy `.card`, `.input-field`, arbitrary shadows/radii and `transition-all` are allowlisted by existing path; new usage fails.
 8. Documentation: token and component contracts update with each migration phase.
-9. Inventory drift: a verification script compares all page routes and non-test production component modules with [`phase5/route-component-inventory.json`](phase5/route-component-inventory.json); new routes/components must be mapped and classified before the check passes.
+9. Inventory drift: a verification script regenerates and compares the bounded current
+   production graph with
+   [`phase5/live-route-component-inventory.json`](phase5/live-route-component-inventory.json);
+   new routes/components and new or increased visual debt must be mapped and classified
+   before the check passes. The historical audit taxonomy remains unchanged.
 
 ## Rollout strategy
 
+- Complete exactly two Phase 5A.1 PRs—5A.1a foundations and 5A.1b primitives/facades;
+  there is no 5A.1c.
+- Complete and explicitly approve the non-production Phase 5A.2 Golden Reference gate
+  before any production-route restyle or identity replacement.
 - Build V2 alongside existing components.
 - Migrate one route family per PR using compatibility facades.
 - Keep legacy CSS until the final importing route is migrated.
@@ -550,4 +606,8 @@ Record a baseline with exact Next.js route analysis before enforcement. Then:
 - Capture before/after screenshots with meaningful deterministic fixtures.
 - Remove deprecated components and legacy tokens only in dedicated cleanup PRs after search proves zero imports.
 
-The staged implementation and first-phase acceptance contract are defined in [`PHASE5_IMPLEMENTATION_ROADMAP.md`](PHASE5_IMPLEMENTATION_ROADMAP.md).
+The staged implementation and first-phase acceptance contract are defined in
+[`PHASE5_IMPLEMENTATION_ROADMAP.md`](PHASE5_IMPLEMENTATION_ROADMAP.md). The mandatory
+future art-direction, identity, content, motion, and Golden Reference approval contract
+is defined in
+[`PHASE5A2_EXPERIENCE_ARCHITECTURE_GOLDEN_REFERENCE.md`](PHASE5A2_EXPERIENCE_ARCHITECTURE_GOLDEN_REFERENCE.md).

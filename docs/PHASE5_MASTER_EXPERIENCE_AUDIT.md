@@ -1,6 +1,6 @@
 # Phase 5 Master Experience Audit
 
-> **Last updated:** 2026-07-30
+> **Last updated:** 2026-08-10
 > **Status:** Active — audit and design decision record; no redesign is implemented
 > **Owner issue:** Frontend domain
 
@@ -8,9 +8,9 @@
 
 TryVit should become a **living food label**: a calm, premium European product that turns a package, barcode, or search result into an understandable, evidence-aware decision. The interface should make three things immediately clear: what the product data says, how confident TryVit is, and what remains unknown.
 
-The recommended visual direction is **Living Label**. It replaces the current generic glass-and-glow language with warm editorial surfaces, deep forest ink, precise ruled information panels, tactile label details, strong typography, and restrained motion that visually “decodes” a product label. The same system can support an expressive public site and a dense authenticated application without making them feel like separate products.
+The strongest current visual hypothesis is **Living Label**. It replaces the current generic glass-and-glow language with warm editorial surfaces, deep forest ink, precise ruled information panels, tactile label details, strong typography, and restrained motion that visually “decodes” a product label. Its semantic foundations can support an expressive public site and a dense authenticated application without making them feel like separate products. Phase 5A.2 must nevertheless challenge it against up to two other genuinely different TryVit-native directions before the final language is approved.
 
-Implementation should not begin with an unrestricted landing-page makeover. The first implementation phase is **Phase 5A.0 — Public Experience Foundation Gate**. It must make public routing, demo-mode isolation, localization, accessibility primitives, performance measurement, and local-only visual baselines trustworthy. Phase 5A.1 can then establish Design System V2 and the public shell; Phase 5A.2 can deliver the full Living Label landing experience.
+Implementation should not begin with an unrestricted landing-page makeover. The first implementation phase is **Phase 5A.0 — Public Experience Foundation Gate**. It must make public routing, demo-mode isolation, localization, accessibility primitives, performance measurement, and local-only visual baselines trustworthy. Exactly two Phase 5A.1 PRs then establish Design System V2 foundations, primitives and compatibility without migrating production routes. Phase 5A.2 is a non-production Experience Architecture and Golden Reference Gate. Production public/authentication work begins in Phase 5A.3 only after Eric approves that gate.
 
 No open P0 was found. Phase 5 Preflight A corrected the former allergen truthfulness risk, and that contract is now a non-negotiable redesign guardrail. The audit found nine P1 issues that should be resolved or structurally contained before broad visual migration.
 
@@ -86,9 +86,9 @@ The machine-readable inventory is in [`phase5/route-component-inventory.json`](p
 | Journey | Routes | Purpose and primary action | Current strengths | Principal problems | Complexity | Priority / phase |
 |---|---:|---|---|---|---|---|
 | Visitor / marketing | 1 | Understand TryVit; explore or sign in | Clear core claim, live/demo variants | Generic visual language, hardcoded copy, backend coupling | High | P1 / 5A |
-| Learn / editorial | 9 | Understand scores, labels, confidence, allergens | Substantive educational content | Locale and metadata gaps; repetitive glass shells | Medium | P2 / 5A.2 |
-| Legal / support / system | 5 | Trust, support, offline and policy access | Simple readable content | Placeholder contact; offline auth-gated; incomplete metadata | Low–medium | P1 / 5A.0–5A.2 |
-| Authentication | 4 | Enter or recover an account | Visually coherent shell and useful form labels | Toast-only errors; global provider weight; locale gaps | Medium | P1 / 5A.1 |
+| Learn / editorial | 9 | Understand scores, labels, confidence, allergens | Substantive educational content | Locale and metadata gaps; repetitive glass shells | Medium | P2 / 5A.3 |
+| Legal / support / system | 5 | Trust, support, offline and policy access | Simple readable content | Placeholder contact; offline auth-gated; incomplete metadata | Low–medium | P1 / 5A.0–5A.3 |
+| Authentication | 4 | Enter or recover an account | Visually coherent shell and useful form labels | Toast-only errors; global provider weight; locale gaps | Medium | P1 / 5A.2 reference, 5A.3 production |
 | Public sharing | 2 | Open a shared list or comparison | Acquisition-capable concept | Proxy can redirect anonymous recipients to login | Medium | P1 / 5A.0 |
 | Onboarding | 3 | Choose region/preferences and establish profile | Clear stepped concept | Chosen language does not immediately localize; legacy redirects | Medium | P1 / 5D |
 | Dashboard | 1 | Resume a useful task | New/returning user branches | New-user state lacks page-level `h1`; empty dashboard feels sparse | Medium | P1 shell / 5B; P2 content / 5D |
@@ -97,7 +97,7 @@ The machine-readable inventory is in [`phase5/route-component-inventory.json`](p
 | Saved / personal | 5 | Save, organize, and revisit decisions | Lists, watchlist, saved searches/comparisons exist | Inconsistent states; list-card nested action | High | P1 / 5D |
 | Explore / recipes | 2 | Find and inspect recipe ideas | Search/detail journeys exist | Secondary value; mixed state/copy patterns | Medium | P2 / 5D |
 | Gamification | 1 | Review achievements/progress | Unlock/progress states exist | Weak fit with the evidence-first north star | Low–medium | P3 / 5D |
-| Scanner / contribution | 6 | Scan, recover, submit, revisit | Multiple recovery journeys exist | Camera surface dominates; usefulness gated by data readiness | High | P2 / 5E (gated) |
+| Scanner / contribution | 6 | Scan, recover, submit, revisit | Multiple recovery journeys exist | Camera surface dominates; usefulness gated by data readiness | High | P2 / 5A.2 reference, 5E implementation (gated) |
 | Settings / account | 5 | Manage preferences, privacy, notifications | Logical domain separation | Mixed form/error patterns; mobile tab overflow | Medium | P2 / 5D |
 | Admin | 3 | Review submissions and operations | Separate operational views | Hardcoded English; authorization/nav exposure risk | Medium | P1 policy / 5B; P3 page visuals / 5F |
 | Development catalog | 1 | Inspect shared components | Useful migration aid | Not a complete canonical component catalog | Low | P2 / 5A.1 |
@@ -111,7 +111,10 @@ The machine-readable inventory is in [`phase5/route-component-inventory.json`](p
 - There are two route error boundaries, one fatal global-error surface, and one global not-found page.
 - Shared, offline, backend-paused, authentication-error, no-evidence, and degraded-data states exist, but their routing and visual contracts are inconsistent.
 
-Every route is retained in the migration map. Scanner and image-search routes are deferred, not dropped.
+Every route remains visible to the migration program. An active user-facing route must
+ultimately be migrated to the approved V2 experience or removed by explicit product
+decision. Scanner and image-search readiness may change the implemented experience, but
+cannot create an indefinite deferral while Phase 5 is declared complete.
 
 ## Screenshot inventory and visual inspection
 
@@ -122,7 +125,7 @@ Every route is retained in the migration map. Scanner and image-search routes ar
 | Landing | 390×844 light/dark; 768×1024 light/dark; 1440×900 light/dark | Clear headline and status, but generic glass/glow treatment, repeated pills, and an oversized hero card weaken distinction. Mobile header is crowded. |
 | Login | 390×844 dark; 1440×900 dark | Most coherent existing visual surface. Desktop illustration and form split well; mobile remains focused and readable. |
 
-The eight public/auth captures are retained under [`phase5/screenshots/`](phase5/screenshots/) because they are the direct visual evidence for the selected direction and responsive findings. They are already compact PNGs (30–68KB each), contain no authenticated user data, and cover the three required viewport classes without creating another large image collection. Their exact byte sizes and SHA-256 checksums are recorded in [`phase5/route-component-inventory.json`](phase5/route-component-inventory.json).
+The eight public/auth captures are retained under [`phase5/screenshots/`](phase5/screenshots/) because they are direct current-state audit evidence for the working direction and responsive findings. They are not approval of an art direction, Golden References, or production regression baselines. They are already compact PNGs (30–68KB each), contain no authenticated user data, and cover the three required viewport classes without creating another large image collection. Their exact byte sizes and SHA-256 checksums are recorded in [`phase5/route-component-inventory.json`](phase5/route-component-inventory.json).
 
 - Landing: [390 light](phase5/screenshots/landing-390x844-light.png), [390 dark](phase5/screenshots/landing-390x844-dark.png), [768 light](phase5/screenshots/landing-768x1024-light.png), [768 dark](phase5/screenshots/landing-768x1024-dark.png), [1440 light](phase5/screenshots/landing-1440x900-light.png), [1440 dark](phase5/screenshots/landing-1440x900-dark.png).
 - Login: [390 dark](phase5/screenshots/login-390x844-dark.png), [1440 dark](phase5/screenshots/login-1440x900-dark.png).
@@ -280,7 +283,10 @@ For health-conscious shoppers in Poland and Germany, TryVit decodes nutrition, i
 
 ## Visual directions and decision matrix
 
-Scores are 0–10. Weighted score uses the audit’s required weights.
+Scores are 0–10. Weighted score uses the audit’s required weights. These are audit-
+stage hypotheses, not a final brand or production-design approval; Phase 5A.2 must
+challenge up to three genuinely different TryVit-native directions through rendered
+Golden Reference evidence and independent review.
 
 | Direction | Trust 20% | Distinction 15% | Usefulness 15% | Visitor impact 15% | Scalability 15% | A11y 10% | Perf 5% | Feasibility 5% | Weighted |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
@@ -288,7 +294,7 @@ Scores are 0–10. Weighted score uses the audit’s required weights.
 | **Signal Lab** | 9.5 | 7.8 | 9.4 | 7.8 | 9.4 | 9.5 | 9.3 | 8.8 | **8.92** |
 | **Market Garden** | 7.8 | 9.4 | 7.7 | 9.6 | 7.5 | 8.0 | 6.5 | 6.8 | **8.16** |
 
-### Direction 1 — Living Label (recommended)
+### Direction 1 — Living Label (current lead hypothesis)
 
 - **Idea:** the interface behaves like a beautifully decoded package label.
 - **Character:** warm scientific clarity; assured rather than clinical.
@@ -327,9 +333,13 @@ Scores are 0–10. Weighted score uses the audit’s required weights.
 - **A11y/perf:** feasible only with aggressive image/motion controls.
 - **Risk:** highest; can weaken provenance clarity, imply freshness/health halos, and scale poorly into dense comparison and evidence views.
 
-Living Label wins because it is almost as rigorous as Signal Lab, more memorable for first-time visitors, and more scalable into the authenticated product than Market Garden. It also turns TryVit’s unique evidence model into the visual identity itself.
+Living Label scored highest in this audit because it is almost as rigorous as Signal
+Lab, more memorable for first-time visitors, and more scalable into the authenticated
+product than Market Garden. It also offers a promising way to turn TryVit’s evidence
+model into a visual identity. That lead does not bypass the Phase 5A.2 comparison,
+identity exploration, independent scoring, or Eric's explicit selection.
 
-## Future landing-page blueprint
+## Future landing-page candidate blueprint
 
 ### Landing north star
 
@@ -360,7 +370,13 @@ The visitor should understand TryVit within five seconds and experience its dist
 - Hero label enters as one element; a scan line reveals rows in reading order.
 - Scroll changes the product preview from package → evidence sheet → comparison, using one shared product anchor.
 - Cards do not float independently. Motion communicates causality and continuity.
-- Hover/press use 120–180ms feedback; section entrances use 240–360ms opacity/transform; long narrative transitions cap at 500ms.
+- The only approved transition durations are 0, 120, 180, 240, 360, and 500ms:
+  0ms renders the final reduced-motion state and resets state; 120ms handles press,
+  direct-manipulation, and icon-state feedback; 180ms handles hover/focus response and
+  disclosure or overlay exits; 240ms handles disclosure entrances and determinate
+  progress; 360ms handles overlay entrances, section/evidence reveals, and spatial
+  continuity; 500ms is reserved exclusively for an approved landing-page narrative
+  transition.
 - No animated large blur/filter layers, layout properties, autoplay video, or default WebGL.
 - Reduced motion renders the final state immediately and replaces scroll choreography with clear section separators.
 
@@ -461,7 +477,16 @@ Detailed architecture, component taxonomy, tokens and evidence-state specificati
 
 ### Human approvals required
 
-- Final brand palette, type pairing, logomark evolution and photography rights.
+- Phase 5A.2 art-direction and identity selection after comparison of up to three
+  coherent candidates; the current mark and Living Label direction remain provisional
+  until then.
+- Final brand palette, type pairing, icon/illustration language, logomark evolution and
+  photography rights.
+- All six Golden References—landing, authentication, authenticated home, search,
+  product/evidence, and scanner—after two independent fresh-context reviews meet the
+  documented rubric and veto rules.
+- Final motion language, including full-motion recordings and equivalent reduced-motion
+  behavior.
 - Final public headline and any “healthier/better” comparison language.
 - Support/status address and ownership.
 - Native PL/DE review of allergens, health, legal, privacy and account-deletion copy.
@@ -472,4 +497,11 @@ Detailed architecture, component taxonomy, tokens and evidence-state specificati
 
 ## Decision
 
-Proceed with Living Label as the Phase 5 north star, but preserve the architecture as a sequence of reversible, route-scoped PRs. Phase 5A.0 must first establish a truthful, backend-independent and measurable public foundation. The detailed weighted implementation ranking, acceptance criteria, rollback boundaries and exact next prompt are in [`PHASE5_IMPLEMENTATION_ROADMAP.md`](PHASE5_IMPLEMENTATION_ROADMAP.md).
+Use Living Label as the strongest current hypothesis while keeping the semantic
+foundation direction-resilient. Phase 5A.1 remains exactly two non-production-route
+Design System V2 PRs. Phase 5A.2 is the mandatory non-production Experience
+Architecture and Golden Reference Gate defined in
+[`PHASE5A2_EXPERIENCE_ARCHITECTURE_GOLDEN_REFERENCE.md`](PHASE5A2_EXPERIENCE_ARCHITECTURE_GOLDEN_REFERENCE.md).
+Production redesign begins in Phase 5A.3 only after that gate passes and Eric explicitly
+approves the art direction, identity, and six references. The staged acceptance and
+rollback plan is in [`PHASE5_IMPLEMENTATION_ROADMAP.md`](PHASE5_IMPLEMENTATION_ROADMAP.md).

@@ -1,15 +1,19 @@
 # Brand Guidelines — TryVit
 
-> **Last updated:** 2026-03-14
-> **Status:** Active for retained mark and asset governance; V1 palette/type guidance is historical for Phase 5
+> **Last updated:** 2026-08-10
+> **Status:** Active for current production-asset governance; identity, mark, palette, type, and motion direction remain provisional for Phase 5
 > **Owner issue:** [#410](https://github.com/ericsocrat/tryvit/issues/410)
 > **Parent epic:** [#397](https://github.com/ericsocrat/tryvit/issues/397) — Brand Identity Foundation
 
-This document governs the retained mark and brand-asset usage. Phase 5 visual-system
-decisions are governed by `PHASE5_MASTER_EXPERIENCE_AUDIT.md`,
-`PHASE5_DESIGN_SYSTEM_BLUEPRINT.md`, `PHASE5_IMPLEMENTATION_ROADMAP.md`, and the active
-phase record. `docs/assets/design-tokens.json` is now generated from the typed Design
-System V2 manifest; older palette and typography guidance below remains a V1 reference.
+This document governs current production-brand asset usage while the existing mark is
+retained provisionally. Phase 5 visual-system decisions are governed by
+`PHASE5_MASTER_EXPERIENCE_AUDIT.md`, `PHASE5_DESIGN_SYSTEM_BLUEPRINT.md`,
+`PHASE5_IMPLEMENTATION_ROADMAP.md`, the active phase record, and the future
+[`PHASE5A2_EXPERIENCE_ARCHITECTURE_GOLDEN_REFERENCE.md`](PHASE5A2_EXPERIENCE_ARCHITECTURE_GOLDEN_REFERENCE.md)
+approval gate. `docs/assets/design-tokens.json` is generated from the typed Design
+System V2 manifest; older palette, typography, component, and implementation guidance
+below remains a V1 reference. No text here constitutes final approval of the current
+mark or authorization to replace production identity assets.
 
 ---
 
@@ -70,7 +74,7 @@ Empower consumers in Poland (and expanding to Europe) to make healthier food cho
 
 ## 2. Logo Usage
 
-> **Status:** Active — logomark (#407) and lockups (#408) finalized.
+> **Status:** Active current production assets — logomark (#407) and lockups (#408) are provisionally retained, not approved as the final Phase 5 identity.
 
 ### Logo Variants
 
@@ -480,10 +484,15 @@ Display as a numeric badge (1–4) with the corresponding NOVA color.
 
 ### Chips / Tags
 
-- Allergen chips: colored by severity (present/traces/free).
-- Category chips: neutral background, category emoji prefix.
+- Allergen chips: pair text, icon/shape, and semantic color for contains, may-contain,
+  deterministic-derived, and neutral unknown states. “Free” is not a current status;
+  the reserved assessed-absence treatment requires authoritative negative evidence and
+  provenance.
+- Category chips: use a neutral treatment. Historical category-emoji prefixes are V1
+  debt and are not a pattern for new work.
 - Filter chips: brand-subtle background, dismissible "×" icon.
-- Enter animation: `chip-enter` (scale from 0.85 → 1.0, 150ms decelerate).
+- Historical V1 `chip-enter` examples migrate to the 180ms fast role; Phase 5 does not
+  add an ornamental enter animation by default.
 
 ---
 
@@ -540,62 +549,66 @@ The spacing system uses a 4px base unit, matching Tailwind's default scale:
 
 ## 10. Motion & Animation
 
+The canonical future Phase 5 contract below supersedes the historical V1 duration
+examples in this document. It is a governance target; production adoption starts only
+after the non-production Phase 5A.2 Golden Reference gate is approved.
+
 ### Duration Scale
 
-| Token                | Value | Usage                                     |
-| -------------------- | ----- | ----------------------------------------- |
-| `--duration-instant` | 100ms | Press feedback, micro-interactions        |
-| `--duration-fast`    | 150ms | Hovers, chip enters, tooltips             |
-| `--duration-normal`  | 200ms | Page element entrances, theme transitions |
-| `--duration-slow`    | 300ms | Sheet slides, emphasis animations         |
+| Role | Value | Usage |
+| --- | ---: | --- |
+| Instant | 0ms | Complete final state for reduced motion; state reset |
+| Feedback | 120ms | Press and direct-manipulation feedback |
+| Fast | 180ms | Hover/focus response, disclosure exit, overlay exit |
+| Standard | 240ms | Disclosure entrance and determinate progress |
+| Deliberate | 360ms | Overlay entrance, section/evidence reveal, spatial continuity |
+| Narrative maximum | 500ms | Approved landing package-to-label narrative only |
+
+These are the only approved transition durations: **0, 120, 180, 240, 360, and
+500ms**. The 500ms role is reserved exclusively for an approved landing narrative; it
+is not available to authenticated, scanner, system, or general component transitions.
 
 ### Easing Functions
 
-| Token               | Value                                    | Usage                                |
-| ------------------- | ---------------------------------------- | ------------------------------------ |
-| `--ease-standard`   | `cubic-bezier(0.4, 0, 0.2, 1)`           | General transitions (move, resize)   |
-| `--ease-decelerate` | `cubic-bezier(0, 0, 0.2, 1)`             | Entrances (fade in, slide up)        |
-| `--ease-accelerate` | `cubic-bezier(0.4, 0, 1, 1)`             | Exits (fade out, slide away)         |
-| `--ease-spring`     | `cubic-bezier(0.68, -0.55, 0.265, 1.55)` | Playful bounces (trust badge verify) |
+| Role | Value | Usage |
+| --- | --- | --- |
+| Standard | Approved token value | General state transitions |
+| Emphasized decelerate | Approved token value | Entrances that settle into place |
+| Emphasized accelerate | Approved token value | Exits that clear quickly |
+| Linear progress | `linear` | Truthful progress tied to actual work |
 
 ### Animation Patterns
 
-| Pattern            | CSS Class                 | Behavior                                            |
-| ------------------ | ------------------------- | --------------------------------------------------- |
-| Fade in up         | `.animate-fade-in-up`     | translateY(8px→0) + opacity(0→1), normal+decelerate |
-| Scale in           | `.animate-scale-in`       | scale(0.92→1) + opacity(0→1), fast+decelerate       |
-| Chip enter         | `.animate-chip-enter`     | scale(0.85→1) + opacity(0→1), fast+decelerate       |
-| Trust verified     | `.animate-trust-verified` | scale(1→1.15→1), 600ms+decelerate, 300ms delay      |
-| Hover lift         | `.hover-lift`             | translateY(-2px) + shadow-md on hover               |
-| Press scale        | `.press-scale`            | scale(0.97) on :active                              |
-| Hover lift + press | `.hover-lift-press`       | Lift on hover, scale+flatten on press               |
-| Skeleton shimmer   | `.skeleton`               | Horizontal gradient sweep, 1.5s infinite            |
-| Slide up sheet     | `.animate-slide-up-sheet` | translateY(100%→0), slow+decelerate                 |
+| Pattern | Behavior |
+| --- | --- |
+| Direct feedback | Small transform/opacity or icon-state response at 120ms |
+| Hover/focus response | Interruptible transform/opacity at 180ms |
+| Disclosure / overlay exit | Interruptible transform/opacity at 180ms with focus preserved |
+| Disclosure entrance | Interruptible transform/opacity at 240ms with focus preserved |
+| Overlay entrance / continuity | Interruptible transform/opacity at 360ms with deterministic final state |
+| Evidence reveal | Reading-order reveal at 360ms maximum; meaning never depends on sequencing |
+| Landing narrative | One approved package-to-label transition at 500ms maximum |
+| Progress | Determinate updates use 240ms and linear-progress easing tied to actual work; indeterminate feedback never fakes completion |
 
 ### Motion Rules
 
-1. **Entrances use decelerate** — elements arrive quickly and settle.
-2. **Exits use accelerate** — elements depart with increasing speed.
-3. **Interactive feedback is instant** (100ms) — the user must feel the press immediately.
-4. **No animation exceeds 300ms** except special emphasis animations (trust badge).
-5. **Staggered lists:** Each item delays by 50ms × index. Max stagger delay: 500ms (10 items).
-6. **Theme transitions:** Body background/color transitions at 150ms, disabled during initial load.
+1. **Entrances use emphasized deceleration** and exits use emphasized acceleration.
+2. **Interactive feedback uses 120ms** and remains interruptible under repeated input.
+3. **Motion explains causality, continuity, feedback, or progress**; ornamental floating,
+   bounce, parallax, and stagger choreography is not a default.
+4. **Animate transform and opacity by default.** Layout-property, large blur/filter,
+   scroll-jacking, autoplay-video, and default WebGL motion require explicit approval.
+5. **Theme change is immediate or 180ms at most** and never hides content or delays
+   selected-state semantics.
+6. **No critical content waits for animation or JavaScript.** Motion must not cause
+   layout shift or an animation-attributable task above the approved performance limit.
 
 ### Reduced Motion
 
-All animations are fully disabled when `prefers-reduced-motion: reduce` is active:
-
-```css
-@media (prefers-reduced-motion: reduce) {
-  :root {
-    --duration-instant: 0ms;
-    --duration-fast: 0ms;
-    --duration-normal: 0ms;
-    --duration-slow: 0ms;
-  }
-  /* All animation-duration → 0.01ms, transition-duration → 0.01ms */
-}
-```
+`prefers-reduced-motion: reduce` renders the complete informative final state at 0ms.
+It removes travel, parallax, scanning, unfolding, shimmer, and stagger without removing
+content, focus, announcements, progress meaning, or recovery. Every approved motion
+family requires a separately reviewed reduced-motion equivalent.
 
 ---
 
@@ -603,7 +616,7 @@ All animations are fully disabled when `prefers-reduced-motion: reduce` is activ
 
 ### Contrast Requirements
 
-All text and UI elements follow WCAG 2.1 Level AA:
+All text and UI elements follow WCAG 2.2 Level AA:
 
 | Element Type                       | Minimum Ratio  | Standard |
 | ---------------------------------- | -------------- | -------- |
@@ -764,9 +777,11 @@ Dark mode is applied via the `data-theme="dark"` attribute on the root element:
 1. **Don't invert — remap.** Dark mode is not a simple inversion. Background goes dark, text goes light, but colored data indicators (scores, Nutri-Score) retain their hue identity.
 2. **Increase shadow opacity.** Shadows need higher opacity on dark backgrounds to maintain visual hierarchy.
 3. **Neutral scale inverts.** `neutral-50` (lightest in light mode) becomes the darkest value in dark mode and vice versa.
-4. **Score band hues are preserved** — only the lightness adjusts to maintain readability. Users must recognize "green = good" regardless of theme.
+4. **Score band hues remain recognizable** while text/numeric labels preserve meaning in
+   every theme. Green is never a general “good,” health, safety, or allergen-absence
+   signal.
 5. **Logo variant selection:** Use the dark-mode logo variant (when available from #407/#408) on dark backgrounds. Never place the light logo on dark backgrounds.
-6. **Theme transition:** 150ms ease on background-color and color, disabled during initial page load to prevent flash.
+6. **Theme transition:** immediate or the canonical 180ms fast role, disabled during initial page load to prevent flash.
 
 ---
 
@@ -904,7 +919,7 @@ As per the [Open Food Facts Terms of Use](https://world.openfoodfacts.org/terms-
 | ----------------------------------------------------------------------- | -------------------------------------------------- |
 | [`frontend/docs/DESIGN_SYSTEM.md`](../frontend/docs/DESIGN_SYSTEM.md)   | Token reference with Tailwind mappings (technical) |
 | [`docs/assets/design-tokens.json`](assets/design-tokens.json)           | Machine-readable color definitions                 |
-| [`frontend/src/styles/globals.css`](../frontend/src/styles/globals.css) | CSS custom property definitions (source of truth)  |
-| [`frontend/tailwind.config.ts`](../frontend/tailwind.config.ts)         | Tailwind utility class mappings                    |
+| [`frontend/src/styles/globals.css`](../frontend/src/styles/globals.css) | Existing V1 CSS custom-property source; V2 consumes the typed manifest |
+| [`frontend/src/design-system/tokens/manifest.ts`](../frontend/src/design-system/tokens/manifest.ts) | Canonical typed Design System V2 token source |
 | [`docs/UX_UI_DESIGN.md`](UX_UI_DESIGN.md)                               | UI/UX design guidelines                            |
 | [`docs/SCORING_METHODOLOGY.md`](SCORING_METHODOLOGY.md)                 | Score band definitions and formula                 |

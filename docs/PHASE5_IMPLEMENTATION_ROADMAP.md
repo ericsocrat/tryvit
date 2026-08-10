@@ -1,22 +1,30 @@
 # Phase 5 Implementation Roadmap
 
-> **Last updated:** 2026-07-30
+> **Last updated:** 2026-08-10
 > **Status:** Active — staged implementation plan; no implementation is included
 > **Owner issue:** Frontend domain
 
 ## Decision
 
-Phase 5 should begin with **public-experience foundations**, not with visual styling in isolation.
+Phase 5 began with **public-experience foundations**, not with visual styling in isolation.
 
-The first implementation phase is:
+The first implementation phase was:
 
 > **Phase 5A.0 — Public Experience Foundation Gate**
 
-It establishes a correct public-route contract, a genuinely backend-independent demo/public path, route-group provider isolation, server-led public rendering, fail-closed local visual tooling, and authoritative landing performance/visual gates. This work is intentionally visually neutral. It gives the later Living Label redesign a trustworthy, measurable platform.
+It established a correct public-route contract, a genuinely backend-independent demo/public path, route-group provider isolation, server-led public rendering, fail-closed local visual tooling, authoritative landing performance/visual gates, synchronized performance/accessibility remediation, and private PWA cache safety. This work was intentionally visually neutral. It gives the later approved redesign a trustworthy, measurable platform while Living Label remains the strongest current hypothesis.
 
-The precise first PR is **Phase 5A.0a — Local Visual-Test Safety**. It closes the demonstrated stale-compiled-client risk before any further authenticated screenshot run. The remaining 5A.0 contracts then ship independently as 5A.0b route/PWA policy, 5A.0c demo/provider/rendering/locale, and 5A.0d measurement/baselines.
+The completed Phase 5A.0 sequence used six independently bounded PRs: 5A.0a local
+visual-test safety; 5A.0b route/PWA policy; 5A.0c demo/provider/rendering/locale;
+5A.0d performance and visual gates; 5A.0e synchronized performance/accessibility
+remediation; and 5A.0f private PWA cache safety. Phase 5A.1 entered from verified,
+merged 5A.0f rather than bypassing either hardening phase.
 
-Phase 5A then continues with Design System V2 and the visitor experience. The former `codex/phase-5a-visitor-experience` branch predates the allergen preflight and must never be reused or merged into this program.
+Phase 5A then continues with exactly two Design System V2 PRs, followed by a
+non-production Experience Architecture and Golden Reference Gate. Production visitor
+redesign begins only after that gate receives Eric's explicit approval. The former
+`codex/phase-5a-visitor-experience` branch predates the allergen preflight and must never
+be reused or merged into this program.
 
 ## Weighted implementation priority
 
@@ -49,14 +57,16 @@ These apply to every Phase 5 PR:
 - One route family or infrastructure contract per PR; no big-bang component rewrite.
 - Every visual PR includes meaningful light/dark/mobile/tablet/desktop screenshots, reduced-motion behavior, and before/after evidence.
 - Every PR has a route-level rollback boundary and remains draft until its required verification passes.
+- No active user-facing route may remain visually deferred when Phase 5 is declared complete; it must be migrated to the approved V2 experience or removed.
 
 ## Roadmap overview
 
 | Phase | Objective | Primary surface | PR shape | Recommended model / effort |
 |---|---|---|---|---|
-| 5A.0 | Make public/demo rendering truthful, backend-independent and measurable | Visual safety, proxy/PWA, provider topology, landing architecture, visual/perf CI | 4 focused PRs; the exact prompt below covers 5A.0a only | GPT-5.6 Sol / Ultra |
-| 5A.1 | Establish Design System V2 foundations and public/auth shells | Tokens, typography, primitives, route locale, component catalog | 2 focused PRs | GPT-5.6 Sol / XHigh |
-| 5A.2 | Deliver Living Label landing, Learn/legal/support and auth visual cohesion | Public visitor journey | 2–3 route-family PRs | GPT-5.6 Sol / Ultra for landing; High for follow-ups |
+| 5A.0 | Make public/demo rendering truthful, backend-independent and measurable | Visual safety, proxy/PWA, provider topology, landing architecture, visual/perf CI, accessibility remediation, private-cache safety | Six focused PRs, 5A.0a–5A.0f; completed before 5A.1 | GPT-5.6 Sol / Ultra |
+| 5A.1 | Establish Design System V2 foundations, primitives and compatibility | Tokens, typography, theme, primitives, route locale, component catalog | Exactly 2 focused PRs; no 5A.1c | GPT-5.6 Sol / XHigh |
+| 5A.2 | Challenge and approve experience architecture and Golden References | Non-production art direction, identity, content, motion and six reference experiences | Approval package; no production migration | Highest-capability Sol/frontier model / Ultra |
+| 5A.3 | Deliver the approved landing, Learn/legal/support and auth visual cohesion | Public visitor journey | 2–3 route-family PRs | GPT-5.6 Sol / Ultra for landing; High for follow-ups |
 | 5B | Create one app shell, route manifest and accessible navigation/overlay system | `/app` shell and global interactions | 2 focused PRs | GPT-5.6 Sol / XHigh |
 | 5C.1 | Redesign discovery | Search, filters, categories | 2 PRs | GPT-5.6 Sol / High |
 | 5C.2 | Redesign product decision and evidence | Product, ingredient, compare, alternatives | 2–3 PRs | GPT-5.6 Sol / Ultra |
@@ -68,15 +78,16 @@ These apply to every Phase 5 PR:
 
 | Phase | Dependencies | Routes, components and expected architecture areas | Required screenshots and tests | Accessibility and performance gate | Rollback / PR boundary |
 |---|---|---|---|---|---|
-| 5A.0 | Merged audit and allergen preflight | Local fixture/network guard; public/system/auth/share policy; `proxy.ts`; PWA; Supabase middleware ordering; root/route-group layouts; `Providers`; public locale and landing Server/Client split; Lighthouse, bundle and visual workflows | 390/768/1024/1280/1440 landing/shell coverage as applicable; auth/offline/share; reduced motion; host/network guard, route/proxy/provider/i18n/unit/type/lint/build/Playwright/axe/Lighthouse/CI | Public reachability, no unintended backend traffic, preserved focus/landmarks; LCP ≤2.5s, TTFB ≤800ms, mobile ≥0.90, desktop ≥0.95, TBT ≤200ms, CLS ≤0.05, JS budgets | Four independent PRs: 5A.0a safety; 5A.0b route/PWA; 5A.0c provider/rendering/locale; 5A.0d gates/baselines |
-| 5A.1 | 5A.0 green | `frontend/src/design-system/**`; `globals.css` mapping; compatibility facades; `/dev/components`; root locale/skip link; Button/CardLink/Field/Dialog/Sheet/Menu/Tabs/Tooltip/PageState | Component catalog at 390/768/1440, light/dark/reduced/high contrast; token schema, compiled utilities, contrast, interaction, type/lint/build/axe/Playwright | WCAG 2.2 primitive contracts; no route-JS regression; fonts ≤100KiB if adopted | Two PRs: tokens/foundations, then primitives/facades; V1 remains available |
-| 5A.2 | 5A.0 and 5A.1; approved brand/copy/support decisions | `/`, `/learn/**`, `/contact`, `/privacy`, `/terms`, `/forbidden`, `/offline`, `/auth/**`; PublicShell/AuthShell; LivingLabelDemo; marketing/evidence components; metadata/social assets | Full 390/768/1440 light/dark public matrix; normal/reduced-motion story; EN/PL/DE; visual/Lighthouse/axe/Playwright | Headings, reflow, focus, motion equivalence; all Phase 5 public budgets, hero ≤250KiB, cold load ≤900KiB | Landing, editorial/legal, and auth are separate route-family PRs |
-| 5B | 5A.1 primitives | `/app` shell; route manifest; DesktopSidebar/HeaderNav/Navigation/MoreDrawer; Breadcrumbs; route announcements; app loading/error boundaries; Admin policy | New/returning/error shell at 320/390/768/1024/1440 light/dark; nav-role unit tests; keyboard, screen-reader and Playwright journeys | Stable nav, skip/focus, 320 reflow, 200% zoom, localized announcements; shell bundle within budget | Route manifest can feed old shell first; shell view replacement is a separate PR |
-| 5C.1 | 5B shell and Sheet/Combobox/CardLink | `/app/search`, `/app/search/saved` entry, `/app/categories`, `/app/categories/[slug]`; SearchAutocomplete, FilterPanel, ActiveFilterChips, result/product cards | Complete/unknown evidence results; no-query/loading/empty/error/degraded; 390/768/1440 light/dark; filter/combobox keyboard and search performance tests | No nested controls; truthful filters; dialog/combobox contracts; search response/render and route JS within baseline | Search and category PRs separate; API unchanged |
-| 5C.2 | 5C.1 discovery plus Tabs/data-display primitives | `/app/product/[id]`, `/app/ingredient/[id]`, `/app/compare`, alternatives and contextual tray; product/evidence/chart/table components | Five display-status fixtures plus explicit/derived/legacy basis combinations and mixed/partial/error; product/compare at 390/768/1440 light/dark; tabs/table/chart/visual/perf journeys | Evidence never color-only; package-label reference; keyboard tables/tabs; lazy detail panels and route budgets | Summary/evidence, detail tabs/ingredient, and compare are separate PRs |
-| 5D | 5B shell; 5C cards/evidence where reused | `/app`, `/onboarding*`, lists/watchlist, saved search/compare, recipes, achievements, `/app/settings*`; forms, dialogs and PageState | New/returning/empty/error/permission/form-error at 390/768/1440; EN/PL/DE; form and destructive-action Playwright | Immediate locale change, inline+summary errors, 320/200% settings, no nested card actions; no budget regressions | Dashboard/onboarding, saved, settings, and secondary content ship separately |
-| 5E | Explicit scanner/data-readiness approval plus 5C product patterns | `/app/scan*`, `/app/image-search`; scan components, camera frame, result sheet, contribution states | Permission/scan/manual/not-found/offline/partial/complete at phone/tablet; reduced motion; camera-independent path; performance/battery-oriented tests | Non-camera alternative, visible recovery, unknown evidence, bounded camera; no long animation tasks or route budget regression | Scan entry/results and history/contribution are separate PRs; scanner behavior unchanged unless separately authorized |
-| 5F | All migration phases | Remaining 54-route matrix, Admin/experimental routes, PWA/metadata, visual catalog, legacy token/component cleanup, rollout docs | Every route/state fixture at target widths/themes; WCAG manual matrix; native-copy review; Lighthouse/bundle/visual/CI | WCAG 2.2 AA release matrix, all budgets, blocking local visual tests and monitored field plan | Small hardening/cleanup PRs; production rollout remains a separate authorization |
+| 5A.0 | Merged audit and allergen preflight | Local fixture/network guard; public/system/auth/share policy; `proxy.ts`; PWA and private-cache safety; Supabase middleware ordering; root/route-group layouts; `Providers`; public locale and landing Server/Client split; Lighthouse, bundle, visual and synchronized accessibility/performance workflows | 390/768/1024/1280/1440 landing/shell coverage as applicable; auth/offline/share/account-switch; reduced motion; host/network/cache guard, route/proxy/provider/i18n/unit/type/lint/build/Playwright/axe/Lighthouse/CI | Public reachability, no unintended backend traffic or private-response cache reuse, preserved focus/landmarks; LCP ≤2.5s, TTFB ≤800ms, mobile ≥0.90, desktop ≥0.95, TBT ≤200ms, CLS ≤0.05, JS budgets | Six independent PRs: 5A.0a safety; 5A.0b route/PWA; 5A.0c provider/rendering/locale; 5A.0d gates/baselines; 5A.0e performance/accessibility; 5A.0f private-cache safety |
+| 5A.1 | 5A.0f merged and green | `frontend/src/design-system/**`; `globals.css` mapping; compatibility facades; `/dev/components`; root locale/skip link; Button/CardLink/Field/Dialog/Sheet/Menu/Tabs/Tooltip/PageState | Component catalog at 390/768/1440, light/dark/system/reduced/high contrast; token schema, compiled utilities, contrast, interaction, type/lint/build/axe/Playwright | WCAG 2.2 primitive contracts; no route-JS regression; Manrope remains assay-only and the production font stack is unchanged | Exactly two PRs: 5A.1a tokens/foundations, then 5A.1b primitives/facades; V1 remains available; no production route migration |
+| 5A.2 | Merged/green 5A.1a and 5A.1b plus explicit authorization | Up to three original art directions and identity systems; six Golden Reference experiences; content, responsive, state and motion evidence; independent review | 390/768/1440 light/dark stills; behavioral matrix at 320–1440, 200% zoom, reduced motion and forced colors; deterministic recordings; EN/PL/DE; two fresh-context reviewers | Rubric ≥88/100, no category below 75%, no truth/a11y/privacy/performance veto, Eric selection | Non-production approval phase; no route migration, production identity replacement or approved-baseline mutation |
+| 5A.3 | Explicitly approved 5A.2 plus approved brand/copy/support decisions | `/`, `/learn/**`, `/contact`, `/privacy`, `/terms`, `/forbidden`, `/offline`, `/auth/**`; PublicShell/AuthShell; approved demonstration; marketing/evidence components; metadata/social assets | Full 390/768/1440 light/dark public matrix; normal/reduced-motion story; EN/PL/DE; visual/Lighthouse/axe/Playwright | Headings, reflow, focus, motion equivalence; all Phase 5 public budgets, hero ≤250KiB, cold load ≤900KiB | Landing, editorial/legal, and auth are separate route-family PRs |
+| 5B | Explicitly approved 5A.2 plus 5A.1 primitives | `/app` shell; route manifest; DesktopSidebar/HeaderNav/Navigation/MoreDrawer; Breadcrumbs; route announcements; app loading/error boundaries; Admin policy | New/returning/error shell at 320/390/768/1024/1440 light/dark; nav-role unit tests; keyboard, screen-reader and Playwright journeys | Stable nav, skip/focus, 320 reflow, 200% zoom, localized announcements; shell bundle within budget | Route manifest can feed old shell first; shell view replacement is a separate PR |
+| 5C.1 | Approved 5A.2; 5B shell and Sheet/Combobox/CardLink | `/app/search`, `/app/search/saved` entry, `/app/categories`, `/app/categories/[slug]`; SearchAutocomplete, FilterPanel, ActiveFilterChips, result/product cards | Complete/unknown evidence results; no-query/loading/empty/error/degraded; 390/768/1440 light/dark; filter/combobox keyboard and search performance tests | No nested controls; truthful filters; dialog/combobox contracts; search response/render and route JS within baseline | Search and category PRs separate; API unchanged |
+| 5C.2 | Approved 5A.2; 5C.1 discovery plus Tabs/data-display primitives | `/app/product/[id]`, `/app/ingredient/[id]`, `/app/compare`, alternatives and contextual tray; product/evidence/chart/table components | Five display-status fixtures plus explicit/derived/legacy basis combinations and mixed/partial/error; product/compare at 390/768/1440 light/dark; tabs/table/chart/visual/perf journeys | Evidence never color-only; package-label reference; keyboard tables/tabs; lazy detail panels and route budgets | Summary/evidence, detail tabs/ingredient, and compare are separate PRs |
+| 5D | Approved 5A.2; 5B shell; 5C cards/evidence where reused | `/app`, `/onboarding*`, lists/watchlist, saved search/compare, recipes, achievements, `/app/settings*`; forms, dialogs and PageState | New/returning/empty/error/permission/form-error at 390/768/1440; EN/PL/DE; form and destructive-action Playwright | Immediate locale change, inline+summary errors, 320/200% settings, no nested card actions; no budget regressions | Dashboard/onboarding, saved, settings, and secondary content ship separately |
+| 5E | Approved 5A.2; explicit scanner/data-readiness decision plus 5C product patterns | `/app/scan*`, `/app/image-search`; scan components, camera frame, result sheet, contribution states | Permission/scan/manual/not-found/offline/partial/complete at phone/tablet; reduced motion; camera-independent path; performance/battery-oriented tests | Non-camera alternative, visible recovery, unknown evidence, bounded camera; no long animation tasks or route budget regression | Scan entry/results and history/contribution are separate PRs; failed readiness produces truthful unavailable/partial/contribution UX or removal, never indefinite deferral |
+| 5F | Approved 5A.2 and all migration phases | Complete generated route/state/theme/viewport/motion/approval ledger; Admin/Labs/system disposition; PWA/metadata; visual catalog; legacy cleanup; rollout docs | Every active experience/state fixture at target widths/themes; WCAG manual matrix; native-copy review; Lighthouse/bundle/visual/CI | WCAG 2.2 AA release matrix, real-device/AT sampling, all budgets, blocking local visual tests and expert cohesion review | Small hardening/cleanup PRs; production rollout remains a separate authorization |
 
 ## Phase 5A.0 — Public Experience Foundation Gate
 
@@ -90,6 +101,8 @@ Make the public site reliable with an intentionally paused data backend and esta
 2. **5A.0b — Public Route and PWA Contract:** one route-policy schema, proxy behavior, shared/offline/metadata reachability, manifest orientation/shortcuts and contradictory-test reconciliation.
 3. **5A.0c — Demo Provider, Locale and Server Rendering:** backend-independent public provider topology, minimal server-resolvable public locale/`html[lang]` contract, and landing Server Component/client islands with visual parity.
 4. **5A.0d — Performance and Visual Gates:** route-specific JS, Lighthouse, deterministic local baselines and measurement protocols.
+5. **5A.0e — Performance and Accessibility:** synchronized evidence-backed diagnosis and bounded remediation without weakening the established budgets.
+6. **5A.0f — Private PWA Cache Safety:** protected-response exclusion, targeted legacy-cache migration, and guarded offline account-switch proof.
 
 Each PR is reviewed and verified before the next begins. Do not combine them into one squash PR.
 
@@ -148,22 +161,29 @@ Each PR is reviewed and verified before the next begins. Do not combine them int
 
 ### Rollback boundary
 
-Revert Phase 5A.0 PRs to restore prior proxy/provider/landing architecture. No database, migration, dependency or visual-token rollback is involved.
+Each Phase 5A.0 PR retains its documented focused rollback boundary across visual
+safety, route/provider/landing architecture, measurement, remediation, or private-cache
+safety. No database, schema migration, dependency, or visual-token rollback is involved.
 
 ## Phase 5A.1 — Design System V2 foundations
 
 ### Objective
 
-Introduce the Living Label token hierarchy and canonical accessibility primitives without performing a mass page restyle.
+Introduce a direction-resilient semantic token hierarchy and canonical accessibility primitives without performing a production page restyle. Living Label is the strongest current working hypothesis, not a frozen Phase 5A.1 conclusion.
 
 ### Scope
 
-- `frontend/src/design-system/tokens`, foundations, initial primitives and component-test catalog.
+- `frontend/src/design-system/tokens`, foundations, primitive-token contracts and component-test catalog.
 - Correct Tailwind semantic mappings and remove token cycles.
-- Candidate Manrope/Source Serif 4 loading through a measured built-in font path, only after validating Latin Extended and the 100KiB budget.
+- Manrope assay evidence only; retain the deterministic production system stack and do
+  not preload or adopt a new font in Phase 5A.1.
+- Defer serif selection and the complete production type pairing to Phase 5A.2 Golden
+  Reference review. Any later adoption still requires Latin Extended, licensing,
+  checksum, fallback/CLS, and the 100KiB total font budget.
 - Canonical Button, IconButton, Surface, CardLink, Field, Dialog, Sheet, Menu, Tabs, Tooltip and PageState.
 - Compatibility facades for existing shared components.
 - Complete component-level locale/announcement contract and skip link, extending the minimal public `html[lang]` contract from 5A.0c.
+- Keep exactly two official PRs: 5A.1a foundations, followed by 5A.1b primitives, interactions and facades. There is no 5A.1c.
 
 ### Acceptance
 
@@ -174,31 +194,85 @@ Introduce the Living Label token hierarchy and canonical accessibility primitive
 - Legacy class/value allowlist is recorded and new arbitrary shadow/radius/transition usage fails.
 - A generated route/component dependency report validates every current route and component, records client-boundary status and migration/removal gates, and fails when inventory drift is unclassified.
 - No route is visually migrated except `/dev/components` and minimal facade parity fixtures.
+- Manrope remains assay-only, serif remains deferred, and the production font stack is
+  unchanged.
 
 ### Screenshots/tests/rollback
 
-Capture the full component catalog at 390, 768 and 1440 in light/dark/reduced-motion/high-contrast. Run unit, type, lint, build, axe, Playwright and token validation. V2 exists alongside V1 and can be removed by reverting the focused PR.
+Capture the full component catalog at 390, 768 and 1440 across the documented light,
+warm-dark, system-theme, reduced-motion, forced-color and EN/PL/DE contexts. These are
+candidate foundation images, not Golden References or approved production baselines.
+Run unit, type, lint, build, axe, Playwright and token validation. V2 exists alongside
+V1 and can be removed by reverting the focused PR. Phase 5A.1b begins only after
+5A.1a is reviewed, green, approved by Eric, merged, and verified on authoritative
+`main`.
 
-## Phase 5A.2 — Living Label visitor experience
+## Phase 5A.2 — Experience Architecture and Golden Reference Gate
 
 ### Objective
 
-Deliver the memorable public experience after Phase 5A.0/5A.1 gates are green.
+Challenge and approve the complete art direction, identity, interaction, content, and
+frontend architecture before production migration. This is a non-production phase
+governed by
+[`PHASE5A2_EXPERIENCE_ARCHITECTURE_GOLDEN_REFERENCE.md`](PHASE5A2_EXPERIENCE_ARCHITECTURE_GOLDEN_REFERENCE.md).
 
 ### Scope
 
-- Landing, public shell, status treatment, deterministic Living Label demo, Learn hub/articles, contact, privacy, terms, forbidden/offline and auth shell.
-- Approved EN/PL/DE marketing and support copy, metadata, sitemap and social preview.
-- Purposeful scroll narrative with equivalent reduced-motion output.
+- Up to three original TryVit-native art directions and three coherent identity options.
+- Six complete Golden References: landing, authentication, authenticated home, search,
+  product/evidence, and the signature scanner journey.
+- Deterministic still and motion evidence, reduced-motion equivalents, content design,
+  responsive/state coverage, and performance architecture.
+- A single motion taxonomy using only 0/120/180/240/360/500ms, with 500ms reserved
+  exclusively for an approved landing narrative.
+- Two independent fresh-context visual reviewers plus Eric's explicit selection.
 
 ### Acceptance
 
-- A visitor understands product, evidence boundaries, PL/DE support and paused state within the first viewport.
-- No fake testimonials, statistics, partnerships, safety claims or implied global coverage.
-- Demo is deterministic and backend-independent.
-- All Phase 5 budgets remain green; hero media ≤250KiB and total cold mobile transfer ≤900KiB.
-- Required 390/768/1440 light/dark screenshots and motion/reduced-motion behavioral tests pass.
-- Human approval exists for final headline, support/status path, imagery rights and sensitive PL/DE copy.
+- Every direction is original, truthful, responsive, localizable, accessible,
+  maintainable, and evaluated through coherent light and dark expressions. Warm-forest
+  dark remains the current candidate rather than a mandatory final choice.
+- Six references include their required loading, empty, degraded, error, offline,
+  permission, partial, unknown, and recovery states where relevant.
+- Static and motion review evidence meet the documented device, viewport, input,
+  reduced-motion, forced-color and performance contracts.
+- Each reference scores at least 88/100, no category scores below 75%, and no
+  truthfulness, accessibility, privacy, performance, or severe generic-template veto
+  remains.
+- Eric explicitly selects and approves the direction and identity.
+
+### Rollback
+
+Revert the non-production reference artifacts and decision record. No production route,
+identity asset, dependency, API, database, or hosted configuration is changed by this
+gate.
+
+## Phase 5A.3 — Approved public and authentication experience
+
+### Objective
+
+Deliver the approved public experience only after Phase 5A.2 passes.
+
+### Scope
+
+- Landing, public shell, status treatment, deterministic demonstration, Learn
+  hub/articles, contact, privacy, terms, forbidden/offline and auth shell.
+- Approved EN/PL/DE marketing and support copy, metadata, sitemap and social preview.
+- Purposeful narrative motion with equivalent reduced-motion output.
+
+### Acceptance
+
+- A visitor understands product, evidence boundaries, PL/DE support and paused state
+  within the first viewport.
+- No fake testimonials, statistics, partnerships, safety claims or implied global
+  coverage.
+- The demonstration is deterministic and backend-independent.
+- All Phase 5 budgets remain green; hero media is at most 250 KiB and total cold mobile
+  transfer is at most 900 KiB.
+- Required 390/768/1440 light/dark screenshots and motion/reduced-motion behavioral
+  tests pass.
+- Human approval exists for final headline, support/status path, imagery rights and
+  sensitive PL/DE copy.
 
 ### Rollback
 
@@ -208,7 +282,7 @@ Public route-family PRs are independently revertible; Design System V2 remains i
 
 ### Objective
 
-Make the authenticated app feel like the same Living Label product and establish one navigation/overlay contract.
+Make the authenticated app express the approved Phase 5A.2 direction and establish one navigation/overlay contract.
 
 ### Scope
 
@@ -301,11 +375,18 @@ Unify onboarding, home, saved content and settings without letting gamification 
 
 ### Entry gate
 
-Do not start because the rest of the app looks polished. Start only when a checkpoint defines and meets minimum barcode lookup, ingredient evidence, allergen evidence and result usefulness thresholds for representative PL/DE samples.
+Do not start merely because the rest of the app looks polished. Start the full scanner
+implementation only when a checkpoint defines and meets minimum barcode lookup,
+ingredient evidence, allergen evidence and result usefulness thresholds for
+representative PL/DE samples. If readiness fails, the owning phase must ship a truthful
+unavailable, partial, manual-entry or contribution experience, or remove the feature by
+explicit product decision. Indefinite deferral is not an exit.
 
 ### Objective and scope
 
-Integrate scan, result, history, contribution and image-search routes into Living Label without changing scanner/data behavior unless separately authorized.
+Integrate scan, result, history, contribution and image-search routes into the approved
+Phase 5A.2 direction without changing scanner/data behavior unless separately
+authorized.
 
 ### Acceptance
 
@@ -323,21 +404,35 @@ Close remaining route, localization, accessibility, performance and regression g
 
 ### Scope
 
-- Admin/experimental polish where valuable, all 54 route entries, all PageState variants, PWA/offline, metadata, visual catalog, legacy token/component removal and production rollout plan.
+- Every active public, authentication, share, PWA/system and authenticated route;
+  Admin/Labs/system surfaces with an owned migration or explicitly approved exclusion;
+  all PageState variants; metadata/social assets; visual catalog; legacy cleanup; and
+  the production rollout plan.
 
 ### Exit criteria
 
-- 54/54 routes mapped and either migrated, intentionally retained or explicitly deferred.
+- A generated route × state × theme × viewport × motion × approval ledger has 100%
+  coverage. Every active user-facing route is migrated to V2 and redesigned or removed;
+  “intentionally retained” and “deferred” do not count as complete.
 - WCAG 2.2 AA automated/manual matrix complete at 320/390/768/1024/1280/1440 and 200% zoom.
 - EN/PL/DE native/domain review complete for consequential copy.
 - Critical local visual baselines are blocking and secret-free.
 - Core Web Vitals field monitoring plan exists; lab budgets pass.
-- Zero unauthorized legacy class growth and zero orphaned deprecated components.
+- Real-device and assistive-technology sampling and expert visual-cohesion review are
+  complete.
+- Zero unexplained production V1 scopes, orphaned compatibility facades, uncontrolled
+  icon/raw-SVG/emoji drift, unclassified motion debt, unauthorized legacy growth or
+  orphaned deprecated components remain.
+- Eric gives final whole-product approval.
 - Production rollout, monitoring and rollback are separately authorized; this roadmap itself does not deploy.
 
-## Exact next implementation prompt
+## Archived historical implementation prompt — Phase 5A.0a
 
-Use the following only after the audit PR is reviewed, squash-merged, and the actual merged `main` SHA is verified. Replace `<VERIFIED_AUDIT_MAIN_SHA>` with that commit. It implements **Phase 5A.0a only**. Recommended execution: **GPT-5.6 Sol, Ultra effort**.
+The following prompt is retained verbatim as implementation provenance for the completed
+5A.0a phase. It is not the current next step and must not be run. Phase 5A.1b becomes the
+next implementation phase only after 5A.1a is reviewed, exact-head green, explicitly
+approved by Eric, merged, and verified on authoritative `main`; this roadmap does not
+authorize starting it early.
 
 ```text
 Implement Phase 5A.0a of TryVit: Local Visual-Test Safety.

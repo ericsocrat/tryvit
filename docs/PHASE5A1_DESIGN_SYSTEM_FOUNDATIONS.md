@@ -1,20 +1,27 @@
 # Phase 5A.1a — Design System V2 Foundations
 
-> **Last updated:** 2026-08-09
-> **Status:** Implemented on the Phase 5A.1a draft branch; exact-head CI and catalog candidate review pending
+> **Last updated:** 2026-08-10
+> **Status:** Implemented on the Phase 5A.1a draft branch; exact-head CI, correction review, and catalog candidate approval pending
 > **Entry gate:** Phase 5A.0f merged to `main` at `2d40001754d370782bc7f502918daac06a8d024f`
 
-## Approved direction
+## Phase 5A.1 foundation decision
 
-Eric approved the following human visual decisions before implementation:
+Eric approved the following bounded decisions for the direction-resilient Phase 5A.1
+foundation—not as final production art-direction or identity approval:
 
-- **Living Label** as the Design System V2 direction;
+- **Living Label** as the strongest current Design System V2 working hypothesis;
 - oat/ivory light canvases and **warm-forest dark mode**;
 - compact authenticated-application density, with more expressive public-page spacing;
-- low elevation, restrained radii, and the existing TryVit mark retained;
+- low elevation, restrained radii, and the existing TryVit mark retained provisionally;
 - a **Manrope assay only**, with serif typography deferred;
 - zero new runtime dependencies by default;
-- two official pull requests: foundations first, primitives and compatibility facades second.
+- exactly two official pull requests: foundations first, primitives and compatibility
+  facades second. There is no Phase 5A.1c.
+
+The mandatory Phase 5A.2 gate will compare up to three art directions and identity
+systems and requires Eric's explicit final selection. Nothing in 5A.1 freezes Living
+Label, the current mark, a type pairing, illustration language, or production-route
+composition.
 
 The intended character is warm, editorial, evidence-led, and trustworthy. It must not
 become generic glass SaaS, neon health-tech, a wall of decorative cards, ornamental
@@ -27,8 +34,8 @@ are visually weaker than a score.
 
 - one canonical typed token manifest and deterministic generator;
 - generated CSS, TypeScript, and documentation artifacts;
-- V2 primitives, semantic roles, component recipes, domain roles, and an exact V1
-  compatibility layer;
+- the V2 primitive-token layer, semantic roles, component recipe tokens, domain roles,
+  and an exact V1 token compatibility layer;
 - spacing, sizing, typography, radius, border, elevation, motion, z-index, and
   breakpoint foundations;
 - theme bootstrap, explicit-theme Tailwind behavior, color-scheme metadata,
@@ -55,11 +62,13 @@ reviewed Phase 5A.0d baseline images.
 ## Source hierarchy
 
 For Phase 5 visual work, the master experience audit, Design System V2 blueprint,
-implementation roadmap, and this phase record are the governing documents. The older
-brand guidelines remain authoritative for the retained mark and asset-use rules, while
-their V1 palette/type guidance is historical. `DESIGN_REFRESH_SPEC.md` is a superseded
-planning artifact, and `frontend/docs/DESIGN_SYSTEM.md` documents the V1 compatibility
-surface rather than the V2 source of truth.
+implementation roadmap, this phase record, and the future
+[`PHASE5A2_EXPERIENCE_ARCHITECTURE_GOLDEN_REFERENCE.md`](PHASE5A2_EXPERIENCE_ARCHITECTURE_GOLDEN_REFERENCE.md)
+gate are the governing documents. The older brand guidelines remain authoritative for
+current production-asset use while the mark is provisionally retained; their V1
+palette/type guidance is historical. `DESIGN_REFRESH_SPEC.md` is a superseded planning
+artifact, and `frontend/docs/DESIGN_SYSTEM.md` documents the V1 compatibility surface
+rather than the V2 source of truth.
 
 The source of truth is:
 
@@ -80,7 +89,7 @@ The manifest contains five sections:
 
 | Section        | Count | Purpose                                                        |
 | -------------- | ----: | -------------------------------------------------------------- |
-| `primitive`    |   180 | Private `--ds-*` colors, spacing, sizing, type, motion, and more |
+| `primitive`    |   182 | Private `--ds-*` colors, spacing, sizing, type, motion, and more |
 | `semanticV2`   |    59 | Living Label roles such as canvas, surface, content, and action |
 | `componentV2`  |    28 | Component recipe tokens reserved for canonical V2 primitives   |
 | `domain`       |    57 | Evidence, allergen, confidence, score, and regulated roles      |
@@ -116,13 +125,22 @@ V1 and V2 roles to system colors and removes decorative shadows.
   expressive gap.
 - Radii are limited to none, small, medium, large, label, and round.
 - Elevation is limited to exactly four recipes: none, raised, overlay, and floating.
-- Motion is limited to four durations, four named easings, and four displacement sizes;
-  reduced-motion and forced-colors equivalents remain mandatory.
-- The existing mark is retained. This phase adds no illustration or photography asset.
+- The canonical Phase 5 transition durations are limited to **0, 120, 180, 240, 360,
+  and 500ms**: 0ms for the final reduced-motion state; 120ms for direct feedback;
+  180ms for hover/focus and disclosure/overlay exits; 240ms for disclosure entrances
+  and determinate progress; 360ms for overlay entrances, section/evidence reveals, and
+  spatial continuity; and 500ms exclusively for a future approved landing shared-label
+  narrative. Four named easings and four displacement sizes remain the maximum;
+  reduced-motion resolves every recipe immediately to its final information state.
+- The existing mark is provisionally retained. This phase adds no illustration or
+  photography asset and does not approve a final identity.
 
-Twenty-five named contrast pairs pass in light, dark, and forced-color contracts. The
-minimum measured normal-text ratios are 5.000:1 in light and 7.096:1 in dark; the
-minimum meaningful UI/focus ratios are 3.432:1 and 3.710:1 respectively.
+Forty-six named text and meaningful-UI pairs pass deterministic light/dark contrast
+contracts. The minimum measured normal-text ratio is 4.716:1 in both themes; the
+minimum meaningful UI/focus ratios are 3.432:1 in light and 3.710:1 in dark. The fresh
+exact-head rendered forced-colors matrix must separately prove system-color pairing,
+visible focus, shadow removal, and whole-page WCAG 2.2 Axe compliance before this PR is
+merge-ready. No exact-head browser pass is claimed until that evidence is produced.
 
 ## Typography decision
 
@@ -141,7 +159,9 @@ so adopting it would require guessing. A future adoption requires all of:
 - fallback and layout-shift evidence;
 - no unintended production-route preload.
 
-Serif typography remains deferred by explicit approval.
+Serif typography is not adopted in Phase 5A.1. Phase 5A.2 must evaluate the complete
+type system in rendered Golden References; this phase boundary is not permission to
+omit an approved display/editorial role from the eventual production redesign.
 
 ## Accessibility and locale contract
 
@@ -164,39 +184,81 @@ contract in this draft.
 
 `docs/phase5/live-route-component-inventory.json` is generated from production modules
 under `frontend/src/app`, `frontend/src/components`, and `frontend/src/design-system`.
-It records resolvable local imports, inverse consumers, valid directive-prologue client
-boundaries, the stable merge base, and a source fingerprint. It does not modify the
-historical Phase 5 inventory.
+Its bounded 345-record report is backed by a complete 450-module `frontend/src`
+runtime graph so imports through libraries, hooks, and stores retain correct client and
+route reachability. It records direct and inverse consumers, transitive route
+consumers, client-entry/reachable/server boundaries, target redesign phases,
+disposition, migration/removal gates, V1/V2 status, classified debt, the stable merge
+base, and deterministic fingerprints. A fail-closed boundary audit rejects runtime
+imports from production source into docs, E2E, tests, or tooling; the current report
+contains zero violations. The finalized generated JSON SHA-256 is
+`DF6681557764B81A9AA223E3F154882356E6659C27DF819FA5802BA14C9D9C83`; its governed
+source fingerprint is
+`de5f1d2e98b22dc4ac2cc43006943e2ca0a6344a1d3c9a7f46c10ce714371306`, and its
+runtime-boundary fingerprint is
+`77c6a405d6e5480c1f1f245d65f79ce0f3c4e0150118ff86957c2bcb0c58bc76`. The
+historical Phase 5 inventory remains untouched.
 
 Visual-debt ratchets classify exact path/value/count maxima for legacy `.card` and
 `.input-field` usage, arbitrary shadow/radius/duration/animation/tracking recipes, and
 `transition-all`. New categories, files, values, or higher counts fail. Removal and
-lower counts pass.
+lower counts pass. Generation validates the prior maxima before overwrite, so a failed
+regeneration cannot silently bless new debt.
 
 ## Guarded component catalog
 
 `/dev/components` is open during local development. A production build exposes it only
 when both `PHASE5A1_CATALOG=1` and `NEXT_PUBLIC_QA_MODE=1`. Normal production therefore
-continues to return not found. The browser project also requires the guarded
-local-authenticated visual-safety mode and inherited egress controls; service workers,
-trace, screenshots, and video are disabled at the Playwright-project layer except for
-the explicit candidate images written by the test.
+continues to return not found. The browser project requires the guarded
+local-authenticated visual-safety launcher/runtime and inherited egress controls.
+Service workers, trace, automatic screenshots, and video are disabled at the
+Playwright-project layer; only the explicit candidate images or sanitized failure
+diagnostics written by the test are eligible for artifacts.
 
 The four stable scenes are:
 
-1. foundations;
-2. actions and forms;
-3. overlays and navigation;
-4. evidence and page states.
+1. foundations and semantic roles;
+2. action and form specimens;
+3. interaction cues and feedback;
+4. evidence semantics and status states.
 
 The capture matrix is 6 locale/theme/accessibility contexts × 3 widths (390, 768, and
-1440) × 4 scenes = **72 candidate scene images**, plus contact sheets. These are review
-candidates in `phase5a1-catalog-candidates`; they are never snapshot assertions and
+1440) = 18 cases. Each captures 4 scenes for **72 candidate scene images** plus one
+reviewable contact sheet, yielding exactly **90 PNGs** and a SHA-256 manifest. The
+contexts include explicit light/dark, system-dark, forced colors, reduced motion, and
+fully localized representative EN/PL/DE copy. The test performs whole-page WCAG 2.2
+Axe, overflow, theme, motion-token, forced-color, focus, skip-link, console, and
+hydration checks before writing candidates. These are never snapshot assertions and
 never replace the immutable Phase 5A.0d baseline namespace.
 
 Quality Gate and Nightly reuse their existing guarded local Supabase build/runtime,
 preflight, deterministic fixture, safety assertion, teardown, and no-backup shutdown.
-The candidate artifact uploads only after every safety and cleanup step succeeds.
+Candidate verification requires the exact source SHA, 72 scene hashes, 18
+contact-sheet hashes, and safe paths before upload; the artifact remains gated on every
+visual-safety, fixture-cleanup, and no-backup shutdown step. Sanitized failure
+diagnostics are uploaded separately only after the same guards.
+
+## Future Phase 5A.2 governance — not implemented here
+
+Phase 5A.1 remains exactly two official PRs. The 72 scene images and 18 contact sheets
+are foundation candidates only: none of the 90 PNGs is a Golden Reference or an
+approved production baseline.
+After 5A.1a and 5A.1b are reviewed, merged, and green on authoritative `main`, a
+separately authorized non-production Phase 5A.2 must:
+
+- compare up to three original art directions and up to three coherent identity
+  systems, with Living Label and the current mark treated as provisional;
+- complete landing, authentication, authenticated home, search, product/evidence, and
+  scanner Golden References with responsive, theme, state, content, full-motion, and
+  reduced-motion evidence;
+- receive two independent fresh-context reviews and meet the 100-point rubric, 88-point
+  threshold, category floors, veto rules, and Eric's explicit approval defined in the
+  Golden Reference contract.
+
+Phase 5A.2 does not migrate production routes or replace production identity assets.
+Production redesign begins in Phase 5A.3+. No active user-facing route may be left
+“intentionally retained” or “deferred” when Phase 5 is declared complete: it must be
+redesigned on the approved V2 system or removed from the product.
 
 ## Verification
 
@@ -210,6 +272,11 @@ Local implementation checks required before the draft PR is pushed:
 - exact byte hashes for all reviewed Phase 5A.0d PNGs and their manifest;
 - diff/scope audit proving no dependency, lockfile, route policy, API/database,
   service-worker, Next config, or immutable-baseline mutation.
+
+The governance and correction amendments recorded on 2026-08-10 do not themselves add
+execution evidence. They require fresh exact-head generation, test, browser, and CI
+results. The historical local evidence below applies only to its recorded run and must
+not be used as proof for the amended head.
 
 Completed local evidence on 2026-08-09:
 
@@ -252,5 +319,6 @@ their final run IDs and artifact checksums before 5A.1a is considered merge-read
 - The rollback boundary is the complete 5A.1a PR. Because production remains on the V1
   compatibility scope, reverting the PR requires no route migration cleanup.
 
-5A.1b may begin only after this foundations PR is reviewed, its candidate catalog is
-human-approved, and exact-head gates are green.
+5A.1b may begin only after this foundations PR is reviewed, its exact-head gates are
+green, the candidate catalog is reviewed and explicitly approved by Eric, the PR is
+merged, and the result is verified on authoritative `main`.
