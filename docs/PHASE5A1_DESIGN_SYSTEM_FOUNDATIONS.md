@@ -192,7 +192,7 @@ disposition, migration/removal gates, V1/V2 status, classified debt, the stable 
 base, and deterministic fingerprints. A fail-closed boundary audit rejects runtime
 imports from production source into docs, E2E, tests, or tooling; the current report
 contains zero violations. The finalized generated JSON SHA-256 is
-`DF6681557764B81A9AA223E3F154882356E6659C27DF819FA5802BA14C9D9C83`; its governed
+`014FF7543197D7B5D455E9B00B2221ED53ADD9FFDCA621BDC7DAEDAA2A32B28F`; its governed
 source fingerprint is
 `de5f1d2e98b22dc4ac2cc43006943e2ca0a6344a1d3c9a7f46c10ce714371306`, and its
 runtime-boundary fingerprint is

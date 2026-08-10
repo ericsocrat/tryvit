@@ -1,6 +1,17 @@
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import {
+  closeSync,
+  existsSync,
+  fsyncSync,
+  ftruncateSync,
+  openSync,
+  readdirSync,
+  readFileSync,
+  statSync,
+  unlinkSync,
+  writeSync,
+} from "node:fs";
 import path from "node:path";
 import ts from "@typescript/typescript6";
 
@@ -901,19 +912,70 @@ export function writeLiveRouteComponentInventory(
   const output = path.join(repositoryRoot, LIVE_INVENTORY_REPORT_RELATIVE_PATH);
   if (!statSync(path.dirname(output)).isDirectory())
     throw new Error("live-inventory-output-parent-missing");
-  if (existsSync(output)) {
-    const baseline = JSON.parse(readFileSync(output, "utf8")) as {
-      readonly visualDebtRatchets?: unknown;
-    };
-    if (!Array.isArray(baseline.visualDebtRatchets)) {
-      throw new Error("live-inventory-visual-debt-baseline-invalid");
+  const lock = `${output}.lock`;
+  let lockDescriptor: number;
+  try {
+    lockDescriptor = openSync(lock, "wx", 0o600);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "EEXIST") {
+      throw new Error("live-inventory-writer-locked");
     }
-    assertShrinkOnlyVisualDebt(
-      baseline.visualDebtRatchets as readonly VisualDebtRatchet[],
-      inventory.visualDebtRatchets,
-    );
+    throw error;
   }
-  writeFileSync(output, `${JSON.stringify(inventory, null, 2)}\n`, "utf8");
+  try {
+    let descriptor: number;
+    let hasBaseline = true;
+    try {
+      descriptor = openSync(output, "r+");
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      try {
+        descriptor = openSync(output, "wx+");
+        hasBaseline = false;
+      } catch (createError) {
+        if ((createError as NodeJS.ErrnoException).code !== "EEXIST") throw createError;
+        descriptor = openSync(output, "r+");
+      }
+    }
+    try {
+      if (hasBaseline) {
+        const baseline = JSON.parse(readFileSync(descriptor, "utf8")) as {
+          readonly visualDebtRatchets?: unknown;
+        };
+        if (!Array.isArray(baseline.visualDebtRatchets)) {
+          throw new Error("live-inventory-visual-debt-baseline-invalid");
+        }
+        assertShrinkOnlyVisualDebt(
+          baseline.visualDebtRatchets as readonly VisualDebtRatchet[],
+          inventory.visualDebtRatchets,
+        );
+      }
+      const serialized = `${JSON.stringify(inventory, null, 2)}\n`;
+      const bytes = Buffer.from(serialized, "utf8");
+      ftruncateSync(descriptor, 0);
+      let written = 0;
+      while (written < bytes.length) {
+        const count = writeSync(
+          descriptor,
+          bytes,
+          written,
+          bytes.length - written,
+          written,
+        );
+        if (count <= 0) throw new Error("live-inventory-write-incomplete");
+        written += count;
+      }
+      fsyncSync(descriptor);
+    } finally {
+      closeSync(descriptor);
+    }
+  } finally {
+    try {
+      closeSync(lockDescriptor);
+    } finally {
+      unlinkSync(lock);
+    }
+  }
   return inventory;
 }
 
