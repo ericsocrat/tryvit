@@ -1,7 +1,7 @@
 # Phase 5A.1a — Design System V2 Foundations
 
 > **Last updated:** 2026-08-10
-> **Status:** Corrected implementation and candidate evidence are green at reviewed head `72ff09fc515dcfc1e597d5c49861ebd063348fd5`; Eric's catalog-candidate approval and final docs-only-head revalidation remain pending
+> **Status:** Corrected implementation and candidate evidence are green at reviewed head `72ff09fc515dcfc1e597d5c49861ebd063348fd5`; the moving final-head rollup is maintained in draft PR #1263, and Eric's catalog-candidate approval remains pending
 > **Entry gate:** Phase 5A.0f merged to `main` at `2d40001754d370782bc7f502918daac06a8d024f`
 
 ## Phase 5A.1 foundation decision
@@ -341,10 +341,10 @@ images were reviewed after correction. No remaining clipping, overlap, contrast,
 localization, dark/system-dark, or reduced-motion endpoint defect was found. This is an
 engineering review, not Eric's required product/design approval.
 
-This evidence records the stable implementation and candidate bytes. Because adding
-this evidence record creates a docs-only PR head, that final head still requires its own
-green exact-head rollup before the PR can be considered merge-ready; the PR body is the
-non-self-referential source for that final rollup. Eric's explicit candidate approval
+This evidence records the stable implementation and candidate bytes. The draft PR body
+is the non-self-referential source for the moving final-head rollup because embedding a
+final commit SHA in versioned source would itself create another SHA. Every actual final
+PR head still requires a green exact-head rollup. Eric's explicit candidate approval
 remains mandatory regardless of automation.
 
 ## Deferred and rollback boundaries
