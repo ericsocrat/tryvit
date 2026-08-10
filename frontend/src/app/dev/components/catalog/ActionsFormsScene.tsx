@@ -82,7 +82,7 @@ export function ActionsFormsScene({ copy }: Readonly<{ copy: CatalogCopy }>) {
           </label>
           <label className="catalog-v2-field">
             <span>{actions.disabledField}</span>
-            <input defaultValue={actions.disabledValue} disabled type="text" />
+            <textarea defaultValue={actions.disabledValue} readOnly rows={2} />
           </label>
           <label className="catalog-v2-field">
             <span>{actions.category}</span>

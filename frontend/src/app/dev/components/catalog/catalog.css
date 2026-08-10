@@ -284,6 +284,12 @@
   opacity: 1;
 }
 
+.catalog-v2-field textarea:read-only {
+  color: var(--button-disabled-foreground);
+  background: var(--button-disabled-background);
+  resize: none;
+}
+
 .catalog-v2-error {
   color: var(--color-feedback-error-text);
   font-size: var(--ds-type-size-1);
@@ -568,6 +574,20 @@
 .catalog-v2-swatch[data-tone="evidence"] { color: var(--domain-allergen-derived-foreground); background: var(--domain-allergen-derived-surface); }
 
 @media (forced-colors: active) {
+  /* These specimens intentionally compose system colors. Chromium's automatic
+     text backplates otherwise cover HighlightText/Canvas text with the same
+     system color, making the labels visually disappear. Keep the system-color
+     palette while disabling only that additional adjustment. */
+  .catalog-v2-button:not([data-variant]):not(:disabled),
+  .catalog-v2-button[data-variant="primary"]:not(:disabled),
+  .catalog-v2-button[data-variant="destructive"]:not(:disabled),
+  .catalog-v2-chip[data-tone="action"],
+  .catalog-v2-swatch[data-tone="action"],
+  .catalog-v2-mixed-checkbox > span,
+  .catalog-v2-tooltip {
+    forced-color-adjust: none;
+  }
+
   .catalog-v2-chip[data-tone="action"] {
     --catalog-tone-surface: var(--color-action-primary-background);
     --catalog-tone-foreground: var(--color-action-primary-foreground);

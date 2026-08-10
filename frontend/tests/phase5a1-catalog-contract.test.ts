@@ -86,6 +86,34 @@ describe("Phase 5A.1a catalog contract", () => {
       ),
       "utf8",
     );
+    const catalogCss = readFileSync(
+      path.join(
+        process.cwd(),
+        "src",
+        "app",
+        "dev",
+        "components",
+        "catalog",
+        "catalog.css",
+      ),
+      "utf8",
+    );
+    const actionsScene = readFileSync(
+      path.join(
+        process.cwd(),
+        "src",
+        "app",
+        "dev",
+        "components",
+        "catalog",
+        "ActionsFormsScene.tsx",
+      ),
+      "utf8",
+    );
+    const sonarConfiguration = readFileSync(
+      path.join(process.cwd(), "..", "sonar-project.properties"),
+      "utf8",
+    );
     expect(config).toContain('const HAS_PHASE5A1_CATALOG = process.env.PHASE5A1_CATALOG === "1"');
     expect(config).toContain(
       "...(HAS_PHASE5A1_CATALOG && LOCAL_AUTHENTICATED ? [phase5a1CatalogProject] : [])",
@@ -112,12 +140,27 @@ describe("Phase 5A.1a catalog contract", () => {
     expect(specification).toContain("sourceTreeSha");
     expect(specification).toContain("sourceWorktreeSha");
     expect(specification).toContain("themePreference");
+    expect(specification).toContain("forcedColorProtectedElements");
     expect(specification).not.toContain("toHaveScreenshot");
     expect(specification).not.toContain("__screenshots__");
     expect(verifier).toContain("getCatalogCandidateRelativePaths");
     expect(verifier).toContain("candidate-entry-symlink");
     expect(verifier).toContain("candidate-root-contents-invalid");
     expect(verifier).toContain("candidate-manifest-path-matrix-invalid");
+    expect(catalogCss).toMatch(
+      /@media \(forced-colors: active\)[\s\S]*\.catalog-v2-button:not\(\[data-variant\]\):not\(:disabled\)[\s\S]*\.catalog-v2-tooltip[\s\S]*forced-color-adjust: none/u,
+    );
+    expect(catalogCss).toContain(".catalog-v2-field textarea:read-only");
+    expect(actionsScene).toContain(
+      "<textarea defaultValue={actions.disabledValue} readOnly rows={2} />",
+    );
+    expect(sonarConfiguration).toContain("frontend/src/design-system/generated/**");
+    expect(sonarConfiguration).toContain(
+      "sonar.issue.ignore.multicriteria.tailwindCustomVariant.ruleKey=css:S8776",
+    );
+    expect(sonarConfiguration).toContain(
+      "sonar.issue.ignore.multicriteria.tailwindCustomVariant.resourceKey=frontend/src/styles/globals.css",
+    );
   });
 
   it("uses fully localized representative copy, including long Polish and German fixtures", () => {

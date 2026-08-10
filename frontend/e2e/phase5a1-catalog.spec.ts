@@ -251,6 +251,19 @@ async function assertCatalogHealth(
       prefersDark: matchMedia("(prefers-color-scheme: dark)").matches,
       reducedMotion: matchMedia("(prefers-reduced-motion: reduce)").matches,
       forcedColors: matchMedia("(forced-colors: active)").matches,
+      forcedColorProtectedElements: Array.from(
+        document.querySelectorAll(
+          [
+            ".catalog-v2-button:not([data-variant]):not(:disabled)",
+            '.catalog-v2-button[data-variant="primary"]:not(:disabled)',
+            '.catalog-v2-button[data-variant="destructive"]:not(:disabled)',
+            '.catalog-v2-chip[data-tone="action"]',
+            '.catalog-v2-swatch[data-tone="action"]',
+            ".catalog-v2-mixed-checkbox > span",
+            ".catalog-v2-tooltip",
+          ].join(","),
+        ),
+      ).map((element) => getComputedStyle(element).forcedColorAdjust),
       motionDurations: [
         "--ds-motion-duration-instant",
         "--ds-motion-duration-feedback",
@@ -284,7 +297,10 @@ async function assertCatalogHealth(
   }
   if (
     runtime.forcedColors !== (context.forcedColors === "active") ||
-    (context.forcedColors === "active" && runtime.panelShadow !== "none")
+    (context.forcedColors === "active" &&
+      (runtime.panelShadow !== "none" ||
+        runtime.forcedColorProtectedElements.length === 0 ||
+        runtime.forcedColorProtectedElements.some((value) => value !== "none")))
   ) {
     throw new CatalogFailure("forced-colors-contract-invalid", "catalog-shell");
   }
