@@ -12,7 +12,9 @@ describe("DevComponentsPage", () => {
   it("renders the catalog shell in a non-production environment", async () => {
     const { default: DevComponentsPage } = await import("./page");
     render(await DevComponentsPage());
-    expect(screen.getByRole("heading", { name: "Component Library" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Design-system foundation catalog" }),
+    ).toBeInTheDocument();
     expect(screen.getByTestId("living-label-v2-foundation")).toBeInTheDocument();
     expect(mockNotFound).not.toHaveBeenCalled();
   });

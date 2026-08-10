@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   isPhase5A1CatalogOpen,
-} from "@/../tooling/design-system/catalog/catalog-gate";
+} from "@/design-system/catalog/catalog-gate";
 
 describe("Phase 5A.1a catalog production gate", () => {
   it("keeps the catalog available for local development only", () => {

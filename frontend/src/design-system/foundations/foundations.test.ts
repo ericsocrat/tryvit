@@ -115,14 +115,43 @@ describe("Design System V2 foundations", () => {
   it("defines bounded motion and a zero-duration reduced-motion contract", () => {
     expect(motion.duration).toEqual({
       instant: "0ms",
-      fast: "120ms",
-      standard: "200ms",
-      slow: "320ms",
+      feedback: "120ms",
+      fast: "180ms",
+      standard: "240ms",
+      deliberate: "360ms",
+      narrativeMax: "500ms",
     });
     expect(new Set(Object.values(motion.reducedDuration))).toEqual(
       new Set(["0ms"]),
     );
     expect(Object.keys(motion.displacement)).toEqual(["xs", "sm", "md", "lg"]);
+    expect(motion.recipe.disclosureEnter).toMatchObject({
+      duration: "standard",
+      easing: "emphasizedDecelerate",
+      properties: ["transform", "opacity"],
+      reduced: "final-state-immediate",
+    });
+    expect(motion.recipe.disclosureExit).toMatchObject({
+      duration: "fast",
+      easing: "emphasizedAccelerate",
+    });
+    expect(motion.recipe.spatialContinuity.duration).toBe("deliberate");
+    expect(motion.recipe.determinateProgress).toMatchObject({
+      duration: "standard",
+      easing: "linearProgress",
+      displacement: null,
+      properties: ["transform"],
+    });
+    expect(
+      Object.entries(motion.recipe)
+        .filter(([, recipe]) => recipe.duration === "narrativeMax")
+        .map(([name]) => name),
+    ).toEqual(["landingSharedLabel"]);
+    expect(
+      Object.values(motion.recipe).every(
+        (recipe) => recipe.reduced === "final-state-immediate",
+      ),
+    ).toBe(true);
   });
 
   it("defines ordered z-index and shared responsive breakpoints", () => {

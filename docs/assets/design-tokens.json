@@ -1019,10 +1019,30 @@
         "highContrast": "2px"
       }
     },
+    "motion.duration.deliberate": {
+      "cssVariable": "--ds-motion-duration-deliberate",
+      "kind": "duration",
+      "description": "Overlay, reveal and page-section entrance",
+      "values": {
+        "light": "360ms",
+        "dark": "360ms",
+        "highContrast": "360ms"
+      }
+    },
     "motion.duration.fast": {
       "cssVariable": "--ds-motion-duration-fast",
       "kind": "duration",
-      "description": "Micro interaction",
+      "description": "Hover and focus-adjacent response",
+      "values": {
+        "light": "180ms",
+        "dark": "180ms",
+        "highContrast": "180ms"
+      }
+    },
+    "motion.duration.feedback": {
+      "cssVariable": "--ds-motion-duration-feedback",
+      "kind": "duration",
+      "description": "Direct manipulation feedback",
       "values": {
         "light": "120ms",
         "dark": "120ms",
@@ -1032,61 +1052,61 @@
     "motion.duration.instant": {
       "cssVariable": "--ds-motion-duration-instant",
       "kind": "duration",
-      "description": "Immediate feedback",
+      "description": "State reset and reduced-motion substitution",
       "values": {
         "light": "0ms",
         "dark": "0ms",
         "highContrast": "0ms"
       }
     },
-    "motion.duration.slow": {
-      "cssVariable": "--ds-motion-duration-slow",
+    "motion.duration.narrativeMax": {
+      "cssVariable": "--ds-motion-duration-narrative-max",
       "kind": "duration",
-      "description": "Spatial transition",
+      "description": "Maximum landing shared-label narrative duration",
       "values": {
-        "light": "320ms",
-        "dark": "320ms",
-        "highContrast": "320ms"
+        "light": "500ms",
+        "dark": "500ms",
+        "highContrast": "500ms"
       }
     },
     "motion.duration.standard": {
       "cssVariable": "--ds-motion-duration-standard",
       "kind": "duration",
-      "description": "Standard transition",
+      "description": "Disclosure and small panel transition",
       "values": {
-        "light": "200ms",
-        "dark": "200ms",
-        "highContrast": "200ms"
+        "light": "240ms",
+        "dark": "240ms",
+        "highContrast": "240ms"
       }
     },
-    "motion.easing.accelerate": {
-      "cssVariable": "--ds-motion-easing-accelerate",
+    "motion.easing.emphasizedAccelerate": {
+      "cssVariable": "--ds-motion-easing-emphasized-accelerate",
       "kind": "easing",
-      "description": "Exiting content easing",
+      "description": "Emphasized exiting-content easing",
       "values": {
-        "light": "cubic-bezier(0.3, 0, 1, 1)",
-        "dark": "cubic-bezier(0.3, 0, 1, 1)",
-        "highContrast": "cubic-bezier(0.3, 0, 1, 1)"
+        "light": "cubic-bezier(0.3, 0, 0.8, 0.15)",
+        "dark": "cubic-bezier(0.3, 0, 0.8, 0.15)",
+        "highContrast": "cubic-bezier(0.3, 0, 0.8, 0.15)"
       }
     },
-    "motion.easing.decelerate": {
-      "cssVariable": "--ds-motion-easing-decelerate",
+    "motion.easing.emphasizedDecelerate": {
+      "cssVariable": "--ds-motion-easing-emphasized-decelerate",
       "kind": "easing",
-      "description": "Entering content easing",
+      "description": "Emphasized entering-content easing",
       "values": {
-        "light": "cubic-bezier(0, 0, 0, 1)",
-        "dark": "cubic-bezier(0, 0, 0, 1)",
-        "highContrast": "cubic-bezier(0, 0, 0, 1)"
+        "light": "cubic-bezier(0.05, 0.7, 0.1, 1)",
+        "dark": "cubic-bezier(0.05, 0.7, 0.1, 1)",
+        "highContrast": "cubic-bezier(0.05, 0.7, 0.1, 1)"
       }
     },
-    "motion.easing.expressive": {
-      "cssVariable": "--ds-motion-easing-expressive",
+    "motion.easing.linearProgress": {
+      "cssVariable": "--ds-motion-easing-linear-progress",
       "kind": "easing",
-      "description": "Restrained label reveal easing",
+      "description": "Honest determinate-progress easing",
       "values": {
-        "light": "cubic-bezier(0.16, 1, 0.3, 1)",
-        "dark": "cubic-bezier(0.16, 1, 0.3, 1)",
-        "highContrast": "cubic-bezier(0.16, 1, 0.3, 1)"
+        "light": "linear",
+        "dark": "linear",
+        "highContrast": "linear"
       }
     },
     "motion.easing.standard": {

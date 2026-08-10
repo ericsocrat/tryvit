@@ -869,15 +869,54 @@ describe("browser workflow visual-safety contract", () => {
     expect(workflowSources.qualityGate).toContain('PHASE5A1_CATALOG: "1"');
     expect(workflowSources.qualityGate).toContain('NEXT_PUBLIC_QA_MODE: "1"');
     expect(browserJobs.qualityGate).toContain("--project=phase5a1-catalog");
+    expect(workflowSources.qualityGate).toContain(
+      "Verify Phase 5A.1 catalog candidate manifest",
+    );
+    expect(workflowSources.qualityGate).toContain(
+      "tooling/design-system/catalog/verify-candidates.mts",
+    );
     expect(workflowSources.qualityGate).toMatch(
-      /Upload Phase 5A\.1 catalog candidates[\s\S]*steps\.auth_safety_assert\.outcome == 'success'[\s\S]*steps\.local_fixture_teardown\.outcome == 'success'[\s\S]*steps\.local_supabase_stop\.outcome == 'success'[\s\S]*phase5a1-catalog-candidates/u,
+      /Upload Phase 5A\.1 catalog candidates[\s\S]*steps\.catalog_candidates\.outcome == 'success'[\s\S]*steps\.auth_safety_assert\.outcome == 'success'[\s\S]*steps\.local_fixture_teardown\.outcome == 'success'[\s\S]*steps\.local_supabase_stop\.outcome == 'success'[\s\S]*phase5a1-catalog-candidates/u,
+    );
+    expect(workflowSources.qualityGate).toMatch(
+      /Upload Phase 5A\.1 catalog diagnostics[\s\S]*phase5a1-catalog-diagnostics/u,
+    );
+    expect(workflowSources.qualityGate).toContain(
+      "PHASE5A1_CATALOG_SOURCE_SHA: ${{ github.sha }}",
+    );
+    expect(workflowSources.qualityGate).toContain(
+      "PHASE5A1_CATALOG_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}",
     );
 
     expect(workflowSources.nightly).toContain('PHASE5A1_CATALOG: "1"');
     expect(workflowSources.nightly).toContain('NEXT_PUBLIC_QA_MODE: "1"');
     expect(browserJobs.nightly).toContain("--project=phase5a1-catalog");
+    expect(workflowSources.nightly).toContain(
+      "PHASE5A1_CATALOG_SOURCE_SHA: ${{ github.sha }}",
+    );
+    expect(workflowSources.nightly).toContain(
+      "PHASE5A1_CATALOG_PR_HEAD_SHA: ${{ github.sha }}",
+    );
+    expect(workflowSources.nightly).toContain(
+      "Verify Phase 5A.1 catalog candidate manifest",
+    );
+    expect(workflowSources.nightly).toContain(
+      "tooling/design-system/catalog/verify-candidates.mts",
+    );
+    expect(workflowSources.nightly).toMatch(
+      /Upload Phase 5A\.1 catalog candidates[\s\S]*steps\.catalog_candidates\.outcome == 'success'[\s\S]*steps\.auth_safety_assert\.outcome == 'success'[\s\S]*steps\.local_fixture_teardown\.outcome == 'success'[\s\S]*steps\.local_supabase_stop\.outcome == 'success'[\s\S]*nightly-phase5a1-catalog-candidates/u,
+    );
+    expect(workflowSources.nightly).toContain(
+      "!frontend/test-results/phase5a1-catalog-candidates/**",
+    );
+    expect(workflowSources.nightly).toContain(
+      "!frontend/test-results/phase5a1-catalog-diagnostics/**",
+    );
     expect(browserJobs.nightly.indexOf("--project=phase5a1-catalog")).toBeLessThan(
       browserJobs.nightly.lastIndexOf("npm run visual-safety:assert"),
+    );
+    expect(browserJobs.nightly.indexOf("--project=phase5a1-catalog")).toBeLessThan(
+      browserJobs.nightly.indexOf("tooling/design-system/catalog/verify-candidates.mts"),
     );
   });
 

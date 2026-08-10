@@ -13,14 +13,14 @@ export function CatalogShell({ copy }: Readonly<{ copy: CatalogCopy }>) {
       className="catalog-v2-canvas mx-auto min-h-screen max-w-5xl space-y-12 p-8"
     >
       <header className="space-y-2">
-        <h1 className="text-3xl font-bold text-foreground">{copy.title}</h1>
-        <p className="text-foreground-secondary">{copy.description}</p>
-        <nav aria-label="Catalog scenes">
+        <h1 className="catalog-v2-title text-3xl font-bold">{copy.title}</h1>
+        <p className="catalog-v2-copy">{copy.description}</p>
+        <nav aria-label={copy.sceneNavigationLabel}>
           <ul className="flex flex-wrap gap-3 text-sm">
             {catalogSceneIds.map((id) => (
               <li key={id}>
                 <a
-                  className="text-brand underline-offset-4 hover:underline"
+                  className="catalog-v2-link underline-offset-4 hover:underline"
                   href={`#${id}-title`}
                 >
                   {copy.scenes[id]}

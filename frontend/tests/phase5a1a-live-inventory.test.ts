@@ -4,10 +4,13 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  assertNoForbiddenRuntimeImports,
   assertShrinkOnlyVisualDebt,
   buildLiveRouteComponentInventory,
   scanVisualDebt,
+  scanRuntimeBoundaryAudit,
   type VisualDebtRatchet,
+  writeLiveRouteComponentInventory,
 } from "@/../tooling/design-system/phase5a1a-live-inventory";
 
 const repositoryRoot = path.resolve(process.cwd(), "..");
@@ -45,7 +48,32 @@ describe("Phase 5A.1a live route/component inventory", () => {
         "frontend/src/app/late.tsx",
         'import Widget from "@/components/Widget";\n"use client";\nexport default Widget;\n',
       );
-      write(root, "frontend/src/components/Widget.tsx", "export default function Widget() { return null; }\n");
+      write(
+        root,
+        "frontend/src/components/Widget.tsx",
+        'import { loadLeaf } from "@/lib/bridge";\nexport { loadLeaf };\nexport default function Widget() { return <div className="card" />; }\n',
+      );
+      write(
+        root,
+        "frontend/src/components/Leaf.tsx",
+        "export default function Leaf() { return null; }\n",
+      );
+      write(
+        root,
+        "frontend/src/lib/bridge.ts",
+        'export async function loadLeaf() { return import("@/components/Leaf"); }\n',
+      );
+      write(
+        root,
+        "frontend/src/__tests__/setup.ts",
+        'import "@/../tooling/test-only";\n',
+      );
+      write(
+        root,
+        "frontend/src/components/__mocks__/Widget.tsx",
+        'export default function MockWidget() { return <div className="card" />; }\n',
+      );
+      write(root, "frontend/tooling/test-only.ts", "export const testOnly = true;\n");
       write(
         root,
         "frontend/src/styles/globals.css",
@@ -55,6 +83,7 @@ describe("Phase 5A.1a live route/component inventory", () => {
         baseSha: "b".repeat(40),
         baseReference: "merge-base HEAD origin/main",
       });
+      expect(inventory.schemaVersion).toBe(2);
       expect(inventory.modules).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
@@ -63,28 +92,83 @@ describe("Phase 5A.1a live route/component inventory", () => {
             routeModuleKind: "page",
             routePath: "/",
             hasUseClientDirective: true,
+            runtimeBoundary: "client-entry",
             directModuleImports: ["frontend/src/components/Widget.tsx"],
+            transitiveRouteConsumers: [
+              {
+                modulePath: "frontend/src/app/(marketing)/page.tsx",
+                routeModuleKind: "page",
+                routePath: "/",
+              },
+            ],
+            targetRedesignPhases: ["5A.3"],
+            disposition: "migrate-to-v2",
+            migrationGate: "approved-5a2-golden-reference-and-authorized-phase-entry",
+            removalGate:
+              "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+            designSystemStatus: "v1",
           }),
           expect.objectContaining({
             path: "frontend/src/app/late.tsx",
             classification: "app-support-module",
             hasUseClientDirective: false,
+            runtimeBoundary: "server-only",
           }),
           expect.objectContaining({
             path: "frontend/src/components/Widget.tsx",
             classification: "shared-component-module",
-            directConsumers: [
-              "frontend/src/app/(marketing)/page.tsx",
-              "frontend/src/app/late.tsx",
+            runtimeBoundary: "client-reachable",
+            directModuleImports: ["frontend/src/lib/bridge.ts"],
+            directConsumers: ["frontend/src/app/(marketing)/page.tsx", "frontend/src/app/late.tsx"],
+            transitiveRouteConsumers: [
+              {
+                modulePath: "frontend/src/app/(marketing)/page.tsx",
+                routeModuleKind: "page",
+                routePath: "/",
+              },
+            ],
+            classifiedLegacyDebt: [
+              {
+                category: "legacy-card",
+                occurrences: [{ value: ".card", count: 1 }],
+              },
+            ],
+          }),
+          expect.objectContaining({
+            path: "frontend/src/components/Leaf.tsx",
+            runtimeBoundary: "client-reachable",
+            directConsumers: ["frontend/src/lib/bridge.ts"],
+            transitiveRouteConsumers: [
+              {
+                modulePath: "frontend/src/app/(marketing)/page.tsx",
+                routeModuleKind: "page",
+                routePath: "/",
+              },
             ],
           }),
         ]),
       );
       expect(inventory.provenance.sourceFingerprint).toMatch(/^[0-9a-f]{64}$/u);
-      expect(inventory.visualDebtRatchets.find((item) => item.category === "legacy-card"))
-        .toMatchObject({
-          occurrences: [{ path: "frontend/src/styles/globals.css", value: ".card", count: 1 }],
-        });
+      expect(inventory.runtimeBoundaryAudit).toMatchObject({
+        scannedRoot: "frontend/src",
+        inspectedModuleCount: 5,
+        violations: [],
+      });
+      expect(inventory.modules.map((module) => module.path)).not.toEqual(
+        expect.arrayContaining([
+          "frontend/src/__tests__/setup.ts",
+          "frontend/src/components/__mocks__/Widget.tsx",
+        ]),
+      );
+      expect(inventory.runtimeBoundaryAudit.sourceFingerprint).toMatch(/^[0-9a-f]{64}$/u);
+      expect(
+        inventory.visualDebtRatchets.find((item) => item.category === "legacy-card"),
+      ).toMatchObject({
+        occurrences: [
+          { path: "frontend/src/components/Widget.tsx", value: ".card", count: 1 },
+          { path: "frontend/src/styles/globals.css", value: ".card", count: 1 },
+        ],
+      });
       expect(
         inventory.visualDebtRatchets.find((item) => item.category === "arbitrary-shadow"),
       ).toMatchObject({
@@ -96,6 +180,40 @@ describe("Phase 5A.1a live route/component inventory", () => {
           },
         ],
       });
+    } finally {
+      rmSync(root, { recursive: true, force: false });
+    }
+  });
+
+  it("fails closed when a runtime import escapes src into a forbidden local root", () => {
+    const root = mkdtempSync(path.join(tmpdir(), "tryvit-live-boundary-"));
+    try {
+      write(
+        root,
+        "frontend/src/app/page.tsx",
+        'import type { TypeOnly } from "@/../tooling/type-only";\nvoid import("@/../tooling/runtime-helper");\nexport default function Page(): TypeOnly { return null; }\n',
+      );
+      write(root, "frontend/tooling/runtime-helper.ts", "export const helper = true;\n");
+      write(root, "frontend/tooling/type-only.ts", "export type TypeOnly = null;\n");
+
+      const audit = scanRuntimeBoundaryAudit(root);
+      expect(audit.violations).toEqual([
+        {
+          importer: "frontend/src/app/page.tsx",
+          specifier: "@/../tooling/runtime-helper",
+          resolvedPath: "frontend/tooling/runtime-helper.ts",
+          forbiddenRoot: "frontend/tooling",
+        },
+      ]);
+      expect(() => assertNoForbiddenRuntimeImports(audit)).toThrow(
+        "forbidden-runtime-import:frontend/src/app/page.tsx:@/../tooling/runtime-helper:frontend/tooling/runtime-helper.ts",
+      );
+      expect(() =>
+        buildLiveRouteComponentInventory(root, {
+          baseSha: "b".repeat(40),
+          baseReference: "merge-base HEAD origin/main",
+        }),
+      ).toThrow("forbidden-runtime-import");
     } finally {
       rmSync(root, { recursive: true, force: false });
     }
@@ -141,6 +259,34 @@ describe("Phase 5A.1a live route/component inventory", () => {
     );
   });
 
+  it("refuses to overwrite the generated baseline with newly introduced debt", () => {
+    const root = mkdtempSync(path.join(tmpdir(), "tryvit-live-ratchet-"));
+    const provenance = {
+      baseSha: "b".repeat(40),
+      baseReference: "merge-base HEAD origin/main" as const,
+    };
+    try {
+      write(root, "frontend/src/app/page.tsx", "export default function Page() { return null; }\n");
+      mkdirSync(path.join(root, "docs", "phase5"), { recursive: true });
+      const baseline = buildLiveRouteComponentInventory(root, provenance);
+      const output = path.join(root, "docs", "phase5", "live-route-component-inventory.json");
+      writeFileSync(output, `${JSON.stringify(baseline, null, 2)}\n`, "utf8");
+
+      write(
+        root,
+        "frontend/src/app/page.tsx",
+        'export default function Page() { return <div className="card" />; }\n',
+      );
+      const increased = buildLiveRouteComponentInventory(root, provenance);
+      expect(() => writeLiveRouteComponentInventory(root, increased)).toThrow(
+        "visual-debt-new-occurrence:legacy-card:frontend/src/app/page.tsx:.card",
+      );
+      expect(JSON.parse(readFileSync(output, "utf8"))).toEqual(baseline);
+    } finally {
+      rmSync(root, { recursive: true, force: false });
+    }
+  });
+
   it("keeps the committed report current and ratchets its production debt only downward", () => {
     const committed = JSON.parse(
       readFileSync(
@@ -158,6 +304,8 @@ describe("Phase 5A.1a live route/component inventory", () => {
       baseReference: committed.provenance.baseReference,
     });
     expect(current).toEqual(committed);
-    expect(() => assertShrinkOnlyVisualDebt(committed.visualDebtRatchets, scanVisualDebt(repositoryRoot))).not.toThrow();
+    expect(() =>
+      assertShrinkOnlyVisualDebt(committed.visualDebtRatchets, scanVisualDebt(repositoryRoot)),
+    ).not.toThrow();
   });
 });

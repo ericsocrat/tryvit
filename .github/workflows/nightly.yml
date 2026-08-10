@@ -28,6 +28,8 @@ env:
   BASELINE_DATA_AUDIT: 300
   NEXT_PUBLIC_QA_MODE: "1"
   PHASE5A1_CATALOG: "1"
+  PHASE5A1_CATALOG_SOURCE_SHA: ${{ github.sha }}
+  PHASE5A1_CATALOG_PR_HEAD_SHA: ${{ github.sha }}
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────
@@ -155,6 +157,7 @@ jobs:
           echo "seeded=true" >> "$GITHUB_OUTPUT"
 
       - name: Local-authenticated Playwright suite
+        id: local_authenticated_suite
         run: |
           set -o pipefail
           npm run visual-safety:local-authenticated -- --project=authenticated --project=functional --project=private-pwa-cache --project=phase5a1-catalog --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
@@ -162,6 +165,11 @@ jobs:
         env:
           VISUAL_SAFETY_MODE: local-authenticated
           BASE_URL: http://127.0.0.1:3000
+
+      - name: Verify Phase 5A.1 catalog candidate manifest
+        id: catalog_candidates
+        if: ${{ !cancelled() && steps.local_authenticated_suite.outcome == 'success' }}
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/catalog/verify-candidates.mts
 
       - name: Assert local-authenticated visual safety
         id: auth_safety_assert
@@ -190,9 +198,29 @@ jobs:
           path: |
             frontend/playwright-report/
             frontend/test-results/
+            !frontend/test-results/phase5a1-catalog-candidates/**
+            !frontend/test-results/phase5a1-catalog-diagnostics/**
             playwright-public-stdout.log
             playwright-authenticated-stdout.log
           retention-days: 30
+
+      - name: Upload Phase 5A.1 catalog candidates
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() && steps.catalog_candidates.outcome == 'success' && steps.public_safety_assert.outcome == 'success' && steps.auth_safety_assert.outcome == 'success' && steps.local_fixture_teardown.outcome == 'success' && steps.local_supabase_stop.outcome == 'success' }}
+        with:
+          name: nightly-phase5a1-catalog-candidates
+          path: frontend/test-results/phase5a1-catalog-candidates/
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Upload Phase 5A.1 catalog diagnostics
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() && steps.public_safety_assert.outcome == 'success' && steps.auth_safety_assert.outcome == 'success' && steps.local_fixture_teardown.outcome == 'success' && steps.local_supabase_stop.outcome == 'success' }}
+        with:
+          name: nightly-phase5a1-catalog-diagnostics
+          path: frontend/test-results/phase5a1-catalog-diagnostics/
+          retention-days: 30
+          if-no-files-found: ignore
 
       - name: Alert on comprehensive failure
         if: failure()

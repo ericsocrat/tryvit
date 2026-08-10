@@ -5,8 +5,8 @@ export interface CatalogGateEnvironment {
 }
 
 /**
- * The catalog is convenient locally, but a production build must opt in twice:
- * a server-only switch plus the deterministic public QA build switch.
+ * Runtime-safe catalog gate. Local development is open, while a production
+ * build requires both the server-only catalog flag and the public QA flag.
  */
 export function isPhase5A1CatalogOpen(environment: CatalogGateEnvironment): boolean {
   if (environment.nodeEnv !== "production") return true;
