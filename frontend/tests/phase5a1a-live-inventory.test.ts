@@ -287,27 +287,6 @@ describe("Phase 5A.1a live route/component inventory", () => {
     }
   });
 
-  it("creates a missing report and then validates the same descriptor-backed baseline", () => {
-    const root = mkdtempSync(path.join(tmpdir(), "tryvit-live-create-"));
-    const provenance = {
-      baseSha: "c".repeat(40),
-      baseReference: "merge-base HEAD origin/main" as const,
-    };
-    try {
-      write(root, "frontend/src/app/page.tsx", "export default function Page() { return null; }\n");
-      mkdirSync(path.join(root, "docs", "phase5"), { recursive: true });
-      const inventory = buildLiveRouteComponentInventory(root, provenance);
-      const output = path.join(root, "docs", "phase5", "live-route-component-inventory.json");
-
-      expect(writeLiveRouteComponentInventory(root, inventory)).toEqual(inventory);
-      expect(JSON.parse(readFileSync(output, "utf8"))).toEqual(inventory);
-      expect(writeLiveRouteComponentInventory(root, inventory)).toEqual(inventory);
-      expect(JSON.parse(readFileSync(output, "utf8"))).toEqual(inventory);
-    } finally {
-      rmSync(root, { recursive: true, force: false });
-    }
-  });
-
   it("fails closed without touching the report while another writer holds the lock", () => {
     const root = mkdtempSync(path.join(tmpdir(), "tryvit-live-lock-"));
     const provenance = {

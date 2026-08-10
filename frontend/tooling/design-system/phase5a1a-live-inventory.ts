@@ -923,33 +923,18 @@ export function writeLiveRouteComponentInventory(
     throw error;
   }
   try {
-    let descriptor: number;
-    let hasBaseline = true;
+    const descriptor = openSync(output, "r+");
     try {
-      descriptor = openSync(output, "r+");
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-      try {
-        descriptor = openSync(output, "wx+");
-        hasBaseline = false;
-      } catch (createError) {
-        if ((createError as NodeJS.ErrnoException).code !== "EEXIST") throw createError;
-        descriptor = openSync(output, "r+");
+      const baseline = JSON.parse(readFileSync(descriptor, "utf8")) as {
+        readonly visualDebtRatchets?: unknown;
+      };
+      if (!Array.isArray(baseline.visualDebtRatchets)) {
+        throw new Error("live-inventory-visual-debt-baseline-invalid");
       }
-    }
-    try {
-      if (hasBaseline) {
-        const baseline = JSON.parse(readFileSync(descriptor, "utf8")) as {
-          readonly visualDebtRatchets?: unknown;
-        };
-        if (!Array.isArray(baseline.visualDebtRatchets)) {
-          throw new Error("live-inventory-visual-debt-baseline-invalid");
-        }
-        assertShrinkOnlyVisualDebt(
-          baseline.visualDebtRatchets as readonly VisualDebtRatchet[],
-          inventory.visualDebtRatchets,
-        );
-      }
+      assertShrinkOnlyVisualDebt(
+        baseline.visualDebtRatchets as readonly VisualDebtRatchet[],
+        inventory.visualDebtRatchets,
+      );
       const serialized = `${JSON.stringify(inventory, null, 2)}\n`;
       const bytes = Buffer.from(serialized, "utf8");
       ftruncateSync(descriptor, 0);
