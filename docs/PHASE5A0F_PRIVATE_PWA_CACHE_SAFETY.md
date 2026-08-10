@@ -1,7 +1,7 @@
 # Phase 5A.0f — Private PWA Cache Safety
 
 > **Last updated:** 2026-08-09
-> **Status:** Implemented on the Phase 5A.0f draft branch; exact-head CI evidence pending
+> **Status:** Merged and verified; entry gate for Phase 5A.1 satisfied
 > **Owner issue:** —
 
 ## Scope
@@ -189,26 +189,37 @@ Completed local verification:
   `includes("v3")` cleanup, and the offline fallback present.
 
 The dedicated browser proof was attempted twice against newly created local
-Windows Supabase runtimes. Both attempts stopped before the PWA test at the
-same guarded Auth admin fixture operation (`VS_FIXTURE_ADMIN:fixture.list-users`),
-including a serial one-worker attempt. Each runtime was stopped and its local
-volumes removed without backup. No automatic retry policy, hosted fallback, or
-weakened guard was introduced. The exact-head Linux Quality Gate is therefore
-the required authoritative browser result; this document does not claim a
-local browser pass.
+Windows Supabase runtimes. Both local attempts stopped before the PWA test at a
+guarded Auth admin fixture operation, and both runtimes were removed without
+backup. No hosted fallback or weakened guard was introduced. Authoritative Linux
+evidence subsequently completed on exact PR head
+`5da756b56a99fd9aabd6210dbc8f8af4fcdc63c1`:
 
-Exact-head PR verification must include:
+- PR Gate, CodeQL, repository hygiene, title checks, and immutable visual
+  verification passed;
+- Quality Gate passed its public and authenticated audits; the dedicated
+  private-PWA account-switch proof passed in 5.0 seconds and the complete
+  authenticated desktop selection passed 12/12;
+- Route-JavaScript guard passed with 0.0 KiB change on every governed route;
+- five-run Lighthouse passed with no blocking or instability failures;
+- Main Gate, complete tests, build, type-check, lint, Playwright, SonarCloud,
+  and the exact-revision Sonar quality gate passed;
+- every guarded fixture teardown, safety assertion, and local-runtime removal
+  completed successfully.
 
-- focused policy, route-policy, auth, manifest, and worker tests;
-- the dedicated guarded service-worker/account-switch project;
-- complete frontend tests, type-check, lint, and a clean production build;
-- inspection of the freshly generated `/sw.js` for rule order, offline
-  precache, and removal of broad cleanup/dead RPC caching.
+Quality evidence artifacts were `9033024298` (Playwright report, SHA-256
+`ad20d1f764c425ff8423bffdd0cb88b6dee2fa9149572da1669106f897413fd7`) and
+`9033024052` (screenshots, SHA-256
+`fdcc582257398fb6ba747e0590886d876079e2ab5702dd7de665927a49533aa3`). The
+Lighthouse report checksum was
+`d4b75367a9ae86ae5fb55ad3f67a15f1af33609e4386de72d982fc407dce303f`.
 
-The draft PR is not ready for final review until exact-head PR Gate, Quality
-Gate, immutable visual baselines, route-JavaScript guard, five-run Lighthouse,
-CodeQL, Main Gate, and SonarCloud all finish. Results and artifact checksums
-belong here only after those exact-head runs exist.
+PR #1262 was merged to authoritative `main` at
+`2d40001754d370782bc7f502918daac06a8d024f`. Exact-main Main Gate, CodeQL,
+repository hygiene, Vercel status, and Supabase Preview status passed. A known
+production `/api/health` readiness failure in the first automatic post-deploy
+smoke was later superseded by a successful post-deploy run; it did not weaken
+the browser/cache contract.
 
 ## Residual boundaries
 
@@ -222,7 +233,6 @@ belong here only after those exact-head runs exist.
   payload user-independent. Any public Supabase cache allowlist requires a new
   reviewed provenance and response-shape contract.
 
-Phase 5A.1 is safe to begin only after the exact-head browser and CI evidence
-confirms this contract. Personalized server-prefetch work still requires its
-own response/data review; this phase removes the known cross-account
-CacheStorage blocker, not every future privacy question.
+Phase 5A.1's entry gate is satisfied. Personalized server-prefetch work still
+requires its own response/data review; this phase removes the known
+cross-account CacheStorage blocker, not every future privacy question.

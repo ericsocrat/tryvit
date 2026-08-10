@@ -1,41 +1,21 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// ─── Mocks ──────────────────────────────────────────────────────────────────
-
 const mockNotFound = vi.fn();
-vi.mock("next/navigation", () => ({
-  notFound: () => mockNotFound(),
-}));
 
-// ─── Tests ──────────────────────────────────────────────────────────────────
-
-beforeEach(() => {
-  vi.clearAllMocks();
-});
+vi.mock("next/navigation", () => ({ notFound: () => mockNotFound() }));
+vi.mock("@/lib/server-locale", () => ({ getServerLocale: vi.fn(async () => "en") }));
 
 describe("DevComponentsPage", () => {
-  it("renders component library heading in development", async () => {
-    const { default: DevComponentsPage } = await import("./page");
-    render(<DevComponentsPage />);
-    expect(
-      screen.getByRole("heading", { name: /Component Library/i }),
-    ).toBeInTheDocument();
-  });
+  beforeEach(() => vi.clearAllMocks());
 
-  it("renders button section", async () => {
+  it("renders the catalog shell in a non-production environment", async () => {
     const { default: DevComponentsPage } = await import("./page");
-    render(<DevComponentsPage />);
+    render(await DevComponentsPage());
     expect(
-      screen.getByRole("heading", { name: /^Button$/i }),
+      screen.getByRole("heading", { name: "Design-system foundation catalog" }),
     ).toBeInTheDocument();
-  });
-
-  it("renders toggle section with interactive toggles", async () => {
-    const { default: DevComponentsPage } = await import("./page");
-    render(<DevComponentsPage />);
-    expect(
-      screen.getByRole("heading", { name: /^Toggle$/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("living-label-v2-foundation")).toBeInTheDocument();
+    expect(mockNotFound).not.toHaveBeenCalled();
   });
 });

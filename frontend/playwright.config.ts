@@ -71,6 +71,7 @@ const HAS_SAFETY_BROWSER_TESTS = enabled("VISUAL_SAFETY_BROWSER_TESTS");
 const HAS_SAFETY_NEGATIVE_TESTS = enabled("VISUAL_SAFETY_NEGATIVE_TESTS");
 const HAS_OWNED_SERVER = enabled("VISUAL_SAFETY_OWNED_SERVER");
 const HAS_PHASE5_ROUTE_JS = enabled("PHASE5_ROUTE_JS_CAPTURE");
+const HAS_PHASE5A1_CATALOG = process.env.PHASE5A1_CATALOG === "1";
 
 const proxyServer = process.env.VISUAL_SAFETY_PROXY
   ? canonicalizeLoopbackOrigin(process.env.VISUAL_SAFETY_PROXY).origin
@@ -348,6 +349,21 @@ const phase5RouteJsAuthenticatedProject = {
   },
 };
 
+const phase5a1CatalogProject = {
+  name: "phase5a1-catalog",
+  testMatch: /phase5a1-catalog\.spec\.ts/,
+  dependencies: ["auth-setup"],
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    storageState: authStatePath("user.json"),
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
 const privatePwaCacheProject = {
   name: "private-pwa-cache",
   testMatch: /private-pwa-cache-isolation\.spec\.ts/,
@@ -379,6 +395,7 @@ const projects = [
   ...(HAS_SAFETY_NEGATIVE_TESTS ? [safetyNegativeProject] : []),
   ...(HAS_PHASE5_ROUTE_JS && !LOCAL_AUTHENTICATED ? [phase5RouteJsPublicProject] : []),
   ...(HAS_PHASE5_ROUTE_JS && LOCAL_AUTHENTICATED ? [phase5RouteJsAuthenticatedProject] : []),
+  ...(HAS_PHASE5A1_CATALOG && LOCAL_AUTHENTICATED ? [phase5a1CatalogProject] : []),
   ...(HAS_SCREENSHOTS ? [screenshotsProject] : []),
   ...(HAS_PR_SCREENSHOTS ? [prScreenshotsProject] : []),
 ];

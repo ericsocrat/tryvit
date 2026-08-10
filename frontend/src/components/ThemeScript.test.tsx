@@ -35,6 +35,13 @@ describe("ThemeScript", () => {
     expect(content).toContain("setAttribute");
   });
 
+  it("sets color-scheme before first paint", () => {
+    const { container } = render(<ThemeScript />);
+    const script = container.querySelector("script");
+    expect(script).toHaveAttribute("id", "tryvit-theme-bootstrap");
+    expect(script?.innerHTML).toContain("root.style.colorScheme = resolved");
+  });
+
   it("has suppressHydrationWarning to prevent React mismatch", () => {
     const { container } = render(<ThemeScript />);
     const script = container.querySelector("script");

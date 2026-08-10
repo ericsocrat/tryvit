@@ -13,7 +13,10 @@ import { LayoutGrid, Search, ShieldOff } from "lucide-react";
 export default function ForbiddenPage() {
   const { t } = useTranslation();
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4">
+    <div
+      id="main-content"
+      className="flex min-h-screen flex-col items-center justify-center px-4"
+    >
       <ShieldOff
         size={48}
         className="mb-4 text-foreground-muted"

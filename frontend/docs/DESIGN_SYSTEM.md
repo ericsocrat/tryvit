@@ -1,8 +1,11 @@
 # Design System Foundation
 
-> **Issue**: #57 · **Status**: Active · **Last updated**: 2026-02-17
+> **Issue**: #57 · **Status**: V1 compatibility reference · **Last updated**: 2026-08-09
 
-This document defines the design token vocabulary for the tryvit frontend. All visual properties (colors, spacing, typography, elevation, radii, transitions) are codified as CSS custom properties in `src/styles/globals.css` and mapped to Tailwind CSS utility classes via `tailwind.config.ts`.
+This document describes the legacy V1 compatibility vocabulary. The canonical V2 source
+is `src/design-system/tokens/manifest.ts`, with generated CSS/TypeScript/documentation
+artifacts and an exact V1 compatibility section. Tailwind v4 is bridged through
+`src/styles/globals.css`; this repository has no `tailwind.config.ts`.
 
 ---
 

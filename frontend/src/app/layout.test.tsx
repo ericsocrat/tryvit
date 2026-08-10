@@ -16,6 +16,7 @@ describe("RootLayout document language", () => {
       mockGetServerLocale.mockResolvedValueOnce(language);
       const result = await RootLayout({ children: <main>Content</main> });
       expect(result.props.lang).toBe(language);
+      expect(result.props["data-design-system"]).toBe("v1");
     },
   );
 });

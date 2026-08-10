@@ -21,6 +21,12 @@ describe("Dark mode CSS tokens", () => {
     expect(GLOBALS_CSS).toContain(":root:not([data-theme='light'])");
   });
 
+  it("keeps dark utilities coherent when the bootstrap script cannot run", () => {
+    expect(GLOBALS_CSS).toMatch(
+      /@custom-variant dark[\s\S]*\[data-theme='dark'\][\s\S]*@media \(prefers-color-scheme: dark\)[\s\S]*:root:not\(\[data-theme\]\) \*/u,
+    );
+  });
+
   const darkTokens = [
     "--color-surface",
     "--color-surface-subtle",
@@ -106,7 +112,7 @@ describe("ThemeScript", () => {
     const { renderToStaticMarkup } = await import("react-dom/server");
     const html = renderToStaticMarkup(ThemeScript({}));
 
-    expect(html).toContain("<script>");
+    expect(html).toContain('<script id="tryvit-theme-bootstrap">');
     expect(html).toContain("localStorage");
     expect(html).toContain("data-theme");
     expect(html).toContain("prefers-color-scheme: dark");

@@ -97,6 +97,7 @@ const phase5VisualJobs = {
   verify: jobSection(workflowSources.phase5Visual, "verify"),
   generate: jobSection(workflowSources.phase5Visual, "generate-candidates"),
 };
+const prGateUnitJob = jobSection(workflowSources.prGate, "unit-tests");
 
 const hostedSupabasePatterns: RegExp[] = [
   /^\s*NEXT_PUBLIC_SUPABASE_URL:/m,
@@ -115,6 +116,13 @@ const hostedSupabasePatterns: RegExp[] = [
 ];
 
 describe("browser workflow visual-safety contract", () => {
+  it("keeps unit-test enforcement inside a larger job-level cleanup budget", () => {
+    expect(prGateUnitJob).toMatch(/^    timeout-minutes: 8$/mu);
+    expect(prGateUnitJob).toMatch(
+      /- name: Run unit tests\s+run: npx vitest run\s+timeout-minutes: 6/mu,
+    );
+  });
+
   it("declares the complete visual-safety script contract", () => {
     for (const script of [
       "visual-safety:preflight",
@@ -835,6 +843,14 @@ describe("browser workflow visual-safety contract", () => {
     expect(packageScripts["quality:full"]).toContain("--quality-level=full");
     expect(packageScripts["lighthouse:mobile"]).toContain("visual-safety:public-lighthouse");
     expect(packageScripts["lighthouse:desktop"]).toContain("visual-safety:public-lighthouse");
+    expect(packageScripts["design-system:tokens:generate"]).toContain(
+      "tooling/design-system/tokens/generate.mts",
+    );
+    expect(packageScripts["design-system:tokens:check"]).toContain("--check");
+    expect(packageScripts["design-system:inventory:generate"]).toContain(
+      "phase5a1a-live-inventory-cli.mts",
+    );
+    expect(packageScripts["phase5:catalog"]).toContain("tooling/design-system/catalog/run.mts");
     expect(safetyCliSource).toMatch(
       /commandEnvironment\.VISUAL_SAFETY_MODE = mode;[\s\S]*loadSafetyContractFromEnvironment\(commandEnvironment\)/u,
     );
@@ -855,6 +871,61 @@ describe("browser workflow visual-safety contract", () => {
       expect(workflow).toContain("run: npm run build");
       expect(workflow).not.toContain("run: npx next build");
     }
+  });
+
+  it("captures Phase 5A.1 catalog candidates only inside guarded local workflows", () => {
+    expect(workflowSources.qualityGate).toContain('PHASE5A1_CATALOG: "1"');
+    expect(workflowSources.qualityGate).toContain('NEXT_PUBLIC_QA_MODE: "1"');
+    expect(browserJobs.qualityGate).toContain("--project=phase5a1-catalog");
+    expect(workflowSources.qualityGate).toContain(
+      "Verify Phase 5A.1 catalog candidate manifest",
+    );
+    expect(workflowSources.qualityGate).toContain(
+      "tooling/design-system/catalog/verify-candidates.mts",
+    );
+    expect(workflowSources.qualityGate).toMatch(
+      /Upload Phase 5A\.1 catalog candidates[\s\S]*steps\.catalog_candidates\.outcome == 'success'[\s\S]*steps\.auth_safety_assert\.outcome == 'success'[\s\S]*steps\.local_fixture_teardown\.outcome == 'success'[\s\S]*steps\.local_supabase_stop\.outcome == 'success'[\s\S]*phase5a1-catalog-candidates/u,
+    );
+    expect(workflowSources.qualityGate).toMatch(
+      /Upload Phase 5A\.1 catalog diagnostics[\s\S]*phase5a1-catalog-diagnostics/u,
+    );
+    expect(workflowSources.qualityGate).toContain(
+      "PHASE5A1_CATALOG_SOURCE_SHA: ${{ github.sha }}",
+    );
+    expect(workflowSources.qualityGate).toContain(
+      "PHASE5A1_CATALOG_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}",
+    );
+
+    expect(workflowSources.nightly).toContain('PHASE5A1_CATALOG: "1"');
+    expect(workflowSources.nightly).toContain('NEXT_PUBLIC_QA_MODE: "1"');
+    expect(browserJobs.nightly).toContain("--project=phase5a1-catalog");
+    expect(workflowSources.nightly).toContain(
+      "PHASE5A1_CATALOG_SOURCE_SHA: ${{ github.sha }}",
+    );
+    expect(workflowSources.nightly).toContain(
+      "PHASE5A1_CATALOG_PR_HEAD_SHA: ${{ github.sha }}",
+    );
+    expect(workflowSources.nightly).toContain(
+      "Verify Phase 5A.1 catalog candidate manifest",
+    );
+    expect(workflowSources.nightly).toContain(
+      "tooling/design-system/catalog/verify-candidates.mts",
+    );
+    expect(workflowSources.nightly).toMatch(
+      /Upload Phase 5A\.1 catalog candidates[\s\S]*steps\.catalog_candidates\.outcome == 'success'[\s\S]*steps\.auth_safety_assert\.outcome == 'success'[\s\S]*steps\.local_fixture_teardown\.outcome == 'success'[\s\S]*steps\.local_supabase_stop\.outcome == 'success'[\s\S]*nightly-phase5a1-catalog-candidates/u,
+    );
+    expect(workflowSources.nightly).toContain(
+      "!frontend/test-results/phase5a1-catalog-candidates/**",
+    );
+    expect(workflowSources.nightly).toContain(
+      "!frontend/test-results/phase5a1-catalog-diagnostics/**",
+    );
+    expect(browserJobs.nightly.indexOf("--project=phase5a1-catalog")).toBeLessThan(
+      browserJobs.nightly.lastIndexOf("npm run visual-safety:assert"),
+    );
+    expect(browserJobs.nightly.indexOf("--project=phase5a1-catalog")).toBeLessThan(
+      browserJobs.nightly.indexOf("tooling/design-system/catalog/verify-candidates.mts"),
+    );
   });
 
   it("never stages local authenticated storage state in browser artifacts", () => {

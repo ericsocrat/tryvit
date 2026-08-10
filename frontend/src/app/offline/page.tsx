@@ -7,7 +7,10 @@ import { useTranslation } from "@/lib/i18n";
 export default function OfflinePage() {
   const { t } = useTranslation();
   return (
-    <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
+    <div
+      id="main-content"
+      className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center"
+    >
       <ErrorIllustration type="offline" className="mb-2" />
       <h1 className="mt-4 text-xl font-bold text-foreground">
         {t("offline.title")}

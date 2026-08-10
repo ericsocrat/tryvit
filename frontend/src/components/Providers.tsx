@@ -6,6 +6,8 @@ import { Toaster } from "sonner";
 import { RouteAnnouncer } from "@/components/common/RouteAnnouncer";
 import { ClientMessagesProvider } from "@/components/i18n/ClientMessagesProvider";
 import { LanguageSynchronizer } from "@/components/i18n/LanguageSynchronizer";
+import { ThemeSynchronizer } from "@/components/ThemeSynchronizer";
+import { SkipLink } from "@/design-system/accessibility/SkipLink";
 import { InitialLanguageContext, type InitialLanguage } from "@/lib/initial-language-context";
 import type { InitialClientMessages } from "@/lib/i18n-format";
 
@@ -31,6 +33,8 @@ export function Providers({
     <InitialLanguageContext.Provider value={initialLanguage}>
       <ClientMessagesProvider initialMessages={initialMessages}>
         <LanguageSynchronizer initialLanguage={initialLanguage} />
+        <ThemeSynchronizer />
+        <SkipLink />
         <TooltipPrimitive.Provider delayDuration={300} skipDelayDuration={100}>
           {children}
         </TooltipPrimitive.Provider>

@@ -1,10 +1,13 @@
 # Mobile-First Design System & UX Refresh Spec
 
 > **Last updated:** 2026-03-14
-> **Status:** Draft — planning deliverable, not yet implemented
+> **Status:** Superseded planning artifact — use the Phase 5 audit, blueprint, roadmap, and active phase record
 > **Audience:** Designer, frontend engineer, AI agent
 > **Scope:** Mobile-first redesign of TryVit's 86+ component library and 14 app routes
 > **Prerequisite reading:** `DESIGN_SYSTEM.md` (tokens), `UX_UI_DESIGN.md` (wireframes), `BRAND_GUIDELINES.md` (identity)
+
+This document is retained for historical context. It does not override the Living Label
+direction, evidence semantics, V1/V2 coexistence rules, or two-PR Phase 5A.1 boundary.
 
 ---
 

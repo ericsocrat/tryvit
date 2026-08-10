@@ -34,7 +34,7 @@ export default async function SharedComparisonPage({
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl space-y-4 px-4 py-6">
+      <main id="main-content" className="mx-auto max-w-5xl space-y-4 px-4 py-6">
         {result.status !== "ok" && (
           <div
             className={`card py-8 text-center ${

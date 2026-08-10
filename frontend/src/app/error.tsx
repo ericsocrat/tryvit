@@ -30,7 +30,10 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4">
+    <div
+      id="main-content"
+      className="flex min-h-screen flex-col items-center justify-center px-4"
+    >
       <ErrorIllustration type="server-error" className="mb-6" />
       <h1 className="mb-2 text-2xl font-bold text-foreground">{t("error.somethingWrong")}</h1>
       <p className="mb-6 text-foreground-secondary">{t("error.unexpected")}</p>

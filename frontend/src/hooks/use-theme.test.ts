@@ -35,6 +35,7 @@ beforeEach(() => {
   mediaListeners = [];
   mockMatchMedia();
   document.documentElement.removeAttribute("data-theme");
+  document.documentElement.style.removeProperty("color-scheme");
 });
 
 afterEach(() => {
@@ -126,11 +127,13 @@ describe("useTheme", () => {
       result.current.setMode("dark");
     });
     expect(document.documentElement.getAttribute("data-theme")).toBe("dark");
+    expect(document.documentElement.style.colorScheme).toBe("dark");
 
     act(() => {
       result.current.setMode("light");
     });
     expect(document.documentElement.getAttribute("data-theme")).toBe("light");
+    expect(document.documentElement.style.colorScheme).toBe("light");
   });
 
   it("listens to system preference changes when mode is 'system'", () => {
@@ -179,5 +182,25 @@ describe("useTheme", () => {
     act(() => result.current.setMode("system"));
     expect(result.current.mode).toBe("system");
     // resolved depends on matchMedia mock
+  });
+
+  it("keeps independent hook consumers coherent in the same document", () => {
+    const first = renderHook(() => useTheme());
+    const second = renderHook(() => useTheme());
+
+    act(() => first.result.current.setMode("dark"));
+
+    expect(second.result.current.mode).toBe("dark");
+    expect(second.result.current.resolved).toBe("dark");
+  });
+
+  it("synchronizes a theme preference changed in another tab", () => {
+    const { result } = renderHook(() => useTheme());
+    localStorage.setItem("theme", "dark");
+
+    act(() => globalThis.dispatchEvent(new StorageEvent("storage", { key: "theme" })));
+
+    expect(result.current.mode).toBe("dark");
+    expect(result.current.resolved).toBe("dark");
   });
 });

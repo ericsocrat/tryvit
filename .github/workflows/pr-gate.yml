@@ -129,7 +129,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-    timeout-minutes: 5
+    # The test step has its own six-minute fail-closed budget; keep enough job
+    # headroom for npm install, timing evidence, and artifact upload.
+    timeout-minutes: 8
     defaults:
       run:
         working-directory: frontend
