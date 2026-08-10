@@ -1,7 +1,7 @@
 # Phase 5A.1a — Design System V2 Foundations
 
 > **Last updated:** 2026-08-10
-> **Status:** Implemented on the Phase 5A.1a draft branch; exact-head CI, correction review, and catalog candidate approval pending
+> **Status:** Corrected implementation and candidate evidence are green at reviewed head `72ff09fc515dcfc1e597d5c49861ebd063348fd5`; Eric's catalog-candidate approval and final docs-only-head revalidation remain pending
 > **Entry gate:** Phase 5A.0f merged to `main` at `2d40001754d370782bc7f502918daac06a8d024f`
 
 ## Phase 5A.1 foundation decision
@@ -137,10 +137,13 @@ V1 and V2 roles to system colors and removes decorative shadows.
 
 Forty-six named text and meaningful-UI pairs pass deterministic light/dark contrast
 contracts. The minimum measured normal-text ratio is 4.716:1 in both themes; the
-minimum meaningful UI/focus ratios are 3.432:1 in light and 3.710:1 in dark. The fresh
-exact-head rendered forced-colors matrix must separately prove system-color pairing,
-visible focus, shadow removal, and whole-page WCAG 2.2 Axe compliance before this PR is
-merge-ready. No exact-head browser pass is claimed until that evidence is produced.
+minimum meaningful UI/focus ratios are 3.432:1 in light and 3.710:1 in dark. The
+exact-head rendered matrix at reviewed implementation head `72ff09fc` separately proves
+system-color pairing, visible focus, shadow removal, and whole-page WCAG 2.2 Axe
+compliance. The first candidate review exposed forced-color text loss in filled
+specimens; the corrected matrix re-rendered all affected states and independent review
+confirmed that the labels, mixed indicator, and localized locked fields are visible at
+all three widths.
 
 ## Typography decision
 
@@ -273,18 +276,14 @@ Local implementation checks required before the draft PR is pushed:
 - diff/scope audit proving no dependency, lockfile, route policy, API/database,
   service-worker, Next config, or immutable-baseline mutation.
 
-The governance and correction amendments recorded on 2026-08-10 do not themselves add
-execution evidence. They require fresh exact-head generation, test, browser, and CI
-results. The historical local evidence below applies only to its recorded run and must
-not be used as proof for the amended head.
-
-Completed local evidence on 2026-08-09:
+Completed local evidence on reviewed implementation head
+`72ff09fc515dcfc1e597d5c49861ebd063348fd5` on 2026-08-10:
 
 - deterministic token generation/check and live-inventory regeneration passed;
-- 41 focused design-system/inventory/catalog contracts passed;
+- 46 focused design-system/inventory/catalog contracts passed;
 - the integrated theme, provider, announcer, skip-link, root-layout, catalog, and
   workflow contracts are included in the passing complete suite;
-- the complete frontend suite passed: 384 files passed, 1 skipped; 6,476 tests
+- the complete frontend suite passed: 384 files passed, 1 skipped; 6,481 tests
   passed, 19 skipped;
 - type-check, full source lint, scoped tooling/E2E lint, and `git diff --check`
   passed;
@@ -296,16 +295,57 @@ Completed local evidence on 2026-08-09:
 - forbidden-scope inspection found no dependency lockfile, Next config, route policy,
   PWA source, API/database, or immutable-baseline change.
 
-The guarded Windows catalog run was attempted once. It stopped at the fail-closed local
-Supabase start because the Docker-backed runtime was unavailable, before any fixture,
-build, server, or browser action. The matching no-backup stop found no usable runtime.
-No hosted fallback or guard relaxation was used, so this document does not claim a local
-browser pass.
+The local Windows browser harness was not used as acceptance evidence. No hosted
+Supabase fallback or guard relaxation was used. Authoritative browser evidence was
+produced by the guarded Linux CI lifecycle against the reviewed implementation head.
 
-The guarded catalog browser run, route-JavaScript comparison, immutable visual
-verification, private PWA proof, Quality Gate, Lighthouse, CodeQL, Main Gate, and
-SonarCloud remain exact-head CI acceptance evidence. This document must be updated with
-their final run IDs and artifact checksums before 5A.1a is considered merge-ready.
+### Authoritative implementation evidence — 2026-08-10
+
+The following evidence is bound to exact PR head
+`72ff09fc515dcfc1e597d5c49861ebd063348fd5`. GitHub's reviewed merge ref was
+`5425db67fdd5e4a64deefc1cf92cf35069149063`, with tree
+`34a968bb2b4862001c7d17de5075e02d1b01695b` and the exact base/head parents.
+
+- PR Gate run `31360260505`, CodeQL run `31360260489`, and GHAS check
+  `93367817478` passed; both repository and branch open-alert counts were zero.
+- Main Gate run `31360596638` passed exactly once. Sonar analyzed SCM revision
+  `72ff09fc515dcfc1e597d5c49861ebd063348fd5`: reliability, security, and
+  maintainability were A; coverage was 91.2%; duplication was 1.384802947%; and
+  security hotspots reviewed were 100%.
+- Quality Gate run `31360260503` passed the public and guarded local-authenticated
+  lifecycles, all 18 catalog cases, safety assertions, fixture teardown, and no-backup
+  runtime shutdown. Candidate artifact `9052264601` has archive SHA-256
+  `e9561d4fe6d5005866c92415324efb4ee5973681216112b455c1994d925c89f4` and
+  manifest SHA-256
+  `dac764820b051669460f5535b52110a5a3a82c1339983169ad6b8be1abcc2866`.
+  Independent verification confirmed the exact 72 scene images plus 18 contact sheets,
+  including every manifest path, byte size, PNG signature, and content hash.
+- Immutable visual run `31360260484` passed all five public and three authenticated
+  comparisons without changing the Phase 5A.0d baselines or producing a diff artifact.
+- Route-JavaScript run `31360260483` passed all five fail-if-either regression guards.
+  Artifact `9052265939` has archive SHA-256
+  `6007a527e4d4df425e66ac18672dabfcadca5bf88cc1c1a1b5491619609d08c1`.
+- Lighthouse run `31360260491` attempt 1 stopped before authenticated measurement on a
+  bounded local-auth token-response wait; it produced no incomplete evidence and all
+  cleanup gates passed. The single authorized unchanged-SHA retry, attempt 2, passed all
+  10 route/profile rows with five runs each, zero blocking failures, and zero instability
+  failures. Artifact `9052744518` has archive SHA-256
+  `9b341e7cbea58917964d8af1de68fafb91b63e422491fa7f707cf592c03d09b4`
+  and report checksum
+  `47c704cac34af57b761243f933745772b709dec1d46b92e467a03fa35d279af4`.
+- Dependency audit, license compliance, repository hygiene, title checks, and the exact
+  Vercel preview status passed. Hosted preview endpoints were not accessed.
+
+All 18 contact sheets and the relevant individual forced-color and localized scene
+images were reviewed after correction. No remaining clipping, overlap, contrast,
+localization, dark/system-dark, or reduced-motion endpoint defect was found. This is an
+engineering review, not Eric's required product/design approval.
+
+This evidence records the stable implementation and candidate bytes. Because adding
+this evidence record creates a docs-only PR head, that final head still requires its own
+green exact-head rollup before the PR can be considered merge-ready; the PR body is the
+non-self-referential source for that final rollup. Eric's explicit candidate approval
+remains mandatory regardless of automation.
 
 ## Deferred and rollback boundaries
 
