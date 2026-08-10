@@ -97,6 +97,7 @@ const phase5VisualJobs = {
   verify: jobSection(workflowSources.phase5Visual, "verify"),
   generate: jobSection(workflowSources.phase5Visual, "generate-candidates"),
 };
+const prGateUnitJob = jobSection(workflowSources.prGate, "unit-tests");
 
 const hostedSupabasePatterns: RegExp[] = [
   /^\s*NEXT_PUBLIC_SUPABASE_URL:/m,
@@ -115,6 +116,13 @@ const hostedSupabasePatterns: RegExp[] = [
 ];
 
 describe("browser workflow visual-safety contract", () => {
+  it("keeps unit-test enforcement inside a larger job-level cleanup budget", () => {
+    expect(prGateUnitJob).toMatch(/^    timeout-minutes: 8$/mu);
+    expect(prGateUnitJob).toMatch(
+      /- name: Run unit tests\s+run: npx vitest run\s+timeout-minutes: 6/mu,
+    );
+  });
+
   it("declares the complete visual-safety script contract", () => {
     for (const script of [
       "visual-safety:preflight",
