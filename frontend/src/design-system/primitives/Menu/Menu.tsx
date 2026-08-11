@@ -13,7 +13,12 @@ import {
 import { Icon, type IconName } from "@/design-system/icons/Icon";
 import { anchoredPopupStyle } from "@/design-system/primitives/shared/anchored-position";
 import { adjacentTabStop, focusElement } from "@/design-system/primitives/shared/dom";
-import { isTopOverlay, registerOverlay } from "@/design-system/primitives/shared/overlay-stack";
+import {
+  claimOverlayPointerDismissal,
+  isOverlayPointerDismissalClaimed,
+  isTopOverlay,
+  registerOverlay,
+} from "@/design-system/primitives/shared/overlay-stack";
 import { ScopedPortal } from "@/design-system/primitives/shared/portal";
 import { useControllableState } from "@/design-system/primitives/shared/controllable-state";
 
@@ -154,10 +159,15 @@ export function Menu({
       setViewportRevision((revision) => revision + 1);
     };
     const onPointerDown = (event: PointerEvent) => {
-      if (event.button !== 0 || !isTopOverlay(overlayId)) return;
+      if (
+        isOverlayPointerDismissalClaimed(event) ||
+        event.button !== 0 ||
+        !isTopOverlay(overlayId)
+      ) return;
       const target = event.target;
       if (!(target instanceof Node)) return;
       if (anchor.contains(target) || contentRef.current?.contains(target)) return;
+      claimOverlayPointerDismissal(event);
       closeMenu(false);
     };
     const onScroll = (event: Event) => {

@@ -7,6 +7,7 @@ import { axe } from "vitest-axe";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { Menu } from "@/design-system/primitives/Menu";
+import { claimOverlayPointerDismissal } from "@/design-system/primitives/shared/overlay-stack";
 
 import {
   Dialog,
@@ -490,6 +491,18 @@ describe("V2 native modal overlays", () => {
     fireEvent.pointerDown(dialog, { button: 0, pointerId: 2, clientX: 20, clientY: 20 });
     fireEvent.pointerCancel(dialog, { pointerId: 2 });
     fireEvent.pointerUp(dialog, { button: 0, pointerId: 2, clientX: 20, clientY: 20 });
+    expect(onChange).not.toHaveBeenCalled();
+
+    const claimedPointerDown = new PointerEvent("pointerdown", {
+      bubbles: true,
+      button: 0,
+      clientX: 20,
+      clientY: 20,
+      pointerId: 4,
+    });
+    claimOverlayPointerDismissal(claimedPointerDown);
+    fireEvent(dialog, claimedPointerDown);
+    fireEvent.pointerUp(dialog, { button: 0, pointerId: 4, clientX: 20, clientY: 20 });
     expect(onChange).not.toHaveBeenCalled();
 
     fireEvent.pointerDown(dialog, { button: 0, pointerId: 3, clientX: 20, clientY: 20 });

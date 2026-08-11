@@ -23,6 +23,7 @@ import {
   type TabbableElement,
 } from "@/design-system/primitives/shared/dom";
 import {
+  isOverlayPointerDismissalClaimed,
   isTopOverlay,
   registerOverlay,
 } from "@/design-system/primitives/shared/overlay-stack";
@@ -267,7 +268,8 @@ function ModalOverlayInner({
         if (dismissible && isTopOverlay(overlayId)) requestClose("escape");
       }}
       onPointerDown={(event) => {
-        backdropPointerRef.current = isTopOverlay(overlayId) &&
+        backdropPointerRef.current = !isOverlayPointerDismissalClaimed(event.nativeEvent) &&
+            isTopOverlay(overlayId) &&
             event.button === 0 &&
             isBackdropPoint(event.currentTarget, event)
           ? event.pointerId

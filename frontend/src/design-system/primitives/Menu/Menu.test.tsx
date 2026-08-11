@@ -4,6 +4,8 @@ import { axe } from "vitest-axe";
 import { describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 
+import { claimOverlayPointerDismissal } from "@/design-system/primitives/shared/overlay-stack";
+
 import { Menu, type MenuEntry } from "./Menu";
 
 function entries(
@@ -255,6 +257,31 @@ describe("V2 Menu", () => {
 
   it("closes on an outside primary pointer without stealing the clicked target's focus", async () => {
     const user = userEvent.setup();
+    const pointerDefaultPrevented = vi.fn();
+    const outsideClick = vi.fn();
+    render(
+      <>
+        <Menu triggerLabel="Evidence actions" entries={entries()} />
+        <button
+          type="button"
+          onClick={outsideClick}
+          onPointerDown={(event) => pointerDefaultPrevented(event.defaultPrevented)}
+        >
+          Outside target
+        </button>
+      </>,
+    );
+    await user.click(screen.getByRole("button", { name: "Evidence actions" }));
+    const outside = screen.getByRole("button", { name: "Outside target" });
+    await user.click(outside);
+    expect(screen.queryByRole("menu")).toBeNull();
+    expect(outside).toHaveFocus();
+    expect(pointerDefaultPrevented).toHaveBeenCalledWith(false);
+    expect(outsideClick).toHaveBeenCalledOnce();
+  });
+
+  it("does not consume a native pointer dismissal already claimed by a higher overlay", async () => {
+    const user = userEvent.setup();
     render(
       <>
         <Menu triggerLabel="Evidence actions" entries={entries()} />
@@ -263,9 +290,16 @@ describe("V2 Menu", () => {
     );
     await user.click(screen.getByRole("button", { name: "Evidence actions" }));
     const outside = screen.getByRole("button", { name: "Outside target" });
-    await user.click(outside);
-    expect(screen.queryByRole("menu")).toBeNull();
-    expect(outside).toHaveFocus();
+    const claimedPointerDown = new PointerEvent("pointerdown", {
+      bubbles: true,
+      button: 0,
+    });
+    claimOverlayPointerDismissal(claimedPointerDown);
+    fireEvent(outside, claimedPointerDown);
+    expect(screen.getByRole("menu")).toBeVisible();
+
+    fireEvent.pointerDown(outside, { button: 0 });
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
   });
 
   it("closes when focus is moved outside programmatically", async () => {

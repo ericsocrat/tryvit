@@ -878,6 +878,15 @@ async function exerciseNestedCombobox(
     await expect(popup).toBeHidden();
     await expect(input).toBeFocused();
     await expect(modal).toBeVisible();
+
+    await pointerActivate(page, input, context.pointer);
+    await page.keyboard.press("ArrowDown");
+    await expect(popup).toBeVisible();
+    await pointerOutside(page, context.pointer);
+    await expect(popup).toBeHidden();
+    if (!await modal.isVisible()) {
+      throw new CatalogFailure("nested-outside-cascade-invalid", capture);
+    }
   } catch (error) {
     if (error instanceof CatalogFailure) throw error;
     throw new CatalogFailure("focus-containment-invalid", capture);

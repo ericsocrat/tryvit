@@ -12,6 +12,10 @@ import {
   programmaticTabStopCandidates,
   tabbableElements,
 } from "./dom";
+import {
+  claimOverlayPointerDismissal,
+  isOverlayPointerDismissalClaimed,
+} from "./overlay-stack";
 import { lockDocumentScroll } from "./scroll-lock";
 
 const html = document.documentElement;
@@ -66,6 +70,16 @@ afterEach(() => {
 });
 
 describe("V2 portal and overlay helpers", () => {
+  it("claims only the exact native pointer dismissal event", () => {
+    const pointerDown = new Event("pointerdown");
+    const pointerUp = new Event("pointerup");
+
+    expect(isOverlayPointerDismissalClaimed(pointerDown)).toBe(false);
+    claimOverlayPointerDismissal(pointerDown);
+    expect(isOverlayPointerDismissalClaimed(pointerDown)).toBe(true);
+    expect(isOverlayPointerDismissalClaimed(pointerUp)).toBe(false);
+  });
+
   it("copies local theme, direction, and language scope", () => {
     const scope = document.createElement("section");
     scope.dataset.theme = "dark";

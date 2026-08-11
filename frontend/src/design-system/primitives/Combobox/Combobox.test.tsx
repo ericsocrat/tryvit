@@ -3,6 +3,8 @@ import userEvent from "@testing-library/user-event";
 import { axe } from "vitest-axe";
 import { describe, expect, it, vi } from "vitest";
 
+import { claimOverlayPointerDismissal } from "@/design-system/primitives/shared/overlay-stack";
+
 import { Combobox, type ComboboxOption, type ComboboxProps } from "./Combobox";
 
 const options = [
@@ -89,6 +91,26 @@ describe("V2 Combobox", () => {
     await user.tab();
     expect(screen.getByRole("button", { name: "After field" })).toHaveFocus();
     expect(input).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("does not consume a native pointer dismissal already claimed by a higher overlay", async () => {
+    render(
+      <>
+        <Combobox {...props({ defaultOpen: true })} />
+        <button type="button">Outside target</button>
+      </>,
+    );
+    const outside = screen.getByRole("button", { name: "Outside target" });
+    const claimedPointerDown = new PointerEvent("pointerdown", {
+      bubbles: true,
+      button: 0,
+    });
+    claimOverlayPointerDismissal(claimedPointerDown);
+    fireEvent(outside, claimedPointerDown);
+    expect(screen.getByRole("listbox")).toBeVisible();
+
+    fireEvent.pointerDown(outside, { button: 0 });
+    await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
   });
 
   it("hands a containing modal's forward Tab boundary back without leaving the modal", async () => {

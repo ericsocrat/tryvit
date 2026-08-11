@@ -432,9 +432,10 @@ verification passed before the approval and merge recorded at the top of this do
 
 ### Phase 5A.1b local pre-push evidence — 2026-08-11
 
-The settled Phase 5A.1b worktree passed the following checks before its draft PR was
-created. These results are local implementation evidence, not a substitute for the
-required exact-head Linux catalog, visual, performance, security, and integration runs:
+The settled Phase 5A.1b worktree passed the following checks before the current draft
+PR head was pushed. These results are local implementation evidence, not a substitute
+for the required exact-head Linux catalog, visual, performance, security, and
+integration runs:
 
 - token artifacts passed deterministic `--check`;
 - the live inventory generated twice to the identical SHA-256
@@ -442,9 +443,9 @@ required exact-head Linux catalog, visual, performance, security, and integratio
   it records 393 governed modules, 498 inspected runtime modules, zero forbidden
   boundaries, six symbol-aware compatibility entries, five controlled relocations,
   and zero V2 route consumers outside `/dev/components`;
-- `npm run design-system:check` passed 23 files and 182 tests, and the transitive
+- `npm run design-system:check` passed 23 files and 185 tests, and the transitive
   architecture contract passed its additional 6 tests;
-- the complete frontend suite passed 401 files with 1 skipped and 6,625 tests with
+- the complete frontend suite passed 401 files with 1 skipped and 6,628 tests with
   19 skipped;
 - TypeScript, full source lint, scoped E2E/tooling/test lint, and `git diff --check`
   passed;
