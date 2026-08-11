@@ -134,6 +134,7 @@
 }
 
 .switchLabel {
+  flex-wrap: wrap;
   justify-content: space-between;
   width: 100%;
 }
@@ -143,6 +144,7 @@
   gap: var(--ds-space-2);
   align-items: center;
   flex: none;
+  max-inline-size: 100%;
 }
 
 .switchInput {

@@ -187,6 +187,11 @@ describe("Phase 5A.1b catalog contract", () => {
       .sort()
       .map((filename) => readFileSync(path.join(catalogDirectory, filename), "utf8"))
       .join("\n");
+    const catalogStyles = readFileSync(path.join(catalogDirectory, "catalog.css"), "utf8");
+    const fieldStyles = readFileSync(
+      path.join(process.cwd(), "src", "design-system", "primitives", "Field", "field.module.css"),
+      "utf8",
+    );
 
     expect(config).toContain('const HAS_PHASE5A1_CATALOG = process.env.PHASE5A1_CATALOG === "1"');
     expect(config).toContain(
@@ -230,6 +235,12 @@ describe("Phase 5A.1b catalog contract", () => {
     expect(specification).toContain("TEXT_SPACING_STYLE");
     expect(specification).toContain("assertZoom200Reflow");
     expect(specification).toContain("assertNoClippedOverlappingOrObscuredContent");
+    expect(specification).toContain("inlineScrollableBoundary");
+    expect(specification).toContain("blockScrollableBoundary");
+    expect(specification).toContain(
+      '"[data-ds-component]:not(input):not(textarea):not(select)"',
+    );
+    expect(specification).toContain("overflowTarget");
     expect(specification).not.toContain("toHaveScreenshot");
     expect(specification).not.toContain("__screenshots__");
     expect(verifier).toContain("getCatalogCandidateRelativePaths");
@@ -243,6 +254,11 @@ describe("Phase 5A.1b catalog contract", () => {
     expect(catalogSources).not.toContain('from "lucide-react"');
     expect(catalogSources).toContain('type: "checkbox"');
     expect(catalogSources).toContain("checked: menuCheckboxChecked");
+    expect(catalogStyles).toMatch(
+      /\.catalog-v2-composite-grid\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\);/su,
+    );
+    expect(fieldStyles).toMatch(/\.switchLabel\s*\{[^}]*flex-wrap:\s*wrap;/su);
+    expect(fieldStyles).toMatch(/\.switchControl\s*\{[^}]*max-inline-size:\s*100%;/su);
     for (const retiredReplica of [
       "catalog-v2-button",
       "catalog-v2-icon-button",

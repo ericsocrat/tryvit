@@ -86,6 +86,7 @@
 
 .catalog-v2-composite-grid {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--ds-space-5);
 }
 

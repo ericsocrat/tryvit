@@ -86,6 +86,10 @@ interface CatalogFailureDiagnostic {
   readonly axeRuleIds?: readonly string[];
   readonly axeRuleCount?: number;
   readonly axeNodeCount?: number;
+  readonly overflowClientWidth?: number;
+  readonly overflowScrollWidth?: number;
+  readonly overflowTarget?: string;
+  readonly overflowViewport?: number;
 }
 
 class CatalogFailure extends Error {
@@ -289,6 +293,9 @@ async function assertNoOverflow(
       ...document.querySelectorAll<HTMLElement>("[data-ds-portal-root]"),
       ...document.querySelectorAll<HTMLElement>("[data-ds-part='content']"),
       ...document.querySelectorAll<HTMLElement>("[data-ds-part='listbox']"),
+      ...document.querySelectorAll<HTMLElement>(
+        "[data-ds-component]:not(input):not(textarea):not(select)",
+      ),
     ];
     return {
       viewport: window.innerWidth,
@@ -298,6 +305,9 @@ async function assertNoOverflow(
         const rectangle = target.getBoundingClientRect();
         return {
           id: target.getAttribute("data-catalog-scene") ??
+            target.closest<HTMLElement>("[data-catalog-probe]")?.getAttribute(
+              "data-catalog-probe",
+            ) ??
             target.getAttribute("data-ds-component") ??
             target.getAttribute("data-ds-part") ?? "unknown",
           scrollWidth: target.scrollWidth,
@@ -318,7 +328,14 @@ async function assertNoOverflow(
     overflow.bodyWidth > overflow.viewport + 1 ||
     overflowing
   ) {
-    throw new CatalogFailure("overflow", capture);
+    const documentOverflow = overflow.documentWidth > overflow.viewport + 1;
+    throw new CatalogFailure("overflow", capture, {
+      overflowClientWidth: overflowing?.clientWidth ?? overflow.viewport,
+      overflowScrollWidth: overflowing?.scrollWidth ??
+        (documentOverflow ? overflow.documentWidth : overflow.bodyWidth),
+      overflowTarget: overflowing?.id ?? (documentOverflow ? "document" : "body"),
+      overflowViewport: overflow.viewport,
+    });
   }
 }
 
@@ -1234,21 +1251,45 @@ async function assertNoClippedOverlappingOrObscuredContent(
       .filter(({ rectangles }) => rectangles.length > 0);
 
     for (const { element, rectangles } of candidates) {
+      // Text outside a real scroll viewport remains reachable. Higher clipping
+      // ancestors must contain that viewport, while inner clipping still fails.
+      let inlineScrollableBoundary: DOMRect | null = null;
+      let blockScrollableBoundary: DOMRect | null = null;
       for (let ancestor: HTMLElement | null = element; ancestor; ancestor = ancestor.parentElement) {
         const style = getComputedStyle(ancestor);
         const clipsInline = style.overflowX === "hidden" || style.overflowX === "clip";
         const clipsBlock = style.overflowY === "hidden" || style.overflowY === "clip";
-        if (!clipsInline && !clipsBlock) continue;
+        if (clipsInline || clipsBlock) {
+          if (
+            (clipsInline && ancestor.scrollWidth > ancestor.clientWidth + 1) ||
+            (clipsBlock && ancestor.scrollHeight > ancestor.clientHeight + 1)
+          ) return "content-clipped";
+          const boundary = ancestor.getBoundingClientRect();
+          const inlineRectangles = inlineScrollableBoundary
+            ? [inlineScrollableBoundary]
+            : rectangles;
+          const blockRectangles = blockScrollableBoundary ? [blockScrollableBoundary] : rectangles;
+          if (
+            (clipsInline && inlineRectangles.some((rectangle) =>
+              rectangle.left < boundary.left - 1 || rectangle.right > boundary.right + 1
+            )) ||
+            (clipsBlock && blockRectangles.some((rectangle) =>
+              rectangle.top < boundary.top - 1 || rectangle.bottom > boundary.bottom + 1
+            ))
+          ) return "text-clipped";
+        }
         if (
-          (clipsInline && ancestor.scrollWidth > ancestor.clientWidth + 1) ||
-          (clipsBlock && ancestor.scrollHeight > ancestor.clientHeight + 1)
-        ) return "content-clipped";
-        const boundary = ancestor.getBoundingClientRect();
-        const clipped = rectangles.some((rectangle) =>
-          (clipsInline && (rectangle.left < boundary.left - 1 || rectangle.right > boundary.right + 1)) ||
-          (clipsBlock && (rectangle.top < boundary.top - 1 || rectangle.bottom > boundary.bottom + 1)),
-        );
-        if (clipped) return "text-clipped";
+          (style.overflowX === "auto" || style.overflowX === "scroll") &&
+          ancestor.scrollWidth > ancestor.clientWidth + 1
+        ) {
+          inlineScrollableBoundary = ancestor.getBoundingClientRect();
+        }
+        if (
+          (style.overflowY === "auto" || style.overflowY === "scroll") &&
+          ancestor.scrollHeight > ancestor.clientHeight + 1
+        ) {
+          blockScrollableBoundary = ancestor.getBoundingClientRect();
+        }
         if (ancestor === root) break;
       }
     }
