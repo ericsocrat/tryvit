@@ -220,6 +220,14 @@ describe("Phase 5A.1b catalog contract", () => {
     const overlayForcedColors = overlayStyles.slice(
       overlayStyles.indexOf("@media (forced-colors: active)"),
     );
+    const pointerActivationHelper = specification.slice(
+      specification.indexOf("async function pointerActivate"),
+      specification.indexOf("async function pointerOpen"),
+    );
+    const pointerOpenHelper = specification.slice(
+      specification.indexOf("async function pointerOpen"),
+      specification.indexOf("async function pointerOutside"),
+    );
 
     expect(config).toContain('const HAS_PHASE5A1_CATALOG = process.env.PHASE5A1_CATALOG === "1"');
     expect(config).toContain(
@@ -263,6 +271,27 @@ describe("Phase 5A.1b catalog contract", () => {
     expect(specification).toContain("TEXT_SPACING_STYLE");
     expect(specification).toContain("assertZoom200Reflow");
     expect(specification).toContain("assertNoClippedOverlappingOrObscuredContent");
+    expect(pointerActivationHelper).toContain("capture: CatalogFailureCapture");
+    expect(pointerActivationHelper).toContain("await locator.scrollIntoViewIfNeeded()");
+    expect(pointerActivationHelper).toContain("await settleScrollWork(page)");
+    expect(pointerActivationHelper).toContain(
+      'throw new CatalogFailure("pointer-contract-invalid", capture)',
+    );
+    expect(pointerOpenHelper).toContain("await pointerActivate(page, trigger, pointer, capture)");
+    expect(pointerOpenHelper).toContain("await expect(content).toBeVisible()");
+    expect(pointerOpenHelper).toContain(
+      'throw new CatalogFailure("pointer-contract-invalid", capture)',
+    );
+    for (const callSite of [
+      "await pointerOpen(page, trigger, nestedMenu, context.pointer, capture)",
+      "await pointerOpen(page, trigger, content, context.pointer, capture)",
+      "await pointerOpen(page, trigger, menu, context.pointer, capture)",
+    ]) {
+      expect(specification).toContain(callSite);
+    }
+    expect(
+      specification.match(/await pointerActivate\(page, input, context\.pointer, capture\)/gu),
+    ).toHaveLength(2);
     expect(specification).toContain("inlineScrollableBoundary");
     expect(specification).toContain("blockScrollableBoundary");
     expect(specification).toContain(

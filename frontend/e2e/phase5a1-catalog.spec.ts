@@ -667,14 +667,47 @@ async function screenshotInteraction(
   });
 }
 
-async function pointerActivate(page: Page, locator: CatalogLocator, pointer: "fine" | "coarse") {
-  if (pointer === "fine") {
-    await locator.click();
-    return;
+async function settleScrollWork(page: Page): Promise<void> {
+  await page.evaluate(() => new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  }));
+}
+
+async function pointerActivate(
+  page: Page,
+  locator: CatalogLocator,
+  pointer: "fine" | "coarse",
+  capture: CatalogFailureCapture,
+): Promise<void> {
+  try {
+    await locator.scrollIntoViewIfNeeded();
+    await settleScrollWork(page);
+    if (pointer === "fine") {
+      await locator.click();
+      return;
+    }
+    const box = await locator.boundingBox();
+    if (!box) throw new CatalogFailure("pointer-contract-invalid", capture);
+    await page.touchscreen.tap(box.x + (box.width / 2), box.y + (box.height / 2));
+  } catch (error) {
+    if (error instanceof CatalogFailure) throw error;
+    throw new CatalogFailure("pointer-contract-invalid", capture);
   }
-  const box = await locator.boundingBox();
-  if (!box) throw new CatalogFailure("pointer-contract-invalid", "catalog-shell");
-  await page.touchscreen.tap(box.x + (box.width / 2), box.y + (box.height / 2));
+}
+
+async function pointerOpen(
+  page: Page,
+  trigger: CatalogLocator,
+  content: CatalogLocator,
+  pointer: "fine" | "coarse",
+  capture: CatalogFailureCapture,
+): Promise<void> {
+  await pointerActivate(page, trigger, pointer, capture);
+  try {
+    await expect(content).toBeVisible();
+  } catch {
+    throw new CatalogFailure("pointer-contract-invalid", capture);
+  }
 }
 
 async function pointerOutside(page: Page, pointer: "fine" | "coarse"): Promise<void> {
@@ -692,9 +725,7 @@ async function prepareAnchoredInput(
 ): Promise<void> {
   try {
     await input.scrollIntoViewIfNeeded();
-    await page.evaluate(() => new Promise<void>((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-    }));
+    await settleScrollWork(page);
     await input.evaluate((element) => (element as HTMLElement).focus({ preventScroll: true }));
     await expect(input).toBeFocused();
   } catch {
@@ -834,8 +865,7 @@ async function exerciseNestedMenu(
   await expect(modal).toBeVisible();
   await expect(trigger).toBeFocused();
 
-  await pointerActivate(page, trigger, context.pointer);
-  await expect(nestedMenu).toBeVisible();
+  await pointerOpen(page, trigger, nestedMenu, context.pointer, capture);
   await pointerOutside(page, context.pointer);
   await expect(nestedMenu).toBeHidden();
   if (!await modal.isVisible()) {
@@ -896,7 +926,7 @@ async function exerciseNestedCombobox(
     await expect(input).toBeFocused();
     await expect(modal).toBeVisible();
 
-    await pointerActivate(page, input, context.pointer);
+    await pointerActivate(page, input, context.pointer, capture);
     await page.keyboard.press("ArrowDown");
     await expect(popup).toBeVisible();
     await pointerOutside(page, context.pointer);
@@ -946,7 +976,7 @@ async function exerciseCombobox(
     await page.keyboard.press("Escape");
     await expect(input).toBeFocused();
     await expect(input).toHaveAttribute("aria-expanded", "false");
-    await pointerActivate(page, input, context.pointer);
+    await pointerActivate(page, input, context.pointer, capture);
     await page.keyboard.press("ArrowDown");
     await expect(listbox).toBeVisible();
     await pointerOutside(page, context.pointer);
@@ -1087,8 +1117,7 @@ async function exerciseModal(
   if (!await trigger.evaluate((element) => element === document.activeElement)) {
     throw new CatalogFailure("focus-restoration-invalid", capture);
   }
-  await pointerActivate(page, trigger, context.pointer);
-  await expect(content).toBeVisible();
+  await pointerOpen(page, trigger, content, context.pointer, capture);
   await pointerOutside(page, context.pointer);
   await expect(content).toBeHidden();
   if (!await trigger.evaluate((element) => element === document.activeElement)) {
@@ -1149,8 +1178,7 @@ async function exerciseMenu(
   await expect(
     page.locator('[data-catalog-probe="tooltip"] [data-ds-part="trigger"]'),
   ).toBeFocused();
-  await pointerActivate(page, trigger, context.pointer);
-  await expect(menu).toBeVisible();
+  await pointerOpen(page, trigger, menu, context.pointer, capture);
   await pointerOutside(page, context.pointer);
   await expect(menu).toBeHidden();
   return buffer;
