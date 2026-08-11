@@ -124,6 +124,7 @@
     color: HighlightText;
     background: Highlight;
     border-color: Highlight;
+    forced-color-adjust: none;
   }
 
   .item[data-active="true"][aria-disabled="true"] {

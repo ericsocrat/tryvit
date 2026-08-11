@@ -155,6 +155,7 @@
     color: HighlightText;
     background: Highlight;
     border-color: Highlight;
+    forced-color-adjust: none;
   }
 
   .option[data-active="true"]:hover {

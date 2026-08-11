@@ -493,7 +493,7 @@ describe("Phase 5A.1b catalog contract", () => {
     expect(fieldStyles).toMatch(/\.switchLabel\s*\{[^}]*flex-wrap:\s*wrap;/su);
     expect(fieldStyles).toMatch(/\.switchControl\s*\{[^}]*max-inline-size:\s*100%;/su);
     expect(comboboxForcedColors).toMatch(
-      /\.option\[data-active="true"\]\s*\{[^}]*color:\s*HighlightText;[^}]*background:\s*Highlight;[^}]*border-color:\s*Highlight;/u,
+      /\.option\[data-active="true"\]\s*\{[^}]*color:\s*HighlightText;[^}]*background:\s*Highlight;[^}]*border-color:\s*Highlight;[^}]*forced-color-adjust:\s*none;/u,
     );
     expect(comboboxForcedColors).toMatch(
       /\.option\[data-active="true"\]:hover\s*\{[^}]*background:\s*Highlight;/u,
@@ -502,10 +502,13 @@ describe("Phase 5A.1b catalog contract", () => {
       /\.option\[data-active="true"\]\s+\.optionDescription\s*\{[^}]*color:\s*HighlightText;/u,
     );
     expect(menuForcedColors).toMatch(
-      /\.item\[data-active="true"\]:not\(\[aria-disabled="true"\]\)\s*\{[^}]*color:\s*HighlightText;[^}]*background:\s*Highlight;[^}]*border-color:\s*Highlight;/u,
+      /\.item\[data-active="true"\]:not\(\[aria-disabled="true"\]\)\s*\{[^}]*color:\s*HighlightText;[^}]*background:\s*Highlight;[^}]*border-color:\s*Highlight;[^}]*forced-color-adjust:\s*none;/u,
     );
     expect(menuForcedColors).toMatch(
       /\.item\[data-active="true"\]\[aria-disabled="true"\]\s*\{[^}]*color:\s*GrayText;[^}]*background:\s*Canvas;[^}]*border-color:\s*Highlight;/u,
+    );
+    expect(menuForcedColors).not.toMatch(
+      /\.item\[data-active="true"\]\[aria-disabled="true"\]\s*\{[^}]*forced-color-adjust:\s*none;/u,
     );
     expect(overlayForcedColors).toMatch(
       /\.overlay::backdrop\s*\{[^}]*animation:\s*none;[^}]*background:\s*Canvas;[^}]*opacity:\s*1;/u,
