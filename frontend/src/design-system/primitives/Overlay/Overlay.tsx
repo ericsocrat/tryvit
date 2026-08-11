@@ -181,7 +181,13 @@ function ModalOverlayInner({
       unmountingRef.current = true;
       if (dialog.open) dialog.close();
       const restoreTarget = explicitRestoreTarget ?? invoker;
-      queueMicrotask(() => focusElement(restoreTarget));
+      const ownerDocument = restoreTarget.ownerDocument;
+      setTimeout(() => {
+        const activeElement = ownerDocument.activeElement;
+        if (activeElement === ownerDocument.body || activeElement === invoker) {
+          focusElement(restoreTarget);
+        }
+      }, 0);
     };
   }, [initialFocus, initialFocusRef, invoker, restoreFocusRef]);
 

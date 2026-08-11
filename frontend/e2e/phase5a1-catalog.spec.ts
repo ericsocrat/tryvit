@@ -1195,13 +1195,17 @@ async function exerciseModal(
   await exerciseNestedCombobox(page, content, component, capture, context);
   await page.keyboard.press("Escape");
   await expect(content).toBeHidden();
-  if (!await trigger.evaluate((element) => element === document.activeElement)) {
+  try {
+    await expect(trigger).toBeFocused({ timeout: 1_000 });
+  } catch {
     throw new CatalogFailure("focus-restoration-invalid", capture);
   }
   await pointerOpen(page, trigger, content, context.pointer, capture);
   await pointerOutside(page, context.pointer);
   await expect(content).toBeHidden();
-  if (!await trigger.evaluate((element) => element === document.activeElement)) {
+  try {
+    await expect(trigger).toBeFocused({ timeout: 1_000 });
+  } catch {
     throw new CatalogFailure("focus-restoration-invalid", capture);
   }
   return buffer;
@@ -1256,9 +1260,19 @@ async function exerciseMenu(
   await expect(menu).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(menu).toBeHidden();
-  await expect(
-    page.locator('[data-catalog-probe="tooltip"] [data-ds-part="trigger"]'),
-  ).toBeFocused();
+  const tooltipTrigger = page.locator(
+    '[data-catalog-probe="tooltip"] [data-ds-part="trigger"]',
+  );
+  const tooltip = page.locator('[data-ds-component="tooltip"][data-ds-part="content"]');
+  try {
+    await expect(tooltipTrigger).toBeFocused();
+    await expect(tooltip).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(tooltip).toBeHidden();
+    await expect(tooltipTrigger).toBeFocused();
+  } catch {
+    throw new CatalogFailure("interaction-contract-invalid", capture);
+  }
   await pointerOpen(page, trigger, menu, context.pointer, capture);
   await pointerOutside(page, context.pointer);
   await expect(menu).toBeHidden();
@@ -1343,6 +1357,14 @@ async function assertNoClippedOverlappingOrObscuredContent(
         rectangle.width > 2 &&
         rectangle.height > 2;
     };
+    const nativeInlineTextTypes = new Set([
+      "email",
+      "password",
+      "search",
+      "tel",
+      "text",
+      "url",
+    ]);
     const directTextRectangles = (element: HTMLElement): DOMRect[] => {
       if (element.matches("input, select, textarea")) return [element.getBoundingClientRect()];
       return [...element.childNodes].flatMap((node) => {
@@ -1368,10 +1390,21 @@ async function assertNoClippedOverlappingOrObscuredContent(
         const style = getComputedStyle(ancestor);
         const clipsInline = style.overflowX === "hidden" || style.overflowX === "clip";
         const clipsBlock = style.overflowY === "hidden" || style.overflowY === "clip";
+        const inlineContentOverflows = clipsInline &&
+          ancestor.scrollWidth > ancestor.clientWidth + 1;
+        const blockContentOverflows = clipsBlock &&
+          ancestor.scrollHeight > ancestor.clientHeight + 1;
+        const isNativeInlineTextViewport =
+          ancestor === element &&
+          element instanceof HTMLInputElement &&
+          !element.matches(":disabled") &&
+          !element.readOnly &&
+          element.value.length > 0 &&
+          nativeInlineTextTypes.has(element.type);
         if (clipsInline || clipsBlock) {
           if (
-            (clipsInline && ancestor.scrollWidth > ancestor.clientWidth + 1) ||
-            (clipsBlock && ancestor.scrollHeight > ancestor.clientHeight + 1)
+            (inlineContentOverflows && !isNativeInlineTextViewport) ||
+            blockContentOverflows
           ) return "content-clipped";
           const boundary = ancestor.getBoundingClientRect();
           const inlineRectangles = inlineScrollableBoundary
@@ -1388,8 +1421,9 @@ async function assertNoClippedOverlappingOrObscuredContent(
           ) return "text-clipped";
         }
         if (
-          (style.overflowX === "auto" || style.overflowX === "scroll") &&
-          ancestor.scrollWidth > ancestor.clientWidth + 1
+          (isNativeInlineTextViewport && inlineContentOverflows) ||
+          ((style.overflowX === "auto" || style.overflowX === "scroll") &&
+            ancestor.scrollWidth > ancestor.clientWidth + 1)
         ) {
           inlineScrollableBoundary = ancestor.getBoundingClientRect();
         }

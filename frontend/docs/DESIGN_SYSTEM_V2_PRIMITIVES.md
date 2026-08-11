@@ -124,6 +124,8 @@ backdrop, and programmatic dismissal
 restore the connected invoker. `restoreFocusRef` supplies a different connected logical
 target when a workflow requires it. Backdrop dismissal requires primary pointer down
 and up on the backdrop, so a drag crossing the boundary cannot close.
+Restoration settles in the next task after native or synthesized dismissal work and
+never steals focus that has already moved beyond the document body or original invoker.
 Scroll locking is reference-counted. Sheet placement is recipe-controlled rather than
 a public art-direction prop.
 

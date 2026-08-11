@@ -234,6 +234,17 @@ describe("Phase 5A.1b catalog contract", () => {
     const overlayForcedColors = overlayStyles.slice(
       overlayStyles.indexOf("@media (forced-colors: active)"),
     );
+    const overlaySource = readFileSync(
+      path.join(
+        process.cwd(),
+        "src",
+        "design-system",
+        "primitives",
+        "Overlay",
+        "Overlay.tsx",
+      ),
+      "utf8",
+    );
     const axeNodeFingerprintContract = specification.slice(
       specification.indexOf("interface AxeNodeFingerprint"),
       specification.indexOf("class CatalogFailure"),
@@ -241,6 +252,26 @@ describe("Phase 5A.1b catalog contract", () => {
     const axeDiagnosticHelper = specification.slice(
       specification.indexOf("async function assertFullPageAxe"),
       specification.indexOf("async function assertNoOverflow"),
+    );
+    const contentIntegrityHelper = specification.slice(
+      specification.indexOf("async function assertNoClippedOverlappingOrObscuredContent"),
+      specification.indexOf("async function assertTextSpacing"),
+    );
+    const modalExercise = specification.slice(
+      specification.indexOf("async function exerciseModal"),
+      specification.indexOf("async function exerciseMenu"),
+    );
+    const menuExercise = specification.slice(
+      specification.indexOf("async function exerciseMenu"),
+      specification.indexOf("async function exerciseTabs"),
+    );
+    const menuTooltipPointerIsolation = menuExercise.slice(
+      menuExercise.indexOf("const tooltipTrigger = page.locator("),
+      menuExercise.indexOf("await pointerOutside(page, context.pointer);"),
+    );
+    const overlayRestoreCleanup = overlaySource.slice(
+      overlaySource.indexOf("const restoreTarget = explicitRestoreTarget ?? invoker;"),
+      overlaySource.indexOf("}, [initialFocus, initialFocusRef, invoker, restoreFocusRef]);"),
     );
     const pointerActivationHelper = specification.slice(
       specification.indexOf("async function pointerActivate"),
@@ -310,6 +341,65 @@ describe("Phase 5A.1b catalog contract", () => {
     ]) {
       expect(axeDiagnosticHelper).not.toContain(forbiddenAxeDiagnosticField);
     }
+    expect(modalExercise).toMatch(
+      /await page\.keyboard\.press\("Escape"\);\s*await expect\(content\)\.toBeHidden\(\);\s*try \{\s*await expect\(trigger\)\.toBeFocused\(\{ timeout: 1_000 \}\);/u,
+    );
+    expect(modalExercise).toMatch(
+      /await pointerOutside\(page, context\.pointer\);\s*await expect\(content\)\.toBeHidden\(\);\s*try \{\s*await expect\(trigger\)\.toBeFocused\(\{ timeout: 1_000 \}\);/u,
+    );
+    expect(
+      modalExercise.match(
+        /await expect\(trigger\)\.toBeFocused\(\{ timeout: 1_000 \}\);/gu,
+      ),
+    ).toHaveLength(2);
+    expect(
+      modalExercise.match(
+        /throw new CatalogFailure\("focus-restoration-invalid", capture\)/gu,
+      ),
+    ).toHaveLength(2);
+    expect(modalExercise).not.toContain(
+      "trigger.evaluate((element) => element === document.activeElement)",
+    );
+    expect(modalExercise).not.toContain("await expect(trigger).toBeFocused();");
+    expect(overlayRestoreCleanup).toContain(
+      "const ownerDocument = restoreTarget.ownerDocument;",
+    );
+    expect(overlayRestoreCleanup).toContain("setTimeout(() => {");
+    expect(overlayRestoreCleanup).toMatch(
+      /activeElement === ownerDocument\.body \|\| activeElement === invoker/u,
+    );
+    expect(overlayRestoreCleanup).toContain("focusElement(restoreTarget);");
+    expect(overlayRestoreCleanup).toContain("}, 0);");
+    expect(overlayRestoreCleanup).not.toContain("queueMicrotask");
+    expect(overlayRestoreCleanup).not.toContain("closeReasonRef");
+    let tooltipPointerIsolationCursor = 0;
+    const tooltipPointerIsolationSteps = [
+      "const tooltipTrigger = page.locator(",
+      "const tooltip = page.locator(",
+      "await expect(tooltipTrigger).toBeFocused();",
+      "await expect(tooltip).toBeVisible();",
+      'await page.keyboard.press("Escape");',
+      "await expect(tooltip).toBeHidden();",
+      "await expect(tooltipTrigger).toBeFocused();",
+      'throw new CatalogFailure("interaction-contract-invalid", capture);',
+      "await pointerOpen(page, trigger, menu, context.pointer, capture);",
+    ].map((step) => {
+      const index = menuTooltipPointerIsolation.indexOf(step, tooltipPointerIsolationCursor);
+      tooltipPointerIsolationCursor = index + step.length;
+      return index;
+    });
+    expect(tooltipPointerIsolationSteps.every((index) => index >= 0)).toBe(true);
+    expect(tooltipPointerIsolationSteps).toEqual(
+      [...tooltipPointerIsolationSteps].sort((left, right) => left - right),
+    );
+    expect(menuTooltipPointerIsolation).toMatch(
+      /throw new CatalogFailure\("interaction-contract-invalid", capture\);\s*\}\s*await pointerOpen\(page, trigger, menu, context\.pointer, capture\);/u,
+    );
+    expect(
+      menuTooltipPointerIsolation.match(
+        /await pointerOpen\(page, trigger, menu, context\.pointer, capture\);/gu,
+      ),
+    ).toHaveLength(1);
     expect(specification).toContain("phase5a1-catalog-candidates");
     expect(specification).toContain("phase5a1-catalog-diagnostics");
     expect(specification).toContain('schemaVersion: 3');
@@ -335,10 +425,21 @@ describe("Phase 5A.1b catalog contract", () => {
     expect(pointerActivationHelper).toContain("capture: CatalogFailureCapture");
     expect(pointerActivationHelper).toContain("await locator.scrollIntoViewIfNeeded()");
     expect(pointerActivationHelper).toContain("await settleScrollWork(page)");
+    expect(pointerActivationHelper.match(/await locator\.click\(\);/gu)).toHaveLength(1);
+    expect(
+      pointerActivationHelper.match(
+        /await page\.touchscreen\.tap\(box\.x \+ \(box\.width \/ 2\), box\.y \+ \(box\.height \/ 2\)\);/gu,
+      ),
+    ).toHaveLength(1);
     expect(pointerActivationHelper).toContain(
       'throw new CatalogFailure("pointer-contract-invalid", capture)',
     );
     expect(pointerOpenHelper).toContain("await pointerActivate(page, trigger, pointer, capture)");
+    expect(
+      pointerOpenHelper.match(
+        /await pointerActivate\(page, trigger, pointer, capture\);/gu,
+      ),
+    ).toHaveLength(1);
     expect(pointerOpenHelper).toContain("await expect(content).toBeVisible()");
     expect(pointerOpenHelper).toContain(
       'throw new CatalogFailure("pointer-contract-invalid", capture)',
@@ -355,6 +456,20 @@ describe("Phase 5A.1b catalog contract", () => {
     ).toHaveLength(2);
     expect(specification).toContain("inlineScrollableBoundary");
     expect(specification).toContain("blockScrollableBoundary");
+    expect(contentIntegrityHelper).toMatch(
+      /const nativeInlineTextTypes = new Set\(\[\s*"email",\s*"password",\s*"search",\s*"tel",\s*"text",\s*"url",\s*\]\);/u,
+    );
+    expect(contentIntegrityHelper).toMatch(
+      /ancestor === element\s*&&\s*element instanceof HTMLInputElement\s*&&\s*!element\.matches\(":disabled"\)\s*&&\s*!element\.readOnly\s*&&\s*element\.value\.length > 0\s*&&\s*nativeInlineTextTypes\.has\(element\.type\)/u,
+    );
+    expect(contentIntegrityHelper).toContain(
+      "(inlineContentOverflows && !isNativeInlineTextViewport) ||",
+    );
+    expect(contentIntegrityHelper).toContain("blockContentOverflows");
+    expect(contentIntegrityHelper).toContain(
+      "isNativeInlineTextViewport && inlineContentOverflows",
+    );
+    expect(contentIntegrityHelper).not.toContain('element.matches("input")');
     expect(specification).toContain(
       '"[data-ds-component]:not(input):not(textarea):not(select)"',
     );

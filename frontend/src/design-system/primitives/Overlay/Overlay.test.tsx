@@ -508,7 +508,17 @@ describe("V2 native modal overlays", () => {
     fireEvent.pointerDown(dialog, { button: 0, pointerId: 3, clientX: 20, clientY: 20 });
     fireEvent.pointerUp(dialog, { button: 0, pointerId: 3, clientX: 20, clientY: 20 });
     expect(onChange).toHaveBeenLastCalledWith(false, "outside-pointer");
-    await waitFor(() => expect(trigger).toHaveFocus());
+    await Promise.resolve();
+    const originalBodyTabIndex = document.body.getAttribute("tabindex");
+    try {
+      document.body.tabIndex = -1;
+      document.body.focus();
+      expect(document.body).toHaveFocus();
+      await waitFor(() => expect(trigger).toHaveFocus());
+    } finally {
+      if (originalBodyTabIndex === null) document.body.removeAttribute("tabindex");
+      else document.body.setAttribute("tabindex", originalBodyTabIndex);
+    }
   });
 
   it("does not cascade a nested popup outside-pointer gesture into its parent modal", async () => {
@@ -613,7 +623,7 @@ describe("V2 native modal overlays", () => {
     expect(onChange).toHaveBeenCalledWith(false, "programmatic");
   });
 
-  it("restores a programmatic close only when an explicit connected target is supplied", async () => {
+  it("honors a distinct explicit restore target without stealing newer focus", async () => {
     const user = userEvent.setup();
 
     function ExplicitRestoreHarness() {
@@ -621,9 +631,13 @@ describe("V2 native modal overlays", () => {
       const restoreRef = useRef<HTMLButtonElement>(null);
       return (
         <>
-          <button ref={restoreRef} type="button" onClick={() => setOpen(true)}>
+          <button type="button" onClick={() => setOpen(true)}>
+            Programmatic invoker
+          </button>
+          <button ref={restoreRef} type="button">
             Explicit restore target
           </button>
+          <button type="button">Newer focus target</button>
           <Dialog
             open={open}
             title="Programmatic dialog"
@@ -640,10 +654,23 @@ describe("V2 native modal overlays", () => {
     }
 
     render(<ExplicitRestoreHarness />);
-    const trigger = screen.getByRole("button", { name: "Explicit restore target" });
-    await user.click(trigger);
-    await user.click(screen.getByRole("button", { name: "Finish workflow" }));
-    await waitFor(() => expect(trigger).toHaveFocus());
+    const invoker = screen.getByRole("button", { name: "Programmatic invoker" });
+    const restoreTarget = screen.getByRole("button", { name: "Explicit restore target" });
+    const newerTarget = screen.getByRole("button", { name: "Newer focus target" });
+    await user.click(invoker);
+    fireEvent.click(screen.getByRole("button", { name: "Finish workflow" }));
+    invoker.focus();
+    expect(invoker).toHaveFocus();
+    await waitFor(() => expect(restoreTarget).toHaveFocus());
+
+    await user.click(invoker);
+    fireEvent.click(screen.getByRole("button", { name: "Finish workflow" }));
+    newerTarget.focus();
+    expect(newerTarget).toHaveFocus();
+    await act(async () => {
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    });
+    expect(newerTarget).toHaveFocus();
   });
 
   it("places a nested modal portal in the nearest host and only dismisses the top dialog", async () => {
