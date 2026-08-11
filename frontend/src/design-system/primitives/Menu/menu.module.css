@@ -1,0 +1,126 @@
+.trigger {
+  display: inline-flex;
+  gap: var(--ds-space-2);
+  align-items: center;
+  justify-content: center;
+  min-width: var(--ds-size-touch-minimum);
+  min-height: var(--ds-size-touch-minimum);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  color: var(--button-secondary-foreground);
+  background: var(--button-secondary-background);
+  border: var(--ds-border-standard) solid var(--color-border-default);
+  border-radius: var(--ds-radius-medium);
+  font: inherit;
+}
+
+.triggerIcon {
+  display: inline-flex;
+  flex: none;
+  pointer-events: none;
+}
+
+.trigger:focus-visible,
+.item:focus-visible {
+  outline: var(--focus-indicator-width) solid var(--color-border-focus);
+  outline-offset: var(--focus-indicator-offset);
+}
+
+.content {
+  position: fixed;
+  z-index: var(--ds-z-index-dropdown);
+  box-sizing: border-box;
+  min-width: 12rem;
+  padding: var(--ds-space-1);
+  overflow: auto;
+  color: var(--overlay-foreground);
+  background: var(--overlay-background);
+  border: var(--ds-border-standard) solid var(--overlay-border);
+  border-radius: var(--ds-radius-medium);
+  box-shadow: var(--ds-elevation-overlay);
+  animation-duration: var(--ds-motion-duration-standard);
+  animation-name: menu-enter;
+  animation-timing-function: var(--ds-motion-easing-emphasized-decelerate);
+}
+
+.item {
+  display: flex;
+  gap: var(--ds-space-2);
+  align-items: center;
+  width: 100%;
+  min-height: var(--ds-size-touch-minimum);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  color: var(--overlay-foreground);
+  background: transparent;
+  border: var(--ds-border-standard) solid transparent;
+  border-radius: var(--ds-radius-small);
+  font: inherit;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+
+.item[data-active="true"] {
+  color: var(--color-content-primary);
+  background: var(--color-interaction-selected);
+  border-color: var(--color-border-focus);
+}
+
+.item[aria-disabled="true"] {
+  color: var(--button-disabled-foreground);
+  cursor: not-allowed;
+}
+
+.checkboxIndicator {
+  display: inline-grid;
+  width: var(--ds-size-icon-md);
+  height: var(--ds-size-icon-md);
+  flex: none;
+  place-items: center;
+  color: currentcolor;
+  border: var(--ds-border-standard) solid currentcolor;
+  border-radius: var(--ds-radius-small);
+}
+
+.separator {
+  height: var(--ds-border-standard);
+  margin: var(--ds-space-1) var(--ds-space-2);
+  background: var(--color-border-default);
+}
+
+@keyframes menu-enter {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--ds-motion-displacement-sm) * -1));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    animation: none;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .trigger:hover,
+  .item:not([aria-disabled="true"]):hover {
+    background: var(--color-interaction-hover);
+  }
+}
+
+@media (forced-colors: active) {
+  .content,
+  .trigger,
+  .item,
+  .checkboxIndicator {
+    box-shadow: none;
+    forced-color-adjust: auto;
+  }
+
+  .item[data-active="true"] {
+    border-color: Highlight;
+  }
+}

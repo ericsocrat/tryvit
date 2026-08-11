@@ -1,0 +1,240 @@
+.field,
+.choiceField {
+  display: grid;
+  gap: var(--ds-space-2);
+  min-width: 0;
+  color: var(--color-content-primary);
+}
+
+.label,
+.choiceLabel,
+.switchLabel {
+  color: var(--color-content-primary);
+  font: inherit;
+  font-size: var(--ds-type-size-1);
+  font-weight: var(--ds-type-weight-semibold);
+}
+
+.label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  align-items: baseline;
+}
+
+.required {
+  margin-inline-start: var(--ds-space-1);
+  color: var(--color-feedback-error-text);
+  font-size: var(--ds-type-size-1);
+  font-weight: var(--ds-type-weight-medium);
+}
+
+.control {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--ds-size-touch-minimum);
+  padding-inline: var(--ds-space-3);
+  color: var(--field-foreground);
+  background: var(--field-background);
+  border: var(--ds-border-standard) solid var(--field-border);
+  border-radius: var(--ds-radius-medium);
+  font: inherit;
+  transition-duration: var(--ds-motion-duration-feedback);
+  transition-property: background-color, border-color, color;
+  transition-timing-function: var(--ds-motion-easing-standard);
+}
+
+.control::placeholder {
+  color: var(--field-placeholder);
+  opacity: 1;
+}
+
+.control:focus-visible,
+.checkbox:focus-visible,
+.switchInput:focus-visible {
+  outline: var(--focus-indicator-width) solid var(--field-border-focus);
+  outline-offset: var(--focus-indicator-offset);
+}
+
+.control[aria-invalid="true"],
+.checkbox[aria-invalid="true"],
+.switchInput[aria-invalid="true"] {
+  border-color: var(--color-feedback-error-border);
+}
+
+.control:disabled,
+.checkbox:disabled,
+.switchInput:disabled {
+  color: var(--button-disabled-foreground);
+  background: var(--button-disabled-background);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.control:read-only {
+  color: var(--color-content-secondary);
+  background: var(--color-surface-2);
+}
+
+.textarea {
+  min-height: calc(var(--ds-size-touch-minimum) * 2);
+  padding-block: var(--ds-space-3);
+  resize: vertical;
+}
+
+.select {
+  padding-inline-end: var(--ds-space-4);
+}
+
+.messages {
+  display: grid;
+  gap: var(--ds-space-1);
+  min-width: 0;
+  font-size: var(--ds-type-size-1);
+  line-height: var(--ds-type-line-height-body);
+}
+
+.hint,
+.count {
+  color: var(--color-content-muted);
+}
+
+.error {
+  color: var(--color-feedback-error-text);
+  font-weight: var(--ds-type-weight-medium);
+}
+
+.count {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--ds-space-2);
+  margin-top: var(--ds-space-1);
+  font-size: var(--ds-type-size-1);
+}
+
+.choiceLabel,
+.switchLabel {
+  display: flex;
+  gap: var(--ds-space-3);
+  align-items: center;
+  min-height: var(--ds-size-touch-minimum);
+  width: fit-content;
+  max-width: 100%;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: var(--ds-space-4);
+  height: var(--ds-space-4);
+  flex: none;
+  margin: 0;
+  accent-color: var(--color-action-primary-background);
+}
+
+.switchLabel {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.switchControl {
+  display: inline-flex;
+  gap: var(--ds-space-2);
+  align-items: center;
+  flex: none;
+}
+
+.switchInput {
+  --switch-thumb-shift: calc(
+    var(--ds-size-touch-minimum) - (var(--ds-space-1) * 2) - var(--ds-space-4)
+  );
+
+  position: relative;
+  box-sizing: border-box;
+  width: var(--ds-size-touch-minimum);
+  height: calc(var(--ds-space-6) + var(--ds-space-1));
+  flex: none;
+  margin: 0;
+  appearance: none;
+  background: var(--button-disabled-background);
+  border: var(--ds-border-standard) solid var(--color-border-default);
+  border-radius: var(--ds-radius-round);
+  cursor: pointer;
+  transition-duration: var(--ds-motion-duration-feedback);
+  transition-property: background-color, border-color;
+  transition-timing-function: var(--ds-motion-easing-standard);
+}
+
+.switchInput::before {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: var(--ds-space-1);
+  width: var(--ds-space-4);
+  height: var(--ds-space-4);
+  content: "";
+  background: var(--color-content-muted);
+  border-radius: var(--ds-radius-round);
+  transform: translateY(-50%);
+  transition-duration: var(--ds-motion-duration-feedback);
+  transition-property: background-color, transform;
+  transition-timing-function: var(--ds-motion-easing-standard);
+}
+
+.switchInput:checked {
+  background: var(--color-action-primary-background);
+  border-color: var(--color-action-primary-background);
+}
+
+.switchInput:checked::before {
+  background: var(--color-action-primary-foreground);
+  transform: translate(var(--switch-thumb-shift), -50%);
+}
+
+.switchInput:dir(rtl) {
+  --switch-thumb-shift: calc(
+    (
+      var(--ds-size-touch-minimum) - (var(--ds-space-1) * 2) - var(--ds-space-4)
+    ) * -1
+  );
+}
+
+.stateLabel {
+  color: var(--color-content-secondary);
+  font-size: var(--ds-type-size-1);
+  font-weight: var(--ds-type-weight-medium);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .control:not(:disabled):not(:read-only):hover,
+  .switchInput:not(:disabled):hover {
+    border-color: var(--color-border-strong-v2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control,
+  .switchInput,
+  .switchInput::before {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .control,
+  .checkbox,
+  .switchInput {
+    forced-color-adjust: auto;
+    box-shadow: none;
+  }
+
+  .switchInput {
+    width: var(--ds-size-touch-minimum);
+    height: var(--ds-size-touch-minimum);
+    appearance: auto;
+  }
+
+  .switchInput::before {
+    display: none;
+  }
+}

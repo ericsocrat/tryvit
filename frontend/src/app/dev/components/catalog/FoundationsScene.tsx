@@ -1,5 +1,9 @@
 import type { CSSProperties } from "react";
 
+import { CardLink } from "@/design-system/primitives/CardLink/CardLink";
+import { IconButton } from "@/design-system/primitives/IconButton/IconButton";
+import { Surface } from "@/design-system/primitives/Surface/Surface";
+
 import { CatalogRow, CatalogSection, CatalogSpecimen } from "./CatalogFrame";
 import type { CatalogCopy } from "./registry";
 
@@ -10,22 +14,45 @@ const progressValues = [25, 50, 75, 90, 60] as const;
 
 export function FoundationsScene({ copy }: Readonly<{ copy: CatalogCopy }>) {
   const foundation = copy.foundation;
+  const primitives = copy.primitives;
   return (
     <CatalogSection id="foundations" title={copy.scenes.foundations}>
       <CatalogSpecimen label={copy.specimenLabel} note={copy.specimenNote}>
-        <CatalogRow label={foundation.cards}>
-          <article className="catalog-v2-card" data-variant="default">
+        <CatalogRow label={primitives.surfaces}>
+          <Surface as="article" className="catalog-v2-surface" layer="base">
             <p className="font-semibold">{foundation.cardDefault}</p>
             <p className="catalog-v2-copy text-sm">{foundation.cardDefaultDescription}</p>
-          </article>
-          <article className="catalog-v2-card" data-variant="raised">
+          </Surface>
+          <Surface as="article" className="catalog-v2-surface" layer="raised">
             <p className="font-semibold">{foundation.cardRaised}</p>
             <p className="catalog-v2-copy text-sm">{foundation.cardRaisedDescription}</p>
-          </article>
-          <article className="catalog-v2-card" data-variant="outlined">
+          </Surface>
+          <Surface
+            as="article"
+            boundary="strong"
+            className="catalog-v2-surface"
+            layer="overlay"
+          >
             <p className="font-semibold">{foundation.cardOutlined}</p>
             <p className="catalog-v2-copy text-sm">{foundation.cardOutlinedDescription}</p>
-          </article>
+          </Surface>
+          <CardLink.Root className="catalog-v2-card-link" data-catalog-probe="card-link">
+            <div>
+              <p className="font-semibold">{primitives.cardLinkTitle}</p>
+              <p className="catalog-v2-copy text-sm">{primitives.cardLinkDescription}</p>
+            </div>
+            <CardLink.Primary href="#evidence-page-states-title">
+              {primitives.cardLinkAction}
+            </CardLink.Primary>
+            <CardLink.Actions>
+              <IconButton
+                icon="evidence.records"
+                label={primitives.cardLinkSecondaryAction}
+                size="sm"
+                variant="secondary"
+              />
+            </CardLink.Actions>
+          </CardLink.Root>
         </CatalogRow>
 
         <CatalogRow label={foundation.feedback}>
@@ -68,19 +95,24 @@ export function FoundationsScene({ copy }: Readonly<{ copy: CatalogCopy }>) {
         </div>
       </CatalogSpecimen>
 
-      <article className="catalog-v2-panel" data-testid="living-label-v2-foundation">
+      <Surface
+        as="article"
+        className="catalog-v2-panel"
+        data-testid="living-label-v2-foundation"
+        layer="raised"
+      >
         <div>
           <p className="font-semibold">{foundation.livingLabel}</p>
           <p className="catalog-v2-copy text-sm">{foundation.foundationDescription}</p>
         </div>
-        <div className="catalog-v2-swatches" aria-label={foundation.swatchesLabel}>
+        <div className="catalog-v2-swatches" aria-label={foundation.swatchesLabel} role="group">
           <div className="catalog-v2-swatch" data-tone="canvas">{foundation.canvas}</div>
           <div className="catalog-v2-swatch" data-tone="surface">{foundation.surface}</div>
           <div className="catalog-v2-swatch" data-tone="action">{foundation.action}</div>
           <div className="catalog-v2-swatch" data-tone="evidence">{foundation.evidence}</div>
         </div>
         <p className="catalog-v2-copy text-sm">{copy.fixtureNote}</p>
-      </article>
+      </Surface>
     </CatalogSection>
   );
 }

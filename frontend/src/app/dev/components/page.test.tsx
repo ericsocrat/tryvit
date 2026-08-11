@@ -13,9 +13,15 @@ describe("DevComponentsPage", () => {
     const { default: DevComponentsPage } = await import("./page");
     render(await DevComponentsPage());
     expect(
-      screen.getByRole("heading", { name: "Design-system foundation catalog" }),
+      screen.getByRole("heading", { name: "Canonical primitive foundation catalog" }),
     ).toBeInTheDocument();
     expect(screen.getByTestId("living-label-v2-foundation")).toBeInTheDocument();
+    expect(screen.getAllByRole("combobox", { name: "Evidence source" })).toHaveLength(4);
+    expect(screen.getByText("Loading evidence sources…")).toBeInTheDocument();
+    expect(screen.getByText("No matching evidence sources.")).toBeInTheDocument();
+    expect(
+      screen.getByText("Evidence sources could not be loaded. Try again."),
+    ).toBeInTheDocument();
     expect(mockNotFound).not.toHaveBeenCalled();
   });
 });

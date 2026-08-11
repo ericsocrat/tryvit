@@ -10,7 +10,6 @@ export const catalogSceneIds = [
 export type CatalogSceneId = (typeof catalogSceneIds)[number];
 
 interface FoundationCopy {
-  readonly cards: string;
   readonly cardDefault: string;
   readonly cardDefaultDescription: string;
   readonly cardRaised: string;
@@ -59,6 +58,7 @@ interface ActionsCopy {
   readonly notesHint: string;
   readonly notesValue: string;
   readonly controls: string;
+  readonly switchLabel: string;
   readonly switchOff: string;
   readonly switchOn: string;
   readonly checkboxDefault: string;
@@ -72,11 +72,6 @@ interface InteractionCopy {
   readonly remove: string;
   readonly settings: string;
   readonly copy: string;
-  readonly tooltipCues: string;
-  readonly tooltipTop: string;
-  readonly tooltipRight: string;
-  readonly tooltipBottom: string;
-  readonly tooltipLeft: string;
   readonly alerts: string;
   readonly alertInfoTitle: string;
   readonly alertInfoBody: string;
@@ -111,6 +106,50 @@ interface EvidenceCopy {
   readonly statusValue: string;
 }
 
+interface PrimitiveCopy {
+  readonly surfaces: string;
+  readonly cardLinkTitle: string;
+  readonly cardLinkDescription: string;
+  readonly cardLinkAction: string;
+  readonly cardLinkSecondaryAction: string;
+  readonly activated: string;
+  readonly requiredLabel: string;
+  readonly comboboxLabel: string;
+  readonly comboboxHint: string;
+  readonly comboboxPlaceholder: string;
+  readonly comboboxOptions: readonly [string, string, string];
+  readonly comboboxLoading: string;
+  readonly comboboxEmpty: string;
+  readonly comboboxError: string;
+  readonly comboboxResults: string;
+  readonly dialogTrigger: string;
+  readonly dialogTitle: string;
+  readonly dialogDescription: string;
+  readonly dialogBody: string;
+  readonly dialogClose: string;
+  readonly dialogInitialAction: string;
+  readonly dialogLastAction: string;
+  readonly sheetTrigger: string;
+  readonly sheetTitle: string;
+  readonly sheetDescription: string;
+  readonly sheetBody: string;
+  readonly sheetClose: string;
+  readonly sheetInitialAction: string;
+  readonly sheetLastAction: string;
+  readonly menuTrigger: string;
+  readonly menuItems: readonly [string, string, string, string];
+  readonly tabsLabel: string;
+  readonly tabs: readonly [string, string, string];
+  readonly tabPanels: readonly [string, string, string];
+  readonly tooltipTrigger: string;
+  readonly tooltipContent: string;
+  readonly pageStates: string;
+  readonly pageStateTitles: readonly [string, string, string, string, string, string, string];
+  readonly pageStateDescriptions: readonly [string, string, string, string, string, string, string];
+  readonly retry: string;
+  readonly recoveryAction: string;
+}
+
 export interface CatalogCopy {
   readonly title: string;
   readonly description: string;
@@ -124,27 +163,28 @@ export interface CatalogCopy {
   readonly actions: ActionsCopy;
   readonly interaction: InteractionCopy;
   readonly evidence: EvidenceCopy;
+  readonly primitives: PrimitiveCopy;
   readonly fixtureNote: string;
 }
 
 const catalogCopy: Readonly<Record<SupportedLanguage, CatalogCopy>> = {
   en: {
-    title: "Design-system foundation catalog",
+    title: "Canonical primitive foundation catalog",
     description:
-      "Deterministic, data-independent specimens for reviewing V2 semantics before canonical components ship.",
+      "Deterministic, data-independent specimens for reviewing canonical V2 behavior while visual recipes remain provisional.",
     sceneNavigationLabel: "Catalog scenes",
     scenes: {
       foundations: "Foundations and semantic roles",
       "actions-forms": "Action and form specimens",
-      "overlays-navigation": "Interaction cues and feedback",
+      "overlays-navigation": "Overlays and keyboard navigation",
       "evidence-page-states": "Evidence semantics and status states",
     },
-    specimenLabel: "V2 foundation specimen",
-    specimenNote: "Canonical component and compatibility facades ship in Phase 5A.1b.",
+    specimenLabel: "Canonical V2 behavior specimen",
+    specimenNote:
+      "Canonical behavior is under foundation review; every visual recipe remains provisional and themeable.",
     feedbackLabels: ["Information", "Success", "Warning", "Error", "Neutral"],
     chipLabels: ["Neutral", "Action", "Success", "Warning", "Error", "Information", "Subtle"],
     foundation: {
-      cards: "Surface variants",
       cardDefault: "Default",
       cardDefaultDescription: "Standard surface with a meaningful boundary.",
       cardRaised: "Raised",
@@ -192,6 +232,7 @@ const catalogCopy: Readonly<Record<SupportedLanguage, CatalogCopy>> = {
       notesHint: "Optional context for the next reviewer.",
       notesValue: "The package label and source date remain visible beside this note.",
       controls: "Selection controls",
+      switchLabel: "Automatic updates",
       switchOff: "Automatic updates off",
       switchOn: "Automatic updates on",
       checkboxDefault: "Include source context",
@@ -204,11 +245,6 @@ const catalogCopy: Readonly<Record<SupportedLanguage, CatalogCopy>> = {
       remove: "Delete",
       settings: "Settings",
       copy: "Copy evidence link",
-      tooltipCues: "Placement diagrams",
-      tooltipTop: "Appears above",
-      tooltipRight: "Appears to the right",
-      tooltipBottom: "Appears below",
-      tooltipLeft: "Appears to the left",
       alerts: "Feedback messages",
       alertInfoTitle: "Information",
       alertInfoBody: "The source is available and can be reviewed.",
@@ -241,25 +277,83 @@ const catalogCopy: Readonly<Record<SupportedLanguage, CatalogCopy>> = {
       status: "Status",
       statusValue: "Reviewable",
     },
+    primitives: {
+      surfaces: "Canonical surfaces and linked cards",
+      cardLinkTitle: "Review oat drink evidence",
+      cardLinkDescription:
+        "Open the complete evidence record without nesting the separate save action inside the link.",
+      cardLinkAction: "Open evidence",
+      cardLinkSecondaryAction: "Save for later",
+      activated: "Keyboard activations",
+      requiredLabel: "Required",
+      comboboxLabel: "Evidence source",
+      comboboxHint: "Type or use the arrow keys, then confirm one reviewable source.",
+      comboboxPlaceholder: "Choose an evidence source…",
+      comboboxOptions: ["Package ingredient panel", "Manufacturer specification", "Verified retailer record"],
+      comboboxLoading: "Loading evidence sources…",
+      comboboxEmpty: "No matching evidence sources.",
+      comboboxError: "Evidence sources could not be loaded. Try again.",
+      comboboxResults: "{count} evidence sources available.",
+      dialogTrigger: "Review confirmation dialog",
+      dialogTitle: "Confirm the evidence review",
+      dialogDescription: "Focus stays inside this dialog until it is dismissed.",
+      dialogBody:
+        "The source, observation date, and confidence explanation remain visible before confirmation.",
+      dialogClose: "Close dialog",
+      dialogInitialAction: "Confirm review",
+      dialogLastAction: "Keep editing",
+      sheetTrigger: "Open evidence details sheet",
+      sheetTitle: "Evidence details",
+      sheetDescription: "A compact overlay for supporting information and recovery actions.",
+      sheetBody:
+        "Long evidence text wraps without hiding the source or forcing horizontal scrolling.",
+      sheetClose: "Close sheet",
+      sheetInitialAction: "Use this source",
+      sheetLastAction: "Return to results",
+      menuTrigger: "Open evidence actions",
+      menuItems: ["Open source", "Copy evidence link", "Include review history", "Unavailable action"],
+      tabsLabel: "Evidence record sections",
+      tabs: ["Summary", "Sources", "History"],
+      tabPanels: [
+        "A concise explanation of the current evidence state.",
+        "Source type, observation date, and confidence remain inspectable.",
+        "Review history remains separate from the current conclusion.",
+      ],
+      tooltipTrigger: "Explain confidence",
+      tooltipContent: "Confidence describes source quality; it does not replace the evidence status.",
+      pageStates: "Complete page-state hierarchy",
+      pageStateTitles: ["Loading evidence", "No evidence yet", "Could not load evidence", "You are offline", "Limited evidence available", "Review paused", "Recovering evidence"],
+      pageStateDescriptions: [
+        "The final information state appears immediately when reduced motion is requested.",
+        "Add or locate a source before drawing a conclusion.",
+        "The current work remains available while the request is retried.",
+        "Reconnect to refresh this record; cached context remains clearly labelled.",
+        "Some sources are unavailable, so the visible conclusion remains explicitly limited.",
+        "The review can continue later without presenting an unfinished conclusion as final.",
+        "The retry is active and preserved context remains visible until the result arrives.",
+      ],
+      retry: "Try again",
+      recoveryAction: "Review available context",
+    },
     fixtureNote: "Candidate evidence only — this catalog is not an approved production baseline.",
   },
   pl: {
-    title: "Katalog podstaw systemu projektowego",
+    title: "Katalog podstaw komponentów docelowych",
     description:
-      "Deterministyczne, niezależne od danych przykłady V2 przygotowane do oceny semantyki przed wdrożeniem komponentów docelowych.",
+      "Deterministyczne, niezależne od danych przykłady do oceny docelowego zachowania V2, gdy przepisy wizualne pozostają tymczasowe.",
     sceneNavigationLabel: "Sceny katalogu",
     scenes: {
       foundations: "Podstawy i role semantyczne",
       "actions-forms": "Przykłady akcji i formularzy",
-      "overlays-navigation": "Wskazówki interakcji i komunikaty",
+      "overlays-navigation": "Nakładki i nawigacja klawiaturą",
       "evidence-page-states": "Semantyka dowodów i stany informacji",
     },
-    specimenLabel: "Przykład podstaw V2",
-    specimenNote: "Komponenty docelowe i fasady zgodności powstaną w fazie 5A.1b.",
+    specimenLabel: "Przykład docelowego zachowania V2",
+    specimenNote:
+      "Docelowe zachowanie jest oceniane jako podstawa; każdy przepis wizualny pozostaje tymczasowy i zależny od motywu.",
     feedbackLabels: ["Informacja", "Sukces", "Ostrzeżenie", "Błąd", "Neutralny"],
     chipLabels: ["Neutralny", "Akcja", "Sukces", "Ostrzeżenie", "Błąd", "Informacja", "Subtelny"],
     foundation: {
-      cards: "Warianty powierzchni",
       cardDefault: "Domyślna",
       cardDefaultDescription: "Standardowa powierzchnia z czytelną granicą.",
       cardRaised: "Uniesiona",
@@ -307,6 +401,7 @@ const catalogCopy: Readonly<Record<SupportedLanguage, CatalogCopy>> = {
       notesHint: "Opcjonalny kontekst dla kolejnej osoby sprawdzającej.",
       notesValue: "Etykieta opakowania i data źródła pozostają widoczne obok tej notatki.",
       controls: "Elementy wyboru",
+      switchLabel: "Automatyczne aktualizacje",
       switchOff: "Automatyczne aktualizacje wyłączone",
       switchOn: "Automatyczne aktualizacje włączone",
       checkboxDefault: "Uwzględnij kontekst źródła",
@@ -319,11 +414,6 @@ const catalogCopy: Readonly<Record<SupportedLanguage, CatalogCopy>> = {
       remove: "Usuń",
       settings: "Ustawienia",
       copy: "Kopiuj odsyłacz do dowodu",
-      tooltipCues: "Schematy rozmieszczenia",
-      tooltipTop: "Pojawia się nad elementem",
-      tooltipRight: "Pojawia się po prawej stronie",
-      tooltipBottom: "Pojawia się pod elementem",
-      tooltipLeft: "Pojawia się po lewej stronie",
       alerts: "Komunikaty zwrotne",
       alertInfoTitle: "Informacja",
       alertInfoBody: "Źródło jest dostępne i można je sprawdzić.",
@@ -356,25 +446,83 @@ const catalogCopy: Readonly<Record<SupportedLanguage, CatalogCopy>> = {
       status: "Stan",
       statusValue: "Możliwy do sprawdzenia",
     },
+    primitives: {
+      surfaces: "Docelowe powierzchnie i karty z odsyłaczem",
+      cardLinkTitle: "Sprawdź dowody dotyczące napoju owsianego",
+      cardLinkDescription:
+        "Otwórz pełny zapis dowodów bez zagnieżdżania oddzielnej akcji zapisu wewnątrz odsyłacza.",
+      cardLinkAction: "Otwórz dowody",
+      cardLinkSecondaryAction: "Zapisz na później",
+      activated: "Aktywacje klawiaturą",
+      requiredLabel: "Wymagane",
+      comboboxLabel: "Źródło dowodów",
+      comboboxHint: "Pisz lub użyj klawiszy strzałek, a następnie zatwierdź jedno sprawdzalne źródło.",
+      comboboxPlaceholder: "Wybierz źródło dowodów…",
+      comboboxOptions: ["Wykaz składników na opakowaniu", "Specyfikacja producenta", "Zweryfikowany zapis sprzedawcy"],
+      comboboxLoading: "Wczytywanie źródeł dowodów…",
+      comboboxEmpty: "Brak pasujących źródeł dowodów.",
+      comboboxError: "Nie udało się wczytać źródeł dowodów. Spróbuj ponownie.",
+      comboboxResults: "Dostępne źródła dowodów: {count}.",
+      dialogTrigger: "Sprawdź okno potwierdzenia",
+      dialogTitle: "Potwierdź weryfikację dowodów",
+      dialogDescription: "Do chwili zamknięcia fokus pozostaje wewnątrz tego okna.",
+      dialogBody:
+        "Źródło, data obserwacji i wyjaśnienie poziomu pewności pozostają widoczne przed potwierdzeniem.",
+      dialogClose: "Zamknij okno",
+      dialogInitialAction: "Potwierdź weryfikację",
+      dialogLastAction: "Kontynuuj edycję",
+      sheetTrigger: "Otwórz panel szczegółów dowodu",
+      sheetTitle: "Szczegóły dowodu",
+      sheetDescription: "Kompaktowa nakładka z informacjami pomocniczymi i działaniami naprawczymi.",
+      sheetBody:
+        "Długi tekst dowodu zawija się bez ukrywania źródła i bez wymuszania przewijania poziomego.",
+      sheetClose: "Zamknij panel",
+      sheetInitialAction: "Użyj tego źródła",
+      sheetLastAction: "Wróć do wyników",
+      menuTrigger: "Otwórz działania dotyczące dowodu",
+      menuItems: ["Otwórz źródło", "Kopiuj odsyłacz do dowodu", "Uwzględnij historię weryfikacji", "Działanie niedostępne"],
+      tabsLabel: "Sekcje zapisu dowodów",
+      tabs: ["Podsumowanie", "Źródła", "Historia"],
+      tabPanels: [
+        "Zwięzłe wyjaśnienie bieżącego stanu dowodów.",
+        "Typ źródła, data obserwacji i poziom pewności pozostają możliwe do sprawdzenia.",
+        "Historia weryfikacji pozostaje oddzielona od bieżącego wniosku.",
+      ],
+      tooltipTrigger: "Wyjaśnij poziom pewności",
+      tooltipContent: "Pewność opisuje jakość źródła; nie zastępuje stanu dowodów.",
+      pageStates: "Pełna hierarchia stanów strony",
+      pageStateTitles: ["Ładowanie dowodów", "Brak dowodów", "Nie udało się załadować dowodów", "Brak połączenia", "Dostępne są ograniczone dowody", "Weryfikacja wstrzymana", "Przywracanie dowodów"],
+      pageStateDescriptions: [
+        "Końcowy stan informacji pojawia się natychmiast, gdy użytkownik ogranicza ruch.",
+        "Dodaj lub znajdź źródło, zanim wyciągniesz wniosek.",
+        "Bieżąca praca pozostaje dostępna podczas ponowienia żądania.",
+        "Połącz się ponownie, aby odświeżyć zapis; kontekst z pamięci podręcznej pozostaje wyraźnie oznaczony.",
+        "Część źródeł jest niedostępna, dlatego widoczny wniosek pozostaje jednoznacznie ograniczony.",
+        "Weryfikację można kontynuować później bez przedstawiania niedokończonego wniosku jako ostatecznego.",
+        "Ponowienie jest aktywne, a zachowany kontekst pozostaje widoczny do chwili otrzymania wyniku.",
+      ],
+      retry: "Spróbuj ponownie",
+      recoveryAction: "Sprawdź dostępny kontekst",
+    },
     fixtureNote: "Wyłącznie materiał roboczy — ten katalog nie jest zatwierdzoną bazą produkcyjną.",
   },
   de: {
-    title: "Katalog der Designsystem-Grundlagen",
+    title: "Grundlagenkatalog der verbindlichen Komponenten",
     description:
-      "Deterministische, datenunabhängige V2-Beispiele zur sorgfältigen Prüfung der Semantik, bevor die verbindlichen Komponenten ausgeliefert werden.",
+      "Deterministische, datenunabhängige Beispiele zur Prüfung des verbindlichen V2-Verhaltens, während visuelle Ausgestaltungen vorläufig bleiben.",
     sceneNavigationLabel: "Katalogszenen",
     scenes: {
       foundations: "Grundlagen und semantische Rollen",
       "actions-forms": "Aktions- und Formularbeispiele",
-      "overlays-navigation": "Interaktionshinweise und Rückmeldungen",
+      "overlays-navigation": "Überlagerungen und Tastaturnavigation",
       "evidence-page-states": "Evidenzsemantik und Informationszustände",
     },
-    specimenLabel: "V2-Grundlagenbeispiel",
-    specimenNote: "Verbindliche Komponenten und Kompatibilitätsfassaden folgen in Phase 5A.1b.",
+    specimenLabel: "Beispiel für verbindliches V2-Verhalten",
+    specimenNote:
+      "Das verbindliche Verhalten wird als Grundlage geprüft; jede visuelle Ausgestaltung bleibt vorläufig und themenfähig.",
     feedbackLabels: ["Information", "Erfolg", "Warnung", "Fehler", "Neutral"],
     chipLabels: ["Neutral", "Aktion", "Erfolg", "Warnung", "Fehler", "Information", "Dezent"],
     foundation: {
-      cards: "Oberflächenvarianten",
       cardDefault: "Standard",
       cardDefaultDescription: "Standardoberfläche mit einer bedeutungstragenden Begrenzung.",
       cardRaised: "Angehoben",
@@ -422,6 +570,7 @@ const catalogCopy: Readonly<Record<SupportedLanguage, CatalogCopy>> = {
       notesHint: "Optionaler Kontext für die nächste prüfende Person.",
       notesValue: "Verpackungskennzeichnung und Quelldatum bleiben neben diesem Hinweis sichtbar.",
       controls: "Auswahlsteuerelemente",
+      switchLabel: "Automatische Aktualisierungen",
       switchOff: "Automatische Aktualisierungen deaktiviert",
       switchOn: "Automatische Aktualisierungen aktiviert",
       checkboxDefault: "Quellenkontext einbeziehen",
@@ -434,11 +583,6 @@ const catalogCopy: Readonly<Record<SupportedLanguage, CatalogCopy>> = {
       remove: "Löschen",
       settings: "Einstellungen",
       copy: "Evidenzverknüpfung kopieren",
-      tooltipCues: "Platzierungsdiagramme",
-      tooltipTop: "Erscheint oberhalb",
-      tooltipRight: "Erscheint auf der rechten Seite",
-      tooltipBottom: "Erscheint unterhalb",
-      tooltipLeft: "Erscheint auf der linken Seite",
       alerts: "Rückmeldungen",
       alertInfoTitle: "Information",
       alertInfoBody: "Die Quelle ist verfügbar und kann überprüft werden.",
@@ -470,6 +614,64 @@ const catalogCopy: Readonly<Record<SupportedLanguage, CatalogCopy>> = {
       observed: "Beobachtet am",
       status: "Status",
       statusValue: "Nachvollziehbar und zur Überprüfung bereit",
+    },
+    primitives: {
+      surfaces: "Verbindliche Oberflächen und verknüpfte Karten",
+      cardLinkTitle: "Evidenz zum Hafergetränk prüfen",
+      cardLinkDescription:
+        "Den vollständigen Evidenzdatensatz öffnen, ohne die getrennte Speicheraktion innerhalb der Verknüpfung zu verschachteln.",
+      cardLinkAction: "Evidenz öffnen",
+      cardLinkSecondaryAction: "Für später speichern",
+      activated: "Tastaturaktivierungen",
+      requiredLabel: "Erforderlich",
+      comboboxLabel: "Evidenzquelle",
+      comboboxHint: "Tippen oder die Pfeiltasten verwenden und anschließend eine überprüfbare Quelle bestätigen.",
+      comboboxPlaceholder: "Eine Evidenzquelle auswählen…",
+      comboboxOptions: ["Zutatenverzeichnis auf der Verpackung", "Herstellerspezifikation", "Verifizierter Händlerdatensatz"],
+      comboboxLoading: "Evidenzquellen werden geladen…",
+      comboboxEmpty: "Keine passenden Evidenzquellen.",
+      comboboxError: "Evidenzquellen konnten nicht geladen werden. Bitte erneut versuchen.",
+      comboboxResults: "{count} Evidenzquellen verfügbar.",
+      dialogTrigger: "Bestätigungsdialog prüfen",
+      dialogTitle: "Evidenzprüfung bestätigen",
+      dialogDescription: "Der Fokus bleibt bis zum Schließen innerhalb dieses Dialogs.",
+      dialogBody:
+        "Quelle, Beobachtungsdatum und Erklärung der Konfidenz bleiben vor der Bestätigung sichtbar.",
+      dialogClose: "Dialog schließen",
+      dialogInitialAction: "Prüfung bestätigen",
+      dialogLastAction: "Weiter bearbeiten",
+      sheetTrigger: "Detailbereich der Evidenz öffnen",
+      sheetTitle: "Evidenzdetails",
+      sheetDescription: "Eine kompakte Überlagerung für ergänzende Informationen und Wiederherstellungsaktionen.",
+      sheetBody:
+        "Langer Evidenztext wird umgebrochen, ohne die Quelle zu verbergen oder horizontales Scrollen zu erzwingen.",
+      sheetClose: "Detailbereich schließen",
+      sheetInitialAction: "Diese Quelle verwenden",
+      sheetLastAction: "Zu den Ergebnissen zurückkehren",
+      menuTrigger: "Evidenzaktionen öffnen",
+      menuItems: ["Quelle öffnen", "Evidenzverknüpfung kopieren", "Prüfverlauf einbeziehen", "Nicht verfügbare Aktion"],
+      tabsLabel: "Abschnitte des Evidenzdatensatzes",
+      tabs: ["Zusammenfassung", "Quellen", "Verlauf"],
+      tabPanels: [
+        "Eine prägnante Erklärung des aktuellen Evidenzzustands.",
+        "Quellentyp, Beobachtungsdatum und Konfidenz bleiben überprüfbar.",
+        "Der Prüfverlauf bleibt von der aktuellen Schlussfolgerung getrennt.",
+      ],
+      tooltipTrigger: "Konfidenz erklären",
+      tooltipContent: "Konfidenz beschreibt die Quellenqualität; sie ersetzt nicht den Evidenzstatus.",
+      pageStates: "Vollständige Hierarchie der Seitenzustände",
+      pageStateTitles: ["Evidenz wird geladen", "Noch keine Evidenz", "Evidenz konnte nicht geladen werden", "Sie sind offline", "Begrenzte Evidenz verfügbar", "Prüfung pausiert", "Evidenz wird wiederhergestellt"],
+      pageStateDescriptions: [
+        "Der endgültige Informationszustand erscheint sofort, wenn reduzierte Bewegung angefordert wird.",
+        "Eine Quelle hinzufügen oder finden, bevor eine Schlussfolgerung gezogen wird.",
+        "Die aktuelle Arbeit bleibt während des erneuten Versuchs verfügbar.",
+        "Erneut verbinden, um diesen Datensatz zu aktualisieren; zwischengespeicherter Kontext bleibt klar gekennzeichnet.",
+        "Einige Quellen sind nicht verfügbar, daher bleibt die sichtbare Schlussfolgerung ausdrücklich eingeschränkt.",
+        "Die Prüfung kann später fortgesetzt werden, ohne eine unfertige Schlussfolgerung als endgültig darzustellen.",
+        "Der erneute Versuch läuft und der erhaltene Kontext bleibt sichtbar, bis das Ergebnis eintrifft.",
+      ],
+      retry: "Erneut versuchen",
+      recoveryAction: "Verfügbaren Kontext prüfen",
     },
     fixtureNote: "Nur Prüfmaterial — dieser Katalog ist keine freigegebene Produktionsreferenz.",
   },

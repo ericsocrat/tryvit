@@ -98,6 +98,7 @@ const phase5VisualJobs = {
   generate: jobSection(workflowSources.phase5Visual, "generate-candidates"),
 };
 const prGateUnitJob = jobSection(workflowSources.prGate, "unit-tests");
+const mainGateUnitJob = jobSection(workflowSources.mainGate, "unit-tests");
 
 const hostedSupabasePatterns: RegExp[] = [
   /^\s*NEXT_PUBLIC_SUPABASE_URL:/m,
@@ -871,6 +872,21 @@ describe("browser workflow visual-safety contract", () => {
       expect(workflow).toContain("run: npm run build");
       expect(workflow).not.toContain("run: npx next build");
     }
+  });
+
+  it("keeps independent Git history available to the live-inventory ratchet", () => {
+    expect(prGateUnitJob).toContain(
+      "PHASE5_LIVE_INVENTORY_BASE_SHA: ${{ github.event.pull_request.base.sha }}",
+    );
+    expect(prGateUnitJob).toContain("fetch-depth: 0");
+    expect(mainGateUnitJob).toContain(
+      "PHASE5_LIVE_INVENTORY_BASE_SHA: ${{ github.sha }}",
+    );
+    expect(mainGateUnitJob).toContain("fetch-depth: 0");
+    expect(browserJobs.nightly).toContain(
+      "PHASE5_LIVE_INVENTORY_BASE_SHA: ${{ github.sha }}",
+    );
+    expect(browserJobs.nightly).toContain("fetch-depth: 0");
   });
 
   it("captures Phase 5A.1 catalog candidates only inside guarded local workflows", () => {

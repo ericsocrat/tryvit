@@ -110,6 +110,12 @@ export interface VisualDebtRatchet {
   readonly occurrences: readonly VisualDebtOccurrence[];
 }
 
+export interface VisualDebtRelocation {
+  readonly fromPath: string;
+  readonly toPath: string;
+  readonly reason: "verified-v1-compatibility-facade-relocation";
+}
+
 export interface RuntimeBoundaryViolation {
   readonly importer: string;
   readonly specifier: string;
@@ -131,9 +137,31 @@ export interface RuntimeBoundaryAudit {
   readonly sourceFingerprint: string;
 }
 
+export type CompatibilityFacadeName =
+  | "Button"
+  | "Card"
+  | "ConfirmDialog"
+  | "EmptyState"
+  | "InfoTooltip"
+  | "IconBridge";
+
+export interface CompatibilityFacadeEvidence {
+  readonly facade: CompatibilityFacadeName;
+  readonly entryModule: string;
+  readonly exportedSymbols: readonly string[];
+  readonly directConsumers: readonly string[];
+  readonly transitiveRouteConsumers: readonly RouteConsumer[];
+}
+
+export interface CompatibilityFacadeAudit {
+  readonly auditedBarrel: "frontend/src/components/common/index.ts";
+  readonly facades: readonly CompatibilityFacadeEvidence[];
+  readonly sourceFingerprint: string;
+}
+
 export interface LiveRouteComponentInventory {
-  readonly schemaVersion: 2;
-  readonly kind: "phase5a1a-live-route-component-inventory";
+  readonly schemaVersion: 3;
+  readonly kind: "phase5-live-route-component-inventory";
   readonly provenance: {
     readonly baseSha: string;
     readonly baseReference: "merge-base HEAD origin/main";
@@ -149,7 +177,9 @@ export interface LiveRouteComponentInventory {
   };
   readonly modules: readonly ProductionModule[];
   readonly visualDebtRatchets: readonly VisualDebtRatchet[];
+  readonly visualDebtRelocations: readonly VisualDebtRelocation[];
   readonly runtimeBoundaryAudit: RuntimeBoundaryAudit;
+  readonly compatibilityFacadeAudit: CompatibilityFacadeAudit;
 }
 
 function toPosix(value: string): string {
@@ -589,6 +619,20 @@ function listCssFiles(root: string): string[] {
 
 type BaseProvenance = Pick<LiveRouteComponentInventory["provenance"], "baseSha" | "baseReference">;
 
+export type InventoryRatchetBaseline = Pick<
+  LiveRouteComponentInventory,
+  "provenance" | "visualDebtRatchets"
+> & {
+  readonly visualDebtRelocations?: readonly VisualDebtRelocation[];
+} & Record<string, unknown>;
+
+export interface InventoryComparisonBase {
+  readonly baseSha: string;
+  readonly inventory: InventoryRatchetBaseline;
+}
+
+export const LIVE_INVENTORY_BASE_SHA_ENV = "PHASE5_LIVE_INVENTORY_BASE_SHA";
+
 interface RawProductionModule {
   readonly filename: string;
   readonly classification: ModuleClassification;
@@ -599,11 +643,224 @@ interface RawProductionModule {
   readonly runtimeImports: readonly string[];
 }
 
-export function gitProvenance(repositoryRoot: string): BaseProvenance {
-  const git = (arguments_: readonly string[]) =>
-    execFileSync("git", arguments_, { cwd: repositoryRoot, encoding: "utf8" }).trim();
+const COMPATIBILITY_FACADE_CONTRACTS = [
+  {
+    facade: "Button",
+    entryModule: "frontend/src/components/common/Button.tsx",
+    exportedSymbols: ["Button", "ButtonLink", "buttonClasses"],
+  },
+  {
+    facade: "Card",
+    entryModule: "frontend/src/components/common/Card.tsx",
+    exportedSymbols: ["Card"],
+  },
+  {
+    facade: "ConfirmDialog",
+    entryModule: "frontend/src/components/common/ConfirmDialog.tsx",
+    exportedSymbols: ["ConfirmDialog"],
+  },
+  {
+    facade: "EmptyState",
+    entryModule: "frontend/src/components/common/EmptyState.tsx",
+    exportedSymbols: ["EmptyState"],
+  },
+  {
+    facade: "InfoTooltip",
+    entryModule: "frontend/src/components/common/InfoTooltip.tsx",
+    exportedSymbols: ["InfoTooltip"],
+  },
+  {
+    facade: "IconBridge",
+    entryModule: "frontend/src/components/common/Icon.tsx",
+    exportedSymbols: ["Icon"],
+  },
+] as const satisfies readonly {
+  readonly facade: CompatibilityFacadeName;
+  readonly entryModule: string;
+  readonly exportedSymbols: readonly string[];
+}[];
+
+const VISUAL_DEBT_RELOCATIONS = [
+  "Button",
+  "Card",
+  "ConfirmDialog",
+  "EmptyState",
+  "InfoTooltip",
+].map(
+  (component): VisualDebtRelocation => ({
+    fromPath: `frontend/src/components/common/${component}.tsx`,
+    toPath: `frontend/src/design-system/compat-v1/${component}.tsx`,
+    reason: "verified-v1-compatibility-facade-relocation",
+  }),
+);
+
+function git(repositoryRoot: string, arguments_: readonly string[]): string {
+  return execFileSync("git", arguments_, {
+    cwd: repositoryRoot,
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "pipe"],
+  }).trim();
+}
+
+function tryGit(repositoryRoot: string, arguments_: readonly string[]): string | null {
+  try {
+    return git(repositoryRoot, arguments_);
+  } catch {
+    return null;
+  }
+}
+
+function canonicalCommit(repositoryRoot: string, revision: string): string {
+  if (!/^[0-9a-f]{40}$/u.test(revision)) {
+    throw new Error(`live-inventory-base-sha-invalid:${revision}`);
+  }
+  const commit = tryGit(repositoryRoot, ["rev-parse", "--verify", `${revision}^{commit}`]);
+  if (!commit || commit !== revision) {
+    throw new Error(`live-inventory-base-revision-unavailable:${revision}`);
+  }
+  return commit;
+}
+
+/**
+ * Resolve the independently owned comparison revision without network access.
+ * CI supplies the pull-request base explicitly; local work prefers the fetched
+ * remote-tracking main ref and then a local main ref.
+ */
+export function resolveInventoryComparisonBaseSha(
+  repositoryRoot: string,
+  expectedBaseSha?: string,
+): string {
+  const head = git(repositoryRoot, ["rev-parse", "--verify", "HEAD^{commit}"]);
+  if (expectedBaseSha) {
+    const expected = canonicalCommit(repositoryRoot, expectedBaseSha);
+    const mergeBase = git(repositoryRoot, ["merge-base", head, expected]);
+    if (mergeBase !== expected) {
+      throw new Error(`live-inventory-base-not-ancestor:${expected}:${head}`);
+    }
+    return expected;
+  }
+
+  for (const reference of ["refs/remotes/origin/main", "refs/heads/main"] as const) {
+    const resolved = tryGit(repositoryRoot, ["rev-parse", "--verify", `${reference}^{commit}`]);
+    if (!resolved) continue;
+    return git(repositoryRoot, ["merge-base", head, resolved]);
+  }
+  throw new Error("live-inventory-comparison-base-unavailable");
+}
+
+export function readInventoryComparisonBase(
+  repositoryRoot: string,
+  expectedBaseSha?: string,
+): InventoryComparisonBase {
+  const baseSha = resolveInventoryComparisonBaseSha(repositoryRoot, expectedBaseSha);
   return {
-    baseSha: git(["merge-base", "HEAD", "origin/main"]),
+    baseSha,
+    inventory: readInventoryAtRevision(repositoryRoot, baseSha),
+  };
+}
+
+function readInventoryAtRevision(
+  repositoryRoot: string,
+  revision: string,
+): InventoryRatchetBaseline {
+  const serialized = tryGit(repositoryRoot, [
+    "show",
+    `${revision}:${LIVE_INVENTORY_REPORT_RELATIVE_PATH}`,
+  ]);
+  if (!serialized) {
+    throw new Error(`live-inventory-base-report-unavailable:${revision}`);
+  }
+  let inventory: InventoryRatchetBaseline;
+  try {
+    inventory = JSON.parse(serialized) as InventoryRatchetBaseline;
+  } catch {
+    throw new Error(`live-inventory-base-report-invalid:${revision}`);
+  }
+  if (
+    !inventory.provenance ||
+    !Array.isArray(inventory.visualDebtRatchets) ||
+    (inventory.visualDebtRelocations !== undefined &&
+      !Array.isArray(inventory.visualDebtRelocations))
+  ) {
+    throw new Error(`live-inventory-base-report-invalid:${revision}`);
+  }
+  return inventory;
+}
+
+/**
+ * Verify a versioned report against the checkout. A report that differs from
+ * the independently resolved base must name that exact base. A report already
+ * committed at the resolved revision retains its historical introduction base,
+ * which is verified from first-parent Git history rather than trusted from JSON.
+ */
+export function assertInventoryProvenanceAgainstCheckout(
+  repositoryRoot: string,
+  inventory: LiveRouteComponentInventory,
+  expectedBaseSha?: string,
+): InventoryComparisonBase {
+  const comparison = readInventoryComparisonBase(repositoryRoot, expectedBaseSha);
+  if (stableJson(comparison.inventory) !== stableJson(inventory)) {
+    if (inventory.provenance.baseSha !== comparison.baseSha) {
+      throw new Error(
+        `live-inventory-provenance-base-mismatch:${inventory.provenance.baseSha}:${comparison.baseSha}`,
+      );
+    }
+    return comparison;
+  }
+
+  const introductionCommit = tryGit(repositoryRoot, [
+    "log",
+    "-1",
+    "--first-parent",
+    "--format=%H",
+    "--",
+    LIVE_INVENTORY_REPORT_RELATIVE_PATH,
+  ]);
+  if (!introductionCommit) {
+    throw new Error("live-inventory-provenance-introduction-unavailable");
+  }
+  const committedInventory = readInventoryAtRevision(repositoryRoot, introductionCommit);
+  if (stableJson(committedInventory) !== stableJson(inventory)) {
+    throw new Error(
+      `live-inventory-provenance-introduction-content-mismatch:${introductionCommit}`,
+    );
+  }
+  const parents = git(repositoryRoot, ["show", "-s", "--format=%P", introductionCommit])
+    .split(/\s+/u)
+    .filter(Boolean);
+  const introductionBase = parents[0];
+  if (!introductionBase) {
+    throw new Error(
+      `live-inventory-provenance-introduction-parent-unavailable:${introductionCommit}`,
+    );
+  }
+  canonicalCommit(repositoryRoot, inventory.provenance.baseSha);
+  const head = git(repositoryRoot, ["rev-parse", "--verify", "HEAD^{commit}"]);
+  if (
+    git(repositoryRoot, ["merge-base", head, inventory.provenance.baseSha]) !==
+    inventory.provenance.baseSha
+  ) {
+    throw new Error(
+      `live-inventory-base-not-ancestor:${inventory.provenance.baseSha}:${head}`,
+    );
+  }
+  if (inventory.provenance.baseSha !== introductionBase) {
+    throw new Error(
+      `live-inventory-provenance-base-mismatch:${inventory.provenance.baseSha}:${introductionBase}`,
+    );
+  }
+  return {
+    baseSha: introductionBase,
+    inventory: readInventoryAtRevision(repositoryRoot, introductionBase),
+  };
+}
+
+export function gitProvenance(
+  repositoryRoot: string,
+  expectedBaseSha?: string,
+): BaseProvenance {
+  return {
+    baseSha: resolveInventoryComparisonBaseSha(repositoryRoot, expectedBaseSha),
     baseReference: "merge-base HEAD origin/main",
   };
 }
@@ -642,6 +899,160 @@ function transitiveRouteConsumers(
       compareOrdinal(left.routePath, right.routePath) ||
       compareOrdinal(left.routeModuleKind, right.routeModuleKind),
   );
+}
+
+function namespaceMemberNames(file: ts.SourceFile, namespace: string): ReadonlySet<string> {
+  const members = new Set<string>();
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isPropertyAccessExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === namespace
+    ) {
+      members.add(node.name.text);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(file);
+  return members;
+}
+
+function runtimeSymbolsForModuleSpecifier(
+  file: ts.SourceFile,
+  statement: ts.ImportDeclaration | ts.ExportDeclaration,
+): ReadonlySet<string> | "all" {
+  if (ts.isExportDeclaration(statement)) {
+    if (statement.isTypeOnly) return new Set<string>();
+    if (!statement.exportClause || ts.isNamespaceExport(statement.exportClause)) return "all";
+    return new Set(
+      statement.exportClause.elements
+        .filter((element) => !element.isTypeOnly)
+        .map((element) => (element.propertyName ?? element.name).text),
+    );
+  }
+
+  const clause = statement.importClause;
+  if (!clause || clause.isTypeOnly) return new Set<string>();
+  const symbols = new Set<string>();
+  if (clause.name) symbols.add("default");
+  const bindings = clause.namedBindings;
+  if (!bindings) return symbols;
+  if (ts.isNamespaceImport(bindings)) {
+    return namespaceMemberNames(file, bindings.name.text);
+  }
+  for (const element of bindings.elements) {
+    if (!element.isTypeOnly) symbols.add((element.propertyName ?? element.name).text);
+  }
+  return symbols;
+}
+
+function buildCompatibilityFacadeAudit(
+  repositoryRoot: string,
+  frontendRoot: string,
+  graphModules: readonly RawProductionModule[],
+  graphFileSet: ReadonlySet<string>,
+  consumers: ReadonlyMap<string, ReadonlySet<string>>,
+): CompatibilityFacadeAudit {
+  const barrelRelative = "frontend/src/components/common/index.ts" as const;
+  const barrelAbsolute = path.join(repositoryRoot, ...barrelRelative.split("/"));
+  const contracts = COMPATIBILITY_FACADE_CONTRACTS.map((contract) => ({
+    ...contract,
+    entryAbsolute: path.join(repositoryRoot, ...contract.entryModule.split("/")),
+    directConsumers: new Set<string>(),
+  }));
+
+  for (const sourceModule of graphModules) {
+    const consumerPath = relativePath(repositoryRoot, sourceModule.filename);
+    if (
+      consumerPath === barrelRelative ||
+      contracts.some((contract) => contract.entryModule === consumerPath)
+    ) {
+      continue;
+    }
+    const source = readFileSync(sourceModule.filename, "utf8");
+    const file = sourceFile(source, sourceModule.filename);
+    for (const statement of file.statements) {
+      if (
+        !(ts.isImportDeclaration(statement) || ts.isExportDeclaration(statement)) ||
+        !statement.moduleSpecifier ||
+        !ts.isStringLiteral(statement.moduleSpecifier)
+      ) {
+        continue;
+      }
+      const resolved = resolveLocalImport(
+        frontendRoot,
+        sourceModule.filename,
+        statement.moduleSpecifier.text,
+        graphFileSet,
+      );
+      if (!resolved) continue;
+      const symbols = runtimeSymbolsForModuleSpecifier(file, statement);
+      for (const contract of contracts) {
+        const importsEntry = resolved === contract.entryAbsolute;
+        const importsBarrel = resolved === barrelAbsolute;
+        if (!importsEntry && !importsBarrel) continue;
+        if (
+          symbols === "all" ||
+          contract.exportedSymbols.some((symbol) => symbols.has(symbol))
+        ) {
+          contract.directConsumers.add(consumerPath);
+        }
+      }
+    }
+
+    const dynamicSpecifiers = new Set<string>();
+    const visit = (node: ts.Node): void => {
+      if (isLiteralDynamicImport(node) || isLiteralRequire(node)) {
+        dynamicSpecifiers.add(node.arguments[0].text);
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(file);
+    for (const specifier of dynamicSpecifiers) {
+      const resolved = resolveLocalImport(frontendRoot, sourceModule.filename, specifier, graphFileSet);
+      if (!resolved) continue;
+      for (const contract of contracts) {
+        if (resolved === contract.entryAbsolute || resolved === barrelAbsolute) {
+          contract.directConsumers.add(consumerPath);
+        }
+      }
+    }
+  }
+
+  const modulesByFilename = new Map(graphModules.map((module) => [module.filename, module]));
+  const facades: CompatibilityFacadeEvidence[] = contracts.map((contract) => {
+    const routes = new Map<string, RouteConsumer>();
+    for (const consumerPath of contract.directConsumers) {
+      const consumerAbsolute = path.join(repositoryRoot, ...consumerPath.split("/"));
+      const sourceModule = modulesByFilename.get(consumerAbsolute);
+      if (!sourceModule) continue;
+      for (const route of transitiveRouteConsumers(
+        repositoryRoot,
+        sourceModule,
+        modulesByFilename,
+        consumers,
+      )) {
+        routes.set(route.modulePath, route);
+      }
+    }
+    return {
+      facade: contract.facade,
+      entryModule: contract.entryModule,
+      exportedSymbols: [...contract.exportedSymbols],
+      directConsumers: [...contract.directConsumers].sort(compareOrdinal),
+      transitiveRouteConsumers: [...routes.values()].sort(
+        (left, right) =>
+          compareOrdinal(left.modulePath, right.modulePath) ||
+          compareOrdinal(left.routePath, right.routePath) ||
+          compareOrdinal(left.routeModuleKind, right.routeModuleKind),
+      ),
+    };
+  });
+  return {
+    auditedBarrel: barrelRelative,
+    facades,
+    sourceFingerprint: createHash("sha256").update(stableJson(facades), "utf8").digest("hex"),
+  };
 }
 
 function routeRedesignPhase(route: RouteConsumer): RedesignPhase {
@@ -704,9 +1115,19 @@ function pathFallbackPhase(modulePath: string): RedesignPhase {
 }
 
 function designSystemStatus(modulePath: string): DesignSystemStatus {
+  if (modulePath.startsWith("frontend/src/design-system/compat-v1/")) return "v1";
   if (modulePath.startsWith("frontend/src/design-system/")) return "v2";
   if (modulePath.startsWith("frontend/src/app/dev/components/")) return "mixed";
   return "v1";
+}
+
+function isPhase5A1bDesignSystemModule(modulePath: string): boolean {
+  return [
+    "frontend/src/design-system/compat-v1/",
+    "frontend/src/design-system/icons/",
+    "frontend/src/design-system/patterns/",
+    "frontend/src/design-system/primitives/",
+  ].some((prefix) => modulePath.startsWith(prefix));
 }
 
 function isBehaviorOnlyModule(sourceModule: RawProductionModule): boolean {
@@ -726,10 +1147,13 @@ function governanceForModule(
   const status = designSystemStatus(modulePath);
   const behaviorOnly = isBehaviorOnlyModule(sourceModule);
   let targetRedesignPhases: RedesignPhase[];
-  if (status === "v2") targetRedesignPhases = ["5A.1a"];
+  if (status === "v2") {
+    targetRedesignPhases = [isPhase5A1bDesignSystemModule(modulePath) ? "5A.1b" : "5A.1a"];
+  }
   else if (
     modulePath.startsWith("frontend/src/components/common/") ||
-    modulePath.startsWith("frontend/src/app/dev/components/")
+    modulePath.startsWith("frontend/src/app/dev/components/") ||
+    modulePath.startsWith("frontend/src/design-system/compat-v1/")
   ) {
     targetRedesignPhases = ["5A.1b"];
   } else {
@@ -876,18 +1300,36 @@ export function buildLiveRouteComponentInventory(
       (module) => module.classification === "design-system-module",
     ).length,
   } as const;
+  const compatibilityFacadeAudit = buildCompatibilityFacadeAudit(
+    repositoryRoot,
+    frontendRoot,
+    graphModules,
+    graphFileSet,
+    consumers,
+  );
   const sourceFingerprint = createHash("sha256")
-    .update(stableJson({ modules, visualDebtRatchets, runtimeBoundaryAudit }), "utf8")
+    .update(
+      stableJson({
+        modules,
+        visualDebtRatchets,
+        visualDebtRelocations: VISUAL_DEBT_RELOCATIONS,
+        runtimeBoundaryAudit,
+        compatibilityFacadeAudit,
+      }),
+      "utf8",
+    )
     .digest("hex");
   return {
-    schemaVersion: 2,
-    kind: "phase5a1a-live-route-component-inventory",
+    schemaVersion: 3,
+    kind: "phase5-live-route-component-inventory",
     provenance: { ...baseProvenance, sourceFingerprint },
     sourceRoots: ["frontend/src/app", "frontend/src/components", "frontend/src/design-system"],
     moduleCounts: counts,
     modules,
     visualDebtRatchets,
+    visualDebtRelocations: VISUAL_DEBT_RELOCATIONS,
     runtimeBoundaryAudit,
+    compatibilityFacadeAudit,
   };
 }
 
@@ -905,10 +1347,32 @@ export function inventoryChecksum(inventory: LiveRouteComponentInventory): strin
   return createHash("sha256").update(stableJson(inventory), "utf8").digest("hex");
 }
 
+export interface LiveInventoryWriteOptions {
+  readonly expectedBaseSha?: string;
+}
+
 export function writeLiveRouteComponentInventory(
   repositoryRoot: string,
-  inventory = buildLiveRouteComponentInventory(repositoryRoot),
+  inventory?: LiveRouteComponentInventory,
+  options: LiveInventoryWriteOptions = {},
 ): LiveRouteComponentInventory {
+  const expectedBaseSha =
+    options.expectedBaseSha ?? process.env[LIVE_INVENTORY_BASE_SHA_ENV];
+  const provenance = gitProvenance(repositoryRoot, expectedBaseSha);
+  const nextInventory =
+    inventory ?? buildLiveRouteComponentInventory(repositoryRoot, provenance);
+  if (nextInventory.provenance.baseSha !== provenance.baseSha) {
+    throw new Error(
+      `live-inventory-provenance-base-mismatch:${nextInventory.provenance.baseSha}:${provenance.baseSha}`,
+    );
+  }
+  const comparison = readInventoryComparisonBase(repositoryRoot, expectedBaseSha);
+  assertShrinkOnlyVisualDebt(
+    comparison.inventory.visualDebtRatchets,
+    nextInventory.visualDebtRatchets,
+    nextInventory.visualDebtRelocations,
+  );
+
   const output = path.join(repositoryRoot, LIVE_INVENTORY_REPORT_RELATIVE_PATH);
   if (!statSync(path.dirname(output)).isDirectory())
     throw new Error("live-inventory-output-parent-missing");
@@ -925,17 +1389,7 @@ export function writeLiveRouteComponentInventory(
   try {
     const descriptor = openSync(output, "r+");
     try {
-      const baseline = JSON.parse(readFileSync(descriptor, "utf8")) as {
-        readonly visualDebtRatchets?: unknown;
-      };
-      if (!Array.isArray(baseline.visualDebtRatchets)) {
-        throw new Error("live-inventory-visual-debt-baseline-invalid");
-      }
-      assertShrinkOnlyVisualDebt(
-        baseline.visualDebtRatchets as readonly VisualDebtRatchet[],
-        inventory.visualDebtRatchets,
-      );
-      const serialized = `${JSON.stringify(inventory, null, 2)}\n`;
+      const serialized = `${JSON.stringify(nextInventory, null, 2)}\n`;
       const bytes = Buffer.from(serialized, "utf8");
       ftruncateSync(descriptor, 0);
       let written = 0;
@@ -961,15 +1415,26 @@ export function writeLiveRouteComponentInventory(
       unlinkSync(lock);
     }
   }
-  return inventory;
+  return nextInventory;
 }
 
 export function assertShrinkOnlyVisualDebt(
   baseline: readonly VisualDebtRatchet[],
   current: readonly VisualDebtRatchet[],
+  relocations: readonly VisualDebtRelocation[] = [],
 ): void {
   const baselineCategories = new Map(baseline.map((item) => [item.category, item]));
   const currentCategories = new Map(current.map((item) => [item.category, item]));
+  const relocationTargets = new Map<string, string>();
+  for (const relocation of relocations) {
+    if (
+      relocation.fromPath === relocation.toPath ||
+      relocationTargets.has(relocation.toPath)
+    ) {
+      throw new Error(`visual-debt-relocation-duplicate-target:${relocation.toPath}`);
+    }
+    relocationTargets.set(relocation.toPath, relocation.fromPath);
+  }
   for (const category of currentCategories.keys()) {
     if (!baselineCategories.has(category))
       throw new Error(`visual-debt-unclassified-category:${category}`);
@@ -977,17 +1442,56 @@ export function assertShrinkOnlyVisualDebt(
   for (const [category, baselineCategory] of baselineCategories) {
     const currentCategory = currentCategories.get(category);
     if (!currentCategory) throw new Error(`visual-debt-unclassified-category:${category}`);
-    const maxima = new Map(
-      baselineCategory.occurrences.map((item) => [`${item.path}\u0000${item.value}`, item.count]),
-    );
+    for (const relocation of relocations) {
+      const sourceValues = new Set(
+        currentCategory.occurrences
+          .filter((item) => item.path === relocation.fromPath)
+          .map((item) => item.value),
+      );
+      const duplicatedValue = currentCategory.occurrences.find(
+        (item) => item.path === relocation.toPath && sourceValues.has(item.value),
+      );
+      if (duplicatedValue) {
+        throw new Error(
+          `visual-debt-relocation-source-and-target:${category}:${duplicatedValue.value}`,
+        );
+      }
+    }
+    const maxima = new Map<string, number>();
+    for (const item of baselineCategory.occurrences) {
+      const normalizedPath = relocationTargets.get(item.path) ?? item.path;
+      const key = `${normalizedPath}\u0000${item.value}`;
+      maxima.set(key, (maxima.get(key) ?? 0) + item.count);
+    }
+    const normalizedCurrent = new Map<
+      string,
+      { readonly path: string; readonly value: string; count: number; readonly sourcePath: string }
+    >();
     for (const item of currentCategory.occurrences) {
-      const key = `${item.path}\u0000${item.value}`;
+      const normalizedPath = relocationTargets.get(item.path) ?? item.path;
+      const key = `${normalizedPath}\u0000${item.value}`;
+      const existing = normalizedCurrent.get(key);
+      if (existing) existing.count += item.count;
+      else {
+        normalizedCurrent.set(key, {
+          path: normalizedPath,
+          value: item.value,
+          count: item.count,
+          sourcePath: item.path,
+        });
+      }
+    }
+    for (const [key, item] of normalizedCurrent) {
       const maximum = maxima.get(key);
       if (maximum === undefined) {
-        throw new Error(`visual-debt-new-occurrence:${category}:${item.path}:${item.value}`);
+        throw new Error(
+          `visual-debt-new-occurrence:${category}:${item.sourcePath}:${item.value}`,
+        );
       }
       if (item.count > maximum) {
-        throw new Error(`visual-debt-count-increased:${category}:${item.path}:${item.value}`);
+        throw new Error(
+          `visual-debt-count-increased:${category}:${item.sourcePath}:${item.value}`,
+        );
       }
     }
   }

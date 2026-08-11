@@ -15,21 +15,19 @@
 
 .catalog-v2-copy,
 .catalog-v2-row-label,
-.catalog-v2-muted,
-.catalog-v2-field-meta {
+.catalog-v2-muted {
   color: var(--color-content-muted);
 }
 
 .catalog-v2-link {
+  display: inline-flex;
+  min-width: var(--ds-size-touch-minimum);
+  min-height: var(--ds-size-touch-minimum);
+  align-items: center;
   color: var(--color-content-link);
 }
 
-.catalog-v2-link:focus-visible,
-.catalog-v2-button:focus-visible,
-.catalog-v2-icon-button:focus-visible,
-.catalog-v2-switch:focus-visible,
-.catalog-v2-mixed-checkbox:focus-visible,
-.catalog-v2-field :is(input, select, textarea):focus-visible {
+.catalog-v2-link:focus-visible {
   outline: var(--focus-indicator-width) solid var(--color-border-focus);
   outline-offset: var(--focus-indicator-offset);
 }
@@ -61,24 +59,51 @@
   text-transform: uppercase;
 }
 
-.catalog-v2-card {
-  flex: 1 1 14rem;
+.catalog-v2-surface,
+.catalog-v2-card-link {
+  flex: 1 1 16rem;
   min-width: 0;
-  padding: var(--ds-space-4);
-  color: var(--surface-foreground);
-  background: var(--surface-background);
-  border: var(--ds-border-standard) solid var(--surface-border);
-  border-radius: var(--ds-radius-medium);
 }
 
-.catalog-v2-card[data-variant="raised"] {
-  background: var(--color-surface-raised);
-  box-shadow: var(--ds-elevation-raised);
+.catalog-v2-card-link {
+  display: grid;
+  gap: var(--ds-space-3);
 }
 
-.catalog-v2-card[data-variant="outlined"] {
-  border-width: var(--ds-border-strong);
-  box-shadow: none;
+.catalog-v2-activation-probe {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-2);
+  align-items: center;
+}
+
+.catalog-v2-page-state-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: var(--density-compact-gap);
+  align-items: stretch;
+}
+
+.catalog-v2-composite-grid {
+  display: grid;
+  gap: var(--ds-space-5);
+}
+
+.catalog-v2-composite-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ds-space-3);
+  align-items: center;
+}
+
+.catalog-v2-overlay-content {
+  display: grid;
+  gap: var(--ds-space-4);
+}
+
+.catalog-v2-direction-probe {
+  max-width: 100%;
+  min-width: 0;
 }
 
 .catalog-v2-tone,
@@ -177,249 +202,6 @@
 .catalog-v2-progress-fill[data-tone="warning"] { background: var(--color-feedback-warning-text); }
 .catalog-v2-progress-fill[data-tone="error"] { background: var(--color-feedback-error-text); }
 .catalog-v2-progress-fill[data-tone="evidence"] { background: var(--domain-provenance-explicit-foreground); }
-
-.catalog-v2-button,
-.catalog-v2-icon-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--control-height-default);
-  padding: 0 var(--ds-space-4);
-  color: var(--button-primary-foreground);
-  background: var(--button-primary-background);
-  border: var(--ds-border-standard) solid transparent;
-  border-radius: var(--ds-radius-medium);
-  font: inherit;
-  font-weight: var(--ds-type-weight-semibold);
-  transition-duration: var(--ds-motion-duration-feedback);
-  transition-property: background-color, border-color, color, opacity, transform;
-  transition-timing-function: var(--ds-motion-easing-standard);
-}
-
-.catalog-v2-button:not(:disabled):active,
-.catalog-v2-icon-button:not(:disabled):active {
-  transform: translateY(var(--ds-motion-displacement-xs));
-}
-
-.catalog-v2-button[data-variant="secondary"],
-.catalog-v2-icon-button[data-variant="secondary"] {
-  color: var(--button-secondary-foreground);
-  background: var(--button-secondary-background);
-  border-color: var(--color-border-default);
-}
-
-.catalog-v2-button[data-variant="quiet"],
-.catalog-v2-icon-button[data-variant="quiet"] {
-  color: var(--color-content-link);
-  background: transparent;
-  border-color: var(--color-border-default);
-}
-
-.catalog-v2-button[data-variant="destructive"],
-.catalog-v2-icon-button[data-variant="destructive"] {
-  color: var(--button-destructive-foreground);
-  background: var(--button-destructive-background);
-}
-
-.catalog-v2-button[data-size="small"] { min-height: var(--control-height-small); padding-inline: var(--ds-space-3); }
-.catalog-v2-button[data-size="large"] { min-height: var(--control-height-large); padding-inline: var(--ds-space-6); }
-
-.catalog-v2-button:disabled,
-.catalog-v2-icon-button:disabled,
-.catalog-v2-switch:disabled {
-  color: var(--button-disabled-foreground);
-  background: var(--button-disabled-background);
-  cursor: not-allowed;
-  opacity: 1;
-}
-
-.catalog-v2-icon-button {
-  width: var(--control-height-default);
-  padding: 0;
-}
-
-.catalog-v2-field {
-  display: grid;
-  gap: var(--ds-space-2);
-  color: var(--color-content-primary);
-  font-size: var(--ds-type-size-1);
-  font-weight: var(--ds-type-weight-semibold);
-}
-
-.catalog-v2-field :is(input, select, textarea),
-.catalog-v2-input-with-icon {
-  width: 100%;
-  min-width: 0;
-  color: var(--field-foreground);
-  background: var(--field-background);
-  border: var(--ds-border-standard) solid var(--field-border);
-  border-radius: var(--ds-radius-medium);
-  font: inherit;
-  font-weight: var(--ds-type-weight-regular);
-}
-
-.catalog-v2-field :is(input, select) {
-  min-height: var(--control-height-default);
-  padding: 0 var(--ds-space-3);
-}
-
-.catalog-v2-field textarea {
-  min-height: calc(var(--control-height-default) * 2);
-  padding: var(--ds-space-3);
-  resize: vertical;
-}
-
-.catalog-v2-field :is(input, textarea)::placeholder {
-  color: var(--field-placeholder);
-  opacity: 1;
-}
-
-.catalog-v2-field :is(input, select, textarea)[aria-invalid="true"] {
-  border-color: var(--color-feedback-error-border);
-}
-
-.catalog-v2-field :is(input, select, textarea):disabled {
-  color: var(--button-disabled-foreground);
-  background: var(--button-disabled-background);
-  opacity: 1;
-}
-
-.catalog-v2-field textarea:read-only {
-  color: var(--button-disabled-foreground);
-  background: var(--button-disabled-background);
-  resize: none;
-}
-
-.catalog-v2-error {
-  color: var(--color-feedback-error-text);
-  font-size: var(--ds-type-size-1);
-  font-weight: var(--ds-type-weight-medium);
-}
-
-.catalog-v2-field-meta {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--ds-space-2);
-  font-size: var(--ds-type-size-1);
-  font-weight: var(--ds-type-weight-regular);
-}
-
-.catalog-v2-input-with-icon {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  padding-left: var(--ds-space-3);
-}
-
-.catalog-v2-input-with-icon input {
-  border: 0;
-  outline: 0;
-}
-
-.catalog-v2-switch,
-.catalog-v2-checkbox,
-.catalog-v2-mixed-checkbox {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ds-space-2);
-  min-height: var(--control-height-default);
-  color: var(--color-content-primary);
-  background: transparent;
-  border: 0;
-  font: inherit;
-  font-size: var(--ds-type-size-1);
-}
-
-.catalog-v2-switch-track {
-  display: inline-flex;
-  width: var(--ds-size-control-small);
-  padding: var(--ds-space-1);
-  background: var(--button-disabled-background);
-  border: var(--ds-border-standard) solid var(--color-border-default);
-  border-radius: var(--ds-radius-round);
-}
-
-.catalog-v2-switch-track span {
-  width: var(--ds-space-3);
-  height: var(--ds-space-3);
-  background: var(--color-content-muted);
-  border-radius: 50%;
-}
-
-.catalog-v2-switch[data-checked="true"] .catalog-v2-switch-track,
-.catalog-v2-switch[aria-checked="true"] .catalog-v2-switch-track {
-  justify-content: flex-end;
-  background: var(--color-action-primary-background);
-}
-
-.catalog-v2-switch[data-checked="true"] .catalog-v2-switch-track span,
-.catalog-v2-switch[aria-checked="true"] .catalog-v2-switch-track span {
-  background: var(--color-action-primary-foreground);
-}
-
-.catalog-v2-checkbox input {
-  width: var(--ds-space-4);
-  height: var(--ds-space-4);
-  accent-color: var(--color-action-primary-background);
-}
-
-.catalog-v2-mixed-checkbox span {
-  display: inline-grid;
-  place-items: center;
-  width: var(--ds-space-4);
-  height: var(--ds-space-4);
-  color: var(--color-action-primary-foreground);
-  background: var(--color-action-primary-background);
-  border-radius: var(--ds-radius-small);
-  font-weight: var(--ds-type-weight-bold);
-}
-
-.catalog-v2-tooltip-pair {
-  display: inline-grid;
-  grid-template-areas: "tip" "anchor";
-  gap: var(--ds-space-1);
-  align-items: center;
-  justify-items: center;
-  margin: 0;
-}
-
-.catalog-v2-tooltip-pair[data-placement="right"] {
-  grid-template-areas: "anchor tip";
-}
-
-.catalog-v2-tooltip-pair[data-placement="bottom"] {
-  grid-template-areas: "anchor" "tip";
-}
-
-.catalog-v2-tooltip-pair[data-placement="left"] {
-  grid-template-areas: "tip anchor";
-}
-
-.catalog-v2-tooltip-anchor {
-  display: inline-grid;
-  grid-area: anchor;
-  place-items: center;
-  width: var(--control-height-default);
-  height: var(--control-height-default);
-  color: var(--button-secondary-foreground);
-  background: var(--button-secondary-background);
-  border: var(--ds-border-standard) solid var(--color-border-default);
-  border-radius: var(--ds-radius-medium);
-  font-weight: var(--ds-type-weight-bold);
-}
-
-.catalog-v2-tooltip {
-  grid-area: tip;
-  max-width: 14rem;
-  padding: var(--ds-space-2) var(--ds-space-3);
-  color: var(--tooltip-foreground);
-  background: var(--tooltip-background);
-  border-radius: var(--ds-radius-small);
-  font-size: var(--ds-type-size-1);
-  font-weight: var(--ds-type-weight-medium);
-  text-align: center;
-}
 
 .catalog-v2-alert {
   display: grid;
@@ -578,13 +360,8 @@
      text backplates otherwise cover HighlightText/Canvas text with the same
      system color, making the labels visually disappear. Keep the system-color
      palette while disabling only that additional adjustment. */
-  .catalog-v2-button:not([data-variant]):not(:disabled),
-  .catalog-v2-button[data-variant="primary"]:not(:disabled),
-  .catalog-v2-button[data-variant="destructive"]:not(:disabled),
   .catalog-v2-chip[data-tone="action"],
-  .catalog-v2-swatch[data-tone="action"],
-  .catalog-v2-mixed-checkbox > span,
-  .catalog-v2-tooltip {
+  .catalog-v2-swatch[data-tone="action"] {
     forced-color-adjust: none;
   }
 
@@ -596,7 +373,6 @@
 
   .catalog-v2-panel,
   .catalog-v2-specimen,
-  .catalog-v2-card,
   .catalog-v2-swatch,
   .catalog-v2-status,
   .catalog-v2-tone,

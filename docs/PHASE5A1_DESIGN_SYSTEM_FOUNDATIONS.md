@@ -1,8 +1,8 @@
-# Phase 5A.1a — Design System V2 Foundations
+# Phase 5A.1 — Design System V2 Foundations and Canonical Primitives
 
-> **Last updated:** 2026-08-10
-> **Status:** Corrected implementation and candidate evidence are green at reviewed head `72ff09fc515dcfc1e597d5c49861ebd063348fd5`; the moving final-head rollup is maintained in draft PR #1263, and Eric's catalog-candidate approval remains pending
-> **Entry gate:** Phase 5A.0f merged to `main` at `2d40001754d370782bc7f502918daac06a8d024f`
+> **Last updated:** 2026-08-11
+> **Status:** Phase 5A.1a is merged and green, and Eric explicitly approved its 90 foundation-candidate PNGs; Phase 5A.1b is implemented locally and remains subject to draft-PR review and exact-head evidence
+> **Entry gate:** Phase 5A.1a merged through PR #1263 at `2c0bc9d2d8da49ea2518194925d3aa90d72796e4`; authoritative `main` entry SHA `296742c9b941e0aad9cfb5b00dfa3738af9eba0e` passed Main Gate, Sonar, CodeQL, hygiene, deployment, and post-deploy readiness before 5A.1b began
 
 ## Phase 5A.1 foundation decision
 
@@ -45,13 +45,19 @@ are visually weaker than a score.
   deterministic candidate capture evidence;
 - scripts, CI wiring, tests, and documentation for those contracts.
 
-### Explicitly deferred to 5A.1b
+### Implemented in 5A.1b
 
-- canonical Button, IconButton, Surface, CardLink, Field, Dialog, Sheet, Menu, Tabs,
-  Tooltip, and PageState implementations;
+- canonical Button, IconButton, Surface, CardLink, Field, Combobox, Dialog, Sheet,
+  Menu, Tabs, Tooltip, and PageState implementations;
 - V1 component compatibility facades;
 - interaction-heavy keyboard/focus contracts and their complete catalog scenes;
-- removal of any legacy component or utility debt.
+- typed interface-icon registry and provisional custom domain-glyph admission contract;
+- symbol-aware compatibility-facade and transitive production-isolation evidence.
+
+5A.1b deliberately relocates the five still-consumed V1 implementations behind exact
+facades; it does not remove their visual debt or migrate their consumers. The relocation
+ratchet prevents keeping both old and new debt-bearing copies or increasing a relocated
+recipe.
 
 Production routes and shells are not visually migrated in either part of 5A.1. This
 PR changes only `/dev/components` presentation plus semantic accessibility landmarks.
@@ -87,13 +93,13 @@ differs from the manifest.
 
 The manifest contains five sections:
 
-| Section        | Count | Purpose                                                        |
-| -------------- | ----: | -------------------------------------------------------------- |
-| `primitive`    |   182 | Private `--ds-*` colors, spacing, sizing, type, motion, and more |
-| `semanticV2`   |    59 | Living Label roles such as canvas, surface, content, and action |
-| `componentV2`  |    28 | Component recipe tokens reserved for canonical V2 primitives   |
-| `domain`       |    57 | Evidence, allergen, confidence, score, and regulated roles      |
-| `compatV1`     |   126 | Existing production variables reproduced exactly                |
+| Section       | Count | Purpose                                                          |
+| ------------- | ----: | ---------------------------------------------------------------- |
+| `primitive`   |   182 | Private `--ds-*` colors, spacing, sizing, type, motion, and more |
+| `semanticV2`  |    59 | Living Label roles such as canvas, surface, content, and action  |
+| `componentV2` |    28 | Component recipe tokens reserved for canonical V2 primitives     |
+| `domain`      |    57 | Evidence, allergen, confidence, score, and regulated roles       |
+| `compatV1`    |   126 | Existing production variables reproduced exactly                 |
 
 ## V1 compatibility and rollout
 
@@ -115,6 +121,46 @@ Conflicting nested theme ancestors are not a public composition contract. With
 JavaScript unavailable and no explicit preference, the system media query selects both
 the V1/V2 dark values and existing `dark:` utilities. Forced-colors mode maps meaningful
 V1 and V2 roles to system colors and removes decorative shadows.
+
+## Canonical 5A.1b API and behavior freeze
+
+The canonical API is documented in
+[`frontend/docs/DESIGN_SYSTEM_V2_PRIMITIVES.md`](../frontend/docs/DESIGN_SYSTEM_V2_PRIMITIVES.md).
+The freeze covers semantic props, state models, native/ARIA behavior, focus and Escape
+rules, portal scoping, client/server ownership, and compatibility behavior. It does not
+freeze the provisional Living Label recipes: Phase 5A.2 may restyle components through
+semantic tokens, recipe CSS, icon mappings, and composition without rewriting their
+public behavior.
+
+- Button and IconButton are native buttons with safe `type="button"` defaults,
+  localized loading names, real 44 px minimum targets, registry-only icons, and no
+  manual Enter/Space handling.
+- Surface and CardLink keep noninteractive container semantics fail-closed. CardLink
+  requires exactly one direct primary anchor and at most one secondary action slot;
+  concrete nested controls are rejected.
+- Field keeps the non-empty localized label, external description, hint, count, and error IDREFs
+  together. Input, Textarea, native Select, Checkbox, and native-checkbox Switch retain
+  native required/disabled/read-only behavior; only indeterminate IDL synchronization
+  is a client island.
+- Combobox, Dialog, Sheet, Menu, Tabs, and Tooltip implement the relevant composite
+  keyboard/focus contracts. Native modal dialogs own inertness and containment;
+  nested popups portal into the nearest dialog host and only the top overlay handles
+  dismissal. Popup geometry respects the effective mobile visual viewport, and checked
+  menu state remains visible without relying on color.
+- PageState is server-compatible and covers loading, empty, degraded, error, offline,
+  paused, and recovering semantics with a caller-selected h1–h6 hierarchy, polite
+  defaults, and explicit urgent opt-in.
+
+Exactly six canonical primitive modules are explicit client entries: Combobox,
+IndeterminateCheckbox, Menu, Overlay, Tabs, and Tooltip. Static primitives, Field
+composition, Icon, and PageState remain server-compatible. No primitive barrel or root
+provider was added, and production remains transitively isolated from the new V2 API.
+
+The typed icon registry is the only new V2 Lucide import boundary. Icon names describe
+meaning rather than a drawing, glyphs are inert, and custom `domain.*` entries require a
+controlled repository implementation path, source, license, SHA-256, 24 px-grid review,
+and forced-color review. The domain registry intentionally remains empty until a future
+candidate is reviewed; 5A.1b changes no production identity artwork.
 
 ## Visual foundations
 
@@ -187,26 +233,35 @@ contract in this draft.
 
 `docs/phase5/live-route-component-inventory.json` is generated from production modules
 under `frontend/src/app`, `frontend/src/components`, and `frontend/src/design-system`.
-Its bounded 345-record report is backed by a complete 450-module `frontend/src`
+Its bounded 393-record report is backed by a complete 498-module `frontend/src`
 runtime graph so imports through libraries, hooks, and stores retain correct client and
 route reachability. It records direct and inverse consumers, transitive route
 consumers, client-entry/reachable/server boundaries, target redesign phases,
 disposition, migration/removal gates, V1/V2 status, classified debt, the stable merge
 base, and deterministic fingerprints. A fail-closed boundary audit rejects runtime
 imports from production source into docs, E2E, tests, or tooling; the current report
-contains zero violations. The finalized generated JSON SHA-256 is
-`014FF7543197D7B5D455E9B00B2221ED53ADD9FFDCA621BDC7DAEDAA2A32B28F`; its governed
+contains zero violations. The Phase 5A.1b generated JSON SHA-256 is
+`E09F65F65CAD12428F378650FDC8B3695A3F982E2D42B243965F5E143376EE95`; its governed
 source fingerprint is
-`de5f1d2e98b22dc4ac2cc43006943e2ca0a6344a1d3c9a7f46c10ce714371306`, and its
+`724bf1476d9e39cddc376d72cda19a2e0b040ad6a712f94a0a81877e11f3abe3`, and its
 runtime-boundary fingerprint is
-`77c6a405d6e5480c1f1f245d65f79ce0f3c4e0150118ff86957c2bcb0c58bc76`. The
+`ebae29e594f02adc4d04bd87b1c30268ce3a32fe06c6db6ae84c98fdc9ecc363`. The
 historical Phase 5 inventory remains untouched.
 
 Visual-debt ratchets classify exact path/value/count maxima for legacy `.card` and
 `.input-field` usage, arbitrary shadow/radius/duration/animation/tracking recipes, and
 `transition-all`. New categories, files, values, or higher counts fail. Removal and
-lower counts pass. Generation validates the prior maxima before overwrite, so a failed
-regeneration cannot silently bless new debt.
+lower counts pass. Generation resolves the actual checkout/CI merge base without network
+access, reads its report directly from Git, and validates those independent maxima before
+overwrite. The mutable worktree report cannot authorize its own provenance or debt, so
+editing source and generated JSON together cannot bypass the ratchet.
+
+Schema v3 also records six symbol-aware compatibility entries, five fixed V1
+implementation relocations, and their exact direct/transitive consumers. Both baseline
+and current debt paths normalize to the same historical maximum, making generation
+idempotent while still rejecting a duplicated source/target value. Thirty-nine new V2
+icon, pattern, and primitive modules have zero transitive consumers outside the guarded
+catalog.
 
 ## Guarded component catalog
 
@@ -225,27 +280,46 @@ The four stable scenes are:
 3. interaction cues and feedback;
 4. evidence semantics and status states.
 
-The capture matrix is 6 locale/theme/accessibility contexts × 3 widths (390, 768, and
-1440) = 18 cases. Each captures 4 scenes for **72 candidate scene images** plus one
-reviewable contact sheet, yielding exactly **90 PNGs** and a SHA-256 manifest. The
-contexts include explicit light/dark, system-dark, forced colors, reduced motion, and
-fully localized representative EN/PL/DE copy. The test performs whole-page WCAG 2.2
-Axe, overflow, theme, motion-token, forced-color, focus, skip-link, console, and
-hydration checks before writing candidates. These are never snapshot assertions and
-never replace the immutable Phase 5A.0d baseline namespace.
+The capture matrix remains 6 locale/theme/accessibility contexts × 3 widths (390, 768,
+and 1440) = 18 cases. Each case captures the four stable scenes plus nine deterministic
+open/selected interaction states: populated, loading, empty, and load-error Comboboxes,
+then Dialog, Sheet, Menu, Tabs, and Tooltip. Every case also retains a reviewable
+text-spacing capture, and the six 768 px cases retain a reviewable 200% zoom capture.
+That yields **72 base scenes + 162 interaction states + 24 resilience states + 36 contact
+sheets = 294 PNGs**. A sanitized 18-record `evidence.json` ledger and exact manifest
+bring the artifact to 296 files. The verifier requires the precise path matrix, PNG
+signatures, byte sizes,
+SHA-256 values, source SHA/tree/PR-head provenance, clean or explicitly known Next-build
+source state, and no symlinks or extra files.
+
+The contexts include explicit light/dark, system-dark, forced colors, reduced motion,
+fine/hover and coarse/no-hover input, and fully localized representative EN/PL/DE copy.
+Thirty-five evidence checks per case cover default and open-state WCAG 2.2 Axe, the
+Combobox loading/empty/error status contracts, keyboard
+operation, bidirectional modal containment, restoration, roving focus, nested portal
+scope, outside/pointer behavior, actual 44 px targets, focus visibility, overflow,
+200% reflow, text spacing, forced colors, reduced motion, system theme, and RTL/LTR
+Switch endpoints. These are candidate captures, never snapshot assertions, and never
+replace the immutable Phase 5A.0d baseline namespace.
+
+Text-spacing and zoom checks audit hidden/clip boundaries, sibling text intersections,
+visible-point obscuration, and document/component overflow before writing their named
+altered-state PNGs. Those automated screens remain paired with mandatory human review;
+they do not claim that layout quality can be approved from geometry alone.
 
 Quality Gate and Nightly reuse their existing guarded local Supabase build/runtime,
 preflight, deterministic fixture, safety assertion, teardown, and no-backup shutdown.
-Candidate verification requires the exact source SHA, 72 scene hashes, 18
-contact-sheet hashes, and safe paths before upload; the artifact remains gated on every
+Candidate verification requires the exact source SHA/tree, 294 PNG hashes, evidence
+ledger, manifest, and safe paths before upload; the artifact remains gated on every
 visual-safety, fixture-cleanup, and no-backup shutdown step. Sanitized failure
 diagnostics are uploaded separately only after the same guards.
 
 ## Future Phase 5A.2 governance — not implemented here
 
-Phase 5A.1 remains exactly two official PRs. The 72 scene images and 18 contact sheets
-are foundation candidates only: none of the 90 PNGs is a Golden Reference or an
-approved production baseline.
+Phase 5A.1 remains exactly two official PRs. The approved 5A.1a artifact's 72 scene
+images and 18 contact sheets, plus 5A.1b's expanded 294-PNG interaction and resilience
+catalog, are foundation candidates only: none is a Golden Reference or an approved
+production baseline.
 After 5A.1a and 5A.1b are reviewed, merged, and green on authoritative `main`, a
 separately authorized non-production Phase 5A.2 must:
 
@@ -276,7 +350,7 @@ Local implementation checks required before the draft PR is pushed:
 - diff/scope audit proving no dependency, lockfile, route policy, API/database,
   service-worker, Next config, or immutable-baseline mutation.
 
-Completed local evidence on reviewed implementation head
+Phase 5A.1a completed local evidence on reviewed implementation head
 `72ff09fc515dcfc1e597d5c49861ebd063348fd5` on 2026-08-10:
 
 - deterministic token generation/check and live-inventory regeneration passed;
@@ -338,14 +412,47 @@ The following evidence is bound to exact PR head
 
 All 18 contact sheets and the relevant individual forced-color and localized scene
 images were reviewed after correction. No remaining clipping, overlap, contrast,
-localization, dark/system-dark, or reduced-motion endpoint defect was found. This is an
-engineering review, not Eric's required product/design approval.
+localization, dark/system-dark, or reduced-motion endpoint defect was found. Eric then
+explicitly approved the Phase 5A.1a foundation candidates and authorized PR #1263's
+merge and the guarded start of 5A.1b.
 
 This evidence records the stable implementation and candidate bytes. The draft PR body
 is the non-self-referential source for the moving final-head rollup because embedding a
 final commit SHA in versioned source would itself create another SHA. Every actual final
-PR head still requires a green exact-head rollup. Eric's explicit candidate approval
-remains mandatory regardless of automation.
+PR head still required a green exact-head rollup; that final rollup and exact-main
+verification passed before the approval and merge recorded at the top of this document.
+
+### Phase 5A.1b local pre-push evidence — 2026-08-11
+
+The settled Phase 5A.1b worktree passed the following checks before its draft PR was
+created. These results are local implementation evidence, not a substitute for the
+required exact-head Linux catalog, visual, performance, security, and integration runs:
+
+- token artifacts passed deterministic `--check`;
+- the live inventory generated twice to the identical SHA-256
+  `E09F65F65CAD12428F378650FDC8B3695A3F982E2D42B243965F5E143376EE95`;
+  it records 393 governed modules, 498 inspected runtime modules, zero forbidden
+  boundaries, six symbol-aware compatibility entries, five controlled relocations,
+  and zero V2 route consumers outside `/dev/components`;
+- `npm run design-system:check` passed 23 files and 165 tests, and the transitive
+  architecture contract passed its additional 6 tests;
+- the complete frontend suite passed 401 files with 1 skipped and 6,608 tests with
+  19 skipped;
+- TypeScript, full source lint, scoped E2E/tooling/test lint, and `git diff --check`
+  passed;
+- a normal production build with both catalog flags absent compiled all routes and
+  generated the service worker;
+- an independent local contract/checksum/file-byte recheck passed all seven immutable
+  Phase 5A.0d cases; the authoritative renderer comparison remains intentionally limited
+  to exact-head Linux CI. The manifest file SHA-256 remains
+  `B8504DA5DB591D82E1C6ADDE12B9A32DCDB766AC74633258ABA268F34DE3D1EC` and its internal checksum remains
+  `12a00dc37191191b788964d1c599d103aa0fedb1c15fa8cc36ad80d746953716`;
+- the diff contains no dependency/lockfile, Next configuration, global token/theme,
+  route-policy, API/database, service-worker, root-layout, or immutable-baseline change.
+
+The guarded 18-case browser matrix was intentionally not treated as local Windows
+acceptance evidence. Its 294 PNGs, 18-record/35-check ledger, exact manifest, safety
+lifecycle, and independent human review remain blocking exact-head CI evidence.
 
 ## Deferred and rollback boundaries
 
@@ -356,9 +463,14 @@ remains mandatory regardless of automation.
 - Any unexplained immutable screenshot delta, route-JS regression over the existing
   budget, PWA privacy regression, or accessibility failure blocks merge. Baseline
   replacement is not an acceptable fix.
-- The rollback boundary is the complete 5A.1a PR. Because production remains on the V1
-  compatibility scope, reverting the PR requires no route migration cleanup.
+- The 5A.1a foundation remains an independent merged boundary. The current rollback
+  boundary is the complete 5A.1b primitives/facades/catalog PR; because production
+  remains V1 and facade entry paths are unchanged, reverting it requires no route
+  migration cleanup.
 
-5A.1b may begin only after this foundations PR is reviewed, its exact-head gates are
-green, the candidate catalog is reviewed and explicitly approved by Eric, the PR is
-merged, and the result is verified on authoritative `main`.
+That 5A.1b entry gate was satisfied: PR #1263 merged, its approved tree passed exact-main
+verification, Eric explicitly approved the foundation candidates, and 5A.1b branched
+from the later verified `main` tip recorded above. Phase 5A.2 may begin only after the
+5A.1b draft is independently reviewed, explicitly approved by Eric, merged, and green
+on authoritative `main`; this record does not authorize or claim any Golden Reference
+work.

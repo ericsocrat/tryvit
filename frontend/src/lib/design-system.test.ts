@@ -424,7 +424,9 @@ describe("Design System — Nutrition Traffic Light Tokens", () => {
 
 describe("Design System — Component Classes Use Tokens", () => {
   const css = readSource("src/styles/globals.css");
-  const buttonSrc = readSource("src/components/common/Button.tsx");
+  // Phase 5A.1b keeps the public common path as an exact facade while the
+  // byte-equivalent V1 recipe lives at its audited compatibility owner.
+  const buttonSrc = readSource("src/design-system/compat-v1/Button.tsx");
 
   it("Button primary variant uses bg-brand (not hardcoded brand-600)", () => {
     expect(buttonSrc).toContain("bg-brand");
