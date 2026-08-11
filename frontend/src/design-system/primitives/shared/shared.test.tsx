@@ -83,6 +83,19 @@ describe("V2 portal and overlay helpers", () => {
     dialog.remove();
   });
 
+  it("uses an explicit ancestor host before falling back to the document body", () => {
+    const host = document.createElement("main");
+    host.dataset.dsOverlayHost = "";
+    const anchor = document.createElement("button");
+    host.append(anchor);
+    document.body.append(host);
+
+    expect(resolvePortalHost(anchor)).toBe(host);
+    host.removeAttribute("data-ds-overlay-host");
+    expect(resolvePortalHost(anchor)).toBe(document.body);
+    host.remove();
+  });
+
   it("keeps portalled menu Tab destinations inside the nearest modal", () => {
     const outside = document.createElement("button");
     const dialog = document.createElement("dialog");

@@ -152,10 +152,12 @@ activation is not intercepted. No global provider or arbitrary delay API is expo
 ## Portal scope and overlay ordering
 
 Every popup carries `data-design-system="v2"` plus effective theme, `dir`, and `lang`.
-The portal target is the nearest open dialog's `[data-ds-overlay-host]`, otherwise
-`document.body`. This keeps nested Menu, Combobox, and Tooltip content inside the native
-modal/inert layer while the production root remains V1. A shared stack ensures only the
-top composite processes dismissal.
+The portal target is the nearest open dialog's `[data-ds-overlay-host]`, then the nearest
+explicit ancestor host, otherwise `document.body`. This keeps nested Menu, Combobox, and
+Tooltip content inside the native modal/inert layer, lets guarded catalogs keep popup
+content inside their existing landmark, and leaves the production fallback unchanged
+while the root remains V1. A shared stack ensures only the top composite processes
+dismissal.
 Anchored popups clamp to the effective visual viewport, including its offset and reduced
 height when a mobile virtual keyboard is visible.
 

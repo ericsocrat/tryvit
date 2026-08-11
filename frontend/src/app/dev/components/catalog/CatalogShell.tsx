@@ -10,6 +10,7 @@ export function CatalogShell({ copy }: Readonly<{ copy: CatalogCopy }>) {
     <main
       id="main-content"
       data-design-system="v2"
+      data-ds-overlay-host=""
       className="catalog-v2-canvas mx-auto min-h-screen max-w-5xl space-y-12 p-8"
     >
       <header className="space-y-2">

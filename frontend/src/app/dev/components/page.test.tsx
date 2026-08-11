@@ -22,6 +22,7 @@ describe("DevComponentsPage", () => {
     expect(
       screen.getByText("Evidence sources could not be loaded. Try again."),
     ).toBeInTheDocument();
+    expect(screen.getByRole("main")).toHaveAttribute("data-ds-overlay-host", "");
     expect(mockNotFound).not.toHaveBeenCalled();
   });
 });

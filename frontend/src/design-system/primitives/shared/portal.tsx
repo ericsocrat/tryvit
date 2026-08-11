@@ -37,7 +37,7 @@ export function resolvePortalHost(anchor: HTMLElement): HTMLElement {
   if (dialog) {
     return dialog.querySelector<HTMLElement>("[data-ds-overlay-host]") ?? dialog;
   }
-  return anchor.ownerDocument.body;
+  return anchor.closest<HTMLElement>("[data-ds-overlay-host]") ?? anchor.ownerDocument.body;
 }
 
 export function ScopedPortal({
