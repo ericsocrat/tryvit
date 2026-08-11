@@ -1,8 +1,8 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "vitest-axe";
 import { describe, expect, it, vi } from "vitest";
-import { useState } from "react";
+import { StrictMode, useState } from "react";
 
 import { claimOverlayPointerDismissal } from "@/design-system/primitives/shared/overlay-stack";
 
@@ -124,16 +124,112 @@ describe("V2 Menu", () => {
     expect(indicator).toHaveAttribute("data-state", "unchecked");
     expect(indicator?.querySelector("svg")).toBeNull();
 
-    await user.click(checkbox);
+    act(() => checkbox.focus());
+    await user.keyboard(" ");
     expect(checked).toHaveBeenCalledWith(true);
     expect(screen.getByRole("menu")).toBeVisible();
+    expect(checkbox).toHaveFocus();
     expect(checkbox).toHaveAttribute("aria-checked", "true");
     expect(indicator).toHaveAttribute("data-state", "checked");
     expect(indicator?.querySelector("svg[aria-hidden='true']")).not.toBeNull();
 
+    await user.keyboard(" ");
+    expect(checked).toHaveBeenLastCalledWith(false);
+    expect(screen.getByRole("menu")).toBeVisible();
+    expect(checkbox).toHaveFocus();
+    expect(checkbox).toHaveAttribute("aria-checked", "false");
+    expect(indicator).toHaveAttribute("data-state", "unchecked");
+    expect(indicator?.querySelector("svg")).toBeNull();
+
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("menu")).toBeNull();
     await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
+  it("keeps active item identity aligned when controlled entries reorder", async () => {
+    const user = userEvent.setup();
+    function ReorderHarness() {
+      const [checked, setChecked] = useState(false);
+      const alpha: MenuEntry = {
+        id: "alpha",
+        label: "Alpha source",
+        textValue: "Alpha source",
+        onSelect: vi.fn(),
+      };
+      const checkbox: MenuEntry = {
+        id: "context",
+        type: "checkbox",
+        label: "Include context",
+        textValue: "Include context",
+        checked,
+        onCheckedChange: setChecked,
+      };
+      const gamma: MenuEntry = {
+        id: "gamma",
+        label: "Gamma source",
+        textValue: "Gamma source",
+        onSelect: vi.fn(),
+      };
+      return (
+        <Menu
+          triggerLabel="Evidence actions"
+          entries={checked ? [checkbox, gamma, alpha] : [alpha, checkbox, gamma]}
+        />
+      );
+    }
+
+    render(<ReorderHarness />);
+    await user.click(screen.getByRole("button", { name: "Evidence actions" }));
+    await user.keyboard("{ArrowDown}");
+    const checkbox = screen.getByRole("menuitemcheckbox", { name: "Include context" });
+    expect(checkbox).toHaveFocus();
+
+    await user.keyboard(" ");
+    await waitFor(() => {
+      expect(checkbox).toHaveFocus();
+      expect(checkbox).toHaveAttribute("data-active", "true");
+    });
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("menuitem", { name: "Gamma source" })).toHaveFocus();
+  });
+
+  it("consumes ArrowUp focus intent before a later programmatic reopen", async () => {
+    const user = userEvent.setup();
+    function ControlledReopenHarness() {
+      const [open, setOpen] = useState(false);
+      return (
+        <>
+          <button type="button" onClick={() => setOpen(true)}>
+            Programmatic open
+          </button>
+          <Menu
+            triggerLabel="Evidence actions"
+            entries={entries()}
+            open={open}
+            onOpenChange={setOpen}
+          />
+        </>
+      );
+    }
+
+    render(
+      <StrictMode>
+        <ControlledReopenHarness />
+      </StrictMode>,
+    );
+    const trigger = screen.getByRole("button", { name: "Evidence actions" });
+    trigger.focus();
+    await user.keyboard("{ArrowUp}");
+    await waitFor(() =>
+      expect(screen.getByRole("menuitemcheckbox", { name: "Include context" })).toHaveFocus(),
+    );
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(trigger).toHaveFocus());
+
+    await user.click(screen.getByRole("button", { name: "Programmatic open" }));
+    await waitFor(() =>
+      expect(screen.getByRole("menuitem", { name: "Alpha source" })).toHaveFocus(),
+    );
   });
 
   it("moves forward and backward to the page tab stops adjacent to its portalled trigger", async () => {

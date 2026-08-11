@@ -140,16 +140,37 @@ export function Menu({
   useEffect(() => {
     if (!open) return;
     const unregister = registerOverlay(overlayId);
+    return unregister;
+  }, [open, overlayId]);
+
+  useEffect(() => {
+    if (!open) {
+      focusOnOpenRef.current = "first";
+      return;
+    }
+    const focusOnOpen = focusOnOpenRef.current;
     let cancelled = false;
     queueMicrotask(() => {
       if (cancelled) return;
-      focusEntry(focusOnOpenRef.current === "last" ? interactiveEntries.length - 1 : 0);
+      focusOnOpenRef.current = "first";
+      const items = [...itemRefs.current.values()];
+      focusElement(focusOnOpen === "last" ? items.at(-1) : items[0]);
     });
     return () => {
       cancelled = true;
-      unregister();
     };
-  }, [focusEntry, interactiveEntries.length, open, overlayId]);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open || !anchor) return;
+    const activeElement = anchor.ownerDocument.activeElement;
+    const focusedIndex = interactiveEntries.findIndex(
+      (entry) => itemRefs.current.get(entry.id) === activeElement,
+    );
+    if (focusedIndex >= 0 && focusedIndex !== activeIndex) {
+      setActiveIndex(focusedIndex);
+    }
+  }, [activeIndex, anchor, interactiveEntries, open]);
 
   useEffect(() => {
     if (!open || !anchor) return;

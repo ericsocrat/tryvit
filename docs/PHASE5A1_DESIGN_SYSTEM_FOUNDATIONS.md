@@ -443,9 +443,9 @@ integration runs:
   it records 393 governed modules, 498 inspected runtime modules, zero forbidden
   boundaries, six symbol-aware compatibility entries, five controlled relocations,
   and zero V2 route consumers outside `/dev/components`;
-- `npm run design-system:check` passed 23 files and 185 tests, and the transitive
+- `npm run design-system:check` passed 23 files and 187 tests, and the transitive
   architecture contract passed its additional 6 tests;
-- the complete frontend suite passed 401 files with 1 skipped and 6,628 tests with
+- the complete frontend suite passed 401 files with 1 skipped and 6,630 tests with
   19 skipped;
 - TypeScript, full source lint, scoped E2E/tooling/test lint, and `git diff --check`
   passed;
