@@ -98,7 +98,9 @@ jobs:
     permissions:
       contents: read
     env:
-      PHASE5_LIVE_INVENTORY_BASE_SHA: ${{ github.sha }}
+      # Pushes/manual runs on main validate the report's exact-main history.
+      # Feature-branch dispatches resolve the independently fetched main merge base.
+      PHASE5_LIVE_INVENTORY_BASE_SHA: ${{ github.ref == 'refs/heads/main' && github.sha || '' }}
     timeout-minutes: 8
     defaults:
       run:
