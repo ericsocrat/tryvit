@@ -206,6 +206,20 @@ describe("Phase 5A.1b catalog contract", () => {
     const comboboxForcedColors = comboboxStyles.slice(
       comboboxStyles.indexOf("@media (forced-colors: active)"),
     );
+    const overlayStyles = readFileSync(
+      path.join(
+        process.cwd(),
+        "src",
+        "design-system",
+        "primitives",
+        "Overlay",
+        "overlay.module.css",
+      ),
+      "utf8",
+    );
+    const overlayForcedColors = overlayStyles.slice(
+      overlayStyles.indexOf("@media (forced-colors: active)"),
+    );
 
     expect(config).toContain('const HAS_PHASE5A1_CATALOG = process.env.PHASE5A1_CATALOG === "1"');
     expect(config).toContain(
@@ -281,6 +295,9 @@ describe("Phase 5A.1b catalog contract", () => {
     );
     expect(comboboxForcedColors).toMatch(
       /\.option\[data-active="true"\]\s+\.optionDescription\s*\{[^}]*color:\s*HighlightText;/u,
+    );
+    expect(overlayForcedColors).toMatch(
+      /\.overlay::backdrop\s*\{[^}]*animation:\s*none;[^}]*background:\s*Canvas;[^}]*opacity:\s*1;/u,
     );
     for (const retiredReplica of [
       "catalog-v2-button",

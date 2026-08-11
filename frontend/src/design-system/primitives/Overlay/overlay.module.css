@@ -156,7 +156,8 @@
   }
 
   .overlay::backdrop {
+    animation: none;
     background: Canvas;
-    opacity: 0.75;
+    opacity: 1;
   }
 }
