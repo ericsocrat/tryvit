@@ -668,6 +668,101 @@ async function pointerOutside(page: Page, pointer: "fine" | "coarse"): Promise<v
   }
 }
 
+async function prepareAnchoredInput(
+  page: Page,
+  input: CatalogLocator,
+  capture: CatalogFailureCapture,
+): Promise<void> {
+  try {
+    await input.scrollIntoViewIfNeeded();
+    await page.evaluate(() => new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    }));
+    await input.evaluate((element) => (element as HTMLElement).focus({ preventScroll: true }));
+    await expect(input).toBeFocused();
+  } catch {
+    throw new CatalogFailure("focus-contract-invalid", capture);
+  }
+}
+
+interface ComboboxOpenSnapshot {
+  readonly activeDescendantPresent: boolean;
+  readonly expanded: string | null;
+  readonly inputBusy: string | null;
+  readonly inputFocused: boolean;
+  readonly listboxBusy: string | null;
+  readonly listboxVisible: boolean;
+  readonly liveStatus: string;
+  readonly optionCount: number;
+  readonly popupCount: number;
+  readonly popupStatus: string;
+}
+
+async function readComboboxOpenSnapshot(
+  page: Page,
+  probeName: string,
+): Promise<ComboboxOpenSnapshot> {
+  return page.evaluate((name) => {
+    const probe = document.querySelector<HTMLElement>(`[data-catalog-probe="${name}"]`);
+    const input = probe?.querySelector<HTMLInputElement>('[data-ds-part="input"]') ?? null;
+    const controlledId = input?.getAttribute("aria-controls") ?? "";
+    const listbox = controlledId
+      ? document.getElementById(controlledId)
+      : null;
+    const popup = listbox?.closest<HTMLElement>(
+      '[data-ds-component="combobox"][data-ds-part="content"][data-state="open"]',
+    ) ?? null;
+    const listboxStyle = listbox ? getComputedStyle(listbox) : null;
+
+    return {
+      activeDescendantPresent: Boolean(input?.getAttribute("aria-activedescendant")),
+      expanded: input?.getAttribute("aria-expanded") ?? null,
+      inputBusy: input?.getAttribute("aria-busy") ?? null,
+      inputFocused: document.activeElement === input,
+      listboxBusy: listbox?.getAttribute("aria-busy") ?? null,
+      listboxVisible: Boolean(
+        listbox &&
+        listbox.getClientRects().length > 0 &&
+        listboxStyle?.display !== "none" &&
+        listboxStyle?.visibility !== "hidden",
+      ),
+      liveStatus: probe?.querySelector<HTMLElement>('[role="status"]')?.textContent?.trim() ?? "",
+      optionCount: listbox?.querySelectorAll('[role="option"]').length ?? 0,
+      popupCount: document.querySelectorAll(
+        '[data-ds-component="combobox"][data-ds-part="content"][data-state="open"]',
+      ).length,
+      popupStatus: popup?.querySelector<HTMLElement>('[aria-hidden="true"]')?.textContent?.trim() ?? "",
+    };
+  }, probeName);
+}
+
+async function assertComboboxOpenSnapshot(
+  page: Page,
+  probeName: string,
+  expectedStatus: string,
+  expectedOptionCount: number,
+  expectedBusy: "true" | null,
+  expectActiveDescendant: boolean,
+  capture: CatalogFailureCapture,
+): Promise<void> {
+  try {
+    await expect.poll(() => readComboboxOpenSnapshot(page, probeName)).toEqual({
+      activeDescendantPresent: expectActiveDescendant,
+      expanded: "true",
+      inputBusy: expectedBusy,
+      inputFocused: true,
+      listboxBusy: expectedBusy,
+      listboxVisible: true,
+      liveStatus: expectedStatus,
+      optionCount: expectedOptionCount,
+      popupCount: 1,
+      popupStatus: expectedStatus,
+    });
+  } catch {
+    throw new CatalogFailure("interaction-contract-invalid", capture);
+  }
+}
+
 async function exerciseNestedMenu(
   page: Page,
   modal: CatalogLocator,
@@ -736,36 +831,46 @@ async function exerciseCombobox(
   destination: string,
   context: CatalogCaptureContext,
 ): Promise<Buffer> {
-  const input = page.locator('[data-catalog-probe="combobox-ready"] [data-ds-part="input"]');
-  await input.scrollIntoViewIfNeeded();
-  await input.focus();
+  const capture = "actions-forms--combobox-open";
+  const probeName = "combobox-ready";
+  const probe = page.locator(`[data-catalog-probe="${probeName}"]`);
+  const input = probe.locator('[data-ds-part="input"]');
+  const expectedStatus = (await probe.locator("p").innerText()).trim();
+  if (!expectedStatus) throw new CatalogFailure("interaction-contract-invalid", capture);
+  await prepareAnchoredInput(page, input, capture);
   await page.keyboard.press("ArrowDown");
   const popup = page.locator('[data-ds-component="combobox"][data-ds-part="content"]');
   const listbox = popup.locator('[data-ds-part="listbox"]');
-  await expect(listbox).toBeVisible();
-  await expect(input).toHaveAttribute("aria-expanded", "true");
-  await assertFocusNotObscured(input, "actions-forms--combobox-open");
-  await assertPortalScope(popup, "actions-forms--combobox-open");
+  await assertComboboxOpenSnapshot(page, probeName, expectedStatus, 3, null, true, capture);
+  await assertFocusNotObscured(input, capture);
+  await assertPortalScope(popup, capture);
   if (context.reducedMotion === "reduce") {
-    await assertReducedMotionFinalState(popup, "actions-forms--combobox-open");
+    await assertReducedMotionFinalState(popup, capture);
   }
-  await assertForcedColorsFinalState(popup, "actions-forms--combobox-open", context);
-  await assertNoOverflow(page, "actions-forms--combobox-open");
-  await assertMinimumTargetSizes(page, "actions-forms--combobox-open");
-  await assertFullPageAxe(page, "actions-forms--combobox-open");
+  await assertForcedColorsFinalState(popup, capture, context);
+  await assertNoOverflow(page, capture);
+  await assertMinimumTargetSizes(page, capture);
+  await assertFullPageAxe(page, capture);
+  await assertComboboxOpenSnapshot(page, probeName, expectedStatus, 3, null, true, capture);
   const buffer = await screenshotInteraction(page, destination);
-  await page.keyboard.press("Enter");
-  await expect(input).toHaveAttribute("aria-expanded", "false");
-  await page.keyboard.press("ArrowDown");
-  await expect(listbox).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(input).toBeFocused();
-  await expect(input).toHaveAttribute("aria-expanded", "false");
-  await pointerActivate(page, input, context.pointer);
-  await page.keyboard.press("ArrowDown");
-  await expect(listbox).toBeVisible();
-  await pointerOutside(page, context.pointer);
-  await expect(input).toHaveAttribute("aria-expanded", "false");
+  await assertComboboxOpenSnapshot(page, probeName, expectedStatus, 3, null, true, capture);
+  try {
+    await page.keyboard.press("Enter");
+    await expect(input).toHaveAttribute("aria-expanded", "false");
+    await page.keyboard.press("ArrowDown");
+    await expect(listbox).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(input).toBeFocused();
+    await expect(input).toHaveAttribute("aria-expanded", "false");
+    await pointerActivate(page, input, context.pointer);
+    await page.keyboard.press("ArrowDown");
+    await expect(listbox).toBeVisible();
+    await pointerOutside(page, context.pointer);
+    await expect(input).toHaveAttribute("aria-expanded", "false");
+  } catch (error) {
+    if (error instanceof CatalogFailure) throw error;
+    throw new CatalogFailure("interaction-contract-invalid", capture);
+  }
   return buffer;
 }
 
@@ -776,28 +881,24 @@ async function exerciseComboboxStatus(
   destination: string,
   context: CatalogCaptureContext,
 ): Promise<Buffer> {
-  const probe = page.locator(`[data-catalog-probe="combobox-${state}"]`);
+  const probeName = `combobox-${state}`;
+  const probe = page.locator(`[data-catalog-probe="${probeName}"]`);
   const input = probe.locator('[data-ds-part="input"]');
-  await input.scrollIntoViewIfNeeded();
-  await input.focus();
-  await page.keyboard.press("ArrowDown");
-  const popup = page.locator('[data-ds-component="combobox"][data-ds-part="content"]');
-  const listbox = popup.locator('[data-ds-part="listbox"]');
   const expectedStatus = (await probe.locator("p").innerText()).trim();
   if (!expectedStatus) throw new CatalogFailure("interaction-contract-invalid", capture);
-  await expect(listbox).toBeVisible();
-  await expect(input).toHaveAttribute("aria-expanded", "true");
-  await expect(input).not.toHaveAttribute("aria-activedescendant");
-  await expect(probe.locator('[role="status"]')).toHaveText(expectedStatus);
-  await expect(popup.locator('[aria-hidden="true"]')).toHaveText(expectedStatus);
-  await expect(listbox.locator('[role="option"]')).toHaveCount(0);
-  if (state === "loading") {
-    await expect(input).toHaveAttribute("aria-busy", "true");
-    await expect(listbox).toHaveAttribute("aria-busy", "true");
-  } else {
-    await expect(input).not.toHaveAttribute("aria-busy");
-    await expect(listbox).not.toHaveAttribute("aria-busy");
-  }
+  await prepareAnchoredInput(page, input, capture);
+  await page.keyboard.press("ArrowDown");
+  const popup = page.locator('[data-ds-component="combobox"][data-ds-part="content"]');
+  const expectedBusy = state === "loading" ? "true" : null;
+  await assertComboboxOpenSnapshot(
+    page,
+    probeName,
+    expectedStatus,
+    0,
+    expectedBusy,
+    false,
+    capture,
+  );
   await assertFocusNotObscured(input, capture);
   await assertPortalScope(popup, capture);
   if (context.reducedMotion === "reduce") await assertReducedMotionFinalState(popup, capture);
@@ -805,10 +906,32 @@ async function exerciseComboboxStatus(
   await assertNoOverflow(page, capture);
   await assertMinimumTargetSizes(page, capture);
   await assertFullPageAxe(page, capture);
+  await assertComboboxOpenSnapshot(
+    page,
+    probeName,
+    expectedStatus,
+    0,
+    expectedBusy,
+    false,
+    capture,
+  );
   const buffer = await screenshotInteraction(page, destination);
-  await page.keyboard.press("Escape");
-  await expect(input).toBeFocused();
-  await expect(input).toHaveAttribute("aria-expanded", "false");
+  await assertComboboxOpenSnapshot(
+    page,
+    probeName,
+    expectedStatus,
+    0,
+    expectedBusy,
+    false,
+    capture,
+  );
+  try {
+    await page.keyboard.press("Escape");
+    await expect(input).toBeFocused();
+    await expect(input).toHaveAttribute("aria-expanded", "false");
+  } catch {
+    throw new CatalogFailure("interaction-contract-invalid", capture);
+  }
   return buffer;
 }
 
