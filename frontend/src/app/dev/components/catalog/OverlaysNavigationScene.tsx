@@ -27,6 +27,15 @@ export function OverlaysNavigationScene({ copy }: Readonly<{ copy: CatalogCopy }
         </CatalogRow>
 
         <OverlayNavigationProbes
+          combobox={{
+            label: primitives.comboboxLabel,
+            hint: primitives.comboboxHint,
+            placeholder: primitives.comboboxPlaceholder,
+            options: primitives.comboboxOptions,
+            loadingMessage: primitives.comboboxLoading,
+            emptyMessage: primitives.comboboxEmpty,
+            resultsMessage: primitives.comboboxResults,
+          }}
           dialog={{
             trigger: primitives.dialogTrigger,
             title: primitives.dialogTitle,

@@ -101,6 +101,11 @@
   gap: var(--ds-space-4);
 }
 
+.catalog-v2-overlay-combobox {
+  flex: 1 1 16rem;
+  min-width: min(100%, 16rem);
+}
+
 .catalog-v2-direction-probe {
   max-width: 100%;
   min-width: 0;

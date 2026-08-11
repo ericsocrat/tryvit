@@ -22,6 +22,28 @@ function props(overrides: Partial<ComboboxProps> = {}): ComboboxProps {
   };
 }
 
+function markRendered(...elements: readonly HTMLElement[]): void {
+  const rectangle = {
+    bottom: 40,
+    height: 32,
+    left: 8,
+    right: 120,
+    top: 8,
+    width: 112,
+    x: 8,
+    y: 8,
+    toJSON: () => ({}),
+  } as DOMRect;
+  const rectangles = {
+    0: rectangle,
+    item: (index: number) => (index === 0 ? rectangle : null),
+    length: 1,
+  } as DOMRectList;
+  elements.forEach((element) => {
+    vi.spyOn(element, "getClientRects").mockReturnValue(rectangles);
+  });
+}
+
 describe("V2 Combobox", () => {
   it("keeps DOM focus on the input while arrows move active descendant and Enter selects", async () => {
     const user = userEvent.setup();
@@ -67,6 +89,65 @@ describe("V2 Combobox", () => {
     await user.tab();
     expect(screen.getByRole("button", { name: "After field" })).toHaveFocus();
     expect(input).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("hands a containing modal's forward Tab boundary back without leaving the modal", async () => {
+    const user = userEvent.setup();
+    const observedDialogTab = vi.fn();
+    render(
+      <dialog
+        aria-label="Evidence dialog"
+        onKeyDown={(event) => {
+          if (event.key === "Tab") observedDialogTab(event.defaultPrevented);
+        }}
+        open
+      >
+        <button type="button">First modal action</button>
+        <Combobox {...props()} />
+      </dialog>,
+    );
+    const first = screen.getByRole("button", { name: "First modal action" });
+    const input = screen.getByRole("combobox", { name: "Evidence source" });
+    markRendered(first, input);
+
+    await user.click(input);
+    await screen.findByRole("listbox");
+    await user.tab();
+
+    expect(first).toHaveFocus();
+    expect(input).toHaveAttribute("aria-expanded", "false");
+    expect(observedDialogTab).toHaveBeenCalledWith(true);
+  });
+
+  it("honors a parent Tab veto and leaves modified Tab shortcuts native", async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(
+      <dialog
+        aria-label="Vetoed evidence dialog"
+        onKeyDownCapture={(event) => {
+          if (event.key === "Tab") event.preventDefault();
+        }}
+        open
+      >
+        <button type="button">First vetoed action</button>
+        <Combobox {...props()} />
+      </dialog>,
+    );
+    const first = screen.getByRole("button", { name: "First vetoed action" });
+    const vetoedInput = screen.getByRole("combobox", { name: "Evidence source" });
+    markRendered(first, vetoedInput);
+    await user.click(vetoedInput);
+    await screen.findByRole("listbox");
+
+    fireEvent.keyDown(vetoedInput, { key: "Tab" });
+    expect(vetoedInput).toHaveAttribute("aria-expanded", "true");
+    expect(first).not.toHaveFocus();
+    unmount();
+
+    render(<Combobox {...props({ defaultOpen: true })} />);
+    const modifiedInput = screen.getByRole("combobox", { name: "Evidence source" });
+    fireEvent.keyDown(modifiedInput, { key: "Tab", metaKey: true });
+    expect(modifiedInput).toHaveAttribute("aria-expanded", "true");
   });
 
   it("does not consume Enter without an active option or native text-editing keys", async () => {

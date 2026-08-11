@@ -4,7 +4,7 @@
   "provenance": {
     "baseSha": "296742c9b941e0aad9cfb5b00dfa3738af9eba0e",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "724bf1476d9e39cddc376d72cda19a2e0b040ad6a712f94a0a81877e11f3abe3"
+    "sourceFingerprint": "5112eb6e1d0f3772fa6b0b3e40a8c71e9feefaaa7daa35ff922400b08b35581a"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -2963,6 +2963,7 @@
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
         "frontend/src/design-system/primitives/Button/Button.tsx",
+        "frontend/src/design-system/primitives/Combobox/index.ts",
         "frontend/src/design-system/primitives/Menu/index.ts",
         "frontend/src/design-system/primitives/Overlay/index.ts",
         "frontend/src/design-system/primitives/Tabs/index.ts",
@@ -17476,6 +17477,7 @@
         "frontend/src/design-system/primitives/Field/index.ts",
         "frontend/src/design-system/primitives/shared/anchored-position.ts",
         "frontend/src/design-system/primitives/shared/controllable-state.ts",
+        "frontend/src/design-system/primitives/shared/dom.ts",
         "frontend/src/design-system/primitives/shared/overlay-stack.ts",
         "frontend/src/design-system/primitives/shared/portal.tsx"
       ],
@@ -17531,7 +17533,8 @@
         "frontend/src/design-system/primitives/Combobox/Combobox.tsx"
       ],
       "directConsumers": [
-        "frontend/src/app/dev/components/catalog/CatalogCombobox.client.tsx"
+        "frontend/src/app/dev/components/catalog/CatalogCombobox.client.tsx",
+        "frontend/src/app/dev/components/catalog/OverlayNavigationProbes.client.tsx"
       ],
       "transitiveRouteConsumers": [
         {
@@ -18115,6 +18118,7 @@
       "runtimeBoundary": "client-reachable",
       "directModuleImports": [],
       "directConsumers": [
+        "frontend/src/design-system/primitives/Combobox/Combobox.tsx",
         "frontend/src/design-system/primitives/Menu/Menu.tsx",
         "frontend/src/design-system/primitives/Overlay/Overlay.tsx",
         "frontend/src/design-system/primitives/Tabs/Tabs.tsx"
@@ -19511,7 +19515,7 @@
     ],
     "inspectedModuleCount": 498,
     "violations": [],
-    "sourceFingerprint": "ebae29e594f02adc4d04bd87b1c30268ce3a32fe06c6db6ae84c98fdc9ecc363"
+    "sourceFingerprint": "3f72087780be06b886cd94ce67f453ac43db938f7138111375dd4e8d5941791f"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

@@ -14,6 +14,7 @@ import {
 
 import { Field } from "@/design-system/primitives/Field";
 import { anchoredPopupStyle } from "@/design-system/primitives/shared/anchored-position";
+import { focusElement, modalBoundaryTabStop } from "@/design-system/primitives/shared/dom";
 import { isTopOverlay, registerOverlay } from "@/design-system/primitives/shared/overlay-stack";
 import { ScopedPortal } from "@/design-system/primitives/shared/portal";
 import { useControllableState } from "@/design-system/primitives/shared/controllable-state";
@@ -257,8 +258,22 @@ export function Combobox({
       event.preventDefault();
       event.stopPropagation();
       closePopup();
-    } else if (event.key === "Tab" && open) {
+    } else if (
+      event.key === "Tab" &&
+      open &&
+      !event.defaultPrevented &&
+      !event.altKey &&
+      !event.ctrlKey &&
+      !event.metaKey
+    ) {
+      const boundaryDestination = anchor
+        ? modalBoundaryTabStop(anchor, event.shiftKey, popupRef.current)
+        : null;
       closePopup();
+      if (boundaryDestination) {
+        event.preventDefault();
+        queueMicrotask(() => focusElement(boundaryDestination, { preventScroll: false }));
+      }
     }
   };
 

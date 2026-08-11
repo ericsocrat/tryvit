@@ -219,15 +219,28 @@ export function Menu({
         event.preventDefault();
         event.stopPropagation();
         closeMenu(true);
-      } else if (event.key === "Tab") {
+      } else if (
+        event.key === "Tab" &&
+        !event.defaultPrevented &&
+        !event.altKey &&
+        !event.ctrlKey &&
+        !event.metaKey
+      ) {
         // The menu is portalled, so DOM order cannot carry focus to the page-level
         // tab stop after the trigger. Reproduce that destination only when one
-        // exists; at a document edge, retain the browser's native Tab behavior.
+        // exists; handle the non-addressable browser-chrome edge explicitly below.
         const next = anchor ? adjacentTabStop(anchor, event.shiftKey, contentRef.current) : null;
-        closeMenu(false);
         if (next) {
+          closeMenu(false);
           event.preventDefault();
-          queueMicrotask(() => focusElement(next));
+          queueMicrotask(() => focusElement(next, { preventScroll: false }));
+        } else {
+          // Browser chrome is not a script-addressable destination. Cancel the
+          // ambiguous portal-origin traversal at a document edge and re-anchor
+          // on the trigger; the next native Tab then leaves in that direction.
+          event.preventDefault();
+          focusElement(anchor);
+          closeMenu(false);
         }
       } else if (
         event.key.length === 1 &&

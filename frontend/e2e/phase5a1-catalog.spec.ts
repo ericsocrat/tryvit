@@ -826,6 +826,64 @@ async function exerciseNestedMenu(
   }
 }
 
+async function exerciseNestedCombobox(
+  page: Page,
+  modal: CatalogLocator,
+  component: "dialog" | "sheet",
+  capture: CatalogFailureCapture,
+  context: CatalogCaptureContext,
+): Promise<void> {
+  const probe = modal.locator(`[data-catalog-probe="${component}-nested-combobox"]`);
+  const input = probe.locator('[data-ds-part="input"]');
+  await prepareAnchoredInput(page, input, capture);
+  await page.keyboard.press("ArrowDown");
+  const popup = modal.locator(
+    '[data-ds-overlay-host] [data-ds-component="combobox"][data-ds-part="content"]',
+  );
+  const listbox = popup.locator('[data-ds-part="listbox"]');
+  try {
+    await expect(input).toBeFocused();
+    await expect(input).toHaveAttribute("aria-expanded", "true");
+    await expect(listbox).toBeVisible();
+    await expect(listbox.locator('[role="option"]')).toHaveCount(3);
+    await assertPortalScope(popup, capture);
+    const usesCurrentModalHost = await popup.evaluate((element) => {
+      const portalRoot = element.closest<HTMLElement>("[data-ds-portal-root]");
+      const host = portalRoot?.parentElement;
+      return Boolean(
+        host?.hasAttribute("data-ds-overlay-host") &&
+        host.closest("dialog[open]") === element.closest("dialog[open]"),
+      );
+    });
+    if (!usesCurrentModalHost) throw new CatalogFailure("portal-scope-invalid", capture);
+    if (context.reducedMotion === "reduce") {
+      await assertReducedMotionFinalState(popup, capture);
+    }
+    await assertForcedColorsFinalState(popup, capture, context);
+    await assertFocusNotObscured(input, capture);
+    await assertNoOverflow(page, capture);
+    await assertMinimumTargetSizes(page, capture);
+    await assertFullPageAxe(page, capture);
+
+    await page.keyboard.press("Tab");
+    await expect(input).toHaveAttribute("aria-expanded", "false");
+    await expect(popup).toBeHidden();
+    await expect(modal.locator('[data-ds-part="close"]')).toBeFocused();
+    await expect(modal).toBeVisible();
+
+    await input.focus();
+    await page.keyboard.press("ArrowDown");
+    await expect(popup).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(popup).toBeHidden();
+    await expect(input).toBeFocused();
+    await expect(modal).toBeVisible();
+  } catch (error) {
+    if (error instanceof CatalogFailure) throw error;
+    throw new CatalogFailure("focus-containment-invalid", capture);
+  }
+}
+
 async function exerciseCombobox(
   page: Page,
   destination: string,
@@ -948,11 +1006,27 @@ async function exerciseModal(
   await page.keyboard.press("Enter");
   const content = page.locator(`dialog[data-ds-component="${component}"][open]`);
   await expect(content).toBeVisible();
-  const initialFocus = content.locator('[data-catalog-focus="initial"]');
-  const lastFocus = content.locator('[data-catalog-focus="last"]');
+  const initialAction = content.locator('[data-catalog-focus="initial"]');
+  const initialFocus = component === "sheet"
+    ? content.getByRole("heading")
+    : initialAction;
+  const lastFocus = content.locator(
+    `[data-catalog-probe="${component}-nested-combobox"] [data-ds-part="input"]`,
+  );
   const firstCycleFocus = content.locator('[data-ds-part="close"]');
   await expect(initialFocus).toBeFocused();
   await assertFocusNotObscured(initialFocus, capture);
+  if (component === "sheet") {
+    await page.keyboard.press("Shift+Tab");
+    if (!await lastFocus.evaluate((element) => element === document.activeElement)) {
+      throw new CatalogFailure("focus-containment-invalid", capture);
+    }
+    await initialFocus.focus();
+    await page.keyboard.press("Tab");
+    if (!await firstCycleFocus.evaluate((element) => element === document.activeElement)) {
+      throw new CatalogFailure("focus-containment-invalid", capture);
+    }
+  }
   await lastFocus.focus();
   await page.keyboard.press("Tab");
   if (!await firstCycleFocus.evaluate((element) => element === document.activeElement)) {
@@ -971,8 +1045,8 @@ async function exerciseModal(
   if (!backgroundFocusRejected) {
     throw new CatalogFailure("focus-containment-invalid", capture);
   }
-  await initialFocus.focus();
-  await assertFocusNotObscured(initialFocus, capture);
+  await initialAction.focus();
+  await assertFocusNotObscured(initialAction, capture);
   await assertPortalScope(content, capture);
   if (context.reducedMotion === "reduce") await assertReducedMotionFinalState(content, capture);
   await assertForcedColorsFinalState(content, capture, context);
@@ -981,6 +1055,7 @@ async function exerciseModal(
   await assertFullPageAxe(page, capture);
   const buffer = await screenshotInteraction(page, destination);
   await exerciseNestedMenu(page, content, component, capture, context);
+  await exerciseNestedCombobox(page, content, component, capture, context);
   await page.keyboard.press("Escape");
   await expect(content).toBeHidden();
   if (!await trigger.evaluate((element) => element === document.activeElement)) {

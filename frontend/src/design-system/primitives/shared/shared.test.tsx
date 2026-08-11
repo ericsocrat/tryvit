@@ -5,7 +5,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { anchoredPopupStyle } from "./anchored-position";
 import { portalScopeAttributes, resolvePortalHost, ScopedPortal } from "./portal";
-import { adjacentTabStop } from "./dom";
+import {
+  adjacentDomTabStop,
+  adjacentTabStop,
+  modalBoundaryTabStop,
+  programmaticTabStopCandidates,
+  tabbableElements,
+} from "./dom";
 import { lockDocumentScroll } from "./scroll-lock";
 
 const html = document.documentElement;
@@ -14,6 +20,28 @@ const originalHtmlAttributes = {
   language: html.getAttribute("lang"),
   theme: html.getAttribute("data-theme"),
 };
+
+function markRendered(...elements: readonly Element[]): void {
+  const rectangle = {
+    bottom: 40,
+    height: 32,
+    left: 8,
+    right: 120,
+    top: 8,
+    width: 112,
+    x: 8,
+    y: 8,
+    toJSON: () => ({}),
+  } as DOMRect;
+  const rectangles = {
+    0: rectangle,
+    item: (index: number) => (index === 0 ? rectangle : null),
+    length: 1,
+  } as DOMRectList;
+  elements.forEach((element) => {
+    vi.spyOn(element, "getClientRects").mockReturnValue(rectangles);
+  });
+}
 
 function restoreAttribute(name: string, value: string | null) {
   if (value === null) html.removeAttribute(name);
@@ -105,6 +133,7 @@ describe("V2 portal and overlay helpers", () => {
     const last = document.createElement("button");
     dialog.append(first, trigger, last);
     document.body.append(outside, dialog);
+    markRendered(first, trigger, last, outside);
 
     expect(adjacentTabStop(trigger, false)).toBe(last);
     expect(adjacentTabStop(trigger, true)).toBe(first);
@@ -113,6 +142,195 @@ describe("V2 portal and overlay helpers", () => {
     expect(adjacentTabStop(last, false)).not.toBe(outside);
     dialog.remove();
     outside.remove();
+  });
+
+  it("orders only rendered sequential tab stops", () => {
+    const root = document.createElement("div");
+    const zero = document.createElement("button");
+    const positiveTwo = document.createElement("button");
+    positiveTwo.tabIndex = 2;
+    const positiveOne = document.createElement("button");
+    positiveOne.tabIndex = 1;
+    const details = document.createElement("details");
+    details.open = true;
+    const summary = document.createElement("summary");
+    details.append(summary);
+    const disabledFieldset = document.createElement("fieldset");
+    disabledFieldset.disabled = true;
+    const fieldsetButton = document.createElement("button");
+    disabledFieldset.append(fieldsetButton);
+    const hiddenParent = document.createElement("div");
+    hiddenParent.style.display = "none";
+    const hiddenButton = document.createElement("button");
+    hiddenParent.append(hiddenButton);
+    const checkedRadio = document.createElement("input");
+    checkedRadio.type = "radio";
+    checkedRadio.name = "evidence-choice";
+    checkedRadio.checked = true;
+    const uncheckedRadio = document.createElement("input");
+    uncheckedRadio.type = "radio";
+    uncheckedRadio.name = "evidence-choice";
+    const unselectedRadioOne = document.createElement("input");
+    unselectedRadioOne.type = "radio";
+    unselectedRadioOne.name = "unselected-choice";
+    unselectedRadioOne.tabIndex = 3;
+    const unselectedRadioTwo = document.createElement("input");
+    unselectedRadioTwo.type = "radio";
+    unselectedRadioTwo.name = "unselected-choice";
+    unselectedRadioTwo.tabIndex = 2;
+    const zeroRadioOne = document.createElement("input");
+    zeroRadioOne.type = "radio";
+    zeroRadioOne.name = "zero-choice";
+    const zeroRadioTwo = document.createElement("input");
+    zeroRadioTwo.type = "radio";
+    zeroRadioTwo.name = "zero-choice";
+    const map = document.createElement("map");
+    map.name = "evidence-map";
+    const area = document.createElement("area");
+    area.href = "#evidence-area";
+    map.append(area);
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    const svgLink = document.createElementNS("http://www.w3.org/2000/svg", "a");
+    svgLink.setAttribute("href", "#evidence-vector");
+    svgLink.setAttribute("tabindex", "0");
+    svg.append(svgLink);
+    const nonFocusableForeignElement = document.createElementNS(
+      "urn:tryvit:test",
+      "evidence-node",
+    );
+    nonFocusableForeignElement.setAttribute("tabindex", "0");
+    root.append(
+      zero,
+      positiveTwo,
+      positiveOne,
+      details,
+      disabledFieldset,
+      hiddenParent,
+      checkedRadio,
+      uncheckedRadio,
+      unselectedRadioOne,
+      unselectedRadioTwo,
+      zeroRadioOne,
+      zeroRadioTwo,
+      map,
+      svg,
+      nonFocusableForeignElement,
+    );
+    document.body.append(root);
+    const getComputedStyle = window.getComputedStyle.bind(window);
+    const renderedAreaStyle = getComputedStyle(zero);
+    vi.spyOn(window, "getComputedStyle").mockImplementation((element, pseudoElement) =>
+      element === area ? renderedAreaStyle : getComputedStyle(element, pseudoElement),
+    );
+    markRendered(
+      zero,
+      positiveTwo,
+      positiveOne,
+      summary,
+      fieldsetButton,
+      checkedRadio,
+      uncheckedRadio,
+      unselectedRadioOne,
+      unselectedRadioTwo,
+      zeroRadioOne,
+      zeroRadioTwo,
+      area,
+      svgLink,
+    );
+
+    expect(tabbableElements(root)).toEqual([
+      positiveOne,
+      positiveTwo,
+      unselectedRadioTwo,
+      zero,
+      summary,
+      checkedRadio,
+      zeroRadioOne,
+      area,
+      svgLink,
+    ]);
+    expect(tabbableElements(root)).not.toContain(fieldsetButton);
+    expect(tabbableElements(root)).not.toContain(hiddenButton);
+    expect(tabbableElements(root)).not.toContain(uncheckedRadio);
+    expect(tabbableElements(root)).not.toContain(nonFocusableForeignElement);
+    expect(tabbableElements(root, true)).toContain(unselectedRadioOne);
+    expect(tabbableElements(root, true)).not.toContain(unselectedRadioTwo);
+    expect(tabbableElements(root)).toContain(zeroRadioOne);
+    expect(tabbableElements(root)).not.toContain(zeroRadioTwo);
+    expect(tabbableElements(root, true)).toContain(zeroRadioTwo);
+    expect(tabbableElements(root, true)).not.toContain(zeroRadioOne);
+    root.remove();
+  });
+
+  it("preserves native radio entry around a programmatic DOM starting point", () => {
+    const root = document.createElement("div");
+    const before = document.createElement("button");
+    const firstRadio = document.createElement("input");
+    firstRadio.type = "radio";
+    firstRadio.name = "programmatic-choice";
+    const summary = document.createElement("div");
+    summary.tabIndex = -1;
+    const secondRadio = document.createElement("input");
+    secondRadio.type = "radio";
+    secondRadio.name = "programmatic-choice";
+    const after = document.createElement("button");
+    root.append(before, firstRadio, summary, secondRadio, after);
+    document.body.append(root);
+    markRendered(before, firstRadio, secondRadio, after);
+
+    expect(adjacentDomTabStop(
+      summary,
+      programmaticTabStopCandidates(root),
+      false,
+    )).toBe(secondRadio);
+    expect(adjacentDomTabStop(
+      summary,
+      programmaticTabStopCandidates(root),
+      true,
+    )).toBe(firstRadio);
+
+    firstRadio.checked = true;
+    expect(adjacentDomTabStop(
+      summary,
+      programmaticTabStopCandidates(root),
+      false,
+    )).toBe(after);
+    expect(adjacentDomTabStop(
+      summary,
+      programmaticTabStopCandidates(root),
+      true,
+    )).toBe(firstRadio);
+
+    firstRadio.checked = false;
+    secondRadio.checked = true;
+    expect(adjacentDomTabStop(
+      summary,
+      programmaticTabStopCandidates(root),
+      false,
+    )).toBe(secondRadio);
+    expect(adjacentDomTabStop(
+      summary,
+      programmaticTabStopCandidates(root),
+      true,
+    )).toBe(before);
+    root.remove();
+  });
+
+  it("returns only an actual modal boundary destination", () => {
+    const dialog = document.createElement("dialog");
+    dialog.setAttribute("open", "");
+    const first = document.createElement("button");
+    const middle = document.createElement("input");
+    const last = document.createElement("button");
+    dialog.append(first, middle, last);
+    document.body.append(dialog);
+    markRendered(first, middle, last);
+
+    expect(modalBoundaryTabStop(first, true)).toBe(last);
+    expect(modalBoundaryTabStop(last, false)).toBe(first);
+    expect(modalBoundaryTabStop(middle, false)).toBeNull();
+    expect(modalBoundaryTabStop(middle, true)).toBeNull();
+    dialog.remove();
   });
 
   it("renders an explicitly scoped portal root", () => {

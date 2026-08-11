@@ -82,10 +82,10 @@ continue to consume V1 or the five exact V1 facades plus the existing Icon bridg
 The complete runtime-boundary scan inspected 498 production modules and found zero
 forbidden imports. The report records six symbol-aware compatibility entries and five
 fixed source relocations. Running the generator twice produced the identical file
-SHA-256 `e09f65f65cad12428f378650fdc8b3695a3f982e2d42b243965f5e143376ee95`.
+SHA-256 `6569b98734bdd537b39dd76aae5995cccb3c8b37be9fbd639ade111d07562b3a`.
 Its governed source fingerprint is
-`724bf1476d9e39cddc376d72cda19a2e0b040ad6a712f94a0a81877e11f3abe3`, its
+`5112eb6e1d0f3772fa6b0b3e40a8c71e9feefaaa7daa35ff922400b08b35581a`, its
 runtime-boundary fingerprint is
-`ebae29e594f02adc4d04bd87b1c30268ce3a32fe06c6db6ae84c98fdc9ecc363`, and its
+`3f72087780be06b886cd94ce67f453ac43db938f7138111375dd4e8d5941791f`, and its
 facade-audit fingerprint is
 `4daf94084e2480085c91b0ffe0f0b5f392ca80062874ac8f8a1b8be578ec5332`.

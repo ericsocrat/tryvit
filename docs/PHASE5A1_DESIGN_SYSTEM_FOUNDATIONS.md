@@ -145,8 +145,11 @@ public behavior.
 - Combobox, Dialog, Sheet, Menu, Tabs, and Tooltip implement the relevant composite
   keyboard/focus contracts. Native modal dialogs own inertness and containment;
   nested popups portal into the nearest dialog host and only the top overlay handles
-  dismissal. Popup geometry respects the effective mobile visual viewport, and checked
-  menu state remains visible without relying on color.
+  dismissal. Dialog and Sheet admit native zero-order light-DOM focus scopes: positive
+  `tabIndex`, HTML custom-element hosts, customized built-ins, and inspectable open shadow
+  roots fail closed, while non-introspectable closed shadow roots are explicitly outside
+  the supported composition contract. Popup geometry respects the effective mobile visual
+  viewport, and checked menu state remains visible without relying on color.
 - PageState is server-compatible and covers loading, empty, degraded, error, offline,
   paused, and recovering semantics with a caller-selected h1–h6 hierarchy, polite
   defaults, and explicit urgent opt-in.
@@ -241,11 +244,11 @@ disposition, migration/removal gates, V1/V2 status, classified debt, the stable 
 base, and deterministic fingerprints. A fail-closed boundary audit rejects runtime
 imports from production source into docs, E2E, tests, or tooling; the current report
 contains zero violations. The Phase 5A.1b generated JSON SHA-256 is
-`E09F65F65CAD12428F378650FDC8B3695A3F982E2D42B243965F5E143376EE95`; its governed
+`6569B98734BDD537B39DD76AAE5995CCCB3C8B37BE9FBD639ADE111D07562B3A`; its governed
 source fingerprint is
-`724bf1476d9e39cddc376d72cda19a2e0b040ad6a712f94a0a81877e11f3abe3`, and its
+`5112eb6e1d0f3772fa6b0b3e40a8c71e9feefaaa7daa35ff922400b08b35581a`, and its
 runtime-boundary fingerprint is
-`ebae29e594f02adc4d04bd87b1c30268ce3a32fe06c6db6ae84c98fdc9ecc363`. The
+`3f72087780be06b886cd94ce67f453ac43db938f7138111375dd4e8d5941791f`. The
 historical Phase 5 inventory remains untouched.
 
 Visual-debt ratchets classify exact path/value/count maxima for legacy `.card` and
@@ -301,6 +304,11 @@ scope, outside/pointer behavior, actual 44 px targets, focus visibility, overflo
 200% reflow, text spacing, forced colors, reduced motion, system theme, and RTL/LTR
 Switch endpoints. These are candidate captures, never snapshot assertions, and never
 replace the immutable Phase 5A.0d baseline namespace.
+
+The Dialog and Sheet journeys additionally exercise nested Menu and ready Combobox
+content inside each exact modal host, explicit-ref and default-heading focus entry,
+one-Tab boundary containment, and popup-only Escape without changing the fixed artifact
+or evidence-check counts.
 
 Text-spacing and zoom checks audit hidden/clip boundaries, sibling text intersections,
 visible-point obscuration, and document/component overflow before writing their named
@@ -430,13 +438,13 @@ required exact-head Linux catalog, visual, performance, security, and integratio
 
 - token artifacts passed deterministic `--check`;
 - the live inventory generated twice to the identical SHA-256
-  `E09F65F65CAD12428F378650FDC8B3695A3F982E2D42B243965F5E143376EE95`;
+  `6569B98734BDD537B39DD76AAE5995CCCB3C8B37BE9FBD639ADE111D07562B3A`;
   it records 393 governed modules, 498 inspected runtime modules, zero forbidden
   boundaries, six symbol-aware compatibility entries, five controlled relocations,
   and zero V2 route consumers outside `/dev/components`;
-- `npm run design-system:check` passed 23 files and 166 tests, and the transitive
+- `npm run design-system:check` passed 23 files and 182 tests, and the transitive
   architecture contract passed its additional 6 tests;
-- the complete frontend suite passed 401 files with 1 skipped and 6,609 tests with
+- the complete frontend suite passed 401 files with 1 skipped and 6,625 tests with
   19 skipped;
 - TypeScript, full source lint, scoped E2E/tooling/test lint, and `git diff --check`
   passed;

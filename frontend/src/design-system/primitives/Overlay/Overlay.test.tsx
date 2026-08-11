@@ -2,22 +2,52 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { StrictMode, useRef, useState } from "react";
+import { StrictMode, createElement, useLayoutEffect, useRef, useState } from "react";
 import { axe } from "vitest-axe";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { Menu } from "@/design-system/primitives/Menu";
 
-import { Dialog, type OverlayCloseReason } from "./Overlay";
+import {
+  Dialog,
+  Sheet,
+  assertSupportedModalFocusScope,
+  type ModalOverlayProps,
+  type OverlayCloseReason,
+} from "./Overlay";
 
 const originalShowModal = HTMLDialogElement.prototype.showModal;
 const originalClose = HTMLDialogElement.prototype.close;
-const nestedPopupEntries = [{
-  id: "review-source",
-  label: "Review source",
-  textValue: "Review source",
-  onSelect: () => undefined,
-}] as const;
+const nestedPopupEntries = [
+  {
+    id: "review-source",
+    label: "Review source",
+    textValue: "Review source",
+    onSelect: () => undefined,
+  },
+] as const;
+
+function markRendered(...elements: readonly Element[]): void {
+  const rectangle = {
+    bottom: 40,
+    height: 32,
+    left: 8,
+    right: 120,
+    top: 8,
+    width: 112,
+    x: 8,
+    y: 8,
+    toJSON: () => ({}),
+  } as DOMRect;
+  const rectangles = {
+    0: rectangle,
+    item: (index: number) => (index === 0 ? rectangle : null),
+    length: 1,
+  } as DOMRectList;
+  elements.forEach((element) => {
+    vi.spyOn(element, "getClientRects").mockReturnValue(rectangles);
+  });
+}
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = function showModal() {
@@ -38,29 +68,154 @@ afterAll(() => {
 
 function Harness({
   onChange = vi.fn(),
+  onKeyDown,
   dismissible = true,
+  kind = "dialog",
 }: Readonly<{
   onChange?: (open: boolean, reason: OverlayCloseReason) => void;
+  onKeyDown?: ModalOverlayProps["onKeyDown"];
   dismissible?: boolean;
+  kind?: "dialog" | "sheet";
 }>) {
   const [open, setOpen] = useState(false);
+  const Overlay = kind === "dialog" ? Dialog : Sheet;
   return (
     <section data-design-system="v2" data-theme="dark" dir="rtl" lang="pl">
-      <button type="button" onClick={() => setOpen(true)}>Open review</button>
-      <Dialog
+      <button type="button" onClick={() => setOpen(true)}>
+        Open review
+      </button>
+      <Overlay
         open={open}
         title="Review evidence"
         description="Check the source before confirming."
         closeLabel="Close review"
         dismissible={dismissible}
+        onKeyDown={onKeyDown}
         onOpenChange={(nextOpen, reason) => {
           onChange(nextOpen, reason);
           setOpen(nextOpen);
         }}
       >
         <button type="button">Confirm evidence</button>
-      </Dialog>
+      </Overlay>
     </section>
+  );
+}
+
+function ProgrammaticFocusHarness() {
+  const [open, setOpen] = useState(false);
+  const summaryRef = useRef<HTMLDivElement>(null);
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        Open summary review
+      </button>
+      <Dialog
+        closeLabel="Close summary review"
+        initialFocusRef={summaryRef}
+        onOpenChange={setOpen}
+        open={open}
+        title="Summary review"
+      >
+        <button type="button">Before summary</button>
+        <div ref={summaryRef} tabIndex={-1}>
+          Validation summary
+        </div>
+        <button type="button">After summary</button>
+      </Dialog>
+    </>
+  );
+}
+
+function IframeBoundaryHarness() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        Open iframe review
+      </button>
+      <Dialog
+        closeLabel="Close iframe review"
+        onOpenChange={setOpen}
+        open={open}
+        title="Iframe review"
+      >
+        <iframe title="Embedded evidence" />
+      </Dialog>
+    </>
+  );
+}
+
+function SvgInvokerHarness() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      {createElement(
+        "svg",
+        null,
+        createElement(
+          "a",
+          {
+            "aria-label": "Open vector review",
+            href: "#vector-review",
+            onClick: (event) => {
+              event.preventDefault();
+              setOpen(true);
+            },
+            tabIndex: 0,
+          },
+          createElement("text", null, "Open vector review"),
+        ),
+      )}
+      <Dialog
+        closeLabel="Close vector review"
+        onOpenChange={setOpen}
+        open={open}
+        title="Vector review"
+      >
+        Vector evidence
+      </Dialog>
+    </>
+  );
+}
+
+function MathMlInvokerHarness() {
+  const [open, setOpen] = useState(false);
+  const hostRef = useRef<HTMLSpanElement>(null);
+
+  useLayoutEffect(() => {
+    const host = hostRef.current;
+    if (!host) return;
+    const math = document.createElementNS("http://www.w3.org/1998/Math/MathML", "math");
+    const invoker = document.createElementNS(
+      "http://www.w3.org/1998/Math/MathML",
+      "annotation-xml",
+    );
+    invoker.setAttribute("aria-label", "Open formula review");
+    invoker.setAttribute("role", "button");
+    invoker.setAttribute("tabindex", "0");
+    const openDialog = () => setOpen(true);
+    invoker.addEventListener("click", openDialog);
+    math.append(invoker);
+    host.append(math);
+    return () => {
+      invoker.removeEventListener("click", openDialog);
+      math.remove();
+    };
+  }, []);
+
+  return (
+    <>
+      <span ref={hostRef} />
+      <Dialog
+        closeLabel="Close formula review"
+        onOpenChange={setOpen}
+        open={open}
+        title="Formula review"
+      >
+        Formula evidence
+      </Dialog>
+    </>
   );
 }
 
@@ -82,13 +237,213 @@ describe("V2 native modal overlays", () => {
     const dialog = screen.getByRole("dialog", { name: "Review evidence" });
     expect(dialog).toHaveAttribute("open");
     expect(dialog).toHaveAttribute("aria-modal", "true");
-    await waitFor(() => expect(screen.getByRole("heading", { name: "Review evidence" }))
-      .toHaveFocus());
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { name: "Review evidence" })).toHaveFocus(),
+    );
     const portalRoot = dialog.closest("[data-ds-portal-root]");
     expect(portalRoot).toHaveAttribute("data-design-system", "v2");
     expect(portalRoot).toHaveAttribute("data-theme", "dark");
     expect(portalRoot).toHaveAttribute("dir", "rtl");
     expect(portalRoot).toHaveAttribute("lang", "pl");
+  });
+
+  it.each(["dialog", "sheet"] as const)(
+    "wraps one forward and reverse Tab at the %s boundary while composing onKeyDown",
+    async (kind) => {
+      const user = userEvent.setup();
+      const onTabKeyDown = vi.fn();
+      render(
+        <Harness
+          kind={kind}
+          onKeyDown={(event) => {
+            if (event.key === "Tab") onTabKeyDown();
+          }}
+        />,
+      );
+      await user.click(screen.getByRole("button", { name: "Open review" }));
+
+      const overlay = screen.getByRole("dialog", { name: "Review evidence" });
+      const heading = within(overlay).getByRole("heading", { name: "Review evidence" });
+      const close = within(overlay).getByRole("button", { name: "Close review" });
+      const last = within(overlay).getByRole("button", { name: "Confirm evidence" });
+      markRendered(close, last);
+      await waitFor(() => expect(heading).toHaveFocus());
+
+      await user.tab({ shift: true });
+      expect(last).toHaveFocus();
+      heading.focus();
+      await user.tab();
+      expect(close).toHaveFocus();
+      last.focus();
+
+      await user.tab();
+      expect(close).toHaveFocus();
+      await user.tab({ shift: true });
+      expect(last).toHaveFocus();
+      expect(onTabKeyDown).toHaveBeenCalledTimes(4);
+    },
+  );
+
+  it("preserves DOM-adjacent Tab order from a contained programmatic focus target", async () => {
+    const user = userEvent.setup();
+    render(<ProgrammaticFocusHarness />);
+    await user.click(screen.getByRole("button", { name: "Open summary review" }));
+
+    const overlay = screen.getByRole("dialog", { name: "Summary review" });
+    const before = within(overlay).getByRole("button", { name: "Before summary" });
+    const summary = within(overlay).getByText("Validation summary");
+    const after = within(overlay).getByRole("button", { name: "After summary" });
+    const close = within(overlay).getByRole("button", { name: "Close summary review" });
+    markRendered(close, before, after);
+    await waitFor(() => expect(summary).toHaveFocus());
+
+    await user.tab();
+    expect(after).toHaveFocus();
+    summary.focus();
+    await user.tab({ shift: true });
+    expect(before).toHaveFocus();
+  });
+
+  it("uses its end guard when a nested browsing context cannot bubble Tab", async () => {
+    const user = userEvent.setup();
+    render(<IframeBoundaryHarness />);
+    await user.click(screen.getByRole("button", { name: "Open iframe review" }));
+
+    const overlay = screen.getByRole("dialog", { name: "Iframe review" });
+    const close = within(overlay).getByRole("button", { name: "Close iframe review" });
+    const iframe = within(overlay).getByTitle("Embedded evidence");
+    const guard = overlay.querySelector<HTMLElement>("[data-ds-focus-guard='end']");
+    expect(guard).not.toBeNull();
+    markRendered(close, iframe);
+
+    guard?.focus();
+    expect(close).toHaveFocus();
+  });
+
+  it("restores a connected focusable SVG invoker", async () => {
+    const user = userEvent.setup();
+    render(<SvgInvokerHarness />);
+    const invoker = screen.getByRole("link", { name: "Open vector review" });
+    invoker.focus();
+    fireEvent.click(invoker);
+    await user.click(await screen.findByRole("button", { name: "Close vector review" }));
+
+    await waitFor(() => expect(invoker).toHaveFocus());
+  });
+
+  it("restores a connected focusable MathML invoker", async () => {
+    render(<MathMlInvokerHarness />);
+    const invoker = document.querySelector<Element>(
+      '[aria-label="Open formula review"]',
+    );
+    expect(invoker).not.toBeNull();
+    if (!invoker) throw new Error("MathML invoker missing");
+    const focus = vi.fn();
+    Object.defineProperties(invoker, {
+      focus: { configurable: true, value: focus },
+      tabIndex: { configurable: true, value: 0 },
+    });
+    const getComputedStyle = window.getComputedStyle.bind(window);
+    const fallbackStyle = getComputedStyle(document.body);
+    const computedStyleSpy = vi
+      .spyOn(window, "getComputedStyle")
+      .mockImplementation((element, pseudoElement) =>
+        element === invoker ? fallbackStyle : getComputedStyle(element, pseudoElement),
+      );
+    const ownActiveElement = Object.getOwnPropertyDescriptor(document, "activeElement");
+    Object.defineProperty(document, "activeElement", {
+      configurable: true,
+      get: () => invoker,
+    });
+    try {
+      fireEvent.click(invoker);
+      const close = await waitFor(() => {
+        const element = document.querySelector<HTMLButtonElement>(
+          'dialog [data-ds-part="close"]',
+        );
+        expect(element).not.toBeNull();
+        return element;
+      });
+      if (!close) throw new Error("MathML dialog close action missing");
+      if (ownActiveElement) {
+        Object.defineProperty(document, "activeElement", ownActiveElement);
+      } else {
+        delete (document as Document & { activeElement?: Element | null }).activeElement;
+      }
+      fireEvent.click(close);
+      await waitFor(() => expect(focus).toHaveBeenCalled());
+    } finally {
+      computedStyleSpy.mockRestore();
+      if (ownActiveElement) {
+        Object.defineProperty(document, "activeElement", ownActiveElement);
+      } else {
+        delete (document as Document & { activeElement?: Element | null }).activeElement;
+      }
+    }
+  });
+
+  it("rejects positive tab order inside the modal focus scope", () => {
+    const dialog = document.createElement("dialog");
+    const positive = document.createElement("button");
+    positive.tabIndex = 1;
+    dialog.append(positive);
+    document.body.append(dialog);
+    markRendered(positive);
+
+    expect(() => assertSupportedModalFocusScope(dialog)).toThrow(
+      "Dialog and Sheet do not accept positive tabIndex descendants.",
+    );
+    dialog.remove();
+  });
+
+  it("rejects consumer shadow-root focus scopes", () => {
+    const dialog = document.createElement("dialog");
+    const shadowHost = document.createElement("div");
+    shadowHost.attachShadow({ mode: "open" }).append(document.createElement("button"));
+    dialog.append(shadowHost);
+
+    expect(() => assertSupportedModalFocusScope(dialog)).toThrow(
+      "Dialog and Sheet do not accept consumer custom-element or shadow-root focus scopes.",
+    );
+  });
+
+  it("revalidates a dynamically attached open shadow root before Tab traversal", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    await user.click(screen.getByRole("button", { name: "Open review" }));
+    const dialog = await screen.findByRole("dialog", { name: "Review evidence" });
+    const host = document.createElement("div");
+    host.tabIndex = 0;
+    dialog.append(host);
+    host.focus();
+    host.attachShadow({ mode: "open" }).append(document.createElement("button"));
+    const errors: Error[] = [];
+    const captureError = (event: ErrorEvent) => {
+      if (event.error instanceof Error) errors.push(event.error);
+      event.preventDefault();
+    };
+    window.addEventListener("error", captureError);
+    try {
+      fireEvent.keyDown(host, { key: "Tab" });
+      await waitFor(() =>
+        expect(errors.map((error) => error.message)).toContain(
+          "Dialog and Sheet do not accept consumer custom-element or shadow-root focus scopes.",
+        ),
+      );
+    } finally {
+      window.removeEventListener("error", captureError);
+    }
+  });
+
+  it("does not misclassify standard hyphenated non-HTML elements as custom elements", () => {
+    const dialog = document.createElement("dialog");
+    const annotation = document.createElementNS(
+      "http://www.w3.org/1998/Math/MathML",
+      "annotation-xml",
+    );
+    dialog.append(annotation);
+
+    expect(() => assertSupportedModalFocusScope(dialog)).not.toThrow();
   });
 
   it("reports close-button and Escape reasons and restores the invoker", async () => {
@@ -151,7 +506,9 @@ describe("V2 native modal overlays", () => {
       const [open, setOpen] = useState(false);
       return (
         <>
-          <button type="button" onClick={() => setOpen(true)}>Open parent modal</button>
+          <button type="button" onClick={() => setOpen(true)}>
+            Open parent modal
+          </button>
           <Dialog
             open={open}
             title="Parent modal"
@@ -161,10 +518,7 @@ describe("V2 native modal overlays", () => {
               setOpen(nextOpen);
             }}
           >
-            <Menu
-              entries={nestedPopupEntries}
-              triggerLabel="Open nested actions"
-            />
+            <Menu entries={nestedPopupEntries} triggerLabel="Open nested actions" />
           </Dialog>
         </>
       );
@@ -264,7 +618,9 @@ describe("V2 native modal overlays", () => {
             restoreFocusRef={restoreRef}
             onOpenChange={setOpen}
           >
-            <button type="button" onClick={() => setOpen(false)}>Finish workflow</button>
+            <button type="button" onClick={() => setOpen(false)}>
+              Finish workflow
+            </button>
           </Dialog>
         </>
       );
@@ -287,7 +643,9 @@ describe("V2 native modal overlays", () => {
       const [innerOpen, setInnerOpen] = useState(false);
       return (
         <>
-          <button type="button" onClick={() => setOuterOpen(true)}>Open outer</button>
+          <button type="button" onClick={() => setOuterOpen(true)}>
+            Open outer
+          </button>
           <Dialog
             open={outerOpen}
             title="Outer dialog"
@@ -297,7 +655,9 @@ describe("V2 native modal overlays", () => {
               setOuterOpen(next);
             }}
           >
-            <button type="button" onClick={() => setInnerOpen(true)}>Open inner</button>
+            <button type="button" onClick={() => setInnerOpen(true)}>
+              Open inner
+            </button>
             <Dialog
               open={innerOpen}
               title="Inner dialog"
@@ -317,17 +677,29 @@ describe("V2 native modal overlays", () => {
     render(<NestedHarness />);
     await user.click(screen.getByRole("button", { name: "Open outer" }));
     const outer = screen.getByRole("dialog", { name: "Outer dialog" });
-    await user.click(within(outer).getByRole("button", { name: "Open inner" }));
+    const innerTrigger = within(outer).getByRole("button", { name: "Open inner" });
+    const outerClose = within(outer).getByRole("button", { name: "Close outer" });
+    markRendered(innerTrigger, outerClose);
+    await user.click(innerTrigger);
     const inner = screen.getByRole("dialog", { name: "Inner dialog" });
     const outerHost = outer.querySelector("[data-ds-overlay-host]");
     expect(outerHost).toContainElement(inner.closest("[data-ds-portal-root]"));
     expect(document.body.style.overflow).toBe("hidden");
+
+    const innerClose = within(inner).getByRole("button", { name: "Close inner" });
+    markRendered(innerClose);
+    innerClose.focus();
+    await user.tab();
+    expect(innerClose).toHaveFocus();
 
     fireEvent(inner, new Event("cancel", { cancelable: true }));
     expect(innerChange).toHaveBeenLastCalledWith(false, "escape");
     expect(outerChange).not.toHaveBeenCalled();
     expect(screen.getByRole("dialog", { name: "Outer dialog" })).toBeVisible();
     expect(document.body.style.overflow).toBe("hidden");
+    await waitFor(() => expect(innerTrigger).toHaveFocus());
+    await user.tab();
+    expect(outerClose).toHaveFocus();
   });
 
   it("has no detectable accessibility violations in an open modal", async () => {

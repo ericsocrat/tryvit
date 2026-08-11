@@ -3,12 +3,22 @@
 import { useMemo, useRef, useState } from "react";
 
 import { Button } from "@/design-system/primitives/Button/Button";
+import { Combobox } from "@/design-system/primitives/Combobox";
 import { Menu, type MenuEntry } from "@/design-system/primitives/Menu";
 import { Dialog, Sheet } from "@/design-system/primitives/Overlay";
 import { Tabs } from "@/design-system/primitives/Tabs";
 import { Tooltip } from "@/design-system/primitives/Tooltip";
 
 interface OverlayNavigationProbesProps {
+  readonly combobox: {
+    readonly label: string;
+    readonly hint: string;
+    readonly placeholder: string;
+    readonly options: readonly [string, string, string];
+    readonly loadingMessage: string;
+    readonly emptyMessage: string;
+    readonly resultsMessage: string;
+  };
   readonly dialog: {
     readonly trigger: string;
     readonly title: string;
@@ -36,7 +46,37 @@ interface OverlayNavigationProbesProps {
   readonly tooltipContent: string;
 }
 
+function NestedModalCombobox({
+  component,
+  copy,
+}: Readonly<{
+  component: "dialog" | "sheet";
+  copy: OverlayNavigationProbesProps["combobox"];
+}>) {
+  const options = copy.options.map((label, index) => ({
+    value: `${component}-evidence-source-${index + 1}`,
+    label,
+  }));
+  return (
+    <div
+      className="catalog-v2-overlay-combobox"
+      data-catalog-probe={`${component}-nested-combobox`}
+    >
+      <Combobox
+        emptyMessage={copy.emptyMessage}
+        hint={copy.hint}
+        label={copy.label}
+        loadingMessage={copy.loadingMessage}
+        options={options}
+        placeholder={copy.placeholder}
+        resultsMessage={(count) => copy.resultsMessage.replace("{count}", String(count))}
+      />
+    </div>
+  );
+}
+
 export function OverlayNavigationProbes({
+  combobox,
   dialog,
   sheet,
   menuTrigger,
@@ -51,7 +91,6 @@ export function OverlayNavigationProbes({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [menuCheckboxChecked, setMenuCheckboxChecked] = useState(true);
   const dialogInitialFocusRef = useRef<HTMLButtonElement>(null);
-  const sheetInitialFocusRef = useRef<HTMLButtonElement>(null);
 
   const menuEntries = useMemo<readonly MenuEntry[]>(
     () => [
@@ -130,9 +169,12 @@ export function OverlayNavigationProbes({
         contentClassName="catalog-v2-overlay-content"
         description={dialog.description}
         footer={
-          <Button data-catalog-focus="last" onClick={() => setDialogOpen(false)} variant="quiet">
-            {dialog.lastAction}
-          </Button>
+          <>
+            <Button onClick={() => setDialogOpen(false)} variant="quiet">
+              {dialog.lastAction}
+            </Button>
+            <NestedModalCombobox component="dialog" copy={combobox} />
+          </>
         }
         initialFocusRef={dialogInitialFocusRef}
         onOpenChange={setDialogOpen}
@@ -157,11 +199,13 @@ export function OverlayNavigationProbes({
         contentClassName="catalog-v2-overlay-content"
         description={sheet.description}
         footer={
-          <Button data-catalog-focus="last" onClick={() => setSheetOpen(false)} variant="quiet">
-            {sheet.lastAction}
-          </Button>
+          <>
+            <Button onClick={() => setSheetOpen(false)} variant="quiet">
+              {sheet.lastAction}
+            </Button>
+            <NestedModalCombobox component="sheet" copy={combobox} />
+          </>
         }
-        initialFocusRef={sheetInitialFocusRef}
         onOpenChange={setSheetOpen}
         open={sheetOpen}
         title={sheet.title}
@@ -170,11 +214,7 @@ export function OverlayNavigationProbes({
         <div data-catalog-probe="sheet-nested-menu">
           <Menu entries={menuEntries} triggerLabel={menuTrigger} />
         </div>
-        <Button
-          data-catalog-focus="initial"
-          ref={sheetInitialFocusRef}
-          onClick={() => setSheetOpen(false)}
-        >
+        <Button data-catalog-focus="initial" onClick={() => setSheetOpen(false)}>
           {sheet.initialAction}
         </Button>
       </Sheet>

@@ -8,11 +8,11 @@ export interface PortalScopeAttributes {
   readonly lang?: string;
 }
 
-function closestAttribute(anchor: HTMLElement, attribute: string): string | undefined {
+function closestAttribute(anchor: Element, attribute: string): string | undefined {
   return anchor.closest<HTMLElement>(`[${attribute}]`)?.getAttribute(attribute) ?? undefined;
 }
 
-export function portalScopeAttributes(anchor: HTMLElement): PortalScopeAttributes {
+export function portalScopeAttributes(anchor: Element): PortalScopeAttributes {
   const rawTheme = closestAttribute(anchor, "data-theme");
   const explicitDirection = closestAttribute(anchor, "dir");
   const computedDirection = anchor.ownerDocument.defaultView
@@ -32,7 +32,7 @@ export function portalScopeAttributes(anchor: HTMLElement): PortalScopeAttribute
   };
 }
 
-export function resolvePortalHost(anchor: HTMLElement): HTMLElement {
+export function resolvePortalHost(anchor: Element): HTMLElement {
   const dialog = anchor.closest<HTMLDialogElement>("dialog[open]");
   if (dialog) {
     return dialog.querySelector<HTMLElement>("[data-ds-overlay-host]") ?? dialog;
@@ -45,7 +45,7 @@ export function ScopedPortal({
   children,
   style,
 }: Readonly<{
-  anchor: HTMLElement | null;
+  anchor: Element | null;
   children: ReactNode;
   style?: CSSProperties;
 }>) {

@@ -108,6 +108,16 @@
   display: contents;
 }
 
+.focusGuard {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  inline-size: 1px;
+  block-size: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 @keyframes overlay-enter {
   from {
     opacity: 0;

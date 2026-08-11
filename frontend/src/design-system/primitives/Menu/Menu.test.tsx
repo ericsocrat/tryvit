@@ -46,6 +46,28 @@ function entries(
   ];
 }
 
+function markRendered(...elements: readonly HTMLElement[]): void {
+  const rectangle = {
+    bottom: 40,
+    height: 32,
+    left: 8,
+    right: 120,
+    top: 8,
+    width: 112,
+    x: 8,
+    y: 8,
+    toJSON: () => ({}),
+  } as DOMRect;
+  const rectangles = {
+    0: rectangle,
+    item: (index: number) => (index === 0 ? rectangle : null),
+    length: 1,
+  } as DOMRectList;
+  elements.forEach((element) => {
+    vi.spyOn(element, "getClientRects").mockReturnValue(rectangles);
+  });
+}
+
 describe("V2 Menu", () => {
   it("supports wrapped arrows, Home/End, typeahead, and focusable disabled items", async () => {
     const user = userEvent.setup();
@@ -125,13 +147,19 @@ describe("V2 Menu", () => {
       </>,
     );
     const trigger = screen.getByRole("button", { name: "Evidence actions" });
+    const before = screen.getByRole("button", { name: "Before menu" });
+    const after = screen.getByRole("button", { name: "After menu" });
+    markRendered(before, trigger, after);
+    const beforeFocus = vi.spyOn(before, "focus");
+    const afterFocus = vi.spyOn(after, "focus");
 
     await user.click(trigger);
     await waitFor(() =>
       expect(screen.getByRole("menuitem", { name: "Alpha source" })).toHaveFocus(),
     );
     await user.tab();
-    await waitFor(() => expect(screen.getByRole("button", { name: "After menu" })).toHaveFocus());
+    await waitFor(() => expect(after).toHaveFocus());
+    expect(afterFocus).toHaveBeenCalledWith({ preventScroll: false });
     expect(screen.queryByRole("menu")).toBeNull();
 
     await user.click(trigger);
@@ -139,19 +167,45 @@ describe("V2 Menu", () => {
       expect(screen.getByRole("menuitem", { name: "Alpha source" })).toHaveFocus(),
     );
     await user.tab({ shift: true });
-    await waitFor(() => expect(screen.getByRole("button", { name: "Before menu" })).toHaveFocus());
+    await waitFor(() => expect(before).toHaveFocus());
+    expect(beforeFocus).toHaveBeenCalledWith({ preventScroll: false });
     expect(screen.queryByRole("menu")).toBeNull();
   });
 
-  it("closes on Tab without canceling the browser when no logical destination exists", async () => {
+  it("closes and reanchors on the trigger at a document-edge Tab", async () => {
     const user = userEvent.setup();
     render(<Menu triggerLabel="Evidence actions" entries={entries()} />);
+    const trigger = screen.getByRole("button", { name: "Evidence actions" });
+    await user.click(trigger);
+    const firstItem = screen.getByRole("menuitem", { name: "Alpha source" });
+    await waitFor(() => expect(firstItem).toHaveFocus());
+    const triggerFocus = vi.spyOn(trigger, "focus");
+
+    expect(fireEvent.keyDown(firstItem, { key: "Tab", metaKey: true })).toBe(true);
+    expect(screen.getByRole("menu")).toBeVisible();
+    expect(fireEvent.keyDown(firstItem, { key: "Tab" })).toBe(false);
+    expect(triggerFocus).toHaveBeenCalledWith({ preventScroll: true });
+    expect(trigger).toHaveFocus();
+    expect(screen.queryByRole("menu")).toBeNull();
+  });
+
+  it("honors an ancestor capture veto for Tab handoff", async () => {
+    const user = userEvent.setup();
+    render(
+      <div
+        onKeyDownCapture={(event) => {
+          if (event.key === "Tab") event.preventDefault();
+        }}
+      >
+        <Menu triggerLabel="Evidence actions" entries={entries()} />
+      </div>,
+    );
     await user.click(screen.getByRole("button", { name: "Evidence actions" }));
     const firstItem = screen.getByRole("menuitem", { name: "Alpha source" });
     await waitFor(() => expect(firstItem).toHaveFocus());
 
-    expect(fireEvent.keyDown(firstItem, { key: "Tab" })).toBe(true);
-    expect(screen.queryByRole("menu")).toBeNull();
+    expect(fireEvent.keyDown(firstItem, { key: "Tab" })).toBe(false);
+    expect(screen.getByRole("menu")).toBeVisible();
   });
 
   it("clears typeahead state whenever the menu closes", async () => {

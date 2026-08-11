@@ -96,8 +96,9 @@ inert Icon where allowed.
 Combobox is an editable, single-select listbox. Focus stays on the input and
 `aria-activedescendant` identifies a simple, noninteractive option. Arrow keys open and
 wrap; Enter selects only an active enabled option; Escape closes without clearing;
-Tab closes without interception. Text-editing Home/End and platform shortcuts remain
-native. Async loading, empty, and error states are visible and announced politely.
+Tab closes without interception except when the input owns a containing modal's first or
+last Tab boundary, where focus wraps within that modal. Text-editing Home/End and platform
+shortcuts remain native. Async loading, empty, and error states are visible and announced politely.
 Option values must be non-empty and unique; a removed async option cannot leave a stale
 active ID or submitted value and requests one explicit clear transition. Labels and
 optional descriptions are localized strings; arbitrary React
@@ -109,9 +110,17 @@ that null state to the HTML empty string only at the form-serialization boundary
 ### Dialog and Sheet
 
 Both use conditionally mounted native `<dialog>` plus `showModal()`. They require a
-visible title and localized close label, expose a modal role, rely on native inertness
-and Tab containment, and use an explicit initial-focus policy. An initial-focus ref must
-resolve inside the modal. Escape, close-button, backdrop, and programmatic dismissal
+visible title and localized close label, expose a modal role, rely on native inertness,
+and add a topmost-only rendered sequential Tab boundary guard. Direction-aware radio
+groups, SVG/native stops, programmatically focused static content, and nested
+browsing-context exits retain a contained next destination; boundary moves scroll the
+focused control into view. Positive `tabIndex` descendants, HTML custom-element hosts,
+customized built-ins, and inspectable open shadow-root focus scopes are rejected composition
+boundaries. Closed shadow roots cannot be introspected and are outside the supported contract;
+use native zero-order light DOM.
+Native movement remains unchanged between interior stops. An explicit initial-focus
+policy requires any initial-focus ref to resolve inside the modal. Escape, close-button,
+backdrop, and programmatic dismissal
 restore the connected invoker. `restoreFocusRef` supplies a different connected logical
 target when a workflow requires it. Backdrop dismissal requires primary pointer down
 and up on the backdrop, so a drag crossing the boundary cannot close.
@@ -127,7 +136,10 @@ menu without at least one actionable entry fails closed. DOM focus enters `menui
 disabled focusability, Escape restoration, outside pointer, and forward/backward Tab
 destinations are defined. Leaving the composite by pointer, Tab, or programmatic focus
 closes it without stealing the destination's focus. Nested modal Tab destinations remain
-inside the nearest open dialog, and only the top overlay responds to Escape/outside
+inside the nearest open dialog. At a document edge, where browser chrome is not a
+script-addressable destination from a portal, Menu cancels that Tab, closes, and reanchors
+on its trigger so the next native Tab leaves in the requested direction. Only the top
+overlay responds to Escape/outside
 dismissal. Checkbox rows always reserve a visible border-and-check indicator so state
 survives forced colors without relying on color alone.
 
@@ -219,6 +231,9 @@ light/dark/system, forced colors, reduced motion, fine/coarse pointer, default/o
 Axe, keyboard/focus/portal behavior,
 44 px targets, text spacing, overflow, and 200% reflow through 35 checks per case. These
 files are review candidates, not production baselines or Phase 5A.2 Golden References.
+The Dialog and Sheet journeys include a nested Menu and ready Combobox in the exact
+modal portal host, plus default-heading and explicit-ref focus entry, one-Tab boundary
+containment, popup-only Escape, and focus restoration without adding artifact paths.
 The altered text-spacing and 200%-zoom states are retained as named PNGs after automated
 clipping, sibling-overlap, visible-point-obscuration, and overflow screening so geometry
 checks and human visual judgment remain distinct.

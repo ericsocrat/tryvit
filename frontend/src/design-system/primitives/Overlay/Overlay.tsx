@@ -7,12 +7,21 @@ import {
   useRef,
   useState,
   type DialogHTMLAttributes,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
   type RefObject,
 } from "react";
 
-import { firstFocusable, focusElement } from "@/design-system/primitives/shared/dom";
+import {
+  adjacentDomTabStop,
+  firstFocusable,
+  focusElement,
+  isTabbableElement,
+  programmaticTabStopCandidates,
+  tabbableElements,
+  type TabbableElement,
+} from "@/design-system/primitives/shared/dom";
 import {
   isTopOverlay,
   registerOverlay,
@@ -60,7 +69,7 @@ export interface ModalOverlayProps
 
 interface ModalOverlayInnerProps extends Omit<ModalOverlayProps, "open"> {
   readonly kind: "dialog" | "sheet";
-  readonly invoker: HTMLElement;
+  readonly invoker: TabbableElement;
 }
 
 function isBackdropPoint(
@@ -71,6 +80,46 @@ function isBackdropPoint(
   const rectangle = dialog.getBoundingClientRect();
   return event.clientX < rectangle.left || event.clientX > rectangle.right ||
     event.clientY < rectangle.top || event.clientY > rectangle.bottom;
+}
+
+function modalTabbableElements(
+  dialog: HTMLDialogElement,
+  backwards: boolean,
+): readonly TabbableElement[] {
+  return tabbableElements(dialog, backwards).filter((element) =>
+    element.closest<HTMLDialogElement>("dialog[open]") === dialog,
+  );
+}
+
+function modalProgrammaticTabStopCandidates(
+  dialog: HTMLDialogElement,
+): readonly TabbableElement[] {
+  return programmaticTabStopCandidates(dialog).filter((element) =>
+    element.closest<HTMLDialogElement>("dialog[open]") === dialog,
+  );
+}
+
+/** @internal Runtime guard for focus scopes the Phase 5A.1b contract does not admit. */
+export function assertSupportedModalFocusScope(dialog: HTMLDialogElement): void {
+  const descendants = [...dialog.querySelectorAll<HTMLElement | SVGElement>("*")];
+  if (
+    dialog.tabIndex > 0 ||
+    descendants.some((element) => element.hasAttribute("tabindex") && element.tabIndex > 0)
+  ) {
+    throw new Error("Dialog and Sheet do not accept positive tabIndex descendants.");
+  }
+  if (
+    descendants.some(
+      (element) =>
+        (element.namespaceURI === "http://www.w3.org/1999/xhtml" &&
+          (element.localName.includes("-") || element.hasAttribute("is"))) ||
+        element.shadowRoot,
+    )
+  ) {
+    throw new Error(
+      "Dialog and Sheet do not accept consumer custom-element or shadow-root focus scopes.",
+    );
+  }
 }
 
 function ModalOverlayInner({
@@ -88,6 +137,8 @@ function ModalOverlayInner({
   semanticRole = "dialog",
   contentClassName,
   className,
+  onFocusCapture,
+  onKeyDown,
   invoker,
   ...props
 }: Readonly<ModalOverlayInnerProps>) {
@@ -109,6 +160,7 @@ function ModalOverlayInner({
     // that cleanup close.
     unmountingRef.current = false;
     const explicitRestoreTarget = restoreFocusRef?.current;
+    assertSupportedModalFocusScope(dialog);
     if (!dialog.open) dialog.showModal();
     const unlock = lockDocumentScroll(dialog.ownerDocument);
     queueMicrotask(() => {
@@ -159,6 +211,56 @@ function ModalOverlayInner({
       data-design-system="v2"
       data-ds-component={kind}
       data-state="open"
+      onFocusCapture={(event) => {
+        onFocusCapture?.(event);
+        assertSupportedModalFocusScope(event.currentTarget);
+      }}
+      onKeyDown={(event: ReactKeyboardEvent<HTMLDialogElement>) => {
+        onKeyDown?.(event);
+        if (
+          event.defaultPrevented ||
+          event.key !== "Tab" ||
+          event.altKey ||
+          event.ctrlKey ||
+          event.metaKey ||
+          !isTopOverlay(overlayId)
+        ) {
+          return;
+        }
+
+        const dialog = event.currentTarget;
+        assertSupportedModalFocusScope(dialog);
+        const candidates = modalTabbableElements(dialog, event.shiftKey);
+        const first = candidates[0];
+        const last = candidates.at(-1);
+        if (!first || !last) return;
+
+        const activeElement = dialog.ownerDocument.activeElement;
+        const activeIndex = activeElement instanceof Element
+          ? candidates.indexOf(activeElement as TabbableElement)
+          : -1;
+        const adjacentFromProgrammaticFocus = activeIndex < 0 &&
+            activeElement instanceof Element &&
+            dialog.contains(activeElement)
+          ? adjacentDomTabStop(
+            activeElement,
+            modalProgrammaticTabStopCandidates(dialog),
+            event.shiftKey,
+          )
+          : null;
+        const destination = activeIndex < 0
+          ? adjacentFromProgrammaticFocus ?? (event.shiftKey ? last : first)
+          : event.shiftKey && activeIndex === 0
+            ? last
+            : !event.shiftKey && activeIndex === candidates.length - 1
+              ? first
+              : null;
+        if (!destination) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        focusElement(destination, { preventScroll: false });
+      }}
       onCancel={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -226,6 +328,18 @@ function ModalOverlayInner({
         data-ds-overlay-host=""
         data-ds-part="portal-host"
       />
+      <span
+        className={styles.focusGuard}
+        data-ds-focus-guard="end"
+        onFocus={() => {
+          const dialog = dialogRef.current;
+          if (!dialog || !isTopOverlay(overlayId)) return;
+          focusElement(modalTabbableElements(dialog, false)[0], {
+            preventScroll: false,
+          });
+        }}
+        tabIndex={0}
+      />
     </dialog>
   );
 }
@@ -234,11 +348,11 @@ function ModalOverlay({
   kind,
   ...props
 }: Readonly<Omit<ModalOverlayProps, "open"> & { kind: "dialog" | "sheet" }>) {
-  const [scopeAnchor, setScopeAnchor] = useState<HTMLElement | null>(null);
+  const [scopeAnchor, setScopeAnchor] = useState<TabbableElement | null>(null);
 
   useLayoutEffect(() => {
     const activeElement = document.activeElement;
-    const nextAnchor = activeElement instanceof HTMLElement ? activeElement : document.body;
+    const nextAnchor = isTabbableElement(activeElement) ? activeElement : document.body;
     let cancelled = false;
     queueMicrotask(() => {
       if (!cancelled) setScopeAnchor(nextAnchor);
