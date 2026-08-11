@@ -89,6 +89,7 @@ describe("V2 Menu", () => {
     expect(alpha).toHaveFocus();
     await user.keyboard("{ArrowDown}");
     expect(disabled).toHaveFocus();
+    expect(disabled).toHaveAttribute("data-active", "true");
     await user.keyboard("{Enter}");
     expect(beta).not.toHaveBeenCalled();
     expect(screen.getByRole("menu")).toBeVisible();

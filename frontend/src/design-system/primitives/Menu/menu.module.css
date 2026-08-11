@@ -120,7 +120,15 @@
     forced-color-adjust: auto;
   }
 
-  .item[data-active="true"] {
+  .item[data-active="true"]:not([aria-disabled="true"]) {
+    color: HighlightText;
+    background: Highlight;
+    border-color: Highlight;
+  }
+
+  .item[data-active="true"][aria-disabled="true"] {
+    color: GrayText;
+    background: Canvas;
     border-color: Highlight;
   }
 }

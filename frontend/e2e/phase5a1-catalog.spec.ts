@@ -86,10 +86,22 @@ interface CatalogFailureDiagnostic {
   readonly axeRuleIds?: readonly string[];
   readonly axeRuleCount?: number;
   readonly axeNodeCount?: number;
+  readonly axeNodeFingerprints?: readonly AxeNodeFingerprint[];
   readonly overflowClientWidth?: number;
   readonly overflowScrollWidth?: number;
   readonly overflowTarget?: string;
   readonly overflowViewport?: number;
+}
+
+interface AxeNodeFingerprint {
+  readonly tag: string;
+  readonly role: string | null;
+  readonly component: string | null;
+  readonly part: string | null;
+  readonly foreground: string | null;
+  readonly background: string | null;
+  readonly contrastRatio: number | null;
+  readonly expectedContrastRatio: number | null;
 }
 
 class CatalogFailure extends Error {
@@ -271,15 +283,84 @@ async function assertFullPageAxe(
 ): Promise<void> {
   const result = await new AxeBuilder({ page }).analyze();
   if (result.violations.length === 0) return;
+  const nodes = result.violations.flatMap((violation) => violation.nodes);
+  const structures = await page.evaluate((axeTargets) => {
+    const safeIdentifier = (value: string | null): string | null =>
+      value && /^[a-z][a-z0-9-]{0,63}$/u.test(value) ? value : null;
+    return axeTargets.map((axeTarget) => {
+      if (axeTarget.length !== 1 || typeof axeTarget[0] !== "string") {
+        return { tag: "unknown", role: null, component: null, part: null };
+      }
+      let element: Element | null = null;
+      try {
+        element = document.querySelector(axeTarget[0]);
+      } catch {
+        return { tag: "unknown", role: null, component: null, part: null };
+      }
+      if (!element) return { tag: "unknown", role: null, component: null, part: null };
+      const component = element.closest<HTMLElement>("[data-ds-component]");
+      const part = element.closest<HTMLElement>("[data-ds-part]");
+      return {
+        tag: safeIdentifier(element.tagName.toLowerCase()) ?? "unknown",
+        role: safeIdentifier(element.getAttribute("role")),
+        component: safeIdentifier(component?.dataset.dsComponent ?? null),
+        part: safeIdentifier(part?.dataset.dsPart ?? null),
+      };
+    });
+  }, nodes.map((node) => node.target));
+  const isRecord = (value: unknown): value is Record<string, unknown> =>
+    typeof value === "object" && value !== null && !Array.isArray(value);
+  const safeColor = (value: unknown): string | null => {
+    if (typeof value !== "string") return null;
+    const normalized = value.toLowerCase();
+    return /^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/u.test(normalized) ? normalized : null;
+  };
+  const safeRatio = (value: unknown): number | null =>
+    typeof value === "number" && Number.isFinite(value) && value >= 1 && value <= 21
+      ? value
+      : null;
+  const safeExpectedRatio = (value: unknown): number | null => {
+    if (typeof value !== "string") return null;
+    const match = /^(\d+(?:\.\d+)?):1$/u.exec(value);
+    return match ? safeRatio(Number(match[1])) : null;
+  };
+  const fingerprints = nodes.map((node, index): AxeNodeFingerprint => {
+    const contrastData = [...node.any, ...node.all, ...node.none]
+      .map((check) => check.data as unknown)
+      .find((data) =>
+        isRecord(data) &&
+        ["fgColor", "bgColor", "contrastRatio", "expectedContrastRatio"].some((key) =>
+          Object.prototype.hasOwnProperty.call(data, key),
+        ),
+      );
+    const structure = structures[index] ?? {
+      tag: "unknown",
+      role: null,
+      component: null,
+      part: null,
+    };
+    return {
+      tag: structure.tag,
+      role: structure.role,
+      component: structure.component,
+      part: structure.part,
+      foreground: safeColor(contrastData?.fgColor),
+      background: safeColor(contrastData?.bgColor),
+      contrastRatio: safeRatio(contrastData?.contrastRatio),
+      expectedContrastRatio: safeExpectedRatio(contrastData?.expectedContrastRatio),
+    };
+  }).sort((left, right) => {
+    const leftKey = JSON.stringify(left);
+    const rightKey = JSON.stringify(right);
+    return leftKey === rightKey ? 0 : leftKey < rightKey ? -1 : 1;
+  });
   throw new CatalogFailure("axe-violation", capture, {
     axeRuleIds: [...new Set(result.violations.map((violation) => violation.id))].sort(
       (left, right) => (left === right ? 0 : left < right ? -1 : 1),
     ),
     axeRuleCount: result.violations.length,
-    axeNodeCount: result.violations.reduce(
-      (count, violation) => count + violation.nodes.length,
-      0,
-    ),
+    axeNodeCount: nodes.length,
+    axeNodeFingerprints: fingerprints,
   });
 }
 

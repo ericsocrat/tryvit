@@ -206,6 +206,20 @@ describe("Phase 5A.1b catalog contract", () => {
     const comboboxForcedColors = comboboxStyles.slice(
       comboboxStyles.indexOf("@media (forced-colors: active)"),
     );
+    const menuStyles = readFileSync(
+      path.join(
+        process.cwd(),
+        "src",
+        "design-system",
+        "primitives",
+        "Menu",
+        "menu.module.css",
+      ),
+      "utf8",
+    );
+    const menuForcedColors = menuStyles.slice(
+      menuStyles.indexOf("@media (forced-colors: active)"),
+    );
     const overlayStyles = readFileSync(
       path.join(
         process.cwd(),
@@ -219,6 +233,14 @@ describe("Phase 5A.1b catalog contract", () => {
     );
     const overlayForcedColors = overlayStyles.slice(
       overlayStyles.indexOf("@media (forced-colors: active)"),
+    );
+    const axeNodeFingerprintContract = specification.slice(
+      specification.indexOf("interface AxeNodeFingerprint"),
+      specification.indexOf("class CatalogFailure"),
+    );
+    const axeDiagnosticHelper = specification.slice(
+      specification.indexOf("async function assertFullPageAxe"),
+      specification.indexOf("async function assertNoOverflow"),
     );
     const pointerActivationHelper = specification.slice(
       specification.indexOf("async function pointerActivate"),
@@ -249,6 +271,45 @@ describe("Phase 5A.1b catalog contract", () => {
     expect(specification).toContain("new AxeBuilder({ page }).analyze()");
     expect(specification).not.toContain(".exclude(");
     expect(specification).not.toContain(".disableRules(");
+    expect(
+      [...axeNodeFingerprintContract.matchAll(/readonly ([a-zA-Z]+):/gu)].map(
+        (match) => match[1],
+      ),
+    ).toEqual([
+      "tag",
+      "role",
+      "component",
+      "part",
+      "foreground",
+      "background",
+      "contrastRatio",
+      "expectedContrastRatio",
+    ]);
+    expect(axeDiagnosticHelper).toContain(
+      "nodes.map((node, index): AxeNodeFingerprint =>",
+    );
+    expect(axeDiagnosticHelper).toContain("axeNodeFingerprints: fingerprints");
+    expect(axeDiagnosticHelper).toContain('/^#[0-9a-f]{6}(?:[0-9a-f]{2})?$/u');
+    expect(axeDiagnosticHelper).toContain("value >= 1 && value <= 21");
+    for (const forbiddenAxeDiagnosticField of [
+      ".html",
+      ".xpath",
+      ".ancestry",
+      ".failureSummary",
+      ".message",
+      ".helpUrl",
+      ".textContent",
+      ".innerText",
+      ".innerHTML",
+      ".outerHTML",
+      ".className",
+      'getAttribute("id")',
+      'getAttribute("class")',
+      "aria-label",
+      "accessibleName",
+    ]) {
+      expect(axeDiagnosticHelper).not.toContain(forbiddenAxeDiagnosticField);
+    }
     expect(specification).toContain("phase5a1-catalog-candidates");
     expect(specification).toContain("phase5a1-catalog-diagnostics");
     expect(specification).toContain('schemaVersion: 3');
@@ -324,6 +385,12 @@ describe("Phase 5A.1b catalog contract", () => {
     );
     expect(comboboxForcedColors).toMatch(
       /\.option\[data-active="true"\]\s+\.optionDescription\s*\{[^}]*color:\s*HighlightText;/u,
+    );
+    expect(menuForcedColors).toMatch(
+      /\.item\[data-active="true"\]:not\(\[aria-disabled="true"\]\)\s*\{[^}]*color:\s*HighlightText;[^}]*background:\s*Highlight;[^}]*border-color:\s*Highlight;/u,
+    );
+    expect(menuForcedColors).toMatch(
+      /\.item\[data-active="true"\]\[aria-disabled="true"\]\s*\{[^}]*color:\s*GrayText;[^}]*background:\s*Canvas;[^}]*border-color:\s*Highlight;/u,
     );
     expect(overlayForcedColors).toMatch(
       /\.overlay::backdrop\s*\{[^}]*animation:\s*none;[^}]*background:\s*Canvas;[^}]*opacity:\s*1;/u,
