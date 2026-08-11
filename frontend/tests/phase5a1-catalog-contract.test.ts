@@ -192,6 +192,20 @@ describe("Phase 5A.1b catalog contract", () => {
       path.join(process.cwd(), "src", "design-system", "primitives", "Field", "field.module.css"),
       "utf8",
     );
+    const comboboxStyles = readFileSync(
+      path.join(
+        process.cwd(),
+        "src",
+        "design-system",
+        "primitives",
+        "Combobox",
+        "combobox.module.css",
+      ),
+      "utf8",
+    );
+    const comboboxForcedColors = comboboxStyles.slice(
+      comboboxStyles.indexOf("@media (forced-colors: active)"),
+    );
 
     expect(config).toContain('const HAS_PHASE5A1_CATALOG = process.env.PHASE5A1_CATALOG === "1"');
     expect(config).toContain(
@@ -259,6 +273,15 @@ describe("Phase 5A.1b catalog contract", () => {
     );
     expect(fieldStyles).toMatch(/\.switchLabel\s*\{[^}]*flex-wrap:\s*wrap;/su);
     expect(fieldStyles).toMatch(/\.switchControl\s*\{[^}]*max-inline-size:\s*100%;/su);
+    expect(comboboxForcedColors).toMatch(
+      /\.option\[data-active="true"\]\s*\{[^}]*color:\s*HighlightText;[^}]*background:\s*Highlight;[^}]*border-color:\s*Highlight;/u,
+    );
+    expect(comboboxForcedColors).toMatch(
+      /\.option\[data-active="true"\]:hover\s*\{[^}]*background:\s*Highlight;/u,
+    );
+    expect(comboboxForcedColors).toMatch(
+      /\.option\[data-active="true"\]\s+\.optionDescription\s*\{[^}]*color:\s*HighlightText;/u,
+    );
     for (const retiredReplica of [
       "catalog-v2-button",
       "catalog-v2-icon-button",

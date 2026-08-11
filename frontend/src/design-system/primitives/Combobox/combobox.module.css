@@ -152,6 +152,16 @@
   }
 
   .option[data-active="true"] {
+    color: HighlightText;
+    background: Highlight;
     border-color: Highlight;
+  }
+
+  .option[data-active="true"]:hover {
+    background: Highlight;
+  }
+
+  .option[data-active="true"] .optionDescription {
+    color: HighlightText;
   }
 }
