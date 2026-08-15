@@ -1,18 +1,18 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a0d-visual-baselines",
-  "sourceCommit": "aa84b2bd8a22b20e1625d33dede66238c507130f",
+  "sourceCommit": "3887b1dc8eda1a59ce25725bf04996749f98935e",
   "rendererClass": "ci-linux-authoritative",
   "runner": {
     "imageOS": "ubuntu24",
-    "imageVersion": "20260720.247.2",
+    "imageVersion": "20260810.271.1",
     "arch": "x64"
   },
   "versions": {
     "node": "v22.21.1",
     "npm": "10.9.4",
     "next": "16.2.12",
-    "playwright": "1.62.0",
+    "playwright": "1.62.1",
     "chromium": "151.0.7922.34"
   },
   "settings": {
@@ -114,5 +114,5 @@
       "bytes": 61059
     }
   ],
-  "manifestChecksum": "12a00dc37191191b788964d1c599d103aa0fedb1c15fa8cc36ad80d746953716"
+  "manifestChecksum": "c6c1974955e12a38509c290cc99cd307976416dc9df6bb1f6db94e592ad10721"
 }
