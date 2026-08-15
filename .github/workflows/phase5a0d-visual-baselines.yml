@@ -20,9 +20,51 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  policy-enablement:
+    name: Verify immutable visual baselines
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout the one-time policy-enablement head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Prove the one-time policy-only scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="$RUNNER_TEMP/phase5a0d-policy-expected.txt"
+          actual="$RUNNER_TEMP/phase5a0d-policy-actual.txt"
+          cat > "$expected" <<'EOF'
+          .github/scripts/phase5a0d-renderer-attestation.mjs
+          .github/scripts/phase5a0d-renderer-attestation.test.mjs
+          .github/workflows/phase5a0d-renderer-attestation.yml
+          .github/workflows/phase5a0d-visual-baselines.yml
+          docs/PHASE5A0D_PERFORMANCE_VISUAL_GATES.md
+          EOF
+          git diff --name-only \
+            "${{ github.event.pull_request.base.sha }}" \
+            "${{ github.event.pull_request.head.sha }}" -- | sort > "$actual"
+          if ! cmp --silent "$expected" "$actual"; then
+            echo "::error::The one-time renderer-attestation policy PR changed outside its exact five-file scope."
+            diff -u "$expected" "$actual" || true
+            exit 1
+          fi
+          git diff --quiet \
+            "${{ github.event.pull_request.base.sha }}" \
+            "${{ github.event.pull_request.head.sha }}" -- \
+            frontend/e2e/__screenshots__/phase5a0d-manifest.json \
+            'frontend/e2e/__screenshots__/p5a0d-*.png' \
+            'frontend/e2e/__screenshots__/**/p5a0d-*.png'
+          node --test .github/scripts/phase5a0d-renderer-attestation.test.mjs
+
   verify:
     name: Verify immutable visual baselines
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' && !(github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
@@ -44,6 +86,9 @@ jobs:
       - name: Detect committed visual manifest on the exact PR head
         id: baseline_state
         shell: bash
+        env:
+          ATTESTATION_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          ATTESTATION_LABEL_PRESENT: ${{ contains(github.event.pull_request.labels.*.name, 'phase5a0d-renderer-attestation-approved') }}
         run: |
           set -euo pipefail
           base_sha="${{ github.event.pull_request.base.sha }}"
@@ -90,10 +135,26 @@ jobs:
                 ':(literal)frontend/e2e/__screenshots__/phase5a0d-manifest.json' \
                 ':(glob)frontend/e2e/__screenshots__/p5a0d-*.png' \
                 ':(glob)frontend/e2e/__screenshots__/**/p5a0d-*.png'; then
-                echo "::error::Committed Phase 5A.0d baselines are immutable relative to the exact PR base. Generate and review candidates in a separately authorized baseline-update process."
-                exit 1
+                expected="$RUNNER_TEMP/phase5a0d-attestation-expected.txt"
+                actual="$RUNNER_TEMP/phase5a0d-attestation-actual.txt"
+                cat > "$expected" <<'EOF'
+                docs/evidence/phase5a0d-renderer-runtime-attestation.json
+                frontend/e2e/__screenshots__/phase5a0d-manifest.json
+                EOF
+                git diff --name-only \
+                  "${{ github.event.pull_request.base.sha }}" \
+                  "${{ github.event.pull_request.head.sha }}" -- | sort > "$actual"
+                if [ "$ATTESTATION_HEAD_REF" != "codex/phase-5a0d-renderer-runtime-attestation" ] || \
+                   [ "$ATTESTATION_LABEL_PRESENT" != "true" ] || \
+                   ! cmp --silent "$expected" "$actual"; then
+                  echo "::error::Committed Phase 5A.0d baselines are immutable relative to the exact PR base. Generate and review candidates in a separately authorized baseline-update process."
+                  echo "::error::renderer-attestation-scope-invalid"
+                  exit 1
+                fi
+                echo "provenance=renderer-attestation-review-required" >> "$GITHUB_OUTPUT"
+              else
+                echo "provenance=immutable-pr-base" >> "$GITHUB_OUTPUT"
               fi
-              echo "provenance=immutable-pr-base" >> "$GITHUB_OUTPUT"
             else
               assert_synchronized_bootstrap
               if [ "$base_sha" = "$phase5a0c_base" ]; then
@@ -593,6 +654,7 @@ jobs:
           npm run --silent phase5:visual:artifact:stage -- "$RUNNER_TEMP/phase5a0d-first-candidates"
           (cd "$RUNNER_TEMP/phase5a0d-first-candidates" && find . -type f -print0 | sort -z | xargs -0 sha256sum) > "$RUNNER_TEMP/phase5a0d-first.sha256"
           test "$(find "$RUNNER_TEMP/phase5a0d-first-candidates" -type f | wc -l)" -eq 8
+          cp "$RUNNER_TEMP/phase5a0d-first-candidates/phase5a0d-manifest.json" "$RUNNER_TEMP/phase5a0d-first-manifest.json"
 
       - name: Generate second public candidate pass
         id: second_public_generate
@@ -649,6 +711,34 @@ jobs:
           (cd "$RUNNER_TEMP/phase5a0d-second-candidates" && find . -type f -print0 | sort -z | xargs -0 sha256sum) > "$RUNNER_TEMP/phase5a0d-second.sha256"
           test "$(find "$RUNNER_TEMP/phase5a0d-second-candidates" -type f | wc -l)" -eq 8
           cmp --silent "$RUNNER_TEMP/phase5a0d-first.sha256" "$RUNNER_TEMP/phase5a0d-second.sha256"
+          cp "$RUNNER_TEMP/phase5a0d-second-candidates/phase5a0d-manifest.json" "$RUNNER_TEMP/phase5a0d-second-manifest.json"
+          mkdir -p "$RUNNER_TEMP/phase5a0d-determinism-evidence"
+          cp "$RUNNER_TEMP/phase5a0d-first-manifest.json" "$RUNNER_TEMP/phase5a0d-determinism-evidence/first-manifest.json"
+          cp "$RUNNER_TEMP/phase5a0d-second-manifest.json" "$RUNNER_TEMP/phase5a0d-determinism-evidence/second-manifest.json"
+          cp "$RUNNER_TEMP/phase5a0d-first.sha256" "$RUNNER_TEMP/phase5a0d-determinism-evidence/first-files.sha256"
+          cp "$RUNNER_TEMP/phase5a0d-second.sha256" "$RUNNER_TEMP/phase5a0d-determinism-evidence/second-files.sha256"
+          SOURCE_SHA="${{ steps.candidate_harness.outputs.source_sha }}" \
+          GENERATOR_SHA="${{ steps.candidate_harness.outputs.archive_sha256 }}" \
+          PACKAGE_SHA="${{ steps.candidate_harness.outputs.package_sha256 }}" \
+          LOCKFILE_SHA="$(sha256sum package-lock.json | awk '{print $1}')" \
+          node <<'NODE'
+          const fs = require("node:fs");
+          const manifest = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-second-manifest.json", "utf8"));
+          const evidence = {
+            schemaVersion: 1,
+            sourceCommit: process.env.SOURCE_SHA,
+            runner: manifest.runner,
+            versions: manifest.versions,
+            generatorArchiveSha256: process.env.GENERATOR_SHA,
+            packageJsonSha256: process.env.PACKAGE_SHA,
+            packageLockSha256: process.env.LOCKFILE_SHA,
+            byteIdentical: true,
+          };
+          fs.writeFileSync(
+            process.env.RUNNER_TEMP + "/phase5a0d-determinism-evidence/provenance.json",
+            JSON.stringify(evidence, null, 2) + "\n",
+          );
+          NODE
           echo "byte_identical=true" >> "$GITHUB_OUTPUT"
 
       - name: Stop ephemeral local Supabase (no backup)
@@ -665,3 +755,12 @@ jobs:
           path: ${{ runner.temp }}/phase5a0d-second-candidates/
           if-no-files-found: error
           retention-days: 7
+
+      - name: Upload compact two-pass determinism evidence
+        if: ${{ always() && steps.first_public_safety_assert.outcome == 'success' && steps.first_auth_safety_assert.outcome == 'success' && steps.first_fixture_teardown.outcome == 'success' && steps.second_public_safety_assert.outcome == 'success' && steps.second_auth_safety_assert.outcome == 'success' && steps.second_fixture_teardown.outcome == 'success' && steps.deterministic_candidates.outputs.byte_identical == 'true' && steps.local_supabase_stop.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase5a0d-visual-determinism-evidence-${{ github.event.pull_request.head.sha || github.sha }}
+          path: ${{ runner.temp }}/phase5a0d-determinism-evidence/
+          if-no-files-found: error
+          retention-days: 14

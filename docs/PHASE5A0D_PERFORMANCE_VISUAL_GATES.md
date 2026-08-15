@@ -155,6 +155,42 @@ a separate, explicitly authorized baseline-update workflow change. A baseline
 update cannot be smuggled into an unrelated product PR. The 74 retained audit
 screenshots remain outside this system.
 
+### Renderer/runtime attestation maintenance
+
+A runner-image or lockfile-pinned renderer change is not treated as a product
+redesign. It still requires a separate maintenance sequence because a pull
+request may not install the rule that authorizes its own manifest change. The
+first maintenance PR installs the base-owned comparator and the read-only
+`pull_request_target` evidence gate without changing the manifest or any PNG.
+Only after that policy is on `main` may a second, metadata-only attestation PR
+be opened.
+
+The attestation PR is externally authorized by the exact
+`phase5a0d-renderer-attestation-approved` label and the dedicated
+`codex/phase-5a0d-renderer-runtime-attestation` branch. The trusted target
+workflow checks out and executes only the exact PR base. It fetches the head as
+data, never executes head code, and accepts exactly two changed paths: the
+manifest and one machine-readable evidence record. Its candidate must come
+from a successful manual run of this workflow on that exact base and must have
+completed before acceptance.
+
+The base-owned comparator rejects every PNG addition, deletion, symlink, path,
+byte, or hash change and every case, route, mode, viewport, fixture, settings,
+threshold, clock, locale, theme, fixture-checksum, schema, or kind change. The
+head manifest must be byte-identical to the reviewed candidate manifest, while
+the candidate's seven PNGs must be byte-identical to both the base manifest and
+the base files. Only `sourceCommit`, runner identity, runtime versions, and the
+derived manifest checksum may reflect the observed exact-base candidate. A
+product PR cannot use this path because any additional changed file fails the
+base-owned scope check.
+
+Manual generation retains two artifacts. The candidate artifact remains the
+exact seven PNGs plus manifest intended for review. A separate compact
+determinism artifact retains both pass manifests, both sorted eight-file hash
+lists, source SHA, runner/runtime identity, generator archive hash, and package
+and lockfile hashes. This makes two-pass equality independently auditable
+without expanding the baseline payload.
+
 ## Representative route contract
 
 | ID               | Route                            | Mode                | Boundary                     | Fixture                | Directional initial-JS target |
