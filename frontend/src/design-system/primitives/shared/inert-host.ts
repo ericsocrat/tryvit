@@ -9,14 +9,10 @@ type StaticInteractiveHostKey =
   | "draggable"
   | "role"
   | "tabIndex";
-type InteractiveHostKey =
-  | Exclude<EventHandlerKey, StaticInteractiveHostKey>
-  | StaticInteractiveHostKey;
-
 /** Attributes that cannot turn a semantic container into an interactive widget. */
 export type InertHostAttributes = Omit<
-  HTMLAttributes<HTMLElement>,
-  InteractiveHostKey
+  Omit<HTMLAttributes<HTMLElement>, EventHandlerKey>,
+  StaticInteractiveHostKey
 >;
 
 const INTERACTIVE_HOST_KEYS = new Set([

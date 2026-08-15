@@ -1889,6 +1889,61 @@
       "classification": "genuinely-introduced-static-finding"
     }
   },
+  "closeoutScan": {
+    "sha": "691e3ba7ed62c5f2fd8685a99a394d9cf8ddd4d2",
+    "analysisId": "22e9eeb1-2e1f-476d-a5a0-e2fd0bbad409",
+    "mainGateRunId": 31874219602,
+    "sonarJobId": 94988011828,
+    "decorationCheckId": 94988272452,
+    "count": 373,
+    "accounting": "368 - 1 previously open issue fixed + 59 Phase 5A.1b findings closed + 1 closeout-refactor finding + 5 historical findings activated by the changed TypeScript quality profile = 373",
+    "qualityProfileChanged": true,
+    "genuinelyIntroduced": {
+      "key": "AaAEiZR-FbASQm6rWNmW",
+      "path": "frontend/src/design-system/primitives/shared/inert-host.ts",
+      "rule": "typescript:S6571",
+      "type": "CODE_SMELL",
+      "impact": {
+        "quality": "MAINTAINABILITY",
+        "severity": "LOW"
+      },
+      "message": "A string key union made the explicit interactive-host keys redundant.",
+      "resolution": "Use nested Omit operations so event-handler keys and explicit static interactive keys remain independently expressed."
+    },
+    "qualityProfileActivations": [
+      {
+        "key": "AaAEiZfwFbASQm6rWNmX",
+        "path": "frontend/e2e/smoke.spec.ts",
+        "rule": "typescript:S9332",
+        "creationDate": "2026-08-02T19:17:10+02:00"
+      },
+      {
+        "key": "AaAEiZfwFbASQm6rWNmY",
+        "path": "frontend/e2e/smoke.spec.ts",
+        "rule": "typescript:S9332",
+        "creationDate": "2026-08-02T19:17:10+02:00"
+      },
+      {
+        "key": "AaAEiZfwFbASQm6rWNmZ",
+        "path": "frontend/e2e/smoke.spec.ts",
+        "rule": "typescript:S9332",
+        "creationDate": "2026-08-02T19:17:10+02:00"
+      },
+      {
+        "key": "AaAEiZlPFbASQm6rWNmb",
+        "path": "frontend/e2e/smoke-a11y.spec.ts",
+        "rule": "typescript:S9332",
+        "creationDate": "2026-05-26T18:22:21+02:00"
+      },
+      {
+        "key": "AaAEiZiVFbASQm6rWNma",
+        "path": "frontend/e2e/smoke-responsive.spec.ts",
+        "rule": "typescript:S9332",
+        "creationDate": "2026-05-26T18:22:21+02:00"
+      }
+    ],
+    "classification": "The five S9332 records predate this PR and were absent from both frozen endpoint sets. They are quality-profile/accounting activations, not Phase 5A.1b introductions. The one authored S6571 record is corrected by the subsequent closeout commit."
+  },
   "accounting": {
     "formula": "368 + 59 - 1 = 426",
     "bugs": 0,
