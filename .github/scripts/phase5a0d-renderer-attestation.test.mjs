@@ -90,10 +90,16 @@ test("policy workflows keep target validation base-owned and read-only", () => {
   assert.doesNotMatch(target, /ref: \$\{\{ github\.event\.pull_request\.head\.sha \}\}/u);
   assert.match(target, /phase5a0d-renderer-attestation-approved/u);
   assert.match(target, /node "\$RUNNER_TEMP\/phase5a0d-renderer-attestation\.mjs"/u);
+  assert.match(
+    visual,
+    /pull_request:\s+types: \[opened, synchronize, reopened, labeled, unlabeled\]/u,
+  );
   assert.match(visual, /renderer-attestation-review-required/u);
   assert.match(visual, /renderer-attestation-scope-invalid/u);
   assert.match(visual, /codex\/phase-5a0d-renderer-attestation-shell-fix/u);
   assert.match(visual, /3887b1dc8eda1a59ce25725bf04996749f98935e/u);
+  assert.match(visual, /codex\/phase-5a0d-attestation-label-trigger/u);
+  assert.match(visual, /920d9d01fdff3ab88eb46c082114f5fca998834c/u);
   assert.match(visual, /\.github\/scripts\/phase5a0d-renderer-attestation\.test\.mjs/u);
   assert.equal(
     normalizedVisual.includes(
