@@ -100,6 +100,8 @@ test("policy workflows keep target validation base-owned and read-only", () => {
   assert.match(visual, /3887b1dc8eda1a59ce25725bf04996749f98935e/u);
   assert.match(visual, /codex\/phase-5a0d-attestation-label-trigger/u);
   assert.match(visual, /920d9d01fdff3ab88eb46c082114f5fca998834c/u);
+  assert.match(visual, /codex\/phase-5a0d-renderer-identity-diagnostics/u);
+  assert.match(visual, /d071d00970a108a13ab91aa7e1e736ca2416e119/u);
   assert.match(visual, /\.github\/scripts\/phase5a0d-renderer-attestation\.test\.mjs/u);
   assert.equal(
     normalizedVisual.includes(
