@@ -78,6 +78,7 @@ test("policy workflows keep target validation base-owned and read-only", () => {
     new URL(".github/workflows/phase5a0d-visual-baselines.yml", repositoryRoot),
     "utf8",
   );
+  const normalizedVisual = visual.replace(/\r\n/gu, "\n");
 
   assert.match(target, /pull_request_target:/u);
   assert.match(target, /actions: read/u);
@@ -91,6 +92,22 @@ test("policy workflows keep target validation base-owned and read-only", () => {
   assert.match(target, /node "\$RUNNER_TEMP\/phase5a0d-renderer-attestation\.mjs"/u);
   assert.match(visual, /renderer-attestation-review-required/u);
   assert.match(visual, /renderer-attestation-scope-invalid/u);
+  assert.match(visual, /codex\/phase-5a0d-renderer-attestation-shell-fix/u);
+  assert.match(visual, /3887b1dc8eda1a59ce25725bf04996749f98935e/u);
+  assert.match(visual, /\.github\/scripts\/phase5a0d-renderer-attestation\.test\.mjs/u);
+  assert.equal(
+    normalizedVisual.includes(
+      `printf '%s\\n' \\
+                  'docs/evidence/phase5a0d-renderer-runtime-attestation.json' \\
+                  'frontend/e2e/__screenshots__/phase5a0d-manifest.json' \\
+                  > "$expected"`,
+    ),
+    true,
+  );
+  assert.doesNotMatch(
+    normalizedVisual,
+    /phase5a0d-attestation-expected\.txt[\s\S]*?<<['"]?EOF/u,
+  );
   assert.match(visual, /Committed Phase 5A\.0d baselines are immutable relative/u);
   assert.doesNotMatch(visual, /--update-snapshots|git commit|git push/u);
 });
