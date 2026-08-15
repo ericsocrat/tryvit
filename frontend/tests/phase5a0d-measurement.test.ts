@@ -44,6 +44,7 @@ import {
 import {
   listPhase5BaselinePngs,
   prepareVisualBaselineWriteTargets,
+  rendererIdentityMismatchFields,
   validateVisualBaselineManifest,
   visualArtifactRelativeFiles,
   visualFixtureContractChecksum,
@@ -599,6 +600,19 @@ describe("visual baseline manifest contract", () => {
 
   it("accepts the exact checksummed seven-file manifest", () => {
     expect(() => validateVisualBaselineManifest(visualManifest())).not.toThrow();
+  });
+
+  it("reports only the non-secret renderer identity fields that drift", () => {
+    const expected = visualManifest();
+    const actual = structuredClone(expected);
+    expect(rendererIdentityMismatchFields(expected, actual)).toEqual([]);
+
+    actual.runner.imageVersion = "20991231.999.1";
+    actual.versions.npm = "99.0.0";
+    expect(rendererIdentityMismatchFields(expected, actual)).toEqual([
+      "runner.imageVersion",
+      "versions.npm",
+    ]);
   });
 
   it("rejects missing cases and checksum tampering", () => {
