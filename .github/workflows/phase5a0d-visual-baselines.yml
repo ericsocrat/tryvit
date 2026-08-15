@@ -2,6 +2,7 @@ name: Phase 5A.0d Visual Baselines
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
     branches:
       - main
       - codex/phase-5a0d-performance-visual-gates
