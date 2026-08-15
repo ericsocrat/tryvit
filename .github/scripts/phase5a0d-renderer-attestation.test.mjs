@@ -92,6 +92,9 @@ test("policy workflows keep target validation base-owned and read-only", () => {
   assert.match(target, /node "\$RUNNER_TEMP\/phase5a0d-renderer-attestation\.mjs"/u);
   assert.match(visual, /renderer-attestation-review-required/u);
   assert.match(visual, /renderer-attestation-scope-invalid/u);
+  assert.match(visual, /codex\/phase-5a0d-renderer-attestation-shell-fix/u);
+  assert.match(visual, /3887b1dc8eda1a59ce25725bf04996749f98935e/u);
+  assert.match(visual, /\.github\/scripts\/phase5a0d-renderer-attestation\.test\.mjs/u);
   assert.equal(
     normalizedVisual.includes(
       `printf '%s\\n' \\

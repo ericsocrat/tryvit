@@ -22,7 +22,7 @@ concurrency:
 jobs:
   policy-enablement:
     name: Verify immutable visual baselines
-    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy' }}
+    if: ${{ github.event_name == 'pull_request' && ((github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy') || (github.event.pull_request.base.sha == '3887b1dc8eda1a59ce25725bf04996749f98935e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-shell-fix')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -35,22 +35,34 @@ jobs:
 
       - name: Prove the one-time policy-only scope
         shell: bash
+        env:
+          POLICY_HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
           set -euo pipefail
           expected="$RUNNER_TEMP/phase5a0d-policy-expected.txt"
           actual="$RUNNER_TEMP/phase5a0d-policy-actual.txt"
-          cat > "$expected" <<'EOF'
-          .github/scripts/phase5a0d-renderer-attestation.mjs
-          .github/scripts/phase5a0d-renderer-attestation.test.mjs
-          .github/workflows/phase5a0d-renderer-attestation.yml
-          .github/workflows/phase5a0d-visual-baselines.yml
-          docs/PHASE5A0D_PERFORMANCE_VISUAL_GATES.md
-          EOF
+          if [ "$POLICY_HEAD_REF" = "codex/phase-5a0d-renderer-attestation-policy" ]; then
+            printf '%s\n' \
+              '.github/scripts/phase5a0d-renderer-attestation.mjs' \
+              '.github/scripts/phase5a0d-renderer-attestation.test.mjs' \
+              '.github/workflows/phase5a0d-renderer-attestation.yml' \
+              '.github/workflows/phase5a0d-visual-baselines.yml' \
+              'docs/PHASE5A0D_PERFORMANCE_VISUAL_GATES.md' \
+              > "$expected"
+          elif [ "$POLICY_HEAD_REF" = "codex/phase-5a0d-renderer-attestation-shell-fix" ]; then
+            printf '%s\n' \
+              '.github/scripts/phase5a0d-renderer-attestation.test.mjs' \
+              '.github/workflows/phase5a0d-visual-baselines.yml' \
+              > "$expected"
+          else
+            echo "::error::Unrecognized one-time renderer-attestation policy branch."
+            exit 1
+          fi
           git diff --name-only \
             "${{ github.event.pull_request.base.sha }}" \
             "${{ github.event.pull_request.head.sha }}" -- | sort > "$actual"
           if ! cmp --silent "$expected" "$actual"; then
-            echo "::error::The one-time renderer-attestation policy PR changed outside its exact five-file scope."
+            echo "::error::The one-time renderer-attestation policy PR changed outside its exact approved scope."
             diff -u "$expected" "$actual" || true
             exit 1
           fi
@@ -64,7 +76,7 @@ jobs:
 
   verify:
     name: Verify immutable visual baselines
-    if: ${{ github.event_name == 'pull_request' && !(github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy') }}
+    if: ${{ github.event_name == 'pull_request' && !((github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy') || (github.event.pull_request.base.sha == '3887b1dc8eda1a59ce25725bf04996749f98935e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-shell-fix')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
