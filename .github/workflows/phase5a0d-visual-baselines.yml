@@ -23,7 +23,7 @@ concurrency:
 jobs:
   policy-enablement:
     name: Verify immutable visual baselines
-    if: ${{ github.event_name == 'pull_request' && ((github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy') || (github.event.pull_request.base.sha == '3887b1dc8eda1a59ce25725bf04996749f98935e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-shell-fix')) }}
+    if: ${{ github.event_name == 'pull_request' && ((github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy') || (github.event.pull_request.base.sha == '3887b1dc8eda1a59ce25725bf04996749f98935e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-shell-fix') || (github.event.pull_request.base.sha == '920d9d01fdff3ab88eb46c082114f5fca998834c' && github.event.pull_request.head.ref == 'codex/phase-5a0d-attestation-label-trigger')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -55,6 +55,11 @@ jobs:
               '.github/scripts/phase5a0d-renderer-attestation.test.mjs' \
               '.github/workflows/phase5a0d-visual-baselines.yml' \
               > "$expected"
+          elif [ "$POLICY_HEAD_REF" = "codex/phase-5a0d-attestation-label-trigger" ]; then
+            printf '%s\n' \
+              '.github/scripts/phase5a0d-renderer-attestation.test.mjs' \
+              '.github/workflows/phase5a0d-visual-baselines.yml' \
+              > "$expected"
           else
             echo "::error::Unrecognized one-time renderer-attestation policy branch."
             exit 1
@@ -77,7 +82,7 @@ jobs:
 
   verify:
     name: Verify immutable visual baselines
-    if: ${{ github.event_name == 'pull_request' && !((github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy') || (github.event.pull_request.base.sha == '3887b1dc8eda1a59ce25725bf04996749f98935e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-shell-fix')) }}
+    if: ${{ github.event_name == 'pull_request' && !((github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy') || (github.event.pull_request.base.sha == '3887b1dc8eda1a59ce25725bf04996749f98935e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-shell-fix') || (github.event.pull_request.base.sha == '920d9d01fdff3ab88eb46c082114f5fca998834c' && github.event.pull_request.head.ref == 'codex/phase-5a0d-attestation-label-trigger')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
