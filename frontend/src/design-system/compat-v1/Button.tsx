@@ -100,6 +100,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       iconRight,
       fullWidth = false,
       disabled,
+      type = "button",
       className = "",
       children,
       ...rest
@@ -125,6 +126,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           .join(" ")}
         style={{ touchAction: "manipulation" }}
         {...rest}
+        type={type}
       >
         {loading && (
           <span

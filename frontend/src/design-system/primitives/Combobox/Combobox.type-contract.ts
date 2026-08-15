@@ -42,19 +42,15 @@ export type NullableComboboxChangeContract = Expect<
   null extends Parameters<SelectionChange>[0] ? true : false
 >;
 
-const interactiveOptionDescription = {
+export const interactiveOptionDescription = {
   value: "unsafe",
   label: "Unsafe option",
   // @ts-expect-error Option descriptions are inert localized text, not React subtrees.
   description: {} as ReactElement,
 } satisfies ComboboxOption;
 
-void interactiveOptionDescription;
-
-const interactiveStatus = {
+export const interactiveStatus = {
   ...({} as Base),
   // @ts-expect-error Popup status copy is inert localized text.
   loadingMessage: {} as ReactElement,
 } satisfies ComboboxProps;
-
-void interactiveStatus;

@@ -4,7 +4,7 @@
   "provenance": {
     "baseSha": "296742c9b941e0aad9cfb5b00dfa3738af9eba0e",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "5112eb6e1d0f3772fa6b0b3e40a8c71e9feefaaa7daa35ff922400b08b35581a"
+    "sourceFingerprint": "ae4064a0f0c88f535d897d2407bf7f19dfdfc9ae670af7aadf2bbdeed508aeef"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12,11 +12,11 @@
     "frontend/src/design-system"
   ],
   "moduleCounts": {
-    "total": 393,
+    "total": 395,
     "route-module": 87,
     "app-support-module": 43,
     "shared-component-module": 196,
-    "design-system-module": 67
+    "design-system-module": 69
   },
   "modules": [
     {
@@ -17814,6 +17814,7 @@
         "frontend/src/design-system/primitives/shared/scroll-lock.ts"
       ],
       "directConsumers": [
+        "frontend/src/design-system/primitives/Overlay/Overlay.type-contract.tsx",
         "frontend/src/design-system/primitives/Overlay/index.ts"
       ],
       "transitiveRouteConsumers": [
@@ -17823,6 +17824,27 @@
           "routePath": "/dev/components"
         }
       ],
+      "targetRedesignPhases": [
+        "5A.1b"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/design-system/primitives/Overlay/Overlay.type-contract.tsx",
+      "classification": "design-system-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/design-system/primitives/Overlay/Overlay.tsx"
+      ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
         "5A.1b"
       ],
@@ -18091,7 +18113,8 @@
       "directConsumers": [
         "frontend/src/design-system/primitives/Combobox/Combobox.tsx",
         "frontend/src/design-system/primitives/Menu/Menu.tsx",
-        "frontend/src/design-system/primitives/Tabs/Tabs.tsx"
+        "frontend/src/design-system/primitives/Tabs/Tabs.tsx",
+        "frontend/src/design-system/primitives/shared/controllable-state.type-contract.ts"
       ],
       "transitiveRouteConsumers": [
         {
@@ -18100,6 +18123,27 @@
           "routePath": "/dev/components"
         }
       ],
+      "targetRedesignPhases": [
+        "5A.1b"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/design-system/primitives/shared/controllable-state.type-contract.ts",
+      "classification": "design-system-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/design-system/primitives/shared/controllable-state.ts"
+      ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
         "5A.1b"
       ],
@@ -19513,9 +19557,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 498,
+    "inspectedModuleCount": 500,
     "violations": [],
-    "sourceFingerprint": "3f72087780be06b886cd94ce67f453ac43db938f7138111375dd4e8d5941791f"
+    "sourceFingerprint": "13a41c0c5fd2d92f088bd277caf7108c97b8064008932db573a34267541c5e3b"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

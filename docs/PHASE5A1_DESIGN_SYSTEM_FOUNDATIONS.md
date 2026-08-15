@@ -463,6 +463,29 @@ The guarded 18-case browser matrix was intentionally not treated as local Window
 acceptance evidence. Its 294 PNGs, 18-record/35-check ledger, exact manifest, safety
 lifecycle, and independent human review remain blocking exact-head CI evidence.
 
+### Phase 5A.1b bounded closeout evidence — 2026-08-15
+
+The final closeout correction keeps the visual recipe and production-route boundary
+unchanged while making the modal and controlled-state contracts fail closed:
+
+- Dialog and Sheet now require a localized string title at compile time and reject an
+  empty or whitespace-only visible title when opened;
+- `useControllableState` now accepts concrete next values only, matching every repository
+  caller and removing ambiguous render-captured functional-update semantics;
+- the exact Sonar base/head lifecycle sets and +59/-1 differential are retained in
+  `docs/phase5/phase5a1b-sonar-differential.json`; actionable authored findings were
+  corrected and three accessibility-pattern findings use exact rule/file exceptions;
+- the regenerated live inventory is deterministic at SHA-256
+  `766B8266C2DA58B8CB4BB732B4A969EE11DBA32F0DC526EBA47692C8A62089E7`, with 395
+  governed modules, 500 inspected runtime modules, and zero boundary violations;
+- `npm run design-system:check` passed 24 files and 193 tests; the complete frontend
+  suite passed 402 files with 1 skipped and 6,636 tests with 19 skipped;
+- TypeScript, full source lint, and the production build with both catalog flags absent
+  passed; the build generated the service worker.
+
+Targeted Firefox and WebKit interaction proof remains a blocking Phase 5A.2 entry gate,
+not a new Phase 5A.1b screenshot program or production-migration authorization.
+
 ## Deferred and rollback boundaries
 
 - CSP currently permits the existing stable inline bootstrap. Nonce/hash hardening is

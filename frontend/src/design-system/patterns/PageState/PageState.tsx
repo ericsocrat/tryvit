@@ -69,7 +69,9 @@ export function PageState({
   const generatedId = useId();
   const titleId = `${generatedId}-title`;
   const live = announce === "off" ? undefined : announce;
-  const role = announce === "assertive" ? "alert" : announce === "polite" ? "status" : undefined;
+  let role: "alert" | "status" | undefined;
+  if (announce === "assertive") role = "alert";
+  if (announce === "polite") role = "status";
   const resolvedIcon = icon === undefined ? DEFAULT_ICON[status] : icon;
 
   if (typeof title !== "string" || !title.trim()) {

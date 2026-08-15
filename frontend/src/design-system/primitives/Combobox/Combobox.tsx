@@ -5,6 +5,7 @@ import {
   useEffect,
   useId,
   useMemo,
+  useReducer,
   useRef,
   useState,
   type ChangeEvent,
@@ -83,6 +84,83 @@ export type ComboboxProps = ComboboxBaseProps & ComboboxRequiredProps;
 
 function defaultFilter(option: ComboboxOption, query: string): boolean {
   return option.label.toLowerCase().includes(query.trim().toLowerCase());
+}
+
+function resolvePopupStatus({
+  emptyMessage,
+  filteredCount,
+  loadError,
+  loading,
+  loadingMessage,
+  resultsMessage,
+}: Readonly<{
+  emptyMessage: string;
+  filteredCount: number;
+  loadError?: string;
+  loading: boolean;
+  loadingMessage: string;
+  resultsMessage: string;
+}>): string {
+  if (loadError !== undefined) return loadError;
+  if (loading) return loadingMessage;
+  if (filteredCount === 0) return emptyMessage;
+  return resultsMessage;
+}
+
+function assertComboboxContract({
+  defaultValue,
+  emptyMessage,
+  invalidOptionContract,
+  label,
+  loadError,
+  loadingMessage,
+  required,
+  requiredSelectionMessage,
+  resolvedResultsMessage,
+  value,
+}: Readonly<{
+  defaultValue: string | null;
+  emptyMessage: string;
+  invalidOptionContract: ComboboxOption | undefined;
+  label: string;
+  loadError?: string;
+  loadingMessage: string;
+  required?: boolean;
+  requiredSelectionMessage?: string;
+  resolvedResultsMessage: string;
+  value?: string | null;
+}>): void {
+  if (invalidOptionContract) {
+    throw new Error(
+      "Combobox option values must be non-empty and unique, and labels/descriptions must be non-empty localized text; React content is not supported.",
+    );
+  }
+  if (typeof label !== "string" || !label.trim()) {
+    throw new Error("Combobox label must be non-empty localized text.");
+  }
+  if (
+    typeof loadingMessage !== "string" ||
+    !loadingMessage.trim() ||
+    typeof emptyMessage !== "string" ||
+    !emptyMessage.trim() ||
+    (loadError !== undefined && (typeof loadError !== "string" || !loadError.trim())) ||
+    typeof resolvedResultsMessage !== "string" ||
+    !resolvedResultsMessage.trim()
+  ) {
+    throw new Error(
+      "Combobox status messages must be non-empty localized text; React content is not supported.",
+    );
+  }
+  if (value === "" || defaultValue === "") {
+    throw new Error(
+      "Combobox value and defaultValue must use null, not an empty-string sentinel, when no option is selected.",
+    );
+  }
+  if (required && !requiredSelectionMessage?.trim()) {
+    throw new Error(
+      "Combobox requiredSelectionMessage must be non-empty when selection is required.",
+    );
+  }
 }
 
 export function Combobox({
@@ -191,7 +269,7 @@ export function Combobox({
     ? activeValue
     : (enabledOptions[0]?.value ?? null);
   const [anchor, setAnchor] = useState<HTMLInputElement | null>(null);
-  const [, setViewportRevision] = useState(0);
+  const forceViewportRevision = useReducer((revision: number) => revision + 1, 0)[1];
   const popupRef = useRef<HTMLDivElement>(null);
   const optionRefs = useRef(new Map<string, HTMLDivElement>());
   const overlayId = useRef(Symbol("v2-combobox")).current;
@@ -243,42 +321,53 @@ export function Combobox({
     [disabled, enabledOptions, setOpen],
   );
 
+  const commitActiveOption = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (!open || !effectiveActiveValue) return;
+    const activeOption = enabledOptions.find((option) => option.value === effectiveActiveValue);
+    if (!activeOption) return;
+    event.preventDefault();
+    selectOption(activeOption);
+  };
+
+  const closeForTab = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || !open) return;
+    const boundaryDestination = anchor
+      ? modalBoundaryTabStop(anchor, event.shiftKey, popupRef.current)
+      : null;
+    closePopup();
+    if (!boundaryDestination) return;
+    event.preventDefault();
+    queueMicrotask(() => focusElement(boundaryDestination, { preventScroll: false }));
+  };
+
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.nativeEvent.isComposing) return;
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      if (open) moveActive(1);
-      else openPopup("first");
-    } else if (event.key === "ArrowUp") {
-      event.preventDefault();
-      if (open) moveActive(-1);
-      else openPopup("last");
-    } else if (event.key === "Enter" && open && effectiveActiveValue) {
-      const activeOption = enabledOptions.find((option) => option.value === effectiveActiveValue);
-      if (activeOption) {
+    switch (event.key) {
+      case "ArrowDown":
         event.preventDefault();
-        selectOption(activeOption);
-      }
-    } else if (event.key === "Escape" && open) {
-      event.preventDefault();
-      event.stopPropagation();
-      closePopup();
-    } else if (
-      event.key === "Tab" &&
-      open &&
-      !event.defaultPrevented &&
-      !event.altKey &&
-      !event.ctrlKey &&
-      !event.metaKey
-    ) {
-      const boundaryDestination = anchor
-        ? modalBoundaryTabStop(anchor, event.shiftKey, popupRef.current)
-        : null;
-      closePopup();
-      if (boundaryDestination) {
+        if (open) moveActive(1);
+        else openPopup("first");
+        return;
+      case "ArrowUp":
         event.preventDefault();
-        queueMicrotask(() => focusElement(boundaryDestination, { preventScroll: false }));
-      }
+        if (open) moveActive(-1);
+        else openPopup("last");
+        return;
+      case "Enter":
+        commitActiveOption(event);
+        return;
+      case "Escape":
+        if (open) {
+          event.preventDefault();
+          event.stopPropagation();
+          closePopup();
+        }
+        return;
+      case "Tab":
+        closeForTab(event);
+        return;
+      default:
+        return;
     }
   };
 
@@ -317,7 +406,7 @@ export function Combobox({
     const ownerDocument = anchor.ownerDocument;
     const visualViewport = ownerDocument.defaultView?.visualViewport;
     const repositionForVisualViewport = () => {
-      setViewportRevision((revision) => revision + 1);
+      forceViewportRevision();
     };
     const handleOutsidePointer = (event: PointerEvent) => {
       if (
@@ -349,48 +438,29 @@ export function Combobox({
       visualViewport?.removeEventListener("resize", repositionForVisualViewport);
       visualViewport?.removeEventListener("scroll", repositionForVisualViewport);
     };
-  }, [anchor, closePopup, open, overlayId]);
+  }, [anchor, closePopup, forceViewportRevision, open, overlayId]);
 
   const resolvedResultsMessage = resultsMessage(filteredOptions.length);
-  const popupStatus =
-    loadError ??
-    (loading
-      ? loadingMessage
-      : filteredOptions.length === 0
-        ? emptyMessage
-        : resolvedResultsMessage);
-
-  if (invalidOptionContract) {
-    throw new Error(
-      "Combobox option values must be non-empty and unique, and labels/descriptions must be non-empty localized text; React content is not supported.",
-    );
-  }
-  if (typeof label !== "string" || !label.trim()) {
-    throw new Error("Combobox label must be non-empty localized text.");
-  }
-  if (
-    typeof loadingMessage !== "string" ||
-    !loadingMessage.trim() ||
-    typeof emptyMessage !== "string" ||
-    !emptyMessage.trim() ||
-    (loadError !== undefined && (typeof loadError !== "string" || !loadError.trim())) ||
-    typeof resolvedResultsMessage !== "string" ||
-    !resolvedResultsMessage.trim()
-  ) {
-    throw new Error(
-      "Combobox status messages must be non-empty localized text; React content is not supported.",
-    );
-  }
-  if (value === "" || defaultValue === "") {
-    throw new Error(
-      "Combobox value and defaultValue must use null, not an empty-string sentinel, when no option is selected.",
-    );
-  }
-  if (required && !requiredSelectionMessage?.trim()) {
-    throw new Error(
-      "Combobox requiredSelectionMessage must be non-empty when selection is required.",
-    );
-  }
+  const popupStatus = resolvePopupStatus({
+    emptyMessage,
+    filteredCount: filteredOptions.length,
+    loadError,
+    loading,
+    loadingMessage,
+    resultsMessage: resolvedResultsMessage,
+  });
+  assertComboboxContract({
+    defaultValue,
+    emptyMessage,
+    invalidOptionContract,
+    label,
+    loadError,
+    loadingMessage,
+    required,
+    requiredSelectionMessage,
+    resolvedResultsMessage,
+    value,
+  });
 
   return (
     <div

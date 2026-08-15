@@ -8,10 +8,8 @@ export type TooltipContentContract = Expect<
   Exclude<TooltipProps["content"], undefined> extends string ? true : false
 >;
 
-const interactiveTooltipContent = {
+export const interactiveTooltipContent = {
   children: {} as ReactElement,
   // @ts-expect-error Tooltip content is inert localized text, not a React subtree.
   content: {} as ReactElement,
 } satisfies TooltipProps;
-
-void interactiveTooltipContent;

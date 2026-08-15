@@ -20,7 +20,7 @@ export function Icon({
   label,
   className = "",
 }: Readonly<IconProps>) {
-  if (label !== undefined && label.trim().length === 0) {
+  if (label !== undefined && (typeof label !== "string" || !label.trim())) {
     throw new TypeError("Icon label must be non-empty when the glyph is informational.");
   }
   const decorative = !label;

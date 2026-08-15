@@ -84,6 +84,7 @@
   height: var(--ds-border-standard);
   margin: var(--ds-space-1) var(--ds-space-2);
   background: var(--color-border-default);
+  border: 0;
 }
 
 @keyframes menu-enter {

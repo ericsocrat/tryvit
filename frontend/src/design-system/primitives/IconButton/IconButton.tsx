@@ -53,16 +53,9 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
       className = "",
       ...rest
     } = properties;
-    const {
-      "aria-label": ignoredAriaLabel,
-      "aria-labelledby": ignoredAriaLabelledBy,
-      ...safeRest
-    } = rest as typeof rest & {
-      readonly "aria-label"?: string;
-      readonly "aria-labelledby"?: string;
-    };
-    void ignoredAriaLabel;
-    void ignoredAriaLabelledBy;
+    const safeRest = { ...rest };
+    Reflect.deleteProperty(safeRest, "aria-label");
+    Reflect.deleteProperty(safeRest, "aria-labelledby");
     if (!label.trim()) {
       throw new TypeError("IconButton label must be non-empty.");
     }

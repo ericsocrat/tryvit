@@ -12,10 +12,8 @@ export type SurfaceElementContract = Expect<
     : false
 >;
 
-const interactiveSurface = {
+export const interactiveSurface = {
   children: "Unsafe surface",
   // @ts-expect-error Surface hosts cannot become event-driven controls.
   onClick: () => undefined,
 } satisfies SurfaceProps;
-
-void interactiveSurface;

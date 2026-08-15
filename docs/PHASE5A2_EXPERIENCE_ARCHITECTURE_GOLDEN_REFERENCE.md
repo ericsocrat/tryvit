@@ -1,6 +1,6 @@
 # Phase 5A.2 — Experience Architecture and Golden Reference Gate
 
-> **Last updated:** 2026-08-10
+> **Last updated:** 2026-08-15
 > **Status:** Planned non-production approval phase; no Golden Reference or production migration is implemented by this document
 > **Entry gate:** Phase 5A.1a and Phase 5A.1b are reviewed, merged, and green on authoritative `main`, followed by explicit authorization from Eric
 > **Exit gate:** Eric explicitly selects the art direction and identity and approves all six Golden References after independent review
@@ -22,6 +22,14 @@ There is no Phase 5A.1c. Phase 5A.2 begins only after both official Phase 5A.1 P
 complete. It does not redesign a production route, replace a production identity asset,
 add a production dependency, or authorize deployment. Its screenshots and recordings
 are review evidence, not immutable production baselines.
+
+Before any production-route migration, Phase 5A.2 must add targeted Firefox and WebKit
+interaction proof for Dialog, Sheet, Menu, Combobox, and Tabs. That proof is a blocking
+entry requirement and must cover keyboard containment and restoration, Escape,
+outside-pointer dismissal, and nested portal ownership. It extends behavioral coverage;
+it does not replace the immutable Chromium visual baselines or authorize a new broad
+screenshot matrix. Production-route migration remains prohibited until this
+cross-browser interaction gate passes.
 
 ## Product north star
 

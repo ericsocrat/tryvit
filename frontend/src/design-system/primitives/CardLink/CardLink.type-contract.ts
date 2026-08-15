@@ -12,10 +12,8 @@ export type CardLinkElementContract = Expect<
     : false
 >;
 
-const focusableCardRoot = {
+export const focusableCardRoot = {
   children: "Unsafe card root",
   // @ts-expect-error CardLink.Root cannot enter the tab order.
   tabIndex: 0,
 } satisfies CardLinkRootProps;
-
-void focusableCardRoot;

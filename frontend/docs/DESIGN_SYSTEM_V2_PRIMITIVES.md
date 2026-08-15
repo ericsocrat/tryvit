@@ -110,7 +110,7 @@ that null state to the HTML empty string only at the form-serialization boundary
 ### Dialog and Sheet
 
 Both use conditionally mounted native `<dialog>` plus `showModal()`. They require a
-visible title and localized close label, expose a modal role, rely on native inertness,
+non-empty localized string title and localized close label, expose a modal role, rely on native inertness,
 and add a topmost-only rendered sequential Tab boundary guard. Direction-aware radio
 groups, SVG/native stops, programmatically focused static content, and nested
 browsing-context exits retain a contained next destination; boundary moves scroll the

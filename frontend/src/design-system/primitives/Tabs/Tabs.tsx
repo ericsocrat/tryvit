@@ -35,6 +35,32 @@ export interface TabsProps {
   readonly className?: string;
 }
 
+function tabListDirection(tab: HTMLButtonElement): "ltr" | "rtl" {
+  const tabList = tab.closest<HTMLElement>("[role='tablist']");
+  const computedDirection = tabList?.ownerDocument.defaultView
+    ?.getComputedStyle(tabList).direction;
+  if (computedDirection === "rtl" || computedDirection === "ltr") {
+    return computedDirection;
+  }
+  return tabList?.closest<HTMLElement>("[dir]")?.dir === "rtl" ? "rtl" : "ltr";
+}
+
+function navigationDelta(
+  orientation: "horizontal" | "vertical",
+  key: string,
+  direction: "ltr" | "rtl",
+): number | null {
+  if (orientation === "horizontal" && key === "ArrowRight") {
+    return direction === "rtl" ? -1 : 1;
+  }
+  if (orientation === "horizontal" && key === "ArrowLeft") {
+    return direction === "rtl" ? 1 : -1;
+  }
+  if (orientation === "vertical" && key === "ArrowDown") return 1;
+  if (orientation === "vertical" && key === "ArrowUp") return -1;
+  return null;
+}
+
 export function Tabs({
   items,
   label,
@@ -107,40 +133,26 @@ export function Tabs({
   );
 
   const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>, itemValue: string) => {
-    const tabList = event.currentTarget.closest<HTMLElement>("[role='tablist']");
-    const computedDirection = tabList
-      ? tabList.ownerDocument.defaultView?.getComputedStyle(tabList).direction
-      : undefined;
-    const explicitDirection = tabList?.closest<HTMLElement>("[dir]")?.dir;
-    const direction =
-      computedDirection === "rtl" || computedDirection === "ltr"
-        ? computedDirection
-        : explicitDirection === "rtl"
-          ? "rtl"
-          : "ltr";
-
-    let delta: number | null = null;
-    if (orientation === "horizontal" && event.key === "ArrowRight") {
-      delta = direction === "rtl" ? -1 : 1;
-    } else if (orientation === "horizontal" && event.key === "ArrowLeft") {
-      delta = direction === "rtl" ? 1 : -1;
-    } else if (orientation === "vertical" && event.key === "ArrowDown") {
-      delta = 1;
-    } else if (orientation === "vertical" && event.key === "ArrowUp") {
-      delta = -1;
-    }
+    const direction = tabListDirection(event.currentTarget);
+    const delta = navigationDelta(orientation, event.key, direction);
 
     if (delta !== null) {
       event.preventDefault();
       moveFocus(itemValue, delta);
-    } else if (event.key === "Home") {
+      return;
+    }
+    if (event.key === "Home") {
       event.preventDefault();
       if (enabledItems[0]) focusTab(enabledItems[0].value);
-    } else if (event.key === "End") {
+      return;
+    }
+    if (event.key === "End") {
       event.preventDefault();
       const lastItem = enabledItems.at(-1);
       if (lastItem) focusTab(lastItem.value);
-    } else if (activationMode === "manual" && (event.key === "Enter" || event.key === " ")) {
+      return;
+    }
+    if (activationMode === "manual" && (event.key === "Enter" || event.key === " ")) {
       event.preventDefault();
       setRequestedValue(itemValue);
     }

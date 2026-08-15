@@ -1,8 +1,7 @@
 import type { DOMAttributes, HTMLAttributes } from "react";
 
 type EventHandlerKey = keyof DOMAttributes<HTMLElement>;
-type InteractiveHostKey =
-  | EventHandlerKey
+type StaticInteractiveHostKey =
   | "accessKey"
   | "autoFocus"
   | "contentEditable"
@@ -10,6 +9,9 @@ type InteractiveHostKey =
   | "draggable"
   | "role"
   | "tabIndex";
+type InteractiveHostKey =
+  | Exclude<EventHandlerKey, StaticInteractiveHostKey>
+  | StaticInteractiveHostKey;
 
 /** Attributes that cannot turn a semantic container into an interactive widget. */
 export type InertHostAttributes = Omit<

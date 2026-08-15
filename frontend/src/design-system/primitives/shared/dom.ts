@@ -20,6 +20,8 @@ export interface TabbableElement extends Element {
   focus(options?: FocusOptions): void;
 }
 
+const DEFAULT_FOCUS_OPTIONS: FocusOptions = { preventScroll: true };
+
 export function isTabbableElement(element: Element | null): element is TabbableElement {
   return Boolean(
     element &&
@@ -32,10 +34,10 @@ export function isTabbableElement(element: Element | null): element is TabbableE
 
 export function focusElement(
   element: TabbableElement | null | undefined,
-  options: FocusOptions = { preventScroll: true },
+  options?: FocusOptions,
 ): void {
   if (!element?.isConnected) return;
-  element.focus(options);
+  element.focus(options ?? DEFAULT_FOCUS_OPTIONS);
 }
 
 function isRenderedTabStop(element: TabbableElement): boolean {
@@ -45,7 +47,7 @@ function isRenderedTabStop(element: TabbableElement): boolean {
     (element instanceof HTMLElement && element.hidden) ||
     element.matches(":disabled") ||
     element.closest("[hidden], [inert]") ||
-    element.hasAttribute("data-ds-focus-guard") ||
+    (element instanceof HTMLElement && Object.hasOwn(element.dataset, "dsFocusGuard")) ||
     (element instanceof HTMLInputElement && element.type === "hidden")
   ) {
     return false;
@@ -110,10 +112,10 @@ export function adjacentDomTabStop(
   const preceding = ordered.filter((candidate) =>
     Boolean(activeElement.compareDocumentPosition(candidate) & Node.DOCUMENT_POSITION_PRECEDING),
   );
-  const following = ordered.filter((candidate) =>
+  const following = ordered.find((candidate) =>
     Boolean(activeElement.compareDocumentPosition(candidate) & Node.DOCUMENT_POSITION_FOLLOWING),
   );
-  return backwards ? (preceding.at(-1) ?? null) : (following[0] ?? null);
+  return backwards ? (preceding.at(-1) ?? null) : (following ?? null);
 }
 
 export function tabbableElements(

@@ -5,6 +5,7 @@ import {
   useEffect,
   useId,
   useMemo,
+  useReducer,
   useRef,
   useState,
   type KeyboardEvent,
@@ -86,7 +87,7 @@ export function Menu({
     onChange: onOpenChange,
   });
   const [anchor, setAnchor] = useState<HTMLButtonElement | null>(null);
-  const [, setViewportRevision] = useState(0);
+  const forceViewportRevision = useReducer((revision: number) => revision + 1, 0)[1];
   const [activeIndex, setActiveIndex] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -177,7 +178,7 @@ export function Menu({
     const ownerDocument = anchor.ownerDocument;
     const visualViewport = ownerDocument.defaultView?.visualViewport;
     const repositionForVisualViewport = () => {
-      setViewportRevision((revision) => revision + 1);
+      forceViewportRevision();
     };
     const onPointerDown = (event: PointerEvent) => {
       if (
@@ -208,7 +209,7 @@ export function Menu({
       visualViewport?.removeEventListener("resize", repositionForVisualViewport);
       visualViewport?.removeEventListener("scroll", repositionForVisualViewport);
     };
-  }, [anchor, closeMenu, open, overlayId]);
+  }, [anchor, closeMenu, forceViewportRevision, open, overlayId]);
 
   useEffect(() => {
     if (!open) resetTypeahead();
@@ -231,82 +232,102 @@ export function Menu({
     [closeMenu],
   );
 
+  const handleMenuTab = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+      // The menu is portalled, so DOM order cannot carry focus to the page-level
+      // tab stop after the trigger. Reproduce that destination when addressable.
+      const next = anchor ? adjacentTabStop(anchor, event.shiftKey, contentRef.current) : null;
+      event.preventDefault();
+      if (next) {
+        closeMenu(false);
+        queueMicrotask(() => focusElement(next, { preventScroll: false }));
+        return;
+      }
+      // Browser chrome is not script-addressable. Re-anchor on the trigger; the
+      // next native Tab can then leave the document in the requested direction.
+      focusElement(anchor);
+      closeMenu(false);
+    },
+    [anchor, closeMenu],
+  );
+
+  const handleMenuTypeahead = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      if (
+        event.key.length !== 1 ||
+        event.key === " " ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey
+      ) return;
+      const character = normalizedTypeahead(event.key);
+      const repeatedCharacter =
+        typeaheadRef.current.length > 0 &&
+        [...typeaheadRef.current].every((value) => value === character);
+      typeaheadRef.current = repeatedCharacter
+        ? character
+        : `${typeaheadRef.current}${character}`;
+      if (typeaheadTimerRef.current) clearTimeout(typeaheadTimerRef.current);
+      typeaheadTimerRef.current = setTimeout(() => {
+        typeaheadRef.current = "";
+        typeaheadTimerRef.current = null;
+      }, 500);
+      const ordered = [
+        ...interactiveEntries.slice(activeIndex + 1),
+        ...interactiveEntries.slice(0, activeIndex + 1),
+      ];
+      const match = ordered.find((entry) =>
+        normalizedTypeahead(entry.textValue).startsWith(typeaheadRef.current),
+      );
+      if (!match) return;
+      event.preventDefault();
+      focusEntry(interactiveEntries.findIndex((entry) => entry.id === match.id));
+    },
+    [activeIndex, focusEntry, interactiveEntries],
+  );
+
   const handleMenuKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {
       if (!isTopOverlay(overlayId)) return;
-      if (event.key === "ArrowDown") {
-        event.preventDefault();
-        focusEntry(activeIndex + 1);
-      } else if (event.key === "ArrowUp") {
-        event.preventDefault();
-        focusEntry(activeIndex - 1);
-      } else if (event.key === "Home") {
-        event.preventDefault();
-        focusEntry(0);
-      } else if (event.key === "End") {
-        event.preventDefault();
-        focusEntry(interactiveEntries.length - 1);
-      } else if (event.key === "Escape") {
-        event.preventDefault();
-        event.stopPropagation();
-        closeMenu(true);
-      } else if (
-        event.key === "Tab" &&
-        !event.defaultPrevented &&
-        !event.altKey &&
-        !event.ctrlKey &&
-        !event.metaKey
-      ) {
-        // The menu is portalled, so DOM order cannot carry focus to the page-level
-        // tab stop after the trigger. Reproduce that destination only when one
-        // exists; handle the non-addressable browser-chrome edge explicitly below.
-        const next = anchor ? adjacentTabStop(anchor, event.shiftKey, contentRef.current) : null;
-        if (next) {
-          closeMenu(false);
+      switch (event.key) {
+        case "ArrowDown":
           event.preventDefault();
-          queueMicrotask(() => focusElement(next, { preventScroll: false }));
-        } else {
-          // Browser chrome is not a script-addressable destination. Cancel the
-          // ambiguous portal-origin traversal at a document edge and re-anchor
-          // on the trigger; the next native Tab then leaves in that direction.
+          focusEntry(activeIndex + 1);
+          return;
+        case "ArrowUp":
           event.preventDefault();
-          focusElement(anchor);
-          closeMenu(false);
-        }
-      } else if (
-        event.key.length === 1 &&
-        event.key !== " " &&
-        !event.altKey &&
-        !event.ctrlKey &&
-        !event.metaKey
-      ) {
-        const character = normalizedTypeahead(event.key);
-        const repeatedCharacter =
-          typeaheadRef.current.length > 0 &&
-          [...typeaheadRef.current].every((value) => value === character);
-        typeaheadRef.current = repeatedCharacter
-          ? character
-          : `${typeaheadRef.current}${character}`;
-        if (typeaheadTimerRef.current) clearTimeout(typeaheadTimerRef.current);
-        typeaheadTimerRef.current = setTimeout(() => {
-          typeaheadRef.current = "";
-          typeaheadTimerRef.current = null;
-        }, 500);
-        const query = typeaheadRef.current;
-        const ordered = [
-          ...interactiveEntries.slice(activeIndex + 1),
-          ...interactiveEntries.slice(0, activeIndex + 1),
-        ];
-        const match = ordered.find((entry) =>
-          normalizedTypeahead(entry.textValue).startsWith(query),
-        );
-        if (match) {
+          focusEntry(activeIndex - 1);
+          return;
+        case "Home":
           event.preventDefault();
-          focusEntry(interactiveEntries.findIndex((entry) => entry.id === match.id));
-        }
+          focusEntry(0);
+          return;
+        case "End":
+          event.preventDefault();
+          focusEntry(interactiveEntries.length - 1);
+          return;
+        case "Escape":
+          event.preventDefault();
+          event.stopPropagation();
+          closeMenu(true);
+          return;
+        case "Tab":
+          handleMenuTab(event);
+          return;
+        default:
+          handleMenuTypeahead(event);
       }
     },
-    [activeIndex, anchor, closeMenu, focusEntry, interactiveEntries, overlayId],
+    [
+      activeIndex,
+      closeMenu,
+      focusEntry,
+      handleMenuTab,
+      handleMenuTypeahead,
+      interactiveEntries.length,
+      overlayId,
+    ],
   );
 
   const openMenu = (focus: "first" | "last") => {
@@ -382,7 +403,7 @@ export function Menu({
           >
             {entries.map((entry) => {
               if (entry.type === "separator") {
-                return <div key={entry.id} role="separator" className={styles.separator} />;
+                return <hr key={entry.id} className={styles.separator} />;
               }
               const index = interactiveEntries.findIndex((item) => item.id === entry.id);
               const role = entry.type === "checkbox" ? "menuitemcheckbox" : "menuitem";

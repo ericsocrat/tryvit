@@ -105,12 +105,12 @@ export function FoundationsScene({ copy }: Readonly<{ copy: CatalogCopy }>) {
           <p className="font-semibold">{foundation.livingLabel}</p>
           <p className="catalog-v2-copy text-sm">{foundation.foundationDescription}</p>
         </div>
-        <div className="catalog-v2-swatches" aria-label={foundation.swatchesLabel} role="group">
+        <section className="catalog-v2-swatches" aria-label={foundation.swatchesLabel}>
           <div className="catalog-v2-swatch" data-tone="canvas">{foundation.canvas}</div>
           <div className="catalog-v2-swatch" data-tone="surface">{foundation.surface}</div>
           <div className="catalog-v2-swatch" data-tone="action">{foundation.action}</div>
           <div className="catalog-v2-swatch" data-tone="evidence">{foundation.evidence}</div>
-        </div>
+        </section>
         <p className="catalog-v2-copy text-sm">{copy.fixtureNote}</p>
       </Surface>
     </CatalogSection>

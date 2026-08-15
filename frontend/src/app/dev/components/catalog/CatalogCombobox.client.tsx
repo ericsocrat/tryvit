@@ -31,13 +31,10 @@ export function CatalogCombobox({
     value: `evidence-source-${index + 1}`,
     label: optionLabel,
   }));
-  const stateLabel = state === "loading"
-    ? loadingMessage
-    : state === "empty"
-      ? emptyMessage
-      : state === "error"
-        ? loadError
-        : resultsMessage.replace("{count}", String(options.length));
+  let stateLabel = resultsMessage.replace("{count}", String(options.length));
+  if (state === "loading") stateLabel = loadingMessage;
+  if (state === "empty") stateLabel = emptyMessage;
+  if (state === "error") stateLabel = loadError;
 
   return (
     <div className="space-y-1" data-catalog-probe={`combobox-${state}`}>

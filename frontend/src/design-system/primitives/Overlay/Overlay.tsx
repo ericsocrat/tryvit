@@ -54,7 +54,7 @@ export interface ModalOverlayProps
     | "title"
   > {
   readonly open: boolean;
-  readonly title: ReactNode;
+  readonly title: string;
   readonly description?: ReactNode;
   readonly children: ReactNode;
   readonly footer?: ReactNode;
@@ -98,6 +98,44 @@ function modalProgrammaticTabStopCandidates(
   return programmaticTabStopCandidates(dialog).filter((element) =>
     element.closest<HTMLDialogElement>("dialog[open]") === dialog,
   );
+}
+
+function isUnmodifiedTab(event: ReactKeyboardEvent<HTMLDialogElement>): boolean {
+  return event.key === "Tab" && !event.altKey && !event.ctrlKey && !event.metaKey;
+}
+
+function modalTabDestination(
+  dialog: HTMLDialogElement,
+  candidates: readonly TabbableElement[],
+  backwards: boolean,
+): TabbableElement | null {
+  const first = candidates[0];
+  const last = candidates.at(-1);
+  if (!first || !last) return null;
+
+  const activeElement = dialog.ownerDocument.activeElement;
+  const activeIndex = activeElement instanceof Element
+    ? candidates.indexOf(activeElement as TabbableElement)
+    : -1;
+  if (activeIndex < 0) {
+    const adjacent = activeElement instanceof Element && dialog.contains(activeElement)
+      ? adjacentDomTabStop(
+        activeElement,
+        modalProgrammaticTabStopCandidates(dialog),
+        backwards,
+      )
+      : null;
+    return adjacent ?? (backwards ? last : first);
+  }
+  if (backwards && activeIndex === 0) return last;
+  if (!backwards && activeIndex === candidates.length - 1) return first;
+  return null;
+}
+
+function assertOverlayTitle(kind: "Dialog" | "Sheet", title: string): void {
+  if (typeof title !== "string" || !title.trim()) {
+    throw new TypeError(`${kind} title must be non-empty localized text.`);
+  }
 }
 
 /** @internal Runtime guard for focus scopes the Phase 5A.1b contract does not admit. */
@@ -226,10 +264,7 @@ function ModalOverlayInner({
         onKeyDown?.(event);
         if (
           event.defaultPrevented ||
-          event.key !== "Tab" ||
-          event.altKey ||
-          event.ctrlKey ||
-          event.metaKey ||
+          !isUnmodifiedTab(event) ||
           !isTopOverlay(overlayId)
         ) {
           return;
@@ -238,30 +273,7 @@ function ModalOverlayInner({
         const dialog = event.currentTarget;
         assertSupportedModalFocusScope(dialog);
         const candidates = modalTabbableElements(dialog, event.shiftKey);
-        const first = candidates[0];
-        const last = candidates.at(-1);
-        if (!first || !last) return;
-
-        const activeElement = dialog.ownerDocument.activeElement;
-        const activeIndex = activeElement instanceof Element
-          ? candidates.indexOf(activeElement as TabbableElement)
-          : -1;
-        const adjacentFromProgrammaticFocus = activeIndex < 0 &&
-            activeElement instanceof Element &&
-            dialog.contains(activeElement)
-          ? adjacentDomTabStop(
-            activeElement,
-            modalProgrammaticTabStopCandidates(dialog),
-            event.shiftKey,
-          )
-          : null;
-        const destination = activeIndex < 0
-          ? adjacentFromProgrammaticFocus ?? (event.shiftKey ? last : first)
-          : event.shiftKey && activeIndex === 0
-            ? last
-            : !event.shiftKey && activeIndex === candidates.length - 1
-              ? first
-              : null;
+        const destination = modalTabDestination(dialog, candidates, event.shiftKey);
         if (!destination) return;
 
         event.preventDefault();
@@ -380,6 +392,7 @@ function ModalOverlay({
 
 export function Dialog({ open, ...props }: Readonly<ModalOverlayProps>) {
   if (!open) return null;
+  assertOverlayTitle("Dialog", props.title);
   if (!props.closeLabel.trim()) {
     throw new Error("Dialog closeLabel must be a non-empty visible accessible name.");
   }
@@ -388,6 +401,7 @@ export function Dialog({ open, ...props }: Readonly<ModalOverlayProps>) {
 
 export function Sheet({ open, ...props }: Readonly<ModalOverlayProps>) {
   if (!open) return null;
+  assertOverlayTitle("Sheet", props.title);
   if (!props.closeLabel.trim()) {
     throw new Error("Sheet closeLabel must be a non-empty visible accessible name.");
   }

@@ -5,6 +5,10 @@
 This project uses [SonarCloud](https://sonarcloud.io/) for static analysis.
 The project is configured in `sonar-project.properties` at the repo root.
 
+The Phase 5A.1b base/head lifecycle reconstruction and classified issue sets are retained
+as machine-readable evidence in
+[`phase5a1b-sonar-differential.json`](phase5/phase5a1b-sonar-differential.json).
+
 - **Organization:** `ericsocrat`
 - **Project key:** `ericsocrat_tryvit`
 - **Dashboard:** <https://sonarcloud.io/project/overview?id=ericsocrat_tryvit>
@@ -88,5 +92,8 @@ An `alert-on-failure` job fires a webhook if any job fails on `main`.
 | Middleware matcher uses escaped `\\.` in a string (Sonar S7770 prefers `String.raw`)             | Next.js requires a **plain string literal** in `config.matcher` for static analysis. `String.raw` tagged templates break the build.     | Suppressed via `sonar.issue.ignore` in `sonar-project.properties`. |
 | SearchAutocomplete uses `role="listbox"` / `role="option"` (Sonar S6819 prefers native elements) | WAI-ARIA 1.2 combobox pattern requires these ARIA roles on custom elements — native `<select>`/`<option>` cannot be styled for this UX. | Suppressed via `sonar.issue.ignore` in `sonar-project.properties`. |
 | Tailwind `@custom-variant` uses `&` under `@slot` (Sonar CSS S8776 reports a missing root)           | Tailwind v4 supplies the selector scope through its build-time DSL; the production compiler and tests validate the emitted variant.   | Suppressed only for S8776 in `frontend/src/styles/globals.css`.    |
+| Canonical Combobox options are not directly focusable (Sonar S6852)                                | The WAI-ARIA `aria-activedescendant` pattern deliberately retains DOM focus on the editable input while identifying the active option. | Suppressed only for S6852 in the canonical Combobox file.          |
+| Canonical Menu composite host is not directly focusable (Sonar S6852)                              | Roving DOM focus belongs to the child `menuitem` buttons; the `role="menu"` element is their non-tabbable composite container.          | Suppressed only for S6852 in the canonical Menu file.              |
+| Overlay end focus sentinel has `tabIndex` (Sonar S6845)                                            | The sentinel is a non-operable focus-trap boundary and must not become a false interactive action in the modal accessibility tree.     | Suppressed only for S6845 in the canonical Overlay file.           |
 | Generated Design System V2 token artifacts contain repeated object/CSS structures                 | The manifest and generator are analyzed and contract-tested; emitted `generated/**` files are deterministic build products.           | Generated artifacts are excluded from Sonar source/CPD analysis.  |
 | ~117 legacy maintainability issues                                                               | Inherited from initial rapid development.                                                                                               | Paid down gradually in touched files; not bulk-fixed.              |

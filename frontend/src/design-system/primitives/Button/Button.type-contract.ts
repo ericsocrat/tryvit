@@ -20,17 +20,13 @@ export type ButtonLoadingLabelContract = Expect<
   { loading: true; children: string } extends ButtonProps ? false : true
 >;
 
-const ariaOverride = {
+export const ariaOverride = {
   // @ts-expect-error The visible/loading copy owns the canonical accessible name.
   "aria-label": "Hidden override",
   children: "Visible action",
 } satisfies ButtonProps;
 
-void ariaOverride;
-
-const interactiveLabel = {
+export const interactiveLabel = {
   // @ts-expect-error Button names are localized text, not React subtrees.
   children: {} as ReactElement,
 } satisfies ButtonProps;
-
-void interactiveLabel;

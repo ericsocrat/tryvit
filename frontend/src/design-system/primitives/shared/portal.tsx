@@ -17,11 +17,11 @@ export function portalScopeAttributes(anchor: Element): PortalScopeAttributes {
   const explicitDirection = closestAttribute(anchor, "dir");
   const computedDirection = anchor.ownerDocument.defaultView
     ?.getComputedStyle(anchor).direction;
-  const rawDirection = explicitDirection === "ltr" || explicitDirection === "rtl"
-    ? explicitDirection
-    : computedDirection === "rtl"
-      ? "rtl"
-      : "ltr";
+  let rawDirection: "ltr" | "rtl" = "ltr";
+  if (computedDirection === "rtl") rawDirection = "rtl";
+  if (explicitDirection === "ltr" || explicitDirection === "rtl") {
+    rawDirection = explicitDirection;
+  }
   const language = closestAttribute(anchor, "lang") ??
     (anchor.ownerDocument.documentElement.lang || undefined);
   return {

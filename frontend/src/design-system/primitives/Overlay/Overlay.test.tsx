@@ -221,6 +221,26 @@ function MathMlInvokerHarness() {
 }
 
 describe("V2 native modal overlays", () => {
+  it.each([
+    ["Dialog", Dialog, ""],
+    ["Dialog", Dialog, "   "],
+    ["Sheet", Sheet, ""],
+    ["Sheet", Sheet, "\t\n"],
+  ] as const)("rejects an empty %s visible title", (kind, Overlay, title) => {
+    expect(() =>
+      render(
+        <Overlay
+          closeLabel={`Close ${kind.toLowerCase()}`}
+          onOpenChange={vi.fn()}
+          open
+          title={title}
+        >
+          Evidence details
+        </Overlay>,
+      ),
+    ).toThrow(`${kind} title must be non-empty localized text.`);
+  });
+
   it("keeps dialog and sheet bounds on the shared safe-area contract", () => {
     const css = readFileSync(
       resolve(process.cwd(), "src/design-system/primitives/Overlay/overlay.module.css"),

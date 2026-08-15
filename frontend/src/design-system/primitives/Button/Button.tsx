@@ -56,16 +56,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     children,
     ...rest
   } = properties;
-  const {
-    "aria-label": ignoredAriaLabel,
-    "aria-labelledby": ignoredAriaLabelledBy,
-    ...safeRest
-  } = rest as typeof rest & {
-    readonly "aria-label"?: string;
-    readonly "aria-labelledby"?: string;
-  };
-  void ignoredAriaLabel;
-  void ignoredAriaLabelledBy;
+  const safeRest = { ...rest };
+  Reflect.deleteProperty(safeRest, "aria-label");
+  Reflect.deleteProperty(safeRest, "aria-labelledby");
   if (typeof children !== "string" || !children.trim()) {
     throw new TypeError("Button children must be non-empty localized text.");
   }
@@ -73,6 +66,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     throw new TypeError("Button loadingLabel must be non-empty while loading.");
   }
   const pendingLabel = loading ? loadingLabel : undefined;
+  const leadingIcon = loading ? "feedback.loading" : startIcon;
 
   return (
     <button
@@ -95,11 +89,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={disabled || loading}
       type={type}
     >
-      {loading ? (
-        <Icon className={styles.icon} name="feedback.loading" size="sm" />
-      ) : startIcon ? (
-        <Icon className={styles.icon} name={startIcon} size="sm" />
-      ) : null}
+      {leadingIcon ? <Icon className={styles.icon} name={leadingIcon} size="sm" /> : null}
       <span>{pendingLabel ?? children}</span>
       {!loading && endIcon ? (
         <Icon className={styles.icon} name={endIcon} size="sm" />
