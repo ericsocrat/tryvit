@@ -1896,7 +1896,7 @@
     "sonarJobId": 94988011828,
     "decorationCheckId": 94988272452,
     "count": 373,
-    "accounting": "368 - 1 previously open issue fixed + 59 Phase 5A.1b findings closed + 1 closeout-refactor finding + 5 historical findings activated by the changed TypeScript quality profile = 373",
+    "accounting": "426 frozen-head issues - 59 Phase 5A.1b findings closed + 1 closeout-refactor finding + 5 historical findings activated by the changed TypeScript quality profile = 373",
     "qualityProfileChanged": true,
     "genuinelyIntroduced": {
       "key": "AaAEiZR-FbASQm6rWNmW",
