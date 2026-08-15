@@ -62,6 +62,7 @@ jobs:
               > "$expected"
           elif [ "$POLICY_HEAD_REF" = "codex/phase-5a0d-renderer-identity-diagnostics" ]; then
             printf '%s\n' \
+              '.github/scripts/phase5a0d-renderer-attestation.test.mjs' \
               '.github/workflows/phase5a0d-visual-baselines.yml' \
               'frontend/tests/phase5a0d-measurement.test.ts' \
               'frontend/tooling/phase5a0d-visual-baselines.ts' \
