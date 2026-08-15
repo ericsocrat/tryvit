@@ -137,10 +137,10 @@ jobs:
                 ':(glob)frontend/e2e/__screenshots__/**/p5a0d-*.png'; then
                 expected="$RUNNER_TEMP/phase5a0d-attestation-expected.txt"
                 actual="$RUNNER_TEMP/phase5a0d-attestation-actual.txt"
-                cat > "$expected" <<'EOF'
-                docs/evidence/phase5a0d-renderer-runtime-attestation.json
-                frontend/e2e/__screenshots__/phase5a0d-manifest.json
-                EOF
+                printf '%s\n' \
+                  'docs/evidence/phase5a0d-renderer-runtime-attestation.json' \
+                  'frontend/e2e/__screenshots__/phase5a0d-manifest.json' \
+                  > "$expected"
                 git diff --name-only \
                   "${{ github.event.pull_request.base.sha }}" \
                   "${{ github.event.pull_request.head.sha }}" -- | sort > "$actual"
