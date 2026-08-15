@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
   "attestationType": "phase5a0d-renderer-runtime-metadata-only",
-  "baseCommit": "3887b1dc8eda1a59ce25725bf04996749f98935e",
+  "baseCommit": "920d9d01fdff3ab88eb46c082114f5fca998834c",
   "candidate": {
-    "workflowRunId": 31881517129,
+    "workflowRunId": 31882993338,
     "workflowRunAttempt": 1,
-    "runCreatedAt": "2026-08-15T11:13:46Z",
-    "runCompletedAt": "2026-08-15T11:20:47Z",
-    "artifactId": 9246212081,
-    "artifactName": "phase5a0d-visual-baseline-candidates-3887b1dc8eda1a59ce25725bf04996749f98935e",
-    "archiveDigest": "sha256:80b1f3158c5afb59fe0c8e5b75b7037775d8672e5bc3a0638e8ab0ac105c4668",
-    "archiveBytes": 793034,
-    "sourceCommit": "3887b1dc8eda1a59ce25725bf04996749f98935e"
+    "runCreatedAt": "2026-08-15T11:48:43Z",
+    "runCompletedAt": "2026-08-15T11:56:41Z",
+    "artifactId": 9246581476,
+    "artifactName": "phase5a0d-visual-baseline-candidates-920d9d01fdff3ab88eb46c082114f5fca998834c",
+    "archiveDigest": "sha256:fae7cbabce12473a96039d45bc565ae50466a097c9e21d7f64a5f22dd23035f8",
+    "archiveBytes": 793035,
+    "sourceCommit": "920d9d01fdff3ab88eb46c082114f5fca998834c"
   },
   "oldManifest": {
     "manifestSha256": "8c17917c60a3b46f087cc5d5cd3a80b34355015ed9e8de0a58e98826f11bdf9c",
@@ -27,9 +27,9 @@
     }
   },
   "newManifest": {
-    "manifestSha256": "28c74b7305da6843de177210bb83221e4cbe5c58767f33724ac5aa19180c4e38",
-    "manifestChecksum": "c6c1974955e12a38509c290cc99cd307976416dc9df6bb1f6db94e592ad10721",
-    "sourceCommit": "3887b1dc8eda1a59ce25725bf04996749f98935e",
+    "manifestSha256": "3eec0e538e7b25ae6c6226c995b08d0287e3267b2f76ca7e028c373f88c4497f",
+    "manifestChecksum": "5dd6ef8fd5ad8c43fe0ad519e6afdebbb8453e1ab7d465ac010283e35ddb0f31",
+    "sourceCommit": "920d9d01fdff3ab88eb46c082114f5fca998834c",
     "runnerImageVersion": "20260810.271.1",
     "versions": {
       "node": "v22.21.1",
