@@ -23,7 +23,7 @@ concurrency:
 jobs:
   policy-enablement:
     name: Verify immutable visual baselines
-    if: ${{ github.event_name == 'pull_request' && ((github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy') || (github.event.pull_request.base.sha == '3887b1dc8eda1a59ce25725bf04996749f98935e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-shell-fix') || (github.event.pull_request.base.sha == '920d9d01fdff3ab88eb46c082114f5fca998834c' && github.event.pull_request.head.ref == 'codex/phase-5a0d-attestation-label-trigger') || (github.event.pull_request.base.sha == 'd071d00970a108a13ab91aa7e1e736ca2416e119' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-identity-diagnostics')) }}
+    if: ${{ github.event_name == 'pull_request' && ((github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy') || (github.event.pull_request.base.sha == '3887b1dc8eda1a59ce25725bf04996749f98935e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-shell-fix') || (github.event.pull_request.base.sha == '920d9d01fdff3ab88eb46c082114f5fca998834c' && github.event.pull_request.head.ref == 'codex/phase-5a0d-attestation-label-trigger') || (github.event.pull_request.base.sha == 'd071d00970a108a13ab91aa7e1e736ca2416e119' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-identity-diagnostics') || (github.event.pull_request.base.sha == 'd9257be564c5097ef473b153202fc8e92c5a70e1' && github.event.pull_request.head.ref == 'codex/phase-5a0d-attested-manifest-restore')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -67,6 +67,11 @@ jobs:
               'frontend/tests/phase5a0d-measurement.test.ts' \
               'frontend/tooling/phase5a0d-visual-baselines.ts' \
               > "$expected"
+          elif [ "$POLICY_HEAD_REF" = "codex/phase-5a0d-attested-manifest-restore" ]; then
+            printf '%s\n' \
+              '.github/scripts/phase5a0d-renderer-attestation.test.mjs' \
+              '.github/workflows/phase5a0d-visual-baselines.yml' \
+              > "$expected"
           else
             echo "::error::Unrecognized one-time renderer-attestation policy branch."
             exit 1
@@ -89,7 +94,7 @@ jobs:
 
   verify:
     name: Verify immutable visual baselines
-    if: ${{ github.event_name == 'pull_request' && !((github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy') || (github.event.pull_request.base.sha == '3887b1dc8eda1a59ce25725bf04996749f98935e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-shell-fix') || (github.event.pull_request.base.sha == '920d9d01fdff3ab88eb46c082114f5fca998834c' && github.event.pull_request.head.ref == 'codex/phase-5a0d-attestation-label-trigger') || (github.event.pull_request.base.sha == 'd071d00970a108a13ab91aa7e1e736ca2416e119' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-identity-diagnostics')) }}
+    if: ${{ github.event_name == 'pull_request' && !((github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy') || (github.event.pull_request.base.sha == '3887b1dc8eda1a59ce25725bf04996749f98935e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-shell-fix') || (github.event.pull_request.base.sha == '920d9d01fdff3ab88eb46c082114f5fca998834c' && github.event.pull_request.head.ref == 'codex/phase-5a0d-attestation-label-trigger') || (github.event.pull_request.base.sha == 'd071d00970a108a13ab91aa7e1e736ca2416e119' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-identity-diagnostics') || (github.event.pull_request.base.sha == 'd9257be564c5097ef473b153202fc8e92c5a70e1' && github.event.pull_request.head.ref == 'codex/phase-5a0d-attested-manifest-restore')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
@@ -341,8 +346,16 @@ jobs:
           git diff --quiet HEAD --
           echo "${{ steps.verifier_policy.outputs.archive_sha256 }}  $RUNNER_TEMP/phase5a0d-reviewed-visual-verifier.tar" | sha256sum -c -
           echo "${{ steps.verifier_policy.outputs.package_sha256 }}  $RUNNER_TEMP/phase5a0d-reviewed-visual-package.json" | sha256sum -c -
+          if [ "${{ steps.baseline_state.outputs.provenance }}" = "renderer-attestation-review-required" ]; then
+            git show "${{ github.event.pull_request.head.sha }}:frontend/e2e/__screenshots__/phase5a0d-manifest.json" \
+              > "$RUNNER_TEMP/phase5a0d-attested-head-manifest.json"
+          fi
           rm -rf -- frontend/e2e frontend/tooling frontend/playwright.config.ts
           tar -xf "$RUNNER_TEMP/phase5a0d-reviewed-visual-verifier.tar"
+          if [ "${{ steps.baseline_state.outputs.provenance }}" = "renderer-attestation-review-required" ]; then
+            cp -- "$RUNNER_TEMP/phase5a0d-attested-head-manifest.json" \
+              frontend/e2e/__screenshots__/phase5a0d-manifest.json
+          fi
           cd frontend
           node <<'NODE'
           const fs = require("fs");

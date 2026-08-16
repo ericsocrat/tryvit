@@ -102,6 +102,8 @@ test("policy workflows keep target validation base-owned and read-only", () => {
   assert.match(visual, /920d9d01fdff3ab88eb46c082114f5fca998834c/u);
   assert.match(visual, /codex\/phase-5a0d-renderer-identity-diagnostics/u);
   assert.match(visual, /d071d00970a108a13ab91aa7e1e736ca2416e119/u);
+  assert.match(visual, /codex\/phase-5a0d-attested-manifest-restore/u);
+  assert.match(visual, /d9257be564c5097ef473b153202fc8e92c5a70e1/u);
   assert.match(visual, /\.github\/scripts\/phase5a0d-renderer-attestation\.test\.mjs/u);
   assert.equal(
     normalizedVisual.includes(
@@ -117,5 +119,9 @@ test("policy workflows keep target validation base-owned and read-only", () => {
     /phase5a0d-attestation-expected\.txt[\s\S]*?<<['"]?EOF/u,
   );
   assert.match(visual, /Committed Phase 5A\.0d baselines are immutable relative/u);
+  assert.match(
+    normalizedVisual,
+    /renderer-attestation-review-required" \]; then[\s\S]*?git show "\$\{\{ github\.event\.pull_request\.head\.sha \}\}:frontend\/e2e\/__screenshots__\/phase5a0d-manifest\.json"[\s\S]*?rm -rf -- frontend\/e2e frontend\/tooling frontend\/playwright\.config\.ts[\s\S]*?tar -xf "\$RUNNER_TEMP\/phase5a0d-reviewed-visual-verifier\.tar"[\s\S]*?renderer-attestation-review-required" \]; then[\s\S]*?cp -- "\$RUNNER_TEMP\/phase5a0d-attested-head-manifest\.json"[\s\S]*?frontend\/e2e\/__screenshots__\/phase5a0d-manifest\.json/u,
+  );
   assert.doesNotMatch(visual, /--update-snapshots|git commit|git push/u);
 });
