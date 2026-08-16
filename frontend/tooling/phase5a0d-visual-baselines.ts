@@ -251,6 +251,20 @@ export async function currentRendererIdentity(frontendRoot = process.cwd()) {
   });
 }
 
+export function rendererIdentityMismatchFields(
+  expected: Pick<VisualBaselineManifest, "runner" | "versions">,
+  actual: Pick<VisualBaselineManifest, "runner" | "versions">,
+): string[] {
+  const mismatches: string[] = [];
+  for (const field of ["imageOS", "imageVersion", "arch"] as const) {
+    if (expected.runner[field] !== actual.runner[field]) mismatches.push(`runner.${field}`);
+  }
+  for (const field of ["node", "npm", "next", "playwright", "chromium"] as const) {
+    if (expected.versions[field] !== actual.versions[field]) mismatches.push(`versions.${field}`);
+  }
+  return mismatches;
+}
+
 export async function generateVisualBaselineManifest(
   frontendRoot = process.cwd(),
 ): Promise<VisualBaselineManifest> {
@@ -505,11 +519,7 @@ export async function verifyVisualBaselineManifest(
 ): Promise<VisualBaselineManifest> {
   const manifest = readVerifiedVisualBaselineFiles(frontendRoot);
   const renderer = await currentRendererIdentity(frontendRoot);
-  if (
-    stableJson(renderer.runner) !== stableJson(manifest.runner) ||
-    stableJson(renderer.versions) !== stableJson(manifest.versions)
-  ) {
-    fail("baseline-renderer-mismatch");
-  }
+  const mismatches = rendererIdentityMismatchFields(manifest, renderer);
+  if (mismatches.length > 0) fail(`baseline-renderer-mismatch:${mismatches.join(",")}`);
   return manifest;
 }

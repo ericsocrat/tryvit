@@ -1,0 +1,223 @@
+name: Phase 5A.0d Renderer Attestation
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: phase5a0d-renderer-attestation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify renderer/runtime attestation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout the exact trusted PR base
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch the untrusted head as data only
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+          git fetch --no-tags --no-write-fetch-head origin "$HEAD_SHA"
+          git cat-file -e "$HEAD_SHA^{commit}"
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+
+      - name: Run the trusted policy mutation tests
+        run: node --test .github/scripts/phase5a0d-renderer-attestation.test.mjs
+
+      - name: Detect an attestation refresh
+        id: scope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- \
+            frontend/e2e/__screenshots__/phase5a0d-manifest.json \
+            'frontend/e2e/__screenshots__/p5a0d-*.png' \
+            'frontend/e2e/__screenshots__/**/p5a0d-*.png' \
+            docs/evidence/phase5a0d-renderer-runtime-attestation.json)"
+          if [ -z "$changed" ]; then
+            echo "required=false" >> "$GITHUB_OUTPUT"
+            echo "No renderer/runtime attestation refresh is present."
+          else
+            echo "required=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Prove external authorization and read the evidence blob
+        if: steps.scope.outputs.required == 'true'
+        id: evidence
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          set -euo pipefail
+          test "$HEAD_REF" = "codex/phase-5a0d-renderer-runtime-attestation"
+          node -e '
+            const labels = JSON.parse(process.env.LABELS_JSON);
+            if (!labels.includes("phase5a0d-renderer-attestation-approved")) {
+              throw new Error("renderer-attestation-authorization-label-missing");
+            }
+          '
+          git show "$HEAD_SHA:docs/evidence/phase5a0d-renderer-runtime-attestation.json" \
+            > "$RUNNER_TEMP/phase5a0d-renderer-attestation.json"
+          node - "$GITHUB_OUTPUT" <<'NODE'
+          const fs = require("node:fs");
+          const evidence = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-renderer-attestation.json", "utf8"));
+          const candidate = evidence.candidate ?? {};
+          const values = {
+            run_id: candidate.workflowRunId,
+            run_attempt: candidate.workflowRunAttempt,
+            run_created_at: candidate.runCreatedAt,
+            run_completed_at: candidate.runCompletedAt,
+            artifact_id: candidate.artifactId,
+            artifact_name: candidate.artifactName,
+            archive_digest: candidate.archiveDigest,
+            archive_bytes: candidate.archiveBytes,
+          };
+          for (const [key, value] of Object.entries(values)) {
+            const rendered = String(value);
+            if (!/^[A-Za-z0-9_.:+-]+$/.test(rendered)) throw new Error(`unsafe-attestation-field:${key}`);
+            fs.appendFileSync(process.argv[2], `${key}=${rendered}\n`);
+          }
+          NODE
+
+      - name: Bind the candidate run and artifact to the exact base
+        if: steps.scope.outputs.required == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
+          RUN_ID: ${{ steps.evidence.outputs.run_id }}
+          RUN_ATTEMPT: ${{ steps.evidence.outputs.run_attempt }}
+          RUN_CREATED_AT: ${{ steps.evidence.outputs.run_created_at }}
+          RUN_COMPLETED_AT: ${{ steps.evidence.outputs.run_completed_at }}
+          ARTIFACT_ID: ${{ steps.evidence.outputs.artifact_id }}
+          ARTIFACT_NAME: ${{ steps.evidence.outputs.artifact_name }}
+          ARCHIVE_DIGEST: ${{ steps.evidence.outputs.archive_digest }}
+          ARCHIVE_BYTES: ${{ steps.evidence.outputs.archive_bytes }}
+        run: |
+          set -euo pipefail
+          run_json="$RUNNER_TEMP/phase5a0d-candidate-run.json"
+          artifacts_json="$RUNNER_TEMP/phase5a0d-candidate-artifacts.json"
+          gh api "repos/$REPOSITORY/actions/runs/$RUN_ID" > "$run_json"
+          jq -e \
+            --arg sha "$BASE_SHA" \
+            --arg prCreatedAt "$PR_CREATED_AT" \
+            --argjson attempt "$RUN_ATTEMPT" \
+            --arg createdAt "$RUN_CREATED_AT" \
+            --arg completedAt "$RUN_COMPLETED_AT" \
+            '.event == "workflow_dispatch" and .head_sha == $sha and .head_branch == "main" and .status == "completed" and .conclusion == "success" and .run_attempt == $attempt and .created_at == $createdAt and .updated_at == $completedAt and .created_at < $prCreatedAt and .path == ".github/workflows/phase5a0d-visual-baselines.yml"' \
+            "$run_json" > /dev/null
+          gh api "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" > "$artifacts_json"
+          jq -e \
+            --argjson id "$ARTIFACT_ID" \
+            --arg name "$ARTIFACT_NAME" \
+            --arg digest "$ARCHIVE_DIGEST" \
+            --argjson bytes "$ARCHIVE_BYTES" \
+            '[.artifacts[] | select(.id == $id and .name == $name and .expired == false and .digest == $digest and .size_in_bytes == $bytes)] | length == 1' \
+            "$artifacts_json" > /dev/null
+          gh api "repos/$REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" \
+            > "$RUNNER_TEMP/phase5a0d-renderer-candidate.zip"
+          test "$(stat -c '%s' "$RUNNER_TEMP/phase5a0d-renderer-candidate.zip")" = "$ARCHIVE_BYTES"
+          echo "${ARCHIVE_DIGEST#sha256:}  $RUNNER_TEMP/phase5a0d-renderer-candidate.zip" | sha256sum -c -
+
+      - name: Safely extract the exact eight-file candidate
+        if: steps.scope.outputs.required == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import pathlib
+          import stat
+          import zipfile
+
+          archive = pathlib.Path(os.environ["RUNNER_TEMP"]) / "phase5a0d-renderer-candidate.zip"
+          destination = pathlib.Path(os.environ["RUNNER_TEMP"]) / "phase5a0d-renderer-candidate"
+          destination.mkdir(mode=0o700)
+          with zipfile.ZipFile(archive) as candidate:
+              entries = candidate.infolist()
+              if len(entries) != 8:
+                  raise RuntimeError("candidate-entry-count-invalid")
+              names = []
+              for entry in entries:
+                  path = pathlib.PurePosixPath(entry.filename)
+                  if entry.is_dir() or path.is_absolute() or ".." in path.parts or len(path.parts) not in (1, 2):
+                      raise RuntimeError("candidate-path-invalid")
+                  if stat.S_ISLNK(entry.external_attr >> 16):
+                      raise RuntimeError("candidate-symlink-forbidden")
+                  names.append(entry.filename)
+              if len(set(names)) != 8:
+                  raise RuntimeError("candidate-path-duplicate")
+              for entry in entries:
+                  target = destination / entry.filename
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  with candidate.open(entry) as source, target.open("xb") as output:
+                      output.write(source.read())
+          PY
+
+      - name: Validate with the base-owned comparator
+        if: steps.scope.outputs.required == 'true'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          RUN_ID: ${{ steps.evidence.outputs.run_id }}
+          RUN_ATTEMPT: ${{ steps.evidence.outputs.run_attempt }}
+          RUN_CREATED_AT: ${{ steps.evidence.outputs.run_created_at }}
+          RUN_COMPLETED_AT: ${{ steps.evidence.outputs.run_completed_at }}
+          ARTIFACT_ID: ${{ steps.evidence.outputs.artifact_id }}
+          ARTIFACT_NAME: ${{ steps.evidence.outputs.artifact_name }}
+          ARCHIVE_DIGEST: ${{ steps.evidence.outputs.archive_digest }}
+          ARCHIVE_BYTES: ${{ steps.evidence.outputs.archive_bytes }}
+        run: |
+          set -euo pipefail
+          git show "$BASE_SHA:.github/scripts/phase5a0d-renderer-attestation.mjs" \
+            > "$RUNNER_TEMP/phase5a0d-renderer-attestation.mjs"
+          node "$RUNNER_TEMP/phase5a0d-renderer-attestation.mjs" \
+            --repository-root "$GITHUB_WORKSPACE" \
+            --candidate-root "$RUNNER_TEMP/phase5a0d-renderer-candidate" \
+            --base-sha "$BASE_SHA" \
+            --head-sha "$HEAD_SHA" \
+            --run-id "$RUN_ID" \
+            --run-attempt "$RUN_ATTEMPT" \
+            --run-created-at "$RUN_CREATED_AT" \
+            --run-completed-at "$RUN_COMPLETED_AT" \
+            --artifact-id "$ARTIFACT_ID" \
+            --artifact-name "$ARTIFACT_NAME" \
+            --archive-digest "$ARCHIVE_DIGEST" \
+            --archive-bytes "$ARCHIVE_BYTES"
+
+      - name: Record the bounded disposition
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.scope.outputs.required }}" = "true" ]; then
+            echo "Renderer/runtime attestation was required and evaluated by the exact PR-base policy." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Renderer/runtime attestation was not applicable; no baseline or attestation evidence changed." >> "$GITHUB_STEP_SUMMARY"
+          fi
