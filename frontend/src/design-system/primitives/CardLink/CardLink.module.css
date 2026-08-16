@@ -1,0 +1,72 @@
+.root {
+  position: relative;
+  color: var(--surface-foreground);
+  background: var(--surface-background);
+  border: var(--ds-border-standard) solid var(--surface-border);
+  border-radius: var(--ds-radius-large);
+  box-shadow: var(--ds-elevation-raised);
+  transition-duration: var(--ds-motion-duration-fast);
+  transition-property: background-color, border-color, box-shadow, transform;
+  transition-timing-function: var(--ds-motion-easing-standard);
+}
+
+.root:has(.primary:focus-visible) {
+  outline: var(--ds-border-focus) solid var(--color-border-focus);
+  outline-offset: var(--ds-space-1);
+}
+
+.primary {
+  display: block;
+  padding: var(--ds-space-4);
+  color: inherit;
+  text-decoration: none;
+}
+
+.primary::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+}
+
+.primary:focus-visible {
+  outline: none;
+}
+
+.actions {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ds-space-2);
+  padding: 0 var(--ds-space-4) var(--ds-space-4);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .root:has(.primary:hover) {
+    background: var(--color-surface-selected);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    transition-duration: var(--ds-motion-duration-instant);
+  }
+}
+
+@media (forced-colors: active) {
+  .root {
+    color: CanvasText;
+    background: Canvas;
+    border-color: CanvasText;
+    box-shadow: none;
+    forced-color-adjust: none;
+  }
+
+  .root:has(.primary:focus-visible) {
+    outline-color: Highlight;
+  }
+
+  .primary {
+    color: LinkText;
+  }
+}

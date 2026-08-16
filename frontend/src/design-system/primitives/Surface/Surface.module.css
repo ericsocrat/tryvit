@@ -1,0 +1,62 @@
+.root {
+  color: var(--surface-foreground);
+  border-radius: var(--ds-radius-large);
+}
+
+.base {
+  background: var(--surface-background);
+  box-shadow: var(--ds-elevation-none);
+}
+
+.raised {
+  background: var(--color-surface-raised);
+  box-shadow: var(--ds-elevation-raised);
+}
+
+.overlay {
+  color: var(--overlay-foreground);
+  background: var(--overlay-background);
+  box-shadow: var(--ds-elevation-overlay);
+}
+
+.boundaryNone {
+  border: 0;
+}
+
+.boundaryDefault {
+  border: var(--ds-border-standard) solid var(--surface-border);
+}
+
+.boundaryStrong {
+  border: var(--ds-border-strong) solid var(--color-border-strong-v2);
+}
+
+.densityNone {
+  padding: 0;
+}
+
+.densityCompact {
+  padding: var(--ds-space-3);
+}
+
+.densityDefault {
+  padding: var(--ds-space-4);
+}
+
+.densitySpacious {
+  padding: var(--ds-space-6);
+}
+
+@media (forced-colors: active) {
+  .root {
+    color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+    forced-color-adjust: none;
+  }
+
+  .boundaryDefault,
+  .boundaryStrong {
+    border-color: CanvasText;
+  }
+}

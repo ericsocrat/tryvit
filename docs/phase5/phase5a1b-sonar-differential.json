@@ -1,0 +1,1955 @@
+{
+  "schemaVersion": 1,
+  "project": "ericsocrat_tryvit",
+  "capturedAt": "2026-08-15",
+  "reconstruction": {
+    "query": "/api/issues/search?componentKeys=ericsocrat_tryvit&branch=main&ps=500&additionalFields=_all",
+    "retainedLifecycleRecords": 518,
+    "rule": "creationDate <= analysisCompletedAt and (closeDate is absent or closeDate > analysisCompletedAt)",
+    "caveat": "Sonar public issue search is mutable; immutable GitHub checks and exact scanner logs pin each endpoint. Feature-ref workflow_dispatch scans are recorded under Sonar branch main, so the decoration label New issues is not a pure PR leak-period count."
+  },
+  "base": {
+    "sha": "296742c9b941e0aad9cfb5b00dfa3738af9eba0e",
+    "analysisCompletedAt": "2026-08-10T09:43:33Z",
+    "mainGateRunId": 31375284663,
+    "sonarJobId": 93414422594,
+    "decorationCheckId": 93415054363,
+    "count": 368,
+    "keysetSha256": "89beaa33095437beac630b1fc382acccf126954a4f411579e8c2e5f81b7c645e",
+    "issueKeys": [
+      "AZ_Cm-apAnduJNYFrcet",
+      "AZ_Cm-IVAnduJNYFrcer",
+      "AZ_Cm-IVAnduJNYFrces",
+      "AZ_Db-k3AnduJNYFyO0n",
+      "AZ_Db-LaAnduJNYFyO0l",
+      "AZ_Db-LaAnduJNYFyO0m",
+      "AZ_Db-ltAnduJNYFyO0o",
+      "AZ_Db-qjAnduJNYFyO0p",
+      "AZ_Db-qjAnduJNYFyO0q",
+      "AZ_Db-qjAnduJNYFyO0r",
+      "AZ_Db-qjAnduJNYFyO0s",
+      "AZ_Db-qjAnduJNYFyO0t",
+      "AZ_iDMiaaa4LEs-Mi5b3",
+      "AZ_iDNQBaa4LEs-Mi5b5",
+      "AZ_qMGDaycsaNSwwgKEl",
+      "AZ_qMGFaycsaNSwwgKEm",
+      "AZ_qMGOAycsaNSwwgKEn",
+      "AZ_qMGOAycsaNSwwgKEo",
+      "AZ_qMGOAycsaNSwwgKEp",
+      "AZ_qMGOKycsaNSwwgKEq",
+      "AZ_qMGOKycsaNSwwgKEr",
+      "AZ-0c7IvtiU2q8UBAT9S",
+      "AZ-0c7QVtiU2q8UBAT9T",
+      "AZ-8oixbVL7xxLuoqR0d",
+      "AZ-g400-KxuH45ha14tq",
+      "AZ-g400-KxuH45ha14tr",
+      "AZ-g400-KxuH45ha14ts",
+      "AZ-g400-KxuH45ha14tt",
+      "AZ-g400-KxuH45ha14tu",
+      "AZ-g400lKxuH45ha14ti",
+      "AZ-g400lKxuH45ha14tj",
+      "AZ-g400lKxuH45ha14tk",
+      "AZ-g400lKxuH45ha14tl",
+      "AZ-g400lKxuH45ha14tm",
+      "AZ-g400lKxuH45ha14tn",
+      "AZ-g400lKxuH45ha14to",
+      "AZ-g400lKxuH45ha14tp",
+      "AZ-g400RKxuH45ha14th",
+      "AZ-g401-KxuH45ha14t2",
+      "AZ-g401-KxuH45ha14t3",
+      "AZ-g401-KxuH45ha14t4",
+      "AZ-g401kKxuH45ha14t0",
+      "AZ-g401kKxuH45ha14t1",
+      "AZ-g401kKxuH45ha14tw",
+      "AZ-g401kKxuH45ha14tx",
+      "AZ-g401kKxuH45ha14ty",
+      "AZ-g401kKxuH45ha14tz",
+      "AZ-g401UKxuH45ha14tv",
+      "AZ-g402UKxuH45ha14t5",
+      "AZ-g402UKxuH45ha14t6",
+      "AZ-g40ADKxuH45ha14rW",
+      "AZ-g40BCKxuH45ha14rY",
+      "AZ-g40BcKxuH45ha14rZ",
+      "AZ-g40bOKxuH45ha14sr",
+      "AZ-g40c-KxuH45ha14st",
+      "AZ-g40C0KxuH45ha14rc",
+      "AZ-g40CkKxuH45ha14rb",
+      "AZ-g40cKKxuH45ha14ss",
+      "AZ-g40CQKxuH45ha14ra",
+      "AZ-g40DXKxuH45ha14rd",
+      "AZ-g40F_KxuH45ha14rf",
+      "AZ-g40F_KxuH45ha14rg",
+      "AZ-g40F_KxuH45ha14rh",
+      "AZ-g40F_KxuH45ha14ri",
+      "AZ-g40F_KxuH45ha14rj",
+      "AZ-g40FEKxuH45ha14re",
+      "AZ-g40H0KxuH45ha14ro",
+      "AZ-g40H0KxuH45ha14rp",
+      "AZ-g40H0KxuH45ha14rq",
+      "AZ-g40HaKxuH45ha14rm",
+      "AZ-g40HaKxuH45ha14rn",
+      "AZ-g40HJKxuH45ha14rl",
+      "AZ-g40iuKxuH45ha14su",
+      "AZ-g40JEKxuH45ha14rr",
+      "AZ-g40jpKxuH45ha14sw",
+      "AZ-g40jpKxuH45ha14sx",
+      "AZ-g40jUKxuH45ha14sv",
+      "AZ-g40JXKxuH45ha14rs",
+      "AZ-g40JXKxuH45ha14rt",
+      "AZ-g40JXKxuH45ha14ru",
+      "AZ-g40JxKxuH45ha14rv",
+      "AZ-g40JxKxuH45ha14rw",
+      "AZ-g40k1KxuH45ha14s0",
+      "AZ-g40k1KxuH45ha14s1",
+      "AZ-g40k1KxuH45ha14sy",
+      "AZ-g40k1KxuH45ha14sz",
+      "AZ-g40K8KxuH45ha14r6",
+      "AZ-g40K9KxuH45ha14r7",
+      "AZ-g40KBKxuH45ha14rx",
+      "AZ-g40KBKxuH45ha14ry",
+      "AZ-g40KBKxuH45ha14rz",
+      "AZ-g40KiKxuH45ha14r1",
+      "AZ-g40KiKxuH45ha14r2",
+      "AZ-g40KiKxuH45ha14r3",
+      "AZ-g40KiKxuH45ha14r4",
+      "AZ-g40KiKxuH45ha14r5",
+      "AZ-g40KQKxuH45ha14r0",
+      "AZ-g40l1KxuH45ha14s2",
+      "AZ-g40L4KxuH45ha14r-",
+      "AZ-g40L4KxuH45ha14r9",
+      "AZ-g40LOKxuH45ha14r8",
+      "AZ-g40m3KxuH45ha14s5",
+      "AZ-g40m3KxuH45ha14s6",
+      "AZ-g40mJKxuH45ha14s3",
+      "AZ-g40mJKxuH45ha14s4",
+      "AZ-g40NhKxuH45ha14sF",
+      "AZ-g40NhKxuH45ha14sG",
+      "AZ-g40NhKxuH45ha14sH",
+      "AZ-g40NhKxuH45ha14sI",
+      "AZ-g40NhKxuH45ha14sJ",
+      "AZ-g40NPKxuH45ha14r_",
+      "AZ-g40NPKxuH45ha14sA",
+      "AZ-g40NPKxuH45ha14sB",
+      "AZ-g40NPKxuH45ha14sC",
+      "AZ-g40NPKxuH45ha14sD",
+      "AZ-g40NPKxuH45ha14sE",
+      "AZ-g40ntKxuH45ha14s7",
+      "AZ-g40OHKxuH45ha14sK",
+      "AZ-g40OHKxuH45ha14sL",
+      "AZ-g40OuKxuH45ha14sM",
+      "AZ-g40OuKxuH45ha14sN",
+      "AZ-g40oZKxuH45ha14s8",
+      "AZ-g40P-KxuH45ha14sW",
+      "AZ-g40pNKxuH45ha14s9",
+      "AZ-g40PpKxuH45ha14sP",
+      "AZ-g40PpKxuH45ha14sQ",
+      "AZ-g40PpKxuH45ha14sR",
+      "AZ-g40PpKxuH45ha14sS",
+      "AZ-g40PpKxuH45ha14sT",
+      "AZ-g40PpKxuH45ha14sU",
+      "AZ-g40PpKxuH45ha14sV",
+      "AZ-g40PQKxuH45ha14sO",
+      "AZ-g40ptKxuH45ha14s_",
+      "AZ-g40ptKxuH45ha14s-",
+      "AZ-g40ptKxuH45ha14tA",
+      "AZ-g40QlKxuH45ha14sX",
+      "AZ-g40qyKxuH45ha14tB",
+      "AZ-g40qyKxuH45ha14tC",
+      "AZ-g40R8KxuH45ha14sa",
+      "AZ-g40R8KxuH45ha14sb",
+      "AZ-g40REKxuH45ha14sY",
+      "AZ-g40rGKxuH45ha14tD",
+      "AZ-g40rhKxuH45ha14tE",
+      "AZ-g40rhKxuH45ha14tF",
+      "AZ-g40rhKxuH45ha14tG",
+      "AZ-g40rhKxuH45ha14tH",
+      "AZ-g40RTKxuH45ha14sZ",
+      "AZ-g40SjKxuH45ha14sc",
+      "AZ-g40sZKxuH45ha14tI",
+      "AZ-g40sZKxuH45ha14tJ",
+      "AZ-g40tEKxuH45ha14tK",
+      "AZ-g40TJKxuH45ha14sd",
+      "AZ-g40TrKxuH45ha14se",
+      "AZ-g40U_KxuH45ha14si",
+      "AZ-g40UCKxuH45ha14sf",
+      "AZ-g40UnKxuH45ha14sh",
+      "AZ-g40USKxuH45ha14sg",
+      "AZ-g40v_KxuH45ha14tM",
+      "AZ-g40v_KxuH45ha14tN",
+      "AZ-g40VPKxuH45ha14sj",
+      "AZ-g40vrKxuH45ha14tL",
+      "AZ-g40VzKxuH45ha14sk",
+      "AZ-g40VzKxuH45ha14sl",
+      "AZ-g40W8KxuH45ha14sp",
+      "AZ-g40WCKxuH45ha14sm",
+      "AZ-g40WoKxuH45ha14sn",
+      "AZ-g40WoKxuH45ha14so",
+      "AZ-g40xgKxuH45ha14tT",
+      "AZ-g40xgKxuH45ha14tU",
+      "AZ-g40xgKxuH45ha14tV",
+      "AZ-g40xgKxuH45ha14tW",
+      "AZ-g40xgKxuH45ha14tX",
+      "AZ-g40xOKxuH45ha14tS",
+      "AZ-g40XQKxuH45ha14sq",
+      "AZ-g40xyKxuH45ha14tY",
+      "AZ-g40xyKxuH45ha14tZ",
+      "AZ-g40yDKxuH45ha14ta",
+      "AZ-g40ytKxuH45ha14td",
+      "AZ-g40yYKxuH45ha14tb",
+      "AZ-g40yYKxuH45ha14tc",
+      "AZ-g40z9KxuH45ha14tg",
+      "AZ-g40zfKxuH45ha14te",
+      "AZ-g40zfKxuH45ha14tf",
+      "AZ-g4z-uKxuH45ha14rV",
+      "AZ-g4z04KxuH45ha14rE",
+      "AZ-g4z04KxuH45ha14rF",
+      "AZ-g4z0aKxuH45ha14rD",
+      "AZ-g4z1jKxuH45ha14rG",
+      "AZ-g4z1jKxuH45ha14rH",
+      "AZ-g4z2GKxuH45ha14rI",
+      "AZ-g4z3kKxuH45ha14rJ",
+      "AZ-g4z3kKxuH45ha14rK",
+      "AZ-g4z5QKxuH45ha14rL",
+      "AZ-g4z6sKxuH45ha14rM",
+      "AZ-g4z6sKxuH45ha14rN",
+      "AZ-g4z6sKxuH45ha14rO",
+      "AZ-g4z7UKxuH45ha14rP",
+      "AZ-g4z8YKxuH45ha14rQ",
+      "AZ-g4z93KxuH45ha14rR",
+      "AZ-g4z93KxuH45ha14rS",
+      "AZ-g4z93KxuH45ha14rT",
+      "AZ-g4z93KxuH45ha14rU",
+      "AZ-g4zd8KxuH45ha14qU",
+      "AZ-g4zd8KxuH45ha14qV",
+      "AZ-g4zd8KxuH45ha14qW",
+      "AZ-g4zhRKxuH45ha14qa",
+      "AZ-g4zhRKxuH45ha14qb",
+      "AZ-g4zhRKxuH45ha14qc",
+      "AZ-g4zhRKxuH45ha14qd",
+      "AZ-g4zhRKxuH45ha14qe",
+      "AZ-g4zhRKxuH45ha14qf",
+      "AZ-g4zhRKxuH45ha14qg",
+      "AZ-g4zhRKxuH45ha14qh",
+      "AZ-g4zhRKxuH45ha14qi",
+      "AZ-g4zhRKxuH45ha14qj",
+      "AZ-g4zhRKxuH45ha14qX",
+      "AZ-g4zhRKxuH45ha14qY",
+      "AZ-g4zhRKxuH45ha14qZ",
+      "AZ-g4zjeKxuH45ha14qk",
+      "AZ-g4zliKxuH45ha14qm",
+      "AZ-g4zlLKxuH45ha14ql",
+      "AZ-g4zmeKxuH45ha14qn",
+      "AZ-g4zn2KxuH45ha14qo",
+      "AZ-g4zn2KxuH45ha14qp",
+      "AZ-g4zodKxuH45ha14qq",
+      "AZ-g4zodKxuH45ha14qr",
+      "AZ-g4zosKxuH45ha14qs",
+      "AZ-g4zpwKxuH45ha14qt",
+      "AZ-g4zpwKxuH45ha14qu",
+      "AZ-g4zqEKxuH45ha14qv",
+      "AZ-g4zqWKxuH45ha14qw",
+      "AZ-g4zrGKxuH45ha14qx",
+      "AZ-g4zroKxuH45ha14qy",
+      "AZ-g4zsJKxuH45ha14qz",
+      "AZ-g4zutKxuH45ha14q3",
+      "AZ-g4zutKxuH45ha14q4",
+      "AZ-g4zuWKxuH45ha14q0",
+      "AZ-g4zuWKxuH45ha14q1",
+      "AZ-g4zuWKxuH45ha14q2",
+      "AZ-g4zvpKxuH45ha14q5",
+      "AZ-g4zy1KxuH45ha14q9",
+      "AZ-g4zyXKxuH45ha14q8",
+      "AZ-g4zzNKxuH45ha14q-",
+      "AZ-g4zzqKxuH45ha14q_",
+      "AZ-g4zzqKxuH45ha14rA",
+      "AZ-g4zzqKxuH45ha14rB",
+      "AZ-g4zzqKxuH45ha14rC",
+      "AZ-ktx1eVBmNw6C4Nmzn",
+      "AZ-lXa6H4Ln9rv4-Qrib",
+      "AZ-lXbHJ4Ln9rv4-Qrie",
+      "AZ-lXbHJ4Ln9rv4-Qrih",
+      "AZ-nyzLWiLnwHvvk390b",
+      "AZ-nyzLWiLnwHvvk390c",
+      "AZ-oDgU8q2KiEXPD2Ja-",
+      "AZ-oDgVwq2KiEXPD2Ja_",
+      "AZ-onTt43yP9HN99cHat",
+      "AZ-onTt43yP9HN99cHau",
+      "AZ-onTt43yP9HN99cHav",
+      "AZ-onTxb3yP9HN99cHaw",
+      "AZ-onTyL3yP9HN99cHax",
+      "AZ-oStsK24RUZPqz223X",
+      "AZ-psS_6Iw9_wrMuiiqb",
+      "AZ-psS-2Iw9_wrMuiiqa",
+      "AZ-psS86Iw9_wrMuiiqY",
+      "AZ-psS86Iw9_wrMuiiqZ",
+      "AZ-psTARIw9_wrMuiiqc",
+      "AZ-q5s24Xd3PQyj1ZLKK",
+      "AZ-q5s5YXd3PQyj1ZLKL",
+      "AZ-q5s61Xd3PQyj1ZLKM",
+      "AZ-q5s61Xd3PQyj1ZLKN",
+      "AZ-q5s61Xd3PQyj1ZLKO",
+      "AZ-zs9upVGzfSzGI2Yjf",
+      "AZ-zs9xNVGzfSzGI2Yjg",
+      "AZ-zs9zBVGzfSzGI2Yjh",
+      "AZ0AB05yG81QSrh9O9WU",
+      "AZ0AB1OmG81QSrh9O9WW",
+      "AZ0AB1OmG81QSrh9O9WX",
+      "AZ0AB1OmG81QSrh9O9WY",
+      "AZ0B8cwpTERx1hCrLSHv",
+      "AZ0B8cxATERx1hCrLSHw",
+      "AZ0F3cUYoeAGDXXg_RPp",
+      "AZ0FapiDnt4r1UpceCnw",
+      "AZ0FyWQV9RflQ3Y3UqbA",
+      "AZ0GcC6S1o9-G8NWyUo-",
+      "AZ0Ha0lxnt4r1UpcyPDv",
+      "AZ2qg5k643vI1cIANul1",
+      "AZ3jdSJhp2poZnU9DesI",
+      "AZ3jXfiTM5CXM71Loqm9",
+      "AZ584DChfeNRQCeuEFxp",
+      "AZ584DChfeNRQCeuEFxq",
+      "AZ584DChfeNRQCeuEFxr",
+      "AZ5eN_CpjL8g0JA_TtS2",
+      "AZ5eN_DcjL8g0JA_TtTA",
+      "AZ5eN_DrjL8g0JA_TtTB",
+      "AZ5eN_EIjL8g0JA_TtTI",
+      "AZ5eN_EIjL8g0JA_TtTJ",
+      "AZ5eN_EIjL8g0JA_TtTK",
+      "AZ5eN_EUjL8g0JA_TtTL",
+      "AZ5eN_EUjL8g0JA_TtTM",
+      "AZ5eN_EUjL8g0JA_TtTN",
+      "AZ5eN_GWjL8g0JA_TtUc",
+      "AZ5j4FyfR1Ezg4icajcm",
+      "AZ5mSzmFmQT7csWqK1u9",
+      "AZx1plrtuAPiI9lNFGCC",
+      "AZy7LDD7YVCvSQrjLbzE",
+      "AZy7LDD7YVCvSQrjLbzF",
+      "AZy7LDI2YVCvSQrjLbzG",
+      "AZy7LDI2YVCvSQrjLbzH",
+      "AZy8BK7YJp304WWPL8rc",
+      "AZy8D0ElzH032wkstNyx",
+      "AZyalHpCjKW0Hbtlz5qL",
+      "AZyhmLoqPH6Y8hnMgj3b",
+      "AZyhq1A_bTTkCKzmd9WC",
+      "AZyhq1D_bTTkCKzmd9WD",
+      "AZyhq1D_bTTkCKzmd9WE",
+      "AZyhq1D_bTTkCKzmd9WF",
+      "AZyhq1FCbTTkCKzmd9WG",
+      "AZyhq1FCbTTkCKzmd9WH",
+      "AZyMPCkEyDU3qu04_KpV",
+      "AZyMPCqZyDU3qu04_KpW",
+      "AZymyK9cns9KUdkNXZRb",
+      "AZyQE69SFILVKZPx_0Qm",
+      "AZyQE7B9FILVKZPx_0Qr",
+      "AZySVll-opXpW7uO6V-w",
+      "AZySVlpgopXpW7uO6V-x",
+      "AZyUyeJ41z0xX4LbtEWe",
+      "AZyv0JIjII49zzZP3VVM",
+      "AZz344EkSq2uLhM1c-pa",
+      "AZz344EkSq2uLhM1c-pb",
+      "AZz344EkSq2uLhM1c-pc",
+      "AZz344EkSq2uLhM1c-pd",
+      "AZz344EkSq2uLhM1c-pX",
+      "AZz344EkSq2uLhM1c-pY",
+      "AZz344EkSq2uLhM1c-pZ",
+      "AZz344H-Sq2uLhM1c-pf",
+      "AZz344H-Sq2uLhM1c-pg",
+      "AZz344H-Sq2uLhM1c-ph",
+      "AZz344H-Sq2uLhM1c-pi",
+      "AZzbCU9dAEk4RYmkJdnv",
+      "AZzbCVDjAEk4RYmkJdnw",
+      "AZzjox2hTBjk2HgQDwRA",
+      "AZzk8UAKDVdjFamjWNZU",
+      "AZzk8UAKDVdjFamjWNZV",
+      "AZzk8UAKDVdjFamjWNZW",
+      "AZzk8UAKDVdjFamjWNZX",
+      "AZzk8UDtDVdjFamjWNZY",
+      "AZzlCYH1D4iQCPDF9MZG",
+      "AZzlCYLzD4iQCPDF9MZH",
+      "AZzleqeoPm7U6ieurJ7J",
+      "AZzlJMzXXHoO2ZoP8Abt",
+      "AZzlJMzXXHoO2ZoP8Abu",
+      "AZzM0DE-TBjk2HgQ0wD_",
+      "AZzM0DE-TBjk2HgQ0wD-",
+      "AZzM0DE-TBjk2HgQ0wD9",
+      "AZzp5IDlUKOft2MJ36pY",
+      "AZzp5IHKUKOft2MJ36pa",
+      "AZzQdAg6fFO7fMyoHuP4",
+      "AZzQdAhOfFO7fMyoHuP5",
+      "AZzQdAhOfFO7fMyoHuP6",
+      "AZzVCpXuMVxjo9SIscAt",
+      "AZzVCpXuMVxjo9SIscAu",
+      "AZzy8LXGok8Unw4c6T8N",
+      "AZzy8LXGok8Unw4c6T8O",
+      "AZzy8LXGok8Unw4c6T8P",
+      "AZzy8LXGok8Unw4c6T8R",
+      "AZzZ4VT4WGmXuRX5zPYk",
+      "AZzZ4VXAWGmXuRX5zPYl",
+      "AZzZ4VXAWGmXuRX5zPYm"
+    ]
+  },
+  "head": {
+    "sha": "4c25ff179288bddaaaf3ec6ca71eda85e36de6a6",
+    "analysisCompletedAt": "2026-08-11T13:35:23Z",
+    "analysisId": "c8da8d43-1ef1-452e-b9e9-f6a5e760d13d",
+    "mainGateRunId": 31496182903,
+    "sonarJobId": 93796189473,
+    "decorationCheckId": 93796956436,
+    "count": 426,
+    "keysetSha256": "1fa463ac2a02c6118a269b2ffbf06076174436d5a4fa6168e84b98535477672f",
+    "issueKeys": [
+      "AZ_Cm-apAnduJNYFrcet",
+      "AZ_Cm-IVAnduJNYFrcer",
+      "AZ_Cm-IVAnduJNYFrces",
+      "AZ_Db-k3AnduJNYFyO0n",
+      "AZ_Db-LaAnduJNYFyO0l",
+      "AZ_Db-LaAnduJNYFyO0m",
+      "AZ_Db-ltAnduJNYFyO0o",
+      "AZ_Db-qjAnduJNYFyO0p",
+      "AZ_Db-qjAnduJNYFyO0q",
+      "AZ_Db-qjAnduJNYFyO0r",
+      "AZ_Db-qjAnduJNYFyO0s",
+      "AZ_Db-qjAnduJNYFyO0t",
+      "AZ_iDMiaaa4LEs-Mi5b3",
+      "AZ_iDNQBaa4LEs-Mi5b5",
+      "AZ_qMGDaycsaNSwwgKEl",
+      "AZ_qMGFaycsaNSwwgKEm",
+      "AZ_qMGOAycsaNSwwgKEn",
+      "AZ_qMGOAycsaNSwwgKEo",
+      "AZ_qMGOAycsaNSwwgKEp",
+      "AZ_qMGOKycsaNSwwgKEq",
+      "AZ_qMGOKycsaNSwwgKEr",
+      "AZ_vBYa-ZNe834dW-YJy",
+      "AZ_vBYa-ZNe834dW-YJz",
+      "AZ_vBYaxZNe834dW-YJs",
+      "AZ_vBYaxZNe834dW-YJt",
+      "AZ_vBYaxZNe834dW-YJu",
+      "AZ_vBYaxZNe834dW-YJv",
+      "AZ_vBYaxZNe834dW-YJw",
+      "AZ_vBYb6ZNe834dW-YJ5",
+      "AZ_vBYbkZNe834dW-YJ4",
+      "AZ_vBYbRZNe834dW-YJ0",
+      "AZ_vBYbRZNe834dW-YJ1",
+      "AZ_vBYbRZNe834dW-YJ2",
+      "AZ_vBYbRZNe834dW-YJ3",
+      "AZ_vBYc1ZNe834dW-YKG",
+      "AZ_vBYcGZNe834dW-YJ6",
+      "AZ_vBYcGZNe834dW-YJ7",
+      "AZ_vBYcGZNe834dW-YJ8",
+      "AZ_vBYcqZNe834dW-YJ_",
+      "AZ_vBYcqZNe834dW-YKA",
+      "AZ_vBYcqZNe834dW-YKB",
+      "AZ_vBYcqZNe834dW-YKC",
+      "AZ_vBYcqZNe834dW-YKD",
+      "AZ_vBYcqZNe834dW-YKE",
+      "AZ_vBYcqZNe834dW-YKF",
+      "AZ_vBYcSZNe834dW-YJ-",
+      "AZ_vBYcSZNe834dW-YJ9",
+      "AZ_vBYd9ZNe834dW-YKO",
+      "AZ_vBYd9ZNe834dW-YKP",
+      "AZ_vBYdDZNe834dW-YKH",
+      "AZ_vBYdDZNe834dW-YKI",
+      "AZ_vBYdnZNe834dW-YKN",
+      "AZ_vBYdUZNe834dW-YKJ",
+      "AZ_vBYdUZNe834dW-YKK",
+      "AZ_vBYdUZNe834dW-YKL",
+      "AZ_vBYdUZNe834dW-YKM",
+      "AZ_vBYeaZNe834dW-YKS",
+      "AZ_vBYeaZNe834dW-YKT",
+      "AZ_vBYeNZNe834dW-YKQ",
+      "AZ_vBYeNZNe834dW-YKR",
+      "AZ_vBYf9ZNe834dW-YKV",
+      "AZ_vBYf9ZNe834dW-YKW",
+      "AZ_vBYfbZNe834dW-YKU",
+      "AZ_vBYgdZNe834dW-YKY",
+      "AZ_vBYgJZNe834dW-YKX",
+      "AZ_vBYguZNe834dW-YKa",
+      "AZ_vBYguZNe834dW-YKb",
+      "AZ_vBYguZNe834dW-YKc",
+      "AZ_vBYguZNe834dW-YKZ",
+      "AZ_vBYLhZNe834dW-YJp",
+      "AZ_vBYPRZNe834dW-YJq",
+      "AZ_vBYPRZNe834dW-YJr",
+      "AZ_vrKe-v0JSzLZnIZdU",
+      "AZ_vrKe-v0JSzLZnIZdV",
+      "AZ_vrKe-v0JSzLZnIZdW",
+      "AZ_vrKjXv0JSzLZnIZda",
+      "AZ_vrKjXv0JSzLZnIZdb",
+      "AZ_vrKjXv0JSzLZnIZdX",
+      "AZ_vrKjXv0JSzLZnIZdY",
+      "AZ_vrKjXv0JSzLZnIZdZ",
+      "AZ-0c7IvtiU2q8UBAT9S",
+      "AZ-0c7QVtiU2q8UBAT9T",
+      "AZ-8oixbVL7xxLuoqR0d",
+      "AZ-g400-KxuH45ha14tq",
+      "AZ-g400-KxuH45ha14tr",
+      "AZ-g400-KxuH45ha14ts",
+      "AZ-g400-KxuH45ha14tt",
+      "AZ-g400-KxuH45ha14tu",
+      "AZ-g400lKxuH45ha14ti",
+      "AZ-g400lKxuH45ha14tj",
+      "AZ-g400lKxuH45ha14tk",
+      "AZ-g400lKxuH45ha14tl",
+      "AZ-g400lKxuH45ha14tm",
+      "AZ-g400lKxuH45ha14tn",
+      "AZ-g400lKxuH45ha14to",
+      "AZ-g400lKxuH45ha14tp",
+      "AZ-g400RKxuH45ha14th",
+      "AZ-g401-KxuH45ha14t2",
+      "AZ-g401-KxuH45ha14t3",
+      "AZ-g401-KxuH45ha14t4",
+      "AZ-g401kKxuH45ha14t0",
+      "AZ-g401kKxuH45ha14t1",
+      "AZ-g401kKxuH45ha14tw",
+      "AZ-g401kKxuH45ha14tx",
+      "AZ-g401kKxuH45ha14ty",
+      "AZ-g401kKxuH45ha14tz",
+      "AZ-g401UKxuH45ha14tv",
+      "AZ-g402UKxuH45ha14t5",
+      "AZ-g402UKxuH45ha14t6",
+      "AZ-g40ADKxuH45ha14rW",
+      "AZ-g40BCKxuH45ha14rY",
+      "AZ-g40BcKxuH45ha14rZ",
+      "AZ-g40bOKxuH45ha14sr",
+      "AZ-g40c-KxuH45ha14st",
+      "AZ-g40C0KxuH45ha14rc",
+      "AZ-g40CkKxuH45ha14rb",
+      "AZ-g40cKKxuH45ha14ss",
+      "AZ-g40CQKxuH45ha14ra",
+      "AZ-g40DXKxuH45ha14rd",
+      "AZ-g40F_KxuH45ha14rf",
+      "AZ-g40F_KxuH45ha14rg",
+      "AZ-g40F_KxuH45ha14rh",
+      "AZ-g40F_KxuH45ha14ri",
+      "AZ-g40F_KxuH45ha14rj",
+      "AZ-g40FEKxuH45ha14re",
+      "AZ-g40H0KxuH45ha14ro",
+      "AZ-g40H0KxuH45ha14rp",
+      "AZ-g40H0KxuH45ha14rq",
+      "AZ-g40HaKxuH45ha14rm",
+      "AZ-g40HaKxuH45ha14rn",
+      "AZ-g40HJKxuH45ha14rl",
+      "AZ-g40iuKxuH45ha14su",
+      "AZ-g40JEKxuH45ha14rr",
+      "AZ-g40jpKxuH45ha14sw",
+      "AZ-g40jpKxuH45ha14sx",
+      "AZ-g40jUKxuH45ha14sv",
+      "AZ-g40JXKxuH45ha14rs",
+      "AZ-g40JXKxuH45ha14rt",
+      "AZ-g40JXKxuH45ha14ru",
+      "AZ-g40JxKxuH45ha14rv",
+      "AZ-g40JxKxuH45ha14rw",
+      "AZ-g40k1KxuH45ha14s0",
+      "AZ-g40k1KxuH45ha14s1",
+      "AZ-g40k1KxuH45ha14sy",
+      "AZ-g40k1KxuH45ha14sz",
+      "AZ-g40K8KxuH45ha14r6",
+      "AZ-g40K9KxuH45ha14r7",
+      "AZ-g40KBKxuH45ha14rx",
+      "AZ-g40KBKxuH45ha14ry",
+      "AZ-g40KBKxuH45ha14rz",
+      "AZ-g40KiKxuH45ha14r1",
+      "AZ-g40KiKxuH45ha14r2",
+      "AZ-g40KiKxuH45ha14r3",
+      "AZ-g40KiKxuH45ha14r4",
+      "AZ-g40KiKxuH45ha14r5",
+      "AZ-g40KQKxuH45ha14r0",
+      "AZ-g40l1KxuH45ha14s2",
+      "AZ-g40L4KxuH45ha14r-",
+      "AZ-g40L4KxuH45ha14r9",
+      "AZ-g40LOKxuH45ha14r8",
+      "AZ-g40m3KxuH45ha14s5",
+      "AZ-g40m3KxuH45ha14s6",
+      "AZ-g40mJKxuH45ha14s3",
+      "AZ-g40mJKxuH45ha14s4",
+      "AZ-g40NhKxuH45ha14sF",
+      "AZ-g40NhKxuH45ha14sG",
+      "AZ-g40NhKxuH45ha14sH",
+      "AZ-g40NhKxuH45ha14sI",
+      "AZ-g40NhKxuH45ha14sJ",
+      "AZ-g40NPKxuH45ha14r_",
+      "AZ-g40NPKxuH45ha14sA",
+      "AZ-g40NPKxuH45ha14sB",
+      "AZ-g40NPKxuH45ha14sC",
+      "AZ-g40NPKxuH45ha14sD",
+      "AZ-g40NPKxuH45ha14sE",
+      "AZ-g40ntKxuH45ha14s7",
+      "AZ-g40OHKxuH45ha14sK",
+      "AZ-g40OHKxuH45ha14sL",
+      "AZ-g40OuKxuH45ha14sM",
+      "AZ-g40OuKxuH45ha14sN",
+      "AZ-g40oZKxuH45ha14s8",
+      "AZ-g40P-KxuH45ha14sW",
+      "AZ-g40pNKxuH45ha14s9",
+      "AZ-g40PpKxuH45ha14sP",
+      "AZ-g40PpKxuH45ha14sQ",
+      "AZ-g40PpKxuH45ha14sR",
+      "AZ-g40PpKxuH45ha14sS",
+      "AZ-g40PpKxuH45ha14sT",
+      "AZ-g40PpKxuH45ha14sU",
+      "AZ-g40PpKxuH45ha14sV",
+      "AZ-g40PQKxuH45ha14sO",
+      "AZ-g40ptKxuH45ha14s_",
+      "AZ-g40ptKxuH45ha14s-",
+      "AZ-g40ptKxuH45ha14tA",
+      "AZ-g40QlKxuH45ha14sX",
+      "AZ-g40qyKxuH45ha14tB",
+      "AZ-g40qyKxuH45ha14tC",
+      "AZ-g40R8KxuH45ha14sa",
+      "AZ-g40R8KxuH45ha14sb",
+      "AZ-g40REKxuH45ha14sY",
+      "AZ-g40rGKxuH45ha14tD",
+      "AZ-g40rhKxuH45ha14tE",
+      "AZ-g40rhKxuH45ha14tF",
+      "AZ-g40rhKxuH45ha14tG",
+      "AZ-g40rhKxuH45ha14tH",
+      "AZ-g40RTKxuH45ha14sZ",
+      "AZ-g40SjKxuH45ha14sc",
+      "AZ-g40sZKxuH45ha14tI",
+      "AZ-g40sZKxuH45ha14tJ",
+      "AZ-g40tEKxuH45ha14tK",
+      "AZ-g40TJKxuH45ha14sd",
+      "AZ-g40TrKxuH45ha14se",
+      "AZ-g40U_KxuH45ha14si",
+      "AZ-g40UCKxuH45ha14sf",
+      "AZ-g40UnKxuH45ha14sh",
+      "AZ-g40USKxuH45ha14sg",
+      "AZ-g40v_KxuH45ha14tM",
+      "AZ-g40v_KxuH45ha14tN",
+      "AZ-g40VPKxuH45ha14sj",
+      "AZ-g40vrKxuH45ha14tL",
+      "AZ-g40VzKxuH45ha14sk",
+      "AZ-g40VzKxuH45ha14sl",
+      "AZ-g40W8KxuH45ha14sp",
+      "AZ-g40WCKxuH45ha14sm",
+      "AZ-g40WoKxuH45ha14sn",
+      "AZ-g40WoKxuH45ha14so",
+      "AZ-g40xgKxuH45ha14tT",
+      "AZ-g40xgKxuH45ha14tU",
+      "AZ-g40xgKxuH45ha14tV",
+      "AZ-g40xgKxuH45ha14tW",
+      "AZ-g40xgKxuH45ha14tX",
+      "AZ-g40xOKxuH45ha14tS",
+      "AZ-g40XQKxuH45ha14sq",
+      "AZ-g40xyKxuH45ha14tY",
+      "AZ-g40xyKxuH45ha14tZ",
+      "AZ-g40yDKxuH45ha14ta",
+      "AZ-g40ytKxuH45ha14td",
+      "AZ-g40yYKxuH45ha14tb",
+      "AZ-g40yYKxuH45ha14tc",
+      "AZ-g40z9KxuH45ha14tg",
+      "AZ-g40zfKxuH45ha14te",
+      "AZ-g40zfKxuH45ha14tf",
+      "AZ-g4z-uKxuH45ha14rV",
+      "AZ-g4z04KxuH45ha14rE",
+      "AZ-g4z04KxuH45ha14rF",
+      "AZ-g4z0aKxuH45ha14rD",
+      "AZ-g4z1jKxuH45ha14rG",
+      "AZ-g4z1jKxuH45ha14rH",
+      "AZ-g4z2GKxuH45ha14rI",
+      "AZ-g4z3kKxuH45ha14rJ",
+      "AZ-g4z3kKxuH45ha14rK",
+      "AZ-g4z5QKxuH45ha14rL",
+      "AZ-g4z6sKxuH45ha14rM",
+      "AZ-g4z6sKxuH45ha14rN",
+      "AZ-g4z6sKxuH45ha14rO",
+      "AZ-g4z7UKxuH45ha14rP",
+      "AZ-g4z8YKxuH45ha14rQ",
+      "AZ-g4z93KxuH45ha14rR",
+      "AZ-g4z93KxuH45ha14rS",
+      "AZ-g4z93KxuH45ha14rT",
+      "AZ-g4z93KxuH45ha14rU",
+      "AZ-g4zd8KxuH45ha14qU",
+      "AZ-g4zd8KxuH45ha14qV",
+      "AZ-g4zd8KxuH45ha14qW",
+      "AZ-g4zhRKxuH45ha14qa",
+      "AZ-g4zhRKxuH45ha14qb",
+      "AZ-g4zhRKxuH45ha14qc",
+      "AZ-g4zhRKxuH45ha14qd",
+      "AZ-g4zhRKxuH45ha14qe",
+      "AZ-g4zhRKxuH45ha14qf",
+      "AZ-g4zhRKxuH45ha14qg",
+      "AZ-g4zhRKxuH45ha14qh",
+      "AZ-g4zhRKxuH45ha14qi",
+      "AZ-g4zhRKxuH45ha14qj",
+      "AZ-g4zhRKxuH45ha14qX",
+      "AZ-g4zhRKxuH45ha14qY",
+      "AZ-g4zhRKxuH45ha14qZ",
+      "AZ-g4zjeKxuH45ha14qk",
+      "AZ-g4zliKxuH45ha14qm",
+      "AZ-g4zlLKxuH45ha14ql",
+      "AZ-g4zmeKxuH45ha14qn",
+      "AZ-g4zn2KxuH45ha14qo",
+      "AZ-g4zn2KxuH45ha14qp",
+      "AZ-g4zodKxuH45ha14qq",
+      "AZ-g4zodKxuH45ha14qr",
+      "AZ-g4zosKxuH45ha14qs",
+      "AZ-g4zpwKxuH45ha14qt",
+      "AZ-g4zpwKxuH45ha14qu",
+      "AZ-g4zqWKxuH45ha14qw",
+      "AZ-g4zrGKxuH45ha14qx",
+      "AZ-g4zroKxuH45ha14qy",
+      "AZ-g4zsJKxuH45ha14qz",
+      "AZ-g4zutKxuH45ha14q3",
+      "AZ-g4zutKxuH45ha14q4",
+      "AZ-g4zuWKxuH45ha14q0",
+      "AZ-g4zuWKxuH45ha14q1",
+      "AZ-g4zuWKxuH45ha14q2",
+      "AZ-g4zvpKxuH45ha14q5",
+      "AZ-g4zy1KxuH45ha14q9",
+      "AZ-g4zyXKxuH45ha14q8",
+      "AZ-g4zzNKxuH45ha14q-",
+      "AZ-g4zzqKxuH45ha14q_",
+      "AZ-g4zzqKxuH45ha14rA",
+      "AZ-g4zzqKxuH45ha14rB",
+      "AZ-g4zzqKxuH45ha14rC",
+      "AZ-ktx1eVBmNw6C4Nmzn",
+      "AZ-lXa6H4Ln9rv4-Qrib",
+      "AZ-lXbHJ4Ln9rv4-Qrie",
+      "AZ-lXbHJ4Ln9rv4-Qrih",
+      "AZ-nyzLWiLnwHvvk390b",
+      "AZ-nyzLWiLnwHvvk390c",
+      "AZ-oDgU8q2KiEXPD2Ja-",
+      "AZ-oDgVwq2KiEXPD2Ja_",
+      "AZ-onTt43yP9HN99cHat",
+      "AZ-onTt43yP9HN99cHau",
+      "AZ-onTt43yP9HN99cHav",
+      "AZ-onTxb3yP9HN99cHaw",
+      "AZ-onTyL3yP9HN99cHax",
+      "AZ-oStsK24RUZPqz223X",
+      "AZ-psS_6Iw9_wrMuiiqb",
+      "AZ-psS-2Iw9_wrMuiiqa",
+      "AZ-psS86Iw9_wrMuiiqY",
+      "AZ-psS86Iw9_wrMuiiqZ",
+      "AZ-psTARIw9_wrMuiiqc",
+      "AZ-q5s24Xd3PQyj1ZLKK",
+      "AZ-q5s5YXd3PQyj1ZLKL",
+      "AZ-q5s61Xd3PQyj1ZLKM",
+      "AZ-q5s61Xd3PQyj1ZLKN",
+      "AZ-q5s61Xd3PQyj1ZLKO",
+      "AZ-zs9upVGzfSzGI2Yjf",
+      "AZ-zs9xNVGzfSzGI2Yjg",
+      "AZ-zs9zBVGzfSzGI2Yjh",
+      "AZ0AB05yG81QSrh9O9WU",
+      "AZ0AB1OmG81QSrh9O9WW",
+      "AZ0AB1OmG81QSrh9O9WX",
+      "AZ0AB1OmG81QSrh9O9WY",
+      "AZ0B8cwpTERx1hCrLSHv",
+      "AZ0B8cxATERx1hCrLSHw",
+      "AZ0F3cUYoeAGDXXg_RPp",
+      "AZ0FapiDnt4r1UpceCnw",
+      "AZ0FyWQV9RflQ3Y3UqbA",
+      "AZ0GcC6S1o9-G8NWyUo-",
+      "AZ0Ha0lxnt4r1UpcyPDv",
+      "AZ2qg5k643vI1cIANul1",
+      "AZ3jdSJhp2poZnU9DesI",
+      "AZ3jXfiTM5CXM71Loqm9",
+      "AZ584DChfeNRQCeuEFxp",
+      "AZ584DChfeNRQCeuEFxq",
+      "AZ584DChfeNRQCeuEFxr",
+      "AZ5eN_CpjL8g0JA_TtS2",
+      "AZ5eN_DcjL8g0JA_TtTA",
+      "AZ5eN_DrjL8g0JA_TtTB",
+      "AZ5eN_EIjL8g0JA_TtTI",
+      "AZ5eN_EIjL8g0JA_TtTJ",
+      "AZ5eN_EIjL8g0JA_TtTK",
+      "AZ5eN_EUjL8g0JA_TtTL",
+      "AZ5eN_EUjL8g0JA_TtTM",
+      "AZ5eN_EUjL8g0JA_TtTN",
+      "AZ5eN_GWjL8g0JA_TtUc",
+      "AZ5j4FyfR1Ezg4icajcm",
+      "AZ5mSzmFmQT7csWqK1u9",
+      "AZx1plrtuAPiI9lNFGCC",
+      "AZy7LDD7YVCvSQrjLbzE",
+      "AZy7LDD7YVCvSQrjLbzF",
+      "AZy7LDI2YVCvSQrjLbzG",
+      "AZy7LDI2YVCvSQrjLbzH",
+      "AZy8BK7YJp304WWPL8rc",
+      "AZy8D0ElzH032wkstNyx",
+      "AZyalHpCjKW0Hbtlz5qL",
+      "AZyhmLoqPH6Y8hnMgj3b",
+      "AZyhq1A_bTTkCKzmd9WC",
+      "AZyhq1D_bTTkCKzmd9WD",
+      "AZyhq1D_bTTkCKzmd9WE",
+      "AZyhq1D_bTTkCKzmd9WF",
+      "AZyhq1FCbTTkCKzmd9WG",
+      "AZyhq1FCbTTkCKzmd9WH",
+      "AZyMPCkEyDU3qu04_KpV",
+      "AZyMPCqZyDU3qu04_KpW",
+      "AZymyK9cns9KUdkNXZRb",
+      "AZyQE69SFILVKZPx_0Qm",
+      "AZyQE7B9FILVKZPx_0Qr",
+      "AZySVll-opXpW7uO6V-w",
+      "AZySVlpgopXpW7uO6V-x",
+      "AZyUyeJ41z0xX4LbtEWe",
+      "AZyv0JIjII49zzZP3VVM",
+      "AZz344EkSq2uLhM1c-pa",
+      "AZz344EkSq2uLhM1c-pb",
+      "AZz344EkSq2uLhM1c-pc",
+      "AZz344EkSq2uLhM1c-pd",
+      "AZz344EkSq2uLhM1c-pX",
+      "AZz344EkSq2uLhM1c-pY",
+      "AZz344EkSq2uLhM1c-pZ",
+      "AZz344H-Sq2uLhM1c-pf",
+      "AZz344H-Sq2uLhM1c-pg",
+      "AZz344H-Sq2uLhM1c-ph",
+      "AZz344H-Sq2uLhM1c-pi",
+      "AZzbCU9dAEk4RYmkJdnv",
+      "AZzbCVDjAEk4RYmkJdnw",
+      "AZzjox2hTBjk2HgQDwRA",
+      "AZzk8UAKDVdjFamjWNZU",
+      "AZzk8UAKDVdjFamjWNZV",
+      "AZzk8UAKDVdjFamjWNZW",
+      "AZzk8UAKDVdjFamjWNZX",
+      "AZzk8UDtDVdjFamjWNZY",
+      "AZzlCYH1D4iQCPDF9MZG",
+      "AZzlCYLzD4iQCPDF9MZH",
+      "AZzleqeoPm7U6ieurJ7J",
+      "AZzlJMzXXHoO2ZoP8Abt",
+      "AZzlJMzXXHoO2ZoP8Abu",
+      "AZzM0DE-TBjk2HgQ0wD_",
+      "AZzM0DE-TBjk2HgQ0wD-",
+      "AZzM0DE-TBjk2HgQ0wD9",
+      "AZzp5IDlUKOft2MJ36pY",
+      "AZzp5IHKUKOft2MJ36pa",
+      "AZzQdAg6fFO7fMyoHuP4",
+      "AZzQdAhOfFO7fMyoHuP5",
+      "AZzQdAhOfFO7fMyoHuP6",
+      "AZzVCpXuMVxjo9SIscAt",
+      "AZzVCpXuMVxjo9SIscAu",
+      "AZzy8LXGok8Unw4c6T8N",
+      "AZzy8LXGok8Unw4c6T8O",
+      "AZzy8LXGok8Unw4c6T8P",
+      "AZzy8LXGok8Unw4c6T8R",
+      "AZzZ4VT4WGmXuRX5zPYk",
+      "AZzZ4VXAWGmXuRX5zPYl",
+      "AZzZ4VXAWGmXuRX5zPYm"
+    ]
+  },
+  "delta": {
+    "net": 58,
+    "addedCount": 59,
+    "removedCount": 1,
+    "addedKeysetSha256": "cadaf07c4826b573e29f76d3c5cd28978ed9eb6eefbf74b6d2251f3937a7bdd1",
+    "removedKeysetSha256": "7f6ceb29cbadfecef02b6856330bb73ce2632b6c67c2a14382cf69c63f7d0090",
+    "added": [
+      {
+        "key": "AZ_vBYa-ZNe834dW-YJy",
+        "path": "frontend/src/design-system/primitives/Combobox/Combobox.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 52,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYa-ZNe834dW-YJz",
+        "path": "frontend/src/design-system/primitives/Combobox/Combobox.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 60,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYaxZNe834dW-YJs",
+        "path": "frontend/src/design-system/primitives/Combobox/Combobox.tsx",
+        "rule": "typescript:S3776",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 88,
+        "message": "Refactor this function to reduce its Cognitive Complexity from 18 to the 15 allowed.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYaxZNe834dW-YJt",
+        "path": "frontend/src/design-system/primitives/Combobox/Combobox.tsx",
+        "rule": "typescript:S6754",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MINOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "LOW"
+          }
+        ],
+        "line": 194,
+        "message": "useState call is not destructured into value + setter pair",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYaxZNe834dW-YJu",
+        "path": "frontend/src/design-system/primitives/Combobox/Combobox.tsx",
+        "rule": "typescript:S3776",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 246,
+        "message": "Refactor this function to reduce its Cognitive Complexity from 21 to the 15 allowed.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYaxZNe834dW-YJv",
+        "path": "frontend/src/design-system/primitives/Combobox/Combobox.tsx",
+        "rule": "typescript:S3358",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 359,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYaxZNe834dW-YJw",
+        "path": "frontend/src/design-system/primitives/Combobox/Combobox.tsx",
+        "rule": "typescript:S6852",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "RELIABILITY",
+            "severity": "MEDIUM"
+          },
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "LOW"
+          }
+        ],
+        "line": 497,
+        "message": "Elements with the 'option' interactive role must be focusable.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYb6ZNe834dW-YJ5",
+        "path": "frontend/src/design-system/primitives/CardLink/CardLink.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 21,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYbkZNe834dW-YJ4",
+        "path": "frontend/src/design-system/primitives/Tooltip/Tooltip.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 17,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYbRZNe834dW-YJ0",
+        "path": "frontend/src/design-system/primitives/Field/Field.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 37,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYbRZNe834dW-YJ1",
+        "path": "frontend/src/design-system/primitives/Field/Field.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 38,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYbRZNe834dW-YJ2",
+        "path": "frontend/src/design-system/primitives/Field/Field.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 39,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYbRZNe834dW-YJ3",
+        "path": "frontend/src/design-system/primitives/Field/Field.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 40,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYc1ZNe834dW-YKG",
+        "path": "frontend/src/design-system/primitives/shared/portal.tsx",
+        "rule": "typescript:S3358",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 22,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYcGZNe834dW-YJ6",
+        "path": "frontend/src/design-system/primitives/Button/Button.tsx",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 67,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYcGZNe834dW-YJ7",
+        "path": "frontend/src/design-system/primitives/Button/Button.tsx",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 68,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYcGZNe834dW-YJ8",
+        "path": "frontend/src/design-system/primitives/Button/Button.tsx",
+        "rule": "typescript:S3358",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 100,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYcqZNe834dW-YJ_",
+        "path": "frontend/src/design-system/primitives/shared/inert-host.ts",
+        "rule": "typescript:S6571",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MINOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "LOW"
+          }
+        ],
+        "line": 6,
+        "message": "\"accessKey\" is overridden by string in this union type.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYcqZNe834dW-YKA",
+        "path": "frontend/src/design-system/primitives/shared/inert-host.ts",
+        "rule": "typescript:S6571",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MINOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "LOW"
+          }
+        ],
+        "line": 7,
+        "message": "\"autoFocus\" is overridden by string in this union type.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYcqZNe834dW-YKB",
+        "path": "frontend/src/design-system/primitives/shared/inert-host.ts",
+        "rule": "typescript:S6571",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MINOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "LOW"
+          }
+        ],
+        "line": 8,
+        "message": "\"contentEditable\" is overridden by string in this union type.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYcqZNe834dW-YKC",
+        "path": "frontend/src/design-system/primitives/shared/inert-host.ts",
+        "rule": "typescript:S6571",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MINOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "LOW"
+          }
+        ],
+        "line": 9,
+        "message": "\"dangerouslySetInnerHTML\" is overridden by string in this union type.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYcqZNe834dW-YKD",
+        "path": "frontend/src/design-system/primitives/shared/inert-host.ts",
+        "rule": "typescript:S6571",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MINOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "LOW"
+          }
+        ],
+        "line": 10,
+        "message": "\"draggable\" is overridden by string in this union type.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYcqZNe834dW-YKE",
+        "path": "frontend/src/design-system/primitives/shared/inert-host.ts",
+        "rule": "typescript:S6571",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MINOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "LOW"
+          }
+        ],
+        "line": 11,
+        "message": "\"role\" is overridden by string in this union type.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYcqZNe834dW-YKF",
+        "path": "frontend/src/design-system/primitives/shared/inert-host.ts",
+        "rule": "typescript:S6571",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MINOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "LOW"
+          }
+        ],
+        "line": 12,
+        "message": "\"tabIndex\" is overridden by string in this union type.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYcSZNe834dW-YJ-",
+        "path": "frontend/src/design-system/primitives/Button/Button.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 36,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYcSZNe834dW-YJ9",
+        "path": "frontend/src/design-system/primitives/Button/Button.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 29,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYd9ZNe834dW-YKO",
+        "path": "frontend/src/design-system/primitives/Tabs/Tabs.tsx",
+        "rule": "typescript:S3776",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 109,
+        "message": "Refactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYd9ZNe834dW-YKP",
+        "path": "frontend/src/design-system/primitives/Tabs/Tabs.tsx",
+        "rule": "typescript:S3358",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 118,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYdDZNe834dW-YKH",
+        "path": "frontend/src/design-system/primitives/Menu/Menu.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 18,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYdDZNe834dW-YKI",
+        "path": "frontend/src/design-system/primitives/Menu/Menu.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 19,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYdnZNe834dW-YKN",
+        "path": "frontend/src/design-system/primitives/Surface/Surface.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 21,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYdUZNe834dW-YKJ",
+        "path": "frontend/src/design-system/primitives/Menu/Menu.tsx",
+        "rule": "typescript:S6754",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MINOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "LOW"
+          }
+        ],
+        "line": 89,
+        "message": "useState call is not destructured into value + setter pair",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYdUZNe834dW-YKK",
+        "path": "frontend/src/design-system/primitives/Menu/Menu.tsx",
+        "rule": "typescript:S3776",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 235,
+        "message": "Refactor this function to reduce its Cognitive Complexity from 22 to the 15 allowed.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYdUZNe834dW-YKL",
+        "path": "frontend/src/design-system/primitives/Menu/Menu.tsx",
+        "rule": "typescript:S6852",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "RELIABILITY",
+            "severity": "MEDIUM"
+          },
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "LOW"
+          }
+        ],
+        "line": 363,
+        "message": "Elements with the 'menu' interactive role must be focusable.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYdUZNe834dW-YKM",
+        "path": "frontend/src/design-system/primitives/Menu/Menu.tsx",
+        "rule": "typescript:S6819",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 385,
+        "message": "Use <hr> instead of the \"separator\" role to ensure accessibility across all devices.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYeaZNe834dW-YKS",
+        "path": "frontend/src/design-system/primitives/IconButton/IconButton.tsx",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 64,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYeaZNe834dW-YKT",
+        "path": "frontend/src/design-system/primitives/IconButton/IconButton.tsx",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 65,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYeNZNe834dW-YKQ",
+        "path": "frontend/src/design-system/primitives/IconButton/IconButton.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 15,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYeNZNe834dW-YKR",
+        "path": "frontend/src/design-system/primitives/IconButton/IconButton.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 16,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYf9ZNe834dW-YKV",
+        "path": "frontend/src/design-system/patterns/PageState/PageState.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 24,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYf9ZNe834dW-YKW",
+        "path": "frontend/src/design-system/patterns/PageState/PageState.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 25,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYfbZNe834dW-YKU",
+        "path": "frontend/src/design-system/compat-v1/Button.tsx",
+        "rule": "typescript:S9011",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "RELIABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 112,
+        "message": "Add an explicit \"type\" attribute to this button.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYgdZNe834dW-YKY",
+        "path": "frontend/src/design-system/icons/Icon.tsx",
+        "rule": "typescript:S6582",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MINOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "LOW"
+          }
+        ],
+        "line": 23,
+        "message": "Prefer using an optional chain expression instead, as it's more concise and easier to read.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYgJZNe834dW-YKX",
+        "path": "frontend/src/design-system/patterns/PageState/PageState.tsx",
+        "rule": "typescript:S3358",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 72,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYguZNe834dW-YKa",
+        "path": "frontend/src/design-system/icons/Icon.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 27,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYguZNe834dW-YKb",
+        "path": "frontend/src/design-system/icons/Icon.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 28,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYguZNe834dW-YKc",
+        "path": "frontend/src/design-system/icons/Icon.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 29,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYguZNe834dW-YKZ",
+        "path": "frontend/src/design-system/icons/Icon.type-contract.ts",
+        "rule": "typescript:S3735",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 26,
+        "message": "Remove this use of the \"void\" operator.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYLhZNe834dW-YJp",
+        "path": "frontend/src/app/dev/components/catalog/FoundationsScene.tsx",
+        "rule": "typescript:S6819",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 108,
+        "message": "Use <details>, <fieldset>, <optgroup>, or <address> instead of the \"group\" role to ensure accessibility across all devices.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYPRZNe834dW-YJq",
+        "path": "frontend/src/app/dev/components/catalog/CatalogCombobox.client.tsx",
+        "rule": "typescript:S3358",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 36,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vBYPRZNe834dW-YJr",
+        "path": "frontend/src/app/dev/components/catalog/CatalogCombobox.client.tsx",
+        "rule": "typescript:S3358",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 38,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "scope": "tooling",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vrKe-v0JSzLZnIZdU",
+        "path": "frontend/src/design-system/primitives/shared/dom.ts",
+        "rule": "typescript:S7737",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MINOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          },
+          {
+            "quality": "RELIABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 35,
+        "message": "Do not use an object literal as default for parameter `options`.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vrKe-v0JSzLZnIZdV",
+        "path": "frontend/src/design-system/primitives/shared/dom.ts",
+        "rule": "typescript:S7761",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 48,
+        "message": "Prefer `.dataset` over `hasAttribute(…)`.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vrKe-v0JSzLZnIZdW",
+        "path": "frontend/src/design-system/primitives/shared/dom.ts",
+        "rule": "typescript:S7750",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MINOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 113,
+        "message": "Prefer `.find(…)` over `.filter(…)`.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vrKjXv0JSzLZnIZda",
+        "path": "frontend/src/design-system/primitives/Overlay/Overlay.tsx",
+        "rule": "typescript:S3358",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 262,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vrKjXv0JSzLZnIZdb",
+        "path": "frontend/src/design-system/primitives/Overlay/Overlay.tsx",
+        "rule": "typescript:S6845",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "RELIABILITY",
+            "severity": "MEDIUM"
+          },
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "LOW"
+          }
+        ],
+        "line": 349,
+        "message": "`tabIndex` should only be declared on interactive elements.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vrKjXv0JSzLZnIZdX",
+        "path": "frontend/src/design-system/primitives/Overlay/Overlay.tsx",
+        "rule": "typescript:S3776",
+        "type": "CODE_SMELL",
+        "legacySeverity": "CRITICAL",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "HIGH"
+          }
+        ],
+        "line": 225,
+        "message": "Refactor this function to reduce its Cognitive Complexity from 16 to the 15 allowed.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vrKjXv0JSzLZnIZdY",
+        "path": "frontend/src/design-system/primitives/Overlay/Overlay.tsx",
+        "rule": "typescript:S3358",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 259,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      },
+      {
+        "key": "AZ_vrKjXv0JSzLZnIZdZ",
+        "path": "frontend/src/design-system/primitives/Overlay/Overlay.tsx",
+        "rule": "typescript:S3358",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "MAINTAINABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": 260,
+        "message": "Extract this nested ternary operation into an independent statement.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      }
+    ],
+    "removed": [
+      {
+        "key": "AZ-g4zqEKxuH45ha14qv",
+        "path": "frontend/src/components/common/Button.tsx",
+        "rule": "typescript:S9011",
+        "type": "CODE_SMELL",
+        "legacySeverity": "MAJOR",
+        "impacts": [
+          {
+            "quality": "RELIABILITY",
+            "severity": "MEDIUM"
+          }
+        ],
+        "line": null,
+        "message": "Add an explicit \"type\" attribute to this button.",
+        "scope": "production",
+        "classification": "genuinely-introduced-static-finding"
+      }
+    ],
+    "introducedThenClosedBeforeHead": {
+      "key": "AZ_vBYaxZNe834dW-YJx",
+      "path": "frontend/src/design-system/primitives/Combobox/Combobox.tsx",
+      "rule": "typescript:S1082",
+      "type": "BUG",
+      "legacySeverity": "MINOR",
+      "impacts": [
+        {
+          "quality": "RELIABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "line": null,
+      "message": "Visible, non-interactive elements with click handlers must have at least one keyboard listener.",
+      "scope": "production",
+      "classification": "genuinely-introduced-static-finding"
+    }
+  },
+  "closeoutScan": {
+    "sha": "691e3ba7ed62c5f2fd8685a99a394d9cf8ddd4d2",
+    "analysisId": "22e9eeb1-2e1f-476d-a5a0-e2fd0bbad409",
+    "mainGateRunId": 31874219602,
+    "sonarJobId": 94988011828,
+    "decorationCheckId": 94988272452,
+    "count": 373,
+    "accounting": "426 frozen-head issues - 59 Phase 5A.1b findings closed + 1 closeout-refactor finding + 5 historical findings activated by the changed TypeScript quality profile = 373",
+    "qualityProfileChanged": true,
+    "genuinelyIntroduced": {
+      "key": "AaAEiZR-FbASQm6rWNmW",
+      "path": "frontend/src/design-system/primitives/shared/inert-host.ts",
+      "rule": "typescript:S6571",
+      "type": "CODE_SMELL",
+      "impact": {
+        "quality": "MAINTAINABILITY",
+        "severity": "LOW"
+      },
+      "message": "A string key union made the explicit interactive-host keys redundant.",
+      "resolution": "Use nested Omit operations so event-handler keys and explicit static interactive keys remain independently expressed."
+    },
+    "qualityProfileActivations": [
+      {
+        "key": "AaAEiZfwFbASQm6rWNmX",
+        "path": "frontend/e2e/smoke.spec.ts",
+        "rule": "typescript:S9332",
+        "creationDate": "2026-08-02T19:17:10+02:00"
+      },
+      {
+        "key": "AaAEiZfwFbASQm6rWNmY",
+        "path": "frontend/e2e/smoke.spec.ts",
+        "rule": "typescript:S9332",
+        "creationDate": "2026-08-02T19:17:10+02:00"
+      },
+      {
+        "key": "AaAEiZfwFbASQm6rWNmZ",
+        "path": "frontend/e2e/smoke.spec.ts",
+        "rule": "typescript:S9332",
+        "creationDate": "2026-08-02T19:17:10+02:00"
+      },
+      {
+        "key": "AaAEiZlPFbASQm6rWNmb",
+        "path": "frontend/e2e/smoke-a11y.spec.ts",
+        "rule": "typescript:S9332",
+        "creationDate": "2026-05-26T18:22:21+02:00"
+      },
+      {
+        "key": "AaAEiZiVFbASQm6rWNma",
+        "path": "frontend/e2e/smoke-responsive.spec.ts",
+        "rule": "typescript:S9332",
+        "creationDate": "2026-05-26T18:22:21+02:00"
+      }
+    ],
+    "classification": "The five S9332 records predate this PR and were absent from both frozen endpoint sets. They are quality-profile/accounting activations, not Phase 5A.1b introductions. The one authored S6571 record is corrected by the subsequent closeout commit."
+  },
+  "accounting": {
+    "formula": "368 + 59 - 1 = 426",
+    "bugs": 0,
+    "vulnerabilities": 0,
+    "securityIssues": 0,
+    "generatedIssues": 0,
+    "conclusion": "The +58 is an exact +59/-1 issue-identity delta, not a count hallucination. All added open records are code smells; exact-rule/file accessibility false positives and actionable authored findings are resolved separately."
+  }
+}

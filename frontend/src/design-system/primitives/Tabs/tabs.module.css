@@ -1,0 +1,112 @@
+.root {
+  min-width: 0;
+  color: var(--color-content-primary);
+}
+
+.list {
+  display: flex;
+  min-width: 0;
+  overflow: auto hidden;
+  border-block-end: var(--ds-border-standard) solid var(--color-border-default);
+  scrollbar-width: thin;
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  min-width: var(--ds-size-touch-minimum);
+  min-height: var(--ds-size-touch-minimum);
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ds-space-2) var(--ds-space-4);
+  color: var(--color-content-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: var(--ds-radius-small);
+  font: inherit;
+  font-weight: var(--ds-type-weight-semibold);
+  line-height: var(--ds-type-line-height-compact);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tab::after {
+  position: absolute;
+  inset-inline: var(--ds-space-2);
+  inset-block-end: 0;
+  height: var(--ds-border-focus);
+  content: "";
+  background: transparent;
+  border-radius: var(--ds-radius-round);
+}
+
+.tab[data-state="active"] {
+  color: var(--color-content-primary);
+}
+
+.tab[data-state="active"]::after {
+  background: var(--color-border-focus);
+}
+
+.tab:focus-visible,
+.panel:focus-visible {
+  outline: var(--focus-indicator-width) solid var(--color-border-focus);
+  outline-offset: var(--focus-indicator-offset);
+}
+
+.tab:disabled {
+  color: var(--button-disabled-foreground);
+  cursor: not-allowed;
+}
+
+.panel {
+  min-width: 0;
+  padding-block: var(--ds-space-4);
+}
+
+.root[data-orientation="vertical"] {
+  display: grid;
+  grid-template-columns: minmax(0, 40%) minmax(0, 1fr);
+  gap: var(--ds-space-4);
+}
+
+.root[data-orientation="vertical"] .list {
+  flex-direction: column;
+  overflow: hidden auto;
+  border-block-end: 0;
+  border-inline-end: var(--ds-border-standard) solid var(--color-border-default);
+}
+
+.root[data-orientation="vertical"] .tab {
+  min-width: 0;
+  justify-content: flex-start;
+  overflow-wrap: anywhere;
+  text-align: start;
+  white-space: normal;
+}
+
+.root[data-orientation="vertical"] .tab::after {
+  inset-block: var(--ds-space-2);
+  inset-inline: auto 0;
+  width: var(--ds-border-focus);
+  height: auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tab:not(:disabled):hover {
+    color: var(--color-content-primary);
+    background: var(--color-interaction-hover);
+  }
+}
+
+@media (forced-colors: active) {
+  .tab[data-state="active"]::after {
+    background: Highlight;
+  }
+
+  .tab,
+  .panel {
+    forced-color-adjust: auto;
+  }
+}

@@ -7,6 +7,11 @@ is `src/design-system/tokens/manifest.ts`, with generated CSS/TypeScript/documen
 artifacts and an exact V1 compatibility section. Tailwind v4 is bridged through
 `src/styles/globals.css`; this repository has no `tailwind.config.ts`.
 
+Canonical V2 primitive APIs, interaction contracts, portal behavior, client boundaries,
+and the exact V1 facade map are documented in
+[`DESIGN_SYSTEM_V2_PRIMITIVES.md`](DESIGN_SYSTEM_V2_PRIMITIVES.md). Production remains
+on this V1 compatibility surface until an approved post-5A.2 route-family migration.
+
 ---
 
 ## Core Principles

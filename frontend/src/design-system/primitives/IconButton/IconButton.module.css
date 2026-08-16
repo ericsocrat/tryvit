@@ -1,0 +1,108 @@
+.root {
+  display: inline-flex;
+  min-width: var(--ds-size-touch-minimum);
+  min-height: var(--ds-size-touch-minimum);
+  align-items: center;
+  justify-content: center;
+  border: var(--ds-border-standard) solid transparent;
+  border-radius: var(--ds-radius-medium);
+  touch-action: manipulation;
+  cursor: pointer;
+  user-select: none;
+  transition-duration: var(--ds-motion-duration-fast);
+  transition-property: background-color, border-color, box-shadow, color, transform;
+  transition-timing-function: var(--ds-motion-easing-standard);
+}
+
+.root:focus-visible {
+  outline: var(--ds-border-focus) solid var(--button-border-focus);
+  outline-offset: var(--ds-space-1);
+}
+
+.root:not(:disabled):active {
+  transform: translateY(var(--ds-motion-displacement-xs));
+  transition-duration: var(--ds-motion-duration-feedback);
+}
+
+.root:disabled {
+  color: var(--button-disabled-foreground);
+  background: var(--button-disabled-background);
+  border-color: var(--button-disabled-background);
+  cursor: not-allowed;
+}
+
+.primary {
+  color: var(--button-primary-foreground);
+  background: var(--button-primary-background);
+}
+
+.secondary {
+  color: var(--button-secondary-foreground);
+  background: var(--button-secondary-background);
+  border-color: var(--surface-border);
+}
+
+.quiet {
+  color: var(--color-content-link);
+  background: transparent;
+}
+
+.destructive {
+  color: var(--button-destructive-foreground);
+  background: var(--button-destructive-background);
+}
+
+.sm {
+  border-radius: var(--ds-radius-small);
+}
+
+.md {
+  border-radius: var(--ds-radius-medium);
+}
+
+.lg {
+  border-radius: var(--ds-radius-large);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .primary:not(:disabled):hover {
+    background: var(--button-primary-hover);
+  }
+
+  .secondary:not(:disabled):hover,
+  .quiet:not(:disabled):hover {
+    background: var(--color-surface-selected);
+  }
+
+  .destructive:not(:disabled):hover {
+    border-color: var(--color-feedback-error-border);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    transition-duration: var(--ds-motion-duration-instant);
+  }
+
+  .root:not(:disabled):active {
+    transform: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .root {
+    color: ButtonText;
+    background: ButtonFace;
+    border-color: ButtonText;
+    forced-color-adjust: none;
+  }
+
+  .root:focus-visible {
+    outline-color: Highlight;
+  }
+
+  .root:disabled {
+    color: GrayText;
+    border-color: GrayText;
+  }
+}

@@ -1,10 +1,10 @@
-import { ClipboardList, Pencil, Settings, Trash2 } from "lucide-react";
+import { IconButton } from "@/design-system/primitives/IconButton/IconButton";
 
 import { CatalogRow, CatalogSection, CatalogSpecimen } from "./CatalogFrame";
+import { OverlayNavigationProbes } from "./OverlayNavigationProbes.client";
 import type { CatalogCopy } from "./registry";
 
 const alertTones = ["info", "success", "warning", "error"] as const;
-const tooltipPlacements = ["top", "right", "bottom", "left"] as const;
 
 export function OverlaysNavigationScene({ copy }: Readonly<{ copy: CatalogCopy }>) {
   const interaction = copy.interaction;
@@ -14,45 +14,54 @@ export function OverlaysNavigationScene({ copy }: Readonly<{ copy: CatalogCopy }
     [interaction.alertWarningTitle, interaction.alertWarningBody],
     [interaction.alertErrorTitle, interaction.alertErrorBody],
   ] as const;
-  const tooltipCues = [
-    interaction.tooltipTop,
-    interaction.tooltipRight,
-    interaction.tooltipBottom,
-    interaction.tooltipLeft,
-  ] as const;
+  const primitives = copy.primitives;
 
   return (
     <CatalogSection id="overlays-navigation" title={copy.scenes["overlays-navigation"]}>
       <CatalogSpecimen label={copy.specimenLabel} note={copy.specimenNote}>
         <CatalogRow label={interaction.iconButtons}>
-          <span aria-label={interaction.edit} className="catalog-v2-icon-button" data-variant="primary" role="img">
-            <Pencil aria-hidden="true" size={18} />
-          </span>
-          <span aria-label={interaction.remove} className="catalog-v2-icon-button" data-variant="destructive" role="img">
-            <Trash2 aria-hidden="true" size={18} />
-          </span>
-          <span aria-label={interaction.settings} className="catalog-v2-icon-button" data-variant="quiet" role="img">
-            <Settings aria-hidden="true" size={18} />
-          </span>
-          <span aria-label={interaction.copy} className="catalog-v2-icon-button" data-variant="secondary" role="img">
-            <ClipboardList aria-hidden="true" size={18} />
-          </span>
+          <IconButton icon="action.edit" label={interaction.edit} variant="primary" />
+          <IconButton icon="action.delete" label={interaction.remove} variant="destructive" />
+          <IconButton icon="action.settings" label={interaction.settings} variant="quiet" />
+          <IconButton icon="action.copy" label={interaction.copy} variant="secondary" />
         </CatalogRow>
 
-        <CatalogRow label={interaction.tooltipCues}>
-          {tooltipCues.map((cue, index) => {
-            return (
-              <figure
-                className="catalog-v2-tooltip-pair"
-                data-placement={tooltipPlacements[index]}
-                key={cue}
-              >
-                <span aria-hidden="true" className="catalog-v2-tooltip-anchor">?</span>
-                <figcaption className="catalog-v2-tooltip">{cue}</figcaption>
-              </figure>
-            );
-          })}
-        </CatalogRow>
+        <OverlayNavigationProbes
+          combobox={{
+            label: primitives.comboboxLabel,
+            hint: primitives.comboboxHint,
+            placeholder: primitives.comboboxPlaceholder,
+            options: primitives.comboboxOptions,
+            loadingMessage: primitives.comboboxLoading,
+            emptyMessage: primitives.comboboxEmpty,
+            resultsMessage: primitives.comboboxResults,
+          }}
+          dialog={{
+            trigger: primitives.dialogTrigger,
+            title: primitives.dialogTitle,
+            description: primitives.dialogDescription,
+            body: primitives.dialogBody,
+            close: primitives.dialogClose,
+            initialAction: primitives.dialogInitialAction,
+            lastAction: primitives.dialogLastAction,
+          }}
+          menuItems={primitives.menuItems}
+          menuTrigger={primitives.menuTrigger}
+          sheet={{
+            trigger: primitives.sheetTrigger,
+            title: primitives.sheetTitle,
+            description: primitives.sheetDescription,
+            body: primitives.sheetBody,
+            close: primitives.sheetClose,
+            initialAction: primitives.sheetInitialAction,
+            lastAction: primitives.sheetLastAction,
+          }}
+          tabPanels={primitives.tabPanels}
+          tabs={primitives.tabs}
+          tabsLabel={primitives.tabsLabel}
+          tooltipContent={primitives.tooltipContent}
+          tooltipTrigger={primitives.tooltipTrigger}
+        />
 
         <div className="space-y-3">
           <p className="catalog-v2-row-label text-sm font-medium">{interaction.alerts}</p>

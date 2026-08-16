@@ -1,4 +1,7 @@
-import { AlertTriangle, Check, CircleHelp, Dna, ShieldCheck, Zap } from "lucide-react";
+import { Icon, type IconName } from "@/design-system/icons/Icon";
+import { PageState, type PageStateStatus } from "@/design-system/patterns/PageState/PageState";
+import { Button } from "@/design-system/primitives/Button/Button";
+import { Surface } from "@/design-system/primitives/Surface/Surface";
 
 import { CatalogRow, CatalogSection, CatalogSpecimen } from "./CatalogFrame";
 import type { CatalogCopy } from "./registry";
@@ -13,10 +16,26 @@ const novaTones = ["nova-1", "nova-2", "nova-3", "nova-4", "neutral"] as const;
 const confidenceTones = ["confidence-high", "confidence-medium", "confidence-low", "neutral"] as const;
 const nutritionTones = ["nutrition-low", "nutrition-high", "nutrition-medium", "nutrition-low"] as const;
 const allergenTones = ["allergen-contains", "allergen-may-contain", "allergen-derived", "allergen-unknown", "allergen-absent"] as const;
-const allergenIcons = [AlertTriangle, Zap, Dna, CircleHelp, Check] as const;
+const allergenIcons: readonly IconName[] = [
+  "feedback.error",
+  "feedback.degraded",
+  "evidence.records",
+  "help.context",
+  "action.confirm",
+];
+const pageStateStatuses: readonly PageStateStatus[] = [
+  "loading",
+  "empty",
+  "error",
+  "offline",
+  "degraded",
+  "paused",
+  "recovering",
+];
 
 export function EvidencePageStatesScene({ copy }: Readonly<{ copy: CatalogCopy }>) {
   const evidence = copy.evidence;
+  const primitives = copy.primitives;
   return (
     <CatalogSection id="evidence-page-states" title={copy.scenes["evidence-page-states"]}>
       <CatalogSpecimen label={copy.specimenLabel} note={copy.specimenNote}>
@@ -31,7 +50,7 @@ export function EvidencePageStatesScene({ copy }: Readonly<{ copy: CatalogCopy }
               role="img"
             >
               <strong>{value ?? "—"}</strong>
-              {index < 6 && <span>{evidence.scoreLabels[index]}</span>}
+              {index < 6 ? <span>{evidence.scoreLabels[index]}</span> : null}
             </span>
           ))}
         </CatalogRow>
@@ -44,6 +63,7 @@ export function EvidencePageStatesScene({ copy }: Readonly<{ copy: CatalogCopy }
               data-domain={grade === "?" ? "neutral" : `nutri-${grade.toLowerCase()}`}
               data-size={nutriSizes[index]}
               key={`${grade}-${index}`}
+              role="img"
             >
               {grade}
             </span>
@@ -57,6 +77,7 @@ export function EvidencePageStatesScene({ copy }: Readonly<{ copy: CatalogCopy }
               className="catalog-v2-regulated"
               data-domain={novaTones[index]}
               key={label}
+              role="img"
             >
               <strong>{index < 4 ? index + 1 : "?"}</strong>
               <span>{label}</span>
@@ -67,7 +88,7 @@ export function EvidencePageStatesScene({ copy }: Readonly<{ copy: CatalogCopy }
         <CatalogRow label={evidence.confidence}>
           {evidence.confidenceLabels.map((label, index) => (
             <span className="catalog-v2-domain" data-domain={confidenceTones[index]} key={label}>
-              <ShieldCheck aria-hidden="true" size={15} />
+              <Icon name="evidence.records" size="sm" />
               {label}
             </span>
           ))}
@@ -84,25 +105,50 @@ export function EvidencePageStatesScene({ copy }: Readonly<{ copy: CatalogCopy }
         </CatalogRow>
 
         <CatalogRow label={evidence.allergenStatus}>
-          {evidence.allergenLabels.map((label, index) => {
-            const Icon = allergenIcons[index];
-            return (
-              <span
-                aria-label={`${label}: ${evidence.allergenNames[index]}`}
-                className="catalog-v2-domain"
-                data-domain={allergenTones[index]}
-                key={label}
-              >
-                <Icon aria-hidden="true" size={15} />
-                <span>{label}</span>
-                <strong>{evidence.allergenNames[index]}</strong>
-              </span>
-            );
-          })}
+          {evidence.allergenLabels.map((label, index) => (
+            <span
+              aria-label={`${label}: ${evidence.allergenNames[index]}`}
+              className="catalog-v2-domain"
+              data-domain={allergenTones[index]}
+              key={label}
+              role="img"
+            >
+              <Icon name={allergenIcons[index]} size="sm" />
+              <span>{label}</span>
+              <strong>{evidence.allergenNames[index]}</strong>
+            </span>
+          ))}
         </CatalogRow>
+
+        <div className="space-y-3">
+          <p className="catalog-v2-row-label text-sm font-medium">{primitives.pageStates}</p>
+          <div className="catalog-v2-page-state-grid">
+            {pageStateStatuses.map((status, index) => (
+              <PageState
+                announce="off"
+                description={primitives.pageStateDescriptions[index]}
+                headingLevel={3}
+                key={status}
+                primaryAction={status === "error" ? (
+                  <Button size="sm">{primitives.retry}</Button>
+                ) : undefined}
+                secondaryAction={status === "degraded" ? (
+                  <Button size="sm" variant="secondary">{primitives.recoveryAction}</Button>
+                ) : undefined}
+                status={status}
+                title={primitives.pageStateTitles[index]}
+              />
+            ))}
+          </div>
+        </div>
       </CatalogSpecimen>
 
-      <article className="catalog-v2-panel" data-testid="living-label-v2-evidence">
+      <Surface
+        as="article"
+        className="catalog-v2-panel"
+        data-testid="living-label-v2-evidence"
+        layer="raised"
+      >
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="font-semibold">{copy.foundation.livingLabel}</p>
@@ -116,7 +162,7 @@ export function EvidencePageStatesScene({ copy }: Readonly<{ copy: CatalogCopy }
           <div><dt>{evidence.status}</dt><dd className="font-medium">{evidence.statusValue}</dd></div>
         </dl>
         <p className="catalog-v2-copy text-sm">{copy.fixtureNote}</p>
-      </article>
+      </Surface>
     </CatalogSection>
   );
 }
