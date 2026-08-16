@@ -89,8 +89,12 @@ export function OverlayNavigationProbes({
 }: Readonly<OverlayNavigationProbesProps>) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [menuCheckboxChecked, setMenuCheckboxChecked] = useState(true);
+  const [tabValue, setTabValue] = useState("catalog-tab-1");
+  const dialogRestoreFocusRef = useRef<HTMLButtonElement>(null);
   const dialogInitialFocusRef = useRef<HTMLButtonElement>(null);
+  const sheetRestoreFocusRef = useRef<HTMLButtonElement>(null);
 
   const menuEntries = useMemo<readonly MenuEntry[]>(
     () => [
@@ -136,6 +140,7 @@ export function OverlayNavigationProbes({
         <Button
           data-catalog-probe="dialog-trigger"
           onClick={() => setDialogOpen(true)}
+          ref={dialogRestoreFocusRef}
           startIcon="action.confirm"
         >
           {dialog.trigger}
@@ -143,13 +148,20 @@ export function OverlayNavigationProbes({
         <Button
           data-catalog-probe="sheet-trigger"
           onClick={() => setSheetOpen(true)}
+          ref={sheetRestoreFocusRef}
           startIcon="evidence.records"
           variant="secondary"
         >
           {sheet.trigger}
         </Button>
         <div data-catalog-probe="menu">
-          <Menu entries={menuEntries} triggerIcon="action.menu" triggerLabel={menuTrigger} />
+          <Menu
+            entries={menuEntries}
+            onOpenChange={setMenuOpen}
+            open={menuOpen}
+            triggerIcon="action.menu"
+            triggerLabel={menuTrigger}
+          />
         </div>
         <div data-catalog-probe="tooltip">
           <Tooltip content={tooltipContent} placement="block-start">
@@ -161,7 +173,13 @@ export function OverlayNavigationProbes({
       </div>
 
       <div data-catalog-probe="tabs">
-        <Tabs activationMode="manual" items={tabItems} label={tabsLabel} />
+        <Tabs
+          activationMode="manual"
+          items={tabItems}
+          label={tabsLabel}
+          onValueChange={setTabValue}
+          value={tabValue}
+        />
       </div>
 
       <Dialog
@@ -179,6 +197,7 @@ export function OverlayNavigationProbes({
         initialFocusRef={dialogInitialFocusRef}
         onOpenChange={setDialogOpen}
         open={dialogOpen}
+        restoreFocusRef={dialogRestoreFocusRef}
         title={dialog.title}
       >
         <p>{dialog.body}</p>
@@ -208,6 +227,7 @@ export function OverlayNavigationProbes({
         }
         onOpenChange={setSheetOpen}
         open={sheetOpen}
+        restoreFocusRef={sheetRestoreFocusRef}
         title={sheet.title}
       >
         <p>{sheet.body}</p>

@@ -72,6 +72,7 @@ const HAS_SAFETY_NEGATIVE_TESTS = enabled("VISUAL_SAFETY_NEGATIVE_TESTS");
 const HAS_OWNED_SERVER = enabled("VISUAL_SAFETY_OWNED_SERVER");
 const HAS_PHASE5_ROUTE_JS = enabled("PHASE5_ROUTE_JS_CAPTURE");
 const HAS_PHASE5A1_CATALOG = process.env.PHASE5A1_CATALOG === "1";
+const HAS_PHASE5A2_CROSS_BROWSER = enabled("PHASE5A2_CROSS_BROWSER");
 
 const proxyServer = process.env.VISUAL_SAFETY_PROXY
   ? canonicalizeLoopbackOrigin(process.env.VISUAL_SAFETY_PROXY).origin
@@ -364,6 +365,48 @@ const phase5a1CatalogProject = {
   },
 };
 
+const phase5a2PrimitivesFirefoxProject = {
+  name: "phase5a2-primitives-firefox",
+  testMatch: /phase5a2-cross-browser-primitives\.spec\.ts/,
+  dependencies: ["auth-setup"],
+  retries: 0,
+  use: {
+    ...devices["Desktop Firefox"],
+    browserName: "firefox" as const,
+    viewport: { width: 1280, height: 800 },
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    contextOptions: { reducedMotion: "reduce" as const },
+    storageState: authStatePath("user.json"),
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
+const phase5a2PrimitivesWebkitProject = {
+  name: "phase5a2-primitives-webkit",
+  testMatch: /phase5a2-cross-browser-primitives\.spec\.ts/,
+  dependencies: ["auth-setup"],
+  retries: 0,
+  use: {
+    ...devices["Desktop Safari"],
+    browserName: "webkit" as const,
+    viewport: { width: 1280, height: 800 },
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    contextOptions: { reducedMotion: "reduce" as const },
+    storageState: authStatePath("user.json"),
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
 const privatePwaCacheProject = {
   name: "private-pwa-cache",
   testMatch: /private-pwa-cache-isolation\.spec\.ts/,
@@ -396,6 +439,9 @@ const projects = [
   ...(HAS_PHASE5_ROUTE_JS && !LOCAL_AUTHENTICATED ? [phase5RouteJsPublicProject] : []),
   ...(HAS_PHASE5_ROUTE_JS && LOCAL_AUTHENTICATED ? [phase5RouteJsAuthenticatedProject] : []),
   ...(HAS_PHASE5A1_CATALOG && LOCAL_AUTHENTICATED ? [phase5a1CatalogProject] : []),
+  ...(HAS_PHASE5A2_CROSS_BROWSER && LOCAL_AUTHENTICATED
+    ? [phase5a2PrimitivesFirefoxProject, phase5a2PrimitivesWebkitProject]
+    : []),
   ...(HAS_SCREENSHOTS ? [screenshotsProject] : []),
   ...(HAS_PR_SCREENSHOTS ? [prScreenshotsProject] : []),
 ];

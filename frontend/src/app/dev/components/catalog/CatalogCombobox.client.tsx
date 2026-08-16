@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { Combobox } from "@/design-system/primitives/Combobox";
 
 export type CatalogComboboxState = "ready" | "loading" | "empty" | "error";
@@ -27,6 +29,8 @@ export function CatalogCombobox({
   loadError,
   resultsMessage,
 }: Readonly<CatalogComboboxProps>) {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState<string | null>(null);
   const options = optionLabels.map((optionLabel, index) => ({
     value: `evidence-source-${index + 1}`,
     label: optionLabel,
@@ -46,9 +50,13 @@ export function CatalogCombobox({
         loadError={state === "error" ? loadError : undefined}
         loading={state === "loading"}
         loadingMessage={loadingMessage}
+        onOpenChange={setOpen}
+        onValueChange={setValue}
+        open={open}
         options={state === "empty" ? [] : options}
         placeholder={placeholder}
         resultsMessage={(count) => resultsMessage.replace("{count}", String(count))}
+        value={value}
       />
     </div>
   );
