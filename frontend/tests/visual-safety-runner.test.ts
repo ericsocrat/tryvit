@@ -14,6 +14,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 // type-stripping loader; Vite resolves it directly for focused unit tests.
 // eslint-disable-next-line no-restricted-imports -- focused test crosses the test-infrastructure boundary
 import {
+  assertCompleteLighthouseReportSet,
   assertNoSensitiveArtifactContent,
   assertNoUnownedNextProcess,
   assertExternalAuthStateRoot,
@@ -606,7 +607,128 @@ describe("local-authenticated Lighthouse session guard", () => {
     process.cwd(),
     "e2e/scripts/lighthouse-local-auth-guard.cjs",
   );
-  const guard = requireFromTest(guardModulePath) as (browser: unknown) => Promise<void>;
+  const guard = requireFromTest(guardModulePath) as ((browser: unknown) => Promise<void>) & {
+    probeLoginHydration(): boolean;
+    restorePasswordMask(): boolean;
+  };
+
+  it("uses the password toggle as a reversible hydration handshake", () => {
+    const wrapper = document.createElement("div");
+    const passwordInput = document.createElement("input");
+    passwordInput.id = "password";
+    passwordInput.type = "password";
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    wrapper.append(passwordInput, toggle);
+    document.body.replaceChildren(wrapper);
+
+    try {
+      expect(guard.probeLoginHydration()).toBe(false);
+      expect(passwordInput.type).toBe("password");
+      toggle.addEventListener("click", () => {
+        passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+      });
+      expect(guard.probeLoginHydration()).toBe(true);
+      expect(passwordInput.type).toBe("text");
+      expect(guard.restorePasswordMask()).toBe(true);
+      expect(passwordInput.type).toBe("password");
+    } finally {
+      document.body.replaceChildren();
+    }
+  });
+
+  it("proves hydration and restores password masking before submitting credentials", async () => {
+    const previous = new Map<string, string | undefined>();
+    const environment = {
+      VISUAL_SAFETY_MODE: "local-authenticated",
+      VISUAL_SAFETY_APP_ORIGIN: "http://127.0.0.1:3000",
+      VISUAL_SAFETY_SUPABASE_ORIGIN: "http://127.0.0.1:54321",
+      QA_TEST_EMAIL: "fixture.user@example.test",
+      QA_TEST_PASSWORD: "fixture-password-canary",
+      VISUAL_SAFETY_VIOLATION_MARKER: path.join(tmpdir(), "unused-lighthouse-marker.json"),
+    };
+    for (const [name, value] of Object.entries(environment)) {
+      previous.set(name, process.env[name]);
+      process.env[name] = value;
+    }
+    const order: string[] = [];
+    let currentUrl = "http://127.0.0.1:3000/auth/login";
+    const cdpSession = {
+      on: vi.fn(),
+      send: vi.fn(async () => undefined),
+    };
+    const tokenResponse = {
+      url: () => "http://127.0.0.1:54321/auth/v1/token?grant_type=password",
+      request: () => ({ method: () => "POST" }),
+      ok: () => true,
+      status: () => 200,
+    };
+    const page = {
+      setBypassServiceWorker: vi.fn(async () => undefined),
+      createCDPSession: vi.fn(async () => cdpSession),
+      setRequestInterception: vi.fn(async () => undefined),
+      on: vi.fn(),
+      goto: vi.fn(async () => ({ ok: () => true })),
+      waitForFunction: vi.fn(async (pageFunction: unknown) => {
+        if (pageFunction === guard.probeLoginHydration) {
+          order.push("hydration-probe");
+        } else if (pageFunction === guard.restorePasswordMask) {
+          order.push("password-mask-restore");
+        } else if (currentUrl.endsWith("/auth/login")) {
+          order.push("route-ready");
+        } else {
+          order.push("post-login");
+        }
+      }),
+      url: vi.fn(() => currentUrl),
+      type: vi.fn(async (selector: string) => {
+        order.push(selector === "#email" ? "type-email" : "type-password");
+      }),
+      click: vi.fn(async () => {
+        order.push("submit");
+        currentUrl = "http://127.0.0.1:3000/app/search";
+      }),
+      waitForResponse: vi.fn(async (predicate: (response: typeof tokenResponse) => boolean) => {
+        order.push("arm-token-wait");
+        expect(predicate(tokenResponse)).toBe(true);
+        return tokenResponse;
+      }),
+      close: vi.fn(async () => undefined),
+    };
+    const browser = {
+      pages: vi.fn(async () => [page]),
+      newPage: vi.fn(async () => page),
+      on: vi.fn(),
+    };
+
+    try {
+      await guard(browser);
+      expect(order).toEqual([
+        "route-ready",
+        "hydration-probe",
+        "password-mask-restore",
+        "type-email",
+        "type-password",
+        "arm-token-wait",
+        "submit",
+        "post-login",
+      ]);
+      expect(page.waitForFunction).toHaveBeenCalledWith(guard.probeLoginHydration, {
+        polling: 100,
+        timeout: 30_000,
+      });
+      expect(page.waitForFunction).toHaveBeenCalledWith(guard.restorePasswordMask, {
+        polling: 100,
+        timeout: 5_000,
+      });
+      expect(page.close).toHaveBeenCalledOnce();
+    } finally {
+      for (const [name, value] of previous) {
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
+      }
+    }
+  });
 
   it("reuses an authenticated browser session without submitting credentials again", async () => {
     const previous = new Map<string, string | undefined>();
@@ -665,6 +787,22 @@ describe("local-authenticated Lighthouse session guard", () => {
 });
 
 describe("process ownership and loopback proxy", () => {
+  it("fails with a stable label when Lighthouse exits before creating reports", async () => {
+    const root = await temporaryDirectory();
+    const relativeDirectory = "lighthouse-reports/local-authenticated/mobile";
+    expect(() => assertCompleteLighthouseReportSet(relativeDirectory, 1, 1, root)).toThrow(
+      /\[P5_LIGHTHOUSE_RUN\] child-failed-before-output/u,
+    );
+
+    const reportDirectory = path.join(root, relativeDirectory);
+    await fs.mkdir(reportDirectory, { recursive: true });
+    await fs.writeFile(path.join(reportDirectory, "fixture.report.json"), "{}\n", "utf8");
+    expect(() => assertCompleteLighthouseReportSet(relativeDirectory, 1, 0, root)).not.toThrow();
+    expect(() => assertCompleteLighthouseReportSet(relativeDirectory, 2, 0, root)).toThrow(
+      /\[P5_LIGHTHOUSE_RUN\] report-count-mismatch/u,
+    );
+  });
+
   it("contains an upstream failure after response headers are committed", () => {
     const afterHeaders = {
       destroyed: false,
@@ -973,6 +1111,86 @@ describe("process ownership and loopback proxy", () => {
     expect(proxy.summary).toEqual({ total: 0, categories: {} });
     await proxy.close();
   });
+
+  it.runIf(process.platform === "win32" || process.platform === "linux")(
+    "survives a peer reset after denying an opaque CONNECT",
+    () => {
+      const proxyModuleUrl = pathToFileURL(
+        path.resolve(process.cwd(), "e2e", "helpers", "loopback-egress-proxy.ts"),
+      ).href;
+      const script = [
+        'import { request as httpRequest } from "node:http";',
+        'import { connect as netConnect } from "node:net";',
+        `const { startLoopbackEgressProxy } = await import(${JSON.stringify(proxyModuleUrl)});`,
+        "const proxy = await startLoopbackEgressProxy({",
+        "  writeViolationMarker: false,",
+        '  opaqueConnectPolicy: "contain",',
+        "});",
+        "const proxyUrl = new URL(proxy.origin);",
+        "const resetDeniedConnect = () => new Promise((resolve, reject) => {",
+        '  const socket = netConnect(Number(proxyUrl.port), "127.0.0.1");',
+        '  socket.setEncoding("utf8");',
+        '  let response = "";',
+        '  const timeout = setTimeout(() => reject(new Error("denied CONNECT timed out")), 2_000);',
+        '  socket.once("error", (error) => {',
+        "    clearTimeout(timeout);",
+        "    reject(error);",
+        "  });",
+        '  socket.on("data", (chunk) => {',
+        "    response += chunk;",
+        '    if (!response.includes("\\r\\n\\r\\n")) return;',
+        "    clearTimeout(timeout);",
+        '    if (!response.includes("451 Unavailable For Legal Reasons")) {',
+        '      reject(new Error("proxy did not deny CONNECT"));',
+        "      return;",
+        "    }",
+        "    socket.resetAndDestroy();",
+        "    resolve();",
+        "  });",
+        '  socket.once("connect", () => {',
+        "    socket.write(",
+        '      "CONNECT chrome-background.synthetic.test:443 HTTP/1.1\\r\\n" +',
+        '        "Host: chrome-background.synthetic.test:443\\r\\n\\r\\n",',
+        "    );",
+        "  });",
+        "});",
+        "try {",
+        "  await Promise.all(Array.from({ length: 8 }, resetDeniedConnect));",
+        "  await new Promise((resolve) => setTimeout(resolve, 100));",
+        "  const status = await new Promise((resolve, reject) => {",
+        "    const request = httpRequest(proxy.origin, {",
+        '      path: "http://synthetic.external.test/still-alive",',
+        "    });",
+        '    request.once("response", (response) => {',
+        "      response.resume();",
+        "      resolve(response.statusCode ?? 0);",
+        "    });",
+        '    request.once("error", reject);',
+        "    request.end();",
+        "  });",
+        '  if (status !== 451) throw new Error("proxy did not remain fail closed");',
+        '  if (proxy.summary.total !== 0) throw new Error("contained CONNECT became a violation");',
+        "} finally {",
+        "  await proxy.close();",
+        "}",
+      ].join("\n");
+
+      const result = spawnSync(
+        process.execPath,
+        ["--experimental-strip-types", "--input-type=module", "--eval", script],
+        {
+          cwd: process.cwd(),
+          encoding: "utf8",
+          timeout: 10_000,
+          windowsHide: true,
+        },
+      );
+
+      expect(result.signal).toBeNull();
+      expect(result.status, result.stderr).toBe(0);
+      expect(result.stderr).not.toContain("Unhandled 'error' event");
+    },
+  );
 
   it("rejects and records raw HTTP Upgrade traffic without DNS", async () => {
     const proxy = await startLoopbackEgressProxy({

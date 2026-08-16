@@ -320,6 +320,29 @@ describe("browser workflow visual-safety contract", () => {
     expect(passwordTyping).toBeGreaterThan(authenticatedReturn);
   });
 
+  it("proves login hydration and restores password masking before credential entry", () => {
+    const hydrationProbe = localLighthouseGuardSource.indexOf(
+      "page.waitForFunction(probeLoginHydration",
+    );
+    const maskRestore = localLighthouseGuardSource.indexOf(
+      "page.waitForFunction(restorePasswordMask",
+    );
+    const emailTyping = localLighthouseGuardSource.indexOf('page.type("#email", email)');
+    const tokenWait = localLighthouseGuardSource.indexOf(".waitForResponse(");
+    const submit = localLighthouseGuardSource.indexOf("page.click('button[type=\"submit\"]')");
+    expect(hydrationProbe).toBeGreaterThanOrEqual(0);
+    expect(maskRestore).toBeGreaterThan(hydrationProbe);
+    expect(emailTyping).toBeGreaterThan(maskRestore);
+    expect(tokenWait).toBeGreaterThan(emailTyping);
+    expect(submit).toBeGreaterThan(tokenWait);
+    expect(localLighthouseGuardSource).toContain("[P5_LIGHTHOUSE_AUTH] login-hydration-timeout");
+    expect(localLighthouseGuardSource).toContain(
+      "[P5_LIGHTHOUSE_AUTH] password-mask-restore-timeout",
+    );
+    expect(localLighthouseGuardSource).toContain("[P5_LIGHTHOUSE_AUTH] token-response-timeout");
+    expect(localLighthouseGuardSource).not.toMatch(/error\.(?:message|stack)/u);
+  });
+
   it("keeps fixture credentials behind readiness and out of workflow output", () => {
     const fixtureSection = safetyCliSource.slice(
       safetyCliSource.indexOf("async function runLocalFixtureCommand("),
