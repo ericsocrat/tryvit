@@ -1,8 +1,17 @@
 import { expect, test, type Page } from "./fixtures/safe-test";
+import {
+  CATALOG_SCROLL_QUIESCENCE_TIMEOUT_MS,
+  CATALOG_SCROLL_QUIET_FRAMES_REQUIRED,
+} from "./helpers/catalog-scroll-quiescence";
 
 const CATALOG_PATH = "/dev/components";
 type PrimitiveLocator = ReturnType<Page["locator"]>;
 const runtimeErrors = new WeakMap<Page, string[]>();
+
+interface CrossBrowserScrollProbe {
+  revision: number;
+  cleanup: () => void;
+}
 
 async function openCatalog(page: Page): Promise<void> {
   await page.emulateMedia({
@@ -16,6 +25,95 @@ async function openCatalog(page: Page): Promise<void> {
   await page.evaluate(() => new Promise<void>((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
   }));
+}
+
+async function armCrossBrowserScrollProbe(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const browserGlobal = globalThis as typeof globalThis & {
+      __phase5a2CrossBrowserScrollProbe?: CrossBrowserScrollProbe;
+    };
+    browserGlobal.__phase5a2CrossBrowserScrollProbe?.cleanup();
+    const probe: CrossBrowserScrollProbe = {
+      revision: 0,
+      cleanup: () => undefined,
+    };
+    const observeScroll = () => {
+      probe.revision += 1;
+    };
+    probe.cleanup = () => document.removeEventListener("scroll", observeScroll, true);
+    document.addEventListener("scroll", observeScroll, true);
+    browserGlobal.__phase5a2CrossBrowserScrollProbe = probe;
+  });
+}
+
+async function waitForCrossBrowserScrollQuiescence(page: Page): Promise<boolean> {
+  return page.evaluate(
+    ({ quietFramesRequired, timeoutMs }) => new Promise<boolean>((resolve) => {
+      const browserGlobal = globalThis as typeof globalThis & {
+        __phase5a2CrossBrowserScrollProbe?: CrossBrowserScrollProbe;
+      };
+      const probe = browserGlobal.__phase5a2CrossBrowserScrollProbe;
+      if (!probe) {
+        resolve(false);
+        return;
+      }
+      let observedRevision = probe.revision;
+      let quietFramesObserved = 0;
+      let frame = 0;
+      const timer = setTimeout(() => {
+        cancelAnimationFrame(frame);
+        resolve(false);
+      }, timeoutMs);
+      const sample = () => {
+        if (probe.revision === observedRevision) quietFramesObserved += 1;
+        else {
+          observedRevision = probe.revision;
+          quietFramesObserved = 0;
+        }
+        if (quietFramesObserved >= quietFramesRequired) {
+          clearTimeout(timer);
+          resolve(true);
+          return;
+        }
+        frame = requestAnimationFrame(sample);
+      };
+      frame = requestAnimationFrame(sample);
+    }),
+    {
+      quietFramesRequired: CATALOG_SCROLL_QUIET_FRAMES_REQUIRED,
+      timeoutMs: CATALOG_SCROLL_QUIESCENCE_TIMEOUT_MS,
+    },
+  );
+}
+
+async function cleanupCrossBrowserScrollProbe(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const browserGlobal = globalThis as typeof globalThis & {
+      __phase5a2CrossBrowserScrollProbe?: CrossBrowserScrollProbe;
+    };
+    browserGlobal.__phase5a2CrossBrowserScrollProbe?.cleanup();
+    delete browserGlobal.__phase5a2CrossBrowserScrollProbe;
+  });
+}
+
+async function prepareAnchoredTarget(
+  page: Page,
+  target: PrimitiveLocator,
+): Promise<void> {
+  await armCrossBrowserScrollProbe(page);
+  try {
+    await target.scrollIntoViewIfNeeded();
+    expect(await waitForCrossBrowserScrollQuiescence(page)).toBe(true);
+    expect(await target.evaluate((element) => {
+      if (!(element instanceof HTMLElement)) return false;
+      element.focus({ preventScroll: true });
+      return element.ownerDocument.activeElement === element;
+    })).toBe(true);
+    await expect(target).toBeFocused();
+    expect(await waitForCrossBrowserScrollQuiescence(page)).toBe(true);
+  } finally {
+    await cleanupCrossBrowserScrollProbe(page);
+  }
 }
 
 function durationsResolveImmediately(value: string): boolean {
@@ -94,8 +192,7 @@ async function expectFocusRestored(page: Page, trigger: PrimitiveLocator): Promi
 
 async function exerciseModal(page: Page, component: "dialog" | "sheet"): Promise<void> {
   const trigger = page.locator(`[data-catalog-probe="${component}-trigger"]`);
-  await trigger.scrollIntoViewIfNeeded();
-  await trigger.focus();
+  await prepareAnchoredTarget(page, trigger);
   await page.keyboard.press("Enter");
 
   const modal = page.locator(`dialog[data-ds-component="${component}"][open]`);
@@ -205,8 +302,7 @@ test.describe("Phase 5A.2 cross-browser primitive admission", () => {
     page,
   }) => {
     const trigger = page.locator('[data-catalog-probe="menu"] [data-ds-part="trigger"]');
-    await trigger.scrollIntoViewIfNeeded();
-    await trigger.focus();
+    await prepareAnchoredTarget(page, trigger);
     await page.keyboard.press("ArrowDown");
     const menu = page.locator('[data-ds-component="menu"][data-ds-part="content"]');
     const items = menu.locator('[data-ds-part="item"]');
@@ -250,8 +346,7 @@ test.describe("Phase 5A.2 cross-browser primitive admission", () => {
   test("Combobox navigation, selection, portal, focus, and dismissal", async ({ page }) => {
     const probe = page.locator('[data-catalog-probe="combobox-ready"]');
     const input = probe.locator('[data-ds-part="input"]');
-    await input.scrollIntoViewIfNeeded();
-    await input.focus();
+    await prepareAnchoredTarget(page, input);
     await page.keyboard.press("ArrowDown");
     const popup = page.locator(
       '[data-ds-component="combobox"][data-ds-part="content"][data-state="open"]',

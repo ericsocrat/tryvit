@@ -91,6 +91,21 @@ describe("Phase 5A.2 cross-browser admission contract", () => {
     }
     expect(specification).toContain('errors.push("pageerror")');
     expect(specification).toContain('errors.push("console-error")');
+    expect(specification).toContain("CATALOG_SCROLL_QUIET_FRAMES_REQUIRED");
+    expect(specification).toContain("CATALOG_SCROLL_QUIESCENCE_TIMEOUT_MS");
+    expect(specification).toContain("__phase5a2CrossBrowserScrollProbe");
+    expect(specification).toContain("element.focus({ preventScroll: true })");
+    expect(specification).toContain("cleanupCrossBrowserScrollProbe(page)");
+    expect(specification).toContain("delete browserGlobal.__phase5a2CrossBrowserScrollProbe");
+    expect(specification.match(/waitForCrossBrowserScrollQuiescence\(page\)/gu))
+      .toHaveLength(2);
+    expect(specification.match(/prepareAnchoredTarget\(page, (?:trigger|input)\)/gu))
+      .toHaveLength(3);
+    expect(specification.indexOf("armCrossBrowserScrollProbe(page)"))
+      .toBeLessThan(specification.indexOf("target.scrollIntoViewIfNeeded()"));
+    expect(specification.indexOf("target.scrollIntoViewIfNeeded()"))
+      .toBeLessThan(specification.indexOf("element.focus({ preventScroll: true })"));
+    expect(specification).not.toContain("waitForTimeout");
     expect(overlayProbes).toContain("ref={dialogRestoreFocusRef}");
     expect(overlayProbes).toContain("restoreFocusRef={dialogRestoreFocusRef}");
     expect(overlayProbes).toContain("ref={sheetRestoreFocusRef}");
