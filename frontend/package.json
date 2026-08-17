@@ -52,8 +52,8 @@
     "optimize:svg": "svgo -r -f public/icons --config svgo.config.js"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.7.1",
-    "@marsidev/react-turnstile": "^1.5.5",
+    "@hookform/resolvers": "^5.8.0",
+    "@marsidev/react-turnstile": "^1.6.0",
     "@radix-ui/react-tooltip": "^1.2.16",
     "@sentry/nextjs": "^10.70.0",
     "@serwist/next": "^9.5.12",
@@ -65,16 +65,16 @@
     "@vercel/speed-insights": "^2.0.0",
     "@zxing/browser": "^0.2.1",
     "@zxing/library": "^0.23.0",
-    "lucide-react": "^1.29.0",
+    "lucide-react": "^1.31.0",
     "next": "16.2.12",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-hook-form": "^7.84.0",
+    "react-hook-form": "^7.85.0",
     "sonner": "^1.7.4",
     "tesseract.js": "^5.1.1",
     "web-vitals": "^6.1.0",
     "zod": "^4.3.6",
-    "zustand": "^5.0.14"
+    "zustand": "^5.0.15"
   },
   "overrides": {
     "minimatch": ">=10.2.4",
@@ -102,7 +102,7 @@
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.3",
-    "@types/node": "^26.1.2",
+    "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@types/ws": "^8.18.1",
@@ -121,6 +121,6 @@
     "typescript": "^7.0.2",
     "vitest": "^4.0.18",
     "vitest-axe": "^0.1.0",
-    "ws": "^8.21.2"
+    "ws": "^8.21.3"
   }
 }
