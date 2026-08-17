@@ -8,6 +8,10 @@ import {
   ensureOwnedDirectory,
   removeOwnedDirectory,
 } from "./evidence-safety.ts";
+import {
+  captureNextEnvSourceSnapshot,
+  withNextEnvSourceRestoration,
+} from "./next-env-source.ts";
 
 function git(frontendRoot: string, args: readonly string[]): string {
   const result = spawnSync("git", args, {
@@ -61,25 +65,31 @@ const environment = {
   PHASE5A2_DIRECTION_SOURCE_TREE_SHA: sourceTreeSha,
 };
 
-const result = spawnSync(
-  process.execPath,
-  [
-    "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
-    "--experimental-strip-types",
-    visualSafetyCli,
-    "local-authenticated",
-    "--project=phase5a2-direction-behavior",
-    "--project=phase5a2-direction-stills",
-    "--project=phase5a2-direction-motion",
-    "--project=phase5a2-direction-scanner",
-    "--workers=1",
-    "--reporter=list",
-  ],
-  {
-    cwd: frontendRoot,
-    env: environment,
-    stdio: "inherit",
-  },
+const nextEnvSourceSnapshot = captureNextEnvSourceSnapshot(frontendRoot);
+const result = withNextEnvSourceRestoration(
+  nextEnvSourceSnapshot,
+  () =>
+    spawnSync(
+      process.execPath,
+      [
+        "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
+        "--experimental-strip-types",
+        visualSafetyCli,
+        "local-authenticated",
+        "--project=phase5a2-direction-behavior",
+        "--project=phase5a2-direction-stills",
+        "--project=phase5a2-direction-motion",
+        "--project=phase5a2-direction-scanner",
+        "--workers=1",
+        "--reporter=list",
+      ],
+      {
+        cwd: frontendRoot,
+        env: environment,
+        stdio: "inherit",
+      },
+    ),
+  () => git(frontendRoot, ["status", "--porcelain=v1", "--untracked-files=all"]),
 );
 
 if (result.error) throw result.error;

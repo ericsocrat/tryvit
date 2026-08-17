@@ -23,6 +23,11 @@ import {
   removeOwnedDirectory,
   sha256CanonicalLf,
 } from "@/../tooling/design-system/direction-selection/evidence-safety";
+import {
+  captureNextEnvSourceSnapshot,
+  restoreNextEnvSourceSnapshot,
+  withNextEnvSourceRestoration,
+} from "@/../tooling/design-system/direction-selection/next-env-source";
 import { verifyPlaywrightWebm } from "@/../tooling/design-system/direction-selection/webm-evidence";
 
 const temporaryDirectories: string[] = [];
@@ -31,6 +36,24 @@ function temporaryDirectory(prefix = "tryvit-p5a2-hardening-"): string {
   const directory = realpathSync.native(mkdtempSync(path.join(tmpdir(), prefix)));
   temporaryDirectories.push(directory);
   return directory;
+}
+
+function nextEnvContents(
+  mode: "build" | "development",
+  eol: "\n" | "\r\n" = "\n",
+): string {
+  const routeTypes = mode === "development"
+    ? ".next/dev/types/routes.d.ts"
+    : ".next/types/routes.d.ts";
+  return [
+    '/// <reference types="next" />',
+    '/// <reference types="next/image-types/global" />',
+    `import "./${routeTypes}";`,
+    "",
+    "// NOTE: This file should not be edited",
+    "// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.",
+    "",
+  ].join(eol);
 }
 
 afterEach(() => {
@@ -237,6 +260,128 @@ describe("Phase 5A.2 evidence filesystem containment", () => {
   });
 });
 
+describe("Phase 5A.2 generated Next source restoration", () => {
+  it.each(["\n", "\r\n"] as const)(
+    "restores the exact tracked bytes after the bounded %j build mutation",
+    (eol) => {
+      const root = temporaryDirectory();
+      const filename = path.join(root, "next-env.d.ts");
+      const original = Buffer.from(nextEnvContents("development", eol), "utf8");
+      writeFileSync(filename, original);
+      const snapshot = captureNextEnvSourceSnapshot(root);
+      writeFileSync(filename, nextEnvContents("build", eol), "utf8");
+      let statusChecks = 0;
+
+      expect(
+        restoreNextEnvSourceSnapshot(snapshot, () => {
+          statusChecks += 1;
+          return statusChecks === 1 ? " M frontend/next-env.d.ts" : "";
+        }),
+      ).toBe("restored");
+      expect(readFileSync(filename)).toEqual(original);
+      expect(statusChecks).toBe(2);
+    },
+  );
+
+  it("accepts an unchanged clean source snapshot without writing", () => {
+    const root = temporaryDirectory();
+    const filename = path.join(root, "next-env.d.ts");
+    const original = Buffer.from(nextEnvContents("development"), "utf8");
+    writeFileSync(filename, original);
+    const snapshot = captureNextEnvSourceSnapshot(root);
+
+    expect(restoreNextEnvSourceSnapshot(snapshot, () => "")).toBe("unchanged");
+    expect(readFileSync(filename)).toEqual(original);
+  });
+
+  it("restores the exact generated mutation when the owned child fails", () => {
+    const root = temporaryDirectory();
+    const filename = path.join(root, "next-env.d.ts");
+    const original = Buffer.from(nextEnvContents("development"), "utf8");
+    writeFileSync(filename, original);
+    const snapshot = captureNextEnvSourceSnapshot(root);
+    let statusChecks = 0;
+
+    expect(() =>
+      withNextEnvSourceRestoration(
+        snapshot,
+        () => {
+          writeFileSync(filename, nextEnvContents("build"), "utf8");
+          throw new Error("owned-child-failed");
+        },
+        () => {
+          statusChecks += 1;
+          return statusChecks === 1 ? " M frontend/next-env.d.ts" : "";
+        },
+      ),
+    ).toThrow("owned-child-failed");
+    expect(readFileSync(filename)).toEqual(original);
+    expect(statusChecks).toBe(2);
+  });
+
+  it("refuses unexpected content without overwriting it", () => {
+    const root = temporaryDirectory();
+    const filename = path.join(root, "next-env.d.ts");
+    writeFileSync(filename, nextEnvContents("development"), "utf8");
+    const snapshot = captureNextEnvSourceSnapshot(root);
+    const unexpected = Buffer.from("developer change\n", "utf8");
+    writeFileSync(filename, unexpected);
+
+    expect(() =>
+      restoreNextEnvSourceSnapshot(snapshot, () => " M frontend/next-env.d.ts"),
+    ).toThrow(/next-env-source-mutation-unexpected/u);
+    expect(readFileSync(filename)).toEqual(unexpected);
+  });
+
+  it("refuses the generated mutation when another source path changed", () => {
+    const root = temporaryDirectory();
+    const filename = path.join(root, "next-env.d.ts");
+    writeFileSync(filename, nextEnvContents("development"), "utf8");
+    const snapshot = captureNextEnvSourceSnapshot(root);
+    const buildBytes = Buffer.from(nextEnvContents("build"), "utf8");
+    writeFileSync(filename, buildBytes);
+
+    expect(() =>
+      restoreNextEnvSourceSnapshot(
+        snapshot,
+        () => " M frontend/next-env.d.ts\n M frontend/src/app/page.tsx",
+      ),
+    ).toThrow(/next-env-source-mutation-unexpected/u);
+    expect(readFileSync(filename)).toEqual(buildBytes);
+  });
+
+  it("fails if the worktree is not clean after restoring the exact mutation", () => {
+    const root = temporaryDirectory();
+    const filename = path.join(root, "next-env.d.ts");
+    const original = Buffer.from(nextEnvContents("development"), "utf8");
+    writeFileSync(filename, original);
+    const snapshot = captureNextEnvSourceSnapshot(root);
+    writeFileSync(filename, nextEnvContents("build"), "utf8");
+
+    expect(() =>
+      restoreNextEnvSourceSnapshot(snapshot, () => " M frontend/next-env.d.ts"),
+    ).toThrow(/next-env-source-restore-invalid/u);
+    expect(readFileSync(filename)).toEqual(original);
+  });
+
+  it("rejects missing, duplicate, and non-regular generated source contracts", () => {
+    for (const contents of [
+      "// route import missing\n",
+      `${nextEnvContents("development")}import "./.next/dev/types/routes.d.ts";\n`,
+    ]) {
+      const root = temporaryDirectory();
+      writeFileSync(path.join(root, "next-env.d.ts"), contents, "utf8");
+      expect(() => captureNextEnvSourceSnapshot(root)).toThrow(
+        /next-env-source-contract-invalid/u,
+      );
+    }
+
+    const nonRegularRoot = temporaryDirectory();
+    ensureOwnedDirectory(nonRegularRoot, ["next-env.d.ts"], "test-next-env-directory");
+    expect(() => captureNextEnvSourceSnapshot(nonRegularRoot)).toThrow(/target-invalid/u);
+  });
+});
+
 describe("Phase 5A.2 contact-label determinism", () => {
   it("uses paths rather than host fonts", () => {
     const first = createDirectionSelectionContactLabelSvg("A", 720, 36);
@@ -310,6 +455,12 @@ describe("Phase 5A.2 recording contract wiring", () => {
     const stager = readFrontend("tooling/design-system/direction-selection/stage-evidence.mts");
     expect(runner).toContain('NEXT_PUBLIC_QA_MODE: "0"');
     expect(runner).not.toContain('NEXT_PUBLIC_QA_MODE: "1"');
+    expect(runner).toContain("captureNextEnvSourceSnapshot");
+    expect(runner).toContain("withNextEnvSourceRestoration");
+    expect(runner.lastIndexOf("withNextEnvSourceRestoration(")).toBeLessThan(
+      runner.indexOf('path.join(toolingDirectory, "verify-candidates.mts")'),
+    );
+    expect(runner).not.toMatch(/git[^\n]*(?:checkout|restore)/u);
     expect(verifier).toContain("verifyPlaywrightWebm");
     expect(stager).toContain("sha256CanonicalLf");
     expect(stager).toContain("publishOwnedDirectory");
