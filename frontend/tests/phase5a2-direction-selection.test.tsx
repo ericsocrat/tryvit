@@ -184,6 +184,23 @@ describe("Phase 5A.2 direction-selection contract", () => {
     },
   );
 
+  it("puts the live scanner state before every fixed fixture preview", () => {
+    for (const candidate of PHASE5A2_CANDIDATES) {
+      const route = resolvePhase5A2RouteState(candidate, "scanner", {
+        state: "matched",
+      });
+      if (!route) throw new Error("Matched scanner route must resolve.");
+      const markup = renderToStaticMarkup(renderCandidate[candidate](route));
+      const stateIndex = markup.indexOf("data-phase5a2-scanner");
+      const fixtureIndex = markup.indexOf("data-phase5a2-fixture-reference");
+      expect(stateIndex).toBeGreaterThan(0);
+      expect(fixtureIndex).toBeGreaterThan(stateIndex);
+    }
+
+    expect(candidateSources).toContain("the\\u00a0conclusion");
+    expect(candidateSources).toContain("z\\u00a0przestrzenią");
+  });
+
   it("keeps candidate code deterministic, local, system-fonted, and outside 5A.1 artifacts", () => {
     const sharedSources = [
       "src/app/dev/phase5a2/_shared/MotionStudy.client.tsx",

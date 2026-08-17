@@ -178,7 +178,7 @@ const OPEN_CORE_MESSAGES: Readonly<Record<Phase5A2Locale, OpenCoreMessages>> = {
     identityTypography: "Atkinson Hyperlegible Next + Newsreader. W tym prototypie użyto przybliżenia krojami systemowymi; nie przyjęto żadnego kroju pisma.",
     identityStatus: "Nazwa robocza. Wstępny wektor. Bez weryfikacji nazwy i znaku towarowego.",
     landingEyebrow: "Czytaj tylko tak głęboko, jak potrzebujesz",
-    landingTitle: "Jasna decyzja z przestrzenią, by zajrzeć do środka.",
+    landingTitle: "Jasna decyzja z\u00a0przestrzenią, by zajrzeć do środka.",
     landingBody: "TryVit zaczyna od użytecznego podsumowania, a potem pozostawia otwarte wszystkie warstwy dowodów: fakty, obliczenie, kontekst i notatkę z opakowania.",
     primaryAction: "Otwórz materiał testowy",
     secondaryAction: "Zobacz trzy poziomy",
@@ -544,11 +544,11 @@ function ScannerSurface({ messages, route }: Readonly<{ messages: OpenCoreMessag
       <OpenCoreHeader messages={messages} route={route} />
       <section className={styles.scannerPage}>
         <header><span>{messages.scannerKicker}</span><h1>{messages.scannerTitle}</h1><p>{messages.scannerLead}</p></header>
+        <ScannerStudy className={styles.scannerControls} copy={common.scanner} direction="open-core" ean={PHASE5A2_FIXTURE.ean} initialState={initialState} />
         <div className={styles.scannerStage}>
           <div aria-hidden="true" className={styles.scanPortal}><i /><i /><i /><OpenCoreMark /><span>{PHASE5A2_FIXTURE.ean}</span></div>
           <div className={styles.scannerPreview} data-phase5a2-fixture-reference=""><span>{messages.scannerResult}</span><h2>{common.fixtureName}</h2><dl><div><dt>{messages.scoreLabel}</dt><dd>{PHASE5A2_FIXTURE.conceptDecisionScore} / 100</dd></div><div><dt>{messages.sourceHeading}</dt><dd>{common.confidence}</dd></div></dl><p>{common.processingUnknown}</p></div>
         </div>
-        <ScannerStudy className={styles.scannerControls} copy={common.scanner} direction="open-core" ean={PHASE5A2_FIXTURE.ean} initialState={initialState} />
       </section>
     </>
   );

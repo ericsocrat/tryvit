@@ -522,11 +522,11 @@ function ScannerSurface({ messages, route }: Readonly<{ messages: SourceFoldMess
       <SourceFoldHeader messages={messages} route={route} />
       <section className={styles.scannerPage}>
         <header><span>{messages.labels.scannerConcept}</span><h1>{messages.scannerTitle}</h1><p>{messages.scannerLead}</p></header>
+        <ScannerStudy className={styles.scannerControls} copy={common.scanner} direction="source-fold" ean={PHASE5A2_FIXTURE.ean} initialState={route.state as ScannerState} />
         <div className={styles.scannerGrid}>
           <div className={styles.scanViewport} aria-hidden="true"><div className={styles.scanCorners} /><SourceFoldMark /><span>{PHASE5A2_FIXTURE.ean}</span></div>
-          <div className={styles.scannerResult}><span>{messages.labels.fixtureReference}</span><h2>{common.fixtureName}</h2><p>{common.confidence}</p><p>{common.processingUnknown}</p><strong>{common.conceptScore}</strong></div>
+          <div className={styles.scannerResult} data-phase5a2-fixture-reference=""><span>{messages.labels.fixtureReference}</span><h2>{common.fixtureName}</h2><p>{common.confidence}</p><p>{common.processingUnknown}</p><strong>{common.conceptScore}</strong></div>
         </div>
-        <ScannerStudy className={styles.scannerControls} copy={common.scanner} direction="source-fold" ean={PHASE5A2_FIXTURE.ean} initialState={route.state as ScannerState} />
       </section>
     </>
   );

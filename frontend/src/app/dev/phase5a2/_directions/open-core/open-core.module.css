@@ -1029,8 +1029,15 @@
   align-content: start;
 }
 
+.scannerPage > header {
+  grid-column: 1;
+  grid-row: 1;
+}
+
 .scannerStage {
   display: grid;
+  grid-column: 2;
+  grid-row: 1 / span 2;
   grid-template-rows: minmax(22rem, 1.2fr) auto;
   min-inline-size: 0;
   border: 1px solid var(--oc-line);
@@ -1106,14 +1113,14 @@
 }
 
 .scannerControls {
-  grid-column: 1 / -1;
+  grid-column: 1;
+  grid-row: 2;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 1rem;
   align-items: start;
   padding: 1.5rem;
   border: 1px solid var(--oc-line);
-  border-block-start: 0;
 }
 
 .scannerControls :global(.phase5a2-scanner-status) {
@@ -1333,6 +1340,13 @@
     grid-template-columns: 1fr;
   }
 
+  .scannerPage > header,
+  .scannerControls,
+  .scannerStage {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
   .motionDiagram {
     grid-row: auto;
     grid-column: 1;
@@ -1412,6 +1426,10 @@
   .hero {
     min-block-size: 0;
     padding-block: 4rem;
+  }
+
+  .heroCopy h1 {
+    font-size: clamp(3.2rem, 13vw, 5rem);
   }
 
   .heroDiagram {

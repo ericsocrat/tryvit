@@ -124,7 +124,7 @@ const EVIDENCE_REGISTER_MESSAGES: Readonly<Record<Phase5A2Locale, EvidenceRegist
       evidence: "Evidence register in focus",
       partial: "Partial record: processing classification remains unconfirmed",
     },
-    scannerTitle: "Register the code before the conclusion",
+    scannerTitle: "Register the code before the\u00a0conclusion",
     scannerLead: "A deterministic scanner concept for one synthetic barcode. No camera or network is used.",
     motionTitle: "A record assembles in reading order",
     motionLead: "Rules and entries appear in sequence; no evidence depends on motion.",
@@ -494,11 +494,11 @@ function ScannerSurface({ messages, route }: Readonly<{ messages: EvidenceRegist
       <RegisterHeader messages={messages} route={route} />
       <section className={styles.scannerPage}>
         <header><span>{messages.labels.scannerConcept}</span><h1>{messages.scannerTitle}</h1><p>{messages.scannerLead}</p></header>
+        <ScannerStudy className={styles.scannerControls} copy={common.scanner} direction="evidence-register" ean={PHASE5A2_FIXTURE.ean} initialState={route.state as Parameters<typeof ScannerStudy>[0]["initialState"]} />
         <div className={styles.scannerGrid}>
           <div aria-hidden="true" className={styles.scanViewport}><div className={styles.scanRules}><i /><i /><i /><i /></div><EvidenceRegisterMark /><span>{PHASE5A2_FIXTURE.ean}</span></div>
           <div className={styles.scannerResult} data-phase5a2-fixture-reference=""><span>{messages.labels.readSequence}</span><ol><li><span>01</span>{common.observedDate}</li><li><span>02</span>{common.confidence}</li><li><span>03</span>{common.processingUnknown}</li></ol><strong>{common.conceptScore}</strong></div>
         </div>
-        <ScannerStudy className={styles.scannerControls} copy={common.scanner} direction="evidence-register" ean={PHASE5A2_FIXTURE.ean} initialState={route.state as Parameters<typeof ScannerStudy>[0]["initialState"]} />
       </section>
     </>
   );

@@ -1506,6 +1506,10 @@
     font-size: clamp(2.2rem, 14vw, 3.7rem);
   }
 
+  .scannerPage > header h1 {
+    font-size: clamp(2.2rem, 12vw, 3.2rem);
+  }
+
   .heroActions {
     width: 100%;
   }

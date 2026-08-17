@@ -865,7 +865,7 @@
 
 .scanViewport > svg {
   inline-size: 7rem;
-  opacity: 0.22;
+  opacity: 0.64;
 }
 
 .scanViewport > span {
@@ -969,7 +969,7 @@
 }
 
 .motionControls :global(.phase5a2-motion-stage) {
-  padding: 1.25rem 0;
+  padding: 1.25rem 1rem;
   border-block-end: 1px solid var(--sf-rule);
   transition: color 180ms ease, transform 180ms ease;
 }
@@ -1133,6 +1133,10 @@
   .scannerPage > header h1,
   .motionPage > header h1 {
     overflow-wrap: anywhere;
+  }
+
+  .scanViewport {
+    min-block-size: 18rem;
   }
 }
 
