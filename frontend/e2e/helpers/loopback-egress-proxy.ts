@@ -103,6 +103,10 @@ export async function startLoopbackEgressProxy(
   const trackSocket = <T extends Duplex>(socket: T): T => {
     if (!sockets.has(socket)) {
       sockets.add(socket);
+      // CONNECT and Upgrade hand raw-socket error ownership to this server.
+      // A peer can reset immediately after a deliberate denial, so contain
+      // transport failures here before any protocol-specific listener exists.
+      socket.on("error", () => socket.destroy());
       socket.once("close", () => sockets.delete(socket));
     }
     return socket;

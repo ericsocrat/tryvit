@@ -21,6 +21,28 @@ function canonicalLoopbackOrigin(value, label) {
   return parsed.origin;
 }
 
+function probeLoginHydration() {
+  const passwordInput = document.querySelector("#password");
+  const toggle = passwordInput?.parentElement?.querySelector('button[type="button"]');
+  if (!(passwordInput instanceof HTMLInputElement) || !(toggle instanceof HTMLButtonElement)) {
+    return false;
+  }
+  if (passwordInput.type === "text") return true;
+  toggle.click();
+  return passwordInput.type === "text";
+}
+
+function restorePasswordMask() {
+  const passwordInput = document.querySelector("#password");
+  const toggle = passwordInput?.parentElement?.querySelector('button[type="button"]');
+  if (!(passwordInput instanceof HTMLInputElement) || !(toggle instanceof HTMLButtonElement)) {
+    return false;
+  }
+  if (passwordInput.type === "password") return true;
+  toggle.click();
+  return passwordInput.type === "password";
+}
+
 module.exports = async function localAuthenticatedLighthouseGuard(browser) {
   if (process.env.VISUAL_SAFETY_MODE !== "local-authenticated") {
     throw new Error("[P5_LIGHTHOUSE_AUTH] local-authenticated-mode-required");
@@ -60,21 +82,36 @@ module.exports = async function localAuthenticatedLighthouseGuard(browser) {
     if (new URL(page.url()).pathname.startsWith("/app")) {
       return;
     }
+    try {
+      await page.waitForFunction(probeLoginHydration, { polling: 100, timeout: 30_000 });
+    } catch {
+      throw new Error("[P5_LIGHTHOUSE_AUTH] login-hydration-timeout");
+    }
+    try {
+      await page.waitForFunction(restorePasswordMask, { polling: 100, timeout: 5_000 });
+    } catch {
+      throw new Error("[P5_LIGHTHOUSE_AUTH] password-mask-restore-timeout");
+    }
     await page.type("#email", email);
     await page.type("#password", password);
-    const tokenResponsePromise = page.waitForResponse(
-      (response) => {
-        const target = new URL(response.url());
-        return (
-          response.request().method() === "POST" &&
-          target.origin === supabaseOrigin &&
-          target.pathname === "/auth/v1/token"
-        );
-      },
-      { timeout: 20_000 },
-    );
+    const tokenResponsePromise = page
+      .waitForResponse(
+        (response) => {
+          const target = new URL(response.url());
+          return (
+            response.request().method() === "POST" &&
+            target.origin === supabaseOrigin &&
+            target.pathname === "/auth/v1/token"
+          );
+        },
+        { timeout: 20_000 },
+      )
+      .catch(() => null);
     await page.click('button[type="submit"]');
     const tokenResponse = await tokenResponsePromise;
+    if (!tokenResponse) {
+      throw new Error("[P5_LIGHTHOUSE_AUTH] token-response-timeout");
+    }
     if (!tokenResponse.ok()) {
       throw new Error(`[P5_LIGHTHOUSE_AUTH] token-status-${tokenResponse.status()}`);
     }
@@ -92,3 +129,5 @@ module.exports = async function localAuthenticatedLighthouseGuard(browser) {
 };
 
 module.exports.canonicalLoopbackOrigin = canonicalLoopbackOrigin;
+module.exports.probeLoginHydration = probeLoginHydration;
+module.exports.restorePasswordMask = restorePasswordMask;

@@ -1572,6 +1572,32 @@ function sanitizeLighthouseOutputDirectory(
   }
 }
 
+export function assertCompleteLighthouseReportSet(
+  relativeDirectory: string,
+  expectedReportCount: number,
+  childExitCode: number,
+  root = frontendRoot,
+): void {
+  if (!Number.isSafeInteger(expectedReportCount) || expectedReportCount < 1) {
+    throw safetyError("P5_LIGHTHOUSE_RUN", "expected-report-count-invalid");
+  }
+  const reportRoot = path.resolve(root, "lighthouse-reports");
+  const target = path.resolve(root, relativeDirectory);
+  if (!pathIsWithin(reportRoot, target) || target === reportRoot) {
+    throw safetyError("P5_LIGHTHOUSE_OUTPUT", "output-path-invalid");
+  }
+  const reportCount = filesAtOrBelow(target).filter((filename) =>
+    filename.endsWith(".report.json"),
+  ).length;
+  if (reportCount === expectedReportCount) return;
+  throw safetyError(
+    "P5_LIGHTHOUSE_RUN",
+    childExitCode !== 0 && reportCount === 0
+      ? "child-failed-before-output"
+      : "report-count-mismatch",
+  );
+}
+
 function removeLighthouseWorkingDirectory(): void {
   const target = path.resolve(frontendRoot, ".lighthouseci");
   if (!existsSync(target)) return;
@@ -1877,6 +1903,11 @@ async function runLighthouse(
       if (code === undefined) {
         throw safetyError("P5_LIGHTHOUSE_RUN", "child-exit-code-unavailable");
       }
+      assertCompleteLighthouseReportSet(
+        outputDirectory,
+        selectedRoutes.length * LIGHTHOUSE_RUN_COUNT,
+        code,
+      );
       if (code !== 0) exitCode = code;
       const metadataWithoutChecksum = {
         schemaVersion: "phase5a0d-lighthouse-run/v1",
