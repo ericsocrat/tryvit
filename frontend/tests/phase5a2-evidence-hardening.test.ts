@@ -489,6 +489,7 @@ describe("Phase 5A.2 recording contract wiring", () => {
     expect(verifier).toContain("verifyPlaywrightWebm");
     expect(stager).toContain("sha256CanonicalLf");
     expect(stager).toContain("publishOwnedDirectory");
+    expect(stager).toContain("sharp.cache(false)");
     expect(stager).toContain("sharp.versions.vips");
     expect(stager).not.toContain("<text");
     expect(stager).not.toContain("cpSync(");

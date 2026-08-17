@@ -333,6 +333,10 @@ try {
   }
   assertOwnedRegularFile(stageRoot, "manifest.json", "staged-manifest");
 
+  // libvips can retain cached file handles after metadata reads, which prevents
+  // the populated staging directory from being atomically renamed on Windows.
+  sharp.cache(false);
+
   const publishedDestination = publishOwnedDirectory(
     destinationParent,
     stageBasename,
