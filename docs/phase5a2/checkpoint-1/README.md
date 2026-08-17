@@ -1,7 +1,7 @@
 # Phase 5A.2 Checkpoint 1 selection handoff
 
-> **Last updated:** 2026-08-17  
-> **Status:** Pending Eric selection  
+> **Last updated:** 2026-08-17
+> **Status:** Pending Eric selection
 > **Scope:** Non-production art-direction and identity review only
 
 ## Decision requested
@@ -19,16 +19,18 @@ migration, production branding, font adoption, merge, deployment, or release.
 
 ## Exact evidence
 
-- Capture source and tree: authoritative values in the final regenerated manifest
-- Package: 35 files, 3,112,982 bytes
+- Capture source: `347a7d0a6cd1d060a28487a92315f83f30347bc5`
+- Capture tree: `4c07194ac13111988fbaef0f4c9f18c62d882a8c`
+- Package: 35 files, 2,844,649 bytes
 - Contents: 3 candidates, 21 stills, 6 WebMs, 7 contact sheets, 1 manifest
-- Manifest: [evidence/manifest.json](evidence/manifest.json)
+- Manifest: [evidence/manifest.json](evidence/manifest.json), 23,122 bytes, SHA-256
+  `9c10d0243b5208319fc8c3b1497ca9dae552f7fdfd899823ae2fca39f8993c1e`
 - Review-only: `true`
 - Production baseline: `false`
 
-The capture source may differ from the later documentation-delivery commit. The final
-regenerated manifest is authoritative for rendered evidence; the delivery commit is
-authoritative for this handoff text and pending reviews.
+The capture source may differ from the later documentation-delivery commit. The manifest
+is authoritative for rendered evidence; the delivery commit is authoritative for this
+handoff text and the frozen independent review records.
 
 ## Handoff map
 

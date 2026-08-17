@@ -1,7 +1,9 @@
 # Independent reviewer B — identity and visual system
 
-> **Evidence:** freshly regenerated 21-still set and sampled frames from all 6 recordings  
-> **Independence:** reviewer did not implement the candidates and did not see reviewer A  
+> **Evidence:** all 21 stills, 7 contact sheets, and 6 complete recordings
+> **Source:** `347a7d0a6cd1d060a28487a92315f83f30347bc5`; tree `4c07194ac13111988fbaef0f4c9f18c62d882a8c`
+> **Manifest SHA-256:** `9c10d0243b5208319fc8c3b1497ca9dae552f7fdfd899823ae2fca39f8993c1e`
+> **Independence:** reviewer did not implement the candidates and did not see reviewer A
 > **Scope:** Checkpoint 1 path selection, not the final Golden Reference exit gate
 
 ## Identity-only score
@@ -20,6 +22,11 @@ package framing makes that manageable.
 Evidence Register communicates a trusted record but uses a generic document symbol.
 Open Core can read as a processor, AI agent, cybersecurity target, or compute mark, and
 its nested rings collapse at 16 px.
+
+All six recordings render complete content on frame 0, complete their intended states,
+and reset cleanly. No light or dark prepaint, terminal blank, viewport shift, clipping,
+or still/recording/contact-sheet mismatch remains. Motion/scanner durations are
+3.76/3.56 seconds for A, 4.04/3.56 for B, and 5.52/3.56 for C.
 
 ## Repository 100-point scorecard
 
@@ -51,3 +58,7 @@ to suppress parcel readings, reduce A's large mobile source panel when the decis
 appear earlier, increase B's smallest labels, and simplify C's micro mark. The visual
 packet does not retain error, offline, invalid-input, keyboard-focus, or screen-reader
 states, so those claims remain conditional on separate interaction evidence.
+
+This package is ready for identity selection. The identity assessment is not trademark
+clearance; Candidate A still requires lockup normalization, scanner-mark refinement,
+and formal legal review.

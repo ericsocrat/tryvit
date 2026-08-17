@@ -1,6 +1,6 @@
 # Checkpoint 1 review instructions
 
-> **Last updated:** 2026-08-17  
+> **Last updated:** 2026-08-17
 > **Status:** Executed for Checkpoint 1; reusable for a revision
 
 ## Independent reviewer protocol
@@ -51,7 +51,11 @@ strongest credible path and required corrections.
 - Motion: full-motion sequence and complete reduced-motion still.
 
 The exact route, viewport, content locale, theme, motion, state, bytes, dimensions, and
-hash for every file are in [evidence/manifest.json](evidence/manifest.json).
+hash for every file are in [evidence/manifest.json](evidence/manifest.json). The frozen
+reviews are bound to manifest SHA-256
+`9c10d0243b5208319fc8c3b1497ca9dae552f7fdfd899823ae2fca39f8993c1e`, source
+`347a7d0a6cd1d060a28487a92315f83f30347bc5`, and tree
+`4c07194ac13111988fbaef0f4c9f18c62d882a8c`.
 
 ## Interaction checks
 

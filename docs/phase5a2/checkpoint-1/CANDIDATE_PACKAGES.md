@@ -1,6 +1,6 @@
 # Checkpoint 1 candidate packages
 
-> **Last updated:** 2026-08-17  
+> **Last updated:** 2026-08-17
 > **Status:** Comparative facts; no winner selected
 
 All candidates use the same deterministic synthetic product, evidence semantics,

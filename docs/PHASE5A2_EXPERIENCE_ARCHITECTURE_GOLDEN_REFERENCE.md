@@ -23,13 +23,13 @@ complete. It does not redesign a production route, replace a production identity
 add a production dependency, or authorize deployment. Its screenshots and recordings
 are review evidence, not immutable production baselines.
 
-Before any production-route migration, Phase 5A.2 must add targeted Firefox and WebKit
-interaction proof for Dialog, Sheet, Menu, Combobox, and Tabs. That proof is a blocking
-entry requirement and must cover keyboard containment and restoration, Escape,
-outside-pointer dismissal, and nested portal ownership. It extends behavioral coverage;
-it does not replace the immutable Chromium visual baselines or authorize a new broad
-screenshot matrix. Production-route migration remains prohibited until this
-cross-browser interaction gate passes.
+Phase 5A.2 adds targeted Firefox and WebKit interaction proof for Dialog, Sheet, Menu,
+Combobox, and Tabs. The staged Checkpoint 1 package passed that blocking entry proof,
+including keyboard containment and restoration, Escape, outside-pointer dismissal, and
+nested portal ownership. It extends behavioral coverage; it does not replace the
+immutable Chromium visual baselines or authorize a new broad screenshot matrix.
+Production-route migration remains prohibited until the later Golden Reference exit
+gate and Eric's explicit approval.
 
 ### Approval checkpoints
 

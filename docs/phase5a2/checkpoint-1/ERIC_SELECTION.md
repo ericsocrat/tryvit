@@ -1,12 +1,14 @@
 # Eric's Phase 5A.2 Checkpoint 1 selection
 
-> **Last updated:** 2026-08-17  
-> **Status:** Pending Eric  
+> **Last updated:** 2026-08-17
+> **Status:** Pending Eric
 > **Authority requested:** Checkpoint 2 Golden Reference work only
 
 Both independent scorecards and the
 [review synthesis](REVIEW_SYNTHESIS_AND_RECOMMENDATION.md) are available. Complete this
-record only when making the explicit Checkpoint 1 decision.
+record only when making the explicit Checkpoint 1 decision. The scorecards are frozen
+against manifest SHA-256
+`9c10d0243b5208319fc8c3b1497ca9dae552f7fdfd899823ae2fca39f8993c1e`.
 
 ## Direction decision
 

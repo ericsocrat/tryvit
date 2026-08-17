@@ -100,6 +100,20 @@ The catalog probes also use controlled props for Menu open state, Combobox open
 and value state, and Tabs value state. These are artifact-neutral reference
 harness changes; no production consumer or route changed.
 
+## WebKit anchored-interaction hardening
+
+Two predecessor Quality Gate runs exposed the same WebKit-only late-scroll race in the
+top-level Menu admission. Playwright could resolve `scrollIntoViewIfNeeded()`, open the
+Menu, and then deliver the queued document scroll; the primitive correctly dismissed
+the now-stale anchored popup. The production Menu scroll contract remains unchanged.
+
+The harness now arms a capture-phase scroll revision probe before programmatic scroll,
+requires four quiet animation frames inside a one-second bound, focuses with
+`preventScroll`, verifies focus, and cleans the probe before opening. Local zero-retry
+acceptance passed 20/20 WebKit Menu repetitions, 20/20 Firefox repetitions, and the
+complete 11/11 cross-browser gate. No sleep, retry, forced reopening, screenshot, or
+catalog artifact was added.
+
 ## Authority limitations
 
 This gate proves the pinned Playwright engines on the guarded desktop profile.
@@ -111,22 +125,39 @@ visual, forced-color, and coarse-pointer evidence remains unchanged.
 
 ## Final Checkpoint 1 capture binding
 
-- Candidate source and tree: exact values in the final regenerated manifest
+- Candidate source: `347a7d0a6cd1d060a28487a92315f83f30347bc5`
+- Candidate tree: `4c07194ac13111988fbaef0f4c9f18c62d882a8c`
 - Phase 5A.1 full regression cohort: 19 of 19 passed; governed counts unchanged
 - Phase 5A.2 final guarded direction run: 13 of 13 passed
-- Staged package: 35 files, 3,112,982 bytes
+- Staged package: 35 files, 2,844,649 bytes
 - Contents: 3 candidates, 21 stills, 6 WebMs, 7 contact sheets, 1 manifest
+- Manifest SHA-256:
+  `9c10d0243b5208319fc8c3b1497ca9dae552f7fdfd899823ae2fca39f8993c1e`
 
 This binding supersedes the entry SHA only for candidate evidence. The original SHA,
 Nightly classification, and cross-browser admission above remain the historical gate.
 
 ## Authoritative-main advancement
 
-After the original entry gate, authoritative `main` advanced to `30934dfe` through a
-PostCSS `8.5.26` correction. Its PR checks were green except the Lighthouse aggregate.
-All 50 public and local audits completed and the safety assertions passed; aggregation
-failed only because local-authenticated mobile product performance ranged from `0.84`
-to `0.95` (`0.11`, above the `0.10` stability threshold), alongside the five previously
-recorded mobile LCP directional debts. This is lab instability and directional
-performance debt, not candidate-source, safety, or interaction failure. Final candidate
-evidence must be regenerated after rebasing onto the verified descendant.
+After the original entry gate, authoritative `main` advanced to
+`24b4555cb3d118dc64b46f75ebfd434a655c3498`. PR `#1287` passed both Guarded Lighthouse
+([run `31996203832`](https://github.com/ericsocrat/tryvit/actions/runs/31996203832))
+and Quality Gate
+([run `31996203862`](https://github.com/ericsocrat/tryvit/actions/runs/31996203862)).
+PR `#1288` passed its same-head Quality Gate
+([run `31995500956`](https://github.com/ericsocrat/tryvit/actions/runs/31995500956)); its
+Lighthouse aggregate ([run `31995500881`](https://github.com/ericsocrat/tryvit/actions/runs/31995500881))
+failed only on variable local-authenticated mobile performance medians: `/app` at `0.83`
+and `/app/product/2` at `0.82`, against `0.85`. Public and local-desktop audits, safety,
+cleanup, and the testing-only dependency change were otherwise green, so that isolated
+result remains known lab variance rather than candidate, dependency-runtime, or harness
+regression.
+
+The candidate branch was rebased onto that verified descendant and the evidence above
+was regenerated from exact source `347a7d0a` and tree `4c07194a`. A predecessor draft
+head then exposed three deterministic, non-lab defects: a descriptor-read TOCTOU alert,
+an architecture allowlist missing the guarded Phase 5A.2 route, and the WebKit scroll
+race documented above. The bound capture source includes focused fixes for all three;
+local unit, design-system, cross-browser stress, and direction-review gates are green.
+Remote checks for the replacement draft head were pending at package authoring and must
+be read from the pull-request check rollup.

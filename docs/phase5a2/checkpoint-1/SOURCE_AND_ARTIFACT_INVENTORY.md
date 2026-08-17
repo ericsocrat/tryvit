@@ -1,16 +1,20 @@
 # Checkpoint 1 source and artifact inventory
 
-> **Last updated:** 2026-08-17  
+> **Last updated:** 2026-08-17
 > **Status:** Exact capture map
 
 ## Provenance anchors
 
-- Source commit and tree: exact values in the final regenerated manifest
+- Source commit: `347a7d0a6cd1d060a28487a92315f83f30347bc5`
+- Source tree: `4c07194ac13111988fbaef0f4c9f18c62d882a8c`
 - Fixture SHA-256: `6914a31758740013d31c07c9d1414b43a6de3b81acb35e0041b548adaddb5074`
 - Capture-contract SHA-256, UTF-8/LF canonicalized:
-  `22c1ebfd06de10be807900ce502ea9c659ae81bbed3e637c8209d7779ed3313d`
-- Binary bytes: 3,089,855
-- Package bytes including manifest: 3,112,982
+  `c50fc45944f6ea97d14391d151ba2dd1775267eaaf5526310158b9420a476de0`
+- Binary bytes: 2,821,527
+- Manifest bytes: 23,122
+- Package bytes including manifest: 2,844,649
+- Manifest SHA-256:
+  `9c10d0243b5208319fc8c3b1497ca9dae552f7fdfd899823ae2fca39f8993c1e`
 
 ## Authored candidate sources
 
@@ -60,5 +64,5 @@ not a 36th staged file.
 ## Authored versus generated boundary
 
 The evidence directory is generated and must not be hand-edited. These handoff Markdown
-files are authored adjacent to it and are not included in the 35-file package. Pending
-review scorecards and synthesis are also authored decision records, not capture output.
+files are authored adjacent to it and are not included in the 35-file package. Frozen
+review scorecards and synthesis are authored decision records, not capture output.

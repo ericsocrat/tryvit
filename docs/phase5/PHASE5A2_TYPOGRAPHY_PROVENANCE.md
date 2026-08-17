@@ -5,7 +5,9 @@ served by a review route.
 
 Observed: 2026-08-17
 
-Final capture source: use the exact source in the regenerated Checkpoint 1 manifest.
+Final capture source: `347a7d0a6cd1d060a28487a92315f83f30347bc5`.
+
+Final capture tree: `4c07194ac13111988fbaef0f4c9f18c62d882a8c`.
 
 ## Method
 

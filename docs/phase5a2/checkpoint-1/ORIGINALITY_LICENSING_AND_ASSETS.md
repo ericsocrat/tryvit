@@ -1,6 +1,6 @@
 # Checkpoint 1 originality, licensing, and assets
 
-> **Last updated:** 2026-08-17  
+> **Last updated:** 2026-08-17
 > **Status:** Preliminary review only; legal clearance not performed
 
 ## Identity construction
