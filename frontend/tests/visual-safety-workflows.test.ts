@@ -958,6 +958,7 @@ describe("browser workflow visual-safety contract", () => {
     );
     expect(nightlyTopLevel).not.toContain("NEXT_PUBLIC_QA_MODE");
     expect(nightlyUnitStep).not.toContain("NEXT_PUBLIC_QA_MODE");
+    expect(nightlyUnitStep).toContain("timeout-minutes: 7");
     expect(nightlyPublicSuite).toContain('NEXT_PUBLIC_QA_MODE: "1"');
     expect(nightlyAuthenticatedSuite).toContain('NEXT_PUBLIC_QA_MODE: "1"');
     expect(browserJobs.nightly.match(/NEXT_PUBLIC_QA_MODE: "1"/gu)).toHaveLength(2);
