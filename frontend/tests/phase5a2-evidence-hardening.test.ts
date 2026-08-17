@@ -470,6 +470,12 @@ describe("Phase 5A.2 recording contract wiring", () => {
     expect(helper).toContain("surface.getAnimations({ subtree: true })");
     expect(helper).toContain("full-motion-animation-missing");
     expect(motion.match(/settleDirectionSelectionMotionSurface\(study\)/gu)).toHaveLength(2);
+    expect(motion).toContain("focus({ preventScroll: true })");
+    expect(motion).toContain("motion-control-focus-failed");
+    expect(motion).toContain("motion-viewport-shift");
+    expect(motion).toContain('locator(".phase5a2-motion-actions")).toBeInViewport({ ratio: 1 })');
+    expect(motion).not.toContain("await next.click()");
+    expect(motion).not.toContain("await restart.click()");
     expect(scanner.match(/holdDirectionSelectionVideoState\(page\)/gu)).toHaveLength(5);
   });
 
