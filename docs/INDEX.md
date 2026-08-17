@@ -233,7 +233,7 @@
 | [phase5a2/checkpoint-1/reviews/reviewer-a.md](phase5a2/checkpoint-1/reviews/reviewer-a.md) | Independent product-direction 100-point scorecard and conditions                                              | Phase 5A.2                                              | 2026-08-17   |
 | [phase5a2/checkpoint-1/reviews/reviewer-b.md](phase5a2/checkpoint-1/reviews/reviewer-b.md) | Independent identity and visual-system scorecards and conditions                                              | Phase 5A.2                                              | 2026-08-17   |
 | [phase5a2/checkpoint-1/REVIEW_SYNTHESIS_AND_RECOMMENDATION.md](phase5a2/checkpoint-1/REVIEW_SYNTHESIS_AND_RECOMMENDATION.md) | Reviewer agreement, disagreement, vetoes and primary recommendation                                | Phase 5A.2                                              | 2026-08-17   |
-| [phase5a2/checkpoint-1/ERIC_SELECTION.md](phase5a2/checkpoint-1/ERIC_SELECTION.md)           | Pending direction, identity, typography, conditions and Checkpoint 2 authorization record                              | Phase 5A.2                                              | 2026-08-17   |
+| [phase5a2/checkpoint-1/ERIC_SELECTION.md](phase5a2/checkpoint-1/ERIC_SELECTION.md)           | Recorded conditional hybrid, Source Fold identity, typography control and bounded Checkpoint 2 authorization            | Phase 5A.2                                              | 2026-08-17   |
 
 ## Process & Workflow
 

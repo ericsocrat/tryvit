@@ -1,21 +1,24 @@
 # Phase 5A.2 Checkpoint 1 selection handoff
 
 > **Last updated:** 2026-08-17
-> **Status:** Pending Eric selection
+> **Status:** Conditional hybrid selected; Checkpoint 2 authorized but not started
 > **Scope:** Non-production art-direction and identity review only
 
-## Decision requested
+## Decision recorded
 
-Eric is asked to select, conditionally select, combine explicitly, or reject the three
-paired direction and identity studies:
+Eric selected an explicit conditional hybrid:
 
-- **A — Source Fold**
-- **B — Evidence Register**
-- **C — Open Core**
+- **Master brand and expressive visual language:** A — Source Fold
+- **Product/evidence information architecture:** B — Evidence Register
+- **Master identity:** A — Source Fold
+- **Typography control:** existing system stack, with a bounded rendered assay required
+  before final Golden Reference approval
 
-No candidate is approved by this packet. Selection authorizes only the next Phase 5A.2
-checkpoint: six complete Golden References. It does not authorize production-route
-migration, production branding, font adoption, merge, deployment, or release.
+The exact hybrid boundaries, vetoes, corrections, and authorization are recorded in
+[ERIC_SELECTION.md](ERIC_SELECTION.md). Selection authorizes only the next Phase 5A.2
+checkpoint: six complete, non-production Golden References. It does not authorize
+production-route migration, production branding, font adoption, release, or later Phase
+5 waves.
 
 ## Exact evidence
 
@@ -60,8 +63,8 @@ than the retained screenshots. Identity studies remain preliminary: social/Open 
 splash, production lockups, formal clear-space rules, visual misuse examples, native
 language approval, assistive-technology sampling, and legal clearance are not claimed.
 
-## Stop rule
+## Handoff rule
 
-Keep the pull request draft and stop after presenting this packet. Do not begin the six
-Golden References until [ERIC_SELECTION.md](ERIC_SELECTION.md) records Eric's explicit
-direction and identity decision.
+Finalize Checkpoint 1 through the normal repository ruleset, then stop after exact-main
+certification. Begin the six Golden References only as a fresh Checkpoint 2 task under
+the recorded conditions; do not implement them in the Checkpoint 1 finalization task.

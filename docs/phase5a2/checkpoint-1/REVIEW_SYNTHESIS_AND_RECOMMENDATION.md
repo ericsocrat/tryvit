@@ -1,7 +1,7 @@
 # Checkpoint 1 review synthesis and recommendation
 
 > **Last updated:** 2026-08-17
-> **Status:** Recommendation complete; Eric selection pending
+> **Status:** Recommendation complete; conditional hybrid selected
 > **Authority:** Advisory only
 
 Two non-implementing reviewers independently re-attested all 21 stills, 7 contact sheets,
@@ -77,8 +77,15 @@ software/AI infrastructure and its micro form is not robust. B's current documen
 should remain a utility glyph, not the master identity, unless it is substantially
 redesigned. Neither veto prevents Eric from requesting a focused revision.
 
-## Decision requested
+## Eric's recorded decision
 
-Eric may accept the recommendation, choose A/A, define another exact pairing, request a
-bounded revision, or reject all candidates. No Golden Reference or production work may
-begin until [ERIC_SELECTION.md](ERIC_SELECTION.md) records the decision.
+Eric selected Source Fold for the master brand, expressive language, and identity, and
+selected Evidence Register for the product/evidence information architecture. The
+decision requires one newly coherent system rather than a merger of the existing
+candidate CSS or a Source Fold mark placed onto an unchanged cobalt register.
+
+The existing system stack remains the initial Checkpoint 2 control. Candidate C's
+identity veto and every later accessibility, language, device, performance, originality,
+trademark, and legal gate remain in force. The complete binding decision is recorded in
+[ERIC_SELECTION.md](ERIC_SELECTION.md). It authorizes only six non-production Golden
+References and does not authorize production migration or implementation in this task.

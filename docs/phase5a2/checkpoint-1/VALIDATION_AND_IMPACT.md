@@ -1,7 +1,7 @@
 # Checkpoint 1 validation and impact
 
 > **Last updated:** 2026-08-17
-> **Status:** Final capture evidence; selection pending
+> **Status:** Final capture evidence; conditional hybrid selected
 
 ## Final guarded results
 

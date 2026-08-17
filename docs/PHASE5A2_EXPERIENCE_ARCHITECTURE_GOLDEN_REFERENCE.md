@@ -1,7 +1,7 @@
 # Phase 5A.2 — Experience Architecture and Golden Reference Gate
 
 > **Last updated:** 2026-08-17
-> **Status:** Checkpoint 1 evidence staged; Eric selection pending; no Golden Reference or production migration is authorized
+> **Status:** Checkpoint 1 conditional hybrid selected; Checkpoint 2 Golden References authorized but not started; production migration remains prohibited
 > **Entry gate:** Phase 5A.1a and Phase 5A.1b are reviewed, merged, and green on authoritative `main`, followed by explicit authorization from Eric
 > **Exit gate:** Eric explicitly selects the art direction and identity and approves all six Golden References after independent review
 
