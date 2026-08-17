@@ -1541,9 +1541,9 @@
 .root[data-phase5a2-motion="reduced"] *::before,
 .root[data-phase5a2-motion="reduced"] *::after {
   scroll-behavior: auto !important;
-  animation-duration: 0.001ms !important;
+  animation-duration: 1ms !important;
   animation-delay: 0ms !important;
-  transition-duration: 0.001ms !important;
+  transition-duration: 1ms !important;
   transition-delay: 0ms !important;
 }
 
@@ -1552,9 +1552,9 @@
   .root *::before,
   .root *::after {
     scroll-behavior: auto !important;
-    animation-duration: 0.001ms !important;
+    animation-duration: 1ms !important;
     animation-delay: 0ms !important;
-    transition-duration: 0.001ms !important;
+    transition-duration: 1ms !important;
     transition-delay: 0ms !important;
   }
 

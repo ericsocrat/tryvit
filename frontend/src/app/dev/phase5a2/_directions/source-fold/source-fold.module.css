@@ -299,6 +299,10 @@
   color: #f7efdf;
 }
 
+.darkSpecimen figcaption {
+  color: #f7efdf;
+}
+
 .darkSpecimen .markFront,
 .monoSpecimen .markBack,
 .monoSpecimen .markFront {
@@ -1131,9 +1135,9 @@
   .root *::before,
   .root *::after {
     scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 1ms !important;
     transition-delay: 0ms !important;
-    animation-duration: 0.01ms !important;
+    animation-duration: 1ms !important;
     animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
   }
@@ -1143,9 +1147,9 @@
 .root[data-phase5a2-motion="reduced"] *::before,
 .root[data-phase5a2-motion="reduced"] *::after {
   scroll-behavior: auto !important;
-  transition-duration: 0.01ms !important;
+  transition-duration: 1ms !important;
   transition-delay: 0ms !important;
-  animation-duration: 0.01ms !important;
+  animation-duration: 1ms !important;
   animation-delay: 0ms !important;
   animation-iteration-count: 1 !important;
 }
