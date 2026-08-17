@@ -2,18 +2,14 @@ import type { Locator, Page } from "@playwright/test";
 
 import { expect, test } from "./fixtures/safe-test";
 import {
-  assertCandidateFileBound,
   assertDirectionSelectionAxe,
-  candidateOutputPath,
   holdDirectionSelectionVideoState,
   installSanitizedRuntimeHooks,
   openDirectionSelectionStudy,
   settleDirectionSelectionMotionSurface,
+  startDirectionSelectionRecording,
 } from "./helpers/phase5a2-direction-selection";
-import {
-  DIRECTION_SELECTION_VIDEOS,
-  videoRelativePath,
-} from "@/../tooling/design-system/direction-selection/capture-contract";
+import { DIRECTION_SELECTION_VIDEOS } from "@/../tooling/design-system/direction-selection/capture-contract";
 
 type ViewportPosition = Readonly<{ x: number; y: number }>;
 
@@ -56,27 +52,33 @@ for (const capture of DIRECTION_SELECTION_VIDEOS.filter(
     const initialStage = await study.getAttribute("data-phase5a2-motion-stage");
     if (!initialStage) throw new Error("[P5A2_EVIDENCE] motion-stage-missing");
     const initialViewport = await viewportPosition(page);
-    await holdDirectionSelectionVideoState(page);
+    const recording = await startDirectionSelectionRecording(page, capture);
+    let sequenceError: unknown;
+    try {
+      await holdDirectionSelectionVideoState(page);
 
-    let previousStage = initialStage;
-    for (let index = 0; index < 3; index += 1) {
-      await activateMotionControl(page, next);
-      await expect(study).not.toHaveAttribute("data-phase5a2-motion-stage", previousStage);
-      previousStage = (await study.getAttribute("data-phase5a2-motion-stage")) ?? "";
+      let previousStage = initialStage;
+      for (let index = 0; index < 3; index += 1) {
+        await activateMotionControl(page, next);
+        await expect(study).not.toHaveAttribute("data-phase5a2-motion-stage", previousStage);
+        previousStage = (await study.getAttribute("data-phase5a2-motion-stage")) ?? "";
+        await settleDirectionSelectionMotionSurface(study);
+        await assertMotionViewportStable(page, initialViewport);
+      }
+      await activateMotionControl(page, restart);
+      await expect(study).toHaveAttribute("data-phase5a2-motion-stage", initialStage);
       await settleDirectionSelectionMotionSurface(study);
       await assertMotionViewportStable(page, initialViewport);
+      expect(runtimeErrors).toEqual([]);
+    } catch (error) {
+      sequenceError = error;
+      throw error;
+    } finally {
+      try {
+        await recording.stop();
+      } catch (stopError) {
+        if (sequenceError === undefined) throw stopError;
+      }
     }
-    await activateMotionControl(page, restart);
-    await expect(study).toHaveAttribute("data-phase5a2-motion-stage", initialStage);
-    await settleDirectionSelectionMotionSurface(study);
-    await assertMotionViewportStable(page, initialViewport);
-    expect(runtimeErrors).toEqual([]);
-
-    const video = page.video();
-    if (!video) throw new Error("[P5A2_EVIDENCE] motion-video-missing");
-    const filename = candidateOutputPath(videoRelativePath(capture));
-    await page.close();
-    await video.saveAs(filename);
-    assertCandidateFileBound(filename, "video");
   });
 }

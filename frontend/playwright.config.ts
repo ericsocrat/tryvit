@@ -466,7 +466,7 @@ const phase5a2DirectionMotionProject = {
     serviceWorkers: "block" as const,
     trace: "off" as const,
     screenshot: "off" as const,
-    video: { mode: "on" as const, size: { width: 1440, height: 900 } },
+    video: "off" as const,
   },
 };
 
@@ -487,7 +487,7 @@ const phase5a2DirectionScannerProject = {
     serviceWorkers: "block" as const,
     trace: "off" as const,
     screenshot: "off" as const,
-    video: { mode: "on" as const, size: { width: 390, height: 844 } },
+    video: "off" as const,
   },
 };
 

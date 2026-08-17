@@ -513,8 +513,8 @@ describe("Phase 5A.2 direction-selection contract", () => {
     expect(projectBlock.match(/dependencies: \["auth-setup"\]/gu)).toHaveLength(4);
     expect(projectBlock.match(/serviceWorkers: "block"/gu)).toHaveLength(4);
     expect(projectBlock.match(/trace: "off"/gu)).toHaveLength(4);
-    expect(projectBlock).toContain('video: { mode: "on" as const, size: { width: 1440, height: 900 } }');
-    expect(projectBlock).toContain('video: { mode: "on" as const, size: { width: 390, height: 844 } }');
+    expect(projectBlock.match(/video: "off" as const/gu)).toHaveLength(4);
+    expect(projectBlock).not.toContain('video: { mode: "on"');
 
     expect(runner).toContain('"local-authenticated"');
     expect(runner).toContain('PHASE5A2_DIRECTION_SELECTION: "1"');
@@ -533,6 +533,11 @@ describe("Phase 5A.2 direction-selection contract", () => {
     expect(captureHelper).not.toContain("message.text()");
     expect(captureHelper).not.toContain(".exclude(");
     expect(captureHelper).not.toContain(".disableRules(");
+    expect(captureHelper).toContain("await page.screencast.start({");
+    expect(captureHelper).toContain("await firstFrame;");
+    expect(specifications.match(/startDirectionSelectionRecording\(page, capture\)/gu))
+      .toHaveLength(2);
+    expect(specifications).not.toContain("page.video()");
     expect(verifier).toContain("runtime.sourceTreeSha !== expected.sourceTreeSha");
     expect(verifier).toContain('["status", "--porcelain=v1", "--untracked-files=all"]');
     expect(verifier).toContain('fail("source-provenance-mismatch")');

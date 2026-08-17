@@ -1,16 +1,12 @@
 import { expect, test } from "./fixtures/safe-test";
 import {
-  assertCandidateFileBound,
   assertDirectionSelectionAxe,
-  candidateOutputPath,
   holdDirectionSelectionVideoState,
   installSanitizedRuntimeHooks,
   openDirectionSelectionStudy,
+  startDirectionSelectionRecording,
 } from "./helpers/phase5a2-direction-selection";
-import {
-  DIRECTION_SELECTION_VIDEOS,
-  videoRelativePath,
-} from "@/../tooling/design-system/direction-selection/capture-contract";
+import { DIRECTION_SELECTION_VIDEOS } from "@/../tooling/design-system/direction-selection/capture-contract";
 
 for (const capture of DIRECTION_SELECTION_VIDEOS.filter(
   ({ kind }) => kind === "scanner-sequence",
@@ -22,27 +18,33 @@ for (const capture of DIRECTION_SELECTION_VIDEOS.filter(
 
     const study = page.locator("[data-phase5a2-scanner]");
     await expect(study).toHaveAttribute("data-phase5a2-state", "ready");
-    await holdDirectionSelectionVideoState(page);
-    await study.locator("button").first().click();
-    await expect(study).toHaveAttribute("data-phase5a2-state", "recognized");
-    await holdDirectionSelectionVideoState(page);
-    await study.locator("button").first().click();
-    await expect(study).toHaveAttribute("data-phase5a2-state", "processing");
-    await holdDirectionSelectionVideoState(page);
-    await expect(study).toHaveAttribute("data-phase5a2-state", "matched", {
-      timeout: 2_000,
-    });
-    await holdDirectionSelectionVideoState(page);
-    await study.locator("button").first().click();
-    await expect(study).toHaveAttribute("data-phase5a2-state", "ready");
-    await holdDirectionSelectionVideoState(page);
-    expect(runtimeErrors).toEqual([]);
-
-    const video = page.video();
-    if (!video) throw new Error("[P5A2_EVIDENCE] scanner-video-missing");
-    const filename = candidateOutputPath(videoRelativePath(capture));
-    await page.close();
-    await video.saveAs(filename);
-    assertCandidateFileBound(filename, "video");
+    const recording = await startDirectionSelectionRecording(page, capture);
+    let sequenceError: unknown;
+    try {
+      await holdDirectionSelectionVideoState(page);
+      await study.locator("button").first().click();
+      await expect(study).toHaveAttribute("data-phase5a2-state", "recognized");
+      await holdDirectionSelectionVideoState(page);
+      await study.locator("button").first().click();
+      await expect(study).toHaveAttribute("data-phase5a2-state", "processing");
+      await holdDirectionSelectionVideoState(page);
+      await expect(study).toHaveAttribute("data-phase5a2-state", "matched", {
+        timeout: 2_000,
+      });
+      await holdDirectionSelectionVideoState(page);
+      await study.locator("button").first().click();
+      await expect(study).toHaveAttribute("data-phase5a2-state", "ready");
+      await holdDirectionSelectionVideoState(page);
+      expect(runtimeErrors).toEqual([]);
+    } catch (error) {
+      sequenceError = error;
+      throw error;
+    } finally {
+      try {
+        await recording.stop();
+      } catch (stopError) {
+        if (sequenceError === undefined) throw stopError;
+      }
+    }
   });
 }

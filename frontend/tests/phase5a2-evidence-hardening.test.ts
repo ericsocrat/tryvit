@@ -13,7 +13,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
+import sharp from "sharp";
 
+import { directionSelectionFrameHasVisualContent } from "@/../e2e/helpers/phase5a2-direction-selection";
 import { createDirectionSelectionContactLabelSvg } from "@/../tooling/design-system/direction-selection/contact-label";
 import {
   assertOwnedPathAbsent,
@@ -477,6 +479,37 @@ describe("Phase 5A.2 Playwright WebM verification", () => {
 });
 
 describe("Phase 5A.2 recording contract wiring", () => {
+  it("rejects uniform prepaint frames and admits rendered content", async () => {
+    const uniform = await sharp({
+      create: {
+        width: 32,
+        height: 32,
+        channels: 3,
+        background: { r: 255, g: 255, b: 255 },
+      },
+    }).jpeg().toBuffer();
+    const rendered = await sharp({
+      create: {
+        width: 32,
+        height: 32,
+        channels: 3,
+        background: { r: 255, g: 255, b: 255 },
+      },
+    })
+      .composite([{
+        input: Buffer.from(
+          '<svg width="16" height="16"><rect width="16" height="16" fill="#123456"/></svg>',
+        ),
+        left: 8,
+        top: 8,
+      }])
+      .jpeg()
+      .toBuffer();
+
+    await expect(directionSelectionFrameHasVisualContent(uniform)).resolves.toBe(false);
+    await expect(directionSelectionFrameHasVisualContent(rendered)).resolves.toBe(true);
+  });
+
   const frontendRoot = process.cwd();
   const readFrontend = (relativePath: string): string =>
     readFileSync(path.join(frontendRoot, relativePath), "utf8");
@@ -496,6 +529,58 @@ describe("Phase 5A.2 recording contract wiring", () => {
     expect(motion).not.toContain("await next.click()");
     expect(motion).not.toContain("await restart.click()");
     expect(scanner.match(/holdDirectionSelectionVideoState\(page\)/gu)).toHaveLength(5);
+  });
+
+  it("starts each screencast only after the admitted surface is complete", () => {
+    const config = readFrontend("playwright.config.ts");
+    const helper = readFrontend("e2e/helpers/phase5a2-direction-selection.ts");
+    const motion = readFrontend("e2e/phase5a2-direction-selection-motion.spec.ts");
+    const scanner = readFrontend("e2e/phase5a2-direction-selection-scanner.spec.ts");
+    const projectBlock = config.slice(
+      config.indexOf("const phase5a2DirectionStillsProject"),
+      config.indexOf("const projects ="),
+    );
+    const recordingStart = "startDirectionSelectionRecording(page, capture)";
+
+    expect(projectBlock.match(/video: "off" as const/gu)).toHaveLength(4);
+    expect(projectBlock).not.toContain("video: { mode: \"on\"");
+    expect(helper).toContain("await page.screencast.start({");
+    expect(helper).toContain("await firstFrame;");
+    expect(helper).toContain("route-ready-invalid");
+    expect(helper).toContain("recording-first-frame-invalid");
+    expect(helper).toContain("recording-first-frame-uniform");
+    expect(helper).toContain("directionSelectionFrameHasVisualContent(data)");
+    expect(helper).toContain("DIRECTION_SELECTION_RECORDING_FIRST_FRAME_TIMEOUT_MS");
+    expect(helper).toContain("recording-first-frame-timeout");
+    expect(helper).toContain("clearTimeout(firstFrameTimeout)");
+    expect(helper).toContain("data[0] !== 0xff");
+    expect(helper).toContain("data[1] !== 0xd8");
+    expect(helper).toContain("await page.screencast.stop();");
+    expect(motion.indexOf(recordingStart)).toBeGreaterThan(
+      motion.indexOf("assertDirectionSelectionAxe(page)"),
+    );
+    expect(motion.indexOf(recordingStart)).toBeGreaterThan(
+      motion.indexOf("motion-stage-missing"),
+    );
+    expect(motion.indexOf(recordingStart)).toBeLessThan(
+      motion.indexOf("holdDirectionSelectionVideoState(page)"),
+    );
+    expect(scanner.indexOf(recordingStart)).toBeGreaterThan(
+      scanner.indexOf("assertDirectionSelectionAxe(page)"),
+    );
+    expect(scanner.indexOf(recordingStart)).toBeGreaterThan(
+      scanner.indexOf('toHaveAttribute("data-phase5a2-state", "ready")'),
+    );
+    expect(scanner.indexOf(recordingStart)).toBeLessThan(
+      scanner.indexOf("holdDirectionSelectionVideoState(page)"),
+    );
+    for (const specification of [motion, scanner]) {
+      expect(specification).toContain("} finally {");
+      expect(specification).toContain("await recording.stop();");
+      expect(specification).toContain("if (sequenceError === undefined) throw stopError;");
+    }
+    expect(motion).not.toContain("page.video()");
+    expect(scanner).not.toContain("page.video()");
   });
 
   it("keeps the full-motion runner and hardens media and publication verification", () => {

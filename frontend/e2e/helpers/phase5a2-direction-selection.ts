@@ -3,16 +3,20 @@ import path from "node:path";
 
 import AxeBuilder from "@axe-core/playwright";
 import type { Locator, Page } from "@playwright/test";
+import sharp from "sharp";
 
 import {
   DIRECTION_SELECTION_MAX_PNG_BYTES,
   DIRECTION_SELECTION_MAX_VIDEO_BYTES,
+  DIRECTION_SELECTION_RECORDING_FIRST_FRAME_TIMEOUT_MS,
   DIRECTION_SELECTION_VIDEO_STATE_DWELL_MS,
   directionSelectionRoute,
   getDirectionSelectionCandidateRoot,
+  videoRelativePath,
   type DirectionSelectionCandidate,
   type DirectionSelectionStill,
   type DirectionSelectionVideo,
+  type DIRECTION_SELECTION_VIDEOS,
 } from "@/../tooling/design-system/direction-selection/capture-contract";
 import {
   ensureOwnedDirectory,
@@ -72,15 +76,18 @@ export async function openDirectionSelectionStudy(
     `[data-phase5a2-candidate="${candidate}"][data-phase5a2-surface="${study.surface}"]`,
   );
   await root.waitFor({ state: "attached" });
+  if ((await root.getAttribute("data-phase5a2-ready")) !== "true") {
+    throw new Error("[P5A2_EVIDENCE] route-ready-invalid");
+  }
   if ((await root.getAttribute("data-phase5a2-state")) !== study.state) {
     throw new Error("[P5A2_EVIDENCE] route-state-invalid");
   }
   await page.evaluate(async () => {
     await document.fonts.ready;
+    scrollTo(0, 0);
     await new Promise<void>((resolve) =>
       requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
     );
-    scrollTo(0, 0);
   });
   const overlay = page.locator(
     "[data-nextjs-dialog], .vite-error-overlay, #webpack-dev-server-client-overlay",
@@ -107,6 +114,98 @@ export async function assertDirectionSelectionAxe(page: Page): Promise<void> {
 
 export async function holdDirectionSelectionVideoState(page: Page): Promise<void> {
   await page.waitForTimeout(DIRECTION_SELECTION_VIDEO_STATE_DWELL_MS);
+}
+
+export interface DirectionSelectionRecording {
+  readonly filename: string;
+  stop(): Promise<void>;
+}
+
+type DirectionSelectionVideoCapture = (typeof DIRECTION_SELECTION_VIDEOS)[number];
+
+export async function directionSelectionFrameHasVisualContent(
+  data: Buffer,
+): Promise<boolean> {
+  try {
+    const { channels } = await sharp(data, { failOn: "error" }).stats();
+    const colorChannels = channels.slice(0, 3);
+    return colorChannels.length === 3 &&
+      colorChannels.some(({ min, max }) => min !== max);
+  } catch {
+    return false;
+  }
+}
+
+export async function startDirectionSelectionRecording(
+  page: Page,
+  capture: DirectionSelectionVideoCapture,
+): Promise<DirectionSelectionRecording> {
+  const filename = candidateOutputPath(videoRelativePath(capture));
+  let firstFrameSettled = false;
+  let firstFrameValidationStarted = false;
+  let resolveFirstFrame: (() => void) | undefined;
+  let rejectFirstFrame: ((error: Error) => void) | undefined;
+  const firstFrame = new Promise<void>((resolve, reject) => {
+    resolveFirstFrame = resolve;
+    rejectFirstFrame = reject;
+  });
+
+  await page.screencast.start({
+    path: filename,
+    size: { width: capture.width, height: capture.height },
+    onFrame: async ({ data, viewportWidth, viewportHeight }) => {
+      if (firstFrameSettled || firstFrameValidationStarted) return;
+      firstFrameValidationStarted = true;
+      if (
+        data.length < 2 ||
+        data[0] !== 0xff ||
+        data[1] !== 0xd8 ||
+        viewportWidth !== capture.width ||
+        viewportHeight !== capture.height
+      ) {
+        firstFrameSettled = true;
+        rejectFirstFrame?.(new Error("[P5A2_EVIDENCE] recording-first-frame-invalid"));
+        return;
+      }
+      const hasVisualContent = await directionSelectionFrameHasVisualContent(data);
+      if (firstFrameSettled) return;
+      firstFrameSettled = true;
+      if (!hasVisualContent) {
+        rejectFirstFrame?.(new Error("[P5A2_EVIDENCE] recording-first-frame-uniform"));
+        return;
+      }
+      resolveFirstFrame?.();
+    },
+  });
+
+  const firstFrameTimeout = setTimeout(() => {
+    if (firstFrameSettled) return;
+    firstFrameSettled = true;
+    rejectFirstFrame?.(new Error("[P5A2_EVIDENCE] recording-first-frame-timeout"));
+  }, DIRECTION_SELECTION_RECORDING_FIRST_FRAME_TIMEOUT_MS);
+  try {
+    await firstFrame;
+  } catch (error) {
+    try {
+      await page.screencast.stop();
+    } catch {
+      // Preserve the admission failure; context teardown still owns final cleanup.
+    }
+    throw error;
+  } finally {
+    clearTimeout(firstFrameTimeout);
+  }
+
+  let stopped = false;
+  return Object.freeze({
+    filename,
+    async stop() {
+      if (stopped) throw new Error("[P5A2_EVIDENCE] recording-already-stopped");
+      stopped = true;
+      await page.screencast.stop();
+      assertCandidateFileBound(filename, "video");
+    },
+  });
 }
 
 export async function settleDirectionSelectionMotionSurface(study: Locator): Promise<number> {
