@@ -299,6 +299,7 @@
 
 .darkSpecimen {
   --oc-accent: #ff806a;
+  --oc-muted: #fffaf0;
   color: #fffaf0;
   background: #302036;
 }
@@ -1606,6 +1607,10 @@
     color: CanvasText;
     background: Canvas;
     forced-color-adjust: none;
+  }
+
+  .darkSpecimen {
+    --oc-muted: CanvasText;
   }
 
   .root a,

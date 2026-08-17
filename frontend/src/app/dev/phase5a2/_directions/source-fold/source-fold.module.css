@@ -6,6 +6,7 @@
   --sf-forest: #1f5b42;
   --sf-forest-deep: #123d2c;
   --sf-rust: #a64b2a;
+  --sf-rust-on-wash: #8e3d22;
   --sf-rule: #9a8f7d;
   --sf-wash: #dce5d8;
   --color-canvas: var(--sf-oat);
@@ -45,6 +46,7 @@
   --sf-forest: #9fc8a8;
   --sf-forest-deep: #c1dfc4;
   --sf-rust: #ef9d75;
+  --sf-rust-on-wash: #ef9d75;
   --sf-rule: #718077;
   --sf-wash: #294336;
 }
@@ -738,6 +740,10 @@
   color: var(--sf-ink-soft);
 }
 
+.scoreFold > span {
+  color: var(--sf-rust-on-wash);
+}
+
 .productGrid {
   display: grid;
   grid-template-columns: 12rem minmax(0, 1fr) 15rem;
@@ -1163,6 +1169,7 @@
     --sf-forest: LinkText;
     --sf-forest-deep: CanvasText;
     --sf-rust: Highlight;
+    --sf-rust-on-wash: Highlight;
     --sf-rule: CanvasText;
     --sf-wash: Canvas;
   }

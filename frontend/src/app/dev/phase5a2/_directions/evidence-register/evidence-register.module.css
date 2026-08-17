@@ -9,6 +9,7 @@
   --register-cobalt: #173f95;
   --register-cobalt-deep: #0f2d70;
   --register-copper: #a94e29;
+  --register-copper-strong: #8f3d1d;
   --register-copper-soft: #f0d2c3;
   --color-canvas: var(--register-canvas);
   --color-canvas-subtle: var(--register-paper-2);
@@ -80,6 +81,7 @@
   --register-cobalt: #8eabff;
   --register-cobalt-deep: #adc0ff;
   --register-copper: #f2a271;
+  --register-copper-strong: #f2a271;
   --register-copper-soft: #5f2f22;
   --color-content-secondary: #d5dbea;
   --color-interaction-hover: #253655;
@@ -834,6 +836,10 @@
   font-size: 0.88rem;
 }
 
+.sourceNote > span {
+  color: var(--register-copper-strong);
+}
+
 .product {
   width: min(100% - 3rem, 80rem);
   margin-inline: auto;
@@ -917,7 +923,7 @@
 }
 
 .scoreRegister > span {
-  color: var(--register-copper);
+  color: var(--register-copper-strong);
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1576,6 +1582,7 @@
     --register-cobalt: LinkText;
     --register-cobalt-deep: LinkText;
     --register-copper: Highlight;
+    --register-copper-strong: Highlight;
     --register-copper-soft: Canvas;
     --color-action-primary-background: ButtonFace;
     --color-action-primary-foreground: ButtonText;
