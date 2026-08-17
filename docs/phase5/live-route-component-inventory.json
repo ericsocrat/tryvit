@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "040baae678d39105a5c1ef0aa09dec5090981f61",
+    "baseSha": "dafae77d5ad73e68dbd89c5cac4aa59f98ebec29",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "ae4064a0f0c88f535d897d2407bf7f19dfdfc9ae670af7aadf2bbdeed508aeef"
+    "sourceFingerprint": "2db0fe62b882f068fdee1ef346f1597a1f3a7182c046b98320f0dd063b762928"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12,9 +12,9 @@
     "frontend/src/design-system"
   ],
   "moduleCounts": {
-    "total": 395,
-    "route-module": 87,
-    "app-support-module": 43,
+    "total": 409,
+    "route-module": 90,
+    "app-support-module": 54,
     "shared-component-module": 196,
     "design-system-module": 69
   },
@@ -3082,6 +3082,450 @@
       "migrationGate": "phase-5a1b-entry-and-facade-verification",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "mixed",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+      "classification": "route-module",
+      "routeModuleKind": "page",
+      "routePath": "/dev/phase5a2/[candidate]/[surface]",
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_directions/evidence-register/EvidenceRegister.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/open-core/OpenCore.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/ReviewFrame.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/contract.ts",
+        "frontend/src/app/dev/phase5a2/phase5a2-gate.ts"
+      ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_directions/evidence-register/EvidenceRegister.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_shared/MotionStudy.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/ProductLookup.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/ScannerStudy.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/contract.ts",
+        "frontend/src/app/dev/phase5a2/_shared/fixture.ts",
+        "frontend/src/app/dev/phase5a2/_shared/messages.ts",
+        "frontend/src/design-system/primitives/Surface/Surface.tsx",
+        "frontend/src/design-system/primitives/Tabs/index.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_directions/open-core/OpenCore.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_shared/MotionStudy.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/ProductLookup.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/ScannerStudy.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/contract.ts",
+        "frontend/src/app/dev/phase5a2/_shared/fixture.ts",
+        "frontend/src/app/dev/phase5a2/_shared/messages.ts",
+        "frontend/src/design-system/primitives/Surface/Surface.tsx",
+        "frontend/src/design-system/primitives/Tabs/index.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_shared/MotionStudy.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/ProductLookup.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/ScannerStudy.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/contract.ts",
+        "frontend/src/app/dev/phase5a2/_shared/fixture.ts",
+        "frontend/src/app/dev/phase5a2/_shared/messages.ts",
+        "frontend/src/design-system/primitives/Surface/Surface.tsx",
+        "frontend/src/design-system/primitives/Tabs/index.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_shared/MotionStudy.client.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/design-system/primitives/Button/Button.tsx"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_directions/evidence-register/EvidenceRegister.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/open-core/OpenCore.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_shared/ProductLookup.client.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/design-system/primitives/Combobox/index.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_directions/evidence-register/EvidenceRegister.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/open-core/OpenCore.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/messages.ts"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_shared/ReviewFrame.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_shared/contract.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_shared/ScannerStudy.client.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/design-system/primitives/Button/Button.tsx",
+        "frontend/src/design-system/primitives/Field/index.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_directions/evidence-register/EvidenceRegister.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/open-core/OpenCore.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/messages.ts"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_shared/contract.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/evidence-register/EvidenceRegister.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/open-core/OpenCore.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/ReviewFrame.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/messages.ts"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_shared/fixture.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_directions/evidence-register/EvidenceRegister.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/open-core/OpenCore.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_shared/messages.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_shared/ProductLookup.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/ScannerStudy.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/contract.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_directions/evidence-register/EvidenceRegister.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/open-core/OpenCore.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/layout.tsx",
+      "classification": "route-module",
+      "routeModuleKind": "layout",
+      "routePath": "/dev/phase5a2",
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/layout.tsx",
+          "routeModuleKind": "layout",
+          "routePath": "/dev/phase5a2"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/page.tsx",
+      "classification": "route-module",
+      "routeModuleKind": "page",
+      "routePath": "/dev/phase5a2",
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/phase5a2-gate.ts"
+      ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/phase5a2-gate.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+        "frontend/src/app/dev/phase5a2/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
       "classifiedLegacyDebt": []
     },
     {
@@ -17207,6 +17651,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -17297,6 +17746,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -17374,6 +17828,8 @@
         "frontend/src/app/dev/components/catalog/ButtonActivationProbe.client.tsx",
         "frontend/src/app/dev/components/catalog/EvidencePageStatesScene.tsx",
         "frontend/src/app/dev/components/catalog/OverlayNavigationProbes.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/MotionStudy.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/ScannerStudy.client.tsx",
         "frontend/src/design-system/primitives/Button/Button.type-contract.ts",
         "frontend/src/design-system/primitives/IconButton/IconButton.tsx"
       ],
@@ -17382,6 +17838,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -17490,6 +17951,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -17534,13 +18000,19 @@
       ],
       "directConsumers": [
         "frontend/src/app/dev/components/catalog/CatalogCombobox.client.tsx",
-        "frontend/src/app/dev/components/catalog/OverlayNavigationProbes.client.tsx"
+        "frontend/src/app/dev/components/catalog/OverlayNavigationProbes.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/ProductLookup.client.tsx"
       ],
       "transitiveRouteConsumers": [
         {
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -17571,6 +18043,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -17619,6 +18096,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -17643,6 +18125,7 @@
       "directConsumers": [
         "frontend/src/app/dev/components/catalog/ActionsFormsScene.tsx",
         "frontend/src/app/dev/components/catalog/CatalogSwitch.client.tsx",
+        "frontend/src/app/dev/phase5a2/_shared/ScannerStudy.client.tsx",
         "frontend/src/design-system/primitives/Combobox/Combobox.tsx"
       ],
       "transitiveRouteConsumers": [
@@ -17650,6 +18133,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -17896,6 +18384,9 @@
       "directConsumers": [
         "frontend/src/app/dev/components/catalog/EvidencePageStatesScene.tsx",
         "frontend/src/app/dev/components/catalog/FoundationsScene.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/evidence-register/EvidenceRegister.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/open-core/OpenCore.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx",
         "frontend/src/design-system/primitives/Surface/Surface.type-contract.ts"
       ],
       "transitiveRouteConsumers": [
@@ -17903,6 +18394,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -17954,6 +18450,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -17976,13 +18477,21 @@
         "frontend/src/design-system/primitives/Tabs/Tabs.tsx"
       ],
       "directConsumers": [
-        "frontend/src/app/dev/components/catalog/OverlayNavigationProbes.client.tsx"
+        "frontend/src/app/dev/components/catalog/OverlayNavigationProbes.client.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/evidence-register/EvidenceRegister.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/open-core/OpenCore.tsx",
+        "frontend/src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx"
       ],
       "transitiveRouteConsumers": [
         {
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -18091,6 +18600,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -18121,6 +18635,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -18172,6 +18691,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -18200,6 +18724,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -18229,6 +18758,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -18259,6 +18793,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/[candidate]/[surface]"
         }
       ],
       "targetRedesignPhases": [
@@ -19557,9 +20096,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 500,
+    "inspectedModuleCount": 514,
     "violations": [],
-    "sourceFingerprint": "13a41c0c5fd2d92f088bd277caf7108c97b8064008932db573a34267541c5e3b"
+    "sourceFingerprint": "f24471174e7a294fe30000db4277acc913a518a9cd6323d55d653865fbab3496"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

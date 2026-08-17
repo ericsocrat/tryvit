@@ -1,0 +1,112 @@
+.environment {
+  min-block-size: 100vh;
+  background: #161616;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: minmax(13rem, 0.55fr) minmax(0, 1.45fr);
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  color: #f6f4ef;
+  background: #161616;
+  border-block-end: 1px solid #575757;
+  font: 500 0.75rem/1.35 "Segoe UI", Arial, sans-serif;
+}
+
+.controlHeading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  align-items: baseline;
+}
+
+.controlHeading p,
+.controlHeading strong,
+.controlHeading span {
+  margin: 0;
+}
+
+.controlHeading strong {
+  color: #fff;
+}
+
+.controlHeading span {
+  color: #bababa;
+}
+
+.controlGroups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  justify-content: flex-end;
+}
+
+.controlGroups > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.controlGroups span {
+  margin-inline-end: 0.25rem;
+  color: #a8a8a8;
+}
+
+.controlGroups a {
+  display: inline-flex;
+  min-block-size: 2.75rem;
+  align-items: center;
+  padding: 0.35rem 0.5rem;
+  color: #f6f4ef;
+  border: 1px solid #5e5e5e;
+  text-decoration: none;
+}
+
+.controlGroups a[aria-current="page"] {
+  color: #101010;
+  background: #f6f4ef;
+  border-color: #f6f4ef;
+}
+
+.controlGroups a:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .controls {
+    grid-template-columns: 1fr;
+  }
+
+  .controlGroups {
+    justify-content: flex-start;
+  }
+}
+
+@media (forced-colors: active) {
+  .environment,
+  .controls {
+    color: CanvasText;
+    background: Canvas;
+    border-color: CanvasText;
+  }
+
+  .controlGroups a {
+    color: LinkText;
+    background: Canvas;
+    border-color: LinkText;
+  }
+
+  .controlGroups a[aria-current="page"] {
+    color: HighlightText;
+    background: Highlight;
+    border-color: Highlight;
+    forced-color-adjust: none;
+  }
+
+  .controlGroups a:focus-visible {
+    outline-color: Highlight;
+  }
+}

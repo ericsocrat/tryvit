@@ -37,6 +37,8 @@
     "phase5:route-js:public": "npm run visual-safety:public -- --project=phase5-route-js-public --reporter=list",
     "phase5:route-js:authenticated": "npm run visual-safety:local-authenticated -- --project=phase5-route-js-authenticated --reporter=list",
     "phase5:cross-browser": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/cross-browser/run.mts",
+    "phase5:direction-review": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/direction-selection/run.mts",
+    "phase5:direction-stage": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/direction-selection/stage-evidence.mts",
     "phase5:lighthouse:report": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/phase5a0d-lighthouse-cli.mts aggregate",
     "phase5:visual:generate:public": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts phase5-visual-generate public",
     "phase5:visual:generate:authenticated": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts phase5-visual-generate local-authenticated",
@@ -48,7 +50,7 @@
     "design-system:tokens:generate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/tokens/generate.mts",
     "design-system:tokens:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/tokens/generate.mts --check",
     "design-system:inventory:generate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/phase5a1a-live-inventory-cli.mts",
-    "design-system:check": "npm run design-system:tokens:check && vitest run src/design-system tests/catalog-scroll-quiescence.test.ts tests/phase5a1a-live-inventory.test.ts tests/phase5a1-catalog-contract.test.ts tests/phase5a1-catalog-gate.test.ts tests/phase5a2-cross-browser-admission.test.ts",
+    "design-system:check": "npm run design-system:tokens:check && vitest run src/design-system tests/catalog-scroll-quiescence.test.ts tests/phase5a1a-live-inventory.test.ts tests/phase5a1-catalog-contract.test.ts tests/phase5a1-catalog-gate.test.ts tests/phase5a2-cross-browser-admission.test.ts tests/phase5a2-direction-behavior-contract.test.ts tests/phase5a2-direction-selection.test.tsx tests/phase5a2-evidence-hardening.test.ts",
     "phase5:catalog": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/catalog/run.mts",
     "optimize:svg": "svgo -r -f public/icons --config svgo.config.js"
   },
