@@ -20,6 +20,7 @@ import {
   ensureOwnedDirectory,
   prepareOwnedFileTarget,
   publishOwnedDirectory,
+  readOwnedRegularFile,
   removeOwnedDirectory,
   sha256CanonicalLf,
 } from "@/../tooling/design-system/direction-selection/evidence-safety";
@@ -226,6 +227,9 @@ describe("Phase 5A.2 evidence filesystem containment", () => {
     expect(() =>
       removeOwnedDirectory(root, ["test-results", "candidate"], "test-reparse"),
     ).toThrow(/reparse/u);
+    expect(() =>
+      readOwnedRegularFile(root, "test-results/sentinel.txt", "test-reparse", 64),
+    ).toThrow(/reparse/u);
     expect(readFileSync(sentinel, "utf8")).toBe("preserve");
     unlinkSync(path.join(root, "test-results"));
   });
@@ -248,6 +252,21 @@ describe("Phase 5A.2 evidence filesystem containment", () => {
     expect(() => assertOwnedPathAbsent(parent, ["evidence"], "test-absent")).toThrow(
       /target-exists/u,
     );
+  });
+
+  it("reads bounded evidence from one verified descriptor snapshot", () => {
+    const root = temporaryDirectory();
+    const owned = ensureOwnedDirectory(root, ["test-results", "candidate"], "test-owned");
+    const filename = prepareOwnedFileTarget(owned, "recording.webm", "test-snapshot");
+    const expected = Buffer.from("verified evidence", "utf8");
+    writeFileSync(filename, expected, { flag: "wx" });
+
+    expect(
+      readOwnedRegularFile(owned, "recording.webm", "test-snapshot", expected.length),
+    ).toEqual({ contents: expected });
+    expect(() =>
+      readOwnedRegularFile(owned, "recording.webm", "test-snapshot", expected.length - 1),
+    ).toThrow(/target-invalid/u);
   });
 
   it("canonicalizes checkout line endings before hashing", () => {
@@ -481,6 +500,7 @@ describe("Phase 5A.2 recording contract wiring", () => {
 
   it("keeps the full-motion runner and hardens media and publication verification", () => {
     const runner = readFrontend("tooling/design-system/direction-selection/run.mts");
+    const safety = readFrontend("tooling/design-system/direction-selection/evidence-safety.ts");
     const verifier = readFrontend("tooling/design-system/direction-selection/verify-candidates.mts");
     const stager = readFrontend("tooling/design-system/direction-selection/stage-evidence.mts");
     expect(runner).toContain('NEXT_PUBLIC_QA_MODE: "0"');
@@ -492,12 +512,25 @@ describe("Phase 5A.2 recording contract wiring", () => {
       runner.indexOf('path.join(toolingDirectory, "verify-candidates.mts")'),
     );
     expect(runner).not.toMatch(/git[^\n]*(?:checkout|restore)/u);
+    expect(safety).toContain("O_NOFOLLOW");
+    expect(safety).toContain("fstatSync(descriptor, { bigint: true })");
+    expect(safety).toContain("lstatSync(resolved, { bigint: true })");
+    expect(safety).toContain("readSync(");
+    expect(safety).toContain("closeSync(descriptor)");
     expect(verifier).toContain("verifyPlaywrightWebm");
+    expect(verifier).toContain("readOwnedRegularFile");
+    expect(verifier).toContain("fileContents");
+    expect(verifier).not.toContain("readFileSync(filename)");
+    expect(verifier).not.toContain("statSync(filename)");
+    expect(verifier).not.toContain("sharp(filename)");
     expect(stager).toContain("sha256CanonicalLf");
     expect(stager).toContain("publishOwnedDirectory");
+    expect(stager).toContain("verified.fileContents");
+    expect(stager).toContain("readOwnedRegularFile");
     expect(stager).toContain("sharp.cache(false)");
     expect(stager).toContain("sharp.versions.vips");
     expect(stager).not.toContain("<text");
     expect(stager).not.toContain("cpSync(");
+    expect(stager).not.toContain("copyFileSync");
   });
 });

@@ -1,12 +1,18 @@
 import { createHash } from "node:crypto";
 import {
+  closeSync,
+  constants as fsConstants,
   existsSync,
+  fstatSync,
   lstatSync,
   mkdirSync,
+  openSync,
   readFileSync,
+  readSync,
   realpathSync,
   renameSync,
   rmSync,
+  type BigIntStats,
   type Stats,
 } from "node:fs";
 import path from "node:path";
@@ -173,6 +179,123 @@ export function assertOwnedRegularFile(
     fail(code, "reparse");
   }
   return target;
+}
+
+export interface OwnedRegularFileSnapshot {
+  readonly contents: Buffer;
+}
+
+function sameFileIdentity(left: BigIntStats, right: BigIntStats): boolean {
+  return (
+    left.dev === right.dev &&
+    left.ino === right.ino &&
+    left.mode === right.mode
+  );
+}
+
+function sameFileSnapshot(left: BigIntStats, right: BigIntStats): boolean {
+  return (
+    sameFileIdentity(left, right) &&
+    left.size === right.size &&
+    left.mtimeNs === right.mtimeNs &&
+    left.ctimeNs === right.ctimeNs
+  );
+}
+
+function canonicalRegularFileSnapshot(
+  root: string,
+  target: string,
+  code: string,
+): BigIntStats {
+  let resolved: string;
+  try {
+    resolved = realpathSync.native(target);
+  } catch {
+    fail(code, "target-raced");
+  }
+  if (!isWithin(root, resolved) || comparable(resolved) !== comparable(target)) {
+    fail(code, "reparse");
+  }
+
+  let entry: BigIntStats;
+  try {
+    entry = lstatSync(resolved, { bigint: true });
+  } catch {
+    fail(code, "target-raced");
+  }
+  if (entry.isSymbolicLink() || !entry.isFile()) fail(code, "target-raced");
+  return entry;
+}
+
+export function readOwnedRegularFile(
+  rootDirectory: string,
+  relativePath: string,
+  code: string,
+  maximumBytes = Number.MAX_SAFE_INTEGER,
+): OwnedRegularFileSnapshot {
+  if (!Number.isSafeInteger(maximumBytes) || maximumBytes < 0) {
+    fail(code, "size-limit-invalid");
+  }
+  const segments = relativeSegments(relativePath, code);
+  const root = assertSafeDirectoryRoot(rootDirectory, `${code}-root`);
+  const parent = segments.length === 1
+    ? root
+    : assertOwnedDirectory(root, segments.slice(0, -1), `${code}-parent`);
+  const target = path.join(parent, segments.at(-1) as string);
+  if (!isWithin(root, target)) fail(code, "path-invalid");
+
+  let descriptor: number;
+  try {
+    const noFollow = typeof fsConstants.O_NOFOLLOW === "number"
+      ? fsConstants.O_NOFOLLOW
+      : 0;
+    descriptor = openSync(target, fsConstants.O_RDONLY | noFollow);
+  } catch {
+    fail(code, "target-unreadable");
+  }
+
+  try {
+    const opened = fstatSync(descriptor, { bigint: true });
+    if (!opened.isFile() || opened.size > BigInt(maximumBytes)) {
+      fail(code, "target-invalid");
+    }
+
+    const entry = canonicalRegularFileSnapshot(root, target, code);
+    if (!sameFileSnapshot(opened, entry)) {
+      fail(code, "target-raced");
+    }
+
+    const expectedBytes = Number(opened.size);
+    const contents = Buffer.alloc(expectedBytes);
+    let offset = 0;
+    while (offset < expectedBytes) {
+      const bytesRead = readSync(
+        descriptor,
+        contents,
+        offset,
+        expectedBytes - offset,
+        offset,
+      );
+      if (bytesRead === 0) fail(code, "target-raced");
+      offset += bytesRead;
+    }
+    if (readSync(descriptor, Buffer.alloc(1), 0, 1, expectedBytes) !== 0) {
+      fail(code, "target-raced");
+    }
+    const completed = fstatSync(descriptor, { bigint: true });
+    const finalEntry = canonicalRegularFileSnapshot(root, target, code);
+    if (
+      !sameFileSnapshot(opened, completed) ||
+      !sameFileSnapshot(completed, finalEntry) ||
+      BigInt(contents.length) !== completed.size ||
+      contents.length > maximumBytes
+    ) {
+      fail(code, "target-raced");
+    }
+    return { contents };
+  } finally {
+    closeSync(descriptor);
+  }
 }
 
 export function assertOwnedPathAbsent(

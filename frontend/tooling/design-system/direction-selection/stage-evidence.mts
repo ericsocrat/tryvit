@@ -1,11 +1,7 @@
 import { createHash } from "node:crypto";
 import {
-  constants as fsConstants,
-  copyFileSync,
   mkdtempSync,
-  readFileSync,
   readdirSync,
-  statSync,
   writeFileSync,
 } from "node:fs";
 import path from "node:path";
@@ -32,11 +28,11 @@ import { createDirectionSelectionContactLabelSvg } from "./contact-label.ts";
 import {
   assertOwnedDirectory,
   assertOwnedPathAbsent,
-  assertOwnedRegularFile,
   assertSafeDirectoryRoot,
   ensureOwnedDirectory,
   prepareOwnedFileTarget,
   publishOwnedDirectory,
+  readOwnedRegularFile,
   removeOwnedDirectory,
   sha256CanonicalLf,
 } from "./evidence-safety.ts";
@@ -70,8 +66,8 @@ function fail(code: string): never {
   throw new Error(`[P5A2_EVIDENCE] ${code}`);
 }
 
-function sha256(filename: string): string {
-  return createHash("sha256").update(readFileSync(filename)).digest("hex");
+function sha256(contents: Buffer): string {
+  return createHash("sha256").update(contents).digest("hex");
 }
 
 function outputPath(root: string, relativePath: string): string {
@@ -80,7 +76,7 @@ function outputPath(root: string, relativePath: string): string {
 
 async function createContactSheet(
   stageRoot: string,
-  candidateRoot: string,
+  candidateContents: ReadonlyMap<string, Buffer>,
   contact: (typeof DIRECTION_SELECTION_CONTACT_SHEETS)[number],
 ): Promise<StagedFile> {
   const captures = DIRECTION_SELECTION_STILLS.filter(({ id }) => id === contact.id);
@@ -94,11 +90,8 @@ async function createContactSheet(
   const composites: sharp.OverlayOptions[] = [];
 
   for (const [index, capture] of captures.entries()) {
-    const source = assertOwnedRegularFile(
-      candidateRoot,
-      stillRelativePath(capture),
-      "contact-sheet-source",
-    );
+    const source = candidateContents.get(stillRelativePath(capture));
+    if (!source) fail("contact-sheet-source-missing");
     const input = await sharp(source)
       .resize(cellWidth, cellHeight, { fit: "fill" })
       .png({ compressionLevel: 9 })
@@ -118,7 +111,7 @@ async function createContactSheet(
 
   const relativePath = contactSheetRelativePath(contact);
   const filename = outputPath(stageRoot, relativePath);
-  await sharp({
+  const { data, info } = await sharp({
     create: {
       width: cellWidth * captures.length,
       height: cellHeight + labelHeight,
@@ -128,32 +121,31 @@ async function createContactSheet(
   })
     .composite(composites)
     .png({ compressionLevel: 9, palette: true, quality: 92, colours: 256, dither: 0.5 })
-    .toFile(filename);
-  const metadata = await sharp(filename).metadata();
+    .toBuffer({ resolveWithObject: true });
+  writeFileSync(filename, data, { flag: "wx", mode: 0o600 });
   return {
     path: relativePath,
     kind: "contact-sheet",
-    bytes: statSync(filename).size,
-    sha256: sha256(filename),
+    bytes: data.length,
+    sha256: sha256(data),
     viewport: { width: contact.width, height: contact.height },
     encodedDimensions: {
-      width: metadata.width ?? 0,
-      height: metadata.height ?? 0,
+      width: info.width,
+      height: info.height,
     },
   };
 }
 
 function copyCandidateFile(
   stageRoot: string,
-  candidateRoot: string,
   file: VerifiedCandidateFile,
+  contents: Buffer,
 ): void {
-  const source = assertOwnedRegularFile(candidateRoot, file.path, "candidate-copy-source");
-  const destination = outputPath(stageRoot, file.path);
-  copyFileSync(source, destination, fsConstants.COPYFILE_EXCL);
-  if (statSync(destination).size !== file.bytes || sha256(destination) !== file.sha256) {
-    fail("staged-copy-invalid");
+  if (contents.length !== file.bytes || sha256(contents) !== file.sha256) {
+    fail("candidate-copy-snapshot-invalid");
   }
+  const destination = outputPath(stageRoot, file.path);
+  writeFileSync(destination, contents, { flag: "wx", mode: 0o600 });
 }
 
 const verified = await verifyDirectionSelectionCandidates();
@@ -184,7 +176,11 @@ assertOwnedDirectory(destinationParent, [stageBasename], "temporary-stage");
 let published = false;
 
 try {
-  for (const file of verified.files) copyCandidateFile(stageRoot, verified.root, file);
+  for (const file of verified.files) {
+    const contents = verified.fileContents.get(file.path);
+    if (!contents) fail("candidate-copy-snapshot-missing");
+    copyCandidateFile(stageRoot, file, contents);
+  }
 
   const files: StagedFile[] = [];
   const candidateFiles = new Map(verified.files.map((file) => [file.path, file]));
@@ -232,7 +228,7 @@ try {
     });
   }
   for (const contact of DIRECTION_SELECTION_CONTACT_SHEETS) {
-    files.push(await createContactSheet(stageRoot, verified.root, contact));
+    files.push(await createContactSheet(stageRoot, verified.fileContents, contact));
   }
   files.sort((left, right) => left.path < right.path ? -1 : left.path > right.path ? 1 : 0);
   if (files.length !== DIRECTION_SELECTION_BINARY_COUNT) {
@@ -317,21 +313,32 @@ try {
   ) {
     fail("staged-file-matrix-invalid");
   }
-  const packageBytes = stagedFiles.reduce(
-    (sum, relativePath) =>
-      sum + statSync(assertOwnedRegularFile(stageRoot, relativePath, "staged-package-file")).size,
-    0,
-  );
+  const stagedContents = new Map<string, Buffer>();
+  let packageBytes = 0;
+  for (const relativePath of stagedFiles) {
+    const contents = readOwnedRegularFile(
+      stageRoot,
+      relativePath,
+      "staged-package-file",
+      DIRECTION_SELECTION_MAX_PACKAGE_BYTES,
+    ).contents;
+    stagedContents.set(relativePath, contents);
+    packageBytes += contents.length;
+  }
   if (packageBytes > DIRECTION_SELECTION_MAX_PACKAGE_BYTES) {
     fail("staged-package-size-invalid");
   }
   for (const file of files) {
-    const filename = assertOwnedRegularFile(stageRoot, file.path, "staged-file");
-    if (statSync(filename).size !== file.bytes || sha256(filename) !== file.sha256) {
+    const contents = stagedContents.get(file.path);
+    if (
+      !contents ||
+      contents.length !== file.bytes ||
+      sha256(contents) !== file.sha256
+    ) {
       fail("staged-file-integrity-invalid");
     }
   }
-  assertOwnedRegularFile(stageRoot, "manifest.json", "staged-manifest");
+  if (!stagedContents.has("manifest.json")) fail("staged-manifest-missing");
 
   // libvips can retain cached file handles after metadata reads, which prevents
   // the populated staging directory from being atomically renamed on Windows.
