@@ -165,7 +165,7 @@ async function assertNoClippedText(page: Page): Promise<void> {
 function durationToMilliseconds(value: string): number {
   const normalized = value.trim();
   if (normalized === "0") return 0;
-  const match = /^(\d*\.?\d+)(ms|s)$/u.exec(normalized);
+  const match = /^([+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)(ms|s)$/iu.exec(normalized);
   if (!match) return Number.POSITIVE_INFINITY;
   const amount = Number(match[1]);
   return match[2] === "s" ? amount * 1_000 : amount;

@@ -58,6 +58,7 @@ describe("Phase 5A.2 direction behavior admission contract", () => {
     expect(specification).toContain("PHASE5A2_FIXTURE.ean");
     expect(specification).toContain('data-phase5a2-state", "processing"');
     expect(specification).toContain("maximumMotionDuration");
+    expect(specification).toContain("(?:e[+-]?\\d+)?");
     expect(specification).toContain("style.animationDelay");
     expect(specification).toContain("style.transitionDelay");
     for (const width of [320, 640, 768, 1024, 1280, 1440]) {
