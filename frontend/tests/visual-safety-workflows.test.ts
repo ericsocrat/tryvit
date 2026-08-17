@@ -940,7 +940,27 @@ describe("browser workflow visual-safety contract", () => {
     );
 
     expect(workflowSources.nightly).toContain('PHASE5A1_CATALOG: "1"');
-    expect(workflowSources.nightly).toContain('NEXT_PUBLIC_QA_MODE: "1"');
+    const nightlyTopLevel = workflowSources.nightly.slice(
+      0,
+      workflowSources.nightly.indexOf("\njobs:"),
+    );
+    const nightlyUnitStep = browserJobs.nightly.slice(
+      browserJobs.nightly.indexOf("- name: Unit tests with coverage"),
+      browserJobs.nightly.indexOf("- name: Get Playwright version"),
+    );
+    const nightlyPublicSuite = browserJobs.nightly.slice(
+      browserJobs.nightly.indexOf("- name: Public Playwright suite"),
+      browserJobs.nightly.indexOf("- name: Assert public visual safety"),
+    );
+    const nightlyAuthenticatedSuite = browserJobs.nightly.slice(
+      browserJobs.nightly.indexOf("- name: Local-authenticated Playwright suite"),
+      browserJobs.nightly.indexOf("- name: Verify Phase 5A.1 catalog candidate manifest"),
+    );
+    expect(nightlyTopLevel).not.toContain("NEXT_PUBLIC_QA_MODE");
+    expect(nightlyUnitStep).not.toContain("NEXT_PUBLIC_QA_MODE");
+    expect(nightlyPublicSuite).toContain('NEXT_PUBLIC_QA_MODE: "1"');
+    expect(nightlyAuthenticatedSuite).toContain('NEXT_PUBLIC_QA_MODE: "1"');
+    expect(browserJobs.nightly.match(/NEXT_PUBLIC_QA_MODE: "1"/gu)).toHaveLength(2);
     expect(browserJobs.nightly).toContain("--project=phase5a1-catalog");
     expect(workflowSources.nightly).toContain(
       "PHASE5A1_CATALOG_SOURCE_SHA: ${{ github.sha }}",
