@@ -369,7 +369,8 @@ describe("browser workflow visual-safety contract", () => {
   it("hard-binds the catalog fixture seeder to the configured guarded loopback runtime", () => {
     expect(fixtureSeederSource).toContain('VISUAL_SAFETY_MODE !== "local-authenticated"');
     expect(fixtureSeederSource).toContain("canonicalizeLoopbackOrigin(SUPABASE_URL)");
-    expect(fixtureSeederSource).toContain("discoverLocalSupabaseOrigin");
+    expect(fixtureSeederSource).toContain("process.env.VISUAL_SAFETY_SUPABASE_ORIGIN");
+    expect(fixtureSeederSource).not.toContain("discoverLocalSupabaseOrigin");
     expect(fixtureSeederSource).toContain("requestedOrigin !== configuredOrigin");
     expect(fixtureSeederSource).toContain("createGuardedFetch");
     expect(fixtureSeederSource).toContain("global: { fetch: guardedFetch }");
@@ -842,7 +843,7 @@ describe("browser workflow visual-safety contract", () => {
   });
 
   it("derives authenticated credentials only from the guarded local runtime", () => {
-    expect(safetyCliSource).toContain('["status", "-o", "env", "--workdir", repositoryRoot]');
+    expect(safetyCliSource).toContain('["status", "-o", "env", "--workdir", runtime.root]');
     expect(safetyCliSource).not.toMatch(
       /process\.env\.(?:NEXT_PUBLIC_SUPABASE_ANON_KEY|SUPABASE_SERVICE_ROLE_KEY|QA_TEST_EMAIL|QA_TEST_PASSWORD)\s*\?\?/u,
     );
