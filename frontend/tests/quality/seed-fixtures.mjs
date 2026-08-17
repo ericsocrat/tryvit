@@ -22,15 +22,14 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
-import { fileURLToPath } from "node:url";
 import ws from "ws";
 
 // Node's type-stripping loader is provided by the visual-safety launcher.
 // @ts-expect-error TS source is intentionally imported by this guarded test tool.
+// eslint-disable-next-line no-restricted-imports -- guarded tool imports the safety core outside src
 import {
   canonicalizeLoopbackOrigin,
   createGuardedFetch,
-  discoverLocalSupabaseOrigin,
 } from "../../e2e/helpers/visual-safety.ts";
 
 /* ── Environment ─────────────────────────────────────────────────────────── */
@@ -78,10 +77,8 @@ let requestedOrigin;
 let configuredOrigin;
 try {
   requestedOrigin = canonicalizeLoopbackOrigin(SUPABASE_URL).origin;
-  configuredOrigin = (
-    await discoverLocalSupabaseOrigin(
-      fileURLToPath(new URL("../../../supabase/config.toml", import.meta.url)),
-    )
+  configuredOrigin = canonicalizeLoopbackOrigin(
+    process.env.VISUAL_SAFETY_SUPABASE_ORIGIN,
   ).origin;
 } catch {
   console.error("❌ QA fixture target is not the configured canonical loopback runtime.");

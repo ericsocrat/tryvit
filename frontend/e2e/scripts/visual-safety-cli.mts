@@ -69,6 +69,32 @@ export interface LocalFixtureCredentials {
   readonly serviceRoleKey: string;
 }
 
+export interface VisualSafetyLocalRuntime {
+  readonly root: string;
+  readonly configPath: string;
+  readonly origin: string;
+  readonly overridden: boolean;
+}
+
+export const VISUAL_SAFETY_LOCAL_RUNTIME_ROOT = "VISUAL_SAFETY_LOCAL_RUNTIME_ROOT";
+
+export type LocalSupabaseStatusRunner = (
+  command: string,
+  args: string[],
+  options: {
+    cwd: string;
+    encoding: "utf8";
+    windowsHide: true;
+    shell: false;
+    env: NodeJS.ProcessEnv;
+    maxBuffer: number;
+  },
+) => {
+  readonly status: number | null;
+  readonly error?: Error;
+  readonly stdout: string;
+};
+
 const require = createRequire(import.meta.url);
 export const frontendRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 export const repositoryRoot = path.resolve(frontendRoot, "..");
@@ -110,7 +136,7 @@ const ASSET_EXTENSIONS = new Set([
 ]);
 const FORBIDDEN_ASSET_MARKERS = ["uskvezwftkkudvksmken", "rxtaicdpnaqigowdbmsb"];
 const SENSITIVE_ENV_PATTERN =
-  /(?:SUPABASE|POSTGRES|DATABASE|PASSWORD|TOKEN|SECRET|COOKIE|AUTHORIZATION|API_KEY|STAGING_(?:URL|SERVICE_KEY)|PRODUCTION_(?:URL|SERVICE_KEY))/i;
+  /(?:SUPABASE|POSTGRES|DATABASE|PASSWORD|TOKEN|SECRET|COOKIE|AUTHORIZATION|API_KEY|STAGING_(?:URL|SERVICE_KEY)|PRODUCTION_(?:URL|SERVICE_KEY)|VISUAL_SAFETY_LOCAL_RUNTIME_ROOT)/i;
 const UNSAFE_PROCESS_ENV_PATTERN =
   /^(?:ALL_PROXY|BROWSER|CHROME_PATH|DEBUG|DOCKER_(?:CERT_PATH|CONTEXT|HOST|TLS_VERIFY)|HTTP_PROXY|HTTPS_PROXY|LHCI_.*|LHCITEST_.*|LIGHTHOUSE_.*|NODE_DEBUG(?:_NATIVE)?|NODE_EXTRA_CA_CERTS|NODE_OPTIONS|NODE_PATH|NODE_REPL_EXTERNAL_MODULE|NODE_TLS_REJECT_UNAUTHORIZED|NODE_USE_ENV_PROXY|NO_PROXY|PHASE5A0D_FIXED_TIME|PLAYWRIGHT_.*|PUPPETEER_.*|PW(?!D$).*|SSLKEYLOGFILE|VISUAL_SAFETY_CONFIG_(?:RUNNER_PID|SEAL))$/iu;
 const MAX_CHILD_OUTPUT_BYTES = 32 * 1024 * 1024;
@@ -172,14 +198,101 @@ function safetyError(code: string, category: string): Error {
   return new Error(`[${code}] ${category}`);
 }
 
-function nonSensitiveEnvironment(source: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+export function nonSensitiveEnvironment(source: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const result: NodeJS.ProcessEnv = {};
   for (const name of Object.keys(source)) {
-    if (!SENSITIVE_ENV_PATTERN.test(name) && !UNSAFE_PROCESS_ENV_PATTERN.test(name)) {
+    if (
+      !SENSITIVE_ENV_PATTERN.test(name) &&
+      !UNSAFE_PROCESS_ENV_PATTERN.test(name)
+    ) {
       result[name] = source[name];
     }
   }
   return result;
+}
+
+function comparableLocalRuntimePath(value: string): string {
+  const normalized = path.normalize(value).replace(/[\\/]+$/u, "");
+  return process.platform === "win32" ? normalized.toLowerCase() : normalized;
+}
+
+function localRuntimeMetadata(candidate: string): ReturnType<typeof lstatSync> {
+  try {
+    return lstatSync(candidate);
+  } catch {
+    throw safetyError("VS_LOCAL_RUNTIME_ROOT", "local-runtime-path-unavailable");
+  }
+}
+
+function localRuntimeRealpath(candidate: string): string {
+  try {
+    return realpathSync.native(candidate);
+  } catch {
+    throw safetyError("VS_LOCAL_RUNTIME_ROOT", "local-runtime-path-unavailable");
+  }
+}
+
+function assertNoLocalRuntimeReparseSegments(candidate: string): void {
+  const lexical = path.resolve(candidate);
+  const parsed = path.parse(lexical);
+  let cursor = parsed.root;
+  for (const segment of path.relative(parsed.root, lexical).split(path.sep).filter(Boolean)) {
+    cursor = path.join(cursor, segment);
+    const entry = localRuntimeMetadata(cursor);
+    if (entry.isSymbolicLink()) {
+      throw safetyError("VS_LOCAL_RUNTIME_ROOT", "local-runtime-path-reparse");
+    }
+  }
+}
+
+export async function resolveVisualSafetyLocalRuntime(
+  environment: NodeJS.ProcessEnv = process.env,
+  defaultRoot = repositoryRoot,
+  discoverOrigin: typeof discoverLocalSupabaseOrigin = discoverLocalSupabaseOrigin,
+): Promise<VisualSafetyLocalRuntime> {
+  const requested = environment[VISUAL_SAFETY_LOCAL_RUNTIME_ROOT];
+  const overridden = requested !== undefined;
+  if (overridden && (!requested || !path.isAbsolute(requested))) {
+    throw safetyError("VS_LOCAL_RUNTIME_ROOT", "local-runtime-root-absolute-required");
+  }
+  if (!path.isAbsolute(defaultRoot)) {
+    throw safetyError("VS_LOCAL_RUNTIME_ROOT", "local-runtime-default-root-invalid");
+  }
+  const lexicalRoot = path.resolve(requested ?? defaultRoot);
+  assertNoLocalRuntimeReparseSegments(lexicalRoot);
+  const rootEntry = localRuntimeMetadata(lexicalRoot);
+  if (!rootEntry.isDirectory() || rootEntry.isSymbolicLink()) {
+    throw safetyError("VS_LOCAL_RUNTIME_ROOT", "local-runtime-root-invalid");
+  }
+  const root = localRuntimeRealpath(lexicalRoot);
+  const supabaseDirectory = path.join(root, "supabase");
+  const configPath = path.join(supabaseDirectory, "config.toml");
+  assertNoLocalRuntimeReparseSegments(configPath);
+  const supabaseEntry = localRuntimeMetadata(supabaseDirectory);
+  const configEntry = localRuntimeMetadata(configPath);
+  if (
+    !supabaseEntry.isDirectory() ||
+    supabaseEntry.isSymbolicLink() ||
+    !configEntry.isFile() ||
+    configEntry.isSymbolicLink()
+  ) {
+    throw safetyError("VS_LOCAL_RUNTIME_ROOT", "local-runtime-config-invalid");
+  }
+  const resolvedConfig = localRuntimeRealpath(configPath);
+  if (
+    !pathIsWithin(root, resolvedConfig) ||
+    comparableLocalRuntimePath(resolvedConfig) !== comparableLocalRuntimePath(configPath)
+  ) {
+    throw safetyError("VS_LOCAL_RUNTIME_ROOT", "local-runtime-config-reparse");
+  }
+  const discovered = await discoverOrigin(resolvedConfig);
+  let origin: string;
+  try {
+    origin = canonicalizeLoopbackOrigin(discovered.origin).origin;
+  } catch {
+    throw safetyError("VS_LOCAL_RUNTIME_ROOT", "local-runtime-origin-not-loopback");
+  }
+  return Object.freeze({ root, configPath: resolvedConfig, origin, overridden });
 }
 
 export function assertSafeParentEnvironment(source: NodeJS.ProcessEnv): void {
@@ -316,22 +429,37 @@ export function parseLocalSupabaseStatusEnvironment(
   return Object.freeze({ anonKey, serviceRoleKey });
 }
 
-function discoverLocalFixtureCredentials(contract: SafetyContract): LocalFixtureCredentials {
+export function discoverLocalFixtureCredentials(
+  contract: SafetyContract,
+  runtime: VisualSafetyLocalRuntime,
+  statusRunner: LocalSupabaseStatusRunner = spawnSync as LocalSupabaseStatusRunner,
+): LocalFixtureCredentials {
   if (contract.mode !== "local-authenticated" || !contract.supabaseOrigin) {
     throw safetyError("VS_LOCAL_STATUS", "local-status-mode-invalid");
   }
-  const result = spawnSync("supabase", ["status", "-o", "env", "--workdir", repositoryRoot], {
-    cwd: repositoryRoot,
-    encoding: "utf8",
-    windowsHide: true,
-    shell: false,
-    env: nonSensitiveEnvironment(process.env),
-    maxBuffer: 1024 * 1024,
-  });
+  if (
+    canonicalizeLoopbackOrigin(contract.supabaseOrigin).origin !== runtime.origin
+  ) {
+    throw safetyError("VS_LOCAL_STATUS", "local-status-origin-mismatch");
+  }
+  const statusEnvironment = nonSensitiveEnvironment(process.env);
+  delete statusEnvironment[VISUAL_SAFETY_LOCAL_RUNTIME_ROOT];
+  const result = statusRunner(
+    "supabase",
+    ["status", "-o", "env", "--workdir", runtime.root],
+    {
+      cwd: runtime.root,
+      encoding: "utf8",
+      windowsHide: true,
+      shell: false,
+      env: statusEnvironment,
+      maxBuffer: 1024 * 1024,
+    },
+  );
   if (result.status !== 0 || result.error) {
     throw safetyError("VS_LOCAL_STATUS", "local-status-unavailable");
   }
-  return parseLocalSupabaseStatusEnvironment(result.stdout, contract.supabaseOrigin);
+  return parseLocalSupabaseStatusEnvironment(result.stdout, runtime.origin);
 }
 
 export function sanitizedChildEnvironment(
@@ -345,6 +473,7 @@ export function sanitizedChildEnvironment(
   for (const name of dotenvVariableNames()) result[name] = "";
   delete result.VISUAL_SAFETY_BUILD_SUPABASE_ORIGIN;
   delete result.VISUAL_SAFETY_BUILD_ADAPTER_ID;
+  delete result[VISUAL_SAFETY_LOCAL_RUNTIME_ROOT];
 
   result.NEXT_TELEMETRY_DISABLED = "1";
   result.VISUAL_SAFETY_MODE = mode;
@@ -514,6 +643,7 @@ function sourceSha(): string {
     cwd: repositoryRoot,
     encoding: "utf8",
     windowsHide: true,
+    env: nonSensitiveEnvironment(process.env),
   });
   const value = result.stdout.trim();
   if (result.status !== 0 || !/^[0-9a-f]{40}$/u.test(value)) {
@@ -912,6 +1042,7 @@ function signalOwnedProcessTree(child: ChildProcess, force: boolean): boolean {
       stdio: "ignore",
       windowsHide: true,
       shell: false,
+      env: nonSensitiveEnvironment(process.env),
     });
     return result.status === 0;
   }
@@ -1272,14 +1403,15 @@ async function runPlaywright(
     sanitized.QA_MODE_LEVEL = qualityLevel;
   }
   let contract: SafetyContract;
+  let localRuntime: VisualSafetyLocalRuntime | undefined;
   if (mode === "public") {
     delete sanitized.VISUAL_SAFETY_SUPABASE_ORIGIN;
+    delete sanitized[VISUAL_SAFETY_LOCAL_RUNTIME_ROOT];
     contract = loadSafetyContractFromEnvironment(sanitized);
   } else {
-    const localOrigin = (
-      await discoverLocalSupabaseOrigin(path.join(repositoryRoot, "supabase", "config.toml"))
-    ).origin;
-    sanitized.VISUAL_SAFETY_SUPABASE_ORIGIN = localOrigin;
+    localRuntime = await resolveVisualSafetyLocalRuntime(process.env);
+    delete sanitized[VISUAL_SAFETY_LOCAL_RUNTIME_ROOT];
+    sanitized.VISUAL_SAFETY_SUPABASE_ORIGIN = localRuntime.origin;
     contract = loadSafetyContractFromEnvironment(sanitized);
   }
   return runAfterSafetyPreflight(contract, async (localCredentials) => {
@@ -1333,11 +1465,17 @@ async function runPlaywright(
       );
       assertProxyClean(proxy);
       await verifyBuildProvenance(contract);
-      scanChangedArtifacts(artifactsBefore, sensitiveValuesFromEnvironment(playwrightEnv));
+      scanChangedArtifacts(artifactsBefore, [
+        ...sensitiveValuesFromEnvironment(playwrightEnv),
+        ...(localRuntime?.overridden ? [localRuntime.root] : []),
+      ]);
       return code;
     } finally {
       try {
-        scanChangedArtifacts(artifactsBefore, sensitiveValuesFromEnvironment(sanitized));
+        scanChangedArtifacts(artifactsBefore, [
+          ...sensitiveValuesFromEnvironment(sanitized),
+          ...(localRuntime?.overridden ? [localRuntime.root] : []),
+        ]);
       } finally {
         try {
           if (ownedServer) await ownedServer.stop();
@@ -1361,15 +1499,20 @@ async function runPlaywright(
         }
       }
     }
-  });
+  }, (value) => preflightLocalEmulator(value, localRuntime));
 }
 
 export async function preflightLocalEmulator(
   contract: SafetyContract,
+  localRuntime?: VisualSafetyLocalRuntime,
 ): Promise<LocalFixtureCredentials | null> {
   if (contract.mode !== "local-authenticated") return null;
   if (!contract.supabaseOrigin) {
     throw safetyError("VS_LOCAL_ORIGIN", "local-supabase-origin-missing");
+  }
+  const runtime = localRuntime ?? await resolveVisualSafetyLocalRuntime();
+  if (canonicalizeLoopbackOrigin(contract.supabaseOrigin).origin !== runtime.origin) {
+    throw safetyError("VS_LOCAL_ORIGIN", "local-supabase-origin-mismatch");
   }
   const guarded = createGuardedFetch({
     allowedOrigin: contract.supabaseOrigin,
@@ -1389,7 +1532,7 @@ export async function preflightLocalEmulator(
     throw safetyError("VS_LOCAL_READINESS", "local-emulator-not-ready");
   }
   // Credentials come from this exact running local runtime, never ambient env.
-  return discoverLocalFixtureCredentials(contract);
+  return discoverLocalFixtureCredentials(contract, runtime);
 }
 
 export async function runAfterSafetyPreflight<T>(
@@ -1404,10 +1547,10 @@ export async function runAfterSafetyPreflight<T>(
 }
 
 async function runLocalFixtureCommand(action: "seed" | "teardown"): Promise<number> {
-  const localOrigin = (
-    await discoverLocalSupabaseOrigin(path.join(repositoryRoot, "supabase", "config.toml"))
-  ).origin;
+  const localRuntime = await resolveVisualSafetyLocalRuntime(process.env);
+  const localOrigin = localRuntime.origin;
   const environment = nonSensitiveEnvironment(process.env);
+  delete environment[VISUAL_SAFETY_LOCAL_RUNTIME_ROOT];
   environment.VISUAL_SAFETY_MODE = "local-authenticated";
   environment.VISUAL_SAFETY_APP_ORIGIN = APP_ORIGIN;
   environment.BASE_URL = APP_ORIGIN;
@@ -1441,7 +1584,7 @@ async function runLocalFixtureCommand(action: "seed" | "teardown"): Promise<numb
       ],
       { cwd: frontendRoot, env: fixtureEnvironment },
     );
-  });
+  }, (value) => preflightLocalEmulator(value, localRuntime));
 }
 
 async function serveCommand(
@@ -2047,6 +2190,7 @@ async function main(): Promise<number> {
     command === "public-lighthouse" ? "public" : parseMode(process.env.VISUAL_SAFETY_MODE);
   const commandEnvironment = nonSensitiveEnvironment(process.env);
   commandEnvironment.VISUAL_SAFETY_MODE = mode;
+  let localRuntime: VisualSafetyLocalRuntime | undefined;
   for (const name of ["VISUAL_SAFETY_APP_ORIGIN", "BASE_URL"] as const) {
     const requested = commandEnvironment[name];
     if (requested !== undefined && requested !== APP_ORIGIN) {
@@ -2055,17 +2199,20 @@ async function main(): Promise<number> {
     commandEnvironment[name] = APP_ORIGIN;
   }
   if (mode === "local-authenticated") {
-    commandEnvironment.VISUAL_SAFETY_SUPABASE_ORIGIN = (
-      await discoverLocalSupabaseOrigin(path.join(repositoryRoot, "supabase", "config.toml"))
-    ).origin;
+    localRuntime = await resolveVisualSafetyLocalRuntime(process.env);
+    commandEnvironment.VISUAL_SAFETY_SUPABASE_ORIGIN = localRuntime.origin;
+    delete commandEnvironment[VISUAL_SAFETY_LOCAL_RUNTIME_ROOT];
+  } else {
+    delete commandEnvironment[VISUAL_SAFETY_LOCAL_RUNTIME_ROOT];
   }
   const contract = loadSafetyContractFromEnvironment(commandEnvironment);
+  const preflight = (value: SafetyContract) => preflightLocalEmulator(value, localRuntime);
   if (command === "preflight") {
-    await preflightLocalEmulator(contract);
+    await preflight(contract);
     return 0;
   }
   if (command === "build") {
-    const localCredentials = await preflightLocalEmulator(contract);
+    const localCredentials = await preflight(contract);
     clearViolationMarker();
     const proxy = await startLoopbackEgressProxy({
       violationMarkerPath,
@@ -2084,16 +2231,18 @@ async function main(): Promise<number> {
     return 0;
   }
   if (command === "serve") {
-    const localCredentials = await preflightLocalEmulator(contract);
+    const localCredentials = await preflight(contract);
     return serveCommand(contract, localCredentials ?? undefined);
   }
   if (command === "lighthouse" || command === "public-lighthouse") {
-    return runAfterSafetyPreflight(contract, (localCredentials) =>
-      runLighthouse(contract, args, localCredentials),
+    return runAfterSafetyPreflight(
+      contract,
+      (localCredentials) => runLighthouse(contract, args, localCredentials),
+      preflight,
     );
   }
   if (command === "assert") {
-    const localCredentials = await preflightLocalEmulator(contract);
+    const localCredentials = await preflight(contract);
     await assertCommand(contract, localCredentials);
     return 0;
   }

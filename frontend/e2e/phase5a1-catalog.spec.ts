@@ -14,6 +14,12 @@ import AxeBuilder from "@axe-core/playwright";
 import sharp from "sharp";
 
 import { expect, test, type Page } from "./fixtures/safe-test";
+import {
+  advanceCatalogScrollQuiescence,
+  CATALOG_SCROLL_QUIESCENCE_TIMEOUT_MS,
+  CATALOG_SCROLL_QUIET_FRAMES_REQUIRED,
+  initialCatalogScrollQuiescenceState,
+} from "./helpers/catalog-scroll-quiescence";
 // Node's type-stripping loader requires the source extension at runtime.
 // @ts-expect-error TS5097: executed through the guarded Playwright launcher.
 import {
@@ -74,6 +80,7 @@ type CatalogFailureCode =
   | "overflow"
   | "pointer-contract-invalid"
   | "portal-scope-invalid"
+  | "scroll-quiescence-invalid"
   | "skip-link-contract-invalid"
   | "system-theme-contract-invalid"
   | "target-size-invalid"
@@ -87,10 +94,48 @@ interface CatalogFailureDiagnostic {
   readonly axeRuleCount?: number;
   readonly axeNodeCount?: number;
   readonly axeNodeFingerprints?: readonly AxeNodeFingerprint[];
+  readonly combobox?: CatalogComboboxDiagnostic;
   readonly overflowClientWidth?: number;
   readonly overflowScrollWidth?: number;
   readonly overflowTarget?: string;
   readonly overflowViewport?: number;
+  readonly scroll?: CatalogScrollDiagnostic;
+}
+
+type CatalogComboboxAssertionStage = "initial-open" | "post-audit" | "post-capture";
+type CatalogNormalizedAttributeState = "true" | "false" | "missing" | "other";
+
+interface CatalogComboboxDiagnostic {
+  readonly stage: CatalogComboboxAssertionStage;
+  readonly activeDescendantPresent: boolean;
+  readonly expandedState: CatalogNormalizedAttributeState;
+  readonly inputBusyState: CatalogNormalizedAttributeState;
+  readonly inputFocused: boolean;
+  readonly listboxBusyState: CatalogNormalizedAttributeState;
+  readonly listboxVisible: boolean;
+  readonly liveStatusMatchesExpected: boolean;
+  readonly optionCount: number;
+  readonly optionCountMatchesExpected: boolean;
+  readonly popupCount: number;
+  readonly popupStatusMatchesExpected: boolean;
+}
+
+interface CatalogScrollDiagnostic {
+  readonly eventCount: number;
+  readonly quiescentEventCount: number;
+  readonly postQuiescenceEventCount: number;
+  readonly quietFramesRequired: number;
+  readonly quietFramesObserved: number;
+  readonly timeoutMs: number;
+  readonly timedOut: boolean;
+}
+
+interface CatalogScrollProbe {
+  revision: number;
+  quiescentRevision: number;
+  quietFramesObserved: number;
+  timedOut: boolean;
+  cleanup: () => void;
 }
 
 interface AxeNodeFingerprint {
@@ -748,10 +793,160 @@ async function screenshotInteraction(
   });
 }
 
-async function settleScrollWork(page: Page): Promise<void> {
-  await page.evaluate(() => new Promise<void>((resolve) => {
-    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-  }));
+async function armCatalogScrollProbe(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const browserGlobal = globalThis as typeof globalThis & {
+      __phase5a1CatalogScrollProbe?: CatalogScrollProbe;
+    };
+    browserGlobal.__phase5a1CatalogScrollProbe?.cleanup();
+    const probe: CatalogScrollProbe = {
+      revision: 0,
+      quiescentRevision: 0,
+      quietFramesObserved: 0,
+      timedOut: false,
+      cleanup: () => undefined,
+    };
+    const observeScroll = () => {
+      probe.revision += 1;
+      probe.quietFramesObserved = 0;
+    };
+    probe.cleanup = () => document.removeEventListener("scroll", observeScroll, true);
+    document.addEventListener("scroll", observeScroll, true);
+    browserGlobal.__phase5a1CatalogScrollProbe = probe;
+  });
+}
+
+async function readCatalogScrollRevision(page: Page): Promise<number | null> {
+  return page.evaluate(() => {
+    const browserGlobal = globalThis as typeof globalThis & {
+      __phase5a1CatalogScrollProbe?: CatalogScrollProbe;
+    };
+    return browserGlobal.__phase5a1CatalogScrollProbe?.revision ?? null;
+  });
+}
+
+async function sampleCatalogScrollRevision(
+  page: Page,
+  timeoutMs: number,
+): Promise<number | null> {
+  return page.evaluate((sampleTimeoutMs) => new Promise<number | null>((resolve) => {
+    let frame = 0;
+    const timer = setTimeout(() => {
+      cancelAnimationFrame(frame);
+      resolve(null);
+    }, sampleTimeoutMs);
+    frame = requestAnimationFrame(() => {
+      clearTimeout(timer);
+      const browserGlobal = globalThis as typeof globalThis & {
+        __phase5a1CatalogScrollProbe?: CatalogScrollProbe;
+      };
+      resolve(browserGlobal.__phase5a1CatalogScrollProbe?.revision ?? null);
+    });
+  }), timeoutMs);
+}
+
+async function confirmCatalogScrollQuiescence(
+  page: Page,
+  expectedRevision: number,
+  quietFramesObserved: number,
+): Promise<boolean> {
+  return page.evaluate(({ frames, revision }) => {
+    const browserGlobal = globalThis as typeof globalThis & {
+      __phase5a1CatalogScrollProbe?: CatalogScrollProbe;
+    };
+    const probe = browserGlobal.__phase5a1CatalogScrollProbe;
+    if (!probe || probe.revision !== revision) return false;
+    probe.quiescentRevision = revision;
+    probe.quietFramesObserved = frames;
+    probe.timedOut = false;
+    return true;
+  }, { frames: quietFramesObserved, revision: expectedRevision });
+}
+
+async function markCatalogScrollQuiescenceTimeout(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const browserGlobal = globalThis as typeof globalThis & {
+      __phase5a1CatalogScrollProbe?: CatalogScrollProbe;
+    };
+    if (browserGlobal.__phase5a1CatalogScrollProbe) {
+      browserGlobal.__phase5a1CatalogScrollProbe.timedOut = true;
+    }
+  });
+}
+
+async function readCatalogScrollDiagnostic(page: Page): Promise<CatalogScrollDiagnostic> {
+  return page.evaluate(({ quietFramesRequired, timeoutMs }) => {
+    const browserGlobal = globalThis as typeof globalThis & {
+      __phase5a1CatalogScrollProbe?: CatalogScrollProbe;
+    };
+    const probe = browserGlobal.__phase5a1CatalogScrollProbe;
+    const eventCount = Math.min(999, Math.max(0, probe?.revision ?? 0));
+    const quiescentEventCount = Math.min(
+      eventCount,
+      Math.max(0, probe?.quiescentRevision ?? 0),
+    );
+    return {
+      eventCount,
+      quiescentEventCount,
+      postQuiescenceEventCount: Math.min(999, eventCount - quiescentEventCount),
+      quietFramesRequired,
+      quietFramesObserved: Math.min(
+        quietFramesRequired,
+        Math.max(0, probe?.quietFramesObserved ?? 0),
+      ),
+      timeoutMs,
+      timedOut: probe?.timedOut ?? true,
+    };
+  }, {
+    quietFramesRequired: CATALOG_SCROLL_QUIET_FRAMES_REQUIRED,
+    timeoutMs: CATALOG_SCROLL_QUIESCENCE_TIMEOUT_MS,
+  });
+}
+
+async function waitForCatalogScrollQuiescence(
+  page: Page,
+): Promise<CatalogScrollDiagnostic> {
+  const startedAt = Date.now();
+  const initialRevision = await readCatalogScrollRevision(page);
+  if (initialRevision === null) {
+    await markCatalogScrollQuiescenceTimeout(page);
+    return readCatalogScrollDiagnostic(page);
+  }
+  let state = initialCatalogScrollQuiescenceState(initialRevision);
+  while ((Date.now() - startedAt) < CATALOG_SCROLL_QUIESCENCE_TIMEOUT_MS) {
+    const remainingMs = Math.max(
+      1,
+      CATALOG_SCROLL_QUIESCENCE_TIMEOUT_MS - (Date.now() - startedAt),
+    );
+    const revision = await sampleCatalogScrollRevision(page, remainingMs);
+    if (revision === null) break;
+    state = advanceCatalogScrollQuiescence(state, revision);
+    if (
+      state.settled &&
+      await confirmCatalogScrollQuiescence(
+        page,
+        state.observedRevision,
+        state.quietFramesObserved,
+      )
+    ) {
+      return readCatalogScrollDiagnostic(page);
+    }
+  }
+  await markCatalogScrollQuiescenceTimeout(page);
+  return readCatalogScrollDiagnostic(page);
+}
+
+async function prepareCatalogScrollTarget(
+  page: Page,
+  locator: CatalogLocator,
+  capture: CatalogFailureCapture,
+): Promise<void> {
+  await armCatalogScrollProbe(page);
+  await locator.scrollIntoViewIfNeeded();
+  const scroll = await waitForCatalogScrollQuiescence(page);
+  if (scroll.timedOut) {
+    throw new CatalogFailure("scroll-quiescence-invalid", capture, { scroll });
+  }
 }
 
 async function pointerActivate(
@@ -761,8 +956,7 @@ async function pointerActivate(
   capture: CatalogFailureCapture,
 ): Promise<void> {
   try {
-    await locator.scrollIntoViewIfNeeded();
-    await settleScrollWork(page);
+    await prepareCatalogScrollTarget(page, locator, capture);
     if (pointer === "fine") {
       await locator.click();
       return;
@@ -805,11 +999,11 @@ async function prepareAnchoredInput(
   capture: CatalogFailureCapture,
 ): Promise<void> {
   try {
-    await input.scrollIntoViewIfNeeded();
-    await settleScrollWork(page);
+    await prepareCatalogScrollTarget(page, input, capture);
     await input.evaluate((element) => (element as HTMLElement).focus({ preventScroll: true }));
     await expect(input).toBeFocused();
-  } catch {
+  } catch (error) {
+    if (error instanceof CatalogFailure) throw error;
     throw new CatalogFailure("focus-contract-invalid", capture);
   }
 }
@@ -865,6 +1059,40 @@ async function readComboboxOpenSnapshot(
   }, probeName);
 }
 
+function normalizeCatalogAttributeState(
+  value: string | null,
+): CatalogNormalizedAttributeState {
+  if (value === null) return "missing";
+  if (value === "true" || value === "false") return value;
+  return "other";
+}
+
+function boundedCatalogCount(value: number): number {
+  return Math.min(999, Math.max(0, Math.trunc(value)));
+}
+
+function sanitizeComboboxDiagnostic(
+  snapshot: ComboboxOpenSnapshot,
+  stage: CatalogComboboxAssertionStage,
+  expectedStatus: string,
+  expectedOptionCount: number,
+): CatalogComboboxDiagnostic {
+  return {
+    stage,
+    activeDescendantPresent: snapshot.activeDescendantPresent,
+    expandedState: normalizeCatalogAttributeState(snapshot.expanded),
+    inputBusyState: normalizeCatalogAttributeState(snapshot.inputBusy),
+    inputFocused: snapshot.inputFocused,
+    listboxBusyState: normalizeCatalogAttributeState(snapshot.listboxBusy),
+    listboxVisible: snapshot.listboxVisible,
+    liveStatusMatchesExpected: snapshot.liveStatus === expectedStatus,
+    optionCount: boundedCatalogCount(snapshot.optionCount),
+    optionCountMatchesExpected: snapshot.optionCount === expectedOptionCount,
+    popupCount: boundedCatalogCount(snapshot.popupCount),
+    popupStatusMatchesExpected: snapshot.popupStatus === expectedStatus,
+  };
+}
+
 async function assertComboboxOpenSnapshot(
   page: Page,
   probeName: string,
@@ -873,6 +1101,7 @@ async function assertComboboxOpenSnapshot(
   expectedBusy: "true" | null,
   expectActiveDescendant: boolean,
   capture: CatalogFailureCapture,
+  stage: CatalogComboboxAssertionStage,
 ): Promise<void> {
   try {
     await expect.poll(() => readComboboxOpenSnapshot(page, probeName)).toEqual({
@@ -888,7 +1117,21 @@ async function assertComboboxOpenSnapshot(
       popupStatus: expectedStatus,
     });
   } catch {
-    throw new CatalogFailure("interaction-contract-invalid", capture);
+    const snapshot = await readComboboxOpenSnapshot(page, probeName).catch(() => null);
+    const scroll = await readCatalogScrollDiagnostic(page).catch(() => undefined);
+    throw new CatalogFailure("interaction-contract-invalid", capture, {
+      ...(snapshot
+        ? {
+            combobox: sanitizeComboboxDiagnostic(
+              snapshot,
+              stage,
+              expectedStatus,
+              expectedOptionCount,
+            ),
+          }
+        : {}),
+      ...(scroll ? { scroll } : {}),
+    });
   }
 }
 
@@ -1036,7 +1279,16 @@ async function exerciseCombobox(
   await page.keyboard.press("ArrowDown");
   const popup = page.locator('[data-ds-component="combobox"][data-ds-part="content"]');
   const listbox = popup.locator('[data-ds-part="listbox"]');
-  await assertComboboxOpenSnapshot(page, probeName, expectedStatus, 3, null, true, capture);
+  await assertComboboxOpenSnapshot(
+    page,
+    probeName,
+    expectedStatus,
+    3,
+    null,
+    true,
+    capture,
+    "initial-open",
+  );
   await assertFocusNotObscured(input, capture);
   await assertPortalScope(popup, capture);
   if (context.reducedMotion === "reduce") {
@@ -1046,9 +1298,27 @@ async function exerciseCombobox(
   await assertNoOverflow(page, capture);
   await assertMinimumTargetSizes(page, capture);
   await assertFullPageAxe(page, capture);
-  await assertComboboxOpenSnapshot(page, probeName, expectedStatus, 3, null, true, capture);
+  await assertComboboxOpenSnapshot(
+    page,
+    probeName,
+    expectedStatus,
+    3,
+    null,
+    true,
+    capture,
+    "post-audit",
+  );
   const buffer = await screenshotInteraction(page, destination);
-  await assertComboboxOpenSnapshot(page, probeName, expectedStatus, 3, null, true, capture);
+  await assertComboboxOpenSnapshot(
+    page,
+    probeName,
+    expectedStatus,
+    3,
+    null,
+    true,
+    capture,
+    "post-capture",
+  );
   try {
     await page.keyboard.press("Enter");
     await expect(input).toHaveAttribute("aria-expanded", "false");
@@ -1093,6 +1363,7 @@ async function exerciseComboboxStatus(
     expectedBusy,
     false,
     capture,
+    "initial-open",
   );
   await assertFocusNotObscured(input, capture);
   await assertPortalScope(popup, capture);
@@ -1109,6 +1380,7 @@ async function exerciseComboboxStatus(
     expectedBusy,
     false,
     capture,
+    "post-audit",
   );
   const buffer = await screenshotInteraction(page, destination);
   await assertComboboxOpenSnapshot(
@@ -1119,6 +1391,7 @@ async function exerciseComboboxStatus(
     expectedBusy,
     false,
     capture,
+    "post-capture",
   );
   try {
     await page.keyboard.press("Escape");
@@ -1577,6 +1850,17 @@ async function retainSafeDiagnostic(
 ): Promise<void> {
   const directory = path.join(DIAGNOSTIC_ROOT, caseId);
   mkdirSync(directory, { recursive: true });
+  writeFileSync(
+    path.join(directory, "diagnostic.json"),
+    `${JSON.stringify({
+      schemaVersion: 3,
+      caseId,
+      failureCode: failure.code,
+      capture: failure.capture,
+      ...(failure.diagnostic ? { diagnostic: failure.diagnostic } : {}),
+    }, null, 2)}\n`,
+    "utf8",
+  );
   const isCatalogDocument = new URL(page.url()).pathname === CATALOG_PATH &&
     await page.locator("[data-design-system='v2']").count() > 0;
   if (isCatalogDocument) {
@@ -1591,17 +1875,6 @@ async function retainSafeDiagnostic(
       }).catch(() => undefined);
     }
   }
-  writeFileSync(
-    path.join(directory, "diagnostic.json"),
-    `${JSON.stringify({
-      schemaVersion: 2,
-      caseId,
-      failureCode: failure.code,
-      capture: failure.capture,
-      ...(failure.diagnostic ? { diagnostic: failure.diagnostic } : {}),
-    }, null, 2)}\n`,
-    "utf8",
-  );
 }
 
 for (const viewport of CATALOG_CAPTURE_VIEWPORTS) {

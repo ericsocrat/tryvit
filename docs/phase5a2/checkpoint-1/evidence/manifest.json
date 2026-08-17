@@ -1,0 +1,750 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a2-direction-selection-review-evidence",
+  "reviewOnly": true,
+  "productionBaseline": false,
+  "sourceSha": "347a7d0a6cd1d060a28487a92315f83f30347bc5",
+  "sourceTreeSha": "4c07194ac13111988fbaef0f4c9f18c62d882a8c",
+  "fixtureSha256": "6914a31758740013d31c07c9d1414b43a6de3b81acb35e0041b548adaddb5074",
+  "captureContractSha256": "c50fc45944f6ea97d14391d151ba2dd1775267eaaf5526310158b9420a476de0",
+  "captureContractHashCanonicalization": "utf8-lf",
+  "runtime": {
+    "capture": {
+      "playwrightVersion": "1.62.1",
+      "browserName": "chromium",
+      "browserVersion": "151.0.7922.34",
+      "browserLocale": "en-US",
+      "timezoneId": "UTC",
+      "deviceScaleFactor": 1,
+      "nodeVersion": "v24.11.1",
+      "osPlatform": "win32",
+      "osArch": "x64"
+    },
+    "staging": {
+      "nodeVersion": "v24.11.1",
+      "osPlatform": "win32",
+      "osArch": "x64",
+      "sharpVersion": "0.35.3",
+      "libvipsVersion": "8.18.3"
+    }
+  },
+  "counts": {
+    "candidates": 3,
+    "stills": 21,
+    "motionRecordings": 6,
+    "contactSheets": 7,
+    "binaryFiles": 34,
+    "packageFiles": 35
+  },
+  "authoredSources": [
+    "frontend/src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx",
+    "frontend/src/app/dev/phase5a2/_directions/source-fold/source-fold.module.css",
+    "frontend/src/app/dev/phase5a2/_directions/evidence-register/EvidenceRegister.tsx",
+    "frontend/src/app/dev/phase5a2/_directions/evidence-register/evidence-register.module.css",
+    "frontend/src/app/dev/phase5a2/_directions/open-core/OpenCore.tsx",
+    "frontend/src/app/dev/phase5a2/_directions/open-core/open-core.module.css"
+  ],
+  "generatedBy": [
+    "frontend/e2e/phase5a2-direction-selection-stills.spec.ts",
+    "frontend/e2e/phase5a2-direction-selection-motion.spec.ts",
+    "frontend/e2e/phase5a2-direction-selection-scanner.spec.ts",
+    "frontend/tooling/design-system/direction-selection/stage-evidence.mts"
+  ],
+  "files": [
+    {
+      "path": "contact-sheets/home--1440x900--light--de--all-candidates.png",
+      "kind": "contact-sheet",
+      "bytes": 79915,
+      "sha256": "76ac2ad8e3e99cce5adfd219458c773ec193d4bfeb6d7888693c6353e67ad4c9",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 2160,
+        "height": 486
+      }
+    },
+    {
+      "path": "contact-sheets/identity--1440x900--light--all-candidates.png",
+      "kind": "contact-sheet",
+      "bytes": 53539,
+      "sha256": "fd6f3860234ad316f6167b441e86fb2ea8e6cde59ffbc72cfadfc40418b5b0e6",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 2160,
+        "height": 486
+      }
+    },
+    {
+      "path": "contact-sheets/landing--390x844--light--pl--all-candidates.png",
+      "kind": "contact-sheet",
+      "bytes": 51985,
+      "sha256": "0f7ee9a09602b27192663166059ff24c7c2090bd89e0bfbeb9e3d2f92228216d",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 1170,
+        "height": 880
+      }
+    },
+    {
+      "path": "contact-sheets/motion--1440x900--light--reduced--all-candidates.png",
+      "kind": "contact-sheet",
+      "bytes": 75036,
+      "sha256": "0c61a11bc9a063cf85b41c770d7536d7e47652b4b5ce8419f9c61a80e67d34da",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 2160,
+        "height": 486
+      }
+    },
+    {
+      "path": "contact-sheets/product--1440x900--dark--evidence--all-candidates.png",
+      "kind": "contact-sheet",
+      "bytes": 84925,
+      "sha256": "11c8e48de1cb685ce5cd2236422e4c5d2043f22da94675d6a675967d0ac8925f",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 2160,
+        "height": 486
+      }
+    },
+    {
+      "path": "contact-sheets/product--390x844--light--overview--all-candidates.png",
+      "kind": "contact-sheet",
+      "bytes": 35886,
+      "sha256": "1190e795ba1c544733c226d7021dd6a28e667a2b9d11fe8c984800be160f2676",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 1170,
+        "height": 880
+      }
+    },
+    {
+      "path": "contact-sheets/scanner--390x844--dark--matched--all-candidates.png",
+      "kind": "contact-sheet",
+      "bytes": 37337,
+      "sha256": "0d4630ea5b00a91c824f66aa28507eca8008f7a9699799038dbed16d6d44101f",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 1170,
+        "height": 880
+      }
+    },
+    {
+      "path": "motion/evidence-register--motion-sequence--1440x900--light.webm",
+      "bytes": 267679,
+      "sha256": "70a5da586941e6e88949e59111ba7431e4e47e73898cf907165266b2f5b384c1",
+      "kind": "motion-recording",
+      "candidate": "evidence-register",
+      "surface": "motion",
+      "route": "/dev/phase5a2/evidence-register/motion?locale=en&theme=light&motion=full&state=start&capture=1",
+      "contentLocale": "en",
+      "theme": "light",
+      "motion": "full",
+      "state": "start",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "codec": "V_VP8",
+      "durationMs": 4040,
+      "frameCount": 101,
+      "keyFrameCount": 1,
+      "clusterCount": 1
+    },
+    {
+      "path": "motion/evidence-register--scanner-sequence--390x844--dark.webm",
+      "bytes": 91182,
+      "sha256": "1d2664fc40140ec5c060cb0c9bfdada7961ef57d16ccce6af7526d2658390d14",
+      "kind": "motion-recording",
+      "candidate": "evidence-register",
+      "surface": "scanner",
+      "route": "/dev/phase5a2/evidence-register/scanner?locale=en&theme=dark&motion=full&state=ready&capture=1",
+      "contentLocale": "en",
+      "theme": "dark",
+      "motion": "full",
+      "state": "ready",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "codec": "V_VP8",
+      "durationMs": 3560,
+      "frameCount": 89,
+      "keyFrameCount": 1,
+      "clusterCount": 1
+    },
+    {
+      "path": "motion/open-core--motion-sequence--1440x900--light.webm",
+      "bytes": 530255,
+      "sha256": "de2ec8f352bbc9440ae5411810293de4958bbc2fecf96e9eb026d87b452df9bc",
+      "kind": "motion-recording",
+      "candidate": "open-core",
+      "surface": "motion",
+      "route": "/dev/phase5a2/open-core/motion?locale=en&theme=light&motion=full&state=start&capture=1",
+      "contentLocale": "en",
+      "theme": "light",
+      "motion": "full",
+      "state": "start",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "codec": "V_VP8",
+      "durationMs": 5520,
+      "frameCount": 138,
+      "keyFrameCount": 2,
+      "clusterCount": 2
+    },
+    {
+      "path": "motion/open-core--scanner-sequence--390x844--dark.webm",
+      "bytes": 90638,
+      "sha256": "ab8f36849e89f38a4857ea6f25d9b58a57910a072ff160822f24f2016dd69b32",
+      "kind": "motion-recording",
+      "candidate": "open-core",
+      "surface": "scanner",
+      "route": "/dev/phase5a2/open-core/scanner?locale=en&theme=dark&motion=full&state=ready&capture=1",
+      "contentLocale": "en",
+      "theme": "dark",
+      "motion": "full",
+      "state": "ready",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "codec": "V_VP8",
+      "durationMs": 3560,
+      "frameCount": 89,
+      "keyFrameCount": 1,
+      "clusterCount": 1
+    },
+    {
+      "path": "motion/source-fold--motion-sequence--1440x900--light.webm",
+      "bytes": 246112,
+      "sha256": "813c8e38fa69aaeee0fae993f4a7c48a575bdd2f57a201e488bc79cdf711ac4a",
+      "kind": "motion-recording",
+      "candidate": "source-fold",
+      "surface": "motion",
+      "route": "/dev/phase5a2/source-fold/motion?locale=en&theme=light&motion=full&state=start&capture=1",
+      "contentLocale": "en",
+      "theme": "light",
+      "motion": "full",
+      "state": "start",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      },
+      "codec": "V_VP8",
+      "durationMs": 3760,
+      "frameCount": 94,
+      "keyFrameCount": 1,
+      "clusterCount": 1
+    },
+    {
+      "path": "motion/source-fold--scanner-sequence--390x844--dark.webm",
+      "bytes": 89399,
+      "sha256": "35360a045419a8f92345e16a68e0e221196237118500ffd727c45793f72e8552",
+      "kind": "motion-recording",
+      "candidate": "source-fold",
+      "surface": "scanner",
+      "route": "/dev/phase5a2/source-fold/scanner?locale=en&theme=dark&motion=full&state=ready&capture=1",
+      "contentLocale": "en",
+      "theme": "dark",
+      "motion": "full",
+      "state": "ready",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 390,
+        "height": 844
+      },
+      "codec": "V_VP8",
+      "durationMs": 3560,
+      "frameCount": 89,
+      "keyFrameCount": 1,
+      "clusterCount": 1
+    },
+    {
+      "path": "stills/evidence-register--home--1440x900--light--de.png",
+      "bytes": 62279,
+      "sha256": "ab9b4d50736819dd0e01be2e6df225542322ad58a4de1ad94910e0deef36511c",
+      "kind": "still",
+      "candidate": "evidence-register",
+      "surface": "home",
+      "route": "/dev/phase5a2/evidence-register/home?locale=de&theme=light&motion=reduced&state=returning&capture=1",
+      "contentLocale": "de",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "returning",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "path": "stills/evidence-register--identity--1440x900--light.png",
+      "bytes": 45460,
+      "sha256": "95f493c42a42ce6cd72863f63f7abfbeb4e23ce08db074ee226dd32c234cb9d7",
+      "kind": "still",
+      "candidate": "evidence-register",
+      "surface": "identity",
+      "route": "/dev/phase5a2/evidence-register/identity?locale=en&theme=light&motion=reduced&state=canonical&capture=1",
+      "contentLocale": "en",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "canonical",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "path": "stills/evidence-register--landing--390x844--light--pl.png",
+      "bytes": 37452,
+      "sha256": "126283b96a5388f624b0843b3979b7e62a5e6a634f240581cc0ca305c41712cd",
+      "kind": "still",
+      "candidate": "evidence-register",
+      "surface": "landing",
+      "route": "/dev/phase5a2/evidence-register/landing?locale=pl&theme=light&motion=reduced&state=settled&capture=1",
+      "contentLocale": "pl",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "settled",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "path": "stills/evidence-register--motion--1440x900--light--reduced.png",
+      "bytes": 56986,
+      "sha256": "c3e0675fbc54e788721317f89ab76c83afdf6370c42efa68d415716204a2d4bc",
+      "kind": "still",
+      "candidate": "evidence-register",
+      "surface": "motion",
+      "route": "/dev/phase5a2/evidence-register/motion?locale=en&theme=light&motion=reduced&state=complete&capture=1",
+      "contentLocale": "en",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "complete",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "path": "stills/evidence-register--product--1440x900--dark--evidence.png",
+      "bytes": 79269,
+      "sha256": "5d72576527e79e1511888da5ee591e23c86773782926c573dd4dec7c053e884f",
+      "kind": "still",
+      "candidate": "evidence-register",
+      "surface": "product",
+      "route": "/dev/phase5a2/evidence-register/product?locale=en&theme=dark&motion=reduced&state=evidence&capture=1",
+      "contentLocale": "en",
+      "theme": "dark",
+      "motion": "reduced",
+      "state": "evidence",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "path": "stills/evidence-register--product--390x844--light--overview.png",
+      "bytes": 29223,
+      "sha256": "454c548bffeacde4692d5601a04db9d39da72758cb14e56e6857dc090f5eab47",
+      "kind": "still",
+      "candidate": "evidence-register",
+      "surface": "product",
+      "route": "/dev/phase5a2/evidence-register/product?locale=en&theme=light&motion=reduced&state=overview&capture=1",
+      "contentLocale": "en",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "overview",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "path": "stills/evidence-register--scanner--390x844--dark--matched.png",
+      "bytes": 29991,
+      "sha256": "d9b2bfe7f335346c8d467c1644238b3e21a35dc5275b9d7e8bc74ddc0cf5ccb6",
+      "kind": "still",
+      "candidate": "evidence-register",
+      "surface": "scanner",
+      "route": "/dev/phase5a2/evidence-register/scanner?locale=en&theme=dark&motion=reduced&state=matched&capture=1",
+      "contentLocale": "en",
+      "theme": "dark",
+      "motion": "reduced",
+      "state": "matched",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "path": "stills/open-core--home--1440x900--light--de.png",
+      "bytes": 75940,
+      "sha256": "9387739f545931e9a95505dc08bcf16abf92586078260e206e7f69385c52214e",
+      "kind": "still",
+      "candidate": "open-core",
+      "surface": "home",
+      "route": "/dev/phase5a2/open-core/home?locale=de&theme=light&motion=reduced&state=returning&capture=1",
+      "contentLocale": "de",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "returning",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "path": "stills/open-core--identity--1440x900--light.png",
+      "bytes": 62211,
+      "sha256": "3a475e43fa9dd60e20029ff15586dde40649723eade633677d8c3a6fbf2bb6cb",
+      "kind": "still",
+      "candidate": "open-core",
+      "surface": "identity",
+      "route": "/dev/phase5a2/open-core/identity?locale=en&theme=light&motion=reduced&state=canonical&capture=1",
+      "contentLocale": "en",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "canonical",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "path": "stills/open-core--landing--390x844--light--pl.png",
+      "bytes": 48049,
+      "sha256": "a6f3fad01446e82fed65c0e2a287e9c492a10a5b60f55a96608dfc161f2b1f3f",
+      "kind": "still",
+      "candidate": "open-core",
+      "surface": "landing",
+      "route": "/dev/phase5a2/open-core/landing?locale=pl&theme=light&motion=reduced&state=settled&capture=1",
+      "contentLocale": "pl",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "settled",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "path": "stills/open-core--motion--1440x900--light--reduced.png",
+      "bytes": 76896,
+      "sha256": "b76ea59bdb0b25f61b4af2d9ac086663014b94bc24dbf801aef3c7348437ba0c",
+      "kind": "still",
+      "candidate": "open-core",
+      "surface": "motion",
+      "route": "/dev/phase5a2/open-core/motion?locale=en&theme=light&motion=reduced&state=complete&capture=1",
+      "contentLocale": "en",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "complete",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "path": "stills/open-core--product--1440x900--dark--evidence.png",
+      "bytes": 75949,
+      "sha256": "78ff517d8ea8346e673bc903eb1800e7c4369ab3bc00d21e42a40cafb0ea0632",
+      "kind": "still",
+      "candidate": "open-core",
+      "surface": "product",
+      "route": "/dev/phase5a2/open-core/product?locale=en&theme=dark&motion=reduced&state=evidence&capture=1",
+      "contentLocale": "en",
+      "theme": "dark",
+      "motion": "reduced",
+      "state": "evidence",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "path": "stills/open-core--product--390x844--light--overview.png",
+      "bytes": 30807,
+      "sha256": "bd8670defda326acc5309ebdf1aebb68adfa61ceb399982f48af1116ad17fa68",
+      "kind": "still",
+      "candidate": "open-core",
+      "surface": "product",
+      "route": "/dev/phase5a2/open-core/product?locale=en&theme=light&motion=reduced&state=overview&capture=1",
+      "contentLocale": "en",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "overview",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "path": "stills/open-core--scanner--390x844--dark--matched.png",
+      "bytes": 31029,
+      "sha256": "2e100df95da36f112e0eade8ee2db781e1feeb9108806b2acb009fd2351f333b",
+      "kind": "still",
+      "candidate": "open-core",
+      "surface": "scanner",
+      "route": "/dev/phase5a2/open-core/scanner?locale=en&theme=dark&motion=reduced&state=matched&capture=1",
+      "contentLocale": "en",
+      "theme": "dark",
+      "motion": "reduced",
+      "state": "matched",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "path": "stills/source-fold--home--1440x900--light--de.png",
+      "bytes": 52549,
+      "sha256": "1dfa8125de98bce3fdb4bc8bfa71f1c5f7056751eb084bd35f70fcfe98821134",
+      "kind": "still",
+      "candidate": "source-fold",
+      "surface": "home",
+      "route": "/dev/phase5a2/source-fold/home?locale=de&theme=light&motion=reduced&state=returning&capture=1",
+      "contentLocale": "de",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "returning",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "path": "stills/source-fold--identity--1440x900--light.png",
+      "bytes": 46338,
+      "sha256": "73d0e4ca695ec253d1d2afe7309de1c5be081a537495bf828100546cfac2d607",
+      "kind": "still",
+      "candidate": "source-fold",
+      "surface": "identity",
+      "route": "/dev/phase5a2/source-fold/identity?locale=en&theme=light&motion=reduced&state=canonical&capture=1",
+      "contentLocale": "en",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "canonical",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "path": "stills/source-fold--landing--390x844--light--pl.png",
+      "bytes": 44245,
+      "sha256": "6a6eec421338054179c11a7dacadd2e7ae19c07e9aafc32471cb1a5d77fbf499",
+      "kind": "still",
+      "candidate": "source-fold",
+      "surface": "landing",
+      "route": "/dev/phase5a2/source-fold/landing?locale=pl&theme=light&motion=reduced&state=settled&capture=1",
+      "contentLocale": "pl",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "settled",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "path": "stills/source-fold--motion--1440x900--light--reduced.png",
+      "bytes": 65448,
+      "sha256": "3c33d765357115ee53022f2186e19be43132aa0d3812b8e7e3c1adf8a74da854",
+      "kind": "still",
+      "candidate": "source-fold",
+      "surface": "motion",
+      "route": "/dev/phase5a2/source-fold/motion?locale=en&theme=light&motion=reduced&state=complete&capture=1",
+      "contentLocale": "en",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "complete",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "path": "stills/source-fold--product--1440x900--dark--evidence.png",
+      "bytes": 80589,
+      "sha256": "e7a023ccfe75b09c9a7d97541824b1fd06b98c5b7d2214c721550419d7b593d9",
+      "kind": "still",
+      "candidate": "source-fold",
+      "surface": "product",
+      "route": "/dev/phase5a2/source-fold/product?locale=en&theme=dark&motion=reduced&state=evidence&capture=1",
+      "contentLocale": "en",
+      "theme": "dark",
+      "motion": "reduced",
+      "state": "evidence",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "encodedDimensions": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "path": "stills/source-fold--product--390x844--light--overview.png",
+      "bytes": 29280,
+      "sha256": "67aac2389df7302c57346e23f8a50746064fccc200a1f9a16cfb883eaec629bc",
+      "kind": "still",
+      "candidate": "source-fold",
+      "surface": "product",
+      "route": "/dev/phase5a2/source-fold/product?locale=en&theme=light&motion=reduced&state=overview&capture=1",
+      "contentLocale": "en",
+      "theme": "light",
+      "motion": "reduced",
+      "state": "overview",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "path": "stills/source-fold--scanner--390x844--dark--matched.png",
+      "bytes": 27649,
+      "sha256": "a20b4a7116fe2809dd74b5c9d4b3749f3149d3386b79d359ae301c77827dc89d",
+      "kind": "still",
+      "candidate": "source-fold",
+      "surface": "scanner",
+      "route": "/dev/phase5a2/source-fold/scanner?locale=en&theme=dark&motion=reduced&state=matched&capture=1",
+      "contentLocale": "en",
+      "theme": "dark",
+      "motion": "reduced",
+      "state": "matched",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "encodedDimensions": {
+        "width": 390,
+        "height": 844
+      }
+    }
+  ]
+}

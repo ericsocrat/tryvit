@@ -72,6 +72,9 @@ const HAS_SAFETY_NEGATIVE_TESTS = enabled("VISUAL_SAFETY_NEGATIVE_TESTS");
 const HAS_OWNED_SERVER = enabled("VISUAL_SAFETY_OWNED_SERVER");
 const HAS_PHASE5_ROUTE_JS = enabled("PHASE5_ROUTE_JS_CAPTURE");
 const HAS_PHASE5A1_CATALOG = process.env.PHASE5A1_CATALOG === "1";
+const HAS_PHASE5A2_CROSS_BROWSER = enabled("PHASE5A2_CROSS_BROWSER");
+const HAS_PHASE5A2_DIRECTION_REVIEW = enabled("PHASE5A2_DIRECTION_REVIEW");
+const HAS_PHASE5A2_DIRECTION_BEHAVIOR = enabled("PHASE5A2_DIRECTION_BEHAVIOR");
 
 const proxyServer = process.env.VISUAL_SAFETY_PROXY
   ? canonicalizeLoopbackOrigin(process.env.VISUAL_SAFETY_PROXY).origin
@@ -364,6 +367,48 @@ const phase5a1CatalogProject = {
   },
 };
 
+const phase5a2PrimitivesFirefoxProject = {
+  name: "phase5a2-primitives-firefox",
+  testMatch: /phase5a2-cross-browser-primitives\.spec\.ts/,
+  dependencies: ["auth-setup"],
+  retries: 0,
+  use: {
+    ...devices["Desktop Firefox"],
+    browserName: "firefox" as const,
+    viewport: { width: 1280, height: 800 },
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    contextOptions: { reducedMotion: "reduce" as const },
+    storageState: authStatePath("user.json"),
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
+const phase5a2PrimitivesWebkitProject = {
+  name: "phase5a2-primitives-webkit",
+  testMatch: /phase5a2-cross-browser-primitives\.spec\.ts/,
+  dependencies: ["auth-setup"],
+  retries: 0,
+  use: {
+    ...devices["Desktop Safari"],
+    browserName: "webkit" as const,
+    viewport: { width: 1280, height: 800 },
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    contextOptions: { reducedMotion: "reduce" as const },
+    storageState: authStatePath("user.json"),
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
 const privatePwaCacheProject = {
   name: "private-pwa-cache",
   testMatch: /private-pwa-cache-isolation\.spec\.ts/,
@@ -383,6 +428,91 @@ const privatePwaCacheProject = {
   },
 };
 
+const phase5a2DirectionStillsProject = {
+  name: "phase5a2-direction-stills",
+  testMatch: /phase5a2-direction-selection-stills\.spec\.ts/,
+  dependencies: ["auth-setup"],
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    viewport: { width: 1440, height: 900 },
+    deviceScaleFactor: 1,
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    contextOptions: { reducedMotion: "reduce" as const },
+    storageState: authStatePath("user.json"),
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
+const phase5a2DirectionMotionProject = {
+  name: "phase5a2-direction-motion",
+  testMatch: /phase5a2-direction-selection-motion\.spec\.ts/,
+  dependencies: ["auth-setup"],
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    viewport: { width: 1440, height: 900 },
+    deviceScaleFactor: 1,
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    contextOptions: { reducedMotion: "no-preference" as const },
+    storageState: authStatePath("user.json"),
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
+const phase5a2DirectionScannerProject = {
+  name: "phase5a2-direction-scanner",
+  testMatch: /phase5a2-direction-selection-scanner\.spec\.ts/,
+  dependencies: ["auth-setup"],
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    viewport: { width: 390, height: 844 },
+    deviceScaleFactor: 1,
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "dark" as const,
+    contextOptions: { reducedMotion: "no-preference" as const },
+    storageState: authStatePath("user.json"),
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
+const phase5a2DirectionBehaviorProject = {
+  name: "phase5a2-direction-behavior",
+  testMatch: /phase5a2-direction-behavior\.spec\.ts/,
+  dependencies: ["auth-setup"],
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    browserName: "chromium" as const,
+    viewport: { width: 1440, height: 900 },
+    deviceScaleFactor: 1,
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    contextOptions: { reducedMotion: "no-preference" as const },
+    storageState: authStatePath("user.json"),
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
 const projects = [
   ...(LOCAL_AUTHENTICATED ? [authSetupProject, functionalAuthSetupProject] : []),
   smokeProject,
@@ -396,6 +526,19 @@ const projects = [
   ...(HAS_PHASE5_ROUTE_JS && !LOCAL_AUTHENTICATED ? [phase5RouteJsPublicProject] : []),
   ...(HAS_PHASE5_ROUTE_JS && LOCAL_AUTHENTICATED ? [phase5RouteJsAuthenticatedProject] : []),
   ...(HAS_PHASE5A1_CATALOG && LOCAL_AUTHENTICATED ? [phase5a1CatalogProject] : []),
+  ...(HAS_PHASE5A2_CROSS_BROWSER && LOCAL_AUTHENTICATED
+    ? [phase5a2PrimitivesFirefoxProject, phase5a2PrimitivesWebkitProject]
+    : []),
+  ...(HAS_PHASE5A2_DIRECTION_BEHAVIOR && LOCAL_AUTHENTICATED
+    ? [phase5a2DirectionBehaviorProject]
+    : []),
+  ...(HAS_PHASE5A2_DIRECTION_REVIEW && LOCAL_AUTHENTICATED
+    ? [
+        phase5a2DirectionStillsProject,
+        phase5a2DirectionMotionProject,
+        phase5a2DirectionScannerProject,
+      ]
+    : []),
   ...(HAS_SCREENSHOTS ? [screenshotsProject] : []),
   ...(HAS_PR_SCREENSHOTS ? [prScreenshotsProject] : []),
 ];

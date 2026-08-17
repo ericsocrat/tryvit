@@ -28,6 +28,7 @@ env:
   BASELINE_DATA_AUDIT: 300
   NEXT_PUBLIC_QA_MODE: "1"
   PHASE5A1_CATALOG: "1"
+  PHASE5A2_CROSS_BROWSER: "true"
   PHASE5A1_CATALOG_SOURCE_SHA: ${{ github.sha }}
   PHASE5A1_CATALOG_PR_HEAD_SHA: ${{ github.sha }}
 
@@ -93,16 +94,16 @@ jobs:
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/ms-playwright
-          key: pw-${{ runner.os }}-${{ steps.pw-version.outputs.version }}
+          key: pw-all-engines-${{ runner.os }}-${{ steps.pw-version.outputs.version }}
 
       - name: Install Playwright browsers
         if: steps.pw-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium firefox webkit
         timeout-minutes: 8
 
       - name: Install Playwright system deps
         if: steps.pw-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
+        run: npx playwright install-deps chromium firefox webkit
         timeout-minutes: 8
 
       - name: Install pinned Supabase CLI
@@ -164,7 +165,7 @@ jobs:
         id: local_authenticated_suite
         run: |
           set -o pipefail
-          npm run visual-safety:local-authenticated -- --project=authenticated --project=functional --project=private-pwa-cache --project=phase5a1-catalog --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
+          npm run visual-safety:local-authenticated -- --project=authenticated --project=functional --project=private-pwa-cache --project=phase5a1-catalog --project=phase5a2-primitives-firefox --project=phase5a2-primitives-webkit --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
         timeout-minutes: 20
         env:
           VISUAL_SAFETY_MODE: local-authenticated

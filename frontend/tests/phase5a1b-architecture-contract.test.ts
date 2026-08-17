@@ -5,6 +5,18 @@ import { describe, expect, it } from "vitest";
 
 const frontendRoot = process.cwd();
 const sourceRoot = path.join(frontendRoot, "src");
+const guardedPhase5A2V2Importers = new Set([
+  "src/app/dev/phase5a2/_directions/evidence-register/EvidenceRegister.tsx",
+  "src/app/dev/phase5a2/_directions/open-core/OpenCore.tsx",
+  "src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx",
+  "src/app/dev/phase5a2/_shared/MotionStudy.client.tsx",
+  "src/app/dev/phase5a2/_shared/ProductLookup.client.tsx",
+  "src/app/dev/phase5a2/_shared/ScannerStudy.client.tsx",
+]);
+const canonicalV2ReviewRoutes = new Set([
+  "/dev/components",
+  "/dev/phase5a2/[candidate]/[surface]",
+]);
 
 function compareOrdinal(left: string, right: string): number {
   if (left === right) return 0;
@@ -26,6 +38,14 @@ function relative(filename: string): string {
   return path.relative(frontendRoot, filename).split(path.sep).join("/");
 }
 
+function isAdmittedV2ReviewSource(filename: string): boolean {
+  const relativePath = relative(filename);
+  return (
+    relativePath.startsWith("src/app/dev/components/") ||
+    guardedPhase5A2V2Importers.has(relativePath)
+  );
+}
+
 function importSpecifiers(source: string): string[] {
   return [...source.matchAll(/(?:from\s*|import\s*\(|require\s*\()\s*["']([^"']+)["']/gu)]
     .map((match) => match[1]!)
@@ -33,14 +53,14 @@ function importSpecifiers(source: string): string[] {
 }
 
 describe("Phase 5A.1b architecture contract", () => {
-  it("keeps production on V1 and V2 primitive reachability catalog-only", () => {
+  it("keeps production on V1 and bounds V2 imports to exact review sources", () => {
     const rootLayout = readFileSync(path.join(sourceRoot, "app", "layout.tsx"), "utf8");
     expect(rootLayout).toContain('data-design-system="v1"');
 
     const productionFiles = [
       ...listFiles(path.join(sourceRoot, "app"), new Set([".ts", ".tsx"])),
       ...listFiles(path.join(sourceRoot, "components"), new Set([".ts", ".tsx"])),
-    ].filter((filename) => !relative(filename).startsWith("src/app/dev/components/"));
+    ].filter((filename) => !isAdmittedV2ReviewSource(filename));
     const violations = productionFiles.flatMap((filename) =>
       importSpecifiers(readFileSync(filename, "utf8"))
         .filter((specifier) =>
@@ -51,7 +71,7 @@ describe("Phase 5A.1b architecture contract", () => {
     expect(violations).toEqual([]);
   });
 
-  it("rejects transitive production-route reachability into the canonical V2 API", () => {
+  it("rejects V2 reachability outside admitted non-production review routes", () => {
     const inventory = JSON.parse(
       readFileSync(
         path.join(frontendRoot, "..", "docs", "phase5", "live-route-component-inventory.json"),
@@ -76,10 +96,31 @@ describe("Phase 5A.1b architecture contract", () => {
         return [];
       }
       return module.transitiveRouteConsumers
-        .filter((consumer) => consumer.routePath !== "/dev/components")
+        .filter((consumer) => !canonicalV2ReviewRoutes.has(consumer.routePath))
         .map((consumer) => `${module.path}:${consumer.routePath}`);
     });
     expect(violations).toEqual([]);
+  });
+
+  it("keeps the Phase 5A.2 V2 admission private and fail-closed", () => {
+    const phase5A2Root = path.join(sourceRoot, "app", "dev", "phase5a2");
+    const gate = readFileSync(path.join(phase5A2Root, "phase5a2-gate.ts"), "utf8");
+    const pages = [
+      readFileSync(path.join(phase5A2Root, "page.tsx"), "utf8"),
+      readFileSync(
+        path.join(phase5A2Root, "[candidate]", "[surface]", "page.tsx"),
+        "utf8",
+      ),
+    ];
+
+    expect(gate).toContain('environment.nodeEnv !== "production"');
+    expect(gate).toContain('environment.directionSelection === "1"');
+    expect(gate).not.toContain("NEXT_PUBLIC");
+    for (const page of pages) {
+      expect(page).toContain('export const dynamic = "force-dynamic"');
+      expect(page).toContain("phase5A2GateFromProcessEnvironment()");
+      expect(page).toContain("notFound()");
+    }
   });
 
   it("keeps the five consumer-required common entries as explicit V1 facades", () => {

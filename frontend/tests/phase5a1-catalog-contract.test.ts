@@ -277,6 +277,18 @@ describe("Phase 5A.1b catalog contract", () => {
       specification.indexOf("async function pointerActivate"),
       specification.indexOf("async function pointerOpen"),
     );
+    const scrollQuiescenceHelper = specification.slice(
+      specification.indexOf("async function armCatalogScrollProbe"),
+      specification.indexOf("async function pointerActivate"),
+    );
+    const comboboxDiagnosticHelper = specification.slice(
+      specification.indexOf("function normalizeCatalogAttributeState"),
+      specification.indexOf("async function exerciseNestedMenu"),
+    );
+    const retainedDiagnosticHelper = specification.slice(
+      specification.indexOf("async function retainSafeDiagnostic"),
+      specification.indexOf("for (const viewport of CATALOG_CAPTURE_VIEWPORTS)"),
+    );
     const pointerOpenHelper = specification.slice(
       specification.indexOf("async function pointerOpen"),
       specification.indexOf("async function pointerOutside"),
@@ -422,9 +434,40 @@ describe("Phase 5A.1b catalog contract", () => {
     expect(specification).toContain("TEXT_SPACING_STYLE");
     expect(specification).toContain("assertZoom200Reflow");
     expect(specification).toContain("assertNoClippedOverlappingOrObscuredContent");
+    expect(scrollQuiescenceHelper).toContain(
+      'document.addEventListener("scroll", observeScroll, true)',
+    );
+    expect(scrollQuiescenceHelper).toContain(
+      'document.removeEventListener("scroll", observeScroll, true)',
+    );
+    expect(scrollQuiescenceHelper.indexOf("await armCatalogScrollProbe(page)")).toBeLessThan(
+      scrollQuiescenceHelper.indexOf("await locator.scrollIntoViewIfNeeded()"),
+    );
+    expect(scrollQuiescenceHelper).toContain("CATALOG_SCROLL_QUIET_FRAMES_REQUIRED");
+    expect(scrollQuiescenceHelper).toContain("CATALOG_SCROLL_QUIESCENCE_TIMEOUT_MS");
+    expect(scrollQuiescenceHelper).toContain("cancelAnimationFrame(frame)");
+    expect(scrollQuiescenceHelper).toContain(
+      'throw new CatalogFailure("scroll-quiescence-invalid", capture, { scroll })',
+    );
+    expect(scrollQuiescenceHelper).not.toContain("waitForTimeout");
+    expect(scrollQuiescenceHelper).not.toMatch(/retry|reopen|force:/u);
+    expect(specification).toContain("focus({ preventScroll: true })");
+    expect(specification).toContain('"initial-open"');
+    expect(specification).toContain('"post-audit"');
+    expect(specification).toContain('"post-capture"');
+    expect(comboboxDiagnosticHelper).toContain("liveStatusMatchesExpected");
+    expect(comboboxDiagnosticHelper).toContain("popupStatusMatchesExpected");
+    expect(comboboxDiagnosticHelper).not.toMatch(
+      /readonly\s+(?:liveStatus|popupStatus|id|selector|url|text|html)\s*:/iu,
+    );
+    expect(retainedDiagnosticHelper).toContain("schemaVersion: 3");
+    expect(retainedDiagnosticHelper.indexOf("writeFileSync(")).toBeLessThan(
+      retainedDiagnosticHelper.indexOf(".screenshot({"),
+    );
     expect(pointerActivationHelper).toContain("capture: CatalogFailureCapture");
-    expect(pointerActivationHelper).toContain("await locator.scrollIntoViewIfNeeded()");
-    expect(pointerActivationHelper).toContain("await settleScrollWork(page)");
+    expect(pointerActivationHelper).toContain(
+      "await prepareCatalogScrollTarget(page, locator, capture)",
+    );
     expect(pointerActivationHelper.match(/await locator\.click\(\);/gu)).toHaveLength(1);
     expect(
       pointerActivationHelper.match(
