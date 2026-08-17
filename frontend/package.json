@@ -114,7 +114,7 @@
     "eslint-config-next": "16.2.12",
     "fake-indexeddb": "^6.2.5",
     "jsdom": "^29.1.1",
-    "postcss": "^8.5.25",
+    "postcss": "^8.5.26",
     "sharp": "^0.35.3",
     "svgo": "^4.0.2",
     "tailwindcss": "^4.2.1",
