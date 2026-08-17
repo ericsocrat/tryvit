@@ -457,6 +457,7 @@ describe("Phase 5A.2 recording contract wiring", () => {
     expect(runner).not.toContain('NEXT_PUBLIC_QA_MODE: "1"');
     expect(runner).toContain("captureNextEnvSourceSnapshot");
     expect(runner).toContain("withNextEnvSourceRestoration");
+    expect(runner).toContain("return result.stdout.trimEnd()");
     expect(runner.lastIndexOf("withNextEnvSourceRestoration(")).toBeLessThan(
       runner.indexOf('path.join(toolingDirectory, "verify-candidates.mts")'),
     );

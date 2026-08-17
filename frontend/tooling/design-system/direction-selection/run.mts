@@ -20,7 +20,7 @@ function git(frontendRoot: string, args: readonly string[]): string {
   });
   if (result.error) throw result.error;
   if (result.status !== 0) throw new Error("[P5A2_EVIDENCE] git-provenance-failed");
-  return result.stdout.trim();
+  return result.stdout.trimEnd();
 }
 
 const toolingDirectory = path.dirname(fileURLToPath(import.meta.url));
