@@ -15,6 +15,11 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
+- Add the Phase 5A.2 Checkpoint 1 human-selection handoff, candidate and identity
+  coverage ledger, blinded-review protocol, validation/performance limits,
+  source/artifact inventory, originality/licensing boundary, two independent
+  scorecards, review synthesis, and pending Eric decision record alongside the
+  immutable 35-file review-evidence package.
 - Document the Phase 5A.0f private service-worker response boundary, targeted
   legacy-cache migration, offline fallback, and guarded account-switch proof.
 - Record the synchronized Phase 5A.0e five-run Lighthouse and route-JavaScript

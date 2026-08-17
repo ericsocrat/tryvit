@@ -7,6 +7,10 @@ Observed: 2026-08-17
 Scope: interaction and information-design principles for guarded direction
 studies; not production requirements, scientific validation, or legal clearance
 
+Applied candidate packages and the final review boundary are documented in
+[`docs/phase5a2/checkpoint-1/CANDIDATE_PACKAGES.md`](../phase5a2/checkpoint-1/CANDIDATE_PACKAGES.md).
+Benchmark inclusion is not candidate endorsement.
+
 ## Executive Summary
 
 - **Make the decision fast and the proof patient.** The first viewport should

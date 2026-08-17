@@ -5,6 +5,8 @@ served by a review route.
 
 Observed: 2026-08-17
 
+Final capture source: use the exact source in the regenerated Checkpoint 1 manifest.
+
 ## Method
 
 Every candidate currently renders with the existing V2 system stacks. The browser
@@ -37,6 +39,11 @@ All three bounded pairings remain below the Phase 5 font ceiling of 100 KiB, but
 does not establish a production budget. A real adoption assay must use the complete
 approved message corpus, required styles, localized fallbacks, and any generated
 metadata overhead.
+
+The final guarded candidate run confirmed zero candidate font requests and zero adopted
+font bytes. It did not render the proposed families, so it is not evidence of their
+fallback metric compatibility, proposed-font CLS, or final EN/PL/DE corpus coverage.
+Those remain blocking adoption measurements rather than implied passes.
 
 ## Exact upstream requests and payloads
 

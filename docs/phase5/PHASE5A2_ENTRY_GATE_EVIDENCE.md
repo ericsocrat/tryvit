@@ -6,6 +6,10 @@ Observed: 2026-08-17
 
 Reference route: `/dev/components` (existing Phase 5A.1 gate; no new capture cases)
 
+This document records the historical entry baseline. Final candidate provenance is
+separate and authoritative in
+[`docs/phase5a2/checkpoint-1/evidence/manifest.json`](../phase5a2/checkpoint-1/evidence/manifest.json).
+
 ## Exact-main provenance
 
 - Source commit: `39b8313575bac4eaab53fbf34f1aefd7cd1d497f`
@@ -104,3 +108,25 @@ Windows High Contrast, macOS Safari, browser-chrome traversal, assistive
 technology combinations, real touch hardware, or coarse-pointer behavior.
 Those claims require later human/native-device evidence. Existing Chromium
 visual, forced-color, and coarse-pointer evidence remains unchanged.
+
+## Final Checkpoint 1 capture binding
+
+- Candidate source and tree: exact values in the final regenerated manifest
+- Phase 5A.1 full regression cohort: 19 of 19 passed; governed counts unchanged
+- Phase 5A.2 final guarded direction run: 13 of 13 passed
+- Staged package: 35 files, 3,112,982 bytes
+- Contents: 3 candidates, 21 stills, 6 WebMs, 7 contact sheets, 1 manifest
+
+This binding supersedes the entry SHA only for candidate evidence. The original SHA,
+Nightly classification, and cross-browser admission above remain the historical gate.
+
+## Authoritative-main advancement
+
+After the original entry gate, authoritative `main` advanced to `30934dfe` through a
+PostCSS `8.5.26` correction. Its PR checks were green except the Lighthouse aggregate.
+All 50 public and local audits completed and the safety assertions passed; aggregation
+failed only because local-authenticated mobile product performance ranged from `0.84`
+to `0.95` (`0.11`, above the `0.10` stability threshold), alongside the five previously
+recorded mobile LCP directional debts. This is lab instability and directional
+performance debt, not candidate-source, safety, or interaction failure. Final candidate
+evidence must be regenerated after rebasing onto the verified descendant.

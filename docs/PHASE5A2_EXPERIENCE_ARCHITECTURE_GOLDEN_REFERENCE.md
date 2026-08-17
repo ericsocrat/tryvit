@@ -1,7 +1,7 @@
 # Phase 5A.2 — Experience Architecture and Golden Reference Gate
 
-> **Last updated:** 2026-08-15
-> **Status:** Planned non-production approval phase; no Golden Reference or production migration is implemented by this document
+> **Last updated:** 2026-08-17
+> **Status:** Checkpoint 1 evidence staged; Eric selection pending; no Golden Reference or production migration is authorized
 > **Entry gate:** Phase 5A.1a and Phase 5A.1b are reviewed, merged, and green on authoritative `main`, followed by explicit authorization from Eric
 > **Exit gate:** Eric explicitly selects the art direction and identity and approves all six Golden References after independent review
 
@@ -30,6 +30,20 @@ outside-pointer dismissal, and nested portal ownership. It extends behavioral co
 it does not replace the immutable Chromium visual baselines or authorize a new broad
 screenshot matrix. Production-route migration remains prohibited until this
 cross-browser interaction gate passes.
+
+### Approval checkpoints
+
+Phase 5A.2 uses two approval checkpoints without adding roadmap phases:
+
+1. **Direction and identity selection:** three paired candidate studies, bounded
+   representative compositions, motion/scanner evidence, independent review, and Eric's
+   explicit selection.
+2. **Six Golden References:** complete landing, authentication, home, search,
+   product/evidence, and scanner references built only after Checkpoint 1 selection.
+
+Checkpoint 1 evidence is staged at
+[`phase5a2/checkpoint-1/`](phase5a2/checkpoint-1/README.md). Completing Checkpoint 1 does
+not satisfy this document's final exit gate and does not authorize production work.
 
 ## Product north star
 
