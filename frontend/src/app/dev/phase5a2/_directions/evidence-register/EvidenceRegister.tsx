@@ -381,7 +381,7 @@ function IdentitySurface({ messages }: Readonly<{ messages: EvidenceRegisterMess
         <div><span>{messages.labels.identityDoNot}</span><p>{messages.identity[3]}</p></div>
         <div><span>{messages.labels.identityStatus}</span><p>{messages.identity[4]}</p></div>
       </section>
-      <div aria-label={messages.labels.identityPalette} className={styles.palette}><span /><span /><span /><span /><span /></div>
+      <div aria-label={messages.labels.identityPalette} className={styles.palette} role="img"><span /><span /><span /><span /><span /></div>
     </div>
   );
 }

@@ -394,7 +394,7 @@ function IdentitySurface({ messages }: Readonly<{ messages: SourceFoldMessages }
         <div><span>{labels.avoid}</span><p>{labels.avoidDescription}</p></div>
         <div><span>{labels.status}</span><p>{labels.statusDescription}</p></div>
       </section>
-      <div className={styles.palette} aria-label={labels.palette}><span /><span /><span /><span /><span /></div>
+      <div className={styles.palette} role="img" aria-label={labels.palette}><span /><span /><span /><span /><span /></div>
     </div>
   );
 }

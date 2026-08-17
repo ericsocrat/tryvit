@@ -309,6 +309,10 @@
   background: var(--sf-rust);
 }
 
+.maskSpecimen figcaption {
+  color: #fffaf0;
+}
+
 .maskSpecimen svg {
   transform: scale(0.72);
 }

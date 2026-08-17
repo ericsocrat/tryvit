@@ -408,7 +408,7 @@ function IdentitySurface({ messages }: Readonly<{ messages: OpenCoreMessages }>)
         <div><span>{messages.identityDetailLabels[2]}</span><p>{messages.identityAvoid}</p></div>
         <div><span>{messages.identityDetailLabels[3]}</span><p>{messages.identityStatus}</p></div>
       </section>
-      <div aria-label={messages.identityPaletteLabel} className={styles.palette}><span /><span /><span /><span /></div>
+      <div aria-label={messages.identityPaletteLabel} className={styles.palette} role="img"><span /><span /><span /><span /></div>
     </div>
   );
 }
