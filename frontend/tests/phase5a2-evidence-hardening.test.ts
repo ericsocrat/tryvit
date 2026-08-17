@@ -283,6 +283,30 @@ describe("Phase 5A.2 generated Next source restoration", () => {
     },
   );
 
+  it("restores a Git-clean mixed-EOL source after Next canonicalizes it", () => {
+    const root = temporaryDirectory();
+    const filename = path.join(root, "next-env.d.ts");
+    const original = Buffer.from(
+      nextEnvContents("development", "\r\n").replace(
+        'import "./.next/dev/types/routes.d.ts";\r\n\r\n',
+        'import "./.next/dev/types/routes.d.ts";\n\r\n',
+      ),
+      "utf8",
+    );
+    writeFileSync(filename, original);
+    const snapshot = captureNextEnvSourceSnapshot(root);
+    writeFileSync(filename, nextEnvContents("build", "\r\n"), "utf8");
+    let statusChecks = 0;
+
+    expect(
+      restoreNextEnvSourceSnapshot(snapshot, () => {
+        statusChecks += 1;
+        return statusChecks === 1 ? " M frontend/next-env.d.ts" : "";
+      }),
+    ).toBe("restored");
+    expect(readFileSync(filename)).toEqual(original);
+  });
+
   it("accepts an unchanged clean source snapshot without writing", () => {
     const root = temporaryDirectory();
     const filename = path.join(root, "next-env.d.ts");

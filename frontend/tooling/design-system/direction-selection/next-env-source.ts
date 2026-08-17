@@ -11,6 +11,18 @@ const DEV_ROUTE_TYPES_IMPORT = 'import "./.next/dev/types/routes.d.ts";';
 const BUILD_ROUTE_TYPES_IMPORT = 'import "./.next/types/routes.d.ts";';
 const NEXT_BUILD_SOURCE_STATUS = " M frontend/next-env.d.ts";
 
+function canonicalContents(routeTypesImport: string, eol: "\n" | "\r\n"): string {
+  return [
+    '/// <reference types="next" />',
+    '/// <reference types="next/image-types/global" />',
+    routeTypesImport,
+    "",
+    "// NOTE: This file should not be edited",
+    "// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.",
+    "",
+  ].join(eol);
+}
+
 export interface NextEnvSourceSnapshot {
   readonly frontendRoot: string;
   readonly sourceBytes: Buffer;
@@ -34,27 +46,19 @@ function metadata(candidate: string): Stats {
   }
 }
 
-function occurrences(contents: string, value: string): number {
-  return contents.split(value).length - 1;
-}
-
 function expectedBuildBytes(sourceBytes: Buffer): Buffer {
   const contents = sourceBytes.toString("utf8");
   if (!Buffer.from(contents, "utf8").equals(sourceBytes)) {
     fail("next-env-source-encoding-invalid");
   }
-  const developmentImports = occurrences(contents, DEV_ROUTE_TYPES_IMPORT);
-  const buildImports = occurrences(contents, BUILD_ROUTE_TYPES_IMPORT);
-  if (developmentImports === 1 && buildImports === 0) {
-    return Buffer.from(
-      contents.replace(DEV_ROUTE_TYPES_IMPORT, BUILD_ROUTE_TYPES_IMPORT),
-      "utf8",
-    );
+  if (contents.replace(/\r\n?/gu, "\n") !== canonicalContents(DEV_ROUTE_TYPES_IMPORT, "\n")) {
+    fail("next-env-source-contract-invalid");
   }
-  if (developmentImports === 0 && buildImports === 1) {
-    return Buffer.from(sourceBytes);
-  }
-  fail("next-env-source-contract-invalid");
+  const firstNewline = contents.indexOf("\n", 1);
+  const generatedEol = firstNewline !== -1 && contents[firstNewline - 1] === "\r"
+    ? "\r\n"
+    : "\n";
+  return Buffer.from(canonicalContents(BUILD_ROUTE_TYPES_IMPORT, generatedEol), "utf8");
 }
 
 function sourceFilename(frontendRoot: string): string {
