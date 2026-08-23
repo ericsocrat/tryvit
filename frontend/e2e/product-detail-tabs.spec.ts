@@ -13,7 +13,23 @@ const SCORE_INTERPRETATION = '[data-testid="score-interpretation"]';
 const HEALTH_WARNINGS = '[data-testid="health-warnings-card"]';
 const TAB_BAR = '[data-testid="tab-bar"]';
 
-const TAB_NAMES = ["Overview", "Nutrition", "Alternatives", "Scoring"] as const;
+const fixtureProductId = process.env.QA_PRODUCT_ID;
+if (!fixtureProductId || !/^[1-9][0-9]*$/u.test(fixtureProductId)) {
+  throw new Error("[PRODUCT_TABS_FIXTURE] positive-product-id-required");
+}
+const PRODUCT_DETAIL_PATH = `/app/product/${fixtureProductId}`;
+const TAB_IDS = ["overview", "nutrition", "alternatives", "scoring"] as const;
+
+async function openFullAnalysis(page: import("@playwright/test").Page) {
+  await page.goto(PRODUCT_DETAIL_PATH, { waitUntil: "domcontentloaded" });
+  const tabBar = page.locator(TAB_BAR);
+  if (!(await tabBar.isVisible().catch(() => false))) {
+    const toggle = page.getByTestId("toggle-analysis");
+    await expect(toggle).toBeVisible({ timeout: 15_000 });
+    await toggle.click();
+  }
+  await expect(tabBar).toBeVisible({ timeout: 15_000 });
+}
 
 // ── Desktop viewport (1280px) ───────────────────────────────────────────────
 
@@ -23,12 +39,7 @@ test.describe("Product detail — no section duplication (desktop)", () => {
   test("shared sections render exactly once on every tab", async ({
     page,
   }) => {
-    // Navigate to a known product — adjust ID to match seeded data
-    await page.goto("/app/product/1", { waitUntil: "domcontentloaded" });
-
-    // Wait for product content to load (tab bar is present)
-    const tabBar = page.locator(TAB_BAR);
-    await expect(tabBar).toBeVisible({ timeout: 15_000 });
+    await openFullAnalysis(page);
 
     // Verify single instance on default (Overview) tab
     await expect(page.locator(SCORE_INTERPRETATION)).toHaveCount(1);
@@ -37,8 +48,8 @@ test.describe("Product detail — no section duplication (desktop)", () => {
     await expect(page.getByRole("tablist")).toHaveCount(1);
 
     // Switch through all tabs and re-assert
-    for (const tabName of TAB_NAMES) {
-      await page.getByRole("tab", { name: tabName }).click();
+    for (const tabId of TAB_IDS) {
+      await page.locator(`#tab-${tabId}`).click();
 
       // Wait for any transition to settle
       await page.waitForTimeout(300);
@@ -53,8 +64,7 @@ test.describe("Product detail — no section duplication (desktop)", () => {
   test("score interpretation is in left column, not tab content", async ({
     page,
   }) => {
-    await page.goto("/app/product/1", { waitUntil: "domcontentloaded" });
-    await expect(page.locator(TAB_BAR)).toBeVisible({ timeout: 15_000 });
+    await openFullAnalysis(page);
 
     // Score interpretation should be a sibling of (or within) the left column,
     // NOT inside the right column that holds tabs
@@ -78,13 +88,10 @@ test.describe("Product detail — no section duplication (mobile 375px)", () => 
   test("shared sections render exactly once on every tab (mobile)", async ({
     page,
   }) => {
-    await page.goto("/app/product/1", { waitUntil: "domcontentloaded" });
+    await openFullAnalysis(page);
 
-    const tabBar = page.locator(TAB_BAR);
-    await expect(tabBar).toBeVisible({ timeout: 15_000 });
-
-    for (const tabName of TAB_NAMES) {
-      await page.getByRole("tab", { name: tabName }).click();
+    for (const tabId of TAB_IDS) {
+      await page.locator(`#tab-${tabId}`).click();
       await page.waitForTimeout(300);
 
       await expect(page.locator(SCORE_INTERPRETATION)).toHaveCount(1);
