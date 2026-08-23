@@ -23,10 +23,28 @@ export function HomeControls({
   savedMessage: string;
 }>) {
   const [message, setMessage] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const escapeRestoreRef = useRef(false);
   useEffect(() => {
     rootRef.current?.setAttribute("data-golden-client-ready", "true");
   }, []);
+  useEffect(() => {
+    if (!menuOpen) return;
+    const markEscapeClose = (event: KeyboardEvent) => {
+      if (event.key === "Escape") escapeRestoreRef.current = true;
+    };
+    document.addEventListener("keydown", markEscapeClose, true);
+    return () => document.removeEventListener("keydown", markEscapeClose, true);
+  }, [menuOpen]);
+  useEffect(() => {
+    if (menuOpen || !escapeRestoreRef.current) return;
+    escapeRestoreRef.current = false;
+    const trigger = rootRef.current?.querySelector<HTMLButtonElement>(
+      "button[aria-haspopup='menu']",
+    );
+    queueMicrotask(() => trigger?.focus());
+  }, [menuOpen]);
   const entries = useMemo(() => [
     {
       id: "resume-record",
@@ -51,17 +69,15 @@ export function HomeControls({
     <div
       className={styles.homeControls}
       data-golden-client="home-controls"
-      onKeyDownCapture={(event) => {
-        if (event.key !== "Escape") return;
-        const trigger = rootRef.current?.querySelector<HTMLButtonElement>(
-          "button[aria-haspopup='menu']",
-        );
-        window.setTimeout(() => trigger?.focus(), 0);
-      }}
       ref={rootRef}
     >
       <Button onClick={() => setMessage(resumedMessage)}>{resumeLabel}</Button>
-      <Menu entries={entries} triggerLabel={menuLabel} />
+      <Menu
+        entries={entries}
+        onOpenChange={setMenuOpen}
+        open={menuOpen}
+        triggerLabel={menuLabel}
+      />
       <div aria-atomic="true" aria-live="polite" className={styles.homeLive} role="status">
         {message}
       </div>
