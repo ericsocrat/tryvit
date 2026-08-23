@@ -21,6 +21,7 @@ import {
   GoldenMark,
   GoldenWordmark,
 } from "@/app/dev/phase5a2/_golden/GoldenIdentity";
+import { phase5A2GoldenGateFromProcessEnvironment } from "@/app/dev/phase5a2/_golden/golden-gate";
 import {
   GOLDEN_ASSET_BOARD_COUNT,
   GOLDEN_COMMITTED_BINARY_LIMIT_BYTES,
@@ -171,6 +172,16 @@ describe("Phase 5A.2 Golden Reference contract", () => {
     );
     expect(gate).toContain('environment.PHASE5A2_DIRECTION_SELECTION === "1"');
     expect(gate).toContain("phase5A2GateFromProcessEnvironment(environment)");
+    expect(phase5A2GoldenGateFromProcessEnvironment({ NODE_ENV: "development" })).toBe(false);
+    expect(phase5A2GoldenGateFromProcessEnvironment({
+      NODE_ENV: "development",
+      PHASE5A2_DIRECTION_SELECTION: "1",
+    })).toBe(true);
+    expect(phase5A2GoldenGateFromProcessEnvironment({ NODE_ENV: "production" })).toBe(false);
+    expect(phase5A2GoldenGateFromProcessEnvironment({
+      NODE_ENV: "production",
+      PHASE5A2_DIRECTION_SELECTION: "1",
+    })).toBe(true);
   });
 
   it("uses whole-page Axe without legacy exclusions or disabled rules", () => {

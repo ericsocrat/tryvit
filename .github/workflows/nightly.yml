@@ -42,7 +42,9 @@ jobs:
       contents: read
     timeout-minutes: 30
     env:
-      PHASE5_LIVE_INVENTORY_BASE_SHA: ${{ github.sha }}
+      # Main owns its exact report history. Feature-branch dispatches compare
+      # against the independently fetched main merge base.
+      PHASE5_LIVE_INVENTORY_BASE_SHA: ${{ github.ref == 'refs/heads/main' && github.sha || '' }}
       VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
     defaults:
       run:
