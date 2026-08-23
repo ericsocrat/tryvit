@@ -962,6 +962,11 @@ describe("browser workflow visual-safety contract", () => {
     expect(nightlyPublicSuite).toContain('NEXT_PUBLIC_QA_MODE: "1"');
     expect(nightlyAuthenticatedSuite).toContain('NEXT_PUBLIC_QA_MODE: "1"');
     expect(browserJobs.nightly.match(/NEXT_PUBLIC_QA_MODE: "1"/gu)).toHaveLength(2);
+    expect(nightlyPublicSuite).toContain("--retries=0");
+    expect(nightlyAuthenticatedSuite).toContain("--retries=0");
+    expect(browserJobs.nightly.match(/--retries=0/gu)).toHaveLength(2);
+    expect(nightlyPublicSuite).toContain("timeout-minutes: 20");
+    expect(nightlyAuthenticatedSuite).toContain("timeout-minutes: 20");
     expect(browserJobs.nightly).toContain("--project=phase5a1-catalog");
     expect(workflowSources.nightly).toContain(
       "PHASE5A1_CATALOG_SOURCE_SHA: ${{ github.sha }}",
