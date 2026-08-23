@@ -23,6 +23,18 @@
     "branch": "codex/phase-5a2-admission-authenticated-matrix",
     "stackedBaseSha": "bafeb0dc60bba209154091908ff5e03cbd3a9733",
     "resolvedCausalGroups": 12,
+    "nutriForegroundContract": {
+      "scope": "v1-compatibility-domain",
+      "grades": ["A", "B", "C", "D", "E"],
+      "regulatedFillsChanged": false,
+      "forcedColors": "CanvasText"
+    },
+    "serverLogoutCoverage": {
+      "owner": "frontend/e2e/authenticated-server-logout.spec.ts",
+      "identity": "disposable-local-only",
+      "proof": "global-sign-out-rejects-refresh-token",
+      "sharedFixtureMutation": false
+    },
     "focusedEvidence": [
       {
         "kind": "component-and-contract",
@@ -53,7 +65,10 @@
         "firefoxPrimitiveCases": 5
       }
     ],
-    "completeNightly": "pending-settled-head"
+    "completeNightly": {
+      "certificationRecord": "pull-request-description",
+      "reason": "Final exact-head run metadata, artifact IDs, and checksums are recorded after execution without superseding the certified commit."
+    }
   },
   "followUpRuns": [
     {
