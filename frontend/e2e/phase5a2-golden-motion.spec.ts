@@ -63,6 +63,8 @@ async function performJourney(page: Page, reference: (typeof GOLDEN_MOTION_RECOR
       await expect(page.getByRole("menu")).toBeVisible();
       await dwell(page);
       await page.keyboard.press("Escape");
+      await expect(menu).toBeFocused();
+      await dwell(page);
       await page.getByRole("button", { name: "Resume evidence review" }).click();
       await dwell(page);
       break;
