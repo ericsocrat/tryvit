@@ -7,7 +7,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { expect, test } from "./fixtures/safe-test";
-import { getSearchProductsCombobox } from "./helpers/localized-selectors";
+import {
+  getSearchProductsCombobox,
+  SEARCH_PRODUCTS_NAME,
+} from "./helpers/localized-selectors";
 
 async function ensureFullAnalysis(page: import("@playwright/test").Page) {
   const tabBar = page.getByTestId("tab-bar");
@@ -210,7 +213,7 @@ test.describe("Journey: settings interaction", () => {
 
     // Empty state with Search Products CTA
     const searchCta = page.getByRole("link", {
-      name: /search products|szukaj produktów/i,
+      name: SEARCH_PRODUCTS_NAME,
     });
     await expect(searchCta).toBeVisible({ timeout: 10_000 });
 
