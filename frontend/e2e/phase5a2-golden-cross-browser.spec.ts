@@ -59,6 +59,12 @@ test.beforeEach(async ({ page }) => {
 test("landing preserves SSR meaning and reduced-motion equivalence", async ({ page }, testInfo) => {
   await openGolden(page, "landing", "ready", testInfo);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Read the package");
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "Skip to reference" })).toBeFocused();
+  await page.getByRole("link", { name: "Skip to reference" }).click();
+  await expect(page.locator("#golden-main")).toBeFocused();
   const unfold = page.getByRole("button", { name: "Unfold the evidence" });
   await unfold.click();
   await expect(page.getByRole("button", { name: "Fold back to source" })).toHaveAttribute(
@@ -66,12 +72,6 @@ test("landing preserves SSR meaning and reduced-motion equivalence", async ({ pa
     "true",
   );
   await expect(page.getByRole("list").getByText("Observed facts", { exact: true })).toBeVisible();
-  await page.keyboard.press("Home");
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "Skip to reference" })).toBeFocused();
-  await page.getByRole("link", { name: "Skip to reference" }).click();
-  await expect(page.locator("#golden-main")).toBeFocused();
-
   await openGolden(page, "landing", "ready", testInfo, "reduced");
   await page.getByRole("button", { name: "Unfold the evidence" }).click();
   const motion = await page.locator("[data-golden-client='landing-narrative']").evaluate((element) => {
