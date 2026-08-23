@@ -40,6 +40,10 @@ Golden consumers outside the two guarded routes.
   ends at `product/partial/#golden-main` in normal and reduced recordings;
 - staged evidence verifier: 83/83 files, 7,084,033 bytes, passed with manifest SHA-256
   `b286061aecd0637f29da76b11dbdac72955bdac57c66efbdaf4afbd1a30518c5`.
+- dedicated CI workflow: exact-revision Ubuntu 24.04 admission, retries disabled,
+  Chromium/Firefox/WebKit plus full resilience/capture/performance, raw and staged
+  artifact retention, and no-backup runtime teardown; local workflow contracts and
+  `actionlint` passed.
 
 The initial reviewed packet remains recoverable in Git history. Superseded raw visual,
 browser, media, performance, and terminal-verifier packages remain outside the

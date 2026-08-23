@@ -1,0 +1,125 @@
+name: Phase 5A.2 Golden References
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/phase5a2-golden-references.yml"
+      - "frontend/**"
+      - "docs/phase5a2/checkpoint-2/**"
+      - "supabase/config.toml"
+      - "supabase/migrations/**"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase5a2-golden-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  golden-reference-admission:
+    name: Golden Reference admission
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    env:
+      BASE_URL: http://127.0.0.1:3000
+      VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
+      PHASE5A2_GOLDEN_REPLACE_EVIDENCE: "true"
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout exact revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Attest exact revision
+        working-directory: .
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.21.1
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install pinned Playwright browsers
+        run: npx playwright install --with-deps chromium firefox webkit
+        timeout-minutes: 10
+
+      - name: Setup pinned Supabase CLI
+        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
+        with:
+          version: 2.111.0
+
+      - name: Verify selected-system source contracts
+        run: npm run design-system:check
+
+      - name: Start ephemeral local Supabase
+        id: local_supabase_start
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh start
+
+      - name: Guarded local-authenticated preflight
+        id: guarded_preflight
+        if: ${{ !cancelled() && steps.local_supabase_start.outcome == 'success' }}
+        run: npm run visual-safety:preflight
+        env:
+          VISUAL_SAFETY_MODE: local-authenticated
+
+      - name: Run complete retries-disabled Golden admission
+        id: golden_admission
+        if: ${{ !cancelled() && steps.guarded_preflight.outcome == 'success' }}
+        run: npm run phase5:golden-review
+
+      - name: Verify atomically staged packet
+        id: staged_verify
+        if: ${{ !cancelled() && steps.golden_admission.outcome == 'success' }}
+        run: npm run phase5:golden-evidence:verify
+
+      - name: Reject generated source drift
+        if: ${{ !cancelled() && steps.staged_verify.outcome == 'success' }}
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          unexpected="$(git status --porcelain=v1 --untracked-files=all | grep -Ev '^ M docs/phase5a2/checkpoint-2/evidence/' || true)"
+          test -z "$unexpected"
+
+      - name: Upload complete raw candidate
+        if: ${{ always() && steps.local_supabase_start.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase5a2-golden-raw-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            frontend/test-results/phase5a2-golden-candidates/
+            frontend/test-results/**/error-context.md
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload verified replacement packet
+        if: ${{ always() && steps.staged_verify.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: phase5a2-golden-staged-${{ github.event.pull_request.head.sha || github.sha }}
+          path: docs/phase5a2/checkpoint-2/evidence/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Stop ephemeral local Supabase without backup
+        if: ${{ always() }}
+        working-directory: .
+        run: bash frontend/e2e/scripts/local-supabase-ci.sh stop

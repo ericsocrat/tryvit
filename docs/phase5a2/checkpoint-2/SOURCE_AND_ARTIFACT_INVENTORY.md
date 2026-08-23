@@ -21,6 +21,7 @@
 - `frontend/e2e/phase5a2-golden-*.spec.ts`;
 - `frontend/tests/phase5a2-golden-reference-contract.test.tsx`;
 - `frontend/playwright.config.ts` bounded projects;
+- `.github/workflows/phase5a2-golden-references.yml` exact-revision CI admission;
 - `docs/phase5a2/checkpoint-2/evidence/**` generated review packet.
 - `docs/phase5a2/checkpoint-2/rejections/**` compact rejected-attempt records;
 - `docs/phase5a2/checkpoint-2/reviews/**` independent scorecards and synthesis.
