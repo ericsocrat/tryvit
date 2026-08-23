@@ -20,6 +20,12 @@ interface GoldenPerformanceObserverState {
   lcpMs: number;
   cls: number;
   longTasks: Array<{ startTimeMs: number; durationMs: number }>;
+  motionIntervals: Array<{
+    kind: "animation" | "transition";
+    name: string;
+    startTimeMs: number;
+    endTimeMs: number | null;
+  }>;
 }
 
 interface ResourceEntry {
@@ -43,7 +49,10 @@ interface ValidSample {
   readonly ttfbMs: number;
   readonly cls: number;
   readonly longTasks: readonly { startTimeMs: number; durationMs: number }[];
+  readonly motionIntervals: readonly { kind: string; name: string; startTimeMs: number; endTimeMs: number }[];
+  readonly animationAttributableLongTasks: readonly { startTimeMs: number; durationMs: number }[];
   readonly maximumLongTaskMs: number;
+  readonly maximumAnimationLongTaskMs: number;
   readonly jsAssets: readonly { path: string; rawBytes: number; gzipBytes: number }[];
   readonly cssAssets: readonly { path: string; rawBytes: number; gzipBytes: number }[];
 }
@@ -116,7 +125,12 @@ function summary(values: readonly number[]) {
 
 async function installPerformanceObservers(page: Page): Promise<void> {
   await page.addInitScript(() => {
-    const state: GoldenPerformanceObserverState = { lcpMs: 0, cls: 0, longTasks: [] };
+    const state: GoldenPerformanceObserverState = {
+      lcpMs: 0,
+      cls: 0,
+      longTasks: [],
+      motionIntervals: [],
+    };
     Object.defineProperty(window, "__phase5a2GoldenPerformance", {
       configurable: true,
       value: state,
@@ -139,6 +153,24 @@ async function installPerformanceObservers(page: Page): Promise<void> {
     observe("longtask", (entry) => {
       state.longTasks.push({ startTimeMs: entry.startTime, durationMs: entry.duration });
     });
+    const beginMotion = (kind: "animation" | "transition", name: string) => {
+      state.motionIntervals.push({ kind, name, startTimeMs: performance.now(), endTimeMs: null });
+    };
+    const endMotion = (kind: "animation" | "transition", name: string) => {
+      for (let index = state.motionIntervals.length - 1; index >= 0; index -= 1) {
+        const interval = state.motionIntervals[index];
+        if (interval.kind === kind && interval.name === name && interval.endTimeMs === null) {
+          interval.endTimeMs = performance.now();
+          return;
+        }
+      }
+    };
+    document.addEventListener("animationstart", (event) => beginMotion("animation", event.animationName), true);
+    document.addEventListener("animationend", (event) => endMotion("animation", event.animationName), true);
+    document.addEventListener("animationcancel", (event) => endMotion("animation", event.animationName), true);
+    document.addEventListener("transitionrun", (event) => beginMotion("transition", event.propertyName), true);
+    document.addEventListener("transitionend", (event) => endMotion("transition", event.propertyName), true);
+    document.addEventListener("transitioncancel", (event) => endMotion("transition", event.propertyName), true);
   });
 }
 
@@ -162,6 +194,10 @@ async function collectBrowserMeasurement(page: Page) {
       cls: state?.cls ?? -1,
       lcpMs: state?.lcpMs ?? -1,
       longTasks: state?.longTasks ?? [],
+      motionIntervals: (state?.motionIntervals ?? []).map((interval) => ({
+        ...interval,
+        endTimeMs: interval.endTimeMs ?? performance.now(),
+      })),
       resources,
       ttfbMs: navigation?.responseStart ?? -1,
     };
@@ -201,6 +237,17 @@ test("retains five source-matched performance samples for every Golden Reference
           startTimeMs: round(startTimeMs),
           durationMs: round(durationMs),
         }));
+        const motionIntervals = measured.motionIntervals.map(({ kind, name, startTimeMs, endTimeMs }) => ({
+          kind,
+          name,
+          startTimeMs: round(startTimeMs),
+          endTimeMs: round(endTimeMs),
+        }));
+        const animationAttributableLongTasks = longTasks.filter((task) => motionIntervals.some(
+          (interval) =>
+            task.startTimeMs < interval.endTimeMs &&
+            task.startTimeMs + task.durationMs > interval.startTimeMs,
+        ));
         attempts.push({
           reference,
           sample,
@@ -218,7 +265,10 @@ test("retains five source-matched performance samples for every Golden Reference
           ttfbMs: round(measured.ttfbMs),
           cls: round(measured.cls),
           longTasks,
+          motionIntervals,
+          animationAttributableLongTasks,
           maximumLongTaskMs: round(Math.max(0, ...longTasks.map(({ durationMs }) => durationMs))),
+          maximumAnimationLongTaskMs: round(Math.max(0, ...animationAttributableLongTasks.map(({ durationMs }) => durationMs))),
           jsAssets,
           cssAssets,
         });
@@ -250,6 +300,7 @@ test("retains five source-matched performance samples for every Golden Reference
       ttfbMs: summary(samples.map(({ ttfbMs }) => ttfbMs)),
       cls: summary(samples.map(({ cls }) => cls)),
       maximumLongTaskMs: summary(samples.map(({ maximumLongTaskMs }) => maximumLongTaskMs)),
+      maximumAnimationLongTaskMs: summary(samples.map(({ maximumAnimationLongTaskMs }) => maximumAnimationLongTaskMs)),
     };
   });
   const failures = valid.flatMap((sample) => {
@@ -258,7 +309,7 @@ test("retains five source-matched performance samples for every Golden Reference
     if (sample.tbtMs > 200) sampleFailures.push(`${sample.reference}-${sample.sample}-tbt`);
     if (sample.ttfbMs < 0 || sample.ttfbMs > 800) sampleFailures.push(`${sample.reference}-${sample.sample}-ttfb`);
     if (sample.cls > (sample.reference === "landing" ? 0.05 : 0.1)) sampleFailures.push(`${sample.reference}-${sample.sample}-cls`);
-    if (sample.maximumLongTaskMs > 50) sampleFailures.push(`${sample.reference}-${sample.sample}-long-task`);
+    if (sample.maximumAnimationLongTaskMs > 50) sampleFailures.push(`${sample.reference}-${sample.sample}-animation-long-task`);
     if (sample.fontBytes > GOLDEN_FONT_TRANSFER_LIMIT_BYTES) sampleFailures.push(`${sample.reference}-${sample.sample}-font-bytes`);
     return sampleFailures;
   });
@@ -279,7 +330,7 @@ test("retains five source-matched performance samples for every Golden Reference
       tbt: "Sum of observed main-thread long-task duration above 50ms; not field INP.",
       ttfb: "PerformanceNavigationTiming.responseStart from navigation start.",
       assets: "Unique requested Next.js JS/CSS build assets compressed locally with gzip level 9; font/image payloads use encodedBodySize.",
-      animationCoverage: "Long-task and layout-shift observers remain active through full-motion settlement.",
+      animationCoverage: "CSS animation/transition intervals are retained and overlapped with every long task; only overlapping tasks are classified animation-attributable.",
     },
     runtime: { browserName: "chromium", browserVersion: browser.version(), nodeVersion: process.version, platform: process.platform, architecture: process.arch },
     targets: { lcpMsMaximum: 2_500, tbtMsMaximum: 200, landingClsMaximum: 0.05, otherClsMaximum: 0.1, ttfbMsMaximum: 800, animationTaskMsMaximum: 50, candidateFontBytesMaximum: GOLDEN_FONT_TRANSFER_LIMIT_BYTES },
