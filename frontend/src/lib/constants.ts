@@ -140,10 +140,10 @@ export const SCORE_5BAND_DISPLAY: Record<ScoreColorBand, { color: string; bg: st
 // Nutri-Score display config
 export const NUTRI_COLORS: Record<string, string> = {
   A: "bg-nutri-A text-foreground-inverse",
-  B: "bg-nutri-B text-foreground-inverse",
-  C: "bg-nutri-C text-foreground",
-  D: "bg-nutri-D text-foreground-inverse",
-  E: "bg-nutri-E text-foreground-inverse",
+  B: "bg-nutri-B text-black",
+  C: "bg-nutri-C text-black",
+  D: "bg-nutri-D text-black",
+  E: "bg-nutri-E text-black",
   UNKNOWN: "bg-surface-muted text-foreground-secondary",
   "NOT-APPLICABLE": "border border-dashed border-strong bg-transparent text-foreground-muted",
 };

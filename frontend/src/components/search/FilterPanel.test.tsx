@@ -33,6 +33,8 @@ const mockFilterOptions = {
     { label: "A", count: 5 },
     { label: "B", count: 10 },
     { label: "C", count: 8 },
+    { label: "D", count: 4 },
+    { label: "E", count: 2 },
     { label: "UNKNOWN", count: 51 },
     { label: "NOT-APPLICABLE", count: 3 },
   ],
@@ -146,6 +148,23 @@ describe("FilterPanel", () => {
     });
     expect(screen.getAllByText("B").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("C").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders light Nutri-Score bands with contrast-safe text", async () => {
+    renderPanel();
+    await waitFor(() => {
+      expect(screen.getAllByText("B").length).toBeGreaterThanOrEqual(1);
+    });
+
+    for (const grade of ["B", "C", "D", "E"]) {
+      const buttons = screen
+        .getAllByText(grade)
+        .map((label) => label.closest("button"));
+      expect(buttons.length).toBeGreaterThanOrEqual(1);
+      expect(
+        buttons.every((button) => button?.className.includes("text-black")),
+      ).toBe(true);
+    }
   });
 
   it('renders "Exempt" for NOT-APPLICABLE nutri-score', async () => {

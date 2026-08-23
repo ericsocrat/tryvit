@@ -152,6 +152,12 @@ describe("NUTRI_COLORS", () => {
       expect(NUTRI_COLORS[grade]).toBeTruthy();
     }
   });
+
+  it("keeps light Nutri-Score bands on contrast-safe dark text", () => {
+    for (const grade of ["B", "C", "D", "E"]) {
+      expect(NUTRI_COLORS[grade]).toContain("text-black");
+    }
+  });
 });
 
 describe("HEALTH_CONDITIONS", () => {

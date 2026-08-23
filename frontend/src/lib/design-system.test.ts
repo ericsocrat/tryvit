@@ -485,8 +485,9 @@ describe("Design System — Constants Use Semantic Tokens", () => {
     expect(constants).toContain("bg-nutri-E");
   });
 
-  it("NUTRI_COLORS uses foreground-inverse for text", () => {
+  it("NUTRI_COLORS uses contrast-safe text classes", () => {
     expect(constants).toContain("text-foreground-inverse");
+    expect(constants).toContain("text-black");
   });
 
   it("WARNING_SEVERITY uses semantic error/warning tokens", () => {
