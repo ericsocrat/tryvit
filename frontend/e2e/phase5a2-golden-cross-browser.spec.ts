@@ -118,7 +118,9 @@ test("home keeps decision priority and restores Menu focus", async ({ page }, te
   await menu.scrollIntoViewIfNeeded();
   await menu.focus();
   await menu.press("ArrowDown");
-  await expect(page.getByRole("menu")).toBeVisible();
+  const firstMenuItem = page.getByRole("menuitem").first();
+  await expect(firstMenuItem).toBeVisible();
+  await expect(firstMenuItem).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(menu).toBeFocused();
   await page.getByRole("button", { name: "Resume evidence review" }).click();
