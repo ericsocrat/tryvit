@@ -1,6 +1,6 @@
 # Phase 5A.2 Checkpoint 2 — Golden Reference review handoff
 
-> **Status:** Revision-cycle-1 replacement packet ready for mandatory independent re-review
+> **Status:** Replacement passed both independent reviews; exact-head CI and Eric approval pending
 > **Production migration:** Prohibited
 > **Capture source:** `67c0c3f9e23b4fe1197e7b9da900f3d71716bdf8`
 > **Capture tree:** `3f3865a8b21c4f79ad8e77dc7ef3c135005d5b5e`

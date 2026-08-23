@@ -44,6 +44,9 @@ Golden consumers outside the two guarded routes.
   Chromium/Firefox/WebKit plus full resilience/capture/performance, raw and staged
   artifact retention, and no-backup runtime teardown; local workflow contracts and
   `actionlint` passed.
+- independent replacement review: Reviewer A 91/100 and Reviewer B 89/100; each
+  reference ≥88 in both reviews, all category floors passed, and no governed veto
+  remains. Eric's approval is still pending.
 
 The initial reviewed packet remains recoverable in Git history. Superseded raw visual,
 browser, media, performance, and terminal-verifier packages remain outside the
