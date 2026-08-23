@@ -36,7 +36,7 @@ Golden consumers outside the two guarded routes.
 - scanner media-device calls: zero;
 - candidate capture: 113 stills + seven boards + 12 recordings + 12 terminal frames,
   passed;
-- staged evidence verifier: 82/82 files, 6,376,336 bytes, passed.
+- staged evidence verifier: 82/82 files, 6,466,086 bytes, passed.
 
 Three superseded raw packages are retained outside the repository in uniquely named
 temporary directories: an initial landing-duration rejection, a Home-duration
@@ -63,7 +63,7 @@ approval for a future production route.
 ## Performance disposition
 
 - candidate font transfer: `0` bytes;
-- committed review packet: `6,376,336` bytes, not application payload;
+- committed review packet: `6,466,086` bytes, not application payload;
 - route-local application JS/CSS/LCP/TBT/CLS/TTFB measurement: pending the final
   performance pass;
 - production Route-JS comparison: pending the repository workflow;

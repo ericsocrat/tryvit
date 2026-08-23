@@ -2,9 +2,9 @@
 
 > **Status:** Initial selected-hybrid packet ready for independent review
 > **Production migration:** Prohibited
-> **Capture source:** `abe34fc2e359393859237bb321b43ca69761ea1f`
-> **Capture tree:** `7c70deb3939aae092cf322fa6787bb7e05551439`
-> **Manifest SHA-256:** `9d3f20d30595b3704c00010148065577a411a47c0adc4dc5b5d728980c9451e4`
+> **Capture source:** `9f78aef04c86c05cff14c76e2dfcac6e62986010`
+> **Capture tree:** `481bd657db43b7fa683b0a2bd064bc3a378daad3`
+> **Manifest SHA-256:** `5bec248c30a980ddbacf2e1ab6be335681aedccb5aeac782fd433b28c7e0be88`
 
 This packet implements exactly six complete non-production Golden References:
 
@@ -40,7 +40,7 @@ Query input is fail-closed and limited to `locale`, `theme`, `motion`, `state`, 
 
 ## Evidence packet
 
-The committed packet contains 82 files and 6,376,336 bytes:
+The committed packet contains 82 files and 6,466,086 bytes:
 
 - 36 core stills: six references × 390/768/1440 × light/dark;
 - 12 localized stills: Polish mobile and long-German desktop for each reference;

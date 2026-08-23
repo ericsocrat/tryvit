@@ -1,7 +1,7 @@
 # Checkpoint 2 independent review instructions
 
 Review manifest SHA-256:
-`9d3f20d30595b3704c00010148065577a411a47c0adc4dc5b5d728980c9451e4`.
+`5bec248c30a980ddbacf2e1ab6be335681aedccb5aeac782fd433b28c7e0be88`.
 
 Each reviewer must:
 
