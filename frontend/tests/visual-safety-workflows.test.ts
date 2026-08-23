@@ -1006,6 +1006,13 @@ describe("browser workflow visual-safety contract", () => {
     }
   });
 
+  it("keeps the complete Nightly browser matrix within its comprehensive baseline", () => {
+    const config = readFileSync(path.join(repoRoot, "frontend", "playwright.config.ts"), "utf8");
+    expect(config).toContain("globalTimeout: 900_000");
+    expect(workflowSources.nightly).toContain("BASELINE_COMPREHENSIVE: 900");
+    expect(browserJobs.nightly).toContain("timeout-minutes: 20");
+  });
+
   it("scans every browser artifact family before workflow upload", () => {
     for (const requiredRoot of [
       "test-results",
