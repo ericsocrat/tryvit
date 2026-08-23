@@ -137,7 +137,7 @@ test("search settles results and applies the mobile Sheet", async ({ page }, tes
   const dialog = page.getByRole("dialog", { name: "Filters" });
   await expect(dialog).toBeVisible();
   await dialog.getByLabel("Include partial records").check();
-  await dialog.getByLabel("Include records without a score").check();
+  await dialog.getByLabel("Include records without a score").uncheck();
   await dialog.getByRole("button", { name: "Apply filters" }).click();
   await expect(dialog).toBeHidden();
   await expect(page.getByText("Partial evidence included", { exact: false })).toBeVisible();
