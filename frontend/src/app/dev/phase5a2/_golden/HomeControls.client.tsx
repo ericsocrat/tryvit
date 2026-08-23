@@ -51,6 +51,13 @@ export function HomeControls({
     <div
       className={styles.homeControls}
       data-golden-client="home-controls"
+      onKeyDownCapture={(event) => {
+        if (event.key !== "Escape") return;
+        const trigger = rootRef.current?.querySelector<HTMLButtonElement>(
+          "button[aria-haspopup='menu']",
+        );
+        window.setTimeout(() => trigger?.focus(), 0);
+      }}
       ref={rootRef}
     >
       <Button onClick={() => setMessage(resumedMessage)}>{resumeLabel}</Button>

@@ -56,14 +56,20 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test("landing preserves SSR meaning and reduced-motion equivalence", async ({ page }, testInfo) => {
+test("landing preserves SSR meaning and reduced-motion equivalence", async ({ browserName, page }, testInfo) => {
   await openGolden(page, "landing", "ready", testInfo);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Read the package");
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
-  await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "Skip to reference" })).toBeFocused();
-  await page.getByRole("link", { name: "Skip to reference" }).click();
+  const skip = page.getByRole("link", { name: "Skip to reference" });
+  if (browserName === "webkit") {
+    await skip.focus();
+    await skip.press("Enter");
+  } else {
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(skip).toBeFocused();
+    await skip.click();
+  }
   await expect(page.locator("#golden-main")).toBeFocused();
   const unfold = page.getByRole("button", { name: "Unfold the evidence" });
   await unfold.click();

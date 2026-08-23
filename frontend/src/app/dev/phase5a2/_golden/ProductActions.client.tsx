@@ -42,6 +42,7 @@ export function ProductActions({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [message, setMessage] = useState("");
   const rootRef = useRef<HTMLDivElement>(null);
+  const provenanceButtonRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     rootRef.current?.setAttribute("data-golden-client-ready", "true");
   }, []);
@@ -61,7 +62,7 @@ export function ProductActions({
   ], [addCompareLabel, openAlternativeLabel, savedMessage]);
   return (
     <div className={styles.productActions} data-golden-client="product-actions" ref={rootRef}>
-      <Button onClick={() => setDialogOpen(true)} variant="secondary">{provenanceLabel}</Button>
+      <Button ref={provenanceButtonRef} onClick={() => setDialogOpen(true)} variant="secondary">{provenanceLabel}</Button>
       <Menu entries={entries} triggerLabel={compareLabel} />
       <span aria-atomic="true" aria-live="polite" role="status">{message}</span>
       <Dialog
@@ -69,6 +70,7 @@ export function ProductActions({
         description={provenanceDescription}
         onOpenChange={setDialogOpen}
         open={dialogOpen}
+        restoreFocusRef={provenanceButtonRef}
         title={provenanceTitle}
       >
         <p>{provenanceBody}</p>
