@@ -49,6 +49,10 @@ const UNRELATED_SENTINEL_PATH = "/phase5a0f-unrelated-sentinel.txt";
 const WORKER_ACTIVATION_TIMEOUT_MS = 20_000;
 const WORKER_CONTROL_TIMEOUT_MS = 15_000;
 const CLEANUP_TIMEOUT_MS = 20_000;
+const SIGN_OUT_NAME = /^(?:sign out|wyloguj się|abmelden)$/i;
+const SIGN_IN_NAME = /^(?:sign in|zaloguj się|anmelden)$/i;
+const EMAIL_NAME = /^(?:email|e-mail)$/i;
+const PASSWORD_NAME = /^(?:password|hasło|passwort)$/i;
 
 type IdentityKind = "auth-user" | "preferences" | "none";
 type BrowserProbeResult =
@@ -444,11 +448,11 @@ test.describe("private PWA cache account isolation", () => {
       await assertNoPrivateCacheKeys(page, privateUrls);
 
       await page.waitForURL(new RegExp(`${APP_PRIVATE_RSC_PATH}(?:[?#]|$)`));
-      await page.getByRole("button", { name: "Sign Out" }).click();
+      await page.getByRole("button", { name: SIGN_OUT_NAME }).click();
       await page.waitForURL(/\/auth\/login(?:[?#]|$)/u, { timeout: 15_000 });
 
-      await page.getByLabel("Email").fill(TEST_EMAIL);
-      await page.getByLabel("Password", { exact: true }).fill(TEST_PASSWORD);
+      await page.getByLabel(EMAIL_NAME).fill(TEST_EMAIL);
+      await page.getByLabel(PASSWORD_NAME).fill(TEST_PASSWORD);
       const userBTokenResponsePromise = page.waitForResponse(
         (response) => {
           const request = response.request();
@@ -461,7 +465,7 @@ test.describe("private PWA cache account isolation", () => {
         },
         { timeout: 15_000 },
       );
-      await page.getByRole("button", { name: "Sign In" }).click();
+      await page.getByRole("button", { name: SIGN_IN_NAME }).click();
       const userBTokenResponse = await userBTokenResponsePromise.catch(() => null);
       if (!userBTokenResponse) fail("user-b-login-token-missing");
       if (!userBTokenResponse.ok()) fail("user-b-login-token-non-success");

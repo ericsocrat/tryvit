@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { expect, test } from "./fixtures/safe-test";
+import { getSearchProductsCombobox } from "./helpers/localized-selectors";
 
 async function expectResultsCountVisible(
   page: import("@playwright/test").Page,
@@ -23,7 +24,7 @@ test.describe("Search: query → results → product", () => {
     await page.goto("/app/search");
     await page.waitForLoadState("domcontentloaded");
 
-    const input = page.getByPlaceholder(/search products/i);
+    const input = getSearchProductsCombobox(page);
     await input.fill("chips");
     await input.press("Enter");
 
@@ -41,7 +42,7 @@ test.describe("Search: query → results → product", () => {
     await page.goto("/app/search");
     await page.waitForLoadState("domcontentloaded");
 
-    const input = page.getByPlaceholder(/search products/i);
+    const input = getSearchProductsCombobox(page);
     await input.fill("chips");
     await input.press("Enter");
 
@@ -80,7 +81,7 @@ test.describe("Search: query → results → product", () => {
     await page.goto("/app/search");
     await page.waitForLoadState("domcontentloaded");
 
-    const input = page.getByPlaceholder(/search products/i);
+    const input = getSearchProductsCombobox(page);
     await input.fill("xyznonexistent999");
     await input.press("Enter");
 
@@ -99,7 +100,7 @@ test.describe("Search: view mode and interactions", () => {
     await page.waitForLoadState("domcontentloaded");
 
     // Search for something to show results
-    const input = page.getByPlaceholder(/search products/i);
+    const input = getSearchProductsCombobox(page);
     await input.fill("milk");
     await input.press("Enter");
 
@@ -125,7 +126,7 @@ test.describe("Search: view mode and interactions", () => {
     await page.goto("/app/search");
     await page.waitForLoadState("domcontentloaded");
 
-    const input = page.getByPlaceholder(/search products/i);
+    const input = getSearchProductsCombobox(page);
     await input.fill("test query");
 
     // Click the clear button (X icon)
@@ -142,7 +143,7 @@ test.describe("Search: view mode and interactions", () => {
     await page.goto("/app/search");
     await page.waitForLoadState("domcontentloaded");
 
-    const input = page.getByPlaceholder(/search products/i);
+    const input = getSearchProductsCombobox(page);
     await input.fill("dairy");
     await input.press("Enter");
 

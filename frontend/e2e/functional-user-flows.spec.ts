@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { expect, test } from "./fixtures/safe-test";
+import { getSearchProductsCombobox } from "./helpers/localized-selectors";
 
 async function ensureFullAnalysis(page: import("@playwright/test").Page) {
   const tabBar = page.getByTestId("tab-bar");
@@ -29,7 +30,7 @@ test.describe("Journey: search → product → alternatives", () => {
     await page.goto("/app/search");
     await page.waitForLoadState("domcontentloaded");
 
-    const input = page.getByPlaceholder(/search products/i);
+    const input = getSearchProductsCombobox(page);
     await input.fill("chips");
     await input.press("Enter");
 
@@ -45,7 +46,7 @@ test.describe("Journey: search → product → alternatives", () => {
     await ensureFullAnalysis(page);
 
     // 5. Click Nutrition tab
-    const nutritionTab = page.getByRole("tab").nth(1);
+    const nutritionTab = page.locator("#tab-nutrition");
     await expect(nutritionTab).toBeVisible();
     await nutritionTab.click();
     await expect(
@@ -53,7 +54,7 @@ test.describe("Journey: search → product → alternatives", () => {
     ).toBeVisible({ timeout: 10_000 });
 
     // 6. Click Alternatives tab
-    const altTab = page.getByRole("tab").nth(2);
+    const altTab = page.locator("#tab-alternatives");
     await expect(altTab).toBeVisible({ timeout: 10_000 });
     await altTab.click();
 
@@ -120,7 +121,7 @@ test.describe("Journey: app navigation", () => {
     await page.goto("/app/search");
     await page.waitForLoadState("domcontentloaded");
     await expect(
-      page.getByPlaceholder(/search products/i),
+      getSearchProductsCombobox(page),
     ).toBeVisible({ timeout: 10_000 });
   });
 });

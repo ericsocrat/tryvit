@@ -8,8 +8,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { expect, test } from "./fixtures/safe-test";
-
-const SEARCH_PRODUCTS_NAME = /search products|szukaj produktów/i;
+import { getSearchProductsCombobox } from "./helpers/localized-selectors";
 
 async function openFilterPanelIfNeeded(
   page: import("@playwright/test").Page,
@@ -27,9 +26,7 @@ async function searchAndWaitForResults(page: import("@playwright/test").Page) {
   await page.goto("/app/search");
   await page.waitForLoadState("domcontentloaded");
 
-  const input = page
-    .getByRole("search", { name: SEARCH_PRODUCTS_NAME })
-    .getByRole("combobox", { name: SEARCH_PRODUCTS_NAME });
+  const input = getSearchProductsCombobox(page);
   await input.fill("a");
   await input.press("Enter");
 
