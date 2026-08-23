@@ -65,7 +65,7 @@ test("landing preserves SSR meaning and reduced-motion equivalence", async ({ pa
     "aria-pressed",
     "true",
   );
-  await expect(page.getByText("Observed facts", { exact: true })).toBeVisible();
+  await expect(page.getByRole("list").getByText("Observed facts", { exact: true })).toBeVisible();
   await page.keyboard.press("Home");
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Skip to reference" })).toBeFocused();
@@ -116,7 +116,9 @@ test("home keeps decision priority and restores Menu focus", async ({ page }, te
   await page.keyboard.press("Escape");
   await expect(menu).toBeFocused();
   await page.getByRole("button", { name: "Resume evidence review" }).click();
-  await expect(page.getByRole("status")).toContainText("resumed");
+  await expect(
+    page.locator("[data-golden-client='home-controls']").getByRole("status"),
+  ).toContainText("resumed");
 });
 
 test("search settles results and applies the mobile Sheet", async ({ page }, testInfo) => {
