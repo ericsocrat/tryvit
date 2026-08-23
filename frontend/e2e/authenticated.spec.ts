@@ -264,8 +264,17 @@ test.describe("Settings page", () => {
 
 // ─── Authenticated: Logout ─────────────────────────────────────────────────
 
+async function containSharedFixtureLogout(page: Page): Promise<void> {
+  await page.route("**/auth/v1/logout**", (route) =>
+    route.fulfill({ status: 204 }),
+  );
+}
+
 test.describe("Logout flow", () => {
   test("sign-out redirects to login page", async ({ page }) => {
+    // Exercise the client logout flow without revoking the shared server-side
+    // fixture session required by later catalog and cross-browser projects.
+    await containSharedFixtureLogout(page);
     await page.goto("/app/settings/account");
     await page.waitForLoadState("domcontentloaded");
 
@@ -283,6 +292,7 @@ test.describe("Logout flow", () => {
   test("after sign-out, protected routes redirect to login", async ({
     page,
   }) => {
+    await containSharedFixtureLogout(page);
     // Navigate to settings and sign out
     await page.goto("/app/settings/account");
     await page.waitForLoadState("domcontentloaded");
