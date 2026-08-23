@@ -1,0 +1,381 @@
+{
+  "schemaVersion": 1,
+  "contracts": [
+    {
+      "reference": "landing",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "locale": "en",
+      "theme": "light",
+      "startState": "ready",
+      "steps": [
+        {
+          "event": "keyboard-skip-to-reference",
+          "expectedState": "ready",
+          "expectedFocus": "#golden-main"
+        },
+        {
+          "event": "toggle-package-label",
+          "expectedState": "ready",
+          "expectedFocus": "button[aria-pressed='true']"
+        },
+        {
+          "event": "reset-package-label",
+          "expectedState": "ready",
+          "expectedFocus": "button[aria-pressed='false']"
+        },
+        {
+          "event": "repeat-package-label",
+          "expectedState": "ready",
+          "expectedFocus": "button[aria-pressed='true']"
+        },
+        {
+          "event": "change-theme-dark",
+          "expectedState": "ready"
+        }
+      ],
+      "terminal": {
+        "reference": "landing",
+        "state": "ready",
+        "focus": "main-or-theme-link",
+        "announcement": "none"
+      }
+    },
+    {
+      "reference": "authentication",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "locale": "en",
+      "theme": "light",
+      "startState": "sign-in",
+      "steps": [
+        {
+          "event": "submit-empty",
+          "expectedState": "field-invalid",
+          "expectedFocus": "#golden-auth-email",
+          "expectedAnnouncement": "Correct the following fields"
+        },
+        {
+          "event": "submit-invalid-credentials",
+          "expectedState": "invalid-credentials",
+          "expectedFocus": "#golden-auth-email",
+          "expectedAnnouncement": "details do not match"
+        },
+        {
+          "event": "submit-review-fixture",
+          "expectedState": "busy",
+          "expectedAnnouncement": "Checking the local review details"
+        },
+        {
+          "event": "local-validation-complete",
+          "expectedState": "success",
+          "expectedFocus": "[data-golden-live-state='success']",
+          "expectedAnnouncement": "Local sign-in completed"
+        },
+        {
+          "event": "continue-home",
+          "expectedState": "redirecting",
+          "expectedAnnouncement": "Preparing the home reference"
+        }
+      ],
+      "terminal": {
+        "reference": "home",
+        "state": "returning",
+        "focus": "#golden-main",
+        "announcement": "none"
+      }
+    },
+    {
+      "reference": "home",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "locale": "en",
+      "theme": "light",
+      "startState": "paused-partial",
+      "steps": [
+        {
+          "event": "open-decision-menu",
+          "expectedState": "paused-partial",
+          "expectedFocus": "[role='menuitem']"
+        },
+        {
+          "event": "escape-menu",
+          "expectedState": "paused-partial",
+          "expectedFocus": "button[aria-haspopup='menu']"
+        },
+        {
+          "event": "resume-evidence",
+          "expectedState": "paused-partial",
+          "expectedAnnouncement": "Evidence review resumed"
+        },
+        {
+          "event": "open-partial-product",
+          "expectedState": "partial"
+        }
+      ],
+      "terminal": {
+        "reference": "product",
+        "state": "partial",
+        "focus": "#golden-main",
+        "announcement": "none"
+      }
+    },
+    {
+      "reference": "search",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "locale": "en",
+      "theme": "light",
+      "startState": "no-query",
+      "steps": [
+        {
+          "event": "type-oat",
+          "expectedState": "typing",
+          "expectedFocus": "input[name='golden-search']"
+        },
+        {
+          "event": "submit-query",
+          "expectedState": "results-loading",
+          "expectedAnnouncement": "Calculating the local result set"
+        },
+        {
+          "event": "results-settled",
+          "expectedState": "results",
+          "expectedAnnouncement": "3 synthetic records"
+        },
+        {
+          "event": "open-filter-sheet",
+          "expectedState": "results",
+          "expectedFocus": "[role='dialog']"
+        },
+        {
+          "event": "apply-partial-unknown-filters",
+          "expectedState": "filters-active",
+          "expectedAnnouncement": "3 synthetic records"
+        }
+      ],
+      "terminal": {
+        "reference": "search",
+        "state": "filters-active",
+        "focus": "button",
+        "announcement": "3 synthetic records"
+      }
+    },
+    {
+      "reference": "product",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "locale": "en",
+      "theme": "light",
+      "startState": "unknown",
+      "steps": [
+        {
+          "event": "activate-ingredients-tab",
+          "expectedState": "unknown",
+          "expectedFocus": "[role='tab'][aria-selected='true']"
+        },
+        {
+          "event": "open-provenance-dialog",
+          "expectedState": "unknown",
+          "expectedFocus": "[role='dialog']"
+        },
+        {
+          "event": "close-provenance-dialog",
+          "expectedState": "unknown",
+          "expectedFocus": "button"
+        },
+        {
+          "event": "open-comparison-menu",
+          "expectedState": "unknown",
+          "expectedFocus": "[role='menuitem']"
+        }
+      ],
+      "terminal": {
+        "reference": "product",
+        "state": "unknown",
+        "focus": "button[aria-haspopup='menu']",
+        "announcement": "none"
+      }
+    },
+    {
+      "reference": "scanner",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "locale": "en",
+      "theme": "dark",
+      "startState": "not-requested",
+      "steps": [
+        {
+          "event": "request-permission-simulation",
+          "expectedState": "permission-request",
+          "expectedAnnouncement": "No browser prompt is open"
+        },
+        {
+          "event": "grant-simulation",
+          "expectedState": "ready",
+          "expectedAnnouncement": "Scanner simulation ready"
+        },
+        {
+          "event": "show-acquisition-assist",
+          "expectedState": "acquisition-assist",
+          "expectedAnnouncement": "Move the package closer"
+        },
+        {
+          "event": "recognize-barcode",
+          "expectedState": "recognized",
+          "expectedAnnouncement": "Product identity is not matched yet"
+        },
+        {
+          "event": "start-local-lookup",
+          "expectedState": "processing",
+          "expectedAnnouncement": "local product lookup"
+        },
+        {
+          "event": "lookup-complete",
+          "expectedState": "matched",
+          "expectedAnnouncement": "North Grain Oat Drink matched"
+        }
+      ],
+      "terminal": {
+        "reference": "scanner",
+        "state": "matched",
+        "focus": "[data-golden-live-state='matched']",
+        "announcement": "North Grain Oat Drink matched"
+      }
+    }
+  ],
+  "actual": [
+    {
+      "reference": "landing",
+      "mode": "normal",
+      "route": "/dev/phase5a2/golden/landing?locale=en&theme=light&motion=full&state=ready&capture=1",
+      "fixtureState": "ready",
+      "theme": "dark",
+      "liveState": "ready",
+      "focus": "button",
+      "announcement": null
+    },
+    {
+      "reference": "landing",
+      "mode": "reduced",
+      "route": "/dev/phase5a2/golden/landing?locale=en&theme=light&motion=reduced&state=ready&capture=1",
+      "fixtureState": "ready",
+      "theme": "dark",
+      "liveState": "ready",
+      "focus": "button",
+      "announcement": null
+    },
+    {
+      "reference": "authentication",
+      "mode": "normal",
+      "route": "/dev/phase5a2/golden/authentication?locale=en&theme=light&motion=full&state=sign-in&capture=1",
+      "fixtureState": "sign-in",
+      "theme": "light",
+      "liveState": "success",
+      "focus": "section",
+      "announcement": "Local sign-in completedNo account was accessed. Continue to the authenticated home reference."
+    },
+    {
+      "reference": "authentication",
+      "mode": "reduced",
+      "route": "/dev/phase5a2/golden/authentication?locale=en&theme=light&motion=reduced&state=sign-in&capture=1",
+      "fixtureState": "sign-in",
+      "theme": "light",
+      "liveState": "success",
+      "focus": "section",
+      "announcement": "Local sign-in completedNo account was accessed. Continue to the authenticated home reference."
+    },
+    {
+      "reference": "home",
+      "mode": "normal",
+      "route": "/dev/phase5a2/golden/home?locale=en&theme=light&motion=full&state=paused-partial&capture=1",
+      "fixtureState": "paused-partial",
+      "theme": "light",
+      "liveState": "paused-partial",
+      "focus": "button",
+      "announcement": "Evidence review resumed at the missing processing input."
+    },
+    {
+      "reference": "home",
+      "mode": "reduced",
+      "route": "/dev/phase5a2/golden/home?locale=en&theme=light&motion=reduced&state=paused-partial&capture=1",
+      "fixtureState": "paused-partial",
+      "theme": "light",
+      "liveState": "paused-partial",
+      "focus": "button",
+      "announcement": "Evidence review resumed at the missing processing input."
+    },
+    {
+      "reference": "search",
+      "mode": "normal",
+      "route": "/dev/phase5a2/golden/search?locale=en&theme=light&motion=full&state=no-query&capture=1",
+      "fixtureState": "no-query",
+      "theme": "light",
+      "liveState": "filters-active",
+      "focus": "button",
+      "announcement": "3 synthetic records shown; 1 without a score."
+    },
+    {
+      "reference": "search",
+      "mode": "reduced",
+      "route": "/dev/phase5a2/golden/search?locale=en&theme=light&motion=reduced&state=no-query&capture=1",
+      "fixtureState": "no-query",
+      "theme": "light",
+      "liveState": "filters-active",
+      "focus": "button",
+      "announcement": "3 synthetic records shown; 1 without a score."
+    },
+    {
+      "reference": "product",
+      "mode": "normal",
+      "route": "/dev/phase5a2/golden/product?locale=en&theme=light&motion=full&state=unknown&capture=1",
+      "fixtureState": "unknown",
+      "theme": "light",
+      "liveState": "unknown",
+      "focus": "_R_1an2npfiv5ubsdbH1_",
+      "announcement": null
+    },
+    {
+      "reference": "product",
+      "mode": "reduced",
+      "route": "/dev/phase5a2/golden/product?locale=en&theme=light&motion=reduced&state=unknown&capture=1",
+      "fixtureState": "unknown",
+      "theme": "light",
+      "liveState": "unknown",
+      "focus": "_R_1an2npfiv5ubsdbH1_",
+      "announcement": null
+    },
+    {
+      "reference": "scanner",
+      "mode": "normal",
+      "route": "/dev/phase5a2/golden/scanner?locale=en&theme=dark&motion=full&state=not-requested&capture=1",
+      "fixtureState": "not-requested",
+      "theme": "dark",
+      "liveState": "matched",
+      "focus": "status",
+      "announcement": "matchedNorth Grain Oat Drink matched with moderate data confidence."
+    },
+    {
+      "reference": "scanner",
+      "mode": "reduced",
+      "route": "/dev/phase5a2/golden/scanner?locale=en&theme=dark&motion=reduced&state=not-requested&capture=1",
+      "fixtureState": "not-requested",
+      "theme": "dark",
+      "liveState": "matched",
+      "focus": "status",
+      "announcement": "matchedNorth Grain Oat Drink matched with moderate data confidence."
+    }
+  ]
+}
