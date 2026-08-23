@@ -31,9 +31,7 @@ test.describe("Settings: tab navigation", () => {
     await page.goto("/app/settings");
     await page.waitForLoadState("domcontentloaded");
 
-    const nutritionTab = page.getByRole("link", {
-      name: /Nutrition & Diet/i,
-    });
+    const nutritionTab = page.locator('a[href="/app/settings/nutrition"]');
     await expect(nutritionTab).toBeVisible({ timeout: 10_000 });
     await nutritionTab.click();
 
@@ -45,7 +43,7 @@ test.describe("Settings: tab navigation", () => {
     await page.goto("/app/settings");
     await page.waitForLoadState("domcontentloaded");
 
-    const accountTab = page.getByRole("link", { name: /Account/i });
+    const accountTab = page.locator('a[href="/app/settings/account"]');
     await expect(accountTab).toBeVisible({ timeout: 10_000 });
     await accountTab.click();
 
