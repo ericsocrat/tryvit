@@ -72,8 +72,20 @@ for (const capture of GOLDEN_POLISH_MOBILE_STILLS) {
     const geometry = await page.locator("[data-golden-reference]").evaluate((root) => ({
       rootOverflow: root.scrollWidth - root.clientWidth,
       documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      offenders: [...root.querySelectorAll<HTMLElement>("*")]
+        .map((element) => ({ element, rect: element.getBoundingClientRect() }))
+        .filter(({ rect }) => rect.width > 0 && (rect.left < -1 || rect.right > innerWidth + 1))
+        .slice(0, 20)
+        .map(({ element, rect }) => ({
+          tag: element.tagName.toLowerCase(),
+          className: element.className,
+          text: element.textContent?.trim().slice(0, 80),
+          left: Math.round(rect.left),
+          right: Math.round(rect.right),
+          width: Math.round(rect.width),
+        })),
     }));
-    expect(geometry.documentOverflow).toBeLessThanOrEqual(1);
+    expect(geometry.documentOverflow, JSON.stringify(geometry.offenders, null, 2)).toBeLessThanOrEqual(1);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 }

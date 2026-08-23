@@ -1394,6 +1394,25 @@
   border-bottom: 1px solid var(--gr-rule);
 }
 
+.landing,
+.landingHero,
+.heroCopy,
+.packageNarrative,
+.sectionHeading,
+.principleGrid,
+.finalAction {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.landing {
+  overflow-wrap: anywhere;
+}
+
+.packageNarrative > button {
+  white-space: normal;
+}
+
 .heroCopy {
   position: relative;
   z-index: 2;
