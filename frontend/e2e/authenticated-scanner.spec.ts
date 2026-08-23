@@ -19,7 +19,7 @@ async function lookupProductByEan(
 ) {
   await page.goto("/app/scan");
   await disableNextDevOverlay(page);
-  await page.getByRole("button", { name: /Manual/i }).click();
+  await page.getByRole("button", { name: "Manual", exact: true }).click();
   const eanInput = page.getByPlaceholder(/Enter barcode/i);
   await expect(eanInput).toBeVisible();
   await eanInput.fill(ean);
@@ -88,7 +88,7 @@ test.describe("Scanner: Manual EAN lookup", () => {
   }) => {
     await page.goto("/app/scan");
     await disableNextDevOverlay(page);
-    await page.getByRole("button", { name: /Manual/i }).click();
+    await page.getByRole("button", { name: "Manual", exact: true }).click();
 
     const eanInput = page.getByPlaceholder(/Enter barcode/i);
     await eanInput.fill("123"); // too short

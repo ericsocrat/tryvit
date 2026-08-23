@@ -136,7 +136,7 @@ test.describe("Journey: scan → submission", () => {
     await page.waitForLoadState("domcontentloaded");
 
     // 2. Switch to manual mode
-    await page.getByRole("button", { name: /Manual/i }).click();
+    await page.getByRole("button", { name: "Manual", exact: true }).click();
 
     // 3. Enter an unknown EAN
     const eanInput = page.getByPlaceholder(/EAN|barcode|kod kreskowy/i);
