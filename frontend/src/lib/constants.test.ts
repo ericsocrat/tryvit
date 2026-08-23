@@ -153,9 +153,9 @@ describe("NUTRI_COLORS", () => {
     }
   });
 
-  it("keeps light Nutri-Score bands on contrast-safe dark text", () => {
-    for (const grade of ["B", "C", "D", "E"]) {
-      expect(NUTRI_COLORS[grade]).toContain("text-black");
+  it("uses named contrast-safe foreground contracts for every grade", () => {
+    for (const grade of ["A", "B", "C", "D", "E"]) {
+      expect(NUTRI_COLORS[grade]).toContain(`text-nutri-${grade}-foreground`);
     }
   });
 });

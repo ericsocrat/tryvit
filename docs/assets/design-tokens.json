@@ -3465,21 +3465,41 @@
       "light": "#038141",
       "dark": "#34d399"
     },
+    "--color-nutri-A-foreground": {
+      "light": "#ffffff",
+      "dark": "#101828"
+    },
     "--color-nutri-B": {
       "light": "#85bb2f",
       "dark": "#a3e635"
+    },
+    "--color-nutri-B-foreground": {
+      "light": "#101828",
+      "dark": "#101828"
     },
     "--color-nutri-C": {
       "light": "#fecb02",
       "dark": "#fde047"
     },
+    "--color-nutri-C-foreground": {
+      "light": "#101828",
+      "dark": "#101828"
+    },
     "--color-nutri-D": {
       "light": "#ee8100",
       "dark": "#fb923c"
     },
+    "--color-nutri-D-foreground": {
+      "light": "#101828",
+      "dark": "#101828"
+    },
     "--color-nutri-E": {
       "light": "#e63e11",
       "dark": "#f87171"
+    },
+    "--color-nutri-E-foreground": {
+      "light": "#000000",
+      "dark": "#000000"
     },
     "--color-nutrient-high": {
       "light": "#ef4444",

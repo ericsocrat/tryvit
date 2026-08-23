@@ -150,19 +150,21 @@ describe("FilterPanel", () => {
     expect(screen.getAllByText("C").length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders light Nutri-Score bands with contrast-safe text", async () => {
+  it("renders Nutri-Score bands with named contrast-safe text", async () => {
     renderPanel();
     await waitFor(() => {
       expect(screen.getAllByText("B").length).toBeGreaterThanOrEqual(1);
     });
 
-    for (const grade of ["B", "C", "D", "E"]) {
+    for (const grade of ["A", "B", "C", "D", "E"]) {
       const buttons = screen
         .getAllByText(grade)
         .map((label) => label.closest("button"));
       expect(buttons.length).toBeGreaterThanOrEqual(1);
       expect(
-        buttons.every((button) => button?.className.includes("text-black")),
+        buttons.every((button) =>
+          button?.className.includes(`text-nutri-${grade}-foreground`),
+        ),
       ).toBe(true);
     }
   });
@@ -238,6 +240,17 @@ describe("FilterPanel", () => {
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({ nutri_score: ["A"] }),
     );
+  });
+
+  it("keeps the named foreground contract on a selected Nutri-Score", async () => {
+    renderPanel({ filters: { nutri_score: ["B"] } });
+    await waitFor(() => {
+      expect(screen.getAllByText("B").length).toBeGreaterThanOrEqual(1);
+    });
+
+    const selected = screen.getAllByText("B")[0].closest("button");
+    expect(selected?.className).toContain("text-nutri-B-foreground");
+    expect(selected?.className).toContain("ring-2");
   });
 
   it("calls onChange when selecting a sort option", async () => {
