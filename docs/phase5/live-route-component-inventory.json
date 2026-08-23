@@ -4,7 +4,7 @@
   "provenance": {
     "baseSha": "c21d9bb8a25ddf3deee7b11a2386dfa59cccac7c",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "e10c519b7c7557519afd4bf19651f4f47d7ba8927bc96f1d73a88063bcdeaeec"
+    "sourceFingerprint": "50aa570d255ad6a3e343b37ab2dde022b97d18b844f959505bf254c94098d9e6"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -3267,6 +3267,7 @@
       "directModuleImports": [
         "frontend/src/app/dev/phase5a2/_golden/AuthenticationForm.client.tsx",
         "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenIdentity.tsx",
         "frontend/src/app/dev/phase5a2/_golden/authentication-copy.ts",
         "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
         "frontend/src/app/dev/phase5a2/_golden/contract.ts"
@@ -3432,12 +3433,15 @@
       "routeModuleKind": null,
       "routePath": null,
       "hasUseClientDirective": false,
-      "runtimeBoundary": "server-only",
+      "runtimeBoundary": "client-reachable",
       "directModuleImports": [],
       "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationReference.tsx",
         "frontend/src/app/dev/phase5a2/_golden/GoldenAssetBoard.tsx",
         "frontend/src/app/dev/phase5a2/_golden/GoldenFrame.tsx",
-        "frontend/src/app/dev/phase5a2/_golden/LandingReference.tsx"
+        "frontend/src/app/dev/phase5a2/_golden/LandingReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx"
       ],
       "transitiveRouteConsumers": [
         {
@@ -3730,6 +3734,7 @@
       "hasUseClientDirective": false,
       "runtimeBoundary": "server-only",
       "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenIdentity.tsx",
         "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx",
         "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
         "frontend/src/app/dev/phase5a2/_golden/contract.ts",
@@ -3763,6 +3768,7 @@
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
         "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenIdentity.tsx",
         "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
         "frontend/src/app/dev/phase5a2/_golden/contract.ts",
         "frontend/src/app/dev/phase5a2/_golden/fixture.ts",
@@ -21118,7 +21124,7 @@
     ],
     "inspectedModuleCount": 541,
     "violations": [],
-    "sourceFingerprint": "8400827552829d385032570e8abac8389ab2ef99a34fa1f8073f1702243e0e28"
+    "sourceFingerprint": "a0b9a4302d50bb351472f0bab0b7dd0918ba7c64c75ccd96d69a19ba56114e65"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

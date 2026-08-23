@@ -2,6 +2,7 @@ import {
   expect,
   test as base,
   type Page,
+  type TestInfo,
 } from "@playwright/test";
 
 // The fixture lives below e2e/ so every spec can use one stable import path.
@@ -58,4 +59,4 @@ export const test = base.extend<SafetyFixtures>({
 });
 
 export { expect };
-export type { Page };
+export type { Page, TestInfo };

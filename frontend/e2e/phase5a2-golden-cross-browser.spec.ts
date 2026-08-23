@@ -1,4 +1,4 @@
-import { expect, test, type Page, type TestInfo } from "@playwright/test";
+import { expect, test, type Page, type TestInfo } from "./fixtures/safe-test";
 
 import { prepareGoldenAnchoredTarget } from "./helpers/phase5a2-golden-reference";
 

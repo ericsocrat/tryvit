@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 test("landing communicates value and method without hydration", async ({ page }) => {
   const response = await page.goto(

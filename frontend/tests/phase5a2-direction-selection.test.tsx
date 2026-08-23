@@ -510,10 +510,10 @@ describe("Phase 5A.2 direction-selection contract", () => {
       config.indexOf("const phase5a2DirectionStillsProject"),
       config.indexOf("const projects ="),
     );
-    expect(projectBlock.match(/dependencies: \["auth-setup"\]/gu)).toHaveLength(4);
-    expect(projectBlock.match(/serviceWorkers: "block"/gu)).toHaveLength(4);
-    expect(projectBlock.match(/trace: "off"/gu)).toHaveLength(4);
-    expect(projectBlock.match(/video: "off" as const/gu)).toHaveLength(4);
+    expect(projectBlock.match(/dependencies: \["auth-setup"\]/gu)).toHaveLength(5);
+    expect(projectBlock.match(/serviceWorkers: "block"/gu)).toHaveLength(5);
+    expect(projectBlock.match(/trace: "off"/gu)).toHaveLength(5);
+    expect(projectBlock.match(/video: "off" as const/gu)).toHaveLength(5);
     expect(projectBlock).not.toContain('video: { mode: "on"');
 
     expect(runner).toContain('"local-authenticated"');

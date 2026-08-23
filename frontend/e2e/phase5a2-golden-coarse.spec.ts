@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures/safe-test";
 
 test("coarse pointer keeps search filters and scanner recovery touch-operable", async ({ page }) => {
   await page.goto("/dev/phase5a2/golden/search?locale=en&theme=light&motion=reduced&state=results");
