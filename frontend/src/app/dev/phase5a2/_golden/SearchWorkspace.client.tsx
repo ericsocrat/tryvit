@@ -53,8 +53,8 @@ export function SearchWorkspace({
   const initialState = route.state as SearchState;
   const [state, setState] = useState<SearchState>(initialState);
   const [query, setQuery] = useState(["no-query", "typing", "suggestions", "suggestions-loading"].includes(initialState) ? "" : "oat");
-  const [includePartial, setIncludePartial] = useState(initialState === "filters-active");
-  const [includeUnknown, setIncludeUnknown] = useState(initialState === "filters-active");
+  const [includePartial, setIncludePartial] = useState(true);
+  const [includeUnknown, setIncludeUnknown] = useState(initialState !== "filters-active");
   const [sheetOpen, setSheetOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -81,6 +81,11 @@ export function SearchWorkspace({
     ),
     [includePartial, includeUnknown],
   );
+  const visibleResultCount = route.locale === "pl"
+    ? `Wyświetlone rekordy syntetyczne: ${products.length}; bez wyniku: ${products.filter((product) => product.decisionScore === null).length}.`
+    : route.locale === "de"
+      ? `${products.length} synthetische Datensätze angezeigt; ${products.filter((product) => product.decisionScore === null).length} ohne Wert.`
+      : `${products.length} synthetic records shown; ${products.filter((product) => product.decisionScore === null).length} without a score.`;
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -137,16 +142,16 @@ export function SearchWorkspace({
         <aside className={styles.filterRail} aria-label={copy.filter}>
           <SearchFilters copy={copy} includePartial={includePartial} includeUnknown={includeUnknown} onPartial={setIncludePartial} onUnknown={setIncludeUnknown} prefix="rail" />
           <Button fullWidth onClick={applyFilters}>{copy.apply}</Button>
-          <Button fullWidth onClick={() => { setIncludePartial(false); setIncludeUnknown(false); setState("results"); }} variant="quiet">{copy.clear}</Button>
+          <Button fullWidth onClick={() => { setIncludePartial(true); setIncludeUnknown(true); setState("results"); }} variant="quiet">{copy.clear}</Button>
         </aside>
 
         <section aria-label={copy.results} className={styles.searchResults}>
           <div className={styles.filterSummary}>
             <GoldenGlyph name="compare" />
-            <div><strong>{copy.summary}</strong><p>{includePartial || includeUnknown ? [includePartial ? copy.withPartial : "", includeUnknown ? copy.withUnknown : ""].filter(Boolean).join(" · ") : copy.allRecords}</p></div>
+            <div><strong>{copy.summary}</strong><p>{includePartial && includeUnknown ? copy.allRecords : [includePartial ? copy.withPartial : "", includeUnknown ? copy.withUnknown : ""].filter(Boolean).join(" · ")}</p></div>
           </div>
           <div aria-atomic="true" aria-live="polite" className={styles.resultCount} role="status">
-            {["results", "filters-active", "degraded", "offline-cache"].includes(state) ? copy.results : ""}
+            {["results", "filters-active", "degraded", "offline-cache"].includes(state) ? visibleResultCount : ""}
           </div>
           {state === "degraded" ? <PageState description={copy.degradedDetail} headingLevel={2} status="degraded" title={copy.degraded} /> : null}
           {statePage ? (
@@ -175,7 +180,7 @@ export function SearchWorkspace({
 
       <Sheet
         closeLabel={copy.close}
-        footer={<><Button onClick={applyFilters}>{copy.apply}</Button><Button onClick={() => { setIncludePartial(false); setIncludeUnknown(false); }} variant="quiet">{copy.clear}</Button></>}
+        footer={<><Button onClick={applyFilters}>{copy.apply}</Button><Button onClick={() => { setIncludePartial(true); setIncludeUnknown(true); }} variant="quiet">{copy.clear}</Button></>}
         onOpenChange={setSheetOpen}
         open={sheetOpen}
         title={copy.filter}

@@ -43,11 +43,14 @@ export function GoldenMark({
         width={pixels}
       >
         <path
-          d="M1 2h9l5 5v8H1V2Zm3 3v3h3V5H4Z"
+          d="M1 4h5l4 4-4 4H1l3-4-3-4Z"
+          fill="var(--gr-mark-fold, currentColor)"
+        />
+        <path
+          d="M5 1h6l4 4v7l-3 3H5v-4l3-3-3-3V1Zm5 3v2h2V4h-2Z"
           fill="var(--gr-mark-front, currentColor)"
           fillRule="evenodd"
         />
-        <path d="M10 2v5h5l-5-5Z" fill="var(--gr-mark-fold, currentColor)" />
       </svg>
     );
   }
@@ -66,17 +69,13 @@ export function GoldenMark({
       width={pixels}
     >
       <path
-        d="M2 3h13l7 7v11H2V3Zm4 4v4h4V7H6Z"
+        d="M2 6h7l5 5-5 5H2l4-5-4-5Z"
+        fill="var(--gr-mark-fold, currentColor)"
+      />
+      <path
+        d="M7 2h8l7 7v9l-4 4H7v-6l5-5-5-5V2Zm7 5v3h3V7h-3Z"
         fill="var(--gr-mark-front, currentColor)"
         fillRule="evenodd"
-      />
-      <path d="M15 3v7h7l-7-7Z" fill="var(--gr-mark-fold, currentColor)" />
-      <path
-        d="M5 15h13M5 18h9"
-        fill="none"
-        stroke="var(--gr-mark-rule, currentColor)"
-        strokeLinecap="square"
-        strokeWidth="1.5"
       />
     </svg>
   );
@@ -132,6 +131,6 @@ export const GOLDEN_IDENTITY_ASSET_CONTRACT = Object.freeze({
   microSafeEdgePx: 1,
   microMinimumFeaturePx: 2,
   wordmarkCasing: "TryVit",
-  geometry: "asymmetric double fold with square registration aperture",
+  geometry: "asymmetric opposed double fold with square registration aperture",
   prohibitedMasterFormats: Object.freeze(["raster", "live-svg-text", "filter", "gradient"]),
 });
