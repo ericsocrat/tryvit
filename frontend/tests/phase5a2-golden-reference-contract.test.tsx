@@ -106,13 +106,18 @@ describe("Phase 5A.2 Golden Reference contract", () => {
   it("uses path-only identity assets and an optical micro mark", () => {
     const master = renderToStaticMarkup(<GoldenMark label="TryVit symbol" />);
     const micro = renderToStaticMarkup(<GoldenMark label="TryVit symbol" size="micro" />);
+    const twentyPixel = renderToStaticMarkup(<GoldenMark label="TryVit symbol" size={20} />);
     const wordmark = renderToStaticMarkup(<GoldenWordmark />);
     expect(master).toContain("data-golden-mark=\"master\"");
     expect(micro).toContain("data-golden-mark=\"micro\"");
     expect(micro).toContain("height=\"16\"");
+    expect(twentyPixel).toContain("data-golden-mark=\"micro\"");
+    expect(twentyPixel).toContain("height=\"20\"");
     expect(master).not.toContain("<text");
     expect(micro).not.toContain("<text");
     expect(wordmark).not.toContain("<text");
+    expect(wordmark).toContain('viewBox="0 0 96 24"');
+    expect(wordmark).not.toContain('viewBox="0 0 112 24"');
     expect(GOLDEN_IDENTITY_ASSET_CONTRACT.wordmarkCasing).toBe("TryVit");
     expect(GOLDEN_IDENTITY_ASSET_CONTRACT.prohibitedMasterFormats).toContain("raster");
   });
@@ -176,6 +181,25 @@ describe("Phase 5A.2 Golden Reference contract", () => {
     expect(resilience).toContain("new AxeBuilder({ page }).analyze()");
     expect(resilience).not.toMatch(/\.exclude\(|\.include\(|\.disableRules\(|\.withTags\(|runOnly/u);
     expect(resilience).not.toContain("helpers/a11y");
+  });
+
+  it("keeps replacement-review blockers covered by executable evidence", () => {
+    const source = (relativePath: string): string => readFileSync(
+      path.join(process.cwd(), relativePath),
+      "utf8",
+    );
+    const motion = source("e2e/phase5a2-golden-motion.spec.ts");
+    const performance = source("e2e/phase5a2-golden-performance.spec.ts");
+    const resilience = source("e2e/phase5a2-golden-resilience.spec.ts");
+    const verifier = source("tooling/design-system/golden-reference/verify-candidates.mts");
+    expect(motion).toContain('data-golden-reference=\'home\'');
+    expect(motion).toContain('data-golden-reference=\'product\'');
+    expect(motion).toContain("element.innerText.replace(/\\s+/gu, \" \")");
+    expect(performance).toContain("const SAMPLE_COUNT = 5");
+    expect(performance).toContain('goldenOutputPath("performance.json")');
+    expect(resilience).toContain('forcedColorAdjust).toBe("none")');
+    expect(verifier).toContain("journey-terminal-invalid");
+    expect(verifier).toContain("performance-contract-invalid");
   });
 
   it("keeps a byte-level staged evidence verifier", () => {

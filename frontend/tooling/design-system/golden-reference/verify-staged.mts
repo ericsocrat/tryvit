@@ -118,7 +118,7 @@ for (const file of retained) {
 if (
   retainedBytes !== manifest.retainedBytes ||
   retainedBytes > GOLDEN_COMMITTED_BINARY_LIMIT_BYTES ||
-  retained.length !== 81 ||
+  retained.length !== 82 ||
   manifest.fontBytes !== 0
 ) fail("staged-packet-contract-invalid");
 

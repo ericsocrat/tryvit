@@ -3,6 +3,7 @@ import { AuthenticationForm } from "./AuthenticationForm.client";
 import { GOLDEN_COMMON_COPY } from "./common-copy";
 import type { GoldenRouteState } from "./contract";
 import { GoldenGlyph } from "./GoldenGlyph";
+import { GoldenMark } from "./GoldenIdentity";
 import styles from "./golden.module.css";
 
 export function AuthenticationReference({ route }: Readonly<{ route: GoldenRouteState }>) {
@@ -11,6 +12,7 @@ export function AuthenticationReference({ route }: Readonly<{ route: GoldenRoute
   return (
     <article className={styles.authReference}>
       <section className={styles.authEditorial}>
+        <div aria-hidden="true" className={styles.authIdentity}><GoldenMark size="medium" /><i /><i /></div>
         <p className={styles.eyebrow}>{copy.eyebrow}</p>
         <h1>{copy.title}</h1>
         <p>{copy.intro}</p>

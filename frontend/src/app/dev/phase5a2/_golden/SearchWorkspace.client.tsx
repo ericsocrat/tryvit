@@ -12,6 +12,7 @@ import type { GOLDEN_REFERENCE_STATES, GoldenRouteState } from "./contract";
 import { GOLDEN_SEARCH_PRODUCTS } from "./fixture";
 import type { SearchCopy } from "./search-copy";
 import { GoldenGlyph } from "./GoldenGlyph";
+import { GoldenMark } from "./GoldenIdentity";
 import styles from "./golden.module.css";
 
 type SearchState = (typeof GOLDEN_REFERENCE_STATES.search)[number];
@@ -52,7 +53,7 @@ export function SearchWorkspace({
 }>) {
   const initialState = route.state as SearchState;
   const [state, setState] = useState<SearchState>(initialState);
-  const [query, setQuery] = useState(["no-query", "typing", "suggestions", "suggestions-loading"].includes(initialState) ? "" : "oat");
+  const [query, setQuery] = useState(initialState === "no-query" ? "" : "oat");
   const [includePartial, setIncludePartial] = useState(true);
   const [includeUnknown, setIncludeUnknown] = useState(initialState !== "filters-active");
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -130,7 +131,14 @@ export function SearchWorkspace({
         </div>
       </form>
 
-      {(state === "typing" || state === "suggestions") && query ? (
+      {state === "typing" && query ? (
+        <section aria-label={copy.typingTitle} className={styles.typingNotice}>
+          <GoldenGlyph name="confidence" />
+          <div><strong>{copy.typingTitle}</strong><p>{copy.typingDetail}</p></div>
+        </section>
+      ) : null}
+
+      {state === "suggestions" && query ? (
         <section aria-label={copy.suggestion} className={styles.suggestions}>
           <p className={styles.eyebrow}>{copy.suggestion}</p>
           <button onClick={() => { setQuery("North Grain Oat Drink"); armedRef.current = true; setState("results-loading"); }} type="button">North Grain Oat Drink — review fixture</button>
@@ -164,15 +172,18 @@ export function SearchWorkspace({
             />
           ) : (
             <div className={styles.resultList}>
-              {products.map((product) => (
+              {products.map((product) => {
+                const record = copy.records[product.id];
+                return (
                 <article className={styles.resultRow} key={product.id}>
-                  <div className={styles.resultIdentity}><span className={styles.productThumb}><GoldenGlyph name="source" /></span><div><h2>{product.name}</h2><p>{product.brand} · {product.ean}</p></div></div>
-                  <div><span className={styles.eyebrow}>{common.decision}</span><strong>{copy.resultDecision}</strong><small>{product.mainReason}</small></div>
-                  <div><span className={styles.eyebrow}>{common.dataConfidence}</span><strong>{product.dataConfidence}</strong><small>{product.confidenceReason}</small></div>
+                  <div className={styles.resultIdentity}><span className={styles.productThumb}><GoldenMark size="small" /></span><div><h2>{record.name}</h2><p>{product.brand} · {product.ean}</p></div></div>
+                  <div><span className={styles.eyebrow}>{common.decision}</span><strong>{copy.resultDecision}</strong><small>{record.mainReason}</small></div>
+                  <div><span className={styles.eyebrow}>{common.dataConfidence}</span><strong>{record.confidence}</strong><small>{record.confidenceReason}</small></div>
                   <div className={styles.resultScore}>{product.decisionScore === null ? <><strong>{copy.scoreUnavailable}</strong><small>{common.unknownInvariant}</small></> : <><strong>{product.decisionScore}<small>/100</small></strong><small>{common.scoreDerived}</small></>}</div>
-                  <a className={styles.secondaryAnchor} href={`/dev/phase5a2/golden/product?locale=${route.locale}&theme=${route.theme}&motion=${route.motion}&state=${product.decisionScore === null ? "unknown" : product.availability === "partial" ? "partial" : "available"}`}>{copy.open}</a>
+                  <a className={styles.secondaryAnchor} href={`/dev/phase5a2/golden/product?locale=${route.locale}&theme=${route.theme}&motion=${route.motion}&state=${product.decisionScore === null ? "unknown" : product.availability === "partial" ? "partial" : "available"}${route.capture ? "&capture=1" : ""}`}>{copy.open}</a>
                 </article>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>

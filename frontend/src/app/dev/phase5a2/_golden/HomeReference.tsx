@@ -126,7 +126,7 @@ export function HomeReference({ route }: Readonly<{ route: GoldenRouteState }>) 
         : route.state === "offline"
           ? { status: "offline" as const, title: copy.offlineTitle, detail: copy.offlineDetail }
           : null;
-  const query = `locale=${route.locale}&theme=${route.theme}&motion=${route.motion}`;
+  const query = `locale=${route.locale}&theme=${route.theme}&motion=${route.motion}${route.capture ? "&capture=1" : ""}`;
 
   return (
     <article className={styles.homeReference}>

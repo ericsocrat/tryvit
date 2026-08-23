@@ -2,7 +2,7 @@ import { statSync } from "node:fs";
 import path from "node:path";
 
 import AxeBuilder from "@axe-core/playwright";
-import type { Page } from "@playwright/test";
+import type { Locator, Page } from "@playwright/test";
 import sharp from "sharp";
 
 import {
@@ -18,6 +18,10 @@ import {
   ensureOwnedDirectory,
   prepareOwnedFileTarget,
 } from "@/../tooling/design-system/direction-selection/evidence-safety";
+import {
+  CATALOG_SCROLL_QUIESCENCE_TIMEOUT_MS,
+  CATALOG_SCROLL_QUIET_FRAMES_REQUIRED,
+} from "./catalog-scroll-quiescence";
 
 type GoldenPageCapture = Readonly<{
   reference: "landing" | "authentication" | "home" | "search" | "product" | "scanner";
@@ -57,6 +61,90 @@ export function installGoldenRuntimeHooks(page: Page): string[] {
     if (message.type() === "error") errors.push("console-error");
   });
   return errors;
+}
+
+interface GoldenScrollProbe {
+  revision: number;
+  cleanup: () => void;
+}
+
+async function waitForGoldenScrollQuiescence(page: Page): Promise<boolean> {
+  return page.evaluate(
+    ({ quietFramesRequired, timeoutMs }) => new Promise<boolean>((resolve) => {
+      const browserGlobal = globalThis as typeof globalThis & {
+        __phase5a2GoldenScrollProbe?: GoldenScrollProbe;
+      };
+      const probe = browserGlobal.__phase5a2GoldenScrollProbe;
+      if (!probe) {
+        resolve(false);
+        return;
+      }
+      let observedRevision = probe.revision;
+      let quietFramesObserved = 0;
+      let frame = 0;
+      const timer = window.setTimeout(() => {
+        cancelAnimationFrame(frame);
+        resolve(false);
+      }, timeoutMs);
+      const sample = () => {
+        if (probe.revision === observedRevision) quietFramesObserved += 1;
+        else {
+          observedRevision = probe.revision;
+          quietFramesObserved = 0;
+        }
+        if (quietFramesObserved >= quietFramesRequired) {
+          clearTimeout(timer);
+          resolve(true);
+          return;
+        }
+        frame = requestAnimationFrame(sample);
+      };
+      frame = requestAnimationFrame(sample);
+    }),
+    {
+      quietFramesRequired: CATALOG_SCROLL_QUIET_FRAMES_REQUIRED,
+      timeoutMs: CATALOG_SCROLL_QUIESCENCE_TIMEOUT_MS,
+    },
+  );
+}
+
+export async function prepareGoldenAnchoredTarget(
+  page: Page,
+  target: Locator,
+): Promise<void> {
+  await page.evaluate(() => {
+    const browserGlobal = globalThis as typeof globalThis & {
+      __phase5a2GoldenScrollProbe?: GoldenScrollProbe;
+    };
+    browserGlobal.__phase5a2GoldenScrollProbe?.cleanup();
+    const probe: GoldenScrollProbe = { revision: 0, cleanup: () => undefined };
+    const observeScroll = () => { probe.revision += 1; };
+    probe.cleanup = () => document.removeEventListener("scroll", observeScroll, true);
+    document.addEventListener("scroll", observeScroll, true);
+    browserGlobal.__phase5a2GoldenScrollProbe = probe;
+  });
+  try {
+    await target.scrollIntoViewIfNeeded();
+    if (!await waitForGoldenScrollQuiescence(page)) {
+      throw new Error("[P5A2_GOLDEN] scroll-quiescence-invalid");
+    }
+    const focused = await target.evaluate((element) => {
+      if (!(element instanceof HTMLElement)) return false;
+      element.focus({ preventScroll: true });
+      return element.ownerDocument.activeElement === element;
+    });
+    if (!focused || !await waitForGoldenScrollQuiescence(page)) {
+      throw new Error("[P5A2_GOLDEN] anchored-focus-invalid");
+    }
+  } finally {
+    await page.evaluate(() => {
+      const browserGlobal = globalThis as typeof globalThis & {
+        __phase5a2GoldenScrollProbe?: GoldenScrollProbe;
+      };
+      browserGlobal.__phase5a2GoldenScrollProbe?.cleanup();
+      delete browserGlobal.__phase5a2GoldenScrollProbe;
+    });
+  }
 }
 
 export async function openGoldenCapture(page: Page, capture: GoldenPageCapture): Promise<void> {

@@ -42,12 +42,14 @@ export function GoldenAssetBoardView({
           <article className={styles.stackedLockup}><span>Stacked · ≥80px</span><GoldenMark size="large" /><GoldenWordmark /></article>
           <article><span>Compact · symbol only</span><GoldenLockup compact /></article>
           <article><span>Clear space · 0.25H outer / 0.1875H symbol gap</span><div className={styles.clearSpace}><GoldenLockup /></div></article>
+          <article className={styles.misuseTile}><span>Misuse · preserve the source fold</span><div className={styles.misuseExample}><GoldenMark size="large" /><b aria-hidden="true">×</b></div><small>Never stretch, rotate, recolor one face, close the aperture, add effects, or set the mark below 16px.</small></article>
+          <article className={styles.accessibilityTile}><span>Accessibility · name and meaning</span><GoldenLockup /><small>Keep the visible TryVit name with primary lockups. Hide decorative marks from assistive technology; label standalone marks and never encode evidence status by color alone.</small></article>
         </section>
       ) : null}
 
       {board === "compact-favicon" ? (
         <section className={styles.compactBoard}>
-          {([16, 20, 24, 32] as const).map((pixels) => <article key={pixels}><div className={styles.pixelCell}><GoldenMark label={`TryVit ${pixels}px symbol`} size={pixels === 16 ? "micro" : pixels === 24 ? "small" : "medium"} /></div><strong>{pixels}×{pixels}</strong><small>{pixels === 16 ? "Fill-only · 1px safe edge · 2px minimum feature" : "Master geometry"}</small></article>)}
+          {([16, 20, 24, 32] as const).map((pixels) => <article key={pixels}><div className={styles.pixelCell}><GoldenMark label={`TryVit ${pixels}px symbol`} size={pixels} /></div><strong>{pixels}×{pixels}</strong><small>{pixels <= 20 ? "Dedicated reduction · 1px safe edge · 2px minimum feature" : "Master geometry · registration aperture and source rule"}</small></article>)}
           <article className={styles.faviconStrip}><GoldenMark size="micro" /><GoldenMark size="small" /><span>Browser light</span></article>
           <article className={styles.faviconStrip} data-dark="true"><GoldenMark size="micro" tone="inverse" /><GoldenMark size="small" tone="inverse" /><span>Browser dark</span></article>
         </section>

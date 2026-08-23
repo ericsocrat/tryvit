@@ -1,5 +1,7 @@
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 
+import { prepareGoldenAnchoredTarget } from "./helpers/phase5a2-golden-reference";
+
 type GoldenReference =
   | "landing"
   | "authentication"
@@ -115,8 +117,7 @@ test("home keeps decision priority and restores Menu focus", async ({ page }, te
   const decision = page.locator("[data-golden-decision-summary]");
   await expect(decision).toContainText("Review before deciding");
   const menu = page.getByRole("button", { name: "More decision actions" });
-  await menu.scrollIntoViewIfNeeded();
-  await menu.focus();
+  await prepareGoldenAnchoredTarget(page, menu);
   await menu.press("ArrowDown");
   const firstMenuItem = page.getByRole("menuitem").first();
   await expect(firstMenuItem).toBeVisible();

@@ -9,11 +9,14 @@ import {
   GOLDEN_ASSET_BOARDS,
   GOLDEN_CORE_STILLS,
   GOLDEN_FORCED_COLORS_STILLS,
+  GOLDEN_FONT_TRANSFER_LIMIT_BYTES,
   GOLDEN_GERMAN_DESKTOP_STILLS,
+  GOLDEN_JOURNEYS,
   GOLDEN_MAX_PNG_BYTES,
   GOLDEN_MAX_VIDEO_BYTES,
   GOLDEN_MOTION_RECORDINGS,
   GOLDEN_POLISH_MOBILE_STILLS,
+  GOLDEN_REFERENCE_IDS,
   GOLDEN_STATE_CAPTURES,
   GOLDEN_VIDEO_MAX_DURATION_MS,
   GOLDEN_VIDEO_MIN_DURATION_MS,
@@ -38,7 +41,7 @@ import { verifyPlaywrightWebm } from "../direction-selection/webm-evidence.ts";
 
 export interface VerifiedGoldenFile {
   readonly path: string;
-  readonly kind: "still" | "state" | "board" | "video" | "terminal" | "runtime" | "journeys";
+  readonly kind: "still" | "state" | "board" | "video" | "terminal" | "runtime" | "journeys" | "performance";
   readonly bytes: number;
   readonly sha256: string;
   readonly width?: number;
@@ -54,6 +57,7 @@ export interface VerifiedGoldenCandidates {
   readonly root: string;
   readonly runtime: Readonly<Record<string, unknown>>;
   readonly journeys: Readonly<Record<string, unknown>>;
+  readonly performance: Readonly<Record<string, unknown>>;
   readonly files: readonly VerifiedGoldenFile[];
   readonly contents: ReadonlyMap<string, Buffer>;
 }
@@ -125,6 +129,7 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
     ...pngs.map(({ path: filename }) => filename),
     ...videos.map(({ path: filename }) => filename),
     "journeys.json",
+    "performance.json",
     "runtime.json",
   ].sort();
   if (JSON.stringify(listFiles(root).sort()) !== JSON.stringify(expected)) {
@@ -164,8 +169,10 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
 
   const runtimeContents = readOwnedRegularFile(root, "runtime.json", "golden-runtime", 64 * 1024).contents;
   const journeyContents = readOwnedRegularFile(root, "journeys.json", "golden-journeys", 256 * 1024).contents;
+  const performanceContents = readOwnedRegularFile(root, "performance.json", "golden-performance", 2 * 1024 * 1024).contents;
   const runtime = parseJson(runtimeContents, "runtime-format-invalid");
   const journeys = parseJson(journeyContents, "journeys-format-invalid");
+  const performance = parseJson(performanceContents, "performance-format-invalid");
   if (
     runtime.schemaVersion !== 1 ||
     runtime.kind !== "phase5a2-golden-reference-runtime" ||
@@ -178,11 +185,68 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
   if (journeys.schemaVersion !== 1 || !Array.isArray(journeys.contracts) || !Array.isArray(journeys.actual) || journeys.actual.length !== 12) {
     fail("journeys-contract-invalid");
   }
+  for (const [index, capture] of GOLDEN_MOTION_RECORDINGS.entries()) {
+    const contract = GOLDEN_JOURNEYS.find(({ reference }) => reference === capture.reference);
+    const actual = journeys.actual[index];
+    if (!contract || !actual || typeof actual !== "object" || Array.isArray(actual)) {
+      fail("journey-terminal-invalid");
+    }
+    const record = actual as Record<string, unknown>;
+    const expectedAnnouncement = contract.terminal.announcement;
+    const announcementValid = expectedAnnouncement === "none"
+      ? record.announcement === null
+      : typeof record.announcement === "string" && record.announcement.includes(expectedAnnouncement);
+    if (
+      record.recordingReference !== capture.reference ||
+      record.mode !== capture.mode ||
+      record.reference !== contract.terminal.reference ||
+      record.liveState !== contract.terminal.state ||
+      record.focus !== contract.terminal.focus ||
+      typeof record.route !== "string" ||
+      !record.route.startsWith(`/dev/phase5a2/golden/${contract.terminal.reference}?`) ||
+      !announcementValid
+    ) {
+      fail("journey-terminal-invalid");
+    }
+  }
+  if (
+    performance.schemaVersion !== 1 ||
+    performance.kind !== "phase5a2-golden-reference-performance" ||
+    performance.reviewOnly !== true ||
+    performance.productionCoreWebVitals !== false ||
+    performance.sourceSha !== process.env.PHASE5A2_GOLDEN_SOURCE_SHA ||
+    performance.sourceTreeSha !== process.env.PHASE5A2_GOLDEN_SOURCE_TREE_SHA ||
+    !Array.isArray(performance.attempts) ||
+    performance.attempts.length !== GOLDEN_REFERENCE_IDS.length * 5 ||
+    !Array.isArray(performance.summaries) ||
+    performance.summaries.length !== GOLDEN_REFERENCE_IDS.length ||
+    !Array.isArray(performance.failures) ||
+    performance.failures.length !== 0
+  ) fail("performance-contract-invalid");
+  for (const [index, reference] of GOLDEN_REFERENCE_IDS.entries()) {
+    const candidate = performance.summaries[index];
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
+      fail("performance-summary-invalid");
+    }
+    const record = candidate as Record<string, unknown>;
+    const font = record.fontBytes;
+    if (
+      record.reference !== reference ||
+      record.status !== "complete" ||
+      !font ||
+      typeof font !== "object" ||
+      Array.isArray(font) ||
+      typeof (font as Record<string, unknown>).median !== "number" ||
+      ((font as Record<string, unknown>).median as number) > GOLDEN_FONT_TRANSFER_LIMIT_BYTES
+    ) fail("performance-summary-invalid");
+  }
   contents.set("runtime.json", runtimeContents);
   contents.set("journeys.json", journeyContents);
+  contents.set("performance.json", performanceContents);
   files.push({ path: "runtime.json", kind: "runtime", bytes: runtimeContents.length, sha256: sha256(runtimeContents) });
   files.push({ path: "journeys.json", kind: "journeys", bytes: journeyContents.length, sha256: sha256(journeyContents) });
-  return { root, runtime, journeys, files, contents };
+  files.push({ path: "performance.json", kind: "performance", bytes: performanceContents.length, sha256: sha256(performanceContents) });
+  return { root, runtime, journeys, performance, files, contents };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

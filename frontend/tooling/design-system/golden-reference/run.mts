@@ -75,6 +75,7 @@ const result = withNextEnvSourceRestoration(
       "local-authenticated",
       "--project=phase5a2-golden-capture",
       "--project=phase5a2-golden-motion",
+      "--project=phase5a2-golden-performance",
       "--workers=1",
       "--retries=0",
       "--reporter=list",

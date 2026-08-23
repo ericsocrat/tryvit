@@ -6,6 +6,7 @@ import {
   goldenOutputPath,
   installGoldenRuntimeHooks,
   openGoldenCapture,
+  prepareGoldenAnchoredTarget,
   startGoldenRecording,
 } from "./helpers/phase5a2-golden-reference";
 import {
@@ -54,18 +55,28 @@ async function performJourney(page: Page, reference: (typeof GOLDEN_MOTION_RECOR
       await page.getByRole("button", { name: "Continue" }).click();
       await expect(page.locator("[data-golden-live-state='success']")).toBeVisible();
       await dwell(page);
+      await page.getByRole("button", { name: "Open authenticated home" }).click();
+      await expect(page).toHaveURL(/\/golden\/home\?.*state=returning/u);
+      await expect(page.locator("[data-golden-reference='home']")).toHaveAttribute("data-golden-state", "returning");
+      await page.locator("#golden-main").focus();
+      await dwell(page);
       break;
     }
     case "home": {
       const menu = page.getByRole("button", { name: "More decision actions" });
-      await menu.focus();
+      await prepareGoldenAnchoredTarget(page, menu);
       await menu.press("ArrowDown");
-      await expect(page.getByRole("menu")).toBeVisible();
+      await expect(page.getByRole("menuitem").first()).toBeFocused();
       await dwell(page);
       await page.keyboard.press("Escape");
       await expect(menu).toBeFocused();
       await dwell(page);
       await page.getByRole("button", { name: "Resume evidence review" }).click();
+      await dwell(page);
+      await page.getByRole("link", { name: "Resume evidence review" }).click();
+      await expect(page).toHaveURL(/\/golden\/product\?.*state=partial/u);
+      await expect(page.locator("[data-golden-reference='product']")).toHaveAttribute("data-golden-state", "partial");
+      await page.locator("#golden-main").focus();
       await dwell(page);
       break;
     }
@@ -78,7 +89,7 @@ async function performJourney(page: Page, reference: (typeof GOLDEN_MOTION_RECOR
       await page.getByRole("button", { name: "Filters" }).click();
       const dialog = page.getByRole("dialog", { name: "Filters" });
       await dialog.getByLabel("Include partial records").check();
-      await dialog.getByLabel("Include records without a score").check();
+      await dialog.getByLabel("Include records without a score").uncheck();
       await dialog.getByRole("button", { name: "Apply filters" }).click();
       await dwell(page);
       break;
@@ -94,7 +105,7 @@ async function performJourney(page: Page, reference: (typeof GOLDEN_MOTION_RECOR
       await dwell(page);
       await page.getByRole("dialog").getByRole("button", { name: "Close" }).click();
       const menu = page.getByRole("button", { name: "Comparison actions" });
-      await menu.focus();
+      await prepareGoldenAnchoredTarget(page, menu);
       await menu.press("ArrowDown");
       await dwell(page);
       await page.keyboard.press("Escape");
@@ -136,16 +147,29 @@ test("records normal and reduced-motion Golden journeys with terminal frames", a
       const root = document.querySelector<HTMLElement>("[data-golden-reference]");
       const live = document.querySelector<HTMLElement>("[data-golden-live-state]");
       const active = document.activeElement as HTMLElement | null;
+      const focus = (() => {
+        if (!active || active === document.body) return null;
+        if (active.id) return `#${active.id}`;
+        if (active.hasAttribute("data-golden-live-state")) {
+          return `[data-golden-live-state='${active.getAttribute("data-golden-live-state")}']`;
+        }
+        if (active.getAttribute("aria-haspopup")) {
+          return `${active.tagName.toLowerCase()}[aria-haspopup='${active.getAttribute("aria-haspopup")}']`;
+        }
+        const role = active.getAttribute("role");
+        return role ? `[role='${role}']` : active.tagName.toLowerCase();
+      })();
       return {
-        reference,
+        recordingReference: reference,
+        reference: root?.dataset.goldenReference ?? null,
         mode,
         route: location.pathname + location.search,
         fixtureState: root?.dataset.goldenState ?? null,
         theme: root?.dataset.theme ?? null,
         liveState: live?.dataset.goldenLiveState ?? root?.dataset.goldenState ?? null,
-        focus: active?.id || active?.getAttribute("role") || active?.tagName.toLowerCase() || null,
+        focus,
         announcement: [...document.querySelectorAll<HTMLElement>("[aria-live]")]
-          .map((element) => element.textContent?.trim())
+          .map((element) => element.innerText.replace(/\s+/gu, " ").trim())
           .filter(Boolean)
           .at(-1) ?? null,
       };

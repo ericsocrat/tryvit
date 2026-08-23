@@ -118,6 +118,23 @@ for (const capture of GOLDEN_FORCED_COLORS_STILLS) {
     expect(semantics.state).toBe(capture.state);
     expect(semantics.text).toBeGreaterThan(100);
     expect(semantics.borders).toBeGreaterThan(0);
+    if (capture.reference === "landing" || capture.reference === "home") {
+      const essential = capture.reference === "landing"
+        ? page.getByRole("link", { name: "Explore the evidence" })
+        : page.getByRole("link", { name: "Home", exact: true });
+      const forcedStyle = await essential.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          background: style.backgroundColor,
+          color: style.color,
+          forcedColorAdjust: style.forcedColorAdjust,
+          label: element.textContent?.trim(),
+        };
+      });
+      expect(forcedStyle.label).toBe(capture.reference === "landing" ? "Explore the evidence" : "Home");
+      expect(forcedStyle.forcedColorAdjust).toBe("none");
+      expect(forcedStyle.color).not.toBe(forcedStyle.background);
+    }
   });
 }
 

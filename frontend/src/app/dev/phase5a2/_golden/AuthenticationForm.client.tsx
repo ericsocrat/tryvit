@@ -86,11 +86,11 @@ export function AuthenticationForm({
     const timeout = window.setTimeout(() => {
       if (jobGenerationRef.current !== generation) return;
       window.location.assign(
-        `/dev/phase5a2/golden/home?locale=${route.locale}&theme=${route.theme}&motion=${route.motion}&state=returning`,
+        `/dev/phase5a2/golden/home?locale=${route.locale}&theme=${route.theme}&motion=${route.motion}&state=returning${route.capture ? "&capture=1" : ""}`,
       );
     }, route.motion === "reduced" ? 0 : 180);
     return () => window.clearTimeout(timeout);
-  }, [route.locale, route.motion, route.theme, state]);
+  }, [route.capture, route.locale, route.motion, route.theme, state]);
 
   useEffect(() => {
     if (terminal || !focusEmailAfterRenderRef.current) return;

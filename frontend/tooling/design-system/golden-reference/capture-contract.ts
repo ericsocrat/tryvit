@@ -164,7 +164,7 @@ export const GOLDEN_JOURNEYS = Object.freeze([
       { event: "repeat-package-label", expectedState: "ready", expectedFocus: "button[aria-pressed='true']" },
       { event: "change-theme-dark", expectedState: "ready" },
     ],
-    terminal: { reference: "landing", state: "ready", focus: "main-or-theme-link", announcement: "none" },
+    terminal: { reference: "landing", state: "ready", focus: "button", announcement: "none" },
   },
   {
     reference: "authentication",
@@ -206,9 +206,9 @@ export const GOLDEN_JOURNEYS = Object.freeze([
       { event: "submit-query", expectedState: "results-loading", expectedAnnouncement: "Calculating the local result set" },
       { event: "results-settled", expectedState: "results", expectedAnnouncement: "3 synthetic records" },
       { event: "open-filter-sheet", expectedState: "results", expectedFocus: "[role='dialog']" },
-      { event: "apply-partial-unknown-filters", expectedState: "filters-active", expectedAnnouncement: "3 synthetic records" },
+      { event: "apply-partial-filter", expectedState: "filters-active", expectedAnnouncement: "2 synthetic records" },
     ],
-    terminal: { reference: "search", state: "filters-active", focus: "button", announcement: "3 synthetic records" },
+    terminal: { reference: "search", state: "filters-active", focus: "button", announcement: "2 synthetic records" },
   },
   {
     reference: "product",

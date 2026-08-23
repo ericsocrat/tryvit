@@ -22,6 +22,7 @@ const PRODUCT_COPY = {
     provenance: "Open provenance",
     provenanceTitle: "Source and method provenance",
     provenanceDescription: "Why the current record has moderate data confidence.",
+    provenanceUnknownDescription: "Why data confidence is not assessed for the current record.",
     provenanceBody: "This review fixture was transcribed once from a synthetic package. No independent package, laboratory, or regulatory check is attached.",
     compare: "Comparison actions",
     addCompare: "Add to local comparison",
@@ -41,6 +42,8 @@ const PRODUCT_COPY = {
     observedDetail: "3.2 g per 100 ml, transcribed from the synthetic nutrition table.",
     derivedTitle: "Concept decision score",
     derivedDetail: "72 / 100 from review method v0.9. Processing classification is missing.",
+    unknownDerivedTitle: "Concept decision score not assessed",
+    unknownDerivedDetail: "A required processing input is unavailable, so no score has been calculated or shown.",
     contextTitle: "Comparable serving basis",
     contextDetail: "Oat drinks compared per 100 ml under the same review method.",
     decisionTitle: "Check the package and missing input",
@@ -51,6 +54,8 @@ const PRODUCT_COPY = {
     offlineTitle: "Offline product record",
     offlineDetail: "Retained observed facts and source date remain available; fresh comparison is unavailable.",
     staleTitle: "This record may be stale",
+    degradedTitle: "Derived evidence is temporarily incomplete",
+    degradedDetail: "Observed package facts remain available. Retry the derived layer before relying on a score or comparison.",
     fixtureLabel: "Fixture",
     observedLabel: "Observed",
     checksLabel: "Source checks",
@@ -68,6 +73,7 @@ const PRODUCT_COPY = {
     provenance: "Otwórz pochodzenie danych",
     provenanceTitle: "Pochodzenie źródła i metody",
     provenanceDescription: "Dlaczego rekord ma umiarkowaną wiarygodność danych.",
+    provenanceUnknownDescription: "Dlaczego wiarygodności danych nie oceniono dla tego rekordu.",
     provenanceBody: "Materiał testowy zapisano raz z syntetycznego opakowania. Nie dołączono niezależnej kontroli opakowania, laboratorium ani organu regulacyjnego.",
     compare: "Działania porównania",
     addCompare: "Dodaj do lokalnego porównania",
@@ -87,6 +93,8 @@ const PRODUCT_COPY = {
     observedDetail: "3,2 g na 100 ml, zapisane z syntetycznej tabeli żywieniowej.",
     derivedTitle: "Koncepcyjny wynik decyzji",
     derivedDetail: "72 / 100 według metody v0.9. Brakuje klasyfikacji przetworzenia.",
+    unknownDerivedTitle: "Nie oceniono koncepcyjnego wyniku decyzji",
+    unknownDerivedDetail: "Brakuje wymaganej danej o przetworzeniu, dlatego wyniku nie wyliczono ani nie wyświetlono.",
     contextTitle: "Porównywalna podstawa porcji",
     contextDetail: "Napoje owsiane porównane na 100 ml tą samą metodą.",
     decisionTitle: "Sprawdź opakowanie i brakującą daną",
@@ -97,6 +105,8 @@ const PRODUCT_COPY = {
     offlineTitle: "Rekord produktu offline",
     offlineDetail: "Zachowane dane z opakowania i data źródła są dostępne; nowe porównanie jest niedostępne.",
     staleTitle: "Ten rekord może być nieaktualny",
+    degradedTitle: "Wyliczone dane są chwilowo niepełne",
+    degradedDetail: "Dane z opakowania pozostają dostępne. Ponów warstwę wyliczoną przed użyciem wyniku lub porównania.",
     fixtureLabel: "Materiał testowy",
     observedLabel: "Data obserwacji",
     checksLabel: "Kontrole źródła",
@@ -114,6 +124,7 @@ const PRODUCT_COPY = {
     provenance: "Provenienz öffnen",
     provenanceTitle: "Quellen- und Methodenprovenienz",
     provenanceDescription: "Warum der aktuelle Datensatz mittlere Datenverlässlichkeit hat.",
+    provenanceUnknownDescription: "Warum die Datenverlässlichkeit für den aktuellen Datensatz nicht bewertet ist.",
     provenanceBody: "Der Prüfsatz wurde einmal von einer synthetischen Verpackung abgeschrieben. Es ist keine unabhängige Verpackungs-, Labor- oder Behördenprüfung verbunden.",
     compare: "Vergleichsaktionen",
     addCompare: "Zum lokalen Vergleich hinzufügen",
@@ -133,6 +144,8 @@ const PRODUCT_COPY = {
     observedDetail: "3,2 g je 100 ml, aus der synthetischen Nährwerttabelle abgeschrieben.",
     derivedTitle: "Konzeptioneller Entscheidungswert",
     derivedDetail: "72 / 100 nach Prüfmethode v0.9. Die Verarbeitungsklassifikation fehlt.",
+    unknownDerivedTitle: "Konzeptioneller Entscheidungswert nicht bewertet",
+    unknownDerivedDetail: "Eine erforderliche Verarbeitungseingabe fehlt; deshalb wurde kein Wert berechnet oder gezeigt.",
     contextTitle: "Vergleichbare Bezugsgröße",
     contextDetail: "Hafergetränke je 100 ml mit derselben Prüfmethode verglichen.",
     decisionTitle: "Verpackung und fehlende Eingabe prüfen",
@@ -143,6 +156,8 @@ const PRODUCT_COPY = {
     offlineTitle: "Offline-Produktdatensatz",
     offlineDetail: "Gespeicherte Verpackungsangaben und Quelldatum bleiben verfügbar; ein neuer Vergleich ist nicht möglich.",
     staleTitle: "Dieser Datensatz könnte veraltet sein",
+    degradedTitle: "Abgeleitete Evidenz ist vorübergehend unvollständig",
+    degradedDetail: "Verpackungsangaben bleiben verfügbar. Die Ableitung erneut versuchen, bevor Wert oder Vergleich verwendet werden.",
     fixtureLabel: "Prüfsatz",
     observedLabel: "Beobachtet",
     checksLabel: "Quellenprüfungen",
@@ -156,7 +171,7 @@ export function ProductReference({ route }: Readonly<{ route: GoldenRouteState }
   const unknown = route.state === "unknown";
   const partial = route.state === "partial" || route.state === "degraded";
   const stale = route.state === "stale" || route.state === "offline-cache";
-  const query = `locale=${route.locale}&theme=${route.theme}&motion=${route.motion}`;
+  const query = `locale=${route.locale}&theme=${route.theme}&motion=${route.motion}${route.capture ? "&capture=1" : ""}`;
   const reason = unknown ? copy.unknownReason : stale ? copy.staleReason : partial ? copy.partialReason : copy.availableReason;
   const pageState = route.state === "loading"
     ? { status: "loading" as const, title: copy.loadingTitle, detail: copy.source }
@@ -164,6 +179,8 @@ export function ProductReference({ route }: Readonly<{ route: GoldenRouteState }
       ? { status: "error" as const, title: copy.errorTitle, detail: copy.errorDetail }
       : route.state === "offline-cache"
         ? { status: "offline" as const, title: copy.offlineTitle, detail: copy.offlineDetail }
+        : route.state === "degraded"
+          ? { status: "degraded" as const, title: copy.degradedTitle, detail: copy.degradedDetail }
         : route.state === "stale"
           ? { status: "degraded" as const, title: copy.staleTitle, detail: copy.staleReason }
           : null;
@@ -181,7 +198,7 @@ export function ProductReference({ route }: Readonly<{ route: GoldenRouteState }
         copy={common}
         decision={copy.decision}
         mainReason={reason}
-        nextAction={<ProductActions addCompareLabel={copy.addCompare} checksLabel={copy.checksLabel} closeLabel={common.close} compareLabel={copy.compare} fixtureLabel={copy.fixtureLabel} methodLabel={copy.method} noChecksLabel={copy.noChecksLabel} observedLabel={copy.observedLabel} openAlternativeLabel={copy.openAlternative} provenanceBody={copy.provenanceBody} provenanceDescription={copy.provenanceDescription} provenanceLabel={copy.provenance} provenanceTitle={copy.provenanceTitle} savedMessage={copy.saved} />}
+        nextAction={<ProductActions addCompareLabel={copy.addCompare} checksLabel={copy.checksLabel} closeLabel={common.close} compareLabel={copy.compare} fixtureLabel={copy.fixtureLabel} methodLabel={copy.method} noChecksLabel={copy.noChecksLabel} observedLabel={copy.observedLabel} openAlternativeLabel={copy.openAlternative} provenanceBody={copy.provenanceBody} provenanceDescription={unknown ? copy.provenanceUnknownDescription : copy.provenanceDescription} provenanceLabel={copy.provenance} provenanceTitle={copy.provenanceTitle} savedMessage={copy.saved} />}
         score={unknown ? null : 72}
       />
 
@@ -189,7 +206,7 @@ export function ProductReference({ route }: Readonly<{ route: GoldenRouteState }
         <header className={styles.sectionHeading}><p className={styles.eyebrow}>01</p><h2>{copy.inspect}</h2><p>{common.unknownInvariant}</p></header>
         <div className={styles.evidenceSpine}>
           <EvidenceBand detail={copy.observedDetail} kind="observed" label={common.observed} meta={copy.source} title={copy.observedTitle} />
-          <EvidenceBand detail={copy.derivedDetail} kind="derived" label={common.derived} meta={common.scoreDerived} title={copy.derivedTitle} />
+          <EvidenceBand detail={unknown ? copy.unknownDerivedDetail : copy.derivedDetail} kind={unknown ? "unknown" : "derived"} label={common.derived} meta={unknown ? common.unknownInvariant : common.scoreDerived} title={unknown ? copy.unknownDerivedTitle : copy.derivedTitle} />
           <EvidenceBand detail={copy.contextDetail} kind="context" label={common.contextual} meta={partial ? common.unknownInvariant : copy.alternativesDetail} title={copy.contextTitle} />
           <EvidenceBand detail={copy.decisionDetail} kind="decision" label={common.decisionLayer} meta={common.packageReminder} title={copy.decisionTitle} />
         </div>

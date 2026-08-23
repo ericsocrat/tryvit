@@ -128,7 +128,7 @@ export function ScannerExperience({
         <div className={styles.scannerTask}>
           <div aria-atomic="true" aria-live="polite" className={styles.scannerStatus} ref={statusRef} role="status" tabIndex={-1}>
             <GoldenGlyph name={uncertain || state.includes("unavailable") || state.includes("denied") ? "unknown" : state === "matched" ? "decision" : "scanner"} size={32} />
-            <div><span className={styles.eyebrow}>{state}</span><strong>{stateText}</strong></div>
+            <div><span className={styles.eyebrow}>{copy.statusEyebrow}</span><strong>{stateText}</strong></div>
           </div>
 
           {state === "permission-request" ? <div className={styles.permissionPanel}><h2>{copy.permissionTitle}</h2><p>{copy.permissionBody}</p></div> : null}
@@ -163,7 +163,7 @@ export function ScannerExperience({
       </section>
 
       {state === "matched" ? (
-        <DecisionSummary copy={common} decision={copy.resultDecision} mainReason={copy.resultReason} nextAction={<a className={styles.secondaryAnchor} href={`/dev/phase5a2/golden/product?locale=${route.locale}&theme=${route.theme}&motion=${route.motion}&state=partial`}>{common.referenceNames.product}</a>} score={72} />
+        <DecisionSummary copy={common} decision={copy.resultDecision} mainReason={copy.resultReason} nextAction={<a className={styles.secondaryAnchor} href={`/dev/phase5a2/golden/product?locale=${route.locale}&theme=${route.theme}&motion=${route.motion}&state=partial${route.capture ? "&capture=1" : ""}`}>{common.referenceNames.product}</a>} score={72} />
       ) : uncertain ? (
         <DecisionSummary confidence={common.unknown} confidenceReason={common.unknownInvariant} copy={common} decision={copy.resultDecision} mainReason={stateText} nextAction={<Button onClick={() => send("retry")}>{copy.retry}</Button>} score={null} />
       ) : null}

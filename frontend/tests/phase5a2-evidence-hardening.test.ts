@@ -542,7 +542,7 @@ describe("Phase 5A.2 recording contract wiring", () => {
     );
     const recordingStart = "startDirectionSelectionRecording(page, capture)";
 
-    expect(projectBlock.match(/video: "off" as const/gu)).toHaveLength(4);
+    expect(projectBlock.match(/video: "off" as const/gu)).toHaveLength(5);
     expect(projectBlock).not.toContain("video: { mode: \"on\"");
     expect(helper).toContain("await page.screencast.start({");
     expect(helper).toContain("await firstFrame;");

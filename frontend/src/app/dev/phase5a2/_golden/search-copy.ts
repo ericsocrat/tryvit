@@ -33,6 +33,13 @@ export const SEARCH_COPY = {
     open: "Inspect evidence",
     recent: "Recent searches",
     suggestion: "Suggested synthetic query",
+    typingTitle: "Query in progress",
+    typingDetail: "Submit the current query or choose a deterministic suggestion after it is prepared.",
+    records: {
+      "north-grain-oat-drink": { name: "North Grain Oat Drink — synthetic review record", confidence: "Moderate", confidenceReason: "One package transcription; zero independent checks.", mainReason: "Sugars are available, while processing classification is not assessed." },
+      "polny-owies": { name: "Polny Owies Oat Drink — synthetic review record", confidence: "Limited", confidenceReason: "The nutrition table is available; ingredient percentages are incomplete.", mainReason: "Comparable nutrition is available, but ingredient detail is partial." },
+      "lange-haferquelle": { name: "Haferquelle Original — synthetic review record", confidence: "Unavailable", confidenceReason: "A required score input is unavailable.", mainReason: "No score is shown because the record cannot be compared safely." },
+    },
   },
   pl: {
     label: "Wyszukaj produkty syntetyczne",
@@ -66,6 +73,13 @@ export const SEARCH_COPY = {
     open: "Przejrzyj dane",
     recent: "Ostatnie wyszukiwania",
     suggestion: "Sugerowane zapytanie syntetyczne",
+    typingTitle: "Wpisywanie zapytania",
+    typingDetail: "Wyślij bieżące zapytanie albo wybierz deterministyczną sugestię po jej przygotowaniu.",
+    records: {
+      "north-grain-oat-drink": { name: "Napój owsiany North Grain — materiał testowy", confidence: "Umiarkowana", confidenceReason: "Jeden zapis z opakowania; bez niezależnej weryfikacji.", mainReason: "Dane o cukrach są dostępne, ale klasyfikacji przetworzenia nie oceniono." },
+      "polny-owies": { name: "Napój owsiany Polny Owies — materiał testowy", confidence: "Ograniczona", confidenceReason: "Tabela żywieniowa jest dostępna; procenty składników są niepełne.", mainReason: "Dane żywieniowe są porównywalne, ale szczegóły składników są niepełne." },
+      "lange-haferquelle": { name: "Napój owsiany Haferquelle Original — materiał testowy", confidence: "Niedostępna", confidenceReason: "Brakuje danej wymaganej do wyliczenia wyniku.", mainReason: "Wynik nie jest wyświetlany, ponieważ rekordu nie można bezpiecznie porównać." },
+    },
   },
   de: {
     label: "Synthetische Produkte suchen",
@@ -99,6 +113,13 @@ export const SEARCH_COPY = {
     open: "Evidenz prüfen",
     recent: "Letzte Suchen",
     suggestion: "Vorgeschlagene synthetische Suche",
+    typingTitle: "Suchbegriff wird eingegeben",
+    typingDetail: "Die aktuelle Suche absenden oder nach der Vorbereitung einen deterministischen Vorschlag wählen.",
+    records: {
+      "north-grain-oat-drink": { name: "North Grain Hafergetränk — synthetischer Prüfsatz", confidence: "Mittel", confidenceReason: "Eine Verpackungsabschrift; keine unabhängige Prüfung.", mainReason: "Zuckerangaben sind verfügbar; die Verarbeitungsklassifikation ist nicht bewertet." },
+      "polny-owies": { name: "Polny Owies Hafergetränk — synthetischer Prüfsatz", confidence: "Begrenzt", confidenceReason: "Die Nährwerttabelle ist verfügbar; Zutatenanteile sind unvollständig.", mainReason: "Vergleichbare Nährwerte sind verfügbar, die Zutatenangaben jedoch nur teilweise." },
+      "lange-haferquelle": { name: "Haferquelle Original — synthetischer Prüfsatz", confidence: "Nicht verfügbar", confidenceReason: "Eine erforderliche Eingabe für den Wert fehlt.", mainReason: "Es wird kein Wert gezeigt, weil der Datensatz nicht sicher vergleichbar ist." },
+    },
   },
 } as const satisfies Readonly<Record<GoldenLocale, Readonly<Record<string, unknown>>>>;
 

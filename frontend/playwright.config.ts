@@ -600,6 +600,12 @@ const phase5a2GoldenMotionProject = {
   testMatch: /phase5a2-golden-motion\.spec\.ts/,
 };
 
+const phase5a2GoldenPerformanceProject = {
+  ...phase5a2GoldenChromiumProject,
+  name: "phase5a2-golden-performance",
+  testMatch: /phase5a2-golden-performance\.spec\.ts/,
+};
+
 const projects = [
   ...(LOCAL_AUTHENTICATED ? [authSetupProject, functionalAuthSetupProject] : []),
   smokeProject,
@@ -636,6 +642,7 @@ const projects = [
         phase5a2GoldenNoJavaScriptProject,
         phase5a2GoldenCaptureProject,
         phase5a2GoldenMotionProject,
+        phase5a2GoldenPerformanceProject,
       ]
     : []),
   ...(HAS_SCREENSHOTS ? [screenshotsProject] : []),

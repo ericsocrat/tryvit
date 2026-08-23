@@ -149,7 +149,7 @@ const backupBasename = `.golden-evidence-backup-${process.pid}`;
 let backupCreated = false;
 
 try {
-  const retainedKinds = new Set(["still", "board", "video", "runtime", "journeys"]);
+  const retainedKinds = new Set(["still", "board", "video", "runtime", "journeys", "performance"]);
   const retained: StagedFile[] = [];
   for (const file of verified.files) {
     if (!retainedKinds.has(file.kind)) continue;
@@ -192,6 +192,7 @@ try {
       motionRecordings: 12,
       terminalMotionStills: 12,
       assetBoards: 7,
+      performanceReports: 1,
       retainedFiles: retained.length,
       rawFiles: verified.files.length,
     },
@@ -200,6 +201,7 @@ try {
     fontBytes: 0,
     typographyDisposition: "system-stack-control-candidate-font-assay-blocked",
     journeys: verified.journeys,
+    performance: verified.performance,
     rawFiles: verified.files,
     files: retained,
   };
