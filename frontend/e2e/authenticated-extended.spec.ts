@@ -307,7 +307,11 @@ test.describe("Saved comparisons page", () => {
   test("renders heading", async ({ page }) => {
     await page.goto("/app/compare/saved");
     await expect(
-      page.getByRole("heading", { name: /Saved Comparisons/i }),
+      page.getByRole("heading", {
+        level: 1,
+        name: "Saved Comparisons",
+        exact: true,
+      }),
     ).toBeVisible();
   });
 
