@@ -22,7 +22,7 @@
   "remediation": {
     "branch": "codex/phase-5a2-admission-authenticated-matrix",
     "stackedBaseSha": "bafeb0dc60bba209154091908ff5e03cbd3a9733",
-    "resolvedCausalGroups": 5,
+    "resolvedCausalGroups": 9,
     "focusedEvidence": [
       {
         "kind": "component-and-contract",
@@ -43,10 +43,77 @@
         "passed": 12,
         "blockingViolations": 0,
         "warnings": 0
+      },
+      {
+        "kind": "follow-up-owning-projects",
+        "result": "passed",
+        "retries": 0,
+        "passed": 58,
+        "catalogCases": 18,
+        "firefoxPrimitiveCases": 5
       }
     ],
     "completeNightly": "pending-settled-head"
   },
+  "followUpRuns": [
+    {
+      "runId": 32635312359,
+      "headSha": "0832a0648b54b3fc737da9242e59deda823d98f0",
+      "artifactId": 9492428067,
+      "authenticatedStdoutSha256": "c06d11575b000c3f7b153b0e12c0570aae06f05a79885c092a1f8dd7ad57e992",
+      "status": "failed-deterministic",
+      "summary": {
+        "terminalFailures": 12,
+        "passed": 196,
+        "skipped": 2,
+        "didNotRun": 25,
+        "nonTestErrors": 2,
+        "globalTimeoutSeconds": 600
+      },
+      "causalGroups": [
+        {
+          "id": "functional-locale-selector-coverage",
+          "nominalFailures": 5,
+          "firstCause": "The functional fixture legitimately persisted Polish locale, while remaining search journeys still owned the English placeholder instead of the localized search combobox.",
+          "disposition": "resolved",
+          "resolutionCommit": "3bf7be31",
+          "resolutionEvidence": "All locale-mutating cross-country, filter, search, and journey tests passed together with zero retries."
+        },
+        {
+          "id": "product-tabs-seeded-fixture",
+          "nominalFailures": 3,
+          "firstCause": "The tab regression hard-coded product ID 1 and assumed full analysis was already expanded; Nightly seeded the canonical full product at QA_PRODUCT_ID=2 in summary mode.",
+          "disposition": "resolved",
+          "resolutionCommit": "ded556bc",
+          "resolutionEvidence": "All three desktop and mobile tab ownership tests passed against the exported product fixture with zero retries."
+        },
+        {
+          "id": "shared-authenticated-session-revocation",
+          "nominalFailures": 3,
+          "firstCause": "Authenticated logout tests performed a real global Supabase sign-out on the shared fixture identity, revoking the stored session later consumed by the catalog and Firefox projects.",
+          "disposition": "resolved",
+          "resolutionCommit": "3459019f",
+          "resolutionEvidence": "Contained logout behavior, all 18 catalog cases, and all five Firefox primitive cases passed in project order with zero retries."
+        },
+        {
+          "id": "private-cache-localized-auth-controls",
+          "nominalFailures": 1,
+          "firstCause": "The private-cache proof uses the locale-changing functional identity but owned English-only sign-out and sign-in controls.",
+          "disposition": "resolved",
+          "resolutionCommit": "3bf7be31",
+          "resolutionEvidence": "The complete account-isolation proof passed in the zero-retry owning-project run."
+        },
+        {
+          "id": "nightly-browser-global-timeout",
+          "nonTestErrors": 2,
+          "firstCause": "The 600-second Playwright global cap was shorter than the workflow's existing 900-second comprehensive baseline and could not admit all 18 catalog cases plus Firefox and WebKit after earlier failures were removed.",
+          "disposition": "resolved",
+          "resolutionCommit": "3469d532",
+          "resolutionEvidence": "The cap now matches the 900-second comprehensive baseline, remains below the 20-minute workflow step cap, and is protected by a static contract test."
+        }
+      ]
+    }
+  ],
   "groups": [
     {
       "id": "search-filter-contrast",
