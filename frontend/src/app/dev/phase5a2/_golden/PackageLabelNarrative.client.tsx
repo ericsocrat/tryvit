@@ -43,7 +43,7 @@ export function PackageLabelNarrative({
         <span className={styles.packageFace}>NORTH<br />GRAIN</span>
         <span className={styles.packageFold} />
       </div>
-      <ol className={styles.narrativeSteps}>
+      <ol className={styles.narrativeSteps} role="list">
         <li data-active="true"><GoldenGlyph name="source" /><span>{packageLabel}</span></li>
         <li data-active={expanded || undefined}><GoldenGlyph name="observed" /><span>{observedLabel}</span></li>
         <li data-active={expanded || undefined}><GoldenGlyph name="derived" /><span>{derivedLabel}</span></li>

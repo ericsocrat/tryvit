@@ -55,6 +55,11 @@ colors and 200%-equivalent reflow are emulations. No real screen reader, real
 password manager, hybrid-input device, real camera, field performance, or native
 language approval is claimed.
 
+Golden content carries its exact nearest `lang` on the guarded review root. The outer
+application document language and fixed review metadata remain owned by the existing
+authenticated shell, so this packet does not claim root-document locale/metadata
+approval for a future production route.
+
 ## Performance disposition
 
 - candidate font transfer: `0` bytes;

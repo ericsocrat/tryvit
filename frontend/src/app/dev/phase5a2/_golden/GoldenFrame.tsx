@@ -24,6 +24,8 @@ const REFERENCE_LABELS = Object.freeze({
     motion: "Motion",
     full: "Full",
     reduced: "Reduced",
+    light: "Light",
+    dark: "Dark",
   },
   pl: {
     landing: "Strona główna",
@@ -40,6 +42,8 @@ const REFERENCE_LABELS = Object.freeze({
     motion: "Ruch",
     full: "Pełny",
     reduced: "Ograniczony",
+    light: "Jasny",
+    dark: "Ciemny",
   },
   de: {
     landing: "Startseite",
@@ -56,6 +60,8 @@ const REFERENCE_LABELS = Object.freeze({
     motion: "Bewegung",
     full: "Voll",
     reduced: "Reduziert",
+    light: "Hell",
+    dark: "Dunkel",
   },
 } as const);
 
@@ -85,7 +91,7 @@ export function GoldenFrame({
       </a>
       <header className={styles.reviewHeader}>
         <a
-          aria-label="TryVit Golden References"
+          aria-label={copy.review}
           className={styles.lockup}
           href={goldenReferenceHref("landing", route.locale, route.theme, route.motion)}
         >
@@ -120,7 +126,7 @@ export function GoldenFrame({
               route.state,
             )}
           >
-            {copy.theme}: {nextTheme}
+            {copy.theme}: {copy[nextTheme]}
           </a>
           <a
             className={styles.utilityLink}
@@ -155,7 +161,7 @@ export function GoldenFrame({
       <footer className={styles.reviewFooter}>
         <GoldenLockup compact />
         <p>{copy.synthetic}</p>
-        <p>Checkpoint 2 · {route.reference} · {route.state} · {route.motion}</p>
+        <p>Checkpoint 2 · {copy[route.reference]} · {route.state} · {copy[route.motion]}</p>
       </footer>
     </div>
   );

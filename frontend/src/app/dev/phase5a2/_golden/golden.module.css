@@ -1569,7 +1569,7 @@
 
 .narrativeSteps li {
   display: grid;
-  grid-template-columns: 28px 1fr;
+  grid-template-columns: 28px 1fr auto;
   gap: 0.6rem;
   align-items: center;
   min-height: 44px;
@@ -1581,6 +1581,12 @@
 .narrativeSteps li[data-active="true"] {
   color: var(--gr-ink);
   border-color: var(--gr-rust);
+}
+
+.narrativeSteps li[data-active="true"]::after {
+  content: "◆";
+  color: var(--gr-rust);
+  font-size: 0.7rem;
 }
 
 .editorialSection {

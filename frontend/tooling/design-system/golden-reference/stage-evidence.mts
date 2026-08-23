@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -132,12 +132,21 @@ const destinationParent = ensureOwnedDirectory(
   ["docs", "phase5a2", "checkpoint-2"],
   "golden-evidence-parent",
 );
-const destination = assertOwnedPathAbsent(destinationParent, ["evidence"], "golden-evidence-destination");
+const destinationPath = goldenEvidenceRoot(repositoryRoot);
+const replacing = existsSync(destinationPath);
+if (replacing && process.env.PHASE5A2_GOLDEN_REPLACE_EVIDENCE !== "true") {
+  fail("evidence-destination-exists");
+}
+const destination = replacing
+  ? assertOwnedDirectory(destinationParent, ["evidence"], "golden-existing-evidence")
+  : assertOwnedPathAbsent(destinationParent, ["evidence"], "golden-evidence-destination");
 if (destination !== goldenEvidenceRoot(repositoryRoot)) fail("evidence-destination-invalid");
 const stageRoot = mkdtempSync(path.join(destinationParent, ".golden-evidence-staging-"));
 const stageBasename = path.basename(stageRoot);
 assertOwnedDirectory(destinationParent, [stageBasename], "golden-temporary-stage");
 let published = false;
+const backupBasename = `.golden-evidence-backup-${process.pid}`;
+let backupCreated = false;
 
 try {
   const retainedKinds = new Set(["still", "board", "video", "runtime", "journeys"]);
@@ -196,13 +205,38 @@ try {
   };
   const manifestContents = Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`, "utf8");
   writeFileSync(outputPath(stageRoot, "manifest.json"), manifestContents, { flag: "wx", mode: 0o600 });
-  publishOwnedDirectory(
-    destinationParent,
-    stageBasename,
-    path.basename(destination),
-    "golden-evidence-publish",
-  );
+  if (replacing) {
+    const backup = assertOwnedPathAbsent(
+      destinationParent,
+      [backupBasename],
+      "golden-evidence-backup",
+    );
+    renameSync(destination, backup);
+    backupCreated = true;
+  }
+  try {
+    publishOwnedDirectory(
+      destinationParent,
+      stageBasename,
+      path.basename(destination),
+      "golden-evidence-publish",
+    );
+  } catch (error) {
+    if (backupCreated && !existsSync(destination)) {
+      renameSync(path.join(destinationParent, backupBasename), destination);
+      backupCreated = false;
+    }
+    throw error;
+  }
   published = true;
+  if (backupCreated) {
+    removeOwnedDirectory(
+      destinationParent,
+      [backupBasename],
+      "golden-evidence-backup-cleanup",
+    );
+    backupCreated = false;
+  }
   process.stdout.write(`${JSON.stringify({ sourceSha: manifest.sourceSha, sourceTreeSha: manifest.sourceTreeSha, retainedFiles: retained.length + 1, retainedBytes: retainedBytes + manifestContents.length, destination }, null, 2)}\n`);
 } finally {
   if (!published) removeOwnedDirectory(destinationParent, [stageBasename], "golden-temporary-stage-cleanup");

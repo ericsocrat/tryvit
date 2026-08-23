@@ -120,3 +120,19 @@ for (const capture of GOLDEN_FORCED_COLORS_STILLS) {
     expect(semantics.borders).toBeGreaterThan(0);
   });
 }
+
+test("RTL-sensitive Product Tabs and portal ownership inherit direction", async ({ page }) => {
+  await admit(page, routeFor("product", "unknown"));
+  await page.locator("[data-golden-reference]").evaluate((root) => {
+    root.setAttribute("dir", "rtl");
+  });
+  const nutrition = page.getByRole("tab", { name: "Nutrition" });
+  const ingredients = page.getByRole("tab", { name: "Ingredients" });
+  await nutrition.focus();
+  await nutrition.press("ArrowLeft");
+  await expect(ingredients).toBeFocused();
+  await page.getByRole("button", { name: "Open provenance" }).click();
+  const dialog = page.getByRole("dialog", { name: "Source and method provenance" });
+  await expect(dialog).toBeVisible();
+  expect(await dialog.evaluate((element) => element.closest("[data-ds-portal-root]")?.getAttribute("dir"))).toBe("rtl");
+});
