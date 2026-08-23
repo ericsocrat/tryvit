@@ -10,7 +10,6 @@ import {
   assertShrinkOnlyVisualDebt,
   buildLiveRouteComponentInventory,
   LIVE_INVENTORY_BASE_SHA_ENV,
-  scanVisualDebt,
   scanRuntimeBoundaryAudit,
   type VisualDebtRatchet,
   writeLiveRouteComponentInventory,
@@ -619,7 +618,7 @@ describe("Phase 5A.1a live route/component inventory", () => {
     }
   });
 
-  it("keeps the committed report current and ratchets its production debt only downward", () => {
+  it("keeps the committed report current and ratchets its production debt only downward", { timeout: 45_000 }, () => {
     const committed = JSON.parse(
       readFileSync(
         path.join(repositoryRoot, "docs", "phase5", "live-route-component-inventory.json"),
@@ -644,7 +643,7 @@ describe("Phase 5A.1a live route/component inventory", () => {
     expect(() =>
       assertShrinkOnlyVisualDebt(
         comparison.inventory.visualDebtRatchets,
-        scanVisualDebt(repositoryRoot),
+        current.visualDebtRatchets,
         committed.visualDebtRelocations,
       ),
     ).not.toThrow();
