@@ -82,7 +82,7 @@ function compressedAssets(
   extension: ".js" | ".css",
 ): readonly { path: string; rawBytes: number; gzipBytes: number }[] {
   const paths = [...new Set(resources
-    .map(({ name }) => new URL(name).pathname)
+    .map(({ name }) => decodeURIComponent(new URL(name).pathname))
     .filter((pathname) => pathname.startsWith("/_next/static/") && pathname.endsWith(extension)))]
     .sort();
   return paths.map((pathname) => {
