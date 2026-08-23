@@ -1,10 +1,10 @@
 # Phase 5A.2 Checkpoint 2 — Golden Reference review handoff
 
-> **Status:** Initial selected-hybrid packet ready for independent review
+> **Status:** Revision-cycle-1 replacement packet ready for mandatory independent re-review
 > **Production migration:** Prohibited
-> **Capture source:** `9f78aef04c86c05cff14c76e2dfcac6e62986010`
-> **Capture tree:** `481bd657db43b7fa683b0a2bd064bc3a378daad3`
-> **Manifest SHA-256:** `5bec248c30a980ddbacf2e1ab6be335681aedccb5aeac782fd433b28c7e0be88`
+> **Capture source:** `67c0c3f9e23b4fe1197e7b9da900f3d71716bdf8`
+> **Capture tree:** `3f3865a8b21c4f79ad8e77dc7ef3c135005d5b5e`
+> **Manifest SHA-256:** `b286061aecd0637f29da76b11dbdac72955bdac57c66efbdaf4afbd1a30518c5`
 
 This packet implements exactly six complete non-production Golden References:
 
@@ -40,7 +40,7 @@ Query input is fail-closed and limited to `locale`, `theme`, `motion`, `state`, 
 
 ## Evidence packet
 
-The committed packet contains 82 files and 6,466,086 bytes:
+The committed packet contains 83 files and 7,084,033 bytes:
 
 - 36 core stills: six references × 390/768/1440 × light/dark;
 - 12 localized stills: Polish mobile and long-German desktop for each reference;
@@ -48,18 +48,20 @@ The committed packet contains 82 files and 6,466,086 bytes:
 - six complete state/recovery contact sheets built from 59 raw state captures;
 - 12 complete VP8 recordings: normal and reduced motion per reference;
 - seven identity/typography/glyph boards;
-- exact runtime, journey, and manifest JSON.
+- exact runtime, journey, five-sample performance, and manifest JSON.
 
-The raw 59-state matrix, 12 terminal motion stills, and all source captures remain
+The raw 59-state matrix, 12 terminal motion stills, and all 147 candidate files remain
 artifact material rather than committed binary files. The repository verifier checks
 every retained byte, hash, dimension, WebM container, path, provenance value, count,
 and the 15 MiB ceiling.
 
 ## Review boundary
 
-Two fresh-context reviewers must independently inspect every retained still, recording,
-contact sheet, and board before seeing one another's scores. The implementation agent
-does not qualify. Scores do not approve the work and cannot average away a veto.
+Both fresh-context reviewers rejected the initial packet; their separate scorecards and
+synthesis are retained under `reviews/initial/`. Both must independently inspect every
+replacement still, recording, contact sheet, board, and the source-matched performance
+report before seeing one another's replacement scores. The implementation agent does
+not qualify. Scores do not approve the work and cannot average away a veto.
 
 Native Polish/German review, trademark/legal clearance, real assistive-technology and
 device testing, branded Safari, real camera/password-manager behavior, and production

@@ -2,9 +2,9 @@
 
 ## Source binding
 
-- Capture source: `9f78aef04c86c05cff14c76e2dfcac6e62986010`.
-- Capture tree: `481bd657db43b7fa683b0a2bd064bc3a378daad3`.
-- Manifest SHA-256: `5bec248c30a980ddbacf2e1ab6be335681aedccb5aeac782fd433b28c7e0be88`.
+- Capture source: `67c0c3f9e23b4fe1197e7b9da900f3d71716bdf8`.
+- Capture tree: `3f3865a8b21c4f79ad8e77dc7ef3c135005d5b5e`.
+- Manifest SHA-256: `b286061aecd0637f29da76b11dbdac72955bdac57c66efbdaf4afbd1a30518c5`.
 - Checkpoint 1 canonical manifest remains
   `9c10d0243b5208319fc8c3b1497ca9dae552f7fdfd899823ae2fca39f8993c1e`.
 
@@ -22,6 +22,8 @@
 - `frontend/tests/phase5a2-golden-reference-contract.test.tsx`;
 - `frontend/playwright.config.ts` bounded projects;
 - `docs/phase5a2/checkpoint-2/evidence/**` generated review packet.
+- `docs/phase5a2/checkpoint-2/rejections/**` compact rejected-attempt records;
+- `docs/phase5a2/checkpoint-2/reviews/**` independent scorecards and synthesis.
 
 ## Asset provenance
 

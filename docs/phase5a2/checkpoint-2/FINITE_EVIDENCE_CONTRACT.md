@@ -19,6 +19,7 @@ contract.
 | Normal-motion recordings | 6 | One complete deterministic journey per reference |
 | Reduced-motion recordings | 6 | Same journey and information at the 0ms endpoint |
 | Asset boards | 7 | Identity, lockups, compact/favicon, maskable, social/OG, typography, glyphs |
+| Performance report | 1 | Five valid cold local-production samples for every reference, with every sample retained |
 
 Behavioral coverage also runs at 320, 390, 768, 1024, 1280, and 1440; 200% zoom;
 WCAG text spacing; coarse/fine pointer; hover/no-hover; selected RTL-sensitive
@@ -35,13 +36,13 @@ prepaint, truncated endings, and mismatched manifest bytes.
 
 The raw matrix belongs in GitHub Actions artifacts. The committed review packet is
 limited to `15 MiB` and contains only essential stills, contact sheets, complete
-recordings, boards, and the exact manifest. Rejected evidence is retained under a
+recordings, boards, performance data, and the exact manifest. Rejected evidence is retained under a
 versioned rejection namespace; replacement evidence is generated only from a new exact
 source SHA after a causal correction.
 
 ## Performance evidence
 
-Each reference retains every valid sample and reports median and range for LCP, TBT,
+Each reference retains exactly five valid samples and reports median and range for LCP, TBT,
 CLS, and TTFB plus JS/CSS/font/image bytes and long tasks. Thresholds remain LCP
 ≤2.5s, TBT ≤200ms, landing CLS ≤0.05 and never >0.1, TTFB ≤800ms, no
 animation-attributable task >50ms, no animation-caused layout shift, fonts ≤100 KiB,

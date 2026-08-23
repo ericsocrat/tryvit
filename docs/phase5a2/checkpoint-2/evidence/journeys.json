@@ -39,7 +39,7 @@
       "terminal": {
         "reference": "landing",
         "state": "ready",
-        "focus": "main-or-theme-link",
+        "focus": "button",
         "announcement": "none"
       }
     },
@@ -157,16 +157,16 @@
           "expectedFocus": "[role='dialog']"
         },
         {
-          "event": "apply-partial-unknown-filters",
+          "event": "apply-partial-filter",
           "expectedState": "filters-active",
-          "expectedAnnouncement": "3 synthetic records"
+          "expectedAnnouncement": "2 synthetic records"
         }
       ],
       "terminal": {
         "reference": "search",
         "state": "filters-active",
         "focus": "button",
-        "announcement": "3 synthetic records"
+        "announcement": "2 synthetic records"
       }
     },
     {
@@ -251,13 +251,14 @@
       "terminal": {
         "reference": "scanner",
         "state": "matched",
-        "focus": "[data-golden-live-state='matched']",
+        "focus": "[role='status']",
         "announcement": "North Grain Oat Drink matched"
       }
     }
   ],
   "actual": [
     {
+      "recordingReference": "landing",
       "reference": "landing",
       "mode": "normal",
       "route": "/dev/phase5a2/golden/landing?locale=en&theme=light&motion=full&state=ready&capture=1",
@@ -268,6 +269,7 @@
       "announcement": null
     },
     {
+      "recordingReference": "landing",
       "reference": "landing",
       "mode": "reduced",
       "route": "/dev/phase5a2/golden/landing?locale=en&theme=light&motion=reduced&state=ready&capture=1",
@@ -278,46 +280,51 @@
       "announcement": null
     },
     {
-      "reference": "authentication",
-      "mode": "normal",
-      "route": "/dev/phase5a2/golden/authentication?locale=en&theme=light&motion=full&state=sign-in&capture=1",
-      "fixtureState": "sign-in",
-      "theme": "light",
-      "liveState": "success",
-      "focus": "section",
-      "announcement": "Local sign-in completedNo account was accessed. Continue to the authenticated home reference."
-    },
-    {
-      "reference": "authentication",
-      "mode": "reduced",
-      "route": "/dev/phase5a2/golden/authentication?locale=en&theme=light&motion=reduced&state=sign-in&capture=1",
-      "fixtureState": "sign-in",
-      "theme": "light",
-      "liveState": "success",
-      "focus": "section",
-      "announcement": "Local sign-in completedNo account was accessed. Continue to the authenticated home reference."
-    },
-    {
+      "recordingReference": "authentication",
       "reference": "home",
       "mode": "normal",
-      "route": "/dev/phase5a2/golden/home?locale=en&theme=light&motion=full&state=paused-partial&capture=1",
-      "fixtureState": "paused-partial",
+      "route": "/dev/phase5a2/golden/home?locale=en&theme=light&motion=full&state=returning&capture=1",
+      "fixtureState": "returning",
       "theme": "light",
-      "liveState": "paused-partial",
-      "focus": "button",
-      "announcement": "Evidence review resumed at the missing processing input."
+      "liveState": "returning",
+      "focus": "#golden-main",
+      "announcement": null
     },
     {
+      "recordingReference": "authentication",
       "reference": "home",
       "mode": "reduced",
-      "route": "/dev/phase5a2/golden/home?locale=en&theme=light&motion=reduced&state=paused-partial&capture=1",
-      "fixtureState": "paused-partial",
+      "route": "/dev/phase5a2/golden/home?locale=en&theme=light&motion=reduced&state=returning&capture=1",
+      "fixtureState": "returning",
       "theme": "light",
-      "liveState": "paused-partial",
-      "focus": "button",
-      "announcement": "Evidence review resumed at the missing processing input."
+      "liveState": "returning",
+      "focus": "#golden-main",
+      "announcement": null
     },
     {
+      "recordingReference": "home",
+      "reference": "product",
+      "mode": "normal",
+      "route": "/dev/phase5a2/golden/product?locale=en&theme=light&motion=full&capture=1&state=partial",
+      "fixtureState": "partial",
+      "theme": "light",
+      "liveState": "partial",
+      "focus": "#golden-main",
+      "announcement": null
+    },
+    {
+      "recordingReference": "home",
+      "reference": "product",
+      "mode": "reduced",
+      "route": "/dev/phase5a2/golden/product?locale=en&theme=light&motion=reduced&capture=1&state=partial",
+      "fixtureState": "partial",
+      "theme": "light",
+      "liveState": "partial",
+      "focus": "#golden-main",
+      "announcement": null
+    },
+    {
+      "recordingReference": "search",
       "reference": "search",
       "mode": "normal",
       "route": "/dev/phase5a2/golden/search?locale=en&theme=light&motion=full&state=no-query&capture=1",
@@ -325,9 +332,10 @@
       "theme": "light",
       "liveState": "filters-active",
       "focus": "button",
-      "announcement": "3 synthetic records shown; 1 without a score."
+      "announcement": "2 synthetic records shown; 0 without a score."
     },
     {
+      "recordingReference": "search",
       "reference": "search",
       "mode": "reduced",
       "route": "/dev/phase5a2/golden/search?locale=en&theme=light&motion=reduced&state=no-query&capture=1",
@@ -335,47 +343,51 @@
       "theme": "light",
       "liveState": "filters-active",
       "focus": "button",
-      "announcement": "3 synthetic records shown; 1 without a score."
+      "announcement": "2 synthetic records shown; 0 without a score."
     },
     {
+      "recordingReference": "product",
       "reference": "product",
       "mode": "normal",
       "route": "/dev/phase5a2/golden/product?locale=en&theme=light&motion=full&state=unknown&capture=1",
       "fixtureState": "unknown",
       "theme": "light",
       "liveState": "unknown",
-      "focus": "_R_1an2npfiv5ubsdbH1_",
+      "focus": "button[aria-haspopup='menu']",
       "announcement": null
     },
     {
+      "recordingReference": "product",
       "reference": "product",
       "mode": "reduced",
       "route": "/dev/phase5a2/golden/product?locale=en&theme=light&motion=reduced&state=unknown&capture=1",
       "fixtureState": "unknown",
       "theme": "light",
       "liveState": "unknown",
-      "focus": "_R_1an2npfiv5ubsdbH1_",
+      "focus": "button[aria-haspopup='menu']",
       "announcement": null
     },
     {
+      "recordingReference": "scanner",
       "reference": "scanner",
       "mode": "normal",
       "route": "/dev/phase5a2/golden/scanner?locale=en&theme=dark&motion=full&state=not-requested&capture=1",
       "fixtureState": "not-requested",
       "theme": "dark",
       "liveState": "matched",
-      "focus": "status",
-      "announcement": "matchedNorth Grain Oat Drink matched with moderate data confidence."
+      "focus": "[role='status']",
+      "announcement": "SIMULATION STATUS North Grain Oat Drink matched with moderate data confidence."
     },
     {
+      "recordingReference": "scanner",
       "reference": "scanner",
       "mode": "reduced",
       "route": "/dev/phase5a2/golden/scanner?locale=en&theme=dark&motion=reduced&state=not-requested&capture=1",
       "fixtureState": "not-requested",
       "theme": "dark",
       "liveState": "matched",
-      "focus": "status",
-      "announcement": "matchedNorth Grain Oat Drink matched with moderate data confidence."
+      "focus": "[role='status']",
+      "announcement": "SIMULATION STATUS North Grain Oat Drink matched with moderate data confidence."
     }
   ]
 }

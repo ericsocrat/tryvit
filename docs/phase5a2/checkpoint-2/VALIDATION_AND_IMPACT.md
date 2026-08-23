@@ -1,6 +1,6 @@
 # Checkpoint 2 validation and impact
 
-> **Status:** Local deterministic evidence complete; authoritative CI/performance pending
+> **Status:** Exact-source replacement evidence and local performance complete; authoritative CI pending
 
 ## Implemented boundary
 
@@ -18,7 +18,7 @@ Golden consumers outside the two guarded routes.
 ## Local verification retained before review
 
 - prompt and repository entry gate: passed;
-- focused Golden contract: 9/9 passed;
+- focused Golden contract: 10/10 passed;
 - Phase 5A.1b architecture contract plus live inventory cohort: passed;
 - type-check: passed;
 - source lint and focused E2E/tooling lint: passed;
@@ -34,14 +34,18 @@ Golden consumers outside the two guarded routes.
 - coarse/no-hover touch proof: passed;
 - JavaScript-disabled landing comprehension: passed;
 - scanner media-device calls: zero;
-- candidate capture: 113 stills + seven boards + 12 recordings + 12 terminal frames,
-  passed;
-- staged evidence verifier: 82/82 files, 6,466,086 bytes, passed.
+- replacement capture: 113 stills + seven boards + 12 complete recordings + 12
+  terminal frames + 30 valid performance samples, passed;
+- terminal verifier: Authentication ends at `home/returning/#golden-main` and Home
+  ends at `product/partial/#golden-main` in normal and reduced recordings;
+- staged evidence verifier: 83/83 files, 7,084,033 bytes, passed with manifest SHA-256
+  `b286061aecd0637f29da76b11dbdac72955bdac57c66efbdaf4afbd1a30518c5`.
 
-Three superseded raw packages are retained outside the repository in uniquely named
-temporary directories: an initial landing-duration rejection, a Home-duration
-rejection, and a visually rejected identity/search packet. No rejected package was
-published over the final packet.
+The initial reviewed packet remains recoverable in Git history. Superseded raw visual,
+browser, media, performance, and terminal-verifier packages remain outside the
+repository in uniquely owned temporary directories. Compact sanitized performance
+failure reports are retained under `rejections/`. No rejected package was published
+over the replacement packet.
 
 ## Runtime and authority limits
 
@@ -62,10 +66,26 @@ approval for a future production route.
 
 ## Performance disposition
 
-- candidate font transfer: `0` bytes;
-- committed review packet: `6,466,086` bytes, not application payload;
-- route-local application JS/CSS/LCP/TBT/CLS/TTFB measurement: pending the final
-  performance pass;
+- candidate font transfer: `0` bytes in all 30 samples;
+- committed review packet: `7,084,033` bytes, not application payload;
+- measurements use cache-disabled Playwright Chromium at 390×844 against the guarded
+  local production build. They are review-environment lab results, not production
+  Core Web Vitals;
+
+| Reference | JS gzip | CSS gzip | LCP median (range) | TBT median (range) | TTFB median (range) | CLS median (range) |
+|---|---:|---:|---:|---:|---:|---:|
+| Landing | 203,009 B | 48,522 B | 120 ms (116–200) | 0 ms (0–0) | 68.4 ms (65.7–72.1) | 0 (0–0) |
+| Authentication | 203,009 B | 48,522 B | 128 ms (124–152) | 0 ms (0–0) | 67.1 ms (64.7–73.1) | 0 (0–0) |
+| Home | 203,009 B | 48,522 B | 108 ms (108–148) | 0 ms (0–0) | 62.1 ms (62.0–69.4) | 0 (0–0) |
+| Search | 203,009 B | 48,522 B | 120 ms (112–180) | 0 ms (0–0) | 70.7 ms (61.4–93.0) | 0 (0–0) |
+| Product | 203,009 B | 48,522 B | 128 ms (124–148) | 0 ms (0–0) | 66.7 ms (65.5–69.7) | 0 (0–0) |
+| Scanner | 203,009 B | 48,522 B | 128 ms (120–148) | 0 ms (0–0) | 73.6 ms (63.7–78.0) | 0 (0–0) |
+
+Every final sample reports 0 image bytes, 0 font bytes, no long task, no
+animation-attributable long task, and no layout shift. Every threshold passes. A
+rejected earlier exact-source attempt retained a 57 ms non-animation long task and
+7 ms TBT in Landing sample 1; it was not hidden or averaged into the replacement.
+
 - production Route-JS comparison: pending the repository workflow;
 - conservative `/app` evidence remains `0.83` against `0.85`, including retained
   `538ms` TBT; the newer stable `0.87` observation remains visible;

@@ -106,8 +106,9 @@ Dark mode is recomposed, not inverted. Forced colors collapse identity to a sing
 
 ### Identity and domain glyphs
 
-The candidate master mark uses a 24×24 optical grid. A separate fill-only 16×16
-reduction has a 1px safe edge, no feature below 2px, and a 2×2 registration aperture.
+The candidate master mark uses a 24×24 optical grid with a source-registration rule.
+A separate fill-only 16×16 reduction is used through 20px and has a 1px safe edge, no
+feature below 2px, and a 2×2 registration aperture.
 The path-only wordmark uses exact `TryVit` casing. No live SVG text, raster master,
 filter, gradient, emoji, or generic icon-library addition is admitted.
 
