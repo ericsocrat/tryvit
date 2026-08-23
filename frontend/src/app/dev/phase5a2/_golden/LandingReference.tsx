@@ -35,6 +35,11 @@ const LANDING_COPY = {
     errorBody: "The product value, method, privacy explanation, and static evidence remain readable without it.",
     offlineTitle: "Offline review",
     offlineBody: "The complete server-rendered explanation and synthetic fixture remain available. External lookup is unavailable by design.",
+    observedDetail: "3.2 g sugars per 100 ml · observed 14 July 2026",
+    observedMeta: "Synthetic package transcription",
+    derivedDetail: "72 / 100 · incomplete inputs · method v0.9",
+    contextDetail: "Like-for-like oat-drink basis; processing not assessed",
+    decisionDetail: "Check the current package and inspect the missing processing input.",
   },
   pl: {
     eyebrow: "Dane o żywności, które można sprawdzić",
@@ -64,6 +69,11 @@ const LANDING_COPY = {
     errorBody: "Wartość produktu, metoda, opis prywatności i statyczne dane pozostają czytelne bez niej.",
     offlineTitle: "Przegląd offline",
     offlineBody: "Pełne wyjaśnienie renderowane przez serwer i materiał syntetyczny pozostają dostępne. Wyszukiwanie zewnętrzne jest celowo niedostępne.",
+    observedDetail: "Cukry 3,2 g na 100 ml · zapisano 14 lipca 2026",
+    observedMeta: "Syntetyczny zapis z opakowania",
+    derivedDetail: "72 / 100 · niepełne dane · metoda v0.9",
+    contextDetail: "Porównanie napojów owsianych; przetworzenia nie oceniono",
+    decisionDetail: "Sprawdź aktualne opakowanie i brakującą klasyfikację przetworzenia.",
   },
   de: {
     eyebrow: "Nachprüfbare Lebensmittelinformation",
@@ -93,6 +103,11 @@ const LANDING_COPY = {
     errorBody: "Produktnutzen, Methode, Datenschutzhinweis und statische Evidenz bleiben auch ohne sie lesbar.",
     offlineTitle: "Offline-Prüfung",
     offlineBody: "Die vollständige serverseitige Erklärung und der synthetische Datensatz bleiben verfügbar. Externe Suche ist absichtlich nicht verfügbar.",
+    observedDetail: "3,2 g Zucker je 100 ml · beobachtet am 14. Juli 2026",
+    observedMeta: "Synthetische Verpackungsabschrift",
+    derivedDetail: "72 / 100 · unvollständige Eingaben · Methode v0.9",
+    contextDetail: "Vergleichbare Hafergetränke; Verarbeitung nicht bewertet",
+    decisionDetail: "Aktuelle Verpackung und fehlende Verarbeitungseingabe prüfen.",
   },
 } as const;
 
@@ -165,10 +180,10 @@ export function LandingReference({ route }: Readonly<{ route: GoldenRouteState }
           <p>{copy.trustIntro}</p>
         </header>
         <div className={styles.evidenceSpine}>
-          <EvidenceBand detail="3.2 g sugars per 100 ml · observed 14 July 2026" kind="observed" label={common.observed} meta="Synthetic package transcription" title={copy.observed} />
-          <EvidenceBand detail="72 / 100 · incomplete inputs · method v0.9" kind="derived" label={common.derived} meta={common.scoreDerived} title={copy.derived} />
-          <EvidenceBand detail="Like-for-like oat-drink basis; processing not assessed" kind="context" label={common.contextual} meta={common.unknownInvariant} title={common.contextual} />
-          <EvidenceBand detail={common.packageReminder} kind="decision" label={common.decisionLayer} title={copy.decision} />
+          <EvidenceBand detail={copy.observedDetail} kind="observed" label={common.observed} meta={copy.observedMeta} title={copy.observed} />
+          <EvidenceBand detail={copy.derivedDetail} kind="derived" label={common.derived} meta={common.scoreDerived} title={copy.derived} />
+          <EvidenceBand detail={copy.contextDetail} kind="context" label={common.contextual} meta={common.unknownInvariant} title={common.contextual} />
+          <EvidenceBand detail={copy.decisionDetail} kind="decision" label={common.decisionLayer} meta={common.packageReminder} title={copy.decision} />
         </div>
       </section>
 

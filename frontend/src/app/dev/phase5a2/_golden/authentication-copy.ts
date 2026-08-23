@@ -107,3 +107,5 @@ export const AUTH_COPY = {
     summary: "Folgende Felder korrigieren",
   },
 } as const satisfies Readonly<Record<GoldenLocale, Readonly<Record<string, string>>>>;
+
+export type AuthCopy = (typeof AUTH_COPY)[GoldenLocale];

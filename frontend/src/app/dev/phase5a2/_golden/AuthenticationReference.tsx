@@ -19,7 +19,7 @@ export function AuthenticationReference({ route }: Readonly<{ route: GoldenRoute
           <div><dt><GoldenGlyph name="confidence" />{common.dataConfidence}</dt><dd>{copy.privacy}</dd></div>
         </dl>
       </section>
-      <AuthenticationForm route={route} />
+      <AuthenticationForm copy={copy} route={route} />
     </article>
   );
 }

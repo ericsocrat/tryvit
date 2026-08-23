@@ -18,6 +18,11 @@ export function ProductActions({
   addCompareLabel,
   openAlternativeLabel,
   savedMessage,
+  fixtureLabel,
+  observedLabel,
+  methodLabel,
+  checksLabel,
+  noChecksLabel,
 }: Readonly<{
   provenanceLabel: string;
   provenanceTitle: string;
@@ -28,6 +33,11 @@ export function ProductActions({
   addCompareLabel: string;
   openAlternativeLabel: string;
   savedMessage: string;
+  fixtureLabel: string;
+  observedLabel: string;
+  methodLabel: string;
+  checksLabel: string;
+  noChecksLabel: string;
 }>) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -63,10 +73,10 @@ export function ProductActions({
       >
         <p>{provenanceBody}</p>
         <dl className={styles.provenanceList}>
-          <div><dt>Fixture</dt><dd>north-grain-oat-drink</dd></div>
-          <div><dt>Observed</dt><dd>2026-07-14</dd></div>
-          <div><dt>Method</dt><dd>review-v0.9</dd></div>
-          <div><dt>Source checks</dt><dd>0 independent</dd></div>
+          <div><dt>{fixtureLabel}</dt><dd>north-grain-oat-drink</dd></div>
+          <div><dt>{observedLabel}</dt><dd>2026-07-14</dd></div>
+          <div><dt>{methodLabel}</dt><dd>review-v0.9</dd></div>
+          <div><dt>{checksLabel}</dt><dd>{noChecksLabel}</dd></div>
         </dl>
       </Dialog>
     </div>

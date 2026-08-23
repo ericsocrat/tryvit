@@ -51,6 +51,10 @@ const PRODUCT_COPY = {
     offlineTitle: "Offline product record",
     offlineDetail: "Retained observed facts and source date remain available; fresh comparison is unavailable.",
     staleTitle: "This record may be stale",
+    fixtureLabel: "Fixture",
+    observedLabel: "Observed",
+    checksLabel: "Source checks",
+    noChecksLabel: "0 independent",
   },
   pl: {
     eyebrow: "Rekord produktu · materiał syntetyczny",
@@ -93,6 +97,10 @@ const PRODUCT_COPY = {
     offlineTitle: "Rekord produktu offline",
     offlineDetail: "Zachowane dane z opakowania i data źródła są dostępne; nowe porównanie jest niedostępne.",
     staleTitle: "Ten rekord może być nieaktualny",
+    fixtureLabel: "Materiał testowy",
+    observedLabel: "Data obserwacji",
+    checksLabel: "Kontrole źródła",
+    noChecksLabel: "0 niezależnych",
   },
   de: {
     eyebrow: "Produktdatensatz · synthetischer Prüfsatz",
@@ -135,6 +143,10 @@ const PRODUCT_COPY = {
     offlineTitle: "Offline-Produktdatensatz",
     offlineDetail: "Gespeicherte Verpackungsangaben und Quelldatum bleiben verfügbar; ein neuer Vergleich ist nicht möglich.",
     staleTitle: "Dieser Datensatz könnte veraltet sein",
+    fixtureLabel: "Prüfsatz",
+    observedLabel: "Beobachtet",
+    checksLabel: "Quellenprüfungen",
+    noChecksLabel: "0 unabhängig",
   },
 } as const;
 
@@ -169,7 +181,7 @@ export function ProductReference({ route }: Readonly<{ route: GoldenRouteState }
         copy={common}
         decision={copy.decision}
         mainReason={reason}
-        nextAction={<ProductActions addCompareLabel={copy.addCompare} closeLabel={common.close} compareLabel={copy.compare} openAlternativeLabel={copy.openAlternative} provenanceBody={copy.provenanceBody} provenanceDescription={copy.provenanceDescription} provenanceLabel={copy.provenance} provenanceTitle={copy.provenanceTitle} savedMessage={copy.saved} />}
+        nextAction={<ProductActions addCompareLabel={copy.addCompare} checksLabel={copy.checksLabel} closeLabel={common.close} compareLabel={copy.compare} fixtureLabel={copy.fixtureLabel} methodLabel={copy.method} noChecksLabel={copy.noChecksLabel} observedLabel={copy.observedLabel} openAlternativeLabel={copy.openAlternative} provenanceBody={copy.provenanceBody} provenanceDescription={copy.provenanceDescription} provenanceLabel={copy.provenance} provenanceTitle={copy.provenanceTitle} savedMessage={copy.saved} />}
         score={unknown ? null : 72}
       />
 

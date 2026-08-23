@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "24b4555cb3d118dc64b46f75ebfd434a655c3498",
+    "baseSha": "c21d9bb8a25ddf3deee7b11a2386dfa59cccac7c",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "2db0fe62b882f068fdee1ef346f1597a1f3a7182c046b98320f0dd063b762928"
+    "sourceFingerprint": "e10c519b7c7557519afd4bf19651f4f47d7ba8927bc96f1d73a88063bcdeaeec"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12,9 +12,9 @@
     "frontend/src/design-system"
   ],
   "moduleCounts": {
-    "total": 409,
-    "route-module": 90,
-    "app-support-module": 54,
+    "total": 436,
+    "route-module": 92,
+    "app-support-module": 79,
     "shared-component-module": 196,
     "design-system-module": 69
   },
@@ -3225,6 +3225,838 @@
       "classifiedLegacyDebt": []
     },
     {
+      "path": "frontend/src/app/dev/phase5a2/_golden/AuthenticationForm.client.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/authentication-copy.ts",
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts",
+        "frontend/src/design-system/primitives/Button/Button.tsx",
+        "frontend/src/design-system/primitives/Field/index.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationReference.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/AuthenticationReference.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationForm.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/authentication-copy.ts",
+        "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/GoldenAssetBoard.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenIdentity.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/asset-contract.ts",
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden-assets/[board]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/GoldenEvidence.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "client-reachable",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/common-copy.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/HomeReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/LandingReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ProductReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.client.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/GoldenFrame.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenIdentity.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "client-reachable",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationForm.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenAssetBoard.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenEvidence.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/HomeReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/LandingReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/PackageLabelNarrative.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ProductReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden-assets/[board]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/GoldenIdentity.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenAssetBoard.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenFrame.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/LandingReference.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden-assets/[board]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/HomeControls.client.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/design-system/primitives/Button/Button.tsx",
+        "frontend/src/design-system/primitives/Menu/index.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/HomeReference.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/HomeReference.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenEvidence.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/HomeControls.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts",
+        "frontend/src/design-system/patterns/PageState/PageState.tsx"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/LandingReference.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenEvidence.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenIdentity.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/PackageLabelNarrative.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/PackageLabelNarrative.client.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/design-system/primitives/Button/Button.tsx"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/LandingReference.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/ProductActions.client.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/design-system/primitives/Button/Button.tsx",
+        "frontend/src/design-system/primitives/Menu/index.ts",
+        "frontend/src/design-system/primitives/Overlay/index.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/ProductReference.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/ProductReference.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenEvidence.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ProductActions.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts",
+        "frontend/src/app/dev/phase5a2/_golden/fixture.ts",
+        "frontend/src/design-system/patterns/PageState/PageState.tsx",
+        "frontend/src/design-system/primitives/Tabs/index.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/ScannerReference.client.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenEvidence.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts",
+        "frontend/src/app/dev/phase5a2/_golden/scanner-copy.ts",
+        "frontend/src/design-system/primitives/Button/Button.tsx",
+        "frontend/src/design-system/primitives/Field/index.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/ScannerReference.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts",
+        "frontend/src/app/dev/phase5a2/_golden/scanner-copy.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/SearchReference.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts",
+        "frontend/src/app/dev/phase5a2/_golden/search-copy.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts",
+        "frontend/src/app/dev/phase5a2/_golden/fixture.ts",
+        "frontend/src/app/dev/phase5a2/_golden/search-copy.ts",
+        "frontend/src/design-system/patterns/PageState/PageState.tsx",
+        "frontend/src/design-system/primitives/Button/Button.tsx",
+        "frontend/src/design-system/primitives/Field/index.ts",
+        "frontend/src/design-system/primitives/Overlay/index.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/SearchReference.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/asset-contract.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenAssetBoard.tsx",
+        "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden-assets/[board]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/authentication-copy.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationForm.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationReference.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenEvidence.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/HomeReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/LandingReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ProductReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/contract.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationForm.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenAssetBoard.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenFrame.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/HomeReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/LandingReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ProductReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/authentication-copy.ts",
+        "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
+        "frontend/src/app/dev/phase5a2/_golden/scanner-copy.ts",
+        "frontend/src/app/dev/phase5a2/_golden/search-copy.ts",
+        "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden-assets/[board]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/fixture.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "client-reachable",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/ProductReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/golden-gate.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/phase5a2-gate.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx",
+        "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden-assets/[board]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/scanner-copy.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/search-copy.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/SearchReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
       "path": "frontend/src/app/dev/phase5a2/_shared/MotionStudy.client.tsx",
       "classification": "app-support-module",
       "routeModuleKind": null,
@@ -3444,6 +4276,70 @@
       "classifiedLegacyDebt": []
     },
     {
+      "path": "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx",
+      "classification": "route-module",
+      "routeModuleKind": "page",
+      "routePath": "/dev/phase5a2/golden-assets/[board]",
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenAssetBoard.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/asset-contract.ts",
+        "frontend/src/app/dev/phase5a2/_golden/golden-gate.ts"
+      ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden-assets/[board]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+      "classification": "route-module",
+      "routeModuleKind": "page",
+      "routePath": "/dev/phase5a2/golden/[reference]",
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenFrame.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/HomeReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/LandingReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ProductReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts",
+        "frontend/src/app/dev/phase5a2/_golden/golden-gate.ts"
+      ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
       "path": "frontend/src/app/dev/phase5a2/layout.tsx",
       "classification": "route-module",
       "routeModuleKind": "layout",
@@ -3505,6 +4401,7 @@
       "directModuleImports": [],
       "directConsumers": [
         "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/golden-gate.ts",
         "frontend/src/app/dev/phase5a2/page.tsx"
       ],
       "transitiveRouteConsumers": [
@@ -3514,12 +4411,23 @@
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
         },
         {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden-assets/[board]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
+        },
+        {
           "modulePath": "frontend/src/app/dev/phase5a2/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2"
         }
       ],
       "targetRedesignPhases": [
+        "5A.2",
         "5A.3"
       ],
       "disposition": "migrate-to-v2",
@@ -17656,6 +18564,11 @@
           "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -17751,6 +18664,11 @@
           "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -17768,12 +18686,15 @@
       "routeModuleKind": null,
       "routePath": null,
       "hasUseClientDirective": false,
-      "runtimeBoundary": "server-only",
+      "runtimeBoundary": "client-reachable",
       "directModuleImports": [
         "frontend/src/design-system/icons/Icon.tsx"
       ],
       "directConsumers": [
         "frontend/src/app/dev/components/catalog/EvidencePageStatesScene.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/HomeReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ProductReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx",
         "frontend/src/design-system/patterns/PageState/PageState.type-contract.ts"
       ],
       "transitiveRouteConsumers": [
@@ -17781,6 +18702,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -17828,6 +18754,12 @@
         "frontend/src/app/dev/components/catalog/ButtonActivationProbe.client.tsx",
         "frontend/src/app/dev/components/catalog/EvidencePageStatesScene.tsx",
         "frontend/src/app/dev/components/catalog/OverlayNavigationProbes.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationForm.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/HomeControls.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/PackageLabelNarrative.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ProductActions.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx",
         "frontend/src/app/dev/phase5a2/_shared/MotionStudy.client.tsx",
         "frontend/src/app/dev/phase5a2/_shared/ScannerStudy.client.tsx",
         "frontend/src/design-system/primitives/Button/Button.type-contract.ts",
@@ -17843,6 +18775,11 @@
           "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18048,6 +18985,11 @@
           "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18101,6 +19043,11 @@
           "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18125,6 +19072,9 @@
       "directConsumers": [
         "frontend/src/app/dev/components/catalog/ActionsFormsScene.tsx",
         "frontend/src/app/dev/components/catalog/CatalogSwitch.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationForm.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx",
         "frontend/src/app/dev/phase5a2/_shared/ScannerStudy.client.tsx",
         "frontend/src/design-system/primitives/Combobox/Combobox.tsx"
       ],
@@ -18138,6 +19088,11 @@
           "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18227,6 +19182,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18270,13 +19230,20 @@
         "frontend/src/design-system/primitives/Menu/Menu.tsx"
       ],
       "directConsumers": [
-        "frontend/src/app/dev/components/catalog/OverlayNavigationProbes.client.tsx"
+        "frontend/src/app/dev/components/catalog/OverlayNavigationProbes.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/HomeControls.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ProductActions.client.tsx"
       ],
       "transitiveRouteConsumers": [
         {
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18310,6 +19277,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18353,13 +19325,20 @@
         "frontend/src/design-system/primitives/Overlay/Overlay.tsx"
       ],
       "directConsumers": [
-        "frontend/src/app/dev/components/catalog/OverlayNavigationProbes.client.tsx"
+        "frontend/src/app/dev/components/catalog/OverlayNavigationProbes.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ProductActions.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx"
       ],
       "transitiveRouteConsumers": [
         {
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18455,6 +19434,11 @@
           "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18480,7 +19464,8 @@
         "frontend/src/app/dev/components/catalog/OverlayNavigationProbes.client.tsx",
         "frontend/src/app/dev/phase5a2/_directions/evidence-register/EvidenceRegister.tsx",
         "frontend/src/app/dev/phase5a2/_directions/open-core/OpenCore.tsx",
-        "frontend/src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx"
+        "frontend/src/app/dev/phase5a2/_directions/source-fold/SourceFold.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ProductReference.tsx"
       ],
       "transitiveRouteConsumers": [
         {
@@ -18492,6 +19477,11 @@
           "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18605,6 +19595,11 @@
           "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18640,6 +19635,11 @@
           "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18696,6 +19696,11 @@
           "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18763,6 +19768,11 @@
           "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18798,6 +19808,11 @@
           "modulePath": "frontend/src/app/dev/phase5a2/[candidate]/[surface]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/[candidate]/[surface]"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -18825,6 +19840,11 @@
           "modulePath": "frontend/src/app/dev/components/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/components"
+        },
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden/[reference]"
         }
       ],
       "targetRedesignPhases": [
@@ -20096,9 +21116,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 514,
+    "inspectedModuleCount": 541,
     "violations": [],
-    "sourceFingerprint": "f24471174e7a294fe30000db4277acc913a518a9cd6323d55d653865fbab3496"
+    "sourceFingerprint": "8400827552829d385032570e8abac8389ab2ef99a34fa1f8073f1702243e0e28"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

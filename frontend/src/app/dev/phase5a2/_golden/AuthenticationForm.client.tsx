@@ -5,10 +5,10 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Button } from "@/design-system/primitives/Button/Button";
 import { Input } from "@/design-system/primitives/Field";
 
-import { AUTH_COPY } from "./authentication-copy";
-import {
+import type { AuthCopy } from "./authentication-copy";
+import type {
   GOLDEN_REFERENCE_STATES,
-  type GoldenRouteState,
+  GoldenRouteState,
 } from "./contract";
 import { GoldenGlyph } from "./GoldenGlyph";
 import styles from "./golden.module.css";
@@ -26,8 +26,10 @@ function isEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(value.trim());
 }
 
-export function AuthenticationForm({ route }: Readonly<{ route: GoldenRouteState }>) {
-  const copy = AUTH_COPY[route.locale];
+export function AuthenticationForm({
+  route,
+  copy,
+}: Readonly<{ route: GoldenRouteState; copy: AuthCopy }>) {
   const initialState = route.state as AuthState;
   const [mode, setMode] = useState<AuthMode>(initialMode(initialState));
   const [state, setState] = useState<AuthState>(initialState);
@@ -195,7 +197,7 @@ export function AuthenticationForm({ route }: Readonly<{ route: GoldenRouteState
           <Button onClick={() => { userTransitionRef.current = true; setState("redirecting"); }}>
             {copy.home}
           </Button>
-        ) : !userTransitionRef.current ? (
+        ) : isBusy ? (
           <Button onClick={returnToSignIn}>{copy.retry}</Button>
         ) : null}
       </section>

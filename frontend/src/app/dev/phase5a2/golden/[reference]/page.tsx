@@ -51,7 +51,7 @@ async function SelectedReference({ route }: Readonly<{ route: GoldenRouteState }
     }
     case "scanner": {
       const { ScannerReference } = await import(
-        "@/app/dev/phase5a2/_golden/ScannerReference.client"
+        "@/app/dev/phase5a2/_golden/ScannerReference"
       );
       return <ScannerReference route={route} />;
     }

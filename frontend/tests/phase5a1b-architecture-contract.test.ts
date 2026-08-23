@@ -16,6 +16,8 @@ const guardedPhase5A2V2Importers = new Set([
 const canonicalV2ReviewRoutes = new Set([
   "/dev/components",
   "/dev/phase5a2/[candidate]/[surface]",
+  "/dev/phase5a2/golden/[reference]",
+  "/dev/phase5a2/golden-assets/[board]",
 ]);
 
 function compareOrdinal(left: string, right: string): number {
@@ -42,6 +44,9 @@ function isAdmittedV2ReviewSource(filename: string): boolean {
   const relativePath = relative(filename);
   return (
     relativePath.startsWith("src/app/dev/components/") ||
+    relativePath.startsWith("src/app/dev/phase5a2/_golden/") ||
+    relativePath.startsWith("src/app/dev/phase5a2/golden/") ||
+    relativePath.startsWith("src/app/dev/phase5a2/golden-assets/") ||
     guardedPhase5A2V2Importers.has(relativePath)
   );
 }
@@ -119,6 +124,23 @@ describe("Phase 5A.1b architecture contract", () => {
     for (const page of pages) {
       expect(page).toContain('export const dynamic = "force-dynamic"');
       expect(page).toContain("phase5A2GateFromProcessEnvironment()");
+      expect(page).toContain("notFound()");
+    }
+
+    const goldenGate = readFileSync(
+      path.join(phase5A2Root, "_golden", "golden-gate.ts"),
+      "utf8",
+    );
+    const goldenPages = [
+      readFileSync(path.join(phase5A2Root, "golden", "[reference]", "page.tsx"), "utf8"),
+      readFileSync(path.join(phase5A2Root, "golden-assets", "[board]", "page.tsx"), "utf8"),
+    ];
+    expect(goldenGate).toContain('environment.PHASE5A2_DIRECTION_SELECTION === "1"');
+    expect(goldenGate).toContain("phase5A2GateFromProcessEnvironment(environment)");
+    expect(goldenGate).not.toContain("NEXT_PUBLIC");
+    for (const page of goldenPages) {
+      expect(page).toContain('export const dynamic = "force-dynamic"');
+      expect(page).toContain("phase5A2GoldenGateFromProcessEnvironment()");
       expect(page).toContain("notFound()");
     }
   });

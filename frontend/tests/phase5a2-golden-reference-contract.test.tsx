@@ -34,7 +34,11 @@ import {
   GOLDEN_MOTION_RECORDINGS,
   GOLDEN_POLISH_MOBILE_STILLS,
   GOLDEN_STATE_CONTACT_SHEET_COUNT,
-} from "../tooling/design-system/golden-reference/capture-contract";
+  GOLDEN_STATE_CAPTURE_COUNT,
+  GOLDEN_STATE_CAPTURES,
+  GOLDEN_JOURNEYS,
+} from "@/../tooling/design-system/golden-reference/capture-contract";
+import { GOLDEN_ASSET_BOARDS as RUNTIME_ASSET_BOARDS } from "@/app/dev/phase5a2/_golden/asset-contract";
 
 const repositoryRoot = path.resolve(process.cwd(), "..");
 
@@ -88,6 +92,13 @@ describe("Phase 5A.2 Golden Reference contract", () => {
     expect(GOLDEN_MOTION_RECORDINGS).toHaveLength(GOLDEN_MOTION_RECORDING_COUNT);
     expect(GOLDEN_MOTION_RECORDING_COUNT).toBe(12);
     expect(GOLDEN_ASSET_BOARD_COUNT).toBe(7);
+    expect(GOLDEN_STATE_CAPTURES).toHaveLength(GOLDEN_STATE_CAPTURE_COUNT);
+    expect(GOLDEN_STATE_CAPTURE_COUNT).toBe(59);
+    expect(GOLDEN_JOURNEYS).toHaveLength(6);
+    expect(GOLDEN_JOURNEYS.map((journey) => journey.reference)).toEqual(
+      PHASE5A2_GOLDEN_REFERENCES,
+    );
+    expect(RUNTIME_ASSET_BOARDS).toHaveLength(GOLDEN_ASSET_BOARD_COUNT);
     expect(GOLDEN_COMMITTED_BINARY_LIMIT_BYTES).toBe(15 * 1024 * 1024);
     expect(GOLDEN_FONT_TRANSFER_LIMIT_BYTES).toBe(100 * 1024);
   });
@@ -155,5 +166,15 @@ describe("Phase 5A.2 Golden Reference contract", () => {
     );
     expect(gate).toContain('environment.PHASE5A2_DIRECTION_SELECTION === "1"');
     expect(gate).toContain("phase5A2GateFromProcessEnvironment(environment)");
+  });
+
+  it("uses whole-page Axe without legacy exclusions or disabled rules", () => {
+    const resilience = readFileSync(
+      path.join(process.cwd(), "e2e", "phase5a2-golden-resilience.spec.ts"),
+      "utf8",
+    );
+    expect(resilience).toContain("new AxeBuilder({ page }).analyze()");
+    expect(resilience).not.toMatch(/\.exclude\(|\.include\(|\.disableRules\(|\.withTags\(|runOnly/u);
+    expect(resilience).not.toContain("helpers/a11y");
   });
 });

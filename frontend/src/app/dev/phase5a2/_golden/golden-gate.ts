@@ -1,6 +1,6 @@
 import "server-only";
 
-import { phase5A2GateFromProcessEnvironment } from "../phase5a2-gate";
+import { phase5A2GateFromProcessEnvironment } from "@/app/dev/phase5a2/phase5a2-gate";
 
 /**
  * Checkpoint 1 intentionally opens in ordinary development. Golden References are

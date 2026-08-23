@@ -584,6 +584,22 @@ const phase5a2GoldenNoJavaScriptProject = {
   },
 };
 
+const phase5a2GoldenCaptureProject = {
+  ...phase5a2GoldenChromiumProject,
+  name: "phase5a2-golden-capture",
+  testMatch: /phase5a2-golden-capture\.spec\.ts/,
+  use: {
+    ...phase5a2GoldenChromiumProject.use,
+    viewport: { width: 1440, height: 900 },
+  },
+};
+
+const phase5a2GoldenMotionProject = {
+  ...phase5a2GoldenChromiumProject,
+  name: "phase5a2-golden-motion",
+  testMatch: /phase5a2-golden-motion\.spec\.ts/,
+};
+
 const projects = [
   ...(LOCAL_AUTHENTICATED ? [authSetupProject, functionalAuthSetupProject] : []),
   smokeProject,
@@ -618,6 +634,8 @@ const projects = [
         phase5a2GoldenResilienceProject,
         phase5a2GoldenCoarseProject,
         phase5a2GoldenNoJavaScriptProject,
+        phase5a2GoldenCaptureProject,
+        phase5a2GoldenMotionProject,
       ]
     : []),
   ...(HAS_SCREENSHOTS ? [screenshotsProject] : []),
