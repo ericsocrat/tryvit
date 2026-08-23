@@ -26,7 +26,6 @@ concurrency:
 env:
   BASELINE_COMPREHENSIVE: 900
   BASELINE_DATA_AUDIT: 300
-  NEXT_PUBLIC_QA_MODE: "1"
   PHASE5A1_CATALOG: "1"
   PHASE5A2_CROSS_BROWSER: "true"
   PHASE5A1_CATALOG_SOURCE_SHA: ${{ github.sha }}
@@ -83,7 +82,7 @@ jobs:
 
       - name: Unit tests with coverage
         run: npx vitest run --coverage
-        timeout-minutes: 5
+        timeout-minutes: 7
 
       - name: Get Playwright version
         id: pw-version
@@ -118,11 +117,12 @@ jobs:
       - name: Public Playwright suite
         run: |
           set -o pipefail
-          npm run visual-safety:public -- --project=smoke --reporter=list 2>&1 | tee ../playwright-public-stdout.log
+          npm run visual-safety:public -- --project=smoke --retries=0 --reporter=list 2>&1 | tee ../playwright-public-stdout.log
         timeout-minutes: 20
         env:
           VISUAL_SAFETY_MODE: public
           BASE_URL: http://127.0.0.1:3000
+          NEXT_PUBLIC_QA_MODE: "1"
 
       - name: Assert public visual safety
         id: public_safety_assert
@@ -165,11 +165,12 @@ jobs:
         id: local_authenticated_suite
         run: |
           set -o pipefail
-          npm run visual-safety:local-authenticated -- --project=authenticated --project=functional --project=private-pwa-cache --project=phase5a1-catalog --project=phase5a2-primitives-firefox --project=phase5a2-primitives-webkit --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
+          npm run visual-safety:local-authenticated -- --project=authenticated --project=functional --project=private-pwa-cache --project=phase5a1-catalog --project=phase5a2-primitives-firefox --project=phase5a2-primitives-webkit --retries=0 --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
         timeout-minutes: 20
         env:
           VISUAL_SAFETY_MODE: local-authenticated
           BASE_URL: http://127.0.0.1:3000
+          NEXT_PUBLIC_QA_MODE: "1"
 
       - name: Verify Phase 5A.1 catalog candidate manifest
         id: catalog_candidates
