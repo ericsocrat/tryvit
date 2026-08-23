@@ -7,6 +7,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { expect, test } from "./fixtures/safe-test";
+import {
+  getSearchProductsCombobox,
+  SEARCH_PRODUCTS_NAME,
+} from "./helpers/localized-selectors";
 
 async function ensureFullAnalysis(page: import("@playwright/test").Page) {
   const tabBar = page.getByTestId("tab-bar");
@@ -29,7 +33,7 @@ test.describe("Journey: search → product → alternatives", () => {
     await page.goto("/app/search");
     await page.waitForLoadState("domcontentloaded");
 
-    const input = page.getByPlaceholder(/search products/i);
+    const input = getSearchProductsCombobox(page);
     await input.fill("chips");
     await input.press("Enter");
 
@@ -45,7 +49,7 @@ test.describe("Journey: search → product → alternatives", () => {
     await ensureFullAnalysis(page);
 
     // 5. Click Nutrition tab
-    const nutritionTab = page.getByRole("tab").nth(1);
+    const nutritionTab = page.locator("#tab-nutrition");
     await expect(nutritionTab).toBeVisible();
     await nutritionTab.click();
     await expect(
@@ -53,7 +57,7 @@ test.describe("Journey: search → product → alternatives", () => {
     ).toBeVisible({ timeout: 10_000 });
 
     // 6. Click Alternatives tab
-    const altTab = page.getByRole("tab").nth(2);
+    const altTab = page.locator("#tab-alternatives");
     await expect(altTab).toBeVisible({ timeout: 10_000 });
     await altTab.click();
 
@@ -120,7 +124,7 @@ test.describe("Journey: app navigation", () => {
     await page.goto("/app/search");
     await page.waitForLoadState("domcontentloaded");
     await expect(
-      page.getByPlaceholder(/search products/i),
+      getSearchProductsCombobox(page),
     ).toBeVisible({ timeout: 10_000 });
   });
 });
@@ -136,7 +140,7 @@ test.describe("Journey: scan → submission", () => {
     await page.waitForLoadState("domcontentloaded");
 
     // 2. Switch to manual mode
-    await page.getByRole("button", { name: /Manual/i }).click();
+    await page.getByRole("button", { name: "Manual", exact: true }).click();
 
     // 3. Enter an unknown EAN
     const eanInput = page.getByPlaceholder(/EAN|barcode|kod kreskowy/i);
@@ -209,7 +213,7 @@ test.describe("Journey: settings interaction", () => {
 
     // Empty state with Search Products CTA
     const searchCta = page.getByRole("link", {
-      name: /search products|szukaj produktów/i,
+      name: SEARCH_PRODUCTS_NAME,
     });
     await expect(searchCta).toBeVisible({ timeout: 10_000 });
 

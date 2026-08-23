@@ -16,6 +16,7 @@ import { VISUAL_FIXTURE_CONTRACT } from "../../tooling/phase5a0d-contract.ts";
 
 export const TEST_EMAIL = "e2e-playwright-auth@test.tryvit.local";
 export const FUNCTIONAL_TEST_EMAIL = "e2e-playwright-functional@test.tryvit.local";
+export const REVOCATION_TEST_EMAIL = "e2e-playwright-revocation@test.tryvit.local";
 export const TEST_PASSWORD = "PlaywrightTest123!";
 const WebSocketImplementation = WebSocket as unknown as WebSocketLikeConstructor;
 
@@ -100,6 +101,80 @@ export async function getScopedTestSession(scope: TestUserScope): Promise<Scoped
     anonKey,
     userId: data.user.id,
   });
+}
+
+/**
+ * Prove real server-side global sign-out without revoking either shared
+ * Playwright identity. Supabase access JWTs remain valid until expiry; the
+ * server-side contract asserted here is destruction of the refresh session.
+ */
+export async function proveDisposableGlobalSignOutRevocation(): Promise<void> {
+  const runtime = getGuardedFixtureRequest();
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!anonKey) {
+    throw new VisualSafetyError("VS_FIXTURE_CREDENTIAL", "revocation.local-anon-key-missing");
+  }
+
+  const admin = getAdminClient();
+  const staleId = await findTestUserById(admin, REVOCATION_TEST_EMAIL);
+  if (staleId) {
+    const { error } = await admin.auth.admin.deleteUser(staleId);
+    if (error) throw new VisualSafetyError("VS_FIXTURE_ADMIN", "revocation.delete-stale-user");
+  }
+
+  const { data: created, error: createError } = await admin.auth.admin.createUser({
+    email: REVOCATION_TEST_EMAIL,
+    password: TEST_PASSWORD,
+    email_confirm: true,
+  });
+  if (createError || !created.user?.id) {
+    throw new VisualSafetyError("VS_FIXTURE_ADMIN", "revocation.create-user");
+  }
+
+  const guardedClient = () => {
+    const WebSocketTransport = createGuardedWebSocketConstructor({
+      allowedOrigin: runtime.origin,
+      WebSocketImpl: WebSocketImplementation,
+    });
+    return createClient(runtime.origin, anonKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+      global: { fetch: runtime.fetch },
+      realtime: { transport: WebSocketTransport },
+    });
+  };
+
+  try {
+    const client = guardedClient();
+    const { data: signedIn, error: signInError } = await client.auth.signInWithPassword({
+      email: REVOCATION_TEST_EMAIL,
+      password: TEST_PASSWORD,
+    });
+    const refreshToken = signedIn.session?.refresh_token;
+    if (signInError || !refreshToken) {
+      throw new VisualSafetyError("VS_FIXTURE_AUTH", "revocation.sign-in");
+    }
+
+    const { error: signOutError } = await client.auth.signOut({ scope: "global" });
+    if (signOutError) {
+      throw new VisualSafetyError("VS_FIXTURE_AUTH", "revocation.global-sign-out");
+    }
+
+    const verifier = guardedClient();
+    const { data: refreshed, error: refreshError } = await verifier.auth.refreshSession({
+      refresh_token: refreshToken,
+    });
+    if (!refreshError || refreshed.session) {
+      throw new VisualSafetyError("VS_FIXTURE_AUTH", "revocation.refresh-token-survived");
+    }
+  } finally {
+    const disposableId = await findTestUserById(admin, REVOCATION_TEST_EMAIL);
+    if (disposableId) {
+      const { error } = await admin.auth.admin.deleteUser(disposableId);
+      if (error) {
+        throw new VisualSafetyError("VS_FIXTURE_ADMIN", "revocation.cleanup-user");
+      }
+    }
+  }
 }
 
 /**

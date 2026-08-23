@@ -152,6 +152,12 @@ describe("NUTRI_COLORS", () => {
       expect(NUTRI_COLORS[grade]).toBeTruthy();
     }
   });
+
+  it("uses named contrast-safe foreground contracts for every grade", () => {
+    for (const grade of ["A", "B", "C", "D", "E"]) {
+      expect(NUTRI_COLORS[grade]).toContain(`text-nutri-${grade}-foreground`);
+    }
+  });
 });
 
 describe("HEALTH_CONDITIONS", () => {

@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { expect, test } from "./fixtures/safe-test";
+import { getSearchProductsCombobox } from "./helpers/localized-selectors";
 
 async function getFirstCategoryHref(
   page: import("@playwright/test").Page,
@@ -30,7 +31,7 @@ test.describe("Search cross-country: search basics", () => {
     await page.waitForLoadState("domcontentloaded");
 
     // Search input (combobox)
-    const searchInput = page.getByPlaceholder(/search products/i);
+    const searchInput = getSearchProductsCombobox(page);
     await expect(searchInput).toBeVisible({ timeout: 10_000 });
   });
 
@@ -38,7 +39,7 @@ test.describe("Search cross-country: search basics", () => {
     await page.goto("/app/search");
     await page.waitForLoadState("domcontentloaded");
 
-    const searchInput = page.getByPlaceholder(/search products/i);
+    const searchInput = getSearchProductsCombobox(page);
     await searchInput.fill("milk");
     await page.waitForTimeout(2_000);
 
@@ -65,7 +66,7 @@ test.describe("Search cross-country: search basics", () => {
     await page.goto("/app/search");
     await page.waitForLoadState("domcontentloaded");
 
-    const searchInput = page.getByPlaceholder(/search products/i);
+    const searchInput = getSearchProductsCombobox(page);
     await searchInput.fill("chip");
     await page.waitForTimeout(2_000);
 
@@ -96,7 +97,7 @@ test.describe("Search cross-country: search basics", () => {
     await page.goto("/app/search");
     await page.waitForLoadState("domcontentloaded");
 
-    const searchInput = page.getByPlaceholder(/search products/i);
+    const searchInput = getSearchProductsCombobox(page);
     await searchInput.fill("doritos");
 
     // Wait for autocomplete and press Enter to get results
@@ -202,6 +203,7 @@ test.describe("Search cross-country: country switching", () => {
       .filter({ hasText: "Polska" })
       .first();
     await polskaBtn.click();
+    await page.getByRole("button", { name: "English", exact: true }).click();
 
     const saveBtnCleanup = page.getByRole("button", {
       name: /save|speichern|zapisz/i,
@@ -282,6 +284,7 @@ test.describe("Search cross-country: result isolation", () => {
       .filter({ hasText: "Polska" })
       .first();
     await polskaBtn.click();
+    await page.getByRole("button", { name: "English", exact: true }).click();
 
     const saveBtnCleanup = page.getByRole("button", {
       name: /save|speichern|zapisz/i,

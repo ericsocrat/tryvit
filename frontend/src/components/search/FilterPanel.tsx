@@ -250,7 +250,7 @@ export function FilterPanel({
                       }`}
                     >
                       {nutriScoreLabel(ns.label, t("filters.unknown"), t("filters.notApplicable"))}
-                      <span className="text-xs font-normal opacity-75">
+                      <span className="text-xs font-normal">
                         ({ns.count})
                       </span>
                     </button>
@@ -286,7 +286,7 @@ export function FilterPanel({
                       }`}
                     >
                       {novaLabel}
-                      <span className="text-xs font-normal opacity-75">
+                      <span className="text-xs font-normal">
                         ({ng.count})
                       </span>
                     </button>

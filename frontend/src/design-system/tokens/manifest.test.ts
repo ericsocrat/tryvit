@@ -139,8 +139,8 @@ describe("V1 compatibility snapshot", () => {
       ]),
     );
 
-    expect(Object.keys(light)).toHaveLength(126);
-    expect(Object.keys(darkOverrides)).toHaveLength(86);
+    expect(Object.keys(light)).toHaveLength(131);
+    expect(Object.keys(darkOverrides)).toHaveLength(91);
     expect(manifestLight).toEqual(light);
     expect(manifestDark).toEqual(effectiveDark);
   });

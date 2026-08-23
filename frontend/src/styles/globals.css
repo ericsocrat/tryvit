@@ -48,6 +48,11 @@
   --color-nutri-C: var(--color-nutri-C);
   --color-nutri-D: var(--color-nutri-D);
   --color-nutri-E: var(--color-nutri-E);
+  --color-nutri-A-foreground: var(--color-nutri-A-foreground);
+  --color-nutri-B-foreground: var(--color-nutri-B-foreground);
+  --color-nutri-C-foreground: var(--color-nutri-C-foreground);
+  --color-nutri-D-foreground: var(--color-nutri-D-foreground);
+  --color-nutri-E-foreground: var(--color-nutri-E-foreground);
 
   --color-surface: var(--color-surface);
   --color-surface-subtle: var(--color-surface-subtle);
@@ -426,6 +431,11 @@
     --color-nutri-C: #fecb02;
     --color-nutri-D: #ee8100;
     --color-nutri-E: #e63e11;
+    --color-nutri-A-foreground: #ffffff;
+    --color-nutri-B-foreground: #101828;
+    --color-nutri-C-foreground: #101828;
+    --color-nutri-D-foreground: #101828;
+    --color-nutri-E-foreground: #000000;
 
     /* ── Nutrition Traffic Light (FSA/EFSA) ── */
     --color-nutrient-low: #22c55e;
@@ -661,6 +671,11 @@
     --color-nutri-C: #fde047;
     --color-nutri-D: #fb923c;
     --color-nutri-E: #f87171;
+    --color-nutri-A-foreground: #101828;
+    --color-nutri-B-foreground: #101828;
+    --color-nutri-C-foreground: #101828;
+    --color-nutri-D-foreground: #101828;
+    --color-nutri-E-foreground: #000000;
 
     --color-nutrient-low: #4ade80;
     --color-nutrient-medium: #fbbf24;
@@ -831,6 +846,11 @@
     --color-text-secondary: CanvasText;
     --color-text-muted: GrayText;
     --color-text-inverse: CanvasText;
+    --color-nutri-A-foreground: CanvasText;
+    --color-nutri-B-foreground: CanvasText;
+    --color-nutri-C-foreground: CanvasText;
+    --color-nutri-D-foreground: CanvasText;
+    --color-nutri-E-foreground: CanvasText;
     --color-border: CanvasText;
     --color-border-strong: CanvasText;
     --color-brand: LinkText;

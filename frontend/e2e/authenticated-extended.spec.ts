@@ -87,14 +87,14 @@ test.describe("Scan page", () => {
       page.getByRole("button", { name: /Camera/i }),
     ).toBeVisible();
     await expect(
-      page.getByRole("button", { name: /Manual/i }),
+      page.getByRole("button", { name: "Manual", exact: true }),
     ).toBeVisible();
   });
 
   test("Manual mode shows EAN input", async ({ page }) => {
     await page.goto("/app/scan");
     // Click Manual mode toggle
-    await page.getByText("Manual", { exact: false }).click();
+    await page.getByRole("button", { name: "Manual", exact: true }).click();
 
     const eanInput = page.getByPlaceholder(/Enter barcode/i);
     await expect(eanInput).toBeVisible();
@@ -102,7 +102,7 @@ test.describe("Scan page", () => {
 
   test("Manual mode has Look up button", async ({ page }) => {
     await page.goto("/app/scan");
-    await page.getByText("Manual", { exact: false }).click();
+    await page.getByRole("button", { name: "Manual", exact: true }).click();
 
     await expect(
       page.getByRole("button", { name: /Look up/i }),
@@ -111,7 +111,7 @@ test.describe("Scan page", () => {
 
   test("Manual EAN input accepts numeric input", async ({ page }) => {
     await page.goto("/app/scan");
-    await page.getByText("Manual", { exact: false }).click();
+    await page.getByRole("button", { name: "Manual", exact: true }).click();
 
     const eanInput = page.getByPlaceholder(/Enter barcode/i);
     await eanInput.fill("5901234123457");
@@ -280,9 +280,9 @@ test.describe("Compare page", () => {
   test("shows empty state with instructions", async ({ page }) => {
     await page.goto("/app/compare");
     await expect(
-      page.getByText("Select 2–4 products to compare", { exact: false }).or(
-        page.getByText("Select 2-4 products to compare", { exact: false }),
-      ),
+      page.getByRole("heading", {
+        name: /Start by choosing 2[–-]4 products to compare/i,
+      }),
     ).toBeVisible();
   });
 
@@ -307,7 +307,11 @@ test.describe("Saved comparisons page", () => {
   test("renders heading", async ({ page }) => {
     await page.goto("/app/compare/saved");
     await expect(
-      page.getByRole("heading", { name: /Saved Comparisons/i }),
+      page.getByRole("heading", {
+        level: 1,
+        name: "Saved Comparisons",
+        exact: true,
+      }),
     ).toBeVisible();
   });
 

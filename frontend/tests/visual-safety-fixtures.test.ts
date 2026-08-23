@@ -75,6 +75,19 @@ describe("Playwright fixture safety contract", () => {
     );
   });
 
+  it("proves server logout revocation only with a disposable local identity", () => {
+    const helper = source(path.join(e2eRoot, "helpers", "test-user.ts"));
+    const specification = source(path.join(e2eRoot, "authenticated-server-logout.spec.ts"));
+
+    expect(specification).toContain("proveDisposableGlobalSignOutRevocation");
+    expect(helper).toContain("REVOCATION_TEST_EMAIL");
+    expect(helper).toContain('signOut({ scope: "global" })');
+    expect(helper).toContain("refreshSession({");
+    expect(helper).toContain("revocation.refresh-token-survived");
+    expect(helper).toContain("revocation.cleanup-user");
+    expect(helper).not.toContain("SUPABASE_URL_STAGING");
+  });
+
   it.each(["pr-screenshots.spec.ts", "screenshot-capture.spec.ts", "visual-audit.spec.ts"])(
     "makes %s cleanup blocking and teardown-owned",
     (filename) => {
@@ -160,13 +173,16 @@ describe("Playwright fixture safety contract", () => {
     expect(regression).toContain("LEGACY_PRIVATE_CACHE_NAMES");
     expect(regression).toContain("synthetic-private-cache-sentinel");
     expect(regression).toContain("synthetic-unrelated-cache-sentinel");
-    expect(regression).toContain('getByRole("button", { name: "Sign Out" })');
+    expect(regression).toContain(
+      "const SIGN_OUT_NAME = /^(?:sign out|wyloguj się|abmelden)$/i;",
+    );
+    expect(regression).toContain('getByRole("button", { name: SIGN_OUT_NAME })');
     expect(regression).toContain('getScopedTestSession("functional")');
     expect(regression).toContain('getScopedTestSession("authenticated")');
-    expect(regression).toContain('getByLabel("Email").fill(TEST_EMAIL)');
-    expect(regression).toContain('getByLabel("Password", { exact: true }).fill(TEST_PASSWORD)');
-    expect(regression.indexOf('getByRole("button", { name: "Sign Out" })')).toBeLessThan(
-      regression.indexOf('getByLabel("Email").fill(TEST_EMAIL)'),
+    expect(regression).toContain("getByLabel(EMAIL_NAME).fill(TEST_EMAIL)");
+    expect(regression).toContain("getByLabel(PASSWORD_NAME).fill(TEST_PASSWORD)");
+    expect(regression.indexOf('getByRole("button", { name: SIGN_OUT_NAME })')).toBeLessThan(
+      regression.indexOf("getByLabel(EMAIL_NAME).fill(TEST_EMAIL)"),
     );
     expect(regression.match(/context\.setStorageState\(/gu)).toHaveLength(1);
     expect(regression).toContain(

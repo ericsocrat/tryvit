@@ -558,7 +558,7 @@ export default defineConfig({
         ["json", { outputFile: "test-results/a11y-results.json" }],
       ]
     : "html",
-  globalTimeout: 600_000,
+  globalTimeout: 900_000,
   timeout: 30_000,
   expect: {
     timeout: 10_000,

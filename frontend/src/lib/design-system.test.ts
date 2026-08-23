@@ -4,6 +4,10 @@
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import {
+  compatV1DarkOverrides,
+  compatV1Light,
+} from "@/design-system/tokens/compat-v1";
 import { describe, expect, it } from "vitest";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -81,6 +85,11 @@ const REQUIRED_COLOR_TOKENS = [
   "--color-nutri-C",
   "--color-nutri-D",
   "--color-nutri-E",
+  "--color-nutri-A-foreground",
+  "--color-nutri-B-foreground",
+  "--color-nutri-C-foreground",
+  "--color-nutri-D-foreground",
+  "--color-nutri-E-foreground",
   // Nutrition traffic light
   "--color-nutrient-low",
   "--color-nutrient-medium",
@@ -400,6 +409,38 @@ describe("Design System — Score Text WCAG AA Compliance", () => {
   });
 });
 
+describe("Design System — V1 Nutri-Score Foreground Compliance", () => {
+  const grades = ["A", "B", "C", "D", "E"] as const;
+
+  it.each(["light", "dark"] as const)(
+    "keeps every %s grade at WCAG AA contrast",
+    (theme) => {
+      for (const grade of grades) {
+        const fillName = `--color-nutri-${grade}` as const;
+        const foregroundName = `--color-nutri-${grade}-foreground` as const;
+        const fill =
+          theme === "dark"
+            ? (compatV1DarkOverrides[fillName] ?? compatV1Light[fillName])
+            : compatV1Light[fillName];
+        const foreground =
+          theme === "dark"
+            ? (compatV1DarkOverrides[foregroundName] ??
+              compatV1Light[foregroundName])
+            : compatV1Light[foregroundName];
+
+        expect(contrastRatio(foreground, fill), `${theme} Nutri-Score ${grade}`).toBeGreaterThanOrEqual(4.5);
+      }
+    },
+  );
+
+  it("maps every V1 Nutri-Score foreground to CanvasText in forced colors", () => {
+    const css = readSource("src/styles/globals.css");
+    for (const grade of grades) {
+      expect(css).toContain(`--color-nutri-${grade}-foreground: CanvasText;`);
+    }
+  });
+});
+
 describe("Design System — Nutrition Traffic Light Tokens", () => {
   const css = readSource("src/styles/globals.css");
 
@@ -485,8 +526,10 @@ describe("Design System — Constants Use Semantic Tokens", () => {
     expect(constants).toContain("bg-nutri-E");
   });
 
-  it("NUTRI_COLORS uses foreground-inverse for text", () => {
-    expect(constants).toContain("text-foreground-inverse");
+  it("NUTRI_COLORS uses governed foreground token classes", () => {
+    expect(constants).toContain("text-nutri-A-foreground");
+    expect(constants).toContain("text-nutri-E-foreground");
+    expect(constants).not.toContain("text-black");
   });
 
   it("WARNING_SEVERITY uses semantic error/warning tokens", () => {

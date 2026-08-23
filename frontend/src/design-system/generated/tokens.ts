@@ -3466,21 +3466,41 @@ export const generatedTokenContract = {
       "light": "#038141",
       "dark": "#34d399"
     },
+    "--color-nutri-A-foreground": {
+      "light": "#ffffff",
+      "dark": "#101828"
+    },
     "--color-nutri-B": {
       "light": "#85bb2f",
       "dark": "#a3e635"
+    },
+    "--color-nutri-B-foreground": {
+      "light": "#101828",
+      "dark": "#101828"
     },
     "--color-nutri-C": {
       "light": "#fecb02",
       "dark": "#fde047"
     },
+    "--color-nutri-C-foreground": {
+      "light": "#101828",
+      "dark": "#101828"
+    },
     "--color-nutri-D": {
       "light": "#ee8100",
       "dark": "#fb923c"
     },
+    "--color-nutri-D-foreground": {
+      "light": "#101828",
+      "dark": "#101828"
+    },
     "--color-nutri-E": {
       "light": "#e63e11",
       "dark": "#f87171"
+    },
+    "--color-nutri-E-foreground": {
+      "light": "#000000",
+      "dark": "#000000"
     },
     "--color-nutrient-high": {
       "light": "#ef4444",
@@ -4183,10 +4203,15 @@ export const tokenNames = {
     "--color-nova-3": "--color-nova-3",
     "--color-nova-4": "--color-nova-4",
     "--color-nutri-A": "--color-nutri-A",
+    "--color-nutri-A-foreground": "--color-nutri-A-foreground",
     "--color-nutri-B": "--color-nutri-B",
+    "--color-nutri-B-foreground": "--color-nutri-B-foreground",
     "--color-nutri-C": "--color-nutri-C",
+    "--color-nutri-C-foreground": "--color-nutri-C-foreground",
     "--color-nutri-D": "--color-nutri-D",
+    "--color-nutri-D-foreground": "--color-nutri-D-foreground",
     "--color-nutri-E": "--color-nutri-E",
+    "--color-nutri-E-foreground": "--color-nutri-E-foreground",
     "--color-nutrient-high": "--color-nutrient-high",
     "--color-nutrient-low": "--color-nutrient-low",
     "--color-nutrient-medium": "--color-nutrient-medium",
