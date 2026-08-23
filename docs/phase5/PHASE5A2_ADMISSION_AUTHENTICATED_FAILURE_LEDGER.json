@@ -22,7 +22,7 @@
   "remediation": {
     "branch": "codex/phase-5a2-admission-authenticated-matrix",
     "stackedBaseSha": "bafeb0dc60bba209154091908ff5e03cbd3a9733",
-    "resolvedCausalGroups": 9,
+    "resolvedCausalGroups": 10,
     "focusedEvidence": [
       {
         "kind": "component-and-contract",
@@ -110,6 +110,31 @@
           "disposition": "resolved",
           "resolutionCommit": "3469d532",
           "resolutionEvidence": "The cap now matches the 900-second comprehensive baseline, remains below the 20-minute workflow step cap, and is protected by a static contract test."
+        }
+      ]
+    },
+    {
+      "runId": 32637903598,
+      "headSha": "12598794ffe436bcdc3742abce3421945916e752",
+      "artifactId": 9493120773,
+      "authenticatedStdoutSha256": "6aa16571c2446d8f6e91e38bbddc58341be779b5c5ca44f8b0830198675e0d21",
+      "status": "failed-deterministic",
+      "summary": {
+        "terminalFailures": 1,
+        "passed": 232,
+        "skipped": 2,
+        "didNotRun": 0,
+        "nonTestErrors": 0,
+        "durationSeconds": 738
+      },
+      "causalGroups": [
+        {
+          "id": "compare-cta-german-selector",
+          "nominalFailures": 1,
+          "firstCause": "The compare empty-state CTA test supported English and Polish but omitted the valid German accessible name 'Produkte suchen' after the functional fixture persisted German locale.",
+          "disposition": "resolved",
+          "resolutionCommit": "92ae26ee",
+          "resolutionEvidence": "The CTA now owns the same checked-in English, Polish, and German accessible-name contract as the search combobox."
         }
       ]
     }
