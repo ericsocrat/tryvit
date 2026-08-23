@@ -20,12 +20,14 @@ Golden consumers outside the two guarded routes.
 - prompt and repository entry gate: passed;
 - focused Golden contract: 10/10 passed;
 - Phase 5A.1b architecture contract plus live inventory cohort: passed;
+- deterministic live inventory regenerated: 436 production modules, 27 exact Golden
+  Phase 5A.2 modules, zero forbidden runtime boundaries, and zero production consumers;
 - type-check: passed;
 - source lint and focused E2E/tooling lint: passed;
+- complete frontend unit suite: 6,721 passed and 19 skipped across 410 files;
 - production build: passed with Golden routes dynamic and guarded;
-- six-reference Chromium journeys: passed after focused corrections;
-- Firefox six-reference journeys: 6/6 passed;
-- WebKit six-reference journeys: 6/6 passed after explicit composition focus fixes;
+- exact-head retries-disabled browser/resilience run: 99/99 passed;
+- Chromium, Firefox, and WebKit six-reference journeys: 6/6 in each engine;
 - whole-document Axe: all 59 server-addressable states passed with zero serious or
   critical violations and no exclusions/disabled rules;
 - text spacing: 6/6 passed;
@@ -34,6 +36,7 @@ Golden consumers outside the two guarded routes.
 - coarse/no-hover touch proof: passed;
 - JavaScript-disabled landing comprehension: passed;
 - scanner media-device calls: zero;
+- every Golden browser spec uses the repository's automatic fail-closed egress fixture;
 - replacement capture: 113 stills + seven boards + 12 complete recordings + 12
   terminal frames + 30 valid performance samples, passed;
 - terminal verifier: Authentication ends at `home/returning/#golden-main` and Home
@@ -47,6 +50,8 @@ Golden consumers outside the two guarded routes.
 - independent replacement review: Reviewer A 91/100 and Reviewer B 89/100; each
   reference ≥88 in both reviews, all category floors passed, and no governed veto
   remains. Eric's approval is still pending.
+- local Supabase and deterministic fixtures: stopped and removed without backup after
+  verification.
 
 The initial reviewed packet remains recoverable in Git history. Superseded raw visual,
 browser, media, performance, and terminal-verifier packages remain outside the
