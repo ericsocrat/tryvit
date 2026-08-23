@@ -911,6 +911,9 @@ describe("browser workflow visual-safety contract", () => {
     );
     expect(mainGateUnitJob).toContain("fetch-depth: 0");
     expect(browserJobs.nightly).toContain(
+      "PHASE5_LIVE_INVENTORY_BASE_SHA: ${{ github.ref == 'refs/heads/main' && github.sha || '' }}",
+    );
+    expect(browserJobs.nightly).not.toContain(
       "PHASE5_LIVE_INVENTORY_BASE_SHA: ${{ github.sha }}",
     );
     expect(browserJobs.nightly).toContain("fetch-depth: 0");
