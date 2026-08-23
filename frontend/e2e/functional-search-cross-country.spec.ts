@@ -203,6 +203,7 @@ test.describe("Search cross-country: country switching", () => {
       .filter({ hasText: "Polska" })
       .first();
     await polskaBtn.click();
+    await page.getByRole("button", { name: "English", exact: true }).click();
 
     const saveBtnCleanup = page.getByRole("button", {
       name: /save|speichern|zapisz/i,
@@ -283,6 +284,7 @@ test.describe("Search cross-country: result isolation", () => {
       .filter({ hasText: "Polska" })
       .first();
     await polskaBtn.click();
+    await page.getByRole("button", { name: "English", exact: true }).click();
 
     const saveBtnCleanup = page.getByRole("button", {
       name: /save|speichern|zapisz/i,

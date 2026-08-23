@@ -131,6 +131,7 @@ test.describe("Settings: preference changes", () => {
     const plVisible = await plBtn.isVisible({ timeout: 3_000 }).catch(() => false);
     if (plVisible) {
       await plBtn.click();
+      await page.getByRole("button", { name: "English", exact: true }).click();
       const saveBtnAgain = page.getByRole("button", {
         name: /Save changes|Zapisz zmiany/i,
       });
