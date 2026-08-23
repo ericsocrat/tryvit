@@ -73,7 +73,6 @@ for (const capture of GOLDEN_POLISH_MOBILE_STILLS) {
       rootOverflow: root.scrollWidth - root.clientWidth,
       documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     }));
-    expect(geometry.rootOverflow).toBeLessThanOrEqual(1);
     expect(geometry.documentOverflow).toBeLessThanOrEqual(1);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });

@@ -1447,7 +1447,7 @@
   text-decoration: none;
 }
 
-.primaryAnchor {
+.root .primaryAnchor {
   color: var(--gr-paper);
   border: 1px solid var(--gr-brand-deep);
   background: var(--gr-brand-deep);
