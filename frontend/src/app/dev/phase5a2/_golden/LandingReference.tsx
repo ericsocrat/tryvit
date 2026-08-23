@@ -40,6 +40,8 @@ const LANDING_COPY = {
     derivedDetail: "72 / 100 · incomplete inputs · method v0.9",
     contextDetail: "Like-for-like oat-drink basis; processing not assessed",
     decisionDetail: "Check the current package and inspect the missing processing input.",
+    themeAction: "Preview dark system",
+    themeReset: "Return to light system",
   },
   pl: {
     eyebrow: "Dane o żywności, które można sprawdzić",
@@ -74,6 +76,8 @@ const LANDING_COPY = {
     derivedDetail: "72 / 100 · niepełne dane · metoda v0.9",
     contextDetail: "Porównanie napojów owsianych; przetworzenia nie oceniono",
     decisionDetail: "Sprawdź aktualne opakowanie i brakującą klasyfikację przetworzenia.",
+    themeAction: "Wyświetl ciemny motyw",
+    themeReset: "Wróć do jasnego motywu",
   },
   de: {
     eyebrow: "Nachprüfbare Lebensmittelinformation",
@@ -108,6 +112,8 @@ const LANDING_COPY = {
     derivedDetail: "72 / 100 · unvollständige Eingaben · Methode v0.9",
     contextDetail: "Vergleichbare Hafergetränke; Verarbeitung nicht bewertet",
     decisionDetail: "Aktuelle Verpackung und fehlende Verarbeitungseingabe prüfen.",
+    themeAction: "Dunkles System anzeigen",
+    themeReset: "Zum hellen System zurückkehren",
   },
 } as const;
 
@@ -170,6 +176,8 @@ export function LandingReference({ route }: Readonly<{ route: GoldenRouteState }
           observedLabel={copy.observed}
           packageLabel={copy.package}
           resetLabel={copy.reset}
+          themeActionLabel={copy.themeAction}
+          themeResetLabel={copy.themeReset}
         />
       </section>
 

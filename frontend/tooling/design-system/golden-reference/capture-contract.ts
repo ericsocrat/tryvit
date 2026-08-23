@@ -160,6 +160,8 @@ export const GOLDEN_JOURNEYS = Object.freeze([
     steps: [
       { event: "keyboard-skip-to-reference", expectedState: "ready", expectedFocus: "#golden-main" },
       { event: "toggle-package-label", expectedState: "ready", expectedFocus: "button[aria-pressed='true']" },
+      { event: "reset-package-label", expectedState: "ready", expectedFocus: "button[aria-pressed='false']" },
+      { event: "repeat-package-label", expectedState: "ready", expectedFocus: "button[aria-pressed='true']" },
       { event: "change-theme-dark", expectedState: "ready" },
     ],
     terminal: { reference: "landing", state: "ready", focus: "main-or-theme-link", announcement: "none" },

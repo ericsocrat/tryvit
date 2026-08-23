@@ -14,6 +14,8 @@ export function PackageLabelNarrative({
   observedLabel,
   derivedLabel,
   decisionLabel,
+  themeActionLabel,
+  themeResetLabel,
 }: Readonly<{
   actionLabel: string;
   resetLabel: string;
@@ -21,8 +23,11 @@ export function PackageLabelNarrative({
   observedLabel: string;
   derivedLabel: string;
   decisionLabel: string;
+  themeActionLabel: string;
+  themeResetLabel: string;
 }>) {
   const [expanded, setExpanded] = useState(false);
+  const [darkPreview, setDarkPreview] = useState(false);
   const rootRef = useRef<HTMLElement>(null);
   useEffect(() => {
     rootRef.current?.setAttribute("data-golden-client-ready", "true");
@@ -50,6 +55,17 @@ export function PackageLabelNarrative({
         variant="secondary"
       >
         {expanded ? resetLabel : actionLabel}
+      </Button>
+      <Button
+        onClick={() => {
+          const goldenRoot = rootRef.current?.closest<HTMLElement>("[data-golden-reference]");
+          const nextDark = !darkPreview;
+          if (goldenRoot) goldenRoot.dataset.theme = nextDark ? "dark" : "light";
+          setDarkPreview(nextDark);
+        }}
+        variant="quiet"
+      >
+        {darkPreview ? themeResetLabel : themeActionLabel}
       </Button>
     </section>
   );

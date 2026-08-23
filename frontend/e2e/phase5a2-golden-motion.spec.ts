@@ -28,6 +28,15 @@ async function performJourney(page: Page, reference: (typeof GOLDEN_MOTION_RECOR
       await page.getByRole("button", { name: "Unfold the evidence" }).click();
       await expect(page.getByRole("button", { name: "Fold back to source" })).toHaveAttribute("aria-pressed", "true");
       await dwell(page);
+      await page.getByRole("button", { name: "Fold back to source" }).click();
+      await expect(page.getByRole("button", { name: "Unfold the evidence" })).toHaveAttribute("aria-pressed", "false");
+      await dwell(page);
+      await page.getByRole("button", { name: "Unfold the evidence" }).click();
+      await expect(page.getByRole("button", { name: "Fold back to source" })).toHaveAttribute("aria-pressed", "true");
+      await dwell(page);
+      await page.getByRole("button", { name: "Preview dark system" }).click();
+      await expect(page.locator("[data-golden-reference]")).toHaveAttribute("data-theme", "dark");
+      await dwell(page);
       break;
     }
     case "authentication": {
@@ -130,6 +139,7 @@ test("records normal and reduced-motion Golden journeys with terminal frames", a
         mode,
         route: location.pathname + location.search,
         fixtureState: root?.dataset.goldenState ?? null,
+        theme: root?.dataset.theme ?? null,
         liveState: live?.dataset.goldenLiveState ?? root?.dataset.goldenState ?? null,
         focus: active?.id || active?.getAttribute("role") || active?.tagName.toLowerCase() || null,
         announcement: [...document.querySelectorAll<HTMLElement>("[aria-live]")]
