@@ -160,13 +160,16 @@ describe("Playwright fixture safety contract", () => {
     expect(regression).toContain("LEGACY_PRIVATE_CACHE_NAMES");
     expect(regression).toContain("synthetic-private-cache-sentinel");
     expect(regression).toContain("synthetic-unrelated-cache-sentinel");
-    expect(regression).toContain('getByRole("button", { name: "Sign Out" })');
+    expect(regression).toContain(
+      "const SIGN_OUT_NAME = /^(?:sign out|wyloguj się|abmelden)$/i;",
+    );
+    expect(regression).toContain('getByRole("button", { name: SIGN_OUT_NAME })');
     expect(regression).toContain('getScopedTestSession("functional")');
     expect(regression).toContain('getScopedTestSession("authenticated")');
-    expect(regression).toContain('getByLabel("Email").fill(TEST_EMAIL)');
-    expect(regression).toContain('getByLabel("Password", { exact: true }).fill(TEST_PASSWORD)');
-    expect(regression.indexOf('getByRole("button", { name: "Sign Out" })')).toBeLessThan(
-      regression.indexOf('getByLabel("Email").fill(TEST_EMAIL)'),
+    expect(regression).toContain("getByLabel(EMAIL_NAME).fill(TEST_EMAIL)");
+    expect(regression).toContain("getByLabel(PASSWORD_NAME).fill(TEST_PASSWORD)");
+    expect(regression.indexOf('getByRole("button", { name: SIGN_OUT_NAME })')).toBeLessThan(
+      regression.indexOf("getByLabel(EMAIL_NAME).fill(TEST_EMAIL)"),
     );
     expect(regression.match(/context\.setStorageState\(/gu)).toHaveLength(1);
     expect(regression).toContain(
