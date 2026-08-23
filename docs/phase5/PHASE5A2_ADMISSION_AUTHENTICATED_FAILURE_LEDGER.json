@@ -19,6 +19,34 @@
     "nonTestErrors": 2,
     "causalGroups": 5
   },
+  "remediation": {
+    "branch": "codex/phase-5a2-admission-authenticated-matrix",
+    "stackedBaseSha": "bafeb0dc60bba209154091908ff5e03cbd3a9733",
+    "resolvedCausalGroups": 5,
+    "focusedEvidence": [
+      {
+        "kind": "component-and-contract",
+        "result": "passed",
+        "passed": 144
+      },
+      {
+        "kind": "failure-owning-browser-specs",
+        "result": "passed",
+        "retries": 0,
+        "passed": 100,
+        "skipped": 2
+      },
+      {
+        "kind": "authenticated-axe",
+        "result": "passed",
+        "retries": 0,
+        "passed": 12,
+        "blockingViolations": 0,
+        "warnings": 0
+      }
+    ],
+    "completeNightly": "pending-settled-head"
+  },
   "groups": [
     {
       "id": "search-filter-contrast",
@@ -31,7 +59,10 @@
         "frontend/src/lib/constants.ts",
         "frontend/e2e/authenticated-a11y.spec.ts"
       ],
-      "proposedDisposition": "Correct the semantic Nutri-Score foreground recipe and count styling without excluding Axe; prove light and dark contrast with focused component and browser coverage."
+      "proposedDisposition": "Correct the semantic Nutri-Score foreground recipe and count styling without excluding Axe; prove light and dark contrast with focused component and browser coverage.",
+      "disposition": "resolved",
+      "resolutionCommit": "b9db9556",
+      "resolutionEvidence": "Focused component contracts passed; the zero-retry authenticated Axe suite passed all 12 tests with zero blocking violations in light, dark, and mobile search states."
     },
     {
       "id": "compare-empty-copy",
@@ -43,7 +74,10 @@
         "frontend/e2e/authenticated-extended.spec.ts",
         "frontend/src/app/app/compare/page.tsx"
       ],
-      "proposedDisposition": "Update the heading assertion to the current semantic role and copy; do not change product copy to satisfy the stale test."
+      "proposedDisposition": "Update the heading assertion to the current semantic role and copy; do not change product copy to satisfy the stale test.",
+      "disposition": "resolved",
+      "resolutionCommit": "697e1ecb",
+      "resolutionEvidence": "The zero-retry failure-owning browser run passed the current semantic heading assertion."
     },
     {
       "id": "scanner-manual-locator",
@@ -57,7 +91,10 @@
         "frontend/e2e/functional-user-flows.spec.ts",
         "frontend/src/app/app/scan/page.tsx"
       ],
-      "proposedDisposition": "Target the exact Manual mode control by role and accessible name, without positional locators or UI behavior changes."
+      "proposedDisposition": "Target the exact Manual mode control by role and accessible name, without positional locators or UI behavior changes.",
+      "disposition": "resolved",
+      "resolutionCommit": "1f70a28f",
+      "resolutionEvidence": "The zero-retry failure-owning browser run passed all scanner lookup, result, validation, and navigation tests."
     },
     {
       "id": "signup-turnstile-fixture",
@@ -70,7 +107,10 @@
         "frontend/src/app/auth/signup/SignupForm.tsx",
         "frontend/src/components/common/TurnstileWidget.tsx"
       ],
-      "proposedDisposition": "Install a local in-page Turnstile API stub and local verification response for signup E2E only; retain production security behavior and hosted-egress blocking."
+      "proposedDisposition": "Install a local in-page Turnstile API stub and local verification response for signup E2E only; retain production security behavior and hosted-egress blocking.",
+      "disposition": "resolved",
+      "resolutionCommit": "16dc607d",
+      "resolutionEvidence": "The zero-retry local-authenticated browser run passed both gated signup interactions while the egress proxy remained clean."
     },
     {
       "id": "search-filter-locale-selector",
@@ -82,7 +122,10 @@
         "frontend/e2e/functional-search-filters.spec.ts",
         "frontend/src/app/app/search/page.tsx"
       ],
-      "proposedDisposition": "Locate the search combobox inside its search landmark using its supported English or Polish accessible name; do not reset valid locale state or use positional selectors."
+      "proposedDisposition": "Locate the search combobox inside its search landmark using its supported English or Polish accessible name; do not reset valid locale state or use positional selectors.",
+      "disposition": "resolved",
+      "resolutionCommit": "dc3ac10e",
+      "resolutionEvidence": "The zero-retry failure-owning browser run passed all executed desktop and mobile search-filter tests; two pre-existing data-dependent tests were intentionally skipped."
     }
   ],
   "failures": [
@@ -103,7 +146,7 @@
       "proposedOwner": "product-accessibility",
       "likelyFiles": ["frontend/src/components/search/FilterPanel.tsx", "frontend/src/lib/constants.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-1",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 2,
@@ -122,7 +165,7 @@
       "proposedOwner": "product-accessibility",
       "likelyFiles": ["frontend/src/components/search/FilterPanel.tsx", "frontend/src/lib/constants.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-2",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 3,
@@ -141,7 +184,7 @@
       "proposedOwner": "test-contract",
       "likelyFiles": ["frontend/e2e/authenticated-extended.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-3",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 4,
@@ -160,7 +203,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/authenticated-scanner.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-4",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 5,
@@ -179,7 +222,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/authenticated-scanner.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-5",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 6,
@@ -198,7 +241,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/authenticated-scanner.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-6",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 7,
@@ -217,7 +260,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/authenticated-scanner.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-7",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 8,
@@ -236,7 +279,7 @@
       "proposedOwner": "test-fixture",
       "likelyFiles": ["frontend/e2e/authenticated.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-8",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 9,
@@ -255,7 +298,7 @@
       "proposedOwner": "test-fixture",
       "likelyFiles": ["frontend/e2e/authenticated.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-9",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 10,
@@ -274,7 +317,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/functional-search-filters.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-10",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 11,
@@ -293,7 +336,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/functional-search-filters.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-11",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 12,
@@ -312,7 +355,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/functional-search-filters.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-12",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 13,
@@ -331,7 +374,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/functional-search-filters.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-13",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 14,
@@ -350,7 +393,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/functional-search-filters.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-14",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 15,
@@ -369,7 +412,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/functional-search-filters.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-15",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 16,
@@ -388,7 +431,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/functional-search-filters.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-16",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 17,
@@ -407,7 +450,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/functional-search-filters.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-17",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 18,
@@ -426,7 +469,7 @@
       "proposedOwner": "product-accessibility",
       "likelyFiles": ["frontend/src/components/search/FilterPanel.tsx", "frontend/src/lib/constants.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-18",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 19,
@@ -445,7 +488,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/authenticated-extended.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-19",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 20,
@@ -464,7 +507,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/authenticated-scanner.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-20",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     },
     {
       "id": 21,
@@ -483,7 +526,7 @@
       "proposedOwner": "test-harness",
       "likelyFiles": ["frontend/e2e/authenticated-scanner.spec.ts"],
       "artifactRef": "nightly-playwright-report/playwright-authenticated-stdout.log#failure-21",
-      "disposition": "pending"
+      "disposition": "resolved-by-group-remediation"
     }
   ]
 }
