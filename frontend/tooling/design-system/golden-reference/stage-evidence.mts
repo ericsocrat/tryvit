@@ -196,7 +196,12 @@ try {
   };
   const manifestContents = Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`, "utf8");
   writeFileSync(outputPath(stageRoot, "manifest.json"), manifestContents, { flag: "wx", mode: 0o600 });
-  publishOwnedDirectory(stageRoot, destination, "golden-evidence-publish");
+  publishOwnedDirectory(
+    destinationParent,
+    stageBasename,
+    path.basename(destination),
+    "golden-evidence-publish",
+  );
   published = true;
   process.stdout.write(`${JSON.stringify({ sourceSha: manifest.sourceSha, sourceTreeSha: manifest.sourceTreeSha, retainedFiles: retained.length + 1, retainedBytes: retainedBytes + manifestContents.length, destination }, null, 2)}\n`);
 } finally {
