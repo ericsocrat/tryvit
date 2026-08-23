@@ -154,4 +154,3 @@ export const SCANNER_COPY = {
 } as const satisfies Readonly<Record<GoldenLocale, Readonly<Record<string, unknown>>>>;
 
 export type ScannerCopy = (typeof SCANNER_COPY)[GoldenLocale];
-

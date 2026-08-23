@@ -103,4 +103,3 @@ export const SEARCH_COPY = {
 } as const satisfies Readonly<Record<GoldenLocale, Readonly<Record<string, unknown>>>>;
 
 export type SearchCopy = (typeof SEARCH_COPY)[GoldenLocale];
-
