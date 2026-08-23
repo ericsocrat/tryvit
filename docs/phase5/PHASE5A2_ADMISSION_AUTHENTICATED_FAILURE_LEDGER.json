@@ -186,7 +186,8 @@
           "firstCause": "The functional settings navigation tests owned English-only link copy after the valid fixture locale changed to German.",
           "disposition": "resolved",
           "resolutionCommit": "c2c33149",
-          "resolutionEvidence": "The tests now own the unique nutrition and account route hrefs, independent of supported UI locale."
+          "fixtureIsolationCommit": "3e12274f",
+          "resolutionEvidence": "The tests now own the unique nutrition and account route hrefs, and country-switch cleanup restores the checked-in Poland-plus-English fixture contract for later files."
         }
       ]
     }
