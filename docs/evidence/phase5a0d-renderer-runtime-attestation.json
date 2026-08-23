@@ -1,36 +1,36 @@
 {
   "schemaVersion": 1,
   "attestationType": "phase5a0d-renderer-runtime-metadata-only",
-  "baseCommit": "3acb3b1f28e645ea798cd43227030f5651586b03",
+  "baseCommit": "bb4cd53fa37c9e5f6a59a0dbbd9752cbd2e3a03a",
   "candidate": {
-    "workflowRunId": 31968130040,
+    "workflowRunId": 32653121285,
     "workflowRunAttempt": 1,
-    "runCreatedAt": "2026-08-16T19:37:23Z",
-    "runCompletedAt": "2026-08-16T19:45:18Z",
-    "artifactId": 9269135869,
-    "artifactName": "phase5a0d-visual-baseline-candidates-3acb3b1f28e645ea798cd43227030f5651586b03",
-    "archiveDigest": "sha256:2646aba56b7b7f5b3d08a66729c4974b658535decab58aa30e57fb4a280ad64d",
-    "archiveBytes": 793036,
-    "sourceCommit": "3acb3b1f28e645ea798cd43227030f5651586b03"
+    "runCreatedAt": "2026-08-23T16:54:15Z",
+    "runCompletedAt": "2026-08-23T17:02:52Z",
+    "artifactId": 9496834874,
+    "artifactName": "phase5a0d-visual-baseline-candidates-bb4cd53fa37c9e5f6a59a0dbbd9752cbd2e3a03a",
+    "archiveDigest": "sha256:9c5078df27d9d31b2b2695361f0cd6fa3d43f086c8c0f68c3aae80908a637cf3",
+    "archiveBytes": 793034,
+    "sourceCommit": "bb4cd53fa37c9e5f6a59a0dbbd9752cbd2e3a03a"
   },
   "oldManifest": {
-    "manifestSha256": "8c17917c60a3b46f087cc5d5cd3a80b34355015ed9e8de0a58e98826f11bdf9c",
-    "manifestChecksum": "12a00dc37191191b788964d1c599d103aa0fedb1c15fa8cc36ad80d746953716",
-    "sourceCommit": "aa84b2bd8a22b20e1625d33dede66238c507130f",
-    "runnerImageVersion": "20260720.247.2",
-    "versions": {
-      "node": "v22.21.1",
-      "npm": "10.9.4",
-      "next": "16.2.12",
-      "playwright": "1.62.0",
-      "chromium": "151.0.7922.34"
-    }
-  },
-  "newManifest": {
     "manifestSha256": "1531d42b72b36bf961436702a22aa73e249743c14110cd3388d4f66841e24ebc",
     "manifestChecksum": "3eeb57171206e56adba6f110b23d3ec2763a88923d6fb4081d448403eb87aaad",
     "sourceCommit": "3acb3b1f28e645ea798cd43227030f5651586b03",
     "runnerImageVersion": "20260810.271.1",
+    "versions": {
+      "node": "v22.21.1",
+      "npm": "10.9.4",
+      "next": "16.2.12",
+      "playwright": "1.62.1",
+      "chromium": "151.0.7922.34"
+    }
+  },
+  "newManifest": {
+    "manifestSha256": "3bbeacfcd9dd64c8c4d6f852952910b2fb9f97e4166eb0e39bac3730b5c8234e",
+    "manifestChecksum": "3a12a3cb048e1e82fd2cc3493a3c48860a8f2f5268d792510eaa8b8c073423aa",
+    "sourceCommit": "bb4cd53fa37c9e5f6a59a0dbbd9752cbd2e3a03a",
+    "runnerImageVersion": "20260816.277.1",
     "versions": {
       "node": "v22.21.1",
       "npm": "10.9.4",
