@@ -5,7 +5,58 @@
 // No camera dependency — all interactions are keyboard / click.
 // Deterministic — each run starts from a known auth + onboarding state.
 
-import { expect, test } from "./fixtures/safe-test";
+import { expect, test, type Page } from "./fixtures/safe-test";
+
+const LOCAL_TURNSTILE_TOKEN = "local-e2e-turnstile-token";
+
+async function installLocalTurnstileFixture(page: Page): Promise<void> {
+  await page.addInitScript((token) => {
+    type TurnstileOptions = {
+      callback?: (value: string) => void;
+    };
+    type LocalTurnstile = {
+      render: (container: unknown, options: TurnstileOptions) => string;
+      remove: () => void;
+      reset: () => void;
+      getResponse: () => string;
+      isExpired: () => boolean;
+      execute: () => void;
+    };
+
+    const browserGlobal = globalThis as unknown as {
+      turnstile: LocalTurnstile;
+    };
+    browserGlobal.turnstile = {
+      render: (_container, options) => {
+        queueMicrotask(() => options.callback?.(token));
+        return "local-e2e-turnstile-widget";
+      },
+      remove: () => undefined,
+      reset: () => undefined,
+      getResponse: () => token,
+      isExpired: () => false,
+      execute: () => undefined,
+    };
+  }, LOCAL_TURNSTILE_TOKEN);
+
+  await page.route(
+    "https://challenges.cloudflare.com/turnstile/v0/api.js**",
+    (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/javascript; charset=utf-8",
+        body: "globalThis.onloadTurnstileCallback?.();",
+      }),
+  );
+  await page.route("**/functions/v1/verify-turnstile", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: { "access-control-allow-origin": "*" },
+      body: JSON.stringify({ valid: true }),
+    }),
+  );
+}
 
 // ─── Mobile viewport overflow guard ────────────────────────────────────────
 // Regression test for the mobile "zoomed out" bug fixed in PR #92.
@@ -59,16 +110,24 @@ test.describe("Signup form", () => {
   });
 
   test("shows validation for short password", async ({ page }) => {
+    await installLocalTurnstileFixture(page);
     await page.goto("/auth/signup");
     await page.getByLabel("Email").fill("test-short-pw@example.com");
-    await page.getByLabel("Password", { exact: true }).fill("ab"); // too short (min 6)
-    await page.getByRole("button", { name: /sign up/i }).click();
+    const password = page.getByLabel("Password", { exact: true });
+    await password.fill("ab"); // too short (min 6)
+    const submit = page.getByRole("button", { name: /sign up/i });
+    await expect(submit).toBeEnabled();
+    expect(
+      await password.evaluate((input: HTMLInputElement) => input.checkValidity()),
+    ).toBe(false);
+    await submit.click();
 
     // HTML5 minLength prevents submission — button still visible, no redirect
     await expect(page).toHaveURL(/\/auth\/signup/);
   });
 
   test("submits and shows confirmation message", async ({ page }) => {
+    await installLocalTurnstileFixture(page);
     // Intercept signup to avoid creating another local fixture account.
     await page.route("**/auth/v1/signup", (route) =>
       route.fulfill({
@@ -86,7 +145,9 @@ test.describe("Signup form", () => {
     await page.goto("/auth/signup");
     await page.getByLabel("Email").fill("signup-test@example.com");
     await page.getByLabel("Password", { exact: true }).fill("StrongPassword123!");
-    await page.getByRole("button", { name: /sign up/i }).click();
+    const submit = page.getByRole("button", { name: /sign up/i });
+    await expect(submit).toBeEnabled();
+    await submit.click();
 
     // App redirects to login with msg=check-email after successful signup,
     // or shows a confirmation / check-email message on the same page.
