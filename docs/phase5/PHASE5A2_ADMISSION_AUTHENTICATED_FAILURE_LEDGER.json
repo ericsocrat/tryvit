@@ -22,7 +22,7 @@
   "remediation": {
     "branch": "codex/phase-5a2-admission-authenticated-matrix",
     "stackedBaseSha": "bafeb0dc60bba209154091908ff5e03cbd3a9733",
-    "resolvedCausalGroups": 11,
+    "resolvedCausalGroups": 12,
     "focusedEvidence": [
       {
         "kind": "component-and-contract",
@@ -161,6 +161,32 @@
           "disposition": "resolved",
           "resolutionCommit": "4485d874",
           "resolutionEvidence": "The assertion now owns the exact level-1 'Saved Comparisons' page heading and cannot match the empty-state subheading."
+        }
+      ]
+    },
+    {
+      "runId": 32640224222,
+      "headSha": "8487752a4432eae776c78c83de92616cd4597cf5",
+      "artifactId": 9493719435,
+      "authenticatedStdoutSha256": "aae65a1a2b196f85561017bfa9c85498fbd0df11857fdef8ed32db6c89b6f7f8",
+      "status": "failed-deterministic",
+      "summary": {
+        "terminalFailures": 2,
+        "retryOnly": 0,
+        "passed": 231,
+        "skipped": 2,
+        "didNotRun": 0,
+        "nonTestErrors": 0,
+        "durationSeconds": 774
+      },
+      "causalGroups": [
+        {
+          "id": "settings-localized-navigation-copy",
+          "nominalFailures": 2,
+          "firstCause": "The functional settings navigation tests owned English-only link copy after the valid fixture locale changed to German.",
+          "disposition": "resolved",
+          "resolutionCommit": "c2c33149",
+          "resolutionEvidence": "The tests now own the unique nutrition and account route hrefs, independent of supported UI locale."
         }
       ]
     }
