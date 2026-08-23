@@ -238,7 +238,7 @@ export const GOLDEN_JOURNEYS = Object.freeze([
       { event: "start-local-lookup", expectedState: "processing", expectedAnnouncement: "local product lookup" },
       { event: "lookup-complete", expectedState: "matched", expectedAnnouncement: "North Grain Oat Drink matched" },
     ],
-    terminal: { reference: "scanner", state: "matched", focus: "[data-golden-live-state='matched']", announcement: "North Grain Oat Drink matched" },
+    terminal: { reference: "scanner", state: "matched", focus: "[role='status']", announcement: "North Grain Oat Drink matched" },
   },
 ] as const satisfies readonly GoldenJourneyContract[]);
 

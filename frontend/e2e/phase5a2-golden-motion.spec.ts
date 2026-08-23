@@ -149,7 +149,7 @@ test("records normal and reduced-motion Golden journeys with terminal frames", a
       const active = document.activeElement as HTMLElement | null;
       const focus = (() => {
         if (!active || active === document.body) return null;
-        if (active.id) return `#${active.id}`;
+        if (active.id.startsWith("golden-")) return `#${active.id}`;
         if (active.hasAttribute("data-golden-live-state")) {
           return `[data-golden-live-state='${active.getAttribute("data-golden-live-state")}']`;
         }
@@ -157,7 +157,8 @@ test("records normal and reduced-motion Golden journeys with terminal frames", a
           return `${active.tagName.toLowerCase()}[aria-haspopup='${active.getAttribute("aria-haspopup")}']`;
         }
         const role = active.getAttribute("role");
-        return role ? `[role='${role}']` : active.tagName.toLowerCase();
+        if (role) return `[role='${role}']`;
+        return active.tagName.toLowerCase();
       })();
       return {
         recordingReference: reference,
