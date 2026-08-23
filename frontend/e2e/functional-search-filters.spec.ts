@@ -9,6 +9,8 @@
 
 import { expect, test } from "./fixtures/safe-test";
 
+const SEARCH_PRODUCTS_NAME = /search products|szukaj produktów/i;
+
 async function openFilterPanelIfNeeded(
   page: import("@playwright/test").Page,
 ) {
@@ -25,7 +27,9 @@ async function searchAndWaitForResults(page: import("@playwright/test").Page) {
   await page.goto("/app/search");
   await page.waitForLoadState("domcontentloaded");
 
-  const input = page.getByPlaceholder(/search products/i);
+  const input = page
+    .getByRole("search", { name: SEARCH_PRODUCTS_NAME })
+    .getByRole("combobox", { name: SEARCH_PRODUCTS_NAME });
   await input.fill("a");
   await input.press("Enter");
 
@@ -99,11 +103,6 @@ test.describe("Search filters: desktop sort & filter", () => {
       test.skip();
       return;
     }
-
-    // Click the first allergen checkbox (e.g., "Gluten-free")
-    const allergenCheckbox = page
-      .locator('input[type="checkbox"]')
-      .first();
 
     // Scope to allergen section — find any checkbox within the allergen area
     const allergenSection = allergenHeading.locator("..").locator("..");
