@@ -177,4 +177,22 @@ describe("Phase 5A.2 Golden Reference contract", () => {
     expect(resilience).not.toMatch(/\.exclude\(|\.include\(|\.disableRules\(|\.withTags\(|runOnly/u);
     expect(resilience).not.toContain("helpers/a11y");
   });
+
+  it("keeps a byte-level staged evidence verifier", () => {
+    const verifier = readFileSync(
+      path.join(
+        process.cwd(),
+        "tooling",
+        "design-system",
+        "golden-reference",
+        "verify-staged.mts",
+      ),
+      "utf8",
+    );
+    expect(verifier).toContain("staged-root-contents-invalid");
+    expect(verifier).toContain("staged-file-snapshot-invalid");
+    expect(verifier).toContain("staged-packet-contract-invalid");
+    expect(verifier).toContain("manifest-sensitive-content");
+    expect(verifier).toContain("verifyPlaywrightWebm");
+  });
 });

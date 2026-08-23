@@ -42,6 +42,7 @@
     "phase5:golden-review": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/golden-reference/run.mts",
     "phase5:golden-verify": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/golden-reference/verify-candidates.mts",
     "phase5:golden-stage": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/golden-reference/stage-evidence.mts",
+    "phase5:golden-evidence:verify": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/design-system/golden-reference/verify-staged.mts",
     "phase5:lighthouse:report": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types tooling/phase5a0d-lighthouse-cli.mts aggregate",
     "phase5:visual:generate:public": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts phase5-visual-generate public",
     "phase5:visual:generate:authenticated": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types e2e/scripts/visual-safety-cli.mts phase5-visual-generate local-authenticated",
