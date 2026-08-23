@@ -22,7 +22,7 @@
   "remediation": {
     "branch": "codex/phase-5a2-admission-authenticated-matrix",
     "stackedBaseSha": "bafeb0dc60bba209154091908ff5e03cbd3a9733",
-    "resolvedCausalGroups": 10,
+    "resolvedCausalGroups": 11,
     "focusedEvidence": [
       {
         "kind": "component-and-contract",
@@ -135,6 +135,32 @@
           "disposition": "resolved",
           "resolutionCommit": "92ae26ee",
           "resolutionEvidence": "The CTA now owns the same checked-in English, Polish, and German accessible-name contract as the search combobox."
+        }
+      ]
+    },
+    {
+      "runId": 32639247711,
+      "headSha": "05c2ce2d81f085b8e221e61bf12b9f920de360a8",
+      "artifactId": 9493362668,
+      "authenticatedStdoutSha256": "6f544aff7f10424057a9ce87238bf4e03c3258767df83c200062eb4ed8317727",
+      "status": "passed-with-retry-only-flake",
+      "summary": {
+        "terminalFailures": 0,
+        "retryOnly": 1,
+        "passed": 232,
+        "skipped": 2,
+        "didNotRun": 0,
+        "nonTestErrors": 0,
+        "durationSeconds": 510
+      },
+      "causalGroups": [
+        {
+          "id": "saved-comparisons-heading-ambiguity",
+          "retryOnly": 1,
+          "firstCause": "The broad /Saved Comparisons/i heading locator matched both the page h1 and the empty-state h3, producing strict-mode ambiguity on one attempt.",
+          "disposition": "resolved",
+          "resolutionCommit": "4485d874",
+          "resolutionEvidence": "The assertion now owns the exact level-1 'Saved Comparisons' page heading and cannot match the empty-state subheading."
         }
       ]
     }
