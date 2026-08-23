@@ -280,9 +280,9 @@ test.describe("Compare page", () => {
   test("shows empty state with instructions", async ({ page }) => {
     await page.goto("/app/compare");
     await expect(
-      page.getByText("Select 2–4 products to compare", { exact: false }).or(
-        page.getByText("Select 2-4 products to compare", { exact: false }),
-      ),
+      page.getByRole("heading", {
+        name: /Start by choosing 2[–-]4 products to compare/i,
+      }),
     ).toBeVisible();
   });
 
