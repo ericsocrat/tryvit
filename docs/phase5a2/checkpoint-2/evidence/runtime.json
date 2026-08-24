@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a2-golden-reference-runtime",
-  "sourceSha": "9fe14f14e00185cc1f1319d132e6853fa90e1723",
-  "sourceTreeSha": "5d8911cb326b0356e3a89a1a304dcea8c86b79bb",
+  "sourceSha": "c7fc0c5255761b4c3709e2253772bcf8757d3315",
+  "sourceTreeSha": "5dec4dc65c819ec62c74455bafd31e56dfb436e0",
   "fixtureContractVersion": "phase5a2-golden-fixture-v1",
   "playwrightVersion": "1.62.1",
   "browserName": "chromium",

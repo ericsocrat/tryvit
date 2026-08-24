@@ -341,6 +341,15 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
         !Array.isArray(record.edgeRects) ||
         record.edgeRects.length !== record.offenderCount)
     ) fail("resilience-geometry-invalid");
+    if (
+      Array.isArray(record.edgeRects) &&
+      record.edgeRects.some((edge) =>
+        !edge ||
+        typeof edge !== "object" ||
+        Array.isArray(edge) ||
+        (edge as Record<string, unknown>).containedByHorizontalScroller !== true,
+      )
+    ) fail("resilience-geometry-invalid");
   }
   for (const value of resilience.typography as unknown[]) {
     if (!value || typeof value !== "object" || Array.isArray(value)) {

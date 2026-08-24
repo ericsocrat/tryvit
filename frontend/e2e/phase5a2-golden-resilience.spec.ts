@@ -42,6 +42,9 @@ const textSpacingEvidence: Array<Readonly<{
     left: number;
     right: number;
     width: number;
+    containedByHorizontalScroller: boolean;
+    scrollerTag?: string;
+    scrollerRole?: string;
   }>[];
 }>> = [];
 const reflowEvidence: Array<Readonly<{
@@ -227,14 +230,29 @@ for (const capture of GOLDEN_POLISH_MOBILE_STILLS) {
         .map((element) => ({ element, rect: element.getBoundingClientRect() }))
         .filter(({ rect }) => rect.width > 0 && (rect.left < -1 || rect.right > innerWidth + 1))
         .slice(0, 20)
-        .map(({ element, rect }) => ({
-          tag: element.tagName.toLowerCase(),
-          className: element.className,
-          text: element.textContent?.trim().slice(0, 80),
-          left: Math.round(rect.left),
-          right: Math.round(rect.right),
-          width: Math.round(rect.width),
-        })),
+        .map(({ element, rect }) => {
+          let scroller: HTMLElement | null = element.parentElement;
+          while (scroller && scroller !== root) {
+            const overflowX = getComputedStyle(scroller).overflowX;
+            if (
+              ["auto", "scroll"].includes(overflowX) &&
+              scroller.scrollWidth > scroller.clientWidth + 1
+            ) break;
+            scroller = scroller.parentElement;
+          }
+          const containedByHorizontalScroller = Boolean(scroller && scroller !== root);
+          return {
+            tag: element.tagName.toLowerCase(),
+            className: element.className,
+            text: element.textContent?.trim().slice(0, 80),
+            left: Math.round(rect.left),
+            right: Math.round(rect.right),
+            width: Math.round(rect.width),
+            containedByHorizontalScroller,
+            scrollerTag: containedByHorizontalScroller ? scroller?.tagName.toLowerCase() : undefined,
+            scrollerRole: containedByHorizontalScroller ? scroller?.getAttribute("role") ?? undefined : undefined,
+          };
+        }),
     }));
     textSpacingEvidence.push({
       reference: capture.reference,
@@ -245,6 +263,11 @@ for (const capture of GOLDEN_POLISH_MOBILE_STILLS) {
       edgeRects: geometry.offenders,
     });
     expect(geometry.documentOverflow, JSON.stringify(geometry.offenders, null, 2)).toBeLessThanOrEqual(1);
+    expect(
+      geometry.offenders.filter(({ containedByHorizontalScroller }) =>
+        !containedByHorizontalScroller,
+      ),
+    ).toEqual([]);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 }
@@ -506,7 +529,7 @@ test.afterAll(() => {
       sourceTreeSha,
       reviewOnly: true,
       methodology: {
-        textSpacing: "Polish 390x844 with line-height 1.5, letter-spacing 0.12em, word-spacing 0.16em, and paragraph margin 2em. edgeRects enumerates diagnostic child rectangles outside the viewport while document/root overflow remains the blocking metric.",
+        textSpacing: "Polish 390x844 with line-height 1.5, letter-spacing 0.12em, word-spacing 0.16em, and paragraph margin 2em. edgeRects enumerates every child rectangle outside the viewport and proves each is contained by an intentional horizontal scroller while document/root overflow remains bounded.",
         reflow: "200-percent equivalent CSS viewport of 384x844 with horizontal overflow bounded to 1px.",
         typography: "Original 1440x900 light/dark geometry plus 720x450 reflow and WCAG text-spacing override.",
       },
