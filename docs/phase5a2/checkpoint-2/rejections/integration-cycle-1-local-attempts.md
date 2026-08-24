@@ -39,3 +39,7 @@ was corrected by running the same bounded add/commit from the repository root.
 - final packet: source `7e44b4b4…`, manifest `ef97f4fb…`; 116/116 and both candidate
   and staged verifiers pass with zero-scroll capture asserted immediately before every
   screenshot.
+
+The first final-review commit invocation repeated the earlier frontend-relative
+pathspec mistake; Git rejected it before staging or committing. The bounded commit was
+then issued from the repository root.

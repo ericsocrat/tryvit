@@ -1,6 +1,6 @@
 # Phase 5A.2 Checkpoint 2 — Golden Reference review handoff
 
-> **Status:** Current main integrated and final corrected exact-source packet verified; bounded final review recheck, exact-head CI, and Eric approval pending
+> **Status:** Current main integrated; final corrected packet and independent review passed; exact-head CI and Eric approval pending
 > **Production migration:** Prohibited
 > **Capture source:** `7e44b4b4dad5cb940f9b4f3cb7f7579aa4f1cf59`
 > **Capture tree:** `174cd4986085bb71946a1ed094b8093d996bd432`
@@ -62,9 +62,11 @@ The initial 91/89, corrected-packet 93/95, and initial integrated conditional/HO
 reviews remain historical. None approves this final packet. The initial integrated
 review required localization, semantic dwell, evidence hierarchy, and identity
 containment corrections; those corrections and zero-scroll capture binding are now
-included in a new complete exact-source packet. The same three independent lanes must
-complete a bounded final recheck without seeing one another's result. The authorized
-brief and comparisons are under `reviews/integration-cycle-1/`.
+included in a new complete exact-source packet. The same three independent lanes
+completed a bounded final recheck without seeing one another's result: PASS 94/100,
+PASS 93.5/100, and non-taste PASS / PASS with no defect. The implementation agent does
+not qualify; Eric's explicit approval remains required. The final scorecards and
+comparisons are under `reviews/integration-cycle-1/`.
 
 Native Polish/German review, trademark/legal clearance, real assistive-technology and
 device testing, branded Safari, real camera/password-manager behavior, and production

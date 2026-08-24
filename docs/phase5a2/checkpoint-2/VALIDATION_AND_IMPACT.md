@@ -1,6 +1,6 @@
 # Checkpoint 2 validation and impact
 
-> **Status:** Current main integrated and final corrected exact-source local validation complete; bounded final review recheck and authoritative CI pending
+> **Status:** Current main integrated; final corrected exact-source local validation and independent review passed; authoritative CI pending
 
 ## Implemented boundary
 
@@ -55,7 +55,9 @@ Golden consumers outside the two guarded routes.
   artifact retention, and no-backup runtime teardown; local workflow contracts and
   `actionlint` passed.
 - historical 91/89, 93/95, and initial integrated conditional/HOLD reviews are
-  superseded; a bounded final recheck and Eric's approval are pending.
+  superseded; final independent rechecks returned PASS 94/100 and PASS 93.5/100 with
+  every reference at least 90.5 and every category above 75%; non-taste QA returned
+  PASS / PASS with no defect. Eric's approval is pending.
 - exact source/tree: `7e44b4b4dad5cb940f9b4f3cb7f7579aa4f1cf59` /
   `174cd4986085bb71946a1ed094b8093d996bd432`.
 
