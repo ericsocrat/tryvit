@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a2-golden-resilience-evidence",
-  "sourceSha": "bd9426a22dabe11ebb30227efeda746d0b7b4728",
-  "sourceTreeSha": "2d28933246407e986575d9a1a86476d646c6bcad",
+  "sourceSha": "57a562e30ab8f724a60c63770eb9e19de696ac98",
+  "sourceTreeSha": "6afe92b6266bccd69daf11d390a01448c4b7bee4",
   "reviewOnly": true,
   "methodology": {
     "textSpacing": "Polish 390x844 with line-height 1.5, letter-spacing 0.12em, word-spacing 0.16em, and paragraph margin 2em. edgeRects enumerates every child rectangle outside the viewport and proves each is contained by an intentional horizontal scroller while document/root overflow remains bounded.",
@@ -491,7 +491,8 @@
       "totalGlyphs": 11,
       "invalidGlyphs": 0,
       "labeledWordmarks": 2,
-      "productRecordMasterMarks": 0
+      "productRecordMasterMarks": 0,
+      "ownerBoundaryViolations": 0
     },
     {
       "reference": "authentication",
@@ -501,7 +502,8 @@
       "totalGlyphs": 3,
       "invalidGlyphs": 0,
       "labeledWordmarks": 2,
-      "productRecordMasterMarks": 0
+      "productRecordMasterMarks": 0,
+      "ownerBoundaryViolations": 0
     },
     {
       "reference": "home",
@@ -511,7 +513,8 @@
       "totalGlyphs": 4,
       "invalidGlyphs": 0,
       "labeledWordmarks": 2,
-      "productRecordMasterMarks": 0
+      "productRecordMasterMarks": 0,
+      "ownerBoundaryViolations": 0
     },
     {
       "reference": "search",
@@ -521,7 +524,8 @@
       "totalGlyphs": 4,
       "invalidGlyphs": 0,
       "labeledWordmarks": 2,
-      "productRecordMasterMarks": 0
+      "productRecordMasterMarks": 0,
+      "ownerBoundaryViolations": 0
     },
     {
       "reference": "product",
@@ -531,7 +535,8 @@
       "totalGlyphs": 5,
       "invalidGlyphs": 0,
       "labeledWordmarks": 2,
-      "productRecordMasterMarks": 0
+      "productRecordMasterMarks": 0,
+      "ownerBoundaryViolations": 0
     },
     {
       "reference": "scanner",
@@ -541,7 +546,8 @@
       "totalGlyphs": 2,
       "invalidGlyphs": 0,
       "labeledWordmarks": 2,
-      "productRecordMasterMarks": 0
+      "productRecordMasterMarks": 0,
+      "ownerBoundaryViolations": 0
     }
   ]
 }
