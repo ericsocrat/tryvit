@@ -1,6 +1,6 @@
 # Checkpoint 2 validation and impact
 
-> **Status:** Exact-source typography correction and local performance complete; fresh review and authoritative CI pending
+> **Status:** Exact-source typography correction, local performance, and fresh review complete; authoritative CI pending
 
 ## Implemented boundary
 
@@ -54,8 +54,10 @@ Golden consumers outside the two guarded routes.
   Chromium/Firefox/WebKit plus full resilience/capture/performance, raw and staged
   artifact retention, and no-backup runtime teardown; local workflow contracts and
   `actionlint` passed.
-- historical 91/89 reviews are superseded; two new scorecards and the third non-taste
-  QA lane are pending. Eric's approval is still pending.
+- historical 91/89 reviews are superseded; fresh decision reviewers returned PASS
+  93/100 and PASS 95/100 for the selected system, with every reference at least 89 and
+  every category at least 75%; the third non-taste provenance/visual lane returned
+  PASS / PASS with no defect path. Eric's approval is still pending.
 - exact source/tree: `fcc5d8cb9eae609863364a6a34541ce10eefcbc6` /
   `00c47531aa41a7de94dff9f18c1018d551405943`.
 

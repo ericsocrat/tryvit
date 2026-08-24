@@ -1,6 +1,6 @@
 # Phase 5A.2 Checkpoint 2 — Golden Reference review handoff
 
-> **Status:** Bounded typography replacement captured; fresh review, exact-head CI, and Eric approval pending
+> **Status:** Bounded typography replacement captured and fresh review passed; exact-head CI and Eric approval pending
 > **Production migration:** Prohibited
 > **Capture source:** `fcc5d8cb9eae609863364a6a34541ce10eefcbc6`
 > **Capture tree:** `00c47531aa41a7de94dff9f18c1018d551405943`
@@ -59,10 +59,13 @@ and the 15 MiB ceiling.
 ## Review boundary
 
 The earlier initial and replacement reviews remain historical. Their 91/89 scores do
-not approve this correction packet. Two new fresh-context reviewers must independently
-inspect every retained original, including both 1440×900 typography boards and all
-changed recordings, before seeing one another's scores. A third non-taste lane verifies
-every original PNG and the hash comparison. The implementation agent does not qualify.
+not approve this correction packet. Two new fresh-context reviewers independently
+inspected every retained original without seeing one another's result. They returned
+PASS 93/100 and PASS 95/100 for the selected system, with every reference at least 89
+and every category at least 75%. A third non-taste lane verified every original PNG and
+WebM, every retained hash, and the old/new comparison and returned PASS / PASS with no
+defect path. The implementation agent did not qualify; the current scorecards are under
+`reviews/correction-cycle-1/`.
 
 Native Polish/German review, trademark/legal clearance, real assistive-technology and
 device testing, branded Safari, real camera/password-manager behavior, and production
