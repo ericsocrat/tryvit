@@ -2,9 +2,9 @@
 
 ## Source binding
 
-- Capture source: `4d29d5007511a438e14e002b3a0df122007b8de5`.
-- Capture tree: `d1875fccb9b9b0d4f45ff8191bf8cbcee21ce38f`.
-- Manifest SHA-256: `85309352e63b40d5e735d260c68d35668f0582ec0d0e10f8b10f85ece1ca7cf8`.
+- Capture source: `14620a61c702838565eca2916b98af5cd4a572c1`.
+- Capture tree: `de3a00e15099b5f1ca0b5ee521017f195a93b04c`.
+- Manifest SHA-256: `164244174aa7a276389084ff3887b8b6de88d03c50dd9da784f540124eb8f2a1`.
 - Checkpoint 1 canonical manifest remains
   `9c10d0243b5208319fc8c3b1497ca9dae552f7fdfd899823ae2fca39f8993c1e`.
 

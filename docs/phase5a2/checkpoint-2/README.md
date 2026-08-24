@@ -2,9 +2,9 @@
 
 > **Status:** Bounded typography replacement captured; fresh review, exact-head CI, and Eric approval pending
 > **Production migration:** Prohibited
-> **Capture source:** `4d29d5007511a438e14e002b3a0df122007b8de5`
-> **Capture tree:** `d1875fccb9b9b0d4f45ff8191bf8cbcee21ce38f`
-> **Manifest SHA-256:** `85309352e63b40d5e735d260c68d35668f0582ec0d0e10f8b10f85ece1ca7cf8`
+> **Capture source:** `14620a61c702838565eca2916b98af5cd4a572c1`
+> **Capture tree:** `de3a00e15099b5f1ca0b5ee521017f195a93b04c`
+> **Manifest SHA-256:** `164244174aa7a276389084ff3887b8b6de88d03c50dd9da784f540124eb8f2a1`
 
 This packet implements exactly six complete non-production Golden References:
 
@@ -40,7 +40,7 @@ Query input is fail-closed and limited to `locale`, `theme`, `motion`, `state`, 
 
 ## Evidence packet
 
-The committed packet contains 85 files and 7,197,539 bytes:
+The committed packet contains 85 files and 7,188,422 bytes:
 
 - 36 core stills: six references × 390/768/1440 × light/dark;
 - 12 localized stills: Polish mobile and long-German desktop for each reference;

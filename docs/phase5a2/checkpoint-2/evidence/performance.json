@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a2-golden-reference-performance",
-  "sourceSha": "4d29d5007511a438e14e002b3a0df122007b8de5",
-  "sourceTreeSha": "d1875fccb9b9b0d4f45ff8191bf8cbcee21ce38f",
+  "sourceSha": "14620a61c702838565eca2916b98af5cd4a572c1",
+  "sourceTreeSha": "de3a00e15099b5f1ca0b5ee521017f195a93b04c",
   "reviewOnly": true,
   "productionCoreWebVitals": false,
   "methodology": {
@@ -43,13 +43,13 @@
       "reference": "landing",
       "sample": 1,
       "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
       "fontBytes": 0,
       "imageBytes": 0,
-      "lcpMs": 164,
+      "lcpMs": 160,
       "tbtMs": 0,
-      "ttfbMs": 59.3,
+      "ttfbMs": 57.8,
       "cls": 0,
       "longTasks": [],
       "motionIntervals": [],
@@ -98,12 +98,12 @@
           "gzipBytes": 5721
         },
         {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
           "rawBytes": 230499,
           "gzipBytes": 62899
         },
         {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
           "rawBytes": 39608,
           "gzipBytes": 11435
         },
@@ -128,14 +128,14 @@
           "gzipBytes": 3426
         },
         {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
           "rawBytes": 4896,
           "gzipBytes": 1709
         },
         {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
         }
       ],
       "cssAssets": [
@@ -145,19 +145,19 @@
           "gzipBytes": 29959
         },
         {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
         },
         {
           "path": "/_next/static/css/cb3895541f977e72.css",
           "rawBytes": 2333,
           "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
         }
       ]
     },
@@ -165,621 +165,11 @@
       "reference": "landing",
       "sample": 2,
       "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 88,
-      "tbtMs": 0,
-      "ttfbMs": 53.6,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "landing",
-      "sample": 3,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 92,
-      "tbtMs": 0,
-      "ttfbMs": 55.5,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "landing",
-      "sample": 4,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 92,
-      "tbtMs": 0,
-      "ttfbMs": 52.6,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "landing",
-      "sample": 5,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
       "fontBytes": 0,
       "imageBytes": 0,
       "lcpMs": 104,
-      "tbtMs": 0,
-      "ttfbMs": 56.1,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "authentication",
-      "sample": 1,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 128,
-      "tbtMs": 0,
-      "ttfbMs": 58.4,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "authentication",
-      "sample": 2,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 112,
       "tbtMs": 0,
       "ttfbMs": 54.6,
       "cls": 0,
@@ -830,12 +220,12 @@
           "gzipBytes": 5721
         },
         {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
           "rawBytes": 230499,
           "gzipBytes": 62899
         },
         {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
           "rawBytes": 39608,
           "gzipBytes": 11435
         },
@@ -860,14 +250,14 @@
           "gzipBytes": 3426
         },
         {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
           "rawBytes": 4896,
           "gzipBytes": 1709
         },
         {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
         }
       ],
       "cssAssets": [
@@ -877,33 +267,33 @@
           "gzipBytes": 29959
         },
         {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
         },
         {
           "path": "/_next/static/css/cb3895541f977e72.css",
           "rawBytes": 2333,
           "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
         }
       ]
     },
     {
-      "reference": "authentication",
+      "reference": "landing",
       "sample": 3,
       "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
       "fontBytes": 0,
       "imageBytes": 0,
       "lcpMs": 96,
       "tbtMs": 0,
-      "ttfbMs": 55.5,
+      "ttfbMs": 56.2,
       "cls": 0,
       "longTasks": [],
       "motionIntervals": [],
@@ -952,12 +342,12 @@
           "gzipBytes": 5721
         },
         {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
           "rawBytes": 230499,
           "gzipBytes": 62899
         },
         {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
           "rawBytes": 39608,
           "gzipBytes": 11435
         },
@@ -982,14 +372,14 @@
           "gzipBytes": 3426
         },
         {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
           "rawBytes": 4896,
           "gzipBytes": 1709
         },
         {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
         }
       ],
       "cssAssets": [
@@ -999,1248 +389,28 @@
           "gzipBytes": 29959
         },
         {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
         },
         {
           "path": "/_next/static/css/cb3895541f977e72.css",
           "rawBytes": 2333,
           "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
         }
       ]
     },
     {
-      "reference": "authentication",
+      "reference": "landing",
       "sample": 4,
       "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 96,
-      "tbtMs": 0,
-      "ttfbMs": 52.9,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "authentication",
-      "sample": 5,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 96,
-      "tbtMs": 0,
-      "ttfbMs": 51.6,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "home",
-      "sample": 1,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 100,
-      "tbtMs": 0,
-      "ttfbMs": 53.5,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "home",
-      "sample": 2,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 88,
-      "tbtMs": 0,
-      "ttfbMs": 52,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "home",
-      "sample": 3,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 92,
-      "tbtMs": 0,
-      "ttfbMs": 53.9,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "home",
-      "sample": 4,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 92,
-      "tbtMs": 0,
-      "ttfbMs": 53.9,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "home",
-      "sample": 5,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 88,
-      "tbtMs": 0,
-      "ttfbMs": 53,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "search",
-      "sample": 1,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 96,
-      "tbtMs": 0,
-      "ttfbMs": 52.6,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "search",
-      "sample": 2,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 92,
-      "tbtMs": 0,
-      "ttfbMs": 54.1,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "search",
-      "sample": 3,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 92,
-      "tbtMs": 0,
-      "ttfbMs": 55.1,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "search",
-      "sample": 4,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
       "fontBytes": 0,
       "imageBytes": 0,
       "lcpMs": 92,
@@ -2294,12 +464,12 @@
           "gzipBytes": 5721
         },
         {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
           "rawBytes": 230499,
           "gzipBytes": 62899
         },
         {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
           "rawBytes": 39608,
           "gzipBytes": 11435
         },
@@ -2324,14 +494,14 @@
           "gzipBytes": 3426
         },
         {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
           "rawBytes": 4896,
           "gzipBytes": 1709
         },
         {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
         }
       ],
       "cssAssets": [
@@ -2341,33 +511,33 @@
           "gzipBytes": 29959
         },
         {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
         },
         {
           "path": "/_next/static/css/cb3895541f977e72.css",
           "rawBytes": 2333,
           "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
         }
       ]
     },
     {
-      "reference": "search",
+      "reference": "landing",
       "sample": 5,
       "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
       "fontBytes": 0,
       "imageBytes": 0,
-      "lcpMs": 88,
+      "lcpMs": 92,
       "tbtMs": 0,
-      "ttfbMs": 53.2,
+      "ttfbMs": 56.1,
       "cls": 0,
       "longTasks": [],
       "motionIntervals": [],
@@ -2416,12 +586,12 @@
           "gzipBytes": 5721
         },
         {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
           "rawBytes": 230499,
           "gzipBytes": 62899
         },
         {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
           "rawBytes": 39608,
           "gzipBytes": 11435
         },
@@ -2446,14 +616,14 @@
           "gzipBytes": 3426
         },
         {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
           "rawBytes": 4896,
           "gzipBytes": 1709
         },
         {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
         }
       ],
       "cssAssets": [
@@ -2463,33 +633,33 @@
           "gzipBytes": 29959
         },
         {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
         },
         {
           "path": "/_next/static/css/cb3895541f977e72.css",
           "rawBytes": 2333,
           "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
         }
       ]
     },
     {
-      "reference": "product",
+      "reference": "authentication",
       "sample": 1,
       "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
       "fontBytes": 0,
       "imageBytes": 0,
-      "lcpMs": 100,
+      "lcpMs": 104,
       "tbtMs": 0,
-      "ttfbMs": 52.8,
+      "ttfbMs": 53.7,
       "cls": 0,
       "longTasks": [],
       "motionIntervals": [],
@@ -2538,12 +708,12 @@
           "gzipBytes": 5721
         },
         {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
           "rawBytes": 230499,
           "gzipBytes": 62899
         },
         {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
           "rawBytes": 39608,
           "gzipBytes": 11435
         },
@@ -2568,14 +738,14 @@
           "gzipBytes": 3426
         },
         {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
           "rawBytes": 4896,
           "gzipBytes": 1709
         },
         {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
         }
       ],
       "cssAssets": [
@@ -2585,33 +755,33 @@
           "gzipBytes": 29959
         },
         {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
         },
         {
           "path": "/_next/static/css/cb3895541f977e72.css",
           "rawBytes": 2333,
           "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
         }
       ]
     },
     {
-      "reference": "product",
+      "reference": "authentication",
       "sample": 2,
       "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
       "fontBytes": 0,
       "imageBytes": 0,
-      "lcpMs": 104,
+      "lcpMs": 112,
       "tbtMs": 0,
-      "ttfbMs": 54.1,
+      "ttfbMs": 55.4,
       "cls": 0,
       "longTasks": [],
       "motionIntervals": [],
@@ -2660,12 +830,12 @@
           "gzipBytes": 5721
         },
         {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
           "rawBytes": 230499,
           "gzipBytes": 62899
         },
         {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
           "rawBytes": 39608,
           "gzipBytes": 11435
         },
@@ -2690,14 +860,14 @@
           "gzipBytes": 3426
         },
         {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
           "rawBytes": 4896,
           "gzipBytes": 1709
         },
         {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
         }
       ],
       "cssAssets": [
@@ -2707,399 +877,33 @@
           "gzipBytes": 29959
         },
         {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
         },
         {
           "path": "/_next/static/css/cb3895541f977e72.css",
           "rawBytes": 2333,
           "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
         }
       ]
     },
     {
-      "reference": "product",
+      "reference": "authentication",
       "sample": 3,
       "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 104,
-      "tbtMs": 0,
-      "ttfbMs": 55.5,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "product",
-      "sample": 4,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 100,
-      "tbtMs": 0,
-      "ttfbMs": 53.5,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "product",
-      "sample": 5,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
-      "fontBytes": 0,
-      "imageBytes": 0,
-      "lcpMs": 100,
-      "tbtMs": 0,
-      "ttfbMs": 53.4,
-      "cls": 0,
-      "longTasks": [],
-      "motionIntervals": [],
-      "animationAttributableLongTasks": [],
-      "maximumLongTaskMs": 0,
-      "maximumAnimationLongTaskMs": 0,
-      "jsAssets": [
-        {
-          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
-          "rawBytes": 199870,
-          "gzipBytes": 62739
-        },
-        {
-          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
-          "rawBytes": 14741,
-          "gzipBytes": 5566
-        },
-        {
-          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
-          "rawBytes": 12237,
-          "gzipBytes": 4597
-        },
-        {
-          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
-          "rawBytes": 6478,
-          "gzipBytes": 2352
-        },
-        {
-          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
-          "rawBytes": 32768,
-          "gzipBytes": 9200
-        },
-        {
-          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
-          "rawBytes": 51127,
-          "gzipBytes": 18137
-        },
-        {
-          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
-          "rawBytes": 8734,
-          "gzipBytes": 3544
-        },
-        {
-          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
-          "rawBytes": 15689,
-          "gzipBytes": 5721
-        },
-        {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
-          "rawBytes": 230499,
-          "gzipBytes": 62899
-        },
-        {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
-          "rawBytes": 39608,
-          "gzipBytes": 11435
-        },
-        {
-          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
-          "rawBytes": 8319,
-          "gzipBytes": 3490
-        },
-        {
-          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
-          "rawBytes": 1553,
-          "gzipBytes": 907
-        },
-        {
-          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
-          "rawBytes": 12613,
-          "gzipBytes": 5070
-        },
-        {
-          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
-          "rawBytes": 8345,
-          "gzipBytes": 3426
-        },
-        {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
-          "rawBytes": 4896,
-          "gzipBytes": 1709
-        },
-        {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
-        }
-      ],
-      "cssAssets": [
-        {
-          "path": "/_next/static/css/5bb06b6c4c697d67.css",
-          "rawBytes": 238398,
-          "gzipBytes": 29959
-        },
-        {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
-        },
-        {
-          "path": "/_next/static/css/cb3895541f977e72.css",
-          "rawBytes": 2333,
-          "gzipBytes": 797
-        }
-      ]
-    },
-    {
-      "reference": "scanner",
-      "sample": 1,
-      "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
       "fontBytes": 0,
       "imageBytes": 0,
       "lcpMs": 96,
       "tbtMs": 0,
-      "ttfbMs": 54.7,
+      "ttfbMs": 52.7,
       "cls": 0,
       "longTasks": [],
       "motionIntervals": [],
@@ -3148,12 +952,12 @@
           "gzipBytes": 5721
         },
         {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
           "rawBytes": 230499,
           "gzipBytes": 62899
         },
         {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
           "rawBytes": 39608,
           "gzipBytes": 11435
         },
@@ -3178,14 +982,14 @@
           "gzipBytes": 3426
         },
         {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
           "rawBytes": 4896,
           "gzipBytes": 1709
         },
         {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
         }
       ],
       "cssAssets": [
@@ -3195,28 +999,28 @@
           "gzipBytes": 29959
         },
         {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
         },
         {
           "path": "/_next/static/css/cb3895541f977e72.css",
           "rawBytes": 2333,
           "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
         }
       ]
     },
     {
-      "reference": "scanner",
-      "sample": 2,
+      "reference": "authentication",
+      "sample": 4,
       "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
       "fontBytes": 0,
       "imageBytes": 0,
       "lcpMs": 96,
@@ -3270,12 +1074,12 @@
           "gzipBytes": 5721
         },
         {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
           "rawBytes": 230499,
           "gzipBytes": 62899
         },
         {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
           "rawBytes": 39608,
           "gzipBytes": 11435
         },
@@ -3300,14 +1104,14 @@
           "gzipBytes": 3426
         },
         {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
           "rawBytes": 4896,
           "gzipBytes": 1709
         },
         {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
         }
       ],
       "cssAssets": [
@@ -3317,19 +1121,2215 @@
           "gzipBytes": 29959
         },
         {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
         },
         {
           "path": "/_next/static/css/cb3895541f977e72.css",
           "rawBytes": 2333,
           "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "authentication",
+      "sample": 5,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 92,
+      "tbtMs": 0,
+      "ttfbMs": 52.9,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "home",
+      "sample": 1,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 100,
+      "tbtMs": 0,
+      "ttfbMs": 52.9,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "home",
+      "sample": 2,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 88,
+      "tbtMs": 0,
+      "ttfbMs": 54,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "home",
+      "sample": 3,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 92,
+      "tbtMs": 0,
+      "ttfbMs": 53.2,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "home",
+      "sample": 4,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 92,
+      "tbtMs": 0,
+      "ttfbMs": 52.1,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "home",
+      "sample": 5,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 92,
+      "tbtMs": 0,
+      "ttfbMs": 51.8,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "search",
+      "sample": 1,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 92,
+      "tbtMs": 0,
+      "ttfbMs": 52.2,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "search",
+      "sample": 2,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 96,
+      "tbtMs": 0,
+      "ttfbMs": 54.9,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "search",
+      "sample": 3,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 92,
+      "tbtMs": 0,
+      "ttfbMs": 55.6,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "search",
+      "sample": 4,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 92,
+      "tbtMs": 0,
+      "ttfbMs": 53.6,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "search",
+      "sample": 5,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 92,
+      "tbtMs": 0,
+      "ttfbMs": 53.1,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "product",
+      "sample": 1,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 100,
+      "tbtMs": 0,
+      "ttfbMs": 53.3,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "product",
+      "sample": 2,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 96,
+      "tbtMs": 0,
+      "ttfbMs": 53.5,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "product",
+      "sample": 3,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 100,
+      "tbtMs": 0,
+      "ttfbMs": 54.3,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "product",
+      "sample": 4,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 100,
+      "tbtMs": 0,
+      "ttfbMs": 53.1,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "product",
+      "sample": 5,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 100,
+      "tbtMs": 0,
+      "ttfbMs": 54.4,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "scanner",
+      "sample": 1,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 96,
+      "tbtMs": 0,
+      "ttfbMs": 55.5,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
+        }
+      ]
+    },
+    {
+      "reference": "scanner",
+      "sample": 2,
+      "status": "valid",
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
+      "fontBytes": 0,
+      "imageBytes": 0,
+      "lcpMs": 92,
+      "tbtMs": 0,
+      "ttfbMs": 53.1,
+      "cls": 0,
+      "longTasks": [],
+      "motionIntervals": [],
+      "animationAttributableLongTasks": [],
+      "maximumLongTaskMs": 0,
+      "maximumAnimationLongTaskMs": 0,
+      "jsAssets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566
+        },
+        {
+          "path": "/_next/static/chunks/6020-1b614d6ac7b08d63.js",
+          "rawBytes": 12237,
+          "gzipBytes": 4597
+        },
+        {
+          "path": "/_next/static/chunks/6279-b0b2c2fdbdbe2aee.js",
+          "rawBytes": 6478,
+          "gzipBytes": 2352
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544
+        },
+        {
+          "path": "/_next/static/chunks/8632-9f00d3f28efe7345.js",
+          "rawBytes": 15689,
+          "gzipBytes": 5721
+        },
+        {
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62899
+        },
+        {
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
+          "rawBytes": 39608,
+          "gzipBytes": 11435
+        },
+        {
+          "path": "/_next/static/chunks/app/error-8895ebd17c026331.js",
+          "rawBytes": 8319,
+          "gzipBytes": 3490
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-f6a5288b513562f0.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-af6f37af5fbab07f.js",
+          "rawBytes": 12613,
+          "gzipBytes": 5070
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-12fd2e02308787dd.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3426
+        },
+        {
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1709
+        },
+        {
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
+        }
+      ],
+      "cssAssets": [
+        {
+          "path": "/_next/static/css/5bb06b6c4c697d67.css",
+          "rawBytes": 238398,
+          "gzipBytes": 29959
+        },
+        {
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
+        },
+        {
+          "path": "/_next/static/css/cb3895541f977e72.css",
+          "rawBytes": 2333,
+          "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
         }
       ]
     },
@@ -3337,13 +3337,13 @@
       "reference": "scanner",
       "sample": 3,
       "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
       "fontBytes": 0,
       "imageBytes": 0,
       "lcpMs": 92,
       "tbtMs": 0,
-      "ttfbMs": 53.4,
+      "ttfbMs": 52.3,
       "cls": 0,
       "longTasks": [],
       "motionIntervals": [],
@@ -3392,12 +3392,12 @@
           "gzipBytes": 5721
         },
         {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
           "rawBytes": 230499,
           "gzipBytes": 62899
         },
         {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
           "rawBytes": 39608,
           "gzipBytes": 11435
         },
@@ -3422,14 +3422,14 @@
           "gzipBytes": 3426
         },
         {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
           "rawBytes": 4896,
           "gzipBytes": 1709
         },
         {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
         }
       ],
       "cssAssets": [
@@ -3439,19 +3439,19 @@
           "gzipBytes": 29959
         },
         {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
         },
         {
           "path": "/_next/static/css/cb3895541f977e72.css",
           "rawBytes": 2333,
           "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
         }
       ]
     },
@@ -3459,13 +3459,13 @@
       "reference": "scanner",
       "sample": 4,
       "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
       "fontBytes": 0,
       "imageBytes": 0,
-      "lcpMs": 92,
+      "lcpMs": 96,
       "tbtMs": 0,
-      "ttfbMs": 52,
+      "ttfbMs": 51.9,
       "cls": 0,
       "longTasks": [],
       "motionIntervals": [],
@@ -3514,12 +3514,12 @@
           "gzipBytes": 5721
         },
         {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
           "rawBytes": 230499,
           "gzipBytes": 62899
         },
         {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
           "rawBytes": 39608,
           "gzipBytes": 11435
         },
@@ -3544,14 +3544,14 @@
           "gzipBytes": 3426
         },
         {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
           "rawBytes": 4896,
           "gzipBytes": 1709
         },
         {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
         }
       ],
       "cssAssets": [
@@ -3561,19 +3561,19 @@
           "gzipBytes": 29959
         },
         {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
         },
         {
           "path": "/_next/static/css/cb3895541f977e72.css",
           "rawBytes": 2333,
           "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
         }
       ]
     },
@@ -3581,13 +3581,13 @@
       "reference": "scanner",
       "sample": 5,
       "status": "valid",
-      "routeJsGzipBytes": 203085,
-      "cssGzipBytes": 49065,
+      "routeJsGzipBytes": 203083,
+      "cssGzipBytes": 47906,
       "fontBytes": 0,
       "imageBytes": 0,
       "lcpMs": 96,
       "tbtMs": 0,
-      "ttfbMs": 52.6,
+      "ttfbMs": 53.2,
       "cls": 0,
       "longTasks": [],
       "motionIntervals": [],
@@ -3636,12 +3636,12 @@
           "gzipBytes": 5721
         },
         {
-          "path": "/_next/static/chunks/8755-6c7800a11ba270b0.js",
+          "path": "/_next/static/chunks/8755-f331f11b63689a9b.js",
           "rawBytes": 230499,
           "gzipBytes": 62899
         },
         {
-          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-69b39e502535d734.js",
+          "path": "/_next/static/chunks/app/dev/phase5a2/golden/[reference]/page-c380e42ac116f1b0.js",
           "rawBytes": 39608,
           "gzipBytes": 11435
         },
@@ -3666,14 +3666,14 @@
           "gzipBytes": 3426
         },
         {
-          "path": "/_next/static/chunks/main-app-e4375a60d2c5838d.js",
+          "path": "/_next/static/chunks/main-app-5550b7b89582e563.js",
           "rawBytes": 4896,
           "gzipBytes": 1709
         },
         {
-          "path": "/_next/static/chunks/webpack-eaec702dbef904a7.js",
-          "rawBytes": 4277,
-          "gzipBytes": 2293
+          "path": "/_next/static/chunks/webpack-8896f3d53077994f.js",
+          "rawBytes": 4278,
+          "gzipBytes": 2291
         }
       ],
       "cssAssets": [
@@ -3683,19 +3683,19 @@
           "gzipBytes": 29959
         },
         {
-          "path": "/_next/static/css/715fa84f7b332a8c.css",
-          "rawBytes": 62449,
-          "gzipBytes": 10103
-        },
-        {
-          "path": "/_next/static/css/a932a32609e4bd76.css",
-          "rawBytes": 41602,
-          "gzipBytes": 8206
+          "path": "/_next/static/css/b9f02854ba81ffd6.css",
+          "rawBytes": 41901,
+          "gzipBytes": 8262
         },
         {
           "path": "/_next/static/css/cb3895541f977e72.css",
           "rawBytes": 2333,
           "gzipBytes": 797
+        },
+        {
+          "path": "/_next/static/css/e127106f4bf75532.css",
+          "rawBytes": 49328,
+          "gzipBytes": 8888
         }
       ]
     }
@@ -3706,17 +3706,17 @@
       "status": "complete",
       "serverClientBoundary": "Server-rendered identity, value, method, trust, evidence and actions; one package-label narrative island.",
       "routeJsGzipBytes": {
-        "median": 203085,
+        "median": 203083,
         "range": {
-          "minimum": 203085,
-          "maximum": 203085
+          "minimum": 203083,
+          "maximum": 203083
         }
       },
       "cssGzipBytes": {
-        "median": 49065,
+        "median": 47906,
         "range": {
-          "minimum": 49065,
-          "maximum": 49065
+          "minimum": 47906,
+          "maximum": 47906
         }
       },
       "fontBytes": {
@@ -3734,10 +3734,10 @@
         }
       },
       "lcpMs": {
-        "median": 92,
+        "median": 96,
         "range": {
-          "minimum": 88,
-          "maximum": 164
+          "minimum": 92,
+          "maximum": 160
         }
       },
       "tbtMs": {
@@ -3748,10 +3748,10 @@
         }
       },
       "ttfbMs": {
-        "median": 55.5,
+        "median": 56.1,
         "range": {
-          "minimum": 52.6,
-          "maximum": 59.3
+          "minimum": 54.4,
+          "maximum": 57.8
         }
       },
       "cls": {
@@ -3781,17 +3781,17 @@
       "status": "complete",
       "serverClientBoundary": "Server-rendered editorial trust panel and localized view model; one bounded form/state island.",
       "routeJsGzipBytes": {
-        "median": 203085,
+        "median": 203083,
         "range": {
-          "minimum": 203085,
-          "maximum": 203085
+          "minimum": 203083,
+          "maximum": 203083
         }
       },
       "cssGzipBytes": {
-        "median": 49065,
+        "median": 47906,
         "range": {
-          "minimum": 49065,
-          "maximum": 49065
+          "minimum": 47906,
+          "maximum": 47906
         }
       },
       "fontBytes": {
@@ -3811,8 +3811,8 @@
       "lcpMs": {
         "median": 96,
         "range": {
-          "minimum": 96,
-          "maximum": 128
+          "minimum": 92,
+          "maximum": 112
         }
       },
       "tbtMs": {
@@ -3823,10 +3823,10 @@
         }
       },
       "ttfbMs": {
-        "median": 54.6,
+        "median": 53,
         "range": {
-          "minimum": 51.6,
-          "maximum": 58.4
+          "minimum": 52.7,
+          "maximum": 55.4
         }
       },
       "cls": {
@@ -3856,17 +3856,17 @@
       "status": "complete",
       "serverClientBoundary": "Server-rendered decision, recovery and navigation structure; one bounded decision-action island.",
       "routeJsGzipBytes": {
-        "median": 203085,
+        "median": 203083,
         "range": {
-          "minimum": 203085,
-          "maximum": 203085
+          "minimum": 203083,
+          "maximum": 203083
         }
       },
       "cssGzipBytes": {
-        "median": 49065,
+        "median": 47906,
         "range": {
-          "minimum": 49065,
-          "maximum": 49065
+          "minimum": 47906,
+          "maximum": 47906
         }
       },
       "fontBytes": {
@@ -3898,10 +3898,10 @@
         }
       },
       "ttfbMs": {
-        "median": 53.5,
+        "median": 52.9,
         "range": {
-          "minimum": 52,
-          "maximum": 53.9
+          "minimum": 51.8,
+          "maximum": 54
         }
       },
       "cls": {
@@ -3931,17 +3931,17 @@
       "status": "complete",
       "serverClientBoundary": "Server-rendered header and synthetic fixture view model; one bounded query/filter/results island.",
       "routeJsGzipBytes": {
-        "median": 203085,
+        "median": 203083,
         "range": {
-          "minimum": 203085,
-          "maximum": 203085
+          "minimum": 203083,
+          "maximum": 203083
         }
       },
       "cssGzipBytes": {
-        "median": 49065,
+        "median": 47906,
         "range": {
-          "minimum": 49065,
-          "maximum": 49065
+          "minimum": 47906,
+          "maximum": 47906
         }
       },
       "fontBytes": {
@@ -3961,7 +3961,7 @@
       "lcpMs": {
         "median": 92,
         "range": {
-          "minimum": 88,
+          "minimum": 92,
           "maximum": 96
         }
       },
@@ -3973,10 +3973,10 @@
         }
       },
       "ttfbMs": {
-        "median": 54.1,
+        "median": 53.6,
         "range": {
-          "minimum": 52.6,
-          "maximum": 55.1
+          "minimum": 52.2,
+          "maximum": 55.6
         }
       },
       "cls": {
@@ -4006,17 +4006,17 @@
       "status": "complete",
       "serverClientBoundary": "Server-rendered identity, evidence spine, decision and tabs; one bounded provenance/comparison island.",
       "routeJsGzipBytes": {
-        "median": 203085,
+        "median": 203083,
         "range": {
-          "minimum": 203085,
-          "maximum": 203085
+          "minimum": 203083,
+          "maximum": 203083
         }
       },
       "cssGzipBytes": {
-        "median": 49065,
+        "median": 47906,
         "range": {
-          "minimum": 49065,
-          "maximum": 49065
+          "minimum": 47906,
+          "maximum": 47906
         }
       },
       "fontBytes": {
@@ -4036,8 +4036,8 @@
       "lcpMs": {
         "median": 100,
         "range": {
-          "minimum": 100,
-          "maximum": 104
+          "minimum": 96,
+          "maximum": 100
         }
       },
       "tbtMs": {
@@ -4050,8 +4050,8 @@
       "ttfbMs": {
         "median": 53.5,
         "range": {
-          "minimum": 52.8,
-          "maximum": 55.5
+          "minimum": 53.1,
+          "maximum": 54.4
         }
       },
       "cls": {
@@ -4081,17 +4081,17 @@
       "status": "complete",
       "serverClientBoundary": "Server-rendered safety framing and localized view model; one bounded deterministic scanner-state island with zero camera calls.",
       "routeJsGzipBytes": {
-        "median": 203085,
+        "median": 203083,
         "range": {
-          "minimum": 203085,
-          "maximum": 203085
+          "minimum": 203083,
+          "maximum": 203083
         }
       },
       "cssGzipBytes": {
-        "median": 49065,
+        "median": 47906,
         "range": {
-          "minimum": 49065,
-          "maximum": 49065
+          "minimum": 47906,
+          "maximum": 47906
         }
       },
       "fontBytes": {
@@ -4123,10 +4123,10 @@
         }
       },
       "ttfbMs": {
-        "median": 53,
+        "median": 53.1,
         "range": {
-          "minimum": 52,
-          "maximum": 54.7
+          "minimum": 51.9,
+          "maximum": 55.5
         }
       },
       "cls": {

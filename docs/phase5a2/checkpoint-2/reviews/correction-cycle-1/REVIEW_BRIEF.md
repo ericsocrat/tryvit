@@ -9,11 +9,11 @@ reviewer's output before submitting.
 - system: **Folded Label Register**;
 - brand/expression owner: **Source Fold**;
 - product/evidence-architecture owner: **Evidence Register**;
-- source: `4d29d5007511a438e14e002b3a0df122007b8de5`;
-- tree: `d1875fccb9b9b0d4f45ff8191bf8cbcee21ce38f`;
+- source: `14620a61c702838565eca2916b98af5cd4a572c1`;
+- tree: `de3a00e15099b5f1ca0b5ee521017f195a93b04c`;
 - manifest SHA-256:
-  `85309352e63b40d5e735d260c68d35668f0582ec0d0e10f8b10f85ece1ca7cf8`;
-- packet: 85 files / 7,197,539 bytes including the manifest;
+  `164244174aa7a276389084ff3887b8b6de88d03c50dd9da784f540124eb8f2a1`;
+- packet: 85 files / 7,188,422 bytes including the manifest;
 - status: review-only, non-production, production migration prohibited.
 
 The previous packet and its scores are historical and superseded. They do not approve
@@ -28,7 +28,8 @@ Inspect original files, not only contact sheets:
 - `font-assay.json`, `performance.json`, `runtime.json`, `journeys.json`, and the
   manifest;
 - the mechanical old/new comparison only to verify the 65 byte-identical claims and
-  identify all 17 changed plus two added files.
+  identify all 20 changed plus two added files and the ten byte-identical terminal
+  stills whose observed metadata was corrected.
 
 Typography must show honest computed `48/30/22/26px` scales, complete English/Polish/
 German/numeric proofs, no clipping/overlap/boundary crossing, meaningful control versus
