@@ -20,7 +20,6 @@
   --gr-mark-rule: var(--gr-paper);
   min-height: 100vh;
   color: var(--gr-ink);
-  background-color: var(--gr-canvas);
   background:
     linear-gradient(90deg, transparent 0 47px, color-mix(in srgb, var(--gr-rule) 13%, transparent) 48px 49px, transparent 50px),
     var(--gr-canvas);
@@ -798,7 +797,6 @@
   overflow: hidden;
   border: 2px solid var(--gr-paper);
   color: var(--gr-paper);
-  background-color: var(--gr-brand-deep);
   background: color-mix(in srgb, var(--gr-brand-deep) 86%, black);
 }
 
