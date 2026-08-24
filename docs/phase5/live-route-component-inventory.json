@@ -4,7 +4,7 @@
   "provenance": {
     "baseSha": "72eb2ab55c89a1913488cbd7447d03982da5e503",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "5ecb4b7ca218c972803e04eec0a94ab99e2d1dcd9367485899bad560a8735749"
+    "sourceFingerprint": "e70bf7d94f0c622b8303cc33933bcad4b490d303611100944905821d2aaef34c"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -3440,9 +3440,11 @@
         "frontend/src/app/dev/phase5a2/_golden/AuthenticationReference.tsx",
         "frontend/src/app/dev/phase5a2/_golden/GoldenAssetBoard.tsx",
         "frontend/src/app/dev/phase5a2/_golden/GoldenFrame.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/HomeReference.tsx",
         "frontend/src/app/dev/phase5a2/_golden/LandingReference.tsx",
-        "frontend/src/app/dev/phase5a2/_golden/SearchReference.tsx",
-        "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx"
+        "frontend/src/app/dev/phase5a2/_golden/ProductReference.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/ScannerReference.client.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/SearchReference.tsx"
       ],
       "transitiveRouteConsumers": [
         {
@@ -3505,6 +3507,7 @@
       "directModuleImports": [
         "frontend/src/app/dev/phase5a2/_golden/GoldenEvidence.tsx",
         "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenIdentity.tsx",
         "frontend/src/app/dev/phase5a2/_golden/HomeControls.client.tsx",
         "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
         "frontend/src/app/dev/phase5a2/_golden/contract.ts",
@@ -3634,6 +3637,7 @@
       "directModuleImports": [
         "frontend/src/app/dev/phase5a2/_golden/GoldenEvidence.tsx",
         "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenIdentity.tsx",
         "frontend/src/app/dev/phase5a2/_golden/ProductActions.client.tsx",
         "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
         "frontend/src/app/dev/phase5a2/_golden/contract.ts",
@@ -3669,6 +3673,7 @@
       "directModuleImports": [
         "frontend/src/app/dev/phase5a2/_golden/GoldenEvidence.tsx",
         "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenIdentity.tsx",
         "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
         "frontend/src/app/dev/phase5a2/_golden/contract.ts",
         "frontend/src/app/dev/phase5a2/_golden/scanner-copy.ts",
@@ -3768,7 +3773,6 @@
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
         "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
-        "frontend/src/app/dev/phase5a2/_golden/GoldenIdentity.tsx",
         "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
         "frontend/src/app/dev/phase5a2/_golden/contract.ts",
         "frontend/src/app/dev/phase5a2/_golden/fixture.ts",
@@ -3898,7 +3902,7 @@
       "routeModuleKind": null,
       "routePath": null,
       "hasUseClientDirective": false,
-      "runtimeBoundary": "server-only",
+      "runtimeBoundary": "client-reachable",
       "directModuleImports": [],
       "directConsumers": [
         "frontend/src/app/dev/phase5a2/_golden/AuthenticationForm.client.tsx",
@@ -21150,7 +21154,7 @@
     ],
     "inspectedModuleCount": 542,
     "violations": [],
-    "sourceFingerprint": "cd0efbbc03b28526435594720b454cfe6dbe512944a7b3930874257da2c920e0"
+    "sourceFingerprint": "6d8597d1b03452104273e78f4a773236aeb330342356501b81e6b6b7bf1c5146"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
