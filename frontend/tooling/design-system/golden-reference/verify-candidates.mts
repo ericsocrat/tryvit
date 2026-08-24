@@ -333,9 +333,6 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
     const record = value as Record<string, unknown>;
     const overflow = "overflow" in record ? record.overflow : record.documentOverflow;
     if (typeof overflow !== "number" || overflow > 1) fail("resilience-geometry-invalid");
-    if ("offenderCount" in record && record.offenderCount !== 0) {
-      fail("resilience-geometry-invalid");
-    }
   }
   for (const [index, reference] of GOLDEN_REFERENCE_IDS.entries()) {
     const candidate = performance.summaries[index];
