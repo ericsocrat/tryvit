@@ -4,7 +4,7 @@
   "provenance": {
     "baseSha": "72eb2ab55c89a1913488cbd7447d03982da5e503",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "e70bf7d94f0c622b8303cc33933bcad4b490d303611100944905821d2aaef34c"
+    "sourceFingerprint": "eef92d8ffb64be965fdbb769f53fe01a786b480007fb7d7f8e70245962c6f1cf"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -3233,6 +3233,7 @@
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
         "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
+        "frontend/src/app/dev/phase5a2/_golden/GoldenIdentity.tsx",
         "frontend/src/app/dev/phase5a2/_golden/authentication-copy.ts",
         "frontend/src/app/dev/phase5a2/_golden/contract.ts",
         "frontend/src/design-system/primitives/Button/Button.tsx",
@@ -3437,6 +3438,7 @@
       "runtimeBoundary": "client-reachable",
       "directModuleImports": [],
       "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/AuthenticationForm.client.tsx",
         "frontend/src/app/dev/phase5a2/_golden/AuthenticationReference.tsx",
         "frontend/src/app/dev/phase5a2/_golden/GoldenAssetBoard.tsx",
         "frontend/src/app/dev/phase5a2/_golden/GoldenFrame.tsx",
@@ -21154,7 +21156,7 @@
     ],
     "inspectedModuleCount": 542,
     "violations": [],
-    "sourceFingerprint": "6d8597d1b03452104273e78f4a773236aeb330342356501b81e6b6b7bf1c5146"
+    "sourceFingerprint": "4e5136246fb2cafbb25f11e27750ee527f11723e9240ebe96ef5dce0386cae5b"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

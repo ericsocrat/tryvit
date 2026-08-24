@@ -43,3 +43,9 @@ was corrected by running the same bounded add/commit from the repository root.
 The first final-review commit invocation repeated the earlier frontend-relative
 pathspec mistake; Git rejected it before staging or committing. The bounded commit was
 then issued from the repository root.
+
+Exact-head Golden CI run `32719711323` stopped in `design-system:check` before local
+Supabase or browser execution because the generated live inventory omitted the final
+Authentication form's direct `GoldenIdentity` edge. CI computed the same 437 production
+modules and zero violations, but correctly rejected two stale graph edges/fingerprints.
+The inventory was regenerated and committed before any replacement run.
