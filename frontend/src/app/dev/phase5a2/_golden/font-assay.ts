@@ -19,7 +19,8 @@ export const GOLDEN_FONT_ASSAY = Object.freeze({
       commit: "6f81ebecdf65e4463b798cc07b16a4f8d5216917",
       version: "4.504",
       licensePath: "font-assay/licenses/MANROPE-OFL.txt",
-      licenseSha256: "e01b637272e0cbdfb240184dd98ea5cc671556d9894dae2668d92ab2c906787c",
+      upstreamLicenseSha256: "e01b637272e0cbdfb240184dd98ea5cc671556d9894dae2668d92ab2c906787c",
+      licenseSha256: "f612090fb72b6dca3e807e66fa0d2b5def163cef86f1a3209b5c897cba5ee4b7",
       reservedFontNames: Object.freeze([]),
       inputs: Object.freeze([
         Object.freeze({
@@ -43,7 +44,8 @@ export const GOLDEN_FONT_ASSAY = Object.freeze({
       releaseAssetBytes: 11_623_196,
       releaseAssetSha256: "af10e80dcd2296748b04cb9917db9f7ba0ae65101165fd2f0c16b9812d9abd28",
       licensePath: "font-assay/licenses/SOURCE-SERIF-4-OFL.md",
-      licenseSha256: "75784a295293a8992f5a8d99210566e0064a012e6dab6731305e3787f15896c7",
+      upstreamLicenseSha256: "75784a295293a8992f5a8d99210566e0064a012e6dab6731305e3787f15896c7",
+      licenseSha256: "c21d7293d87b6d7ab1d0229a2f55b77f33a7613a6a4e66f6693d68d7d8d09464",
       reservedFontNames: Object.freeze(["Source"]),
       input: Object.freeze({
         path: "TTF/SourceSerif4-Regular.ttf.woff2",

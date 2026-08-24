@@ -34,7 +34,9 @@ German proofs, 200%-equivalent reflow, and WCAG text spacing in both light and d
     `4d459ffc3fdb884cd88587cc3e4170b16f4ebbbf2ad9ccf29cbcc0058d02433f`;
   - SemiBold: 47,868 bytes, SHA-256
     `4b751c7594f0619ec9259c9f5564e0245944cdf0f564b1a3bec612eb98ea8ee1`;
-- license: checked-in SIL OFL 1.1, SHA-256
+- license: checked-in SIL OFL 1.1, line-trailing-space-normalized SHA-256
+  `f612090fb72b6dca3e807e66fa0d2b5def163cef86f1a3209b5c897cba5ee4b7`;
+- exact upstream license SHA-256:
   `e01b637272e0cbdfb240184dd98ea5cc671556d9894dae2668d92ab2c906787c`;
 - reserved font names declared after the copyright statement: none.
 
@@ -47,7 +49,9 @@ German proofs, 200%-equivalent reflow, and WCAG text spacing in both light and d
   `af10e80dcd2296748b04cb9917db9f7ba0ae65101165fd2f0c16b9812d9abd28`;
 - selected upstream TTF-flavored Regular WOFF2: 76,260 bytes, SHA-256
   `6b053e98f0838afe81f3e784727be4583a7c13bb42f198dc5202ecffee0aaee0`;
-- license: checked-in SIL OFL 1.1, SHA-256
+- license: checked-in SIL OFL 1.1, line-trailing-space-normalized SHA-256
+  `c21d7293d87b6d7ab1d0229a2f55b77f33a7613a6a4e66f6693d68d7d8d09464`;
+- exact upstream license SHA-256:
   `75784a295293a8992f5a8d99210566e0064a012e6dab6731305e3787f15896c7`;
 - reserved font name: `Source`.
 
