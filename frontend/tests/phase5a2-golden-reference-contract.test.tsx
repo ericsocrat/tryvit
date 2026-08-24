@@ -277,6 +277,7 @@ describe("Phase 5A.2 Golden Reference contract", () => {
     );
     const motion = source("e2e/phase5a2-golden-motion.spec.ts");
     const performance = source("e2e/phase5a2-golden-performance.spec.ts");
+    const capture = source("e2e/phase5a2-golden-capture.spec.ts");
     const resilience = source("e2e/phase5a2-golden-resilience.spec.ts");
     const verifier = source("tooling/design-system/golden-reference/verify-candidates.mts");
     const stagedVerifier = source("tooling/design-system/golden-reference/verify-staged.mts");
@@ -288,6 +289,8 @@ describe("Phase 5A.2 Golden Reference contract", () => {
     expect(motion).toContain('data-golden-reference=\'product\'');
     expect(motion).toContain("element.innerText.replace(/\\s+/gu, \" \")");
     expect(performance).toContain("const SAMPLE_COUNT = 5");
+    expect(capture).toContain("return { x: scrollX, y: scrollY }");
+    expect(capture).toContain('expect(scroll).toEqual({ x: 0, y: 0 })');
     expect(performance).toContain('goldenOutputPath("performance.json")');
     expect(resilience).toContain('forcedColorAdjust).toBe("none")');
     expect(verifier).toContain("journey-terminal-invalid");

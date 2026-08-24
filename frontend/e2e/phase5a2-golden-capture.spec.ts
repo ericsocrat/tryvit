@@ -28,6 +28,14 @@ import {
 import { GOLDEN_FIXTURE_CONTRACT_VERSION } from "@/app/dev/phase5a2/_golden/fixture";
 
 async function screenshot(page: Parameters<typeof openGoldenCapture>[0], filename: string) {
+  const scroll = await page.evaluate(async () => {
+    scrollTo(0, 0);
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    );
+    return { x: scrollX, y: scrollY };
+  });
+  expect(scroll).toEqual({ x: 0, y: 0 });
   await page.screenshot({
     animations: "disabled",
     caret: "hide",
