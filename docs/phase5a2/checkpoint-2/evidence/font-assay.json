@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a2-golden-font-assay",
-  "sourceSha": "7e44b4b4dad5cb940f9b4f3cb7f7579aa4f1cf59",
-  "sourceTreeSha": "174cd4986085bb71946a1ed094b8093d996bd432",
+  "sourceSha": "303b7bc156490ddf207df668d2d70ea5e0661cd3",
+  "sourceTreeSha": "19140d9fecff098c9deccf851e1348aff8241e01",
   "reviewOnly": true,
   "productionAdoption": false,
   "status": "comparison-ready-decision-pending",
@@ -38,6 +38,13 @@
   },
   "tabularDigitWidthRangePx": 0,
   "fallbackMetrics": {
+    "layoutReserve": {
+      "display": "147px",
+      "polish": "67px",
+      "german": "81px",
+      "tabular": "60px",
+      "basis": "Platform-independent specimen boxes reserve the maximum governed fallback line count while content-expanding tracks preserve text-spacing and reflow."
+    },
     "manropeRegular": {
       "fallback": "Arial",
       "sizeAdjust": "97.58%",

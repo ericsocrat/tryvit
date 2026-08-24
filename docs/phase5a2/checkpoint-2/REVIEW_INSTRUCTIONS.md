@@ -1,11 +1,11 @@
 # Checkpoint 2 independent review instructions
 
 Review manifest SHA-256:
-`ef97f4fb04a0a283d90392639d7d90ca13e7e189da2e68aab0cbb336cb24d5d7`.
+`bf05a824e4b4e6d6cd68c8a0b9c525cbc4b1674eebe3cfd9faa220ae306e8364`.
 
 This is the exact-source packet regenerated after integrating current main. All earlier
 packets and scores are historical and superseded. Two new reviewers inspect the
-complete packet from source `7e44b4b4dad5cb940f9b4f3cb7f7579aa4f1cf59`; neither
+complete packet from source `303b7bc156490ddf207df668d2d70ea5e0661cd3`; neither
 may read the other current score before submitting. A third lane performs non-taste
 visual/provenance QA.
 

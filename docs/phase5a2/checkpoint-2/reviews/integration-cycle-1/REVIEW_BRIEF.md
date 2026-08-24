@@ -7,16 +7,17 @@ output before submitting.
 ## Packet binding
 
 - selected system: Folded Label Register;
-- source/tree: `7e44b4b4dad5cb940f9b4f3cb7f7579aa4f1cf59` / `174cd4986085bb71946a1ed094b8093d996bd432`;
-- manifest SHA-256: `ef97f4fb04a0a283d90392639d7d90ca13e7e189da2e68aab0cbb336cb24d5d7`;
-- packet: 91 files / 7,461,860 bytes including the manifest;
-- comparison: `reviews/integration-cycle-1/final-evidence-comparison.md`;
+- source/tree: `303b7bc156490ddf207df668d2d70ea5e0661cd3` / `19140d9fecff098c9deccf851e1348aff8241e01`;
+- manifest SHA-256: `bf05a824e4b4e6d6cd68c8a0b9c525cbc4b1674eebe3cfd9faa220ae306e8364`;
+- packet: 91 files / 7,397,136 bytes including the manifest;
+- comparisons: `reviews/integration-cycle-1/final-evidence-comparison.md` and
+  `reviews/integration-cycle-1/linux-renderer-comparison.md`;
 - media: `evidence/` contains 68 PNGs and 12 complete WebMs;
 - status: review-only, non-production, production migration prohibited.
 
-Historical scores, including the initial integrated HOLD/conditional review under
-`initial/`, do not approve this final corrected packet and must not be read before the
-bounded final recheck is submitted.
+Historical scores, including `initial/` and the pre-Linux final recheck under `final/`,
+do not approve this renderer-corrected packet and must not be read before the bounded
+Linux-renderer recheck is submitted.
 
 ## Required inspection
 

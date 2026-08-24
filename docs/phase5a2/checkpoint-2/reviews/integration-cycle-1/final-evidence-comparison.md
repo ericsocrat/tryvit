@@ -6,24 +6,24 @@ This mechanically reproduced comparison is not a review score.
 
 - prior local corrected packet: source/tree `fcc5d8cb9eae609863364a6a34541ce10eefcbc6` / `00c47531aa41a7de94dff9f18c1018d551405943`, manifest `ac4102d46fc1bd59099bbaa6e08bff70bab11a3d4c4d39dd0ca874c199773fca`;
 - initial integrated review packet: source/tree `c5edd0f6e43ff86646617a026ffbd0db3e579ad1` / `3c56ce832a0d2c9ddea6d16006150400656f2b76`, manifest `4ff5884a147bacb290a260fc64edc5f05821503641c8ff60aabacb841248f085`;
-- final corrected packet: source/tree `7e44b4b4dad5cb940f9b4f3cb7f7579aa4f1cf59` / `174cd4986085bb71946a1ed094b8093d996bd432`, manifest `ef97f4fb04a0a283d90392639d7d90ca13e7e189da2e68aab0cbb336cb24d5d7`.
+- final renderer-corrected packet: source/tree `303b7bc156490ddf207df668d2d70ea5e0661cd3` / `19140d9fecff098c9deccf851e1348aff8241e01`, manifest `bf05a824e4b4e6d6cd68c8a0b9c525cbc4b1674eebe3cfd9faa220ae306e8364`.
 
 All three packets contain 90 listed files plus the manifest. The final packet contains
-7,215,947 listed bytes and 7,461,860 total bytes; its manifest is 245,913 bytes.
+7,150,882 listed bytes and 7,397,136 total bytes; its manifest is 246,254 bytes.
 
 ## Byte result
 
 Against either the prior corrected packet or the initial integrated review packet:
 
-- unchanged byte-for-byte: **13**;
-- changed: **77**;
+- unchanged byte-for-byte: **11**;
+- changed: **79**;
 - added: **0**;
 - removed: **0**.
 
-The unchanged set is all eight identity/typography/glyph boards, all three WOFF2 font
+The unchanged set is the six non-typography identity/glyph boards, all three WOFF2 font
 files, and both OFL license files. Canonical ordinal-path proof uses UTF-8
-`path<TAB>bytes<TAB>sha256<LF>` records: 1,423 bytes, SHA-256
-`5fa881c564aad44d93b282ca10bede8ef098fe74350bc61e59fb4e4d11b80fda`.
+`path<TAB>bytes<TAB>sha256<LF>` records: 1,202 bytes, SHA-256
+`beec7caeb8a70bb98cbe36005e2fa1342e8d30bb2f6f16cfc7b7f7b78c962c06`.
 
 The complete old and new manifests are the per-file byte/hash proof. The old manifests
 are independently available at commits `c5edd0f6e43ff86646617a026ffbd0db3e579ad1`
@@ -55,7 +55,8 @@ and `34ebb578369869136f445d5198d4bfc6abe9584d`; the final manifest is retained i
   unchanged.
 - `performance.json`: 30 new exact-source samples after the final source correction.
 
-These groups account for all 77 changed paths exactly.
+The two typography boards are additionally changed for cross-renderer layout reserves;
+these groups account for all 79 changed paths exactly.
 
 ## Runtime, font, and performance result
 

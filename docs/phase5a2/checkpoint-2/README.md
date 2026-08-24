@@ -1,10 +1,10 @@
 # Phase 5A.2 Checkpoint 2 — Golden Reference review handoff
 
-> **Status:** Current main integrated; final corrected packet and independent review passed; exact-head CI and Eric approval pending
+> **Status:** Current main integrated; Linux-renderer packet verified locally; bounded renderer recheck and exact-head Golden CI pending
 > **Production migration:** Prohibited
-> **Capture source:** `7e44b4b4dad5cb940f9b4f3cb7f7579aa4f1cf59`
-> **Capture tree:** `174cd4986085bb71946a1ed094b8093d996bd432`
-> **Manifest SHA-256:** `ef97f4fb04a0a283d90392639d7d90ca13e7e189da2e68aab0cbb336cb24d5d7`
+> **Capture source:** `303b7bc156490ddf207df668d2d70ea5e0661cd3`
+> **Capture tree:** `19140d9fecff098c9deccf851e1348aff8241e01`
+> **Manifest SHA-256:** `bf05a824e4b4e6d6cd68c8a0b9c525cbc4b1674eebe3cfd9faa220ae306e8364`
 
 This packet implements exactly six complete non-production Golden References:
 
@@ -40,7 +40,7 @@ Query input is fail-closed and limited to `locale`, `theme`, `motion`, `state`, 
 
 ## Evidence packet
 
-The committed packet contains 91 files and 7,461,860 bytes:
+The committed packet contains 91 files and 7,397,136 bytes:
 
 - 36 core stills: six references × 390/768/1440 × light/dark;
 - 12 localized stills: Polish mobile and long-German desktop for each reference;
@@ -64,9 +64,10 @@ review required localization, semantic dwell, evidence hierarchy, and identity
 containment corrections; those corrections and zero-scroll capture binding are now
 included in a new complete exact-source packet. The same three independent lanes
 completed a bounded final recheck without seeing one another's result: PASS 94/100,
-PASS 93.5/100, and non-taste PASS / PASS with no defect. The implementation agent does
-not qualify; Eric's explicit approval remains required. The final scorecards and
-comparisons are under `reviews/integration-cycle-1/`.
+PASS 93.5/100, and non-taste PASS / PASS with no defect. Exact Linux CI then exposed
+fallback/canvas differences, so those scores are superseded for the renderer-corrected
+packet. A bounded recheck of the 18-file delta is pending; the implementation agent
+does not qualify and Eric's explicit approval remains required.
 
 Native Polish/German review, trademark/legal clearance, real assistive-technology and
 device testing, branded Safari, real camera/password-manager behavior, and production

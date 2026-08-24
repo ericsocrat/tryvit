@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a2-golden-resilience-evidence",
-  "sourceSha": "7e44b4b4dad5cb940f9b4f3cb7f7579aa4f1cf59",
-  "sourceTreeSha": "174cd4986085bb71946a1ed094b8093d996bd432",
+  "sourceSha": "303b7bc156490ddf207df668d2d70ea5e0661cd3",
+  "sourceTreeSha": "19140d9fecff098c9deccf851e1348aff8241e01",
   "reviewOnly": true,
   "methodology": {
     "textSpacing": "Polish 390x844 with line-height 1.5, letter-spacing 0.12em, word-spacing 0.16em, and paragraph margin 2em. edgeRects enumerates every child rectangle outside the viewport and proves each is contained by an intentional horizontal scroller while document/root overflow remains bounded.",
