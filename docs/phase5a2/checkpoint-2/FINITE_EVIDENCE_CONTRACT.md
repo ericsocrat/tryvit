@@ -22,6 +22,8 @@ contract.
 | Asset-board captures | 8 | One light capture per concept plus intentional dark typography proof |
 | Performance report | 1 | Five valid cold local-production samples for every reference, with every sample retained |
 | Font-assay report | 1 | Exact official sources, WOFF2 hashes/bytes, coverage, fallback metrics, tabular figures, and CLS |
+| Font-assay assets | 5 | Three exact WOFF2 subsets and both audited SIL OFL texts |
+| Resilience report | 1 | Six-reference Polish text spacing, six-reference 200%-equivalent reflow, and four typography geometries |
 
 Behavioral coverage also runs at 320, 390, 768, 1024, 1280, and 1440; 200% zoom;
 WCAG text spacing; coarse/fine pointer; hover/no-hover; selected RTL-sensitive

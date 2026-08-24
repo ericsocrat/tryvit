@@ -9,11 +9,11 @@ reviewer's output before submitting.
 - system: **Folded Label Register**;
 - brand/expression owner: **Source Fold**;
 - product/evidence-architecture owner: **Evidence Register**;
-- source: `14620a61c702838565eca2916b98af5cd4a572c1`;
-- tree: `de3a00e15099b5f1ca0b5ee521017f195a93b04c`;
+- source: `9fe14f14e00185cc1f1319d132e6853fa90e1723`;
+- tree: `5d8911cb326b0356e3a89a1a304dcea8c86b79bb`;
 - manifest SHA-256:
-  `164244174aa7a276389084ff3887b8b6de88d03c50dd9da784f540124eb8f2a1`;
-- packet: 85 files / 7,188,422 bytes including the manifest;
+  `10662acdc566f445b6c30615c6c7ed87954c1ea689d48d3a5bab6fbe61d0cfd5`;
+- packet: 91 files / 7,280,743 bytes including the manifest;
 - status: review-only, non-production, production migration prohibited.
 
 The previous packet and its scores are historical and superseded. They do not approve
@@ -25,11 +25,11 @@ Inspect original files, not only contact sheets:
 
 - every retained PNG and all 12 retained WebMs;
 - both original-resolution 1440×900 typography boards;
-- `font-assay.json`, `performance.json`, `runtime.json`, `journeys.json`, and the
-  manifest;
-- the mechanical old/new comparison only to verify the 65 byte-identical claims and
-  identify all 20 changed plus two added files and the ten byte-identical terminal
-  stills whose observed metadata was corrected.
+- `font-assay.json`, its three WOFF2/two OFL files, `resilience.json`,
+  `performance.json`, `runtime.json`, `journeys.json`, and the manifest;
+- the mechanical old/new comparison plus authorized `prior-reviewed-manifest.json` to
+  recompute all 61 byte-identical claims, 21 changed files, eight added files, and the
+  ten byte-identical terminal stills whose observed metadata was corrected.
 
 Typography must show honest computed `48/30/22/26px` scales, complete English/Polish/
 German/numeric proofs, no clipping/overlap/boundary crossing, meaningful control versus

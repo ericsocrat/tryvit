@@ -1,11 +1,11 @@
 # Checkpoint 2 independent review instructions
 
 Review manifest SHA-256:
-`164244174aa7a276389084ff3887b8b6de88d03c50dd9da784f540124eb8f2a1`.
+`10662acdc566f445b6c30615c6c7ed87954c1ea689d48d3a5bab6fbe61d0cfd5`.
 
 This is the bounded typography-correction replacement. All earlier packets and scores
 are historical and superseded. Two new reviewers inspect the complete packet from
-source `14620a61c702838565eca2916b98af5cd4a572c1`; neither may read the other current
+source `9fe14f14e00185cc1f1319d132e6853fa90e1723`; neither may read the other current
 score before submitting. A third lane performs non-taste visual/provenance QA.
 
 Each reviewer must:

@@ -2,9 +2,9 @@
 
 > **Status:** Bounded typography replacement captured; fresh review, exact-head CI, and Eric approval pending
 > **Production migration:** Prohibited
-> **Capture source:** `14620a61c702838565eca2916b98af5cd4a572c1`
-> **Capture tree:** `de3a00e15099b5f1ca0b5ee521017f195a93b04c`
-> **Manifest SHA-256:** `164244174aa7a276389084ff3887b8b6de88d03c50dd9da784f540124eb8f2a1`
+> **Capture source:** `9fe14f14e00185cc1f1319d132e6853fa90e1723`
+> **Capture tree:** `5d8911cb326b0356e3a89a1a304dcea8c86b79bb`
+> **Manifest SHA-256:** `10662acdc566f445b6c30615c6c7ed87954c1ea689d48d3a5bab6fbe61d0cfd5`
 
 This packet implements exactly six complete non-production Golden References:
 
@@ -40,7 +40,7 @@ Query input is fail-closed and limited to `locale`, `theme`, `motion`, `state`, 
 
 ## Evidence packet
 
-The committed packet contains 85 files and 7,188,422 bytes:
+The committed packet contains 91 files and 7,280,743 bytes:
 
 - 36 core stills: six references × 390/768/1440 × light/dark;
 - 12 localized stills: Polish mobile and long-German desktop for each reference;
@@ -48,9 +48,10 @@ The committed packet contains 85 files and 7,188,422 bytes:
 - six complete state/recovery contact sheets built from 59 raw state captures;
 - 12 complete VP8 recordings: normal and reduced motion per reference;
 - seven conceptual identity/typography/glyph boards plus a dark typography composition;
-- exact runtime, journey, five-sample performance, font-assay, and manifest JSON.
+- exact runtime, journey, five-sample performance, font-assay, resilience, and
+  manifest JSON plus the three assayed WOFF2 and two OFL files.
 
-The raw 59-state matrix, 12 terminal motion stills, and all 149 candidate files remain
+The raw 59-state matrix, 12 terminal motion stills, and all 150 candidate files remain
 artifact material rather than committed binary files. The repository verifier checks
 every retained byte, hash, dimension, WebM container, path, provenance value, count,
 and the 15 MiB ceiling.
