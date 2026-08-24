@@ -8,6 +8,111 @@ import {
   GOLDEN_STATE_CAPTURES,
   defaultGoldenState,
 } from "@/../tooling/design-system/golden-reference/capture-contract";
+import { openGoldenBoard } from "./helpers/phase5a2-golden-reference";
+
+type TypographyGeometry = {
+  readonly boardOverflow: number;
+  readonly documentOverflow: number;
+  readonly viewportOverflow: number;
+  readonly specimens: readonly {
+    readonly id: string;
+    readonly label: string;
+    readonly labeledSize: number | null;
+    readonly computedSize: number;
+    readonly contained: boolean;
+    readonly clipped: boolean;
+    readonly labelOverlap: boolean;
+  }[];
+  readonly siblingOverlaps: readonly string[];
+};
+
+async function readTypographyGeometry(page: Page): Promise<TypographyGeometry> {
+  return page.locator("[data-golden-asset-board='typography']").evaluate((board) => {
+    const tolerance = 1;
+    const articles = [...board.querySelectorAll<HTMLElement>("[data-golden-type-specimen]")];
+    const rectangles = articles.map((article) => ({
+      article,
+      rect: article.getBoundingClientRect(),
+    }));
+    const siblingOverlaps: string[] = [];
+    for (let leftIndex = 0; leftIndex < rectangles.length; leftIndex += 1) {
+      for (let rightIndex = leftIndex + 1; rightIndex < rectangles.length; rightIndex += 1) {
+        const left = rectangles[leftIndex];
+        const right = rectangles[rightIndex];
+        if (!left || !right) continue;
+        const overlapWidth = Math.min(left.rect.right, right.rect.right)
+          - Math.max(left.rect.left, right.rect.left);
+        const overlapHeight = Math.min(left.rect.bottom, right.rect.bottom)
+          - Math.max(left.rect.top, right.rect.top);
+        if (overlapWidth > tolerance && overlapHeight > tolerance) {
+          siblingOverlaps.push(
+            `${left.article.dataset.goldenTypeSpecimen}:${right.article.dataset.goldenTypeSpecimen}`,
+          );
+        }
+      }
+    }
+    return {
+      boardOverflow: Math.max(
+        board.scrollWidth - board.clientWidth,
+        board.scrollHeight - board.clientHeight,
+      ),
+      documentOverflow: document.documentElement.scrollWidth
+        - document.documentElement.clientWidth,
+      viewportOverflow: board.getBoundingClientRect().bottom - innerHeight,
+      specimens: rectangles.map(({ article, rect }) => {
+        const label = article.querySelector<HTMLElement>("[data-golden-type-label]");
+        const specimen = article.querySelector<HTMLElement>("[data-golden-type-copy]");
+        if (!label || !specimen) {
+          return {
+            id: article.dataset.goldenTypeSpecimen ?? "missing",
+            label: "",
+            labeledSize: null,
+            computedSize: 0,
+            contained: false,
+            clipped: true,
+            labelOverlap: true,
+          };
+        }
+        const labelText = label.textContent?.trim() ?? "";
+        const labeledSize = Number(labelText.match(/\/\s*(\d+(?:\.\d+)?)\s*$/u)?.[1] ?? NaN);
+        const labelRect = label.getBoundingClientRect();
+        const specimenRect = specimen.getBoundingClientRect();
+        const range = document.createRange();
+        range.selectNodeContents(specimen);
+        const textRect = range.getBoundingClientRect();
+        const specimenStyle = getComputedStyle(specimen);
+        return {
+          id: article.dataset.goldenTypeSpecimen ?? "missing",
+          label: labelText,
+          labeledSize: Number.isFinite(labeledSize) ? labeledSize : null,
+          computedSize: Number.parseFloat(getComputedStyle(specimen).fontSize),
+          contained:
+            labelRect.left >= rect.left - tolerance
+            && labelRect.right <= rect.right + tolerance
+            && labelRect.top >= rect.top - tolerance
+            && specimenRect.left >= rect.left - tolerance
+            && specimenRect.right <= rect.right + tolerance
+            && specimenRect.bottom <= rect.bottom + tolerance
+            && textRect.left >= rect.left - tolerance
+            && textRect.right <= rect.right + tolerance
+            && textRect.top >= rect.top - tolerance
+            && textRect.bottom <= rect.bottom + tolerance,
+          clipped:
+            (["hidden", "clip"].includes(specimenStyle.overflowX)
+              && specimen.scrollWidth > specimen.clientWidth + tolerance)
+            || (["hidden", "clip"].includes(specimenStyle.overflowY)
+              && specimen.scrollHeight > specimen.clientHeight + tolerance),
+          labelOverlap:
+            Math.min(labelRect.right, specimenRect.right)
+              - Math.max(labelRect.left, specimenRect.left) > tolerance
+            && Math.min(labelRect.bottom, specimenRect.bottom)
+              - Math.max(labelRect.top, specimenRect.top) > tolerance,
+        };
+      }),
+      siblingOverlaps,
+    };
+  });
+}
 
 function routeFor(
   reference: (typeof GOLDEN_REFERENCE_IDS)[number],
@@ -152,4 +257,65 @@ test("RTL-sensitive Product Tabs and portal ownership inherit direction", async 
   const dialog = page.getByRole("dialog", { name: "Source and method provenance" });
   await expect(dialog).toBeVisible();
   expect(await dialog.evaluate((element) => element.closest("[data-ds-portal-root]")?.getAttribute("dir"))).toBe("rtl");
+});
+
+for (const theme of ["light", "dark"] as const) {
+  test(`typography board has truthful, contained, non-overlapping scale · ${theme}`, async ({ page }) => {
+    await openGoldenBoard(page, "typography", theme);
+    const geometry = await readTypographyGeometry(page);
+    expect(geometry.specimens).toHaveLength(8);
+    expect(new Set(geometry.specimens.map(({ computedSize }) => computedSize)).size).toBe(4);
+    for (const specimen of geometry.specimens) {
+      expect(specimen.labeledSize, specimen.label).not.toBeNull();
+      expect(specimen.computedSize, specimen.label).toBe(specimen.labeledSize);
+      expect(specimen.contained, specimen.id).toBe(true);
+      expect(specimen.clipped, specimen.id).toBe(false);
+      expect(specimen.labelOverlap, specimen.id).toBe(false);
+    }
+    expect(geometry.siblingOverlaps).toEqual([]);
+    expect(geometry.boardOverflow).toBeLessThanOrEqual(1);
+    expect(geometry.documentOverflow).toBeLessThanOrEqual(1);
+    expect(geometry.viewportOverflow).toBeLessThanOrEqual(1);
+    await expect(page.locator(
+      '[data-golden-type-copy][aria-label="Wiarygodność danych nie ukrywa brakujących informacji."]',
+    )).toHaveCount(2);
+    await expect(page.locator(
+      '[data-golden-type-copy][aria-label="Verpackungsangaben, abgeleitete Einordnung und Datenverlässlichkeit bleiben unterscheidbar."]',
+    )).toHaveCount(2);
+  });
+}
+
+test("typography board survives 200-percent equivalent reflow", async ({ page }) => {
+  await openGoldenBoard(page, "typography");
+  await page.setViewportSize({ width: 720, height: 450 });
+  const geometry = await readTypographyGeometry(page);
+  expect(geometry.documentOverflow).toBeLessThanOrEqual(1);
+  expect(geometry.siblingOverlaps).toEqual([]);
+  for (const specimen of geometry.specimens) {
+    expect(specimen.contained, specimen.id).toBe(true);
+    expect(specimen.clipped, specimen.id).toBe(false);
+    expect(specimen.labelOverlap, specimen.id).toBe(false);
+  }
+});
+
+test("typography board preserves every proof under WCAG text spacing", async ({ page }) => {
+  await openGoldenBoard(page, "typography");
+  await page.addStyleTag({
+    content: `
+      [data-golden-asset-board='typography'],
+      [data-golden-asset-board='typography'] * {
+        line-height: 1.5 !important;
+        letter-spacing: 0.12em !important;
+        word-spacing: 0.16em !important;
+      }
+    `,
+  });
+  const geometry = await readTypographyGeometry(page);
+  expect(geometry.documentOverflow).toBeLessThanOrEqual(1);
+  expect(geometry.siblingOverlaps).toEqual([]);
+  for (const specimen of geometry.specimens) {
+    expect(specimen.contained, specimen.id).toBe(true);
+    expect(specimen.clipped, specimen.id).toBe(false);
+    expect(specimen.labelOverlap, specimen.id).toBe(false);
+  }
 });

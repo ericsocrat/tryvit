@@ -4,6 +4,10 @@ import path from "node:path";
 
 import sharp from "sharp";
 
+// Node executes this tooling directly, so the TypeScript path alias is unavailable.
+// eslint-disable-next-line no-restricted-imports
+import { GOLDEN_FONT_ASSAY } from "../../../src/app/dev/phase5a2/_golden/font-assay.ts";
+
 import {
   GOLDEN_COMMITTED_BINARY_LIMIT_BYTES,
   goldenEvidenceRoot,
@@ -118,8 +122,13 @@ for (const file of retained) {
 if (
   retainedBytes !== manifest.retainedBytes ||
   retainedBytes > GOLDEN_COMMITTED_BINARY_LIMIT_BYTES ||
-  retained.length !== 82 ||
-  manifest.fontBytes !== 0
+  retained.length !== 84 ||
+  manifest.fontBytes !== GOLDEN_FONT_ASSAY.transferBytes ||
+  manifest.typographyDisposition !== GOLDEN_FONT_ASSAY.status ||
+  !manifest.fontAssay ||
+  typeof manifest.fontAssay !== "object" ||
+  Array.isArray(manifest.fontAssay) ||
+  (manifest.fontAssay as Record<string, unknown>).transferredBytes !== GOLDEN_FONT_ASSAY.transferBytes
 ) fail("staged-packet-contract-invalid");
 
 const sensitivePatterns = [

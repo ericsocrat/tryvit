@@ -273,6 +273,63 @@
   }
 }
 
+@font-face {
+  font-family: "Golden Manrope Assay";
+  src: url("./font-assay/manrope-regular.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Golden Manrope Assay";
+  src: url("./font-assay/manrope-semibold.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "Golden Manrope Fallback";
+  src: local("Arial"), local("Arial Regular");
+  font-style: normal;
+  font-weight: 400;
+  size-adjust: 97.58%;
+  ascent-override: 109.24%;
+  descent-override: 30.74%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Golden Manrope Fallback";
+  src: local("Arial Bold"), local("Arial");
+  font-style: normal;
+  font-weight: 600;
+  size-adjust: 98.84%;
+  ascent-override: 107.85%;
+  descent-override: 30.35%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Golden Assay Serif";
+  src: url("./font-assay/tryvit-assay-serif-regular.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Golden Assay Serif Fallback";
+  src: local("Georgia"), local("Times New Roman");
+  font-style: normal;
+  font-weight: 400;
+  size-adjust: 102.12%;
+  ascent-override: 101.45%;
+  descent-override: 32.80%;
+  line-gap-override: 0%;
+}
+
 .assetBoard {
   --gr-canvas: #f3ebdc;
   --gr-paper: #fffaf0;
@@ -564,43 +621,116 @@
 }
 
 .typeBoard {
-  grid-template-columns: 0.7fr 1fr;
-  grid-template-rows: repeat(4, 136px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.typeBoard > header {
-  grid-row: span 4;
-  justify-content: flex-start;
+.typeColumn {
+  min-width: 0;
   min-height: 544px;
-  padding: 2rem;
+  display: grid;
+  grid-template-rows:
+    minmax(72px, auto)
+    minmax(150px, auto)
+    minmax(110px, auto)
+    minmax(105px, auto)
+    minmax(100px, auto);
+  border-inline-end: 1px solid var(--gr-rule);
+  border-bottom: 1px solid var(--gr-rule);
 }
 
-.typeBoard > article {
-  min-height: 136px;
-  padding: 1rem 2rem;
+.typeColumn > header,
+.typeColumn > article {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 0.6rem 1rem;
+  background: var(--gr-paper);
 }
 
-.typeBoard h2 {
+.typeColumn > article {
+  justify-content: flex-start;
+}
+
+.typeColumn > header,
+.typeColumn > article:not(:last-child) {
+  border-bottom: 1px solid var(--gr-rule);
+}
+
+.typeCandidate {
+  border-top: 3px solid var(--gr-rust);
+}
+
+.typeCandidate > header {
+  background: var(--gr-brand-soft);
+}
+
+.typeColumn h2 {
   margin: 0;
-  font-size: 2rem;
+  font-size: 1.15rem;
+  line-height: 1.05;
 }
 
-.typeBoard article span,
-.typeBoard article small,
+.typeColumn header p,
+.typeColumn header small {
+  margin: 0;
+  font-size: 0.66rem;
+  line-height: 1.15;
+}
+
+.typeColumn article span,
+.typeColumn article small,
 .compactBoard small,
 .maskableBoard small {
   color: var(--gr-secondary);
   font-size: 0.75rem;
+  line-height: 1.2;
 }
 
-.typeBoard article strong {
-  font-size: clamp(1.2rem, 2.35vw, 2.35rem);
-  line-height: 1.15;
+.typeColumn article strong {
+  width: 100%;
+  display: block;
+  overflow-wrap: normal;
+  text-wrap: pretty;
+}
+
+.typeDisplay strong {
+  font-size: 48px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+}
+
+.typePolish strong {
+  font-size: 30px;
+  line-height: 1.12;
+}
+
+.typeGerman strong {
+  font-size: 22px;
+  line-height: 1.22;
 }
 
 .typeNumbers strong {
+  font-size: 26px;
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-variant-numeric: tabular-nums;
+  font-weight: 400;
+  letter-spacing: 0.045em;
+  line-height: 1.15;
+}
+
+.typeCandidate .typeDisplay strong,
+.typeCandidate .typeNumbers strong {
+  font-family: "Golden Manrope Assay", "Golden Manrope Fallback", Arial, sans-serif;
+}
+
+.typeCandidate .typePolish strong,
+.typeCandidate .typeGerman strong {
+  font-family: "Golden Assay Serif", "Golden Assay Serif Fallback", Georgia, serif;
+  font-weight: 400;
 }
 
 .glyphBoard {
@@ -638,10 +768,13 @@
     grid-template-columns: 1fr;
   }
 
-  .identityHero,
-  .typeBoard > header {
+  .identityHero {
     grid-column: auto;
     grid-row: auto;
+  }
+
+  .typeColumn {
+    min-height: 0;
   }
 
   .compactBoard,

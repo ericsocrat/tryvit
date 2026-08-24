@@ -96,6 +96,8 @@ export const GOLDEN_ASSET_BOARDS = [
   "domain-glyphs",
 ] as const;
 
+export const GOLDEN_DARK_ASSET_BOARDS = ["typography"] as const;
+
 export const GOLDEN_REFERENCE_STATE_CONTRACT = Object.freeze({
   landing: ["ready", "data-paused", "demo-error", "offline"],
   authentication: [
@@ -249,6 +251,7 @@ export const GOLDEN_STATE_CONTACT_SHEET_COUNT = 6;
 export const GOLDEN_STATE_CAPTURE_COUNT = 59;
 export const GOLDEN_MOTION_RECORDING_COUNT = 12;
 export const GOLDEN_ASSET_BOARD_COUNT = 7;
+export const GOLDEN_ASSET_BOARD_EVIDENCE_COUNT = 8;
 export const GOLDEN_COMMITTED_BINARY_LIMIT_BYTES = 15 * 1024 * 1024;
 export const GOLDEN_FONT_TRANSFER_LIMIT_BYTES = 100 * 1024;
 export const GOLDEN_MAX_PNG_BYTES = 900 * 1024;
@@ -358,6 +361,10 @@ export function stateStillRelativePath(capture: (typeof GOLDEN_STATE_CAPTURES)[n
 
 export function assetBoardRelativePath(board: (typeof GOLDEN_ASSET_BOARDS)[number]): string {
   return path.posix.join("boards", `${board}--1440x900--light.png`);
+}
+
+export function darkAssetBoardRelativePath(board: (typeof GOLDEN_DARK_ASSET_BOARDS)[number]): string {
+  return path.posix.join("boards", `${board}--1440x900--dark.png`);
 }
 
 export function motionRecordingRelativePath(

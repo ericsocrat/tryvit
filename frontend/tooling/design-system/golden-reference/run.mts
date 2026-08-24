@@ -82,6 +82,7 @@ const result = withNextEnvSourceRestoration(
       "--project=phase5a2-golden-capture",
       "--project=phase5a2-golden-motion",
       "--project=phase5a2-golden-performance",
+      "--project=phase5a2-golden-typography",
       "--workers=1",
       "--retries=0",
       "--reporter=list",

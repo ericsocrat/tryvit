@@ -5,9 +5,14 @@ import { fileURLToPath } from "node:url";
 
 import sharp from "sharp";
 
+// Node executes this tooling directly, so the TypeScript path alias is unavailable.
+// eslint-disable-next-line no-restricted-imports
+import { GOLDEN_FONT_ASSAY } from "../../../src/app/dev/phase5a2/_golden/font-assay.ts";
+
 import {
   GOLDEN_ASSET_BOARDS,
   GOLDEN_CORE_STILLS,
+  GOLDEN_DARK_ASSET_BOARDS,
   GOLDEN_FORCED_COLORS_STILLS,
   GOLDEN_FONT_TRANSFER_LIMIT_BYTES,
   GOLDEN_GERMAN_DESKTOP_STILLS,
@@ -22,6 +27,7 @@ import {
   GOLDEN_VIDEO_MIN_DURATION_MS,
   assetBoardRelativePath,
   coreStillRelativePath,
+  darkAssetBoardRelativePath,
   forcedColorsStillRelativePath,
   goldenCandidateRoot,
   localizedStillRelativePath,
@@ -41,7 +47,7 @@ import { verifyPlaywrightWebm } from "../direction-selection/webm-evidence.ts";
 
 export interface VerifiedGoldenFile {
   readonly path: string;
-  readonly kind: "still" | "state" | "board" | "video" | "terminal" | "runtime" | "journeys" | "performance";
+  readonly kind: "still" | "state" | "board" | "video" | "terminal" | "runtime" | "journeys" | "performance" | "font-assay";
   readonly bytes: number;
   readonly sha256: string;
   readonly width?: number;
@@ -58,6 +64,7 @@ export interface VerifiedGoldenCandidates {
   readonly runtime: Readonly<Record<string, unknown>>;
   readonly journeys: Readonly<Record<string, unknown>>;
   readonly performance: Readonly<Record<string, unknown>>;
+  readonly fontAssay: Readonly<Record<string, unknown>>;
   readonly files: readonly VerifiedGoldenFile[];
   readonly contents: ReadonlyMap<string, Buffer>;
 }
@@ -118,6 +125,7 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
     ...GOLDEN_FORCED_COLORS_STILLS.map((capture) => ({ path: forcedColorsStillRelativePath(capture), kind: "still" as const, ...capture })),
     ...GOLDEN_STATE_CAPTURES.map((capture) => ({ path: stateStillRelativePath(capture), kind: "state" as const, ...capture })),
     ...GOLDEN_ASSET_BOARDS.map((board) => ({ path: assetBoardRelativePath(board), kind: "board" as const, width: 1440, height: 900, reference: board, state: "board", locale: "en", theme: "light", motion: "reduced" })),
+    ...GOLDEN_DARK_ASSET_BOARDS.map((board) => ({ path: darkAssetBoardRelativePath(board), kind: "board" as const, width: 1440, height: 900, reference: board, state: "board", locale: "en", theme: "dark", motion: "reduced" })),
     ...GOLDEN_MOTION_RECORDINGS.map((capture) => ({ path: motionTerminalStillRelativePath(capture), kind: "terminal" as const, ...capture })),
   ];
   const videos = GOLDEN_MOTION_RECORDINGS.map((capture) => ({
@@ -128,6 +136,7 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
   const expected = [
     ...pngs.map(({ path: filename }) => filename),
     ...videos.map(({ path: filename }) => filename),
+    "font-assay.json",
     "journeys.json",
     "performance.json",
     "runtime.json",
@@ -170,9 +179,11 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
   const runtimeContents = readOwnedRegularFile(root, "runtime.json", "golden-runtime", 64 * 1024).contents;
   const journeyContents = readOwnedRegularFile(root, "journeys.json", "golden-journeys", 256 * 1024).contents;
   const performanceContents = readOwnedRegularFile(root, "performance.json", "golden-performance", 2 * 1024 * 1024).contents;
+  const fontAssayContents = readOwnedRegularFile(root, "font-assay.json", "golden-font-assay", 512 * 1024).contents;
   const runtime = parseJson(runtimeContents, "runtime-format-invalid");
   const journeys = parseJson(journeyContents, "journeys-format-invalid");
   const performance = parseJson(performanceContents, "performance-format-invalid");
+  const fontAssay = parseJson(fontAssayContents, "font-assay-format-invalid");
   if (
     runtime.schemaVersion !== 1 ||
     runtime.kind !== "phase5a2-golden-reference-runtime" ||
@@ -223,6 +234,23 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
     !Array.isArray(performance.failures) ||
     performance.failures.length !== 0
   ) fail("performance-contract-invalid");
+  if (
+    fontAssay.schemaVersion !== 1 ||
+    fontAssay.kind !== "phase5a2-golden-font-assay" ||
+    fontAssay.sourceSha !== process.env.PHASE5A2_GOLDEN_SOURCE_SHA ||
+    fontAssay.sourceTreeSha !== process.env.PHASE5A2_GOLDEN_SOURCE_TREE_SHA ||
+    fontAssay.reviewOnly !== true ||
+    fontAssay.productionAdoption !== false ||
+    fontAssay.status !== GOLDEN_FONT_ASSAY.status ||
+    fontAssay.transferLimitBytes !== GOLDEN_FONT_ASSAY.transferLimitBytes ||
+    fontAssay.transferredBytes !== GOLDEN_FONT_ASSAY.transferBytes ||
+    typeof fontAssay.fallbackCls !== "number" ||
+    fontAssay.fallbackCls > 0.01 ||
+    typeof fontAssay.tabularDigitWidthRangePx !== "number" ||
+    fontAssay.tabularDigitWidthRangePx > 0.05 ||
+    !Array.isArray(fontAssay.files) ||
+    fontAssay.files.length !== GOLDEN_FONT_ASSAY.files.length
+  ) fail("font-assay-contract-invalid");
   for (const [index, reference] of GOLDEN_REFERENCE_IDS.entries()) {
     const candidate = performance.summaries[index];
     if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
@@ -243,10 +271,12 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
   contents.set("runtime.json", runtimeContents);
   contents.set("journeys.json", journeyContents);
   contents.set("performance.json", performanceContents);
+  contents.set("font-assay.json", fontAssayContents);
   files.push({ path: "runtime.json", kind: "runtime", bytes: runtimeContents.length, sha256: sha256(runtimeContents) });
   files.push({ path: "journeys.json", kind: "journeys", bytes: journeyContents.length, sha256: sha256(journeyContents) });
   files.push({ path: "performance.json", kind: "performance", bytes: performanceContents.length, sha256: sha256(performanceContents) });
-  return { root, runtime, journeys, performance, files, contents };
+  files.push({ path: "font-assay.json", kind: "font-assay", bytes: fontAssayContents.length, sha256: sha256(fontAssayContents) });
+  return { root, runtime, journeys, performance, fontAssay, files, contents };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

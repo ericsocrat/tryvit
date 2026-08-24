@@ -5,6 +5,10 @@ import { fileURLToPath } from "node:url";
 
 import sharp from "sharp";
 
+// Node executes this tooling directly, so the TypeScript path alias is unavailable.
+// eslint-disable-next-line no-restricted-imports
+import { GOLDEN_FONT_ASSAY } from "../../../src/app/dev/phase5a2/_golden/font-assay.ts";
+
 import {
   GOLDEN_COMMITTED_BINARY_LIMIT_BYTES,
   GOLDEN_REFERENCE_IDS,
@@ -149,7 +153,7 @@ const backupBasename = `.golden-evidence-backup-${process.pid}`;
 let backupCreated = false;
 
 try {
-  const retainedKinds = new Set(["still", "board", "video", "runtime", "journeys", "performance"]);
+  const retainedKinds = new Set(["still", "board", "video", "runtime", "journeys", "performance", "font-assay"]);
   const retained: StagedFile[] = [];
   for (const file of verified.files) {
     if (!retainedKinds.has(file.kind)) continue;
@@ -191,15 +195,17 @@ try {
       stateContactSheets: 6,
       motionRecordings: 12,
       terminalMotionStills: 12,
-      assetBoards: 7,
+      assetBoards: 8,
       performanceReports: 1,
+      fontAssayReports: 1,
       retainedFiles: retained.length,
       rawFiles: verified.files.length,
     },
     retainedBytes,
     committedBinaryLimitBytes: GOLDEN_COMMITTED_BINARY_LIMIT_BYTES,
-    fontBytes: 0,
-    typographyDisposition: "system-stack-control-candidate-font-assay-blocked",
+    fontBytes: GOLDEN_FONT_ASSAY.transferBytes,
+    typographyDisposition: GOLDEN_FONT_ASSAY.status,
+    fontAssay: verified.fontAssay,
     journeys: verified.journeys,
     performance: verified.performance,
     rawFiles: verified.files,

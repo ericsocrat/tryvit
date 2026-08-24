@@ -1,5 +1,6 @@
 import { GOLDEN_ASSET_BOARDS, type GoldenAssetBoard } from "./asset-contract";
 import type { GoldenTheme } from "./contract";
+import { GOLDEN_FONT_ASSAY, GOLDEN_TYPE_SCALE } from "./font-assay";
 import { GOLDEN_DOMAIN_GLYPHS, GoldenGlyph } from "./GoldenGlyph";
 import { GoldenLockup, GoldenMark, GoldenWordmark } from "./GoldenIdentity";
 import styles from "./golden.module.css";
@@ -13,6 +14,47 @@ const BOARD_TITLE: Readonly<Record<GoldenAssetBoard, string>> = {
   typography: "Typography assay",
   "domain-glyphs": "Domain-glyph grammar",
 };
+
+const TYPE_PROOF_LINES = Object.freeze({
+  display: Object.freeze(["Evidence should be readable", "before it is persuasive."]),
+  polish: Object.freeze(["Wiarygodność danych nie ukrywa", "brakujących informacji."]),
+  german: Object.freeze([
+    "Verpackungsangaben, abgeleitete Einordnung",
+    "und Datenverlässlichkeit bleiben unterscheidbar.",
+  ]),
+  tabular: Object.freeze(["003.20 · 072/100 · 2026-07-14", "5901234123457"]),
+});
+
+function TypographySpecimen({
+  kind,
+  scope,
+}: Readonly<{
+  kind: keyof typeof GOLDEN_TYPE_SCALE;
+  scope: "control" | "candidate";
+}>) {
+  const label = {
+    display: "Display",
+    polish: "Polski",
+    german: "Deutsch",
+    tabular: "Tabular figures",
+  }[kind];
+  const className = {
+    display: styles.typeDisplay,
+    polish: styles.typePolish,
+    german: styles.typeGerman,
+    tabular: styles.typeNumbers,
+  }[kind];
+  const proof = kind === "display"
+    ? GOLDEN_FONT_ASSAY.proof.english
+    : GOLDEN_FONT_ASSAY.proof[kind];
+  const lines = TYPE_PROOF_LINES[kind];
+  return (
+    <article className={className} data-golden-type-specimen={`${scope}-${kind}`}>
+      <span data-golden-type-label>{label} / {GOLDEN_TYPE_SCALE[kind]}</span>
+      <strong aria-label={proof} data-golden-type-copy>{lines[0]}<br />{lines[1]}</strong>
+    </article>
+  );
+}
 
 export function GoldenAssetBoardView({
   board,
@@ -71,11 +113,28 @@ export function GoldenAssetBoardView({
 
       {board === "typography" ? (
         <section className={styles.typeBoard}>
-          <header><p className={styles.eyebrow}>Rendered control · zero font bytes</p><h2>System UI stack</h2><p>Candidate Manrope + Source Serif 4 remains blocked: immutable upstream commit, checked-in license/RFN text, complete message corpus, fallback metrics, size adjustment and CLS proof are absent.</p></header>
-          <article><span>Display / 64</span><strong>Evidence should be readable before it is persuasive.</strong></article>
-          <article><span>Polski / 32</span><strong>Wiarygodność danych nie ukrywa brakujących informacji.</strong></article>
-          <article><span>Deutsch / 24</span><strong>Verpackungsangaben, abgeleitete Einordnung und Datenverlässlichkeit bleiben unterscheidbar.</strong></article>
-          <article className={styles.typeNumbers}><span>Tabular figures / 14–56</span><strong>003.20 · 072/100 · 2026-07-14 · 5901234123457</strong></article>
+          <section className={styles.typeColumn} data-golden-type-column="control">
+            <header>
+              <p className={styles.eyebrow}>Rendered control · zero font bytes</p>
+              <h2>System UI stack</h2>
+              <small>Current control · not a typography decision</small>
+            </header>
+            <TypographySpecimen kind="display" scope="control" />
+            <TypographySpecimen kind="polish" scope="control" />
+            <TypographySpecimen kind="german" scope="control" />
+            <TypographySpecimen kind="tabular" scope="control" />
+          </section>
+          <section className={`${styles.typeColumn} ${styles.typeCandidate}`} data-golden-type-column="candidate">
+            <header>
+              <p className={styles.eyebrow}>Bounded candidate · {GOLDEN_FONT_ASSAY.transferBytes.toLocaleString("en-US")} font bytes</p>
+              <h2>Manrope + restrained serif</h2>
+              <small>Official-source assay · production adoption prohibited · Eric decision pending</small>
+            </header>
+            <TypographySpecimen kind="display" scope="candidate" />
+            <TypographySpecimen kind="polish" scope="candidate" />
+            <TypographySpecimen kind="german" scope="candidate" />
+            <TypographySpecimen kind="tabular" scope="candidate" />
+          </section>
         </section>
       ) : null}
 

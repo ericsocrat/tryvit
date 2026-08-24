@@ -4,7 +4,7 @@
   "provenance": {
     "baseSha": "c21d9bb8a25ddf3deee7b11a2386dfa59cccac7c",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "50aa570d255ad6a3e343b37ab2dde022b97d18b844f959505bf254c94098d9e6"
+    "sourceFingerprint": "9b43e33c9c168045b549f6251706bca5fe748fbe9c2676a2b26dd59fe10ec2eb"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12,9 +12,9 @@
     "frontend/src/design-system"
   ],
   "moduleCounts": {
-    "total": 436,
+    "total": 437,
     "route-module": 92,
-    "app-support-module": 79,
+    "app-support-module": 80,
     "shared-component-module": 196,
     "design-system-module": 69
   },
@@ -3302,7 +3302,8 @@
         "frontend/src/app/dev/phase5a2/_golden/GoldenGlyph.tsx",
         "frontend/src/app/dev/phase5a2/_golden/GoldenIdentity.tsx",
         "frontend/src/app/dev/phase5a2/_golden/asset-contract.ts",
-        "frontend/src/app/dev/phase5a2/_golden/contract.ts"
+        "frontend/src/app/dev/phase5a2/_golden/contract.ts",
+        "frontend/src/app/dev/phase5a2/_golden/font-assay.ts"
       ],
       "directConsumers": [
         "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx"
@@ -3956,6 +3957,33 @@
           "modulePath": "frontend/src/app/dev/phase5a2/golden/[reference]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/dev/phase5a2/golden/[reference]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.2"
+      ],
+      "disposition": "retain-v2",
+      "migrationGate": "already-v2-contract",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v2",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/dev/phase5a2/_golden/font-assay.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/dev/phase5a2/_golden/GoldenAssetBoard.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/dev/phase5a2/golden-assets/[board]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/dev/phase5a2/golden-assets/[board]"
         }
       ],
       "targetRedesignPhases": [
@@ -21122,9 +21150,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 541,
+    "inspectedModuleCount": 542,
     "violations": [],
-    "sourceFingerprint": "a0b9a4302d50bb351472f0bab0b7dd0918ba7c64c75ccd96d69a19ba56114e65"
+    "sourceFingerprint": "56be8da9f64c5cb4238e21b0eca43e5f736a6fe0b77e43627d1d06edba3d9e67"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

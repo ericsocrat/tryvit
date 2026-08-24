@@ -13,12 +13,14 @@ import {
 import {
   GOLDEN_ASSET_BOARDS,
   GOLDEN_CORE_STILLS,
+  GOLDEN_DARK_ASSET_BOARDS,
   GOLDEN_FORCED_COLORS_STILLS,
   GOLDEN_GERMAN_DESKTOP_STILLS,
   GOLDEN_POLISH_MOBILE_STILLS,
   GOLDEN_STATE_CAPTURES,
   assetBoardRelativePath,
   coreStillRelativePath,
+  darkAssetBoardRelativePath,
   forcedColorsStillRelativePath,
   localizedStillRelativePath,
   stateStillRelativePath,
@@ -61,6 +63,11 @@ test("captures the finite Golden Reference still and board matrix", async ({ bro
     await openGoldenBoard(page, board);
     await assertGoldenAxe(page);
     await screenshot(page, goldenOutputPath(assetBoardRelativePath(board)));
+  }
+  for (const board of GOLDEN_DARK_ASSET_BOARDS) {
+    await openGoldenBoard(page, board, "dark");
+    await assertGoldenAxe(page);
+    await screenshot(page, goldenOutputPath(darkAssetBoardRelativePath(board)));
   }
 
   expect(runtimeErrors).toEqual([]);

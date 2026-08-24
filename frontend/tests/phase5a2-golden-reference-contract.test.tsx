@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import path from "node:path";
 
 import { renderToStaticMarkup } from "react-dom/server";
@@ -24,6 +24,7 @@ import {
 import { phase5A2GoldenGateFromProcessEnvironment } from "@/app/dev/phase5a2/_golden/golden-gate";
 import {
   GOLDEN_ASSET_BOARD_COUNT,
+  GOLDEN_ASSET_BOARD_EVIDENCE_COUNT,
   GOLDEN_COMMITTED_BINARY_LIMIT_BYTES,
   GOLDEN_CORE_STILL_COUNT,
   GOLDEN_CORE_STILLS,
@@ -40,6 +41,8 @@ import {
   GOLDEN_JOURNEYS,
 } from "@/../tooling/design-system/golden-reference/capture-contract";
 import { GOLDEN_ASSET_BOARDS as RUNTIME_ASSET_BOARDS } from "@/app/dev/phase5a2/_golden/asset-contract";
+import { GoldenAssetBoardView } from "@/app/dev/phase5a2/_golden/GoldenAssetBoard";
+import { GOLDEN_FONT_ASSAY, GOLDEN_TYPE_SCALE } from "@/app/dev/phase5a2/_golden/font-assay";
 
 const repositoryRoot = path.resolve(process.cwd(), "..");
 
@@ -93,6 +96,7 @@ describe("Phase 5A.2 Golden Reference contract", () => {
     expect(GOLDEN_MOTION_RECORDINGS).toHaveLength(GOLDEN_MOTION_RECORDING_COUNT);
     expect(GOLDEN_MOTION_RECORDING_COUNT).toBe(12);
     expect(GOLDEN_ASSET_BOARD_COUNT).toBe(7);
+    expect(GOLDEN_ASSET_BOARD_EVIDENCE_COUNT).toBe(8);
     expect(GOLDEN_STATE_CAPTURES).toHaveLength(GOLDEN_STATE_CAPTURE_COUNT);
     expect(GOLDEN_STATE_CAPTURE_COUNT).toBe(59);
     expect(GOLDEN_JOURNEYS).toHaveLength(6);
@@ -140,6 +144,71 @@ describe("Phase 5A.2 Golden Reference contract", () => {
       expect(markup).toContain(`data-golden-glyph=\"${name}\"`);
       expect(markup).not.toContain("<text");
     }
+  });
+
+  it("binds the review-only font comparison to exact official sources and bytes", () => {
+    expect(GOLDEN_FONT_ASSAY.status).toBe("comparison-ready-decision-pending");
+    expect(GOLDEN_FONT_ASSAY.productionAdoption).toBe(false);
+    expect(GOLDEN_FONT_ASSAY.sources.manrope.commit).toBe(
+      "6f81ebecdf65e4463b798cc07b16a4f8d5216917",
+    );
+    expect(GOLDEN_FONT_ASSAY.sources.sourceSerif4.commit).toBe(
+      "2823e993c53fca27c5c8749f529b56a5a7c77b6b",
+    );
+    expect(GOLDEN_FONT_ASSAY.sources.sourceSerif4.reservedFontNames).toEqual(["Source"]);
+    expect(GOLDEN_FONT_ASSAY.sources.sourceSerif4.derivedFamilyName).toBe(
+      "TryVit Assay Serif",
+    );
+
+    let transferredBytes = 0;
+    for (const font of GOLDEN_FONT_ASSAY.files) {
+      const fontPath = path.join(
+        process.cwd(),
+        "src",
+        "app",
+        "dev",
+        "phase5a2",
+        "_golden",
+        font.path,
+      );
+      const bytes = readFileSync(fontPath);
+      expect(statSync(fontPath).size, font.path).toBe(font.bytes);
+      expect(createHash("sha256").update(bytes).digest("hex"), font.path).toBe(font.sha256);
+      transferredBytes += bytes.length;
+    }
+    expect(transferredBytes).toBe(GOLDEN_FONT_ASSAY.transferBytes);
+    expect(transferredBytes).toBeLessThanOrEqual(GOLDEN_FONT_ASSAY.transferLimitBytes);
+
+    for (const source of [
+      GOLDEN_FONT_ASSAY.sources.manrope,
+      GOLDEN_FONT_ASSAY.sources.sourceSerif4,
+    ]) {
+      const licensePath = path.join(
+        process.cwd(),
+        "src",
+        "app",
+        "dev",
+        "phase5a2",
+        "_golden",
+        source.licensePath,
+      );
+      const license = readFileSync(licensePath);
+      expect(createHash("sha256").update(license).digest("hex")).toBe(source.licenseSha256);
+      expect(license.toString("utf8")).toContain("SIL OPEN FONT LICENSE");
+    }
+  });
+
+  it("renders four honest type sizes in both control and candidate columns", () => {
+    expect(new Set(Object.values(GOLDEN_TYPE_SCALE)).size).toBe(4);
+    const markup = renderToStaticMarkup(<GoldenAssetBoardView board="typography" theme="light" />);
+    for (const [name, pixels] of Object.entries(GOLDEN_TYPE_SCALE)) {
+      expect(markup).toContain(`data-golden-type-specimen="control-${name === "tabular" ? "tabular" : name}"`);
+      expect(markup).toContain(`data-golden-type-specimen="candidate-${name === "tabular" ? "tabular" : name}"`);
+      expect(markup).toContain(`/ ${pixels}`);
+    }
+    expect(markup).toContain(GOLDEN_FONT_ASSAY.proof.polish);
+    expect(markup).toContain(GOLDEN_FONT_ASSAY.proof.german);
+    expect(markup).toContain("production adoption prohibited");
   });
 
   it("preserves the frozen Checkpoint 1 LF-canonical manifest", () => {
