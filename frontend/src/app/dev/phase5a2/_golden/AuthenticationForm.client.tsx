@@ -13,6 +13,7 @@ import {
   type GoldenRouteState,
 } from "./contract";
 import { GoldenGlyph } from "./GoldenGlyph";
+import { GoldenSurfaceOwner } from "./GoldenIdentity";
 import styles from "./golden.module.css";
 
 type AuthMode = "sign-in" | "registration" | "recovery";
@@ -31,7 +32,8 @@ function isEmail(value: string): boolean {
 export function AuthenticationForm({
   route,
   copy,
-}: Readonly<{ route: GoldenRouteState; copy: AuthCopy }>) {
+  ownerLabel,
+}: Readonly<{ route: GoldenRouteState; copy: AuthCopy; ownerLabel: string }>) {
   const initialState = route.state as AuthState;
   const [mode, setMode] = useState<AuthMode>(initialMode(initialState));
   const [state, setState] = useState<AuthState>(initialState);
@@ -184,6 +186,7 @@ export function AuthenticationForm({
         }}
         tabIndex={-1}
       >
+        <GoldenSurfaceOwner label={ownerLabel} />
         <div
           aria-atomic="true"
           aria-live={isFailure ? "assertive" : "polite"}
@@ -215,6 +218,7 @@ export function AuthenticationForm({
       data-golden-live-state={state}
       ref={rootRef}
     >
+      <GoldenSurfaceOwner label={ownerLabel} />
       <div className={styles.authModeTabs} role="group" aria-label={copy.modeLabel}>
         <Button aria-pressed={mode === "sign-in"} onClick={() => selectMode("sign-in")} variant={mode === "sign-in" ? "primary" : "quiet"}>{copy.signIn}</Button>
         <Button aria-pressed={mode === "registration"} onClick={() => selectMode("registration")} variant={mode === "registration" ? "primary" : "quiet"}>{copy.register}</Button>
