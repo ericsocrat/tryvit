@@ -126,8 +126,16 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
     ...GOLDEN_STATE_CAPTURES.map((capture) => ({ path: stateStillRelativePath(capture), kind: "state" as const, ...capture })),
     ...GOLDEN_ASSET_BOARDS.map((board) => ({ path: assetBoardRelativePath(board), kind: "board" as const, width: 1440, height: 900, reference: board, state: "board", locale: "en", theme: "light", motion: "reduced" })),
     ...GOLDEN_DARK_ASSET_BOARDS.map((board) => ({ path: darkAssetBoardRelativePath(board), kind: "board" as const, width: 1440, height: 900, reference: board, state: "board", locale: "en", theme: "dark", motion: "reduced" })),
-    ...GOLDEN_MOTION_RECORDINGS.map((capture) => ({ path: motionTerminalStillRelativePath(capture), kind: "terminal" as const, ...capture })),
   ];
+  const terminalPngs = GOLDEN_MOTION_RECORDINGS.map((capture) => ({
+    path: motionTerminalStillRelativePath(capture),
+    kind: "terminal" as const,
+    width: capture.width,
+    height: capture.height,
+    recordingReference: capture.reference,
+    mode: capture.mode,
+    motion: capture.motion,
+  }));
   const videos = GOLDEN_MOTION_RECORDINGS.map((capture) => ({
     path: motionRecordingRelativePath(capture),
     kind: "video" as const,
@@ -135,6 +143,7 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
   }));
   const expected = [
     ...pngs.map(({ path: filename }) => filename),
+    ...terminalPngs.map(({ path: filename }) => filename),
     ...videos.map(({ path: filename }) => filename),
     "font-assay.json",
     "journeys.json",
@@ -219,6 +228,38 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
     ) {
       fail("journey-terminal-invalid");
     }
+    const terminal = terminalPngs[index];
+    if (
+      !terminal ||
+      typeof record.reference !== "string" ||
+      typeof record.liveState !== "string" ||
+      (record.theme !== "light" && record.theme !== "dark")
+    ) fail("journey-terminal-metadata-invalid");
+    const terminalRoute = new URL(record.route as string, "http://golden.invalid");
+    const locale = terminalRoute.searchParams.get("locale");
+    if (locale !== "en" && locale !== "pl" && locale !== "de") {
+      fail("journey-terminal-metadata-invalid");
+    }
+    const verifiedTerminal = await verifyPng(
+      root,
+      terminal.path,
+      terminal.width,
+      terminal.height,
+    );
+    contents.set(terminal.path, verifiedTerminal.contents);
+    files.push({
+      path: terminal.path,
+      kind: terminal.kind,
+      bytes: verifiedTerminal.bytes,
+      sha256: verifiedTerminal.sha256,
+      width: terminal.width,
+      height: terminal.height,
+      reference: record.reference,
+      state: record.liveState,
+      locale,
+      theme: record.theme,
+      motion: terminal.motion,
+    });
   }
   if (
     performance.schemaVersion !== 1 ||

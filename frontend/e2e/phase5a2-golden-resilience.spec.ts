@@ -326,3 +326,28 @@ test("typography board preserves every proof under WCAG text spacing", async ({ 
     expect(specimen.labelOverlap, specimen.id).toBe(false);
   }
 });
+
+test("long German landing actions remain inside the governed desktop capture", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await admit(page, routeFor("landing", "ready", "de", "dark"));
+  for (const name of ["Evidenz erkunden", "Anmeldeablauf prüfen"]) {
+    const geometry = await page.getByRole("link", { name, exact: true }).evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: rect.top, bottom: rect.bottom, viewportHeight: innerHeight };
+    });
+    expect(geometry.top, name).toBeGreaterThanOrEqual(0);
+    expect(geometry.bottom, name).toBeLessThanOrEqual(geometry.viewportHeight - 1);
+  }
+});
+
+for (const localization of [
+  { locale: "pl" as const, title: "North Grain Oat Drink — rekord testowy" },
+  { locale: "de" as const, title: "North Grain Oat Drink — Prüfmuster" },
+]) {
+  test(`localized product fixture title is complete · ${localization.locale}`, async ({ page }) => {
+    await page.setViewportSize({ width: localization.locale === "pl" ? 390 : 1440, height: 900 });
+    await admit(page, routeFor("product", "available", localization.locale, localization.locale === "de" ? "dark" : "light"));
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(localization.title);
+    await expect(page.getByRole("heading", { level: 1 })).not.toContainText("review fixture");
+  });
+}

@@ -272,6 +272,8 @@ describe("Phase 5A.2 Golden Reference contract", () => {
     const performance = source("e2e/phase5a2-golden-performance.spec.ts");
     const resilience = source("e2e/phase5a2-golden-resilience.spec.ts");
     const verifier = source("tooling/design-system/golden-reference/verify-candidates.mts");
+    const stagedVerifier = source("tooling/design-system/golden-reference/verify-staged.mts");
+    const product = source("src/app/dev/phase5a2/_golden/ProductReference.tsx");
     expect(motion).toContain('data-golden-reference=\'home\'');
     expect(motion).toContain('data-golden-reference=\'product\'');
     expect(motion).toContain("element.innerText.replace(/\\s+/gu, \" \")");
@@ -280,6 +282,11 @@ describe("Phase 5A.2 Golden Reference contract", () => {
     expect(resilience).toContain('forcedColorAdjust).toBe("none")');
     expect(verifier).toContain("journey-terminal-invalid");
     expect(verifier).toContain("performance-contract-invalid");
+    expect(verifier).toContain("journey-terminal-metadata-invalid");
+    expect(stagedVerifier).toContain("staged-terminal-provenance-invalid");
+    expect(product).toContain('productName: "North Grain Oat Drink — rekord testowy"');
+    expect(product).toContain('productName: "North Grain Oat Drink — Prüfmuster"');
+    expect(product).toContain("<h1>{copy.productName}</h1>");
   });
 
   it("keeps a byte-level staged evidence verifier", () => {

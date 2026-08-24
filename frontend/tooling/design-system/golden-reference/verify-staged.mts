@@ -10,7 +10,9 @@ import { GOLDEN_FONT_ASSAY } from "../../../src/app/dev/phase5a2/_golden/font-as
 
 import {
   GOLDEN_COMMITTED_BINARY_LIMIT_BYTES,
+  GOLDEN_MOTION_RECORDINGS,
   goldenEvidenceRoot,
+  motionTerminalStillRelativePath,
 } from "./capture-contract.ts";
 // Node executes this tooling directly, so the TypeScript path alias is unavailable.
 // eslint-disable-next-line no-restricted-imports
@@ -29,6 +31,11 @@ interface ManifestFile {
   readonly sha256: string;
   readonly width?: number;
   readonly height?: number;
+  readonly reference?: string;
+  readonly state?: string;
+  readonly locale?: string;
+  readonly theme?: string;
+  readonly motion?: string;
 }
 
 function fail(code: string): never {
@@ -117,6 +124,40 @@ for (const file of retained) {
       maximumDurationMs: 30_000,
     });
   }
+}
+
+const journeys = manifest.journeys;
+if (!journeys || typeof journeys !== "object" || Array.isArray(journeys)) {
+  fail("staged-terminal-provenance-invalid");
+}
+const actualJourneys = (journeys as Record<string, unknown>).actual;
+const rawFiles = manifest.rawFiles as ManifestFile[];
+if (!Array.isArray(actualJourneys) || actualJourneys.length !== GOLDEN_MOTION_RECORDINGS.length) {
+  fail("staged-terminal-provenance-invalid");
+}
+for (const [index, capture] of GOLDEN_MOTION_RECORDINGS.entries()) {
+  const actual = actualJourneys[index];
+  const terminal = rawFiles.find(
+    (file) => file.path === motionTerminalStillRelativePath(capture) && file.kind === "terminal",
+  );
+  if (
+    !actual ||
+    typeof actual !== "object" ||
+    Array.isArray(actual) ||
+    !terminal
+  ) fail("staged-terminal-provenance-invalid");
+  const record = actual as Record<string, unknown>;
+  if (
+    record.recordingReference !== capture.reference ||
+    record.mode !== capture.mode ||
+    typeof record.route !== "string" ||
+    terminal.reference !== record.reference ||
+    terminal.state !== record.liveState ||
+    terminal.theme !== record.theme ||
+    terminal.motion !== capture.motion
+  ) fail("staged-terminal-provenance-invalid");
+  const locale = new URL(record.route as string, "http://golden.invalid").searchParams.get("locale");
+  if (terminal.locale !== locale) fail("staged-terminal-provenance-invalid");
 }
 
 if (

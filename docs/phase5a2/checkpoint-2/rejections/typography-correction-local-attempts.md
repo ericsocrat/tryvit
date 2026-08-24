@@ -48,3 +48,29 @@ comparison-header metadata computed to `10.56px`, below the existing `12px` mean
 metadata floor. All three in-flight review lanes were interrupted, the packet remains
 recoverable in Git, and no score from it qualifies. The causal correction sets that
 metadata to `12px`; the complete packet and three fresh lanes must be regenerated.
+
+## Rejected fresh-review packet
+
+The next packet was bound to source/tree
+`4d29d5007511a438e14e002b3a0df122007b8de5` /
+`d1875fccb9b9b0d4f45ff8191bf8cbcee21ce38f`, manifest
+`85309352e63b40d5e735d260c68d35668f0582ec0d0e10f8b10f85ece1ca7cf8`, and
+85 files / 7,197,539 bytes. Lane C independently passed every byte/provenance check but
+failed visual-artifact QA on:
+
+- `stills/localized/landing--1440x900--dark--de.png`: both primary actions crossed and
+  were clipped by the 900px capture boundary;
+- `stills/localized/product--1440x900--dark--de.png`: untranslated `review fixture`
+  suffix;
+- `stills/localized/product--390x844--light--pl.png`: untranslated `review fixture`
+  suffix.
+
+Before scoring completed, Reviewer B also found a truthfulness veto: ten of the 12 raw
+`motion-terminal/*` manifest records carried start-state/reference/theme metadata
+instead of the observed terminal metadata. The remaining score lane was interrupted;
+no score from this packet qualifies.
+
+The causal correction localizes the product suffix, keeps the German desktop actions
+inside the governed viewport, derives terminal-still metadata from the observed journey
+record, and makes the staged verifier compare every terminal record with its actual
+journey. A new exact source, complete packet, and three entirely new lanes are required.

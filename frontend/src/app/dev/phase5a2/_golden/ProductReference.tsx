@@ -3,7 +3,6 @@ import { Tabs } from "@/design-system/primitives/Tabs";
 
 import { GOLDEN_COMMON_COPY } from "./common-copy";
 import type { GoldenRouteState } from "./contract";
-import { GOLDEN_PRIMARY_PRODUCT } from "./fixture";
 import { DecisionSummary, EvidenceBand } from "./GoldenEvidence";
 import { GoldenGlyph } from "./GoldenGlyph";
 import { ProductActions } from "./ProductActions.client";
@@ -11,6 +10,7 @@ import styles from "./golden.module.css";
 
 const PRODUCT_COPY = {
   en: {
+    productName: "North Grain Oat Drink — review fixture",
     eyebrow: "Product record · synthetic fixture",
     source: "One package transcription · observed 14 July 2026",
     decision: "Review before deciding",
@@ -62,6 +62,7 @@ const PRODUCT_COPY = {
     noChecksLabel: "0 independent",
   },
   pl: {
+    productName: "North Grain Oat Drink — rekord testowy",
     eyebrow: "Rekord produktu · materiał syntetyczny",
     source: "Jeden zapis z opakowania · 14 lipca 2026",
     decision: "Sprawdź przed decyzją",
@@ -113,6 +114,7 @@ const PRODUCT_COPY = {
     noChecksLabel: "0 niezależnych",
   },
   de: {
+    productName: "North Grain Oat Drink — Prüfmuster",
     eyebrow: "Produktdatensatz · synthetischer Prüfsatz",
     source: "Eine Verpackungsabschrift · beobachtet am 14. Juli 2026",
     decision: "Vor der Entscheidung prüfen",
@@ -188,7 +190,7 @@ export function ProductReference({ route }: Readonly<{ route: GoldenRouteState }
   return (
     <article className={styles.productReference}>
       <header className={styles.productHeader}>
-        <div><p className={styles.eyebrow}>{copy.eyebrow}</p><h1>{GOLDEN_PRIMARY_PRODUCT.name}</h1><p>{copy.source}</p></div>
+        <div><p className={styles.eyebrow}>{copy.eyebrow}</p><h1>{copy.productName}</h1><p>{copy.source}</p></div>
         <div aria-hidden="true" className={styles.productPackage}><GoldenGlyph name="source" size={32} /><span>NORTH<br />GRAIN</span></div>
       </header>
       {pageState ? <PageState description={pageState.detail} headingLevel={2} primaryAction={<a className={styles.secondaryAnchor} href={`/dev/phase5a2/golden/product?${query}&state=available`}>{common.retry}</a>} status={pageState.status} title={pageState.title} /> : null}
