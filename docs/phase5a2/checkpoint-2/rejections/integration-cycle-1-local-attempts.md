@@ -49,3 +49,13 @@ Supabase or browser execution because the generated live inventory omitted the f
 Authentication form's direct `GoldenIdentity` edge. CI computed the same 437 production
 modules and zero violations, but correctly rejected two stale graph edges/fingerprints.
 The inventory was regenerated and committed before any replacement run.
+
+Corrected exact-head Golden CI run `32720182906` passed source contracts, Supabase,
+build, 111/116 browser checks, raw-artifact upload, and no-backup teardown, then failed
+on Linux-only assay geometry: the typography board exceeded 900px during fallback,
+German landing boundary included hidden review chrome, and unresolved platform-local
+Arial/Georgia fallbacks shifted candidate specimen tops. Raw artifact `9517695043` was
+retained. The correction reserves cross-platform specimen boxes, compacts the governed
+typography canvas without hiding overflow, and binds the German assertion to the actual
+`capture=1` artifact canvas. No threshold, proof string, type size, font byte, or
+Lighthouse limit was reduced.

@@ -83,6 +83,13 @@ export const GOLDEN_FONT_ASSAY = Object.freeze({
     }),
   ]),
   fallbackMetrics: Object.freeze({
+    layoutReserve: Object.freeze({
+      display: "147px",
+      polish: "67px",
+      german: "81px",
+      tabular: "60px",
+      basis: "Platform-independent specimen boxes reserve the maximum governed fallback line count while content-expanding tracks preserve text-spacing and reflow.",
+    }),
     manropeRegular: Object.freeze({
       fallback: "Arial",
       sizeAdjust: "97.58%",

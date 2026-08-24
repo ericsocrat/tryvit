@@ -453,6 +453,25 @@
   background: var(--gr-brand-deep);
 }
 
+.assetBoard[data-golden-asset-board="typography"] {
+  padding: 2rem 3rem 1rem;
+}
+
+.assetBoard[data-golden-asset-board="typography"] .assetBoardHeader {
+  grid-template-columns: minmax(460px, 0.8fr) 1fr;
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
+.assetBoard[data-golden-asset-board="typography"] .assetBoardHeader h1 {
+  font-size: clamp(3rem, 4.2vw, 4rem);
+  line-height: 0.94;
+}
+
+.assetBoard[data-golden-asset-board="typography"] .typeBoard {
+  margin-top: 1rem;
+}
+
 .identityBoard,
 .lockupBoard,
 .compactBoard,
@@ -665,11 +684,11 @@
   min-height: 544px;
   display: grid;
   grid-template-rows:
-    minmax(72px, auto)
-    minmax(150px, auto)
+    minmax(82px, auto)
+    minmax(190px, auto)
     minmax(110px, auto)
-    minmax(105px, auto)
-    minmax(100px, auto);
+    minmax(120px, auto)
+    minmax(105px, auto);
   border-inline-end: 1px solid var(--gr-rule);
   border-bottom: 1px solid var(--gr-rule);
 }
@@ -733,6 +752,7 @@
 }
 
 .typeDisplay strong {
+  min-height: 147px;
   font-size: 48px;
   font-weight: 600;
   letter-spacing: -0.035em;
@@ -740,16 +760,19 @@
 }
 
 .typePolish strong {
+  min-height: 67px;
   font-size: 30px;
   line-height: 1.12;
 }
 
 .typeGerman strong {
+  min-height: 81px;
   font-size: 22px;
   line-height: 1.22;
 }
 
 .typeNumbers strong {
+  min-height: 60px;
   font-size: 26px;
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-variant-numeric: tabular-nums;
@@ -795,6 +818,14 @@
 }
 
 @media (max-width: 900px) {
+  .assetBoard[data-golden-asset-board="typography"] {
+    padding: 1.5rem;
+  }
+
+  .assetBoard[data-golden-asset-board="typography"] .assetBoardHeader {
+    grid-template-columns: 1fr;
+  }
+
   .assetBoardHeader,
   .identityBoard,
   .lockupBoard,

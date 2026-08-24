@@ -526,7 +526,7 @@ test("every live reference keeps TryVit ownership distinct from product-record g
 
 test("long German landing actions remain inside the governed desktop capture", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
-  await admit(page, routeFor("landing", "ready", "de", "dark"));
+  await admit(page, `${routeFor("landing", "ready", "de", "dark")}&capture=1`);
   for (const name of ["Evidenz erkunden", "Anmeldeablauf prüfen"]) {
     const geometry = await page.getByRole("link", { name, exact: true }).evaluate((element) => {
       const rect = element.getBoundingClientRect();
