@@ -1,10 +1,10 @@
 # Phase 5A.2 Checkpoint 2 — Golden Reference review handoff
 
-> **Status:** Bounded typography replacement captured and fresh review passed; exact-head CI and Eric approval pending
+> **Status:** Current main integrated and exact-source packet regenerated; fresh integrated review, exact-head CI, and Eric approval pending
 > **Production migration:** Prohibited
-> **Capture source:** `fcc5d8cb9eae609863364a6a34541ce10eefcbc6`
-> **Capture tree:** `00c47531aa41a7de94dff9f18c1018d551405943`
-> **Manifest SHA-256:** `ac4102d46fc1bd59099bbaa6e08bff70bab11a3d4c4d39dd0ca874c199773fca`
+> **Capture source:** `c5edd0f6e43ff86646617a026ffbd0db3e579ad1`
+> **Capture tree:** `3c56ce832a0d2c9ddea6d16006150400656f2b76`
+> **Manifest SHA-256:** `4ff5884a147bacb290a260fc64edc5f05821503641c8ff60aabacb841248f085`
 
 This packet implements exactly six complete non-production Golden References:
 
@@ -40,7 +40,7 @@ Query input is fail-closed and limited to `locale`, `theme`, `motion`, `state`, 
 
 ## Evidence packet
 
-The committed packet contains 91 files and 7,315,420 bytes:
+The committed packet contains 91 files and 7,388,236 bytes:
 
 - 36 core stills: six references × 390/768/1440 × light/dark;
 - 12 localized stills: Polish mobile and long-German desktop for each reference;
@@ -58,14 +58,12 @@ and the 15 MiB ceiling.
 
 ## Review boundary
 
-The earlier initial and replacement reviews remain historical. Their 91/89 scores do
-not approve this correction packet. Two new fresh-context reviewers independently
-inspected every retained original without seeing one another's result. They returned
-PASS 93/100 and PASS 95/100 for the selected system, with every reference at least 89
-and every category at least 75%. A third non-taste lane verified every original PNG and
-WebM, every retained hash, and the old/new comparison and returned PASS / PASS with no
-defect path. The implementation agent did not qualify; the current scorecards are under
-`reviews/correction-cycle-1/`.
+The initial 91/89 and corrected-packet 93/95 reviews remain historical. None approves
+this integrated packet. Current main changed browser/test/form/icon/performance
+dependencies, so all media and performance evidence was regenerated from the exact
+integrated source. Two new decision reviewers and one non-taste provenance/visual lane
+must now inspect the packet without seeing one another's result. The authorized brief
+and old/new comparison are under `reviews/integration-cycle-1/`.
 
 Native Polish/German review, trademark/legal clearance, real assistive-technology and
 device testing, branded Safari, real camera/password-manager behavior, and production
