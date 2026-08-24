@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a2-golden-font-assay",
-  "sourceSha": "14620a61c702838565eca2916b98af5cd4a572c1",
-  "sourceTreeSha": "de3a00e15099b5f1ca0b5ee521017f195a93b04c",
+  "sourceSha": "7f27ecd3ac99a49c1df3bde064bce99582a28fc1",
+  "sourceTreeSha": "f36c351c2bf79a5df5e211b903af8eed500362ab",
   "reviewOnly": true,
   "productionAdoption": false,
   "status": "comparison-ready-decision-pending",
@@ -82,6 +82,46 @@
       "height": 0
     }
   ],
+  "expectedTypeScale": {
+    "display": 48,
+    "polish": 30,
+    "german": 22,
+    "tabular": 26
+  },
+  "computedTypeScale": [
+    {
+      "specimen": "control-display",
+      "computedSize": 48
+    },
+    {
+      "specimen": "control-polish",
+      "computedSize": 30
+    },
+    {
+      "specimen": "control-german",
+      "computedSize": 22
+    },
+    {
+      "specimen": "control-tabular",
+      "computedSize": 26
+    },
+    {
+      "specimen": "candidate-display",
+      "computedSize": 48
+    },
+    {
+      "specimen": "candidate-polish",
+      "computedSize": 30
+    },
+    {
+      "specimen": "candidate-german",
+      "computedSize": 22
+    },
+    {
+      "specimen": "candidate-tabular",
+      "computedSize": 26
+    }
+  ],
   "files": [
     {
       "path": "font-assay/manrope-regular.woff2",
@@ -111,6 +151,7 @@
       "commit": "6f81ebecdf65e4463b798cc07b16a4f8d5216917",
       "version": "4.504",
       "licensePath": "font-assay/licenses/MANROPE-OFL.txt",
+      "licenseBytes": 4383,
       "upstreamLicenseSha256": "e01b637272e0cbdfb240184dd98ea5cc671556d9894dae2668d92ab2c906787c",
       "licenseSha256": "f612090fb72b6dca3e807e66fa0d2b5def163cef86f1a3209b5c897cba5ee4b7",
       "reservedFontNames": [],
@@ -135,6 +176,7 @@
       "releaseAssetBytes": 11623196,
       "releaseAssetSha256": "af10e80dcd2296748b04cb9917db9f7ba0ae65101165fd2f0c16b9812d9abd28",
       "licensePath": "font-assay/licenses/SOURCE-SERIF-4-OFL.md",
+      "licenseBytes": 4491,
       "upstreamLicenseSha256": "75784a295293a8992f5a8d99210566e0064a012e6dab6731305e3787f15896c7",
       "licenseSha256": "c21d7293d87b6d7ab1d0229a2f55b77f33a7613a6a4e66f6693d68d7d8d09464",
       "reservedFontNames": [
@@ -154,6 +196,7 @@
     "brotli": "1.2.0",
     "features": "kern,liga,clig,calt,locl,mark,mkmk,tnum",
     "hinting": "retained",
-    "deterministicRerunRequired": true
+    "deterministicRerunRequired": false,
+    "deterministicRerunVerified": true
   }
 }

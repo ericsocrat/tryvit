@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a2-golden-resilience-evidence",
+  "sourceSha": "7f27ecd3ac99a49c1df3bde064bce99582a28fc1",
+  "sourceTreeSha": "f36c351c2bf79a5df5e211b903af8eed500362ab",
+  "reviewOnly": true,
+  "methodology": {
+    "textSpacing": "Polish 390x844 with line-height 1.5, letter-spacing 0.12em, word-spacing 0.16em, and paragraph margin 2em.",
+    "reflow": "200-percent equivalent CSS viewport of 384x844 with horizontal overflow bounded to 1px.",
+    "typography": "Original 1440x900 light/dark geometry plus 720x450 reflow and WCAG text-spacing override."
+  },
+  "textSpacing": [
+    {
+      "reference": "landing",
+      "locale": "pl",
+      "documentOverflow": 0,
+      "rootOverflow": 0,
+      "offenderCount": 4
+    },
+    {
+      "reference": "authentication",
+      "locale": "pl",
+      "documentOverflow": 0,
+      "rootOverflow": 0,
+      "offenderCount": 4
+    },
+    {
+      "reference": "home",
+      "locale": "pl",
+      "documentOverflow": 0,
+      "rootOverflow": 0,
+      "offenderCount": 4
+    },
+    {
+      "reference": "search",
+      "locale": "pl",
+      "documentOverflow": 0,
+      "rootOverflow": 0,
+      "offenderCount": 4
+    },
+    {
+      "reference": "product",
+      "locale": "pl",
+      "documentOverflow": 0,
+      "rootOverflow": 0,
+      "offenderCount": 7
+    },
+    {
+      "reference": "scanner",
+      "locale": "pl",
+      "documentOverflow": 0,
+      "rootOverflow": 0,
+      "offenderCount": 4
+    }
+  ],
+  "reflow": [
+    {
+      "reference": "landing",
+      "locale": "en",
+      "viewport": {
+        "width": 384,
+        "height": 844
+      },
+      "overflow": 0
+    },
+    {
+      "reference": "authentication",
+      "locale": "en",
+      "viewport": {
+        "width": 384,
+        "height": 844
+      },
+      "overflow": 0
+    },
+    {
+      "reference": "home",
+      "locale": "en",
+      "viewport": {
+        "width": 384,
+        "height": 844
+      },
+      "overflow": 0
+    },
+    {
+      "reference": "search",
+      "locale": "en",
+      "viewport": {
+        "width": 384,
+        "height": 844
+      },
+      "overflow": 0
+    },
+    {
+      "reference": "product",
+      "locale": "en",
+      "viewport": {
+        "width": 384,
+        "height": 844
+      },
+      "overflow": 0
+    },
+    {
+      "reference": "scanner",
+      "locale": "en",
+      "viewport": {
+        "width": 384,
+        "height": 844
+      },
+      "overflow": 0
+    }
+  ],
+  "typography": [
+    {
+      "scenario": "default-light",
+      "documentOverflow": 0,
+      "siblingOverlapCount": 0,
+      "clippedCount": 0,
+      "minimumMetadataSize": 12,
+      "computedSizes": [
+        48,
+        30,
+        22,
+        26,
+        48,
+        30,
+        22,
+        26
+      ]
+    },
+    {
+      "scenario": "default-dark",
+      "documentOverflow": 0,
+      "siblingOverlapCount": 0,
+      "clippedCount": 0,
+      "minimumMetadataSize": 12,
+      "computedSizes": [
+        48,
+        30,
+        22,
+        26,
+        48,
+        30,
+        22,
+        26
+      ]
+    },
+    {
+      "scenario": "200-percent-equivalent-reflow",
+      "documentOverflow": 0,
+      "siblingOverlapCount": 0,
+      "clippedCount": 0,
+      "minimumMetadataSize": 12,
+      "computedSizes": [
+        48,
+        30,
+        22,
+        26,
+        48,
+        30,
+        22,
+        26
+      ]
+    },
+    {
+      "scenario": "wcag-text-spacing",
+      "documentOverflow": 0,
+      "siblingOverlapCount": 0,
+      "clippedCount": 0,
+      "minimumMetadataSize": 12,
+      "computedSizes": [
+        48,
+        30,
+        22,
+        26,
+        48,
+        30,
+        22,
+        26
+      ]
+    }
+  ]
+}
