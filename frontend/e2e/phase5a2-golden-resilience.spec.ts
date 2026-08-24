@@ -14,6 +14,7 @@ type TypographyGeometry = {
   readonly boardOverflow: number;
   readonly documentOverflow: number;
   readonly viewportOverflow: number;
+  readonly minimumMetadataSize: number;
   readonly specimens: readonly {
     readonly id: string;
     readonly label: string;
@@ -59,6 +60,11 @@ async function readTypographyGeometry(page: Page): Promise<TypographyGeometry> {
       documentOverflow: document.documentElement.scrollWidth
         - document.documentElement.clientWidth,
       viewportOverflow: board.getBoundingClientRect().bottom - innerHeight,
+      minimumMetadataSize: Math.min(...[
+        ...board.querySelectorAll<HTMLElement>(
+          "[data-golden-type-column] header p, [data-golden-type-column] header small, [data-golden-type-label]",
+        ),
+      ].map((element) => Number.parseFloat(getComputedStyle(element).fontSize))),
       specimens: rectangles.map(({ article, rect }) => {
         const label = article.querySelector<HTMLElement>("[data-golden-type-label]");
         const specimen = article.querySelector<HTMLElement>("[data-golden-type-copy]");
@@ -264,6 +270,7 @@ for (const theme of ["light", "dark"] as const) {
     await openGoldenBoard(page, "typography", theme);
     const geometry = await readTypographyGeometry(page);
     expect(geometry.specimens).toHaveLength(8);
+    expect(geometry.minimumMetadataSize).toBeGreaterThanOrEqual(12);
     expect(new Set(geometry.specimens.map(({ computedSize }) => computedSize)).size).toBe(4);
     for (const specimen of geometry.specimens) {
       expect(specimen.labeledSize, specimen.label).not.toBeNull();

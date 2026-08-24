@@ -38,3 +38,13 @@ satisfy the truthful scale/containment contract.
 
 The accepted pre-commit attempt measures 75,004 transferred bytes, zero missing proof
 coverage, `0px` digit-width range, `0` fallback CLS, and `0px` top/height delta.
+
+## Invalidated first replacement packet
+
+The first exact-source replacement packet was captured from `eaffa77e67d0bee5566966b9d17e021117e60058`
+with manifest `e24b555304fb7319d426b892ea6c9bacb32e46d44bfea0bbf88f24a1ff44bc62`.
+Before any current reviewer score was accepted, a fail-closed audit found that the new
+comparison-header metadata computed to `10.56px`, below the existing `12px` meaningful-
+metadata floor. All three in-flight review lanes were interrupted, the packet remains
+recoverable in Git, and no score from it qualifies. The causal correction sets that
+metadata to `12px`; the complete packet and three fresh lanes must be regenerated.
