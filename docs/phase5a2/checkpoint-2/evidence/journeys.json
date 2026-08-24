@@ -266,7 +266,8 @@
       "theme": "dark",
       "liveState": "ready",
       "focus": "button",
-      "announcement": null
+      "announcement": null,
+      "semanticAnnouncements": []
     },
     {
       "recordingReference": "landing",
@@ -277,7 +278,8 @@
       "theme": "dark",
       "liveState": "ready",
       "focus": "button",
-      "announcement": null
+      "announcement": null,
+      "semanticAnnouncements": []
     },
     {
       "recordingReference": "authentication",
@@ -288,7 +290,10 @@
       "theme": "light",
       "liveState": "returning",
       "focus": "#golden-main",
-      "announcement": null
+      "announcement": null,
+      "semanticAnnouncements": [
+        "Checking the local review details A deterministic in-browser validation is running. No network request is made."
+      ]
     },
     {
       "recordingReference": "authentication",
@@ -299,7 +304,10 @@
       "theme": "light",
       "liveState": "returning",
       "focus": "#golden-main",
-      "announcement": null
+      "announcement": null,
+      "semanticAnnouncements": [
+        "Checking the local review details A deterministic in-browser validation is running. No network request is made."
+      ]
     },
     {
       "recordingReference": "home",
@@ -310,7 +318,8 @@
       "theme": "light",
       "liveState": "partial",
       "focus": "#golden-main",
-      "announcement": null
+      "announcement": null,
+      "semanticAnnouncements": []
     },
     {
       "recordingReference": "home",
@@ -321,7 +330,8 @@
       "theme": "light",
       "liveState": "partial",
       "focus": "#golden-main",
-      "announcement": null
+      "announcement": null,
+      "semanticAnnouncements": []
     },
     {
       "recordingReference": "search",
@@ -332,7 +342,10 @@
       "theme": "light",
       "liveState": "filters-active",
       "focus": "button",
-      "announcement": "2 synthetic records shown; 0 without a score."
+      "announcement": "2 synthetic records shown; 0 without a score.",
+      "semanticAnnouncements": [
+        "Calculating the local result set Try oat, North Grain, or the review EAN 5901234123457."
+      ]
     },
     {
       "recordingReference": "search",
@@ -343,7 +356,10 @@
       "theme": "light",
       "liveState": "filters-active",
       "focus": "button",
-      "announcement": "2 synthetic records shown; 0 without a score."
+      "announcement": "2 synthetic records shown; 0 without a score.",
+      "semanticAnnouncements": [
+        "Calculating the local result set Try oat, North Grain, or the review EAN 5901234123457."
+      ]
     },
     {
       "recordingReference": "product",
@@ -354,7 +370,8 @@
       "theme": "light",
       "liveState": "unknown",
       "focus": "button[aria-haspopup='menu']",
-      "announcement": null
+      "announcement": null,
+      "semanticAnnouncements": []
     },
     {
       "recordingReference": "product",
@@ -365,7 +382,8 @@
       "theme": "light",
       "liveState": "unknown",
       "focus": "button[aria-haspopup='menu']",
-      "announcement": null
+      "announcement": null,
+      "semanticAnnouncements": []
     },
     {
       "recordingReference": "scanner",
@@ -376,7 +394,10 @@
       "theme": "dark",
       "liveState": "matched",
       "focus": "[role='status']",
-      "announcement": "SIMULATION STATUS North Grain Oat Drink matched with moderate data confidence."
+      "announcement": "SIMULATION STATUS North Grain Oat Drink matched with moderate data confidence.",
+      "semanticAnnouncements": [
+        "SIMULATION STATUS Barcode decoded. Local product lookup is in progress."
+      ]
     },
     {
       "recordingReference": "scanner",
@@ -387,7 +408,10 @@
       "theme": "dark",
       "liveState": "matched",
       "focus": "[role='status']",
-      "announcement": "SIMULATION STATUS North Grain Oat Drink matched with moderate data confidence."
+      "announcement": "SIMULATION STATUS North Grain Oat Drink matched with moderate data confidence.",
+      "semanticAnnouncements": [
+        "SIMULATION STATUS Barcode decoded. Local product lookup is in progress."
+      ]
     }
   ]
 }

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a2-golden-resilience-evidence",
-  "sourceSha": "c5edd0f6e43ff86646617a026ffbd0db3e579ad1",
-  "sourceTreeSha": "3c56ce832a0d2c9ddea6d16006150400656f2b76",
+  "sourceSha": "d640605b881b306325904633b54261103adb4509",
+  "sourceTreeSha": "68ad6ff05d94e19e850022f9e575ca0381eef453",
   "reviewOnly": true,
   "methodology": {
     "textSpacing": "Polish 390x844 with line-height 1.5, letter-spacing 0.12em, word-spacing 0.16em, and paragraph margin 2em. edgeRects enumerates every child rectangle outside the viewport and proves each is contained by an intentional horizontal scroller while document/root overflow remains bounded.",
@@ -480,6 +480,68 @@
       "decorativeMarks": 6,
       "invalidMarks": 0,
       "labeledWordmarks": 4
+    }
+  ],
+  "liveIdentitySemantics": [
+    {
+      "reference": "landing",
+      "ownerLockups": 1,
+      "totalMarks": 4,
+      "invalidMarks": 0,
+      "totalGlyphs": 11,
+      "invalidGlyphs": 0,
+      "labeledWordmarks": 2,
+      "productRecordMasterMarks": 0
+    },
+    {
+      "reference": "authentication",
+      "ownerLockups": 1,
+      "totalMarks": 3,
+      "invalidMarks": 0,
+      "totalGlyphs": 3,
+      "invalidGlyphs": 0,
+      "labeledWordmarks": 2,
+      "productRecordMasterMarks": 0
+    },
+    {
+      "reference": "home",
+      "ownerLockups": 1,
+      "totalMarks": 3,
+      "invalidMarks": 0,
+      "totalGlyphs": 4,
+      "invalidGlyphs": 0,
+      "labeledWordmarks": 2,
+      "productRecordMasterMarks": 0
+    },
+    {
+      "reference": "search",
+      "ownerLockups": 1,
+      "totalMarks": 4,
+      "invalidMarks": 0,
+      "totalGlyphs": 4,
+      "invalidGlyphs": 0,
+      "labeledWordmarks": 2,
+      "productRecordMasterMarks": 0
+    },
+    {
+      "reference": "product",
+      "ownerLockups": 1,
+      "totalMarks": 3,
+      "invalidMarks": 0,
+      "totalGlyphs": 5,
+      "invalidGlyphs": 0,
+      "labeledWordmarks": 2,
+      "productRecordMasterMarks": 0
+    },
+    {
+      "reference": "scanner",
+      "ownerLockups": 1,
+      "totalMarks": 3,
+      "invalidMarks": 0,
+      "totalGlyphs": 2,
+      "invalidGlyphs": 0,
+      "labeledWordmarks": 2,
+      "productRecordMasterMarks": 0
     }
   ]
 }
