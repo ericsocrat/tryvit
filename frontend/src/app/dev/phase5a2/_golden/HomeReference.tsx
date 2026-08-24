@@ -4,6 +4,7 @@ import { GOLDEN_COMMON_COPY } from "./common-copy";
 import type { GoldenRouteState } from "./contract";
 import { DecisionSummary } from "./GoldenEvidence";
 import { GoldenGlyph } from "./GoldenGlyph";
+import { GoldenSurfaceOwner } from "./GoldenIdentity";
 import { HomeControls } from "./HomeControls.client";
 import styles from "./golden.module.css";
 
@@ -60,7 +61,7 @@ const HOME_COPY = {
     savedNav: "Zapisane",
     recent: "Ostatnie decyzje",
     savedTitle: "Zapisane decyzje",
-    recentDetail: "North Grain Oat Drink · niepełne dane · 14 lipca",
+    recentDetail: "Napój owsiany North Grain · niepełne dane · 14 lipca",
     savedDetail: "Dwa porównywalne napoje owsiane · metoda v0.9",
     searchAction: "Wyszukaj produkty",
     scanAction: "Otwórz symulowany skaner",
@@ -94,7 +95,7 @@ const HOME_COPY = {
     savedNav: "Gespeichert",
     recent: "Letzte Entscheidungen",
     savedTitle: "Gespeicherte Entscheidungen",
-    recentDetail: "North Grain Oat Drink · teilweise Evidenz · 14. Juli",
+    recentDetail: "North Grain Hafergetränk · teilweise Evidenz · 14. Juli",
     savedDetail: "Zwei vergleichbare Hafergetränke · Methode v0.9",
     searchAction: "Produkte suchen",
     scanAction: "Simulierten Scanner öffnen",
@@ -131,7 +132,7 @@ export function HomeReference({ route }: Readonly<{ route: GoldenRouteState }>) 
   return (
     <article className={styles.homeReference}>
       <header className={styles.appHeader}>
-        <div><p className={styles.eyebrow}>{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.intro}</p></div>
+        <div><GoldenSurfaceOwner label={common.ownerLabel} /><p className={styles.eyebrow}>{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.intro}</p></div>
         <nav aria-label={copy.eyebrow} className={styles.appNav}>
           <a aria-current="page" href="#golden-main"><GoldenGlyph name="decision" />{copy.home}</a>
           <a href={`/dev/phase5a2/golden/search?${query}&state=results`}><GoldenGlyph name="compare" />{copy.discover}</a>
@@ -167,7 +168,8 @@ export function HomeReference({ route }: Readonly<{ route: GoldenRouteState }>) 
             decision={copy.decision}
             mainReason={copy.reason}
             nextAction={<HomeControls hideLabel={copy.hide} menuLabel={copy.menu} resumeLabel={copy.resume} resumedMessage={copy.resumed} saveLabel={copy.save} savedMessage={copy.saved} />}
-            score={72}
+            provisionalScore={72}
+            score={null}
           />
         </section>
       )}

@@ -33,6 +33,8 @@ export const SEARCH_COPY = {
     open: "Inspect evidence",
     recent: "Recent searches",
     suggestion: "Suggested synthetic query",
+    suggestionProduct: "North Grain Oat Drink — review fixture",
+    recordGlyphLabel: "Synthetic product record",
     typingTitle: "Query in progress",
     typingDetail: "Submit the current query or choose a deterministic suggestion after it is prepared.",
     records: {
@@ -73,6 +75,8 @@ export const SEARCH_COPY = {
     open: "Przejrzyj dane",
     recent: "Ostatnie wyszukiwania",
     suggestion: "Sugerowane zapytanie syntetyczne",
+    suggestionProduct: "Napój owsiany North Grain — materiał testowy",
+    recordGlyphLabel: "Syntetyczny rekord produktu",
     typingTitle: "Wpisywanie zapytania",
     typingDetail: "Wyślij bieżące zapytanie albo wybierz deterministyczną sugestię po jej przygotowaniu.",
     records: {
@@ -113,6 +117,8 @@ export const SEARCH_COPY = {
     open: "Evidenz prüfen",
     recent: "Letzte Suchen",
     suggestion: "Vorgeschlagene synthetische Suche",
+    suggestionProduct: "North Grain Hafergetränk — synthetischer Prüfsatz",
+    recordGlyphLabel: "Synthetischer Produktdatensatz",
     typingTitle: "Suchbegriff wird eingegeben",
     typingDetail: "Die aktuelle Suche absenden oder nach der Vorbereitung einen deterministischen Vorschlag wählen.",
     records: {

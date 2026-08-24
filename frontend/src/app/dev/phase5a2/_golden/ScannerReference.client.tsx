@@ -6,9 +6,10 @@ import { Button } from "@/design-system/primitives/Button/Button";
 import { Input } from "@/design-system/primitives/Field";
 
 import type { GoldenCommonCopy } from "./common-copy";
-import type { GOLDEN_REFERENCE_STATES, GoldenRouteState } from "./contract";
+import { GOLDEN_ASYNC_STATE_DWELL_MS, type GOLDEN_REFERENCE_STATES, type GoldenRouteState } from "./contract";
 import { DecisionSummary } from "./GoldenEvidence";
 import { GoldenGlyph } from "./GoldenGlyph";
+import { GoldenSurfaceOwner } from "./GoldenIdentity";
 import type { ScannerCopy } from "./scanner-copy";
 import styles from "./golden.module.css";
 
@@ -81,9 +82,9 @@ export function ScannerExperience({
     const generation = ++generationRef.current;
     const timeout = window.setTimeout(() => {
       if (generationRef.current === generation) dispatch("match");
-    }, route.motion === "reduced" ? 0 : 360);
+    }, GOLDEN_ASYNC_STATE_DWELL_MS);
     return () => window.clearTimeout(timeout);
-  }, [route.motion, state]);
+  }, [state]);
 
   function send(event: ScannerEvent) {
     armedRef.current = true;
@@ -112,9 +113,9 @@ export function ScannerExperience({
   const uncertain = state === "uncertain-match" || state === "partial-match";
 
   return (
-    <article className={styles.scannerReference} data-golden-client="scanner-machine" data-golden-live-state={state} ref={rootRef}>
+    <article className={styles.scannerReference} data-golden-client="scanner-machine" data-golden-live-state={state} data-golden-semantic-dwell-ms={state === "processing" ? GOLDEN_ASYNC_STATE_DWELL_MS : undefined} ref={rootRef}>
       <header className={styles.scannerHeader}>
-        <div><p className={styles.eyebrow}>{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.intro}</p></div>
+        <div><GoldenSurfaceOwner label={common.ownerLabel} /><p className={styles.eyebrow}>{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.intro}</p></div>
         <span className={styles.noCamera}><GoldenGlyph name="scanner" />{copy.noCamera}</span>
       </header>
 
@@ -163,7 +164,7 @@ export function ScannerExperience({
       </section>
 
       {state === "matched" ? (
-        <DecisionSummary copy={common} decision={copy.resultDecision} mainReason={copy.resultReason} nextAction={<a className={styles.secondaryAnchor} href={`/dev/phase5a2/golden/product?locale=${route.locale}&theme=${route.theme}&motion=${route.motion}&state=partial${route.capture ? "&capture=1" : ""}`}>{common.referenceNames.product}</a>} score={72} />
+        <DecisionSummary copy={common} decision={copy.resultDecision} mainReason={copy.resultReason} nextAction={<a className={styles.secondaryAnchor} href={`/dev/phase5a2/golden/product?locale=${route.locale}&theme=${route.theme}&motion=${route.motion}&state=partial${route.capture ? "&capture=1" : ""}`}>{common.referenceNames.product}</a>} provisionalScore={72} score={null} />
       ) : uncertain ? (
         <DecisionSummary confidence={common.unknown} confidenceReason={common.unknownInvariant} copy={common} decision={copy.resultDecision} mainReason={stateText} nextAction={<Button onClick={() => send("retry")}>{copy.retry}</Button>} score={null} />
       ) : null}

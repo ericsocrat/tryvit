@@ -8,6 +8,7 @@ export interface DecisionSummaryProps {
   readonly copy: GoldenCommonCopy;
   readonly decision: string;
   readonly score?: number | null;
+  readonly provisionalScore?: number;
   readonly confidence?: string;
   readonly confidenceReason?: string;
   readonly mainReason: string;
@@ -19,6 +20,7 @@ export function DecisionSummary({
   copy,
   decision,
   score,
+  provisionalScore,
   confidence = copy.confidenceValue,
   confidenceReason = copy.confidenceReason,
   mainReason,
@@ -43,6 +45,11 @@ export function DecisionSummary({
           <strong className={styles.unknownValue}>{copy.unknown}</strong>
         )}
         <small>{typeof score === "number" ? copy.scoreDerived : copy.unknownInvariant}</small>
+        {typeof score !== "number" && typeof provisionalScore === "number" ? (
+          <small className={styles.provisionalValue}>
+            {copy.provisionalScore}: {provisionalScore}/100 · {copy.incomplete}
+          </small>
+        ) : null}
       </div>
       <div className={styles.decisionReason}>
         <span className={styles.eyebrow}>{copy.dataConfidence}</span>

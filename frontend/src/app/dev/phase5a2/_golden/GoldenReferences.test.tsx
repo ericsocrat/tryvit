@@ -134,7 +134,7 @@ describe("Phase 5A.2 Golden Reference rendered contracts", () => {
 
     fireEvent.change(email, { target: { value: "review@tryvit.local" } });
     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
-    await screen.findByText("Local sign-in completed");
+    await screen.findByText("Local sign-in completed", {}, { timeout: 2_500 });
     cleanup();
 
     renderFramed(route("authentication", "sign-in"));
@@ -176,16 +176,17 @@ describe("Phase 5A.2 Golden Reference rendered contracts", () => {
   it("executes Search query, deterministic settlement, filters, and retry", async () => {
     const view = renderFramed(route("search", "no-query"));
     const workspace = within(view.container.querySelector("[data-golden-client='search-workspace']") as HTMLElement);
+    const resultCount = view.container.querySelector("[data-golden-result-count]") as HTMLElement;
     const input = screen.getByLabelText("Search synthetic products");
     fireEvent.change(input, { target: { value: "oat" } });
     expect(screen.getByText("Query in progress")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Search", exact: true }));
-    await waitFor(() => expect(workspace.getByRole("status")).toHaveTextContent("3 synthetic records"));
+    await waitFor(() => expect(resultCount).toHaveTextContent("3 synthetic records"), { timeout: 2_500 });
     fireEvent.click(screen.getByRole("button", { name: "Filters" }));
     const dialog = await screen.findByRole("dialog", { name: "Filters" });
     fireEvent.click(within(dialog).getByLabelText("Include records without a score"));
     fireEvent.click(within(dialog).getByRole("button", { name: "Apply filters" }));
-    await waitFor(() => expect(workspace.getByRole("status")).toHaveTextContent("2 synthetic records"));
+    await waitFor(() => expect(resultCount).toHaveTextContent("2 synthetic records"), { timeout: 2_500 });
     cleanup();
 
     renderFramed(route("search", "service-error"));
@@ -206,6 +207,14 @@ describe("Phase 5A.2 Golden Reference rendered contracts", () => {
     expect(within(view.container.querySelector("[data-golden-client='product-actions']") as HTMLElement).getByRole("status")).toHaveTextContent("Added to the local comparison");
   });
 
+  it("keeps incomplete numeric output secondary to the not-assessed decision", () => {
+    const view = renderFramed(route("home", "returning"));
+    const summary = within(view.container.querySelector("[data-golden-decision-summary]") as HTMLElement);
+    expect(summary.getByText("Not assessed")).toBeInTheDocument();
+    expect(summary.getByText(/Provisional method output: 72\/100/u)).toBeInTheDocument();
+    expect(view.container.querySelector("[class*='scoreValue']")).toBeNull();
+  });
+
   it("executes Scanner permission, recognition, interruption, manual, and contribution paths", async () => {
     renderFramed(route("scanner", "not-requested"));
     fireEvent.click(screen.getByRole("button", { name: "Review permission request" }));
@@ -216,7 +225,7 @@ describe("Phase 5A.2 Golden Reference rendered contracts", () => {
     fireEvent.click(screen.getByRole("button", { name: "Resume interrupted scan" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Build evidence result" })).toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: "Build evidence result" }));
-    await screen.findByText(/matched with moderate data confidence/u);
+    await screen.findByText(/matched with moderate data confidence/u, {}, { timeout: 2_500 });
     fireEvent.click(screen.getByRole("button", { name: "Start another simulated scan" }));
     cleanup();
 

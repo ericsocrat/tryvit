@@ -11,6 +11,13 @@ export const PHASE5A2_GOLDEN_LOCALES = ["en", "pl", "de"] as const;
 export const PHASE5A2_GOLDEN_THEMES = ["light", "dark"] as const;
 export const PHASE5A2_GOLDEN_MOTION_MODES = ["full", "reduced"] as const;
 
+// Async state dwell is semantic, not decorative motion. Full and reduced-motion
+// journeys retain the same perceptible interval so polite live announcements cannot
+// be replaced by the terminal state in the next rendered frame.
+export const GOLDEN_ASYNC_STATE_DWELL_MS = 1_000;
+export const GOLDEN_ASYNC_STATE_ASSERT_MS = 750;
+export const GOLDEN_REDIRECT_DWELL_MS = 400;
+
 export type GoldenReference = (typeof PHASE5A2_GOLDEN_REFERENCES)[number];
 export type GoldenLocale = (typeof PHASE5A2_GOLDEN_LOCALES)[number];
 export type GoldenTheme = (typeof PHASE5A2_GOLDEN_THEMES)[number];

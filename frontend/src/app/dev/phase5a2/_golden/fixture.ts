@@ -24,6 +24,7 @@ export interface GoldenProductFixture {
   readonly sourceLabel: string;
   readonly observedOn: string;
   readonly decisionScore: number | null;
+  readonly decisionScoreStatus: "complete" | "provisional" | "not-assessed";
   readonly dataConfidence: "moderate" | "limited" | "unavailable";
   readonly confidenceReason: string;
   readonly mainReason: string;
@@ -38,6 +39,7 @@ export const GOLDEN_PRIMARY_PRODUCT = Object.freeze({
   sourceLabel: "One synthetic package transcription",
   observedOn: "2026-07-14T12:00:00.000Z",
   decisionScore: 72,
+  decisionScoreStatus: "provisional",
   dataConfidence: "moderate",
   confidenceReason: "One package transcription; zero independent checks.",
   mainReason: "Sugars are available, while processing classification is not assessed.",
@@ -133,6 +135,7 @@ export const GOLDEN_SEARCH_PRODUCTS = Object.freeze([
     sourceLabel: "Syntetyczny rekord opakowania",
     observedOn: "2026-07-13T12:00:00.000Z",
     decisionScore: 66,
+    decisionScoreStatus: "provisional",
     dataConfidence: "limited",
     confidenceReason: "Nutrition table available; ingredient percentages are incomplete.",
     mainReason: "Comparable nutrition is available, but ingredient detail is partial.",
@@ -146,6 +149,7 @@ export const GOLDEN_SEARCH_PRODUCTS = Object.freeze([
     sourceLabel: "Synthetischer Verpackungsdatensatz",
     observedOn: "2026-07-11T12:00:00.000Z",
     decisionScore: null,
+    decisionScoreStatus: "not-assessed",
     dataConfidence: "unavailable",
     confidenceReason: "A required score input is unavailable.",
     mainReason: "No score is shown because the record cannot be compared safely.",

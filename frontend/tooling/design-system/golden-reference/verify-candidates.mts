@@ -220,6 +220,16 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
     const announcementValid = expectedAnnouncement === "none"
       ? record.announcement === null
       : typeof record.announcement === "string" && record.announcement.includes(expectedAnnouncement);
+    const expectedSemanticAnnouncements = contract.steps
+      .filter((step) => ["busy", "results-loading", "processing"].includes(step.expectedState))
+      .map((step) => step.expectedAnnouncement)
+      .filter((value): value is string => typeof value === "string");
+    const semanticAnnouncementsValid = Array.isArray(record.semanticAnnouncements) &&
+      record.semanticAnnouncements.length === expectedSemanticAnnouncements.length &&
+      expectedSemanticAnnouncements.every((expected, semanticIndex) =>
+        typeof record.semanticAnnouncements?.[semanticIndex] === "string" &&
+        (record.semanticAnnouncements[semanticIndex] as string).includes(expected),
+      );
     if (
       record.recordingReference !== capture.reference ||
       record.mode !== capture.mode ||
@@ -228,7 +238,8 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
       record.focus !== contract.terminal.focus ||
       typeof record.route !== "string" ||
       !record.route.startsWith(`/dev/phase5a2/golden/${contract.terminal.reference}?`) ||
-      !announcementValid
+      !announcementValid ||
+      !semanticAnnouncementsValid
     ) {
       fail("journey-terminal-invalid");
     }
@@ -326,7 +337,9 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
     !Array.isArray(resilience.typography) ||
     resilience.typography.length !== 4 ||
     !Array.isArray(resilience.identitySemantics) ||
-    resilience.identitySemantics.length !== 2
+    resilience.identitySemantics.length !== 2 ||
+    !Array.isArray(resilience.liveIdentitySemantics) ||
+    resilience.liveIdentitySemantics.length !== GOLDEN_REFERENCE_IDS.length
   ) fail("resilience-contract-invalid");
   for (const value of [...resilience.textSpacing, ...resilience.reflow] as unknown[]) {
     if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -378,6 +391,22 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
       typeof record.decorativeMarks !== "number" ||
       (record.labeledMarks as number) + (record.decorativeMarks as number) !== record.totalMarks
     ) fail("resilience-identity-semantics-invalid");
+  }
+  for (const [index, value] of (resilience.liveIdentitySemantics as unknown[]).entries()) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      fail("resilience-live-identity-semantics-invalid");
+    }
+    const record = value as Record<string, unknown>;
+    if (
+      record.reference !== GOLDEN_REFERENCE_IDS[index] ||
+      typeof record.ownerLockups !== "number" ||
+      record.ownerLockups < 1 ||
+      typeof record.labeledWordmarks !== "number" ||
+      record.labeledWordmarks < 1 ||
+      record.invalidMarks !== 0 ||
+      record.invalidGlyphs !== 0 ||
+      record.productRecordMasterMarks !== 0
+    ) fail("resilience-live-identity-semantics-invalid");
   }
   for (const [index, reference] of GOLDEN_REFERENCE_IDS.entries()) {
     const candidate = performance.summaries[index];

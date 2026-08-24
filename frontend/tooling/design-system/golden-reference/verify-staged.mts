@@ -13,6 +13,7 @@ import {
 
 import {
   GOLDEN_COMMITTED_BINARY_LIMIT_BYTES,
+  GOLDEN_JOURNEYS,
   GOLDEN_MOTION_RECORDINGS,
   goldenEvidenceRoot,
   motionTerminalStillRelativePath,
@@ -150,6 +151,12 @@ for (const [index, capture] of GOLDEN_MOTION_RECORDINGS.entries()) {
     !terminal
   ) fail("staged-terminal-provenance-invalid");
   const record = actual as Record<string, unknown>;
+  const contract = GOLDEN_JOURNEYS.find(({ reference }) => reference === capture.reference);
+  const expectedSemanticAnnouncements = contract?.steps
+    .filter((step) => ["busy", "results-loading", "processing"].includes(step.expectedState))
+    .map((step) => step.expectedAnnouncement)
+    .filter((value): value is string => typeof value === "string") ?? [];
+  const semanticAnnouncements = record.semanticAnnouncements;
   if (
     record.recordingReference !== capture.reference ||
     record.mode !== capture.mode ||
@@ -157,7 +164,13 @@ for (const [index, capture] of GOLDEN_MOTION_RECORDINGS.entries()) {
     terminal.reference !== record.reference ||
     terminal.state !== record.liveState ||
     terminal.theme !== record.theme ||
-    terminal.motion !== capture.motion
+    terminal.motion !== capture.motion ||
+    !Array.isArray(semanticAnnouncements) ||
+    semanticAnnouncements.length !== expectedSemanticAnnouncements.length ||
+    expectedSemanticAnnouncements.some((expected, semanticIndex) =>
+      typeof semanticAnnouncements[semanticIndex] !== "string" ||
+      !(semanticAnnouncements[semanticIndex] as string).includes(expected),
+    )
   ) fail("staged-terminal-provenance-invalid");
   const locale = new URL(record.route as string, "http://golden.invalid").searchParams.get("locale");
   if (terminal.locale !== locale) fail("staged-terminal-provenance-invalid");
@@ -207,8 +220,25 @@ if (
   !Array.isArray(resilience.typography) ||
   resilience.typography.length !== 4 ||
   !Array.isArray(resilience.identitySemantics) ||
-  resilience.identitySemantics.length !== 2
+  resilience.identitySemantics.length !== 2 ||
+  !Array.isArray(resilience.liveIdentitySemantics) ||
+  resilience.liveIdentitySemantics.length !== 6
 ) fail("staged-resilience-proof-invalid");
+for (const value of resilience.liveIdentitySemantics as unknown[]) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    fail("staged-live-identity-semantics-invalid");
+  }
+  const record = value as Record<string, unknown>;
+  if (
+    typeof record.ownerLockups !== "number" ||
+    record.ownerLockups < 1 ||
+    typeof record.labeledWordmarks !== "number" ||
+    record.labeledWordmarks < 1 ||
+    record.invalidMarks !== 0 ||
+    record.invalidGlyphs !== 0 ||
+    record.productRecordMasterMarks !== 0
+  ) fail("staged-live-identity-semantics-invalid");
+}
 
 const sensitivePatterns = [
   /[A-Za-z]:\\/u,

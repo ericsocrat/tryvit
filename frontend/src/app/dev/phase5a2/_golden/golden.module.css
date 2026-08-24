@@ -110,6 +110,38 @@
   height: 24px;
 }
 
+.surfaceOwner {
+  max-width: 100%;
+  width: fit-content;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  margin-bottom: 0.85rem;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--gr-rule-soft);
+  color: var(--gr-brand-deep);
+  background: var(--gr-paper);
+}
+
+.surfaceOwner > span[data-golden-lockup] {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.surfaceOwner svg[data-golden-wordmark] {
+  width: 76px;
+  height: 19px;
+}
+
+.surfaceOwner > span:last-child {
+  flex: 1 1 150px;
+  color: var(--gr-secondary);
+  font-size: 0.75rem;
+  font-weight: 750;
+}
+
 .reviewLabel {
   margin: 0;
   padding-inline: 1.5rem;
@@ -2032,6 +2064,13 @@
   color: var(--gr-secondary);
 }
 
+.provisionalValue {
+  max-width: 28ch;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--gr-rule-soft);
+  font-variant-numeric: tabular-nums;
+}
+
 @media (max-width: 900px) {
   .landingHero {
     grid-template-columns: 1fr;
@@ -2303,6 +2342,14 @@
     min-height: auto;
     border-inline-end: 0;
     border-top: 1px solid var(--gr-rule);
+  }
+
+  .authIdentity {
+    grid-template-columns: 1fr;
+  }
+
+  .authIdentity > i {
+    display: none;
   }
 
   .authPanel {

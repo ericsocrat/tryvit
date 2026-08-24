@@ -6,6 +6,8 @@ export interface GoldenCommonCopy {
   readonly decision: string;
   readonly score: string;
   readonly scoreDerived: string;
+  readonly provisionalScore: string;
+  readonly incomplete: string;
   readonly dataConfidence: string;
   readonly confidenceValue: string;
   readonly confidenceReason: string;
@@ -21,6 +23,7 @@ export interface GoldenCommonCopy {
   readonly retry: string;
   readonly close: string;
   readonly states: string;
+  readonly ownerLabel: string;
   readonly referenceNames: Readonly<Record<GoldenReference, string>>;
 }
 
@@ -31,6 +34,8 @@ export const GOLDEN_COMMON_COPY: Readonly<Record<GoldenLocale, GoldenCommonCopy>
     decision: "Decision",
     score: "Concept score",
     scoreDerived: "Derived by TryVit review method v0.9",
+    provisionalScore: "Provisional method output",
+    incomplete: "Incomplete—required input missing",
     dataConfidence: "Data confidence",
     confidenceValue: "Moderate",
     confidenceReason: "One package transcription; zero independent checks.",
@@ -46,6 +51,7 @@ export const GOLDEN_COMMON_COPY: Readonly<Record<GoldenLocale, GoldenCommonCopy>
     retry: "Try again",
     close: "Close",
     states: "Reference states",
+    ownerLabel: "TryVit · review method owner",
     referenceNames: {
       landing: "Landing",
       authentication: "Authentication",
@@ -61,6 +67,8 @@ export const GOLDEN_COMMON_COPY: Readonly<Record<GoldenLocale, GoldenCommonCopy>
     decision: "Decyzja",
     score: "Wynik koncepcyjny",
     scoreDerived: "Wyliczony metodą przeglądową TryVit v0.9",
+    provisionalScore: "Wstępny wynik metody",
+    incomplete: "Niepełny—brakuje wymaganej danej",
     dataConfidence: "Wiarygodność danych",
     confidenceValue: "Umiarkowana",
     confidenceReason: "Jeden zapis z opakowania; bez niezależnej weryfikacji.",
@@ -76,6 +84,7 @@ export const GOLDEN_COMMON_COPY: Readonly<Record<GoldenLocale, GoldenCommonCopy>
     retry: "Spróbuj ponownie",
     close: "Zamknij",
     states: "Stany widoku",
+    ownerLabel: "TryVit · właściciel metody przeglądowej",
     referenceNames: {
       landing: "Strona główna",
       authentication: "Logowanie",
@@ -91,6 +100,8 @@ export const GOLDEN_COMMON_COPY: Readonly<Record<GoldenLocale, GoldenCommonCopy>
     decision: "Entscheidung",
     score: "Konzeptioneller Wert",
     scoreDerived: "Abgeleitet mit TryVit-Prüfmethode v0.9",
+    provisionalScore: "Vorläufige Methodenausgabe",
+    incomplete: "Unvollständig—erforderliche Eingabe fehlt",
     dataConfidence: "Datenverlässlichkeit",
     confidenceValue: "Mittel",
     confidenceReason: "Eine Verpackungsabschrift; keine unabhängige Prüfung.",
@@ -106,6 +117,7 @@ export const GOLDEN_COMMON_COPY: Readonly<Record<GoldenLocale, GoldenCommonCopy>
     retry: "Erneut versuchen",
     close: "Schließen",
     states: "Referenzzustände",
+    ownerLabel: "TryVit · Inhaber der Prüfmethode",
     referenceNames: {
       landing: "Startseite",
       authentication: "Anmeldung",

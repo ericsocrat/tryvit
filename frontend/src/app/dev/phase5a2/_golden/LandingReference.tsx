@@ -2,7 +2,7 @@ import { GOLDEN_COMMON_COPY } from "./common-copy";
 import type { GoldenRouteState } from "./contract";
 import { EvidenceBand, StateNotice } from "./GoldenEvidence";
 import { GoldenGlyph } from "./GoldenGlyph";
-import { GoldenMark } from "./GoldenIdentity";
+import { GoldenMark, GoldenSurfaceOwner } from "./GoldenIdentity";
 import { PackageLabelNarrative } from "./PackageLabelNarrative.client";
 import styles from "./golden.module.css";
 
@@ -132,6 +132,7 @@ export function LandingReference({ route }: Readonly<{ route: GoldenRouteState }
     <article className={styles.landing}>
       <section className={styles.landingHero}>
         <div className={styles.heroCopy}>
+          <GoldenSurfaceOwner label={common.ownerLabel} />
           <p className={styles.eyebrow}>{copy.eyebrow}</p>
           <h1>{copy.title}</h1>
           <p className={styles.heroIntro}>{copy.intro}</p>

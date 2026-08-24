@@ -2,7 +2,7 @@ import type { GoldenRouteState } from "./contract";
 import { GOLDEN_COMMON_COPY } from "./common-copy";
 import { SEARCH_COPY } from "./search-copy";
 import { SearchWorkspace } from "./SearchWorkspace.client";
-import { GoldenMark } from "./GoldenIdentity";
+import { GoldenMark, GoldenSurfaceOwner } from "./GoldenIdentity";
 import styles from "./golden.module.css";
 
 const HEADER_COPY = {
@@ -17,7 +17,7 @@ export function SearchReference({ route }: Readonly<{ route: GoldenRouteState }>
   const common = GOLDEN_COMMON_COPY[route.locale];
   return (
     <article className={styles.searchReference}>
-      <header className={styles.searchHeader}><div aria-hidden="true" className={styles.searchIdentity}><GoldenMark size="large" /><i /></div><p className={styles.eyebrow}>{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.intro}</p></header>
+      <header className={styles.searchHeader}><div aria-hidden="true" className={styles.searchIdentity}><GoldenMark size="large" /><i /></div><GoldenSurfaceOwner label={common.ownerLabel} /><p className={styles.eyebrow}>{copy.eyebrow}</p><h1>{copy.title}</h1><p>{copy.intro}</p></header>
       <SearchWorkspace common={common} copy={workspaceCopy} route={route} />
     </article>
   );

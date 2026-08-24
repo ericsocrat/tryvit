@@ -170,6 +170,7 @@ test("scanner performs no camera call and completes the synthetic match", async 
   await page.getByRole("button", { name: "Recognize synthetic barcode" }).click();
   await page.getByRole("button", { name: "Build evidence result" }).click();
   await expect(page.locator("[data-golden-live-state='matched']")).toBeVisible();
+  await expect(page.locator("[data-golden-decision-summary]")).toContainText("Not assessed");
   await expect(page.locator("[data-golden-decision-summary]")).toContainText("72");
   expect(await page.evaluate(() => (window as unknown as { __goldenMediaCalls: { calls: number } }).__goldenMediaCalls.calls)).toBe(0);
 });

@@ -69,6 +69,16 @@ const identitySemanticsEvidence: Array<Readonly<{
   invalidMarks: number;
   labeledWordmarks: number;
 }>> = [];
+const liveIdentitySemanticsEvidence: Array<Readonly<{
+  reference: string;
+  ownerLockups: number;
+  totalMarks: number;
+  invalidMarks: number;
+  totalGlyphs: number;
+  invalidGlyphs: number;
+  labeledWordmarks: number;
+  productRecordMasterMarks: number;
+}>> = [];
 
 async function readTypographyGeometry(page: Page): Promise<TypographyGeometry> {
   return page.locator("[data-golden-asset-board='typography']").evaluate((board) => {
@@ -474,6 +484,38 @@ test("identity board remains fully contained by the 1440x900 canvas", async ({ p
   }
 });
 
+test("every live reference keeps TryVit ownership distinct from product-record glyphs", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  for (const reference of GOLDEN_REFERENCE_IDS) {
+    await admit(page, routeFor(reference, defaultGoldenState(reference)));
+    const semantics = await page.locator("[data-golden-reference]").evaluate((root) => {
+      const marks = [...root.querySelectorAll<SVGElement>("svg[data-golden-mark]")];
+      const glyphs = [...root.querySelectorAll<SVGElement>("svg[data-golden-glyph]")];
+      const wordmarks = [...root.querySelectorAll<SVGElement>("svg[data-golden-wordmark]")];
+      const validGraphic = (graphic: SVGElement) =>
+        graphic.getAttribute("aria-hidden") === "true" ||
+        (graphic.getAttribute("role") === "img" && Boolean(graphic.getAttribute("aria-label")?.trim()));
+      return {
+        ownerLockups: root.querySelectorAll("[data-golden-surface-owner] [data-golden-lockup='horizontal']").length,
+        totalMarks: marks.length,
+        invalidMarks: marks.filter((mark) => !validGraphic(mark)).length,
+        totalGlyphs: glyphs.length,
+        invalidGlyphs: glyphs.filter((glyph) => !validGraphic(glyph)).length,
+        labeledWordmarks: wordmarks.filter((wordmark) =>
+          wordmark.getAttribute("role") === "img" && Boolean(wordmark.getAttribute("aria-label")?.trim()),
+        ).length,
+        productRecordMasterMarks: root.querySelectorAll("[data-golden-product-record] svg[data-golden-mark]").length,
+      };
+    });
+    liveIdentitySemanticsEvidence.push({ reference, ...semantics });
+    expect(semantics.ownerLockups, reference).toBeGreaterThanOrEqual(1);
+    expect(semantics.labeledWordmarks, reference).toBeGreaterThanOrEqual(1);
+    expect(semantics.invalidMarks, reference).toBe(0);
+    expect(semantics.invalidGlyphs, reference).toBe(0);
+    expect(semantics.productRecordMasterMarks, reference).toBe(0);
+  }
+});
+
 test("long German landing actions remain inside the governed desktop capture", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await admit(page, routeFor("landing", "ready", "de", "dark"));
@@ -501,8 +543,19 @@ for (const localization of [
 }
 
 for (const localization of [
-  { locale: "pl" as const, title: "North Grain Oat Drink — rekord testowy" },
-  { locale: "de" as const, title: "North Grain Oat Drink — Prüfmuster" },
+  { locale: "pl" as const, title: "Napój owsiany North Grain · niepełne dane · 14 lipca" },
+  { locale: "de" as const, title: "North Grain Hafergetränk · teilweise Evidenz · 14. Juli" },
+]) {
+  test(`localized home fixture title matches Search and Product · ${localization.locale}`, async ({ page }) => {
+    await admit(page, routeFor("home", "returning", localization.locale));
+    await expect(page.getByText(localization.title, { exact: true })).toBeVisible();
+    await expect(page.locator("[data-golden-reference='home']")).not.toContainText("North Grain Oat Drink");
+  });
+}
+
+for (const localization of [
+  { locale: "pl" as const, title: "Napój owsiany North Grain — rekord testowy" },
+  { locale: "de" as const, title: "North Grain Hafergetränk — Prüfmuster" },
 ]) {
   test(`localized product fixture title is complete · ${localization.locale}`, async ({ page }) => {
     await page.setViewportSize({ width: localization.locale === "pl" ? 390 : 1440, height: 900 });
@@ -520,6 +573,7 @@ test.afterAll(() => {
   expect(reflowEvidence).toHaveLength(6);
   expect(typographyGeometryEvidence).toHaveLength(4);
   expect(identitySemanticsEvidence).toHaveLength(2);
+  expect(liveIdentitySemanticsEvidence).toHaveLength(6);
   writeFileSync(
     goldenOutputPath("resilience.json"),
     `${JSON.stringify({
@@ -537,6 +591,7 @@ test.afterAll(() => {
       reflow: reflowEvidence,
       typography: typographyGeometryEvidence,
       identitySemantics: identitySemanticsEvidence,
+      liveIdentitySemantics: liveIdentitySemanticsEvidence,
     }, null, 2)}\n`,
     "utf8",
   );

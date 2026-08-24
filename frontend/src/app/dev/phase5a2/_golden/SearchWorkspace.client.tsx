@@ -8,15 +8,17 @@ import { Checkbox, Input } from "@/design-system/primitives/Field";
 import { Sheet } from "@/design-system/primitives/Overlay";
 
 import type { GoldenCommonCopy } from "./common-copy";
-import type { GOLDEN_REFERENCE_STATES, GoldenRouteState } from "./contract";
-import { GOLDEN_SEARCH_PRODUCTS } from "./fixture";
+import { GOLDEN_ASYNC_STATE_DWELL_MS, type GOLDEN_REFERENCE_STATES, type GoldenRouteState } from "./contract";
+import { GOLDEN_SEARCH_PRODUCTS, type GoldenProductFixture } from "./fixture";
 import type { SearchCopy } from "./search-copy";
 import { GoldenGlyph } from "./GoldenGlyph";
-import { GoldenMark } from "./GoldenIdentity";
 import styles from "./golden.module.css";
 
 type SearchState = (typeof GOLDEN_REFERENCE_STATES.search)[number];
 
+function scoreStatusOf(product: GoldenProductFixture): GoldenProductFixture["decisionScoreStatus"] {
+  return product.decisionScoreStatus;
+}
 
 function SearchFilters({
   prefix,
@@ -71,9 +73,9 @@ export function SearchWorkspace({
     const generation = ++generationRef.current;
     const timeout = window.setTimeout(() => {
       if (generationRef.current === generation) setState(query.trim() ? "results" : "empty");
-    }, route.motion === "reduced" ? 0 : 240);
+    }, GOLDEN_ASYNC_STATE_DWELL_MS);
     return () => window.clearTimeout(timeout);
-  }, [query, route.motion, state]);
+  }, [query, state]);
 
   const products = useMemo(
     () => GOLDEN_SEARCH_PRODUCTS.filter((product) =>
@@ -113,7 +115,7 @@ export function SearchWorkspace({
             : null;
 
   return (
-    <div className={styles.searchWorkspace} data-golden-client="search-workspace" data-golden-live-state={state} ref={rootRef}>
+    <div className={styles.searchWorkspace} data-golden-client="search-workspace" data-golden-live-state={state} data-golden-semantic-dwell-ms={state === "results-loading" ? GOLDEN_ASYNC_STATE_DWELL_MS : undefined} ref={rootRef}>
       <form className={styles.searchForm} onSubmit={submit} role="search">
         <Input
           autoComplete="off"
@@ -141,7 +143,7 @@ export function SearchWorkspace({
       {state === "suggestions" && query ? (
         <section aria-label={copy.suggestion} className={styles.suggestions}>
           <p className={styles.eyebrow}>{copy.suggestion}</p>
-          <button onClick={() => { setQuery("North Grain Oat Drink"); armedRef.current = true; setState("results-loading"); }} type="button">North Grain Oat Drink — review fixture</button>
+          <button onClick={() => { setQuery(copy.suggestionProduct); armedRef.current = true; setState("results-loading"); }} type="button">{copy.suggestionProduct}</button>
           <button onClick={() => { setQuery("5901234123457"); armedRef.current = true; setState("results-loading"); }} type="button">5901234123457</button>
         </section>
       ) : null}
@@ -158,7 +160,7 @@ export function SearchWorkspace({
             <GoldenGlyph name="compare" />
             <div><strong>{copy.summary}</strong><p>{includePartial && includeUnknown ? copy.allRecords : [includePartial ? copy.withPartial : "", includeUnknown ? copy.withUnknown : ""].filter(Boolean).join(" · ")}</p></div>
           </div>
-          <div aria-atomic="true" aria-live="polite" className={styles.resultCount} role="status">
+          <div aria-atomic="true" aria-live="polite" className={styles.resultCount} data-golden-result-count="" role="status">
             {["results", "filters-active", "degraded", "offline-cache"].includes(state) ? visibleResultCount : ""}
           </div>
           {state === "degraded" ? <PageState description={copy.degradedDetail} headingLevel={2} status="degraded" title={copy.degraded} /> : null}
@@ -174,12 +176,13 @@ export function SearchWorkspace({
             <div className={styles.resultList}>
               {products.map((product) => {
                 const record = copy.records[product.id];
+                const scoreStatus = scoreStatusOf(product);
                 return (
                 <article className={styles.resultRow} key={product.id}>
-                  <div className={styles.resultIdentity}><span className={styles.productThumb}><GoldenMark size="small" /></span><div><h2>{record.name}</h2><p>{product.brand} · {product.ean}</p></div></div>
+                  <div className={styles.resultIdentity}><span className={styles.productThumb} data-golden-product-record=""><GoldenGlyph label={copy.recordGlyphLabel} name="source" size={32} /></span><div><h2>{record.name}</h2><p>{product.brand} · {product.ean}</p></div></div>
                   <div><span className={styles.eyebrow}>{common.decision}</span><strong>{copy.resultDecision}</strong><small>{record.mainReason}</small></div>
                   <div><span className={styles.eyebrow}>{common.dataConfidence}</span><strong>{record.confidence}</strong><small>{record.confidenceReason}</small></div>
-                  <div className={styles.resultScore}>{product.decisionScore === null ? <><strong>{copy.scoreUnavailable}</strong><small>{common.unknownInvariant}</small></> : <><strong>{product.decisionScore}<small>/100</small></strong><small>{common.scoreDerived}</small></>}</div>
+                  <div className={styles.resultScore}>{scoreStatus === "complete" && product.decisionScore !== null ? <><strong>{product.decisionScore}<small>/100</small></strong><small>{common.scoreDerived}</small></> : <><strong>{common.unknown}</strong><small>{common.unknownInvariant}</small>{scoreStatus === "provisional" && product.decisionScore !== null ? <small className={styles.provisionalValue}>{common.provisionalScore}: {product.decisionScore}/100 · {common.incomplete}</small> : null}</>}</div>
                   <a className={styles.secondaryAnchor} href={`/dev/phase5a2/golden/product?locale=${route.locale}&theme=${route.theme}&motion=${route.motion}&state=${product.decisionScore === null ? "unknown" : product.availability === "partial" ? "partial" : "available"}${route.capture ? "&capture=1" : ""}`}>{copy.open}</a>
                 </article>
                 );

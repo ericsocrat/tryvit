@@ -1,5 +1,7 @@
 import type { CSSProperties } from "react";
 
+import styles from "./golden.module.css";
+
 export type GoldenMarkSize = "micro" | "small" | "medium" | "large";
 export type GoldenMarkPixelSize = 16 | 20 | 24 | 32 | 40 | 72;
 export type GoldenMarkTone = "brand" | "inverse" | "monochrome";
@@ -121,6 +123,15 @@ export function GoldenLockup({
       <GoldenMark size={compact ? "small" : "medium"} tone={inverse ? "inverse" : "brand"} />
       {compact ? null : <GoldenWordmark />}
     </span>
+  );
+}
+
+export function GoldenSurfaceOwner({ label }: Readonly<{ label: string }>) {
+  return (
+    <div className={styles.surfaceOwner} data-golden-surface-owner="">
+      <GoldenLockup />
+      <span>{label}</span>
+    </div>
   );
 }
 

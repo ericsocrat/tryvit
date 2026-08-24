@@ -5,6 +5,7 @@ import { GOLDEN_COMMON_COPY } from "./common-copy";
 import type { GoldenRouteState } from "./contract";
 import { DecisionSummary, EvidenceBand } from "./GoldenEvidence";
 import { GoldenGlyph } from "./GoldenGlyph";
+import { GoldenSurfaceOwner } from "./GoldenIdentity";
 import { ProductActions } from "./ProductActions.client";
 import styles from "./golden.module.css";
 
@@ -62,7 +63,7 @@ const PRODUCT_COPY = {
     noChecksLabel: "0 independent",
   },
   pl: {
-    productName: "North Grain Oat Drink — rekord testowy",
+    productName: "Napój owsiany North Grain — rekord testowy",
     eyebrow: "Rekord produktu · materiał syntetyczny",
     source: "Jeden zapis z opakowania · 14 lipca 2026",
     decision: "Sprawdź przed decyzją",
@@ -114,7 +115,7 @@ const PRODUCT_COPY = {
     noChecksLabel: "0 niezależnych",
   },
   de: {
-    productName: "North Grain Oat Drink — Prüfmuster",
+    productName: "North Grain Hafergetränk — Prüfmuster",
     eyebrow: "Produktdatensatz · synthetischer Prüfsatz",
     source: "Eine Verpackungsabschrift · beobachtet am 14. Juli 2026",
     decision: "Vor der Entscheidung prüfen",
@@ -190,7 +191,7 @@ export function ProductReference({ route }: Readonly<{ route: GoldenRouteState }
   return (
     <article className={styles.productReference}>
       <header className={styles.productHeader}>
-        <div><p className={styles.eyebrow}>{copy.eyebrow}</p><h1>{copy.productName}</h1><p>{copy.source}</p></div>
+        <div><GoldenSurfaceOwner label={common.ownerLabel} /><p className={styles.eyebrow}>{copy.eyebrow}</p><h1>{copy.productName}</h1><p>{copy.source}</p></div>
         <div aria-hidden="true" className={styles.productPackage}><GoldenGlyph name="source" size={32} /><span>NORTH<br />GRAIN</span></div>
       </header>
       {pageState ? <PageState description={pageState.detail} headingLevel={2} primaryAction={<a className={styles.secondaryAnchor} href={`/dev/phase5a2/golden/product?${query}&state=available`}>{common.retry}</a>} status={pageState.status} title={pageState.title} /> : null}
@@ -201,14 +202,15 @@ export function ProductReference({ route }: Readonly<{ route: GoldenRouteState }
         decision={copy.decision}
         mainReason={reason}
         nextAction={<ProductActions addCompareLabel={copy.addCompare} checksLabel={copy.checksLabel} closeLabel={common.close} compareLabel={copy.compare} fixtureLabel={copy.fixtureLabel} methodLabel={copy.method} noChecksLabel={copy.noChecksLabel} observedLabel={copy.observedLabel} openAlternativeLabel={copy.openAlternative} provenanceBody={copy.provenanceBody} provenanceDescription={unknown ? copy.provenanceUnknownDescription : copy.provenanceDescription} provenanceLabel={copy.provenance} provenanceTitle={copy.provenanceTitle} savedMessage={copy.saved} />}
-        score={unknown ? null : 72}
+        provisionalScore={unknown ? undefined : 72}
+        score={null}
       />
 
       <section className={styles.productEvidence}>
         <header className={styles.sectionHeading}><p className={styles.eyebrow}>01</p><h2>{copy.inspect}</h2><p>{common.unknownInvariant}</p></header>
         <div className={styles.evidenceSpine}>
           <EvidenceBand detail={copy.observedDetail} kind="observed" label={common.observed} meta={copy.source} title={copy.observedTitle} />
-          <EvidenceBand detail={unknown ? copy.unknownDerivedDetail : copy.derivedDetail} kind={unknown ? "unknown" : "derived"} label={common.derived} meta={unknown ? common.unknownInvariant : common.scoreDerived} title={unknown ? copy.unknownDerivedTitle : copy.derivedTitle} />
+          <EvidenceBand detail={unknown ? copy.unknownDerivedDetail : copy.partialReason} kind="unknown" label={common.derived} meta={unknown ? common.unknownInvariant : `${common.provisionalScore}: 72/100 · ${common.incomplete}`} title={copy.unknownDerivedTitle} />
           <EvidenceBand detail={copy.contextDetail} kind="context" label={common.contextual} meta={partial ? common.unknownInvariant : copy.alternativesDetail} title={copy.contextTitle} />
           <EvidenceBand detail={copy.decisionDetail} kind="decision" label={common.decisionLayer} meta={common.packageReminder} title={copy.decisionTitle} />
         </div>

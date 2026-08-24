@@ -6,10 +6,11 @@ import { Button } from "@/design-system/primitives/Button/Button";
 import { Input } from "@/design-system/primitives/Field";
 
 import type { AuthCopy } from "./authentication-copy";
-import type {
-  GOLDEN_REFERENCE_STATES,
-  GoldenRouteState,
+import {
+  GOLDEN_ASYNC_STATE_DWELL_MS,
+  GOLDEN_REDIRECT_DWELL_MS,
 } from "./contract";
+import type { GOLDEN_REFERENCE_STATES, GoldenRouteState } from "./contract";
 import { GoldenGlyph } from "./GoldenGlyph";
 import styles from "./golden.module.css";
 
@@ -76,9 +77,9 @@ export function AuthenticationForm({
     const generation = ++jobGenerationRef.current;
     const timeout = window.setTimeout(() => {
       if (jobGenerationRef.current === generation) setState("success");
-    }, route.motion === "reduced" ? 0 : 240);
+    }, GOLDEN_ASYNC_STATE_DWELL_MS);
     return () => window.clearTimeout(timeout);
-  }, [route.motion, state]);
+  }, [state]);
 
   useEffect(() => {
     if (state !== "redirecting" || !userTransitionRef.current) return;
@@ -88,7 +89,7 @@ export function AuthenticationForm({
       window.location.assign(
         `/dev/phase5a2/golden/home?locale=${route.locale}&theme=${route.theme}&motion=${route.motion}&state=returning${route.capture ? "&capture=1" : ""}`,
       );
-    }, route.motion === "reduced" ? 0 : 180);
+    }, GOLDEN_REDIRECT_DWELL_MS);
     return () => window.clearTimeout(timeout);
   }, [route.capture, route.locale, route.motion, route.theme, state]);
 
@@ -175,6 +176,7 @@ export function AuthenticationForm({
         className={styles.authStatus}
         data-golden-client="authentication-form"
         data-golden-live-state={state}
+        data-golden-semantic-dwell-ms={state === "busy" ? GOLDEN_ASYNC_STATE_DWELL_MS : undefined}
         ref={(element) => {
           rootRef.current = element;
           statusRef.current = element;

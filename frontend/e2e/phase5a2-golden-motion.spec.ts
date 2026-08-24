@@ -15,6 +15,10 @@ import {
   GOLDEN_VIDEO_STATE_DWELL_MS,
   motionTerminalStillRelativePath,
 } from "@/../tooling/design-system/golden-reference/capture-contract";
+import {
+  GOLDEN_ASYNC_STATE_ASSERT_MS,
+  GOLDEN_ASYNC_STATE_DWELL_MS,
+} from "@/app/dev/phase5a2/_golden/contract";
 
 async function dwell(page: Page): Promise<void> {
   await page.evaluate(
@@ -23,7 +27,26 @@ async function dwell(page: Page): Promise<void> {
   );
 }
 
-async function performJourney(page: Page, reference: (typeof GOLDEN_MOTION_RECORDINGS)[number]["reference"]) {
+async function retainSemanticState(
+  page: Page,
+  state: "busy" | "processing" | "results-loading",
+  expectedAnnouncement: string,
+): Promise<string> {
+  const live = page.locator(`[data-golden-live-state='${state}']`);
+  await expect(live).toBeVisible();
+  await expect(live).toHaveAttribute("data-golden-semantic-dwell-ms", String(GOLDEN_ASYNC_STATE_DWELL_MS));
+  const liveAnnouncements = await live.locator("[aria-live]").evaluateAll((elements) =>
+    elements.map((element) => (element as HTMLElement).innerText.replace(/\s+/gu, " ").trim()).filter(Boolean),
+  );
+  const announcement = liveAnnouncements.at(-1) ?? await live.innerText();
+  expect(announcement).toContain(expectedAnnouncement);
+  await page.waitForTimeout(GOLDEN_ASYNC_STATE_ASSERT_MS);
+  await expect(live).toBeVisible();
+  return announcement.replace(/\s+/gu, " ").trim();
+}
+
+async function performJourney(page: Page, reference: (typeof GOLDEN_MOTION_RECORDINGS)[number]["reference"]): Promise<string[]> {
+  const semanticAnnouncements: string[] = [];
   switch (reference) {
     case "landing": {
       await page.getByRole("button", { name: "Unfold the evidence" }).click();
@@ -53,6 +76,7 @@ async function performJourney(page: Page, reference: (typeof GOLDEN_MOTION_RECOR
       await dwell(page);
       await email.fill("review@tryvit.local");
       await page.getByRole("button", { name: "Continue" }).click();
+      semanticAnnouncements.push(await retainSemanticState(page, "busy", "Checking the local review details"));
       await expect(page.locator("[data-golden-live-state='success']")).toBeVisible();
       await dwell(page);
       await page.getByRole("button", { name: "Open authenticated home" }).click();
@@ -84,6 +108,7 @@ async function performJourney(page: Page, reference: (typeof GOLDEN_MOTION_RECOR
       await page.getByLabel("Search synthetic products").fill("oat");
       await dwell(page);
       await page.getByRole("button", { name: "Search", exact: true }).click();
+      semanticAnnouncements.push(await retainSemanticState(page, "results-loading", "Calculating the local result set"));
       await expect(page.locator("[data-golden-live-state='results']")).toBeVisible();
       await dwell(page);
       await page.getByRole("button", { name: "Filters" }).click();
@@ -120,11 +145,13 @@ async function performJourney(page: Page, reference: (typeof GOLDEN_MOTION_RECOR
       await page.getByRole("button", { name: "Recognize synthetic barcode" }).click();
       await dwell(page);
       await page.getByRole("button", { name: "Build evidence result" }).click();
+      semanticAnnouncements.push(await retainSemanticState(page, "processing", "local product lookup is in progress"));
       await expect(page.locator("[data-golden-live-state='matched']")).toBeVisible();
       await dwell(page);
       break;
     }
   }
+  return semanticAnnouncements;
 }
 
 test("records normal and reduced-motion Golden journeys with terminal frames", async ({ page }) => {
@@ -136,14 +163,14 @@ test("records normal and reduced-motion Golden journeys with terminal frames", a
     await openGoldenCapture(page, capture);
     await dwell(page);
     const recording = await startGoldenRecording(page, capture);
-    await performJourney(page, capture.reference);
+    const semanticAnnouncements = await performJourney(page, capture.reference);
     const terminalPath = goldenOutputPath(motionTerminalStillRelativePath(capture));
     await page.screenshot({ animations: "disabled", caret: "hide", fullPage: false, path: terminalPath, scale: "css" });
     assertGoldenFileBound(terminalPath, "png");
     await dwell(page);
     await recording.stop();
 
-    actual.push(await page.evaluate(({ reference, mode }) => {
+    actual.push(await page.evaluate(({ reference, mode, semanticAnnouncements }) => {
       const root = document.querySelector<HTMLElement>("[data-golden-reference]");
       const live = document.querySelector<HTMLElement>("[data-golden-live-state]");
       const active = document.activeElement as HTMLElement | null;
@@ -173,8 +200,9 @@ test("records normal and reduced-motion Golden journeys with terminal frames", a
           .map((element) => element.innerText.replace(/\s+/gu, " ").trim())
           .filter(Boolean)
           .at(-1) ?? null,
+        semanticAnnouncements,
       };
-    }, { reference: capture.reference, mode: capture.mode }));
+    }, { reference: capture.reference, mode: capture.mode, semanticAnnouncements }));
   }
 
   expect(runtimeErrors).toEqual([]);

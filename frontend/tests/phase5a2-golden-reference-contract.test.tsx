@@ -281,6 +281,9 @@ describe("Phase 5A.2 Golden Reference contract", () => {
     const verifier = source("tooling/design-system/golden-reference/verify-candidates.mts");
     const stagedVerifier = source("tooling/design-system/golden-reference/verify-staged.mts");
     const product = source("src/app/dev/phase5a2/_golden/ProductReference.tsx");
+    const authentication = source("src/app/dev/phase5a2/_golden/AuthenticationForm.client.tsx");
+    const search = source("src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx");
+    const scanner = source("src/app/dev/phase5a2/_golden/ScannerReference.client.tsx");
     expect(motion).toContain('data-golden-reference=\'home\'');
     expect(motion).toContain('data-golden-reference=\'product\'');
     expect(motion).toContain("element.innerText.replace(/\\s+/gu, \" \")");
@@ -291,9 +294,21 @@ describe("Phase 5A.2 Golden Reference contract", () => {
     expect(verifier).toContain("performance-contract-invalid");
     expect(verifier).toContain("journey-terminal-metadata-invalid");
     expect(stagedVerifier).toContain("staged-terminal-provenance-invalid");
-    expect(product).toContain('productName: "North Grain Oat Drink — rekord testowy"');
-    expect(product).toContain('productName: "North Grain Oat Drink — Prüfmuster"');
+    expect(product).toContain('productName: "Napój owsiany North Grain — rekord testowy"');
+    expect(product).toContain('productName: "North Grain Hafergetränk — Prüfmuster"');
     expect(product).toContain("<h1>{copy.productName}</h1>");
+    expect(motion).toContain("GOLDEN_ASYNC_STATE_ASSERT_MS");
+    expect(motion).toContain("semanticAnnouncements");
+    expect(resilience).toContain("liveIdentitySemantics");
+    expect(verifier).toContain("resilience-live-identity-semantics-invalid");
+    expect(stagedVerifier).toContain("semanticAnnouncements");
+    for (const semanticSource of [authentication, search, scanner]) {
+      expect(semanticSource).toContain("GOLDEN_ASYNC_STATE_DWELL_MS");
+      expect(semanticSource).not.toContain('route.motion === "reduced" ? 0');
+    }
+    expect(search).toContain('data-golden-product-record=""');
+    expect(search).not.toContain('<GoldenMark size="small" />');
+    expect(product).toContain("provisionalScore={unknown ? undefined : 72}");
   });
 
   it("keeps a byte-level staged evidence verifier", () => {
