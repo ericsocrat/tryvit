@@ -26,13 +26,19 @@ Golden consumers outside the two guarded routes.
 - source lint and focused E2E/tooling lint: passed;
 - complete frontend unit suite: 6,732 passed and 19 skipped across 411 files;
 - production build: passed with Golden routes dynamic and guarded;
-- exact-source retries-disabled Golden matrix: 111/111 passed;
+- exact-source retries-disabled Golden matrix: 113/113 passed;
 - Chromium, Firefox, and WebKit six-reference journeys: 6/6 in each engine;
 - whole-document Axe: all 59 server-addressable states passed with zero serious or
   critical violations and no exclusions/disabled rules;
 - text spacing: 6/6 passed;
 - 200%-equivalent reflow: 6/6 passed;
 - meaningful forced colors: 6/6 passed;
+- retained resilience proof: six Polish text-spacing cases and six 200%-equivalent
+  reflow cases have zero document/root overflow; every enumerated edge rectangle is
+  contained by an intentional horizontal navigation/tab scroller;
+- retained identity semantics: all four identity-board marks are named; all six
+  lockup-board marks are decorative, all four lockup wordmarks are named, and zero
+  marks are invalid;
 - coarse/no-hover touch proof: passed;
 - JavaScript-disabled landing comprehension: passed;
 - scanner media-device calls: zero;
@@ -42,16 +48,16 @@ Golden consumers outside the two guarded routes.
   passed;
 - terminal verifier: Authentication ends at `home/returning/#golden-main` and Home
   ends at `product/partial/#golden-main` in normal and reduced recordings;
-- staged evidence verifier: 91/91 files, 7,280,743 bytes, passed with manifest SHA-256
-  `10662acdc566f445b6c30615c6c7ed87954c1ea689d48d3a5bab6fbe61d0cfd5`.
+- staged evidence verifier: 91/91 files, 7,315,420 bytes, passed with manifest SHA-256
+  `ac4102d46fc1bd59099bbaa6e08bff70bab11a3d4c4d39dd0ca874c199773fca`.
 - dedicated CI workflow: exact-revision Ubuntu 24.04 admission, retries disabled,
   Chromium/Firefox/WebKit plus full resilience/capture/performance, raw and staged
   artifact retention, and no-backup runtime teardown; local workflow contracts and
   `actionlint` passed.
 - historical 91/89 reviews are superseded; two new scorecards and the third non-taste
   QA lane are pending. Eric's approval is still pending.
-- exact source/tree: `9fe14f14e00185cc1f1319d132e6853fa90e1723` /
-  `5d8911cb326b0356e3a89a1a304dcea8c86b79bb`.
+- exact source/tree: `fcc5d8cb9eae609863364a6a34541ce10eefcbc6` /
+  `00c47531aa41a7de94dff9f18c1018d551405943`.
 
 The initial reviewed packet remains recoverable in Git history. Superseded raw visual,
 browser, media, performance, and terminal-verifier packages remain outside the
@@ -80,19 +86,19 @@ approval for a future production route.
 
 - candidate comparison transfer: `75,004` bytes only on the guarded typography board;
 - Golden reference routes retain `0` font/image bytes in all 30 samples;
-- committed review packet: `7,280,743` bytes, not application payload;
+- committed review packet: `7,315,420` bytes, not application payload;
 - measurements use cache-disabled Playwright Chromium at 390×844 against the guarded
   local production build. They are review-environment lab results, not production
   Core Web Vitals;
 
 | Reference | JS gzip | CSS gzip | LCP median (range) | TBT median (range) | TTFB median (range) | CLS median (range) |
 |---|---:|---:|---:|---:|---:|---:|
-| Landing | 203,083 B | 47,919 B | 96 ms (88–156) | 0 ms (0–0) | 54.2 ms (53.6–57.2) | 0 (0–0) |
-| Authentication | 203,083 B | 47,919 B | 96 ms (96–108) | 0 ms (0–0) | 53.0 ms (51.9–55.5) | 0 (0–0) |
-| Home | 203,083 B | 47,919 B | 92 ms (92–100) | 0 ms (0–0) | 51.5 ms (51.0–54.0) | 0 (0–0) |
-| Search | 203,083 B | 47,919 B | 92 ms (88–96) | 0 ms (0–0) | 52.8 ms (51.8–55.7) | 0 (0–0) |
-| Product | 203,083 B | 47,919 B | 100 ms (96–104) | 0 ms (0–0) | 54.6 ms (52.1–55.6) | 0 (0–0) |
-| Scanner | 203,083 B | 47,919 B | 100 ms (96–136) | 0 ms (0–0) | 55.1 ms (51.4–87.1) | 0 (0–0) |
+| Landing | 203,097 B | 47,919 B | 108 ms (92–144) | 0 ms (0–0) | 55.5 ms (53.8–57.8) | 0 (0–0) |
+| Authentication | 203,097 B | 47,919 B | 116 ms (96–180) | 0 ms (0–0) | 60.3 ms (53.9–90.1) | 0 (0–0) |
+| Home | 203,097 B | 47,919 B | 92 ms (88–96) | 0 ms (0–0) | 53.6 ms (53.0–55.6) | 0 (0–0) |
+| Search | 203,097 B | 47,919 B | 96 ms (88–112) | 0 ms (0–0) | 55.5 ms (52.7–60.5) | 0 (0–0) |
+| Product | 203,097 B | 47,919 B | 100 ms (96–104) | 0 ms (0–0) | 53.1 ms (52.9–54.8) | 0 (0–0) |
+| Scanner | 203,097 B | 47,919 B | 92 ms (92–96) | 0 ms (0–0) | 53.0 ms (52.0–56.2) | 0 (0–0) |
 
 Every final sample reports 0 image bytes, 0 font bytes, no long task, no
 animation-attributable long task, and no layout shift. Every threshold passes. A

@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a2-golden-resilience-evidence",
-  "sourceSha": "c7fc0c5255761b4c3709e2253772bcf8757d3315",
-  "sourceTreeSha": "5dec4dc65c819ec62c74455bafd31e56dfb436e0",
+  "sourceSha": "fcc5d8cb9eae609863364a6a34541ce10eefcbc6",
+  "sourceTreeSha": "00c47531aa41a7de94dff9f18c1018d551405943",
   "reviewOnly": true,
   "methodology": {
-    "textSpacing": "Polish 390x844 with line-height 1.5, letter-spacing 0.12em, word-spacing 0.16em, and paragraph margin 2em. edgeRects enumerates diagnostic child rectangles outside the viewport while document/root overflow remains the blocking metric.",
+    "textSpacing": "Polish 390x844 with line-height 1.5, letter-spacing 0.12em, word-spacing 0.16em, and paragraph margin 2em. edgeRects enumerates every child rectangle outside the viewport and proves each is contained by an intentional horizontal scroller while document/root overflow remains bounded.",
     "reflow": "200-percent equivalent CSS viewport of 384x844 with horizontal overflow bounded to 1px.",
     "typography": "Original 1440x900 light/dark geometry plus 720x450 reflow and WCAG text-spacing override."
   },
@@ -23,7 +23,9 @@
           "text": "Panel główny",
           "left": 277,
           "right": 423,
-          "width": 146
+          "width": 146,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -31,7 +33,9 @@
           "text": "Wyszukiwanie",
           "left": 423,
           "right": 571,
-          "width": 148
+          "width": 148,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -39,7 +43,9 @@
           "text": "Produkt i dane",
           "left": 571,
           "right": 730,
-          "width": 159
+          "width": 159,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -47,7 +53,9 @@
           "text": "Skaner",
           "left": 730,
           "right": 823,
-          "width": 93
+          "width": 93,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         }
       ]
     },
@@ -64,7 +72,9 @@
           "text": "Panel główny",
           "left": 277,
           "right": 423,
-          "width": 146
+          "width": 146,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -72,7 +82,9 @@
           "text": "Wyszukiwanie",
           "left": 423,
           "right": 571,
-          "width": 148
+          "width": 148,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -80,7 +92,9 @@
           "text": "Produkt i dane",
           "left": 571,
           "right": 730,
-          "width": 159
+          "width": 159,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -88,7 +102,9 @@
           "text": "Skaner",
           "left": 730,
           "right": 823,
-          "width": 93
+          "width": 93,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         }
       ]
     },
@@ -105,7 +121,9 @@
           "text": "Panel główny",
           "left": 277,
           "right": 423,
-          "width": 146
+          "width": 146,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -113,7 +131,9 @@
           "text": "Wyszukiwanie",
           "left": 423,
           "right": 571,
-          "width": 148
+          "width": 148,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -121,7 +141,9 @@
           "text": "Produkt i dane",
           "left": 571,
           "right": 730,
-          "width": 159
+          "width": 159,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -129,7 +151,9 @@
           "text": "Skaner",
           "left": 730,
           "right": 823,
-          "width": 93
+          "width": 93,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         }
       ]
     },
@@ -146,7 +170,9 @@
           "text": "Panel główny",
           "left": 277,
           "right": 423,
-          "width": 146
+          "width": 146,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -154,7 +180,9 @@
           "text": "Wyszukiwanie",
           "left": 423,
           "right": 571,
-          "width": 148
+          "width": 148,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -162,7 +190,9 @@
           "text": "Produkt i dane",
           "left": 571,
           "right": 730,
-          "width": 159
+          "width": 159,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -170,7 +200,9 @@
           "text": "Skaner",
           "left": 730,
           "right": 823,
-          "width": 93
+          "width": 93,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         }
       ]
     },
@@ -187,7 +219,9 @@
           "text": "Panel główny",
           "left": 277,
           "right": 423,
-          "width": 146
+          "width": 146,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -195,7 +229,9 @@
           "text": "Wyszukiwanie",
           "left": 423,
           "right": 571,
-          "width": 148
+          "width": 148,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -203,7 +239,9 @@
           "text": "Produkt i dane",
           "left": 571,
           "right": 730,
-          "width": 159
+          "width": 159,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -211,7 +249,9 @@
           "text": "Skaner",
           "left": 730,
           "right": 823,
-          "width": 93
+          "width": 93,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "button",
@@ -219,7 +259,10 @@
           "text": "Alergeny",
           "left": 336,
           "right": 449,
-          "width": 112
+          "width": 112,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "div",
+          "scrollerRole": "tablist"
         },
         {
           "tag": "button",
@@ -227,7 +270,10 @@
           "text": "Metoda",
           "left": 449,
           "right": 549,
-          "width": 100
+          "width": 100,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "div",
+          "scrollerRole": "tablist"
         },
         {
           "tag": "button",
@@ -235,7 +281,10 @@
           "text": "Alternatywy",
           "left": 549,
           "right": 689,
-          "width": 140
+          "width": 140,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "div",
+          "scrollerRole": "tablist"
         }
       ]
     },
@@ -252,7 +301,9 @@
           "text": "Panel główny",
           "left": 277,
           "right": 423,
-          "width": 146
+          "width": 146,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -260,7 +311,9 @@
           "text": "Wyszukiwanie",
           "left": 423,
           "right": 571,
-          "width": 148
+          "width": 148,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -268,7 +321,9 @@
           "text": "Produkt i dane",
           "left": 571,
           "right": 730,
-          "width": 159
+          "width": 159,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         },
         {
           "tag": "a",
@@ -276,7 +331,9 @@
           "text": "Skaner",
           "left": 730,
           "right": 823,
-          "width": 93
+          "width": 93,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
         }
       ]
     }
