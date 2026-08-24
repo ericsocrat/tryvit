@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, renameSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,7 +7,10 @@ import sharp from "sharp";
 
 // Node executes this tooling directly, so the TypeScript path alias is unavailable.
 // eslint-disable-next-line no-restricted-imports
-import { GOLDEN_FONT_ASSAY } from "../../../src/app/dev/phase5a2/_golden/font-assay.ts";
+import {
+  GOLDEN_FONT_ASSAY,
+  GOLDEN_FONT_ASSAY_PACKET_FILES,
+} from "../../../src/app/dev/phase5a2/_golden/font-assay.ts";
 
 import {
   GOLDEN_COMMITTED_BINARY_LIMIT_BYTES,
@@ -153,13 +156,35 @@ const backupBasename = `.golden-evidence-backup-${process.pid}`;
 let backupCreated = false;
 
 try {
-  const retainedKinds = new Set(["still", "board", "video", "runtime", "journeys", "performance", "font-assay"]);
+  const retainedKinds = new Set(["still", "board", "video", "runtime", "journeys", "performance", "font-assay", "resilience"]);
   const retained: StagedFile[] = [];
   for (const file of verified.files) {
     if (!retainedKinds.has(file.kind)) continue;
     const contents = verified.contents.get(file.path);
     if (!contents) fail("retained-snapshot-missing");
     retained.push(copyVerified(stageRoot, file, contents));
+  }
+  for (const asset of GOLDEN_FONT_ASSAY_PACKET_FILES) {
+    const source = path.join(
+      frontendRoot,
+      "src",
+      "app",
+      "dev",
+      "phase5a2",
+      "_golden",
+      ...asset.path.split("/"),
+    );
+    const contents = readFileSync(source);
+    if (contents.length !== asset.bytes || sha256(contents) !== asset.sha256) {
+      fail("font-assay-source-snapshot-invalid");
+    }
+    writeFileSync(outputPath(stageRoot, asset.path), contents, { flag: "wx", mode: 0o600 });
+    retained.push({
+      path: asset.path,
+      kind: asset.kind,
+      bytes: asset.bytes,
+      sha256: asset.sha256,
+    });
   }
   for (const reference of GOLDEN_REFERENCE_IDS) {
     retained.push(
@@ -198,6 +223,8 @@ try {
       assetBoards: 8,
       performanceReports: 1,
       fontAssayReports: 1,
+      resilienceReports: 1,
+      fontAssayAssets: GOLDEN_FONT_ASSAY_PACKET_FILES.length,
       retainedFiles: retained.length,
       rawFiles: verified.files.length,
     },
@@ -206,6 +233,7 @@ try {
     fontBytes: GOLDEN_FONT_ASSAY.transferBytes,
     typographyDisposition: GOLDEN_FONT_ASSAY.status,
     fontAssay: verified.fontAssay,
+    resilience: verified.resilience,
     journeys: verified.journeys,
     performance: verified.performance,
     rawFiles: verified.files,

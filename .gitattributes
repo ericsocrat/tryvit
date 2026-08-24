@@ -28,6 +28,8 @@ frontend/src/design-system/generated/tokens.css text eol=lf
 frontend/src/design-system/generated/tokens.ts text eol=lf
 docs/assets/design-tokens.json text eol=lf
 docs/phase5/live-route-component-inventory.json text eol=lf
+frontend/src/app/dev/phase5a2/_golden/font-assay/licenses/*.txt text eol=lf
+frontend/src/app/dev/phase5a2/_golden/font-assay/licenses/*.md text eol=lf
 
 # Design source files (if ever added)
 *.fig binary

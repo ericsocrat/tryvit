@@ -42,7 +42,11 @@ import {
 } from "@/../tooling/design-system/golden-reference/capture-contract";
 import { GOLDEN_ASSET_BOARDS as RUNTIME_ASSET_BOARDS } from "@/app/dev/phase5a2/_golden/asset-contract";
 import { GoldenAssetBoardView } from "@/app/dev/phase5a2/_golden/GoldenAssetBoard";
-import { GOLDEN_FONT_ASSAY, GOLDEN_TYPE_SCALE } from "@/app/dev/phase5a2/_golden/font-assay";
+import {
+  GOLDEN_FONT_ASSAY,
+  GOLDEN_FONT_ASSAY_PACKET_FILES,
+  GOLDEN_TYPE_SCALE,
+} from "@/app/dev/phase5a2/_golden/font-assay";
 
 const repositoryRoot = path.resolve(process.cwd(), "..");
 
@@ -178,6 +182,9 @@ describe("Phase 5A.2 Golden Reference contract", () => {
     }
     expect(transferredBytes).toBe(GOLDEN_FONT_ASSAY.transferBytes);
     expect(transferredBytes).toBeLessThanOrEqual(GOLDEN_FONT_ASSAY.transferLimitBytes);
+    expect(GOLDEN_FONT_ASSAY_PACKET_FILES).toHaveLength(5);
+    expect(GOLDEN_FONT_ASSAY.subsetting.deterministicRerunRequired).toBe(false);
+    expect(GOLDEN_FONT_ASSAY.subsetting.deterministicRerunVerified).toBe(true);
 
     for (const source of [
       GOLDEN_FONT_ASSAY.sources.manrope,

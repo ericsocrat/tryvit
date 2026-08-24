@@ -74,3 +74,22 @@ The causal correction localizes the product suffix, keeps the German desktop act
 inside the governed viewport, derives terminal-still metadata from the observed journey
 record, and makes the staged verifier compare every terminal record with its actual
 journey. A new exact source, complete packet, and three entirely new lanes are required.
+
+## Rejected terminal-corrected packet
+
+The terminal/localization replacement was bound to source/tree
+`14620a61c702838565eca2916b98af5cd4a572c1` /
+`de3a00e15099b5f1ca0b5ee521017f195a93b04c`, manifest
+`164244174aa7a276389084ff3887b8b6de88d03c50dd9da784f540124eb8f2a1`, and
+85 files / 7,188,422 bytes. Lane C passed its complete provenance audit and all earlier
+localization/terminal corrections, then found the three lower panels in
+`boards/identity--1440x900--light.png` crossing the 900px canvas boundary without their
+shared lower border. The first attempted geometry reduction still measured a `945px`
+board bottom and was rejected by the new browser contract.
+
+The score lanes also identified evidence-packet gaps: a stale `65` unchanged-file claim
+instead of `62`, no reviewer-authorized prior manifest, no retained WOFF2/OFL binaries,
+no retained computed-style scale record, and no retained reflow/text-spacing report.
+Their scores do not qualify. The causal correction adds the missing evidence, makes
+font subsetting explicitly rerun-verified, and reduces the identity hero/variant tracks
+again before a new exact-source capture.

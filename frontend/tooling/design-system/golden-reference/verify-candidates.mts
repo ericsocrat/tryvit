@@ -7,7 +7,7 @@ import sharp from "sharp";
 
 // Node executes this tooling directly, so the TypeScript path alias is unavailable.
 // eslint-disable-next-line no-restricted-imports
-import { GOLDEN_FONT_ASSAY } from "../../../src/app/dev/phase5a2/_golden/font-assay.ts";
+import { GOLDEN_FONT_ASSAY, GOLDEN_TYPE_SCALE } from "../../../src/app/dev/phase5a2/_golden/font-assay.ts";
 
 import {
   GOLDEN_ASSET_BOARDS,
@@ -47,7 +47,7 @@ import { verifyPlaywrightWebm } from "../direction-selection/webm-evidence.ts";
 
 export interface VerifiedGoldenFile {
   readonly path: string;
-  readonly kind: "still" | "state" | "board" | "video" | "terminal" | "runtime" | "journeys" | "performance" | "font-assay";
+  readonly kind: "still" | "state" | "board" | "video" | "terminal" | "runtime" | "journeys" | "performance" | "font-assay" | "resilience";
   readonly bytes: number;
   readonly sha256: string;
   readonly width?: number;
@@ -65,6 +65,7 @@ export interface VerifiedGoldenCandidates {
   readonly journeys: Readonly<Record<string, unknown>>;
   readonly performance: Readonly<Record<string, unknown>>;
   readonly fontAssay: Readonly<Record<string, unknown>>;
+  readonly resilience: Readonly<Record<string, unknown>>;
   readonly files: readonly VerifiedGoldenFile[];
   readonly contents: ReadonlyMap<string, Buffer>;
 }
@@ -148,6 +149,7 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
     "font-assay.json",
     "journeys.json",
     "performance.json",
+    "resilience.json",
     "runtime.json",
   ].sort();
   if (JSON.stringify(listFiles(root).sort()) !== JSON.stringify(expected)) {
@@ -189,10 +191,12 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
   const journeyContents = readOwnedRegularFile(root, "journeys.json", "golden-journeys", 256 * 1024).contents;
   const performanceContents = readOwnedRegularFile(root, "performance.json", "golden-performance", 2 * 1024 * 1024).contents;
   const fontAssayContents = readOwnedRegularFile(root, "font-assay.json", "golden-font-assay", 512 * 1024).contents;
+  const resilienceContents = readOwnedRegularFile(root, "resilience.json", "golden-resilience", 512 * 1024).contents;
   const runtime = parseJson(runtimeContents, "runtime-format-invalid");
   const journeys = parseJson(journeyContents, "journeys-format-invalid");
   const performance = parseJson(performanceContents, "performance-format-invalid");
   const fontAssay = parseJson(fontAssayContents, "font-assay-format-invalid");
+  const resilience = parseJson(resilienceContents, "resilience-format-invalid");
   if (
     runtime.schemaVersion !== 1 ||
     runtime.kind !== "phase5a2-golden-reference-runtime" ||
@@ -290,8 +294,49 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
     typeof fontAssay.tabularDigitWidthRangePx !== "number" ||
     fontAssay.tabularDigitWidthRangePx > 0.05 ||
     !Array.isArray(fontAssay.files) ||
-    fontAssay.files.length !== GOLDEN_FONT_ASSAY.files.length
+    fontAssay.files.length !== GOLDEN_FONT_ASSAY.files.length ||
+    !Array.isArray(fontAssay.computedTypeScale) ||
+    fontAssay.computedTypeScale.length !== Object.keys(GOLDEN_TYPE_SCALE).length * 2
   ) fail("font-assay-contract-invalid");
+  const expectedTypeScale = new Map(
+    (["control", "candidate"] as const).flatMap((scope) =>
+      Object.entries(GOLDEN_TYPE_SCALE).map(([name, pixels]) => [`${scope}-${name}`, pixels] as const),
+    ),
+  );
+  for (const value of fontAssay.computedTypeScale as unknown[]) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      fail("font-assay-type-scale-invalid");
+    }
+    const record = value as Record<string, unknown>;
+    if (
+      typeof record.specimen !== "string" ||
+      record.computedSize !== expectedTypeScale.get(record.specimen)
+    ) fail("font-assay-type-scale-invalid");
+  }
+  if (
+    resilience.schemaVersion !== 1 ||
+    resilience.kind !== "phase5a2-golden-resilience-evidence" ||
+    resilience.sourceSha !== process.env.PHASE5A2_GOLDEN_SOURCE_SHA ||
+    resilience.sourceTreeSha !== process.env.PHASE5A2_GOLDEN_SOURCE_TREE_SHA ||
+    resilience.reviewOnly !== true ||
+    !Array.isArray(resilience.textSpacing) ||
+    resilience.textSpacing.length !== GOLDEN_REFERENCE_IDS.length ||
+    !Array.isArray(resilience.reflow) ||
+    resilience.reflow.length !== GOLDEN_REFERENCE_IDS.length ||
+    !Array.isArray(resilience.typography) ||
+    resilience.typography.length !== 4
+  ) fail("resilience-contract-invalid");
+  for (const value of [...resilience.textSpacing, ...resilience.reflow] as unknown[]) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      fail("resilience-geometry-invalid");
+    }
+    const record = value as Record<string, unknown>;
+    const overflow = "overflow" in record ? record.overflow : record.documentOverflow;
+    if (typeof overflow !== "number" || overflow > 1) fail("resilience-geometry-invalid");
+    if ("offenderCount" in record && record.offenderCount !== 0) {
+      fail("resilience-geometry-invalid");
+    }
+  }
   for (const [index, reference] of GOLDEN_REFERENCE_IDS.entries()) {
     const candidate = performance.summaries[index];
     if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) {
@@ -313,11 +358,13 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
   contents.set("journeys.json", journeyContents);
   contents.set("performance.json", performanceContents);
   contents.set("font-assay.json", fontAssayContents);
+  contents.set("resilience.json", resilienceContents);
   files.push({ path: "runtime.json", kind: "runtime", bytes: runtimeContents.length, sha256: sha256(runtimeContents) });
   files.push({ path: "journeys.json", kind: "journeys", bytes: journeyContents.length, sha256: sha256(journeyContents) });
   files.push({ path: "performance.json", kind: "performance", bytes: performanceContents.length, sha256: sha256(performanceContents) });
   files.push({ path: "font-assay.json", kind: "font-assay", bytes: fontAssayContents.length, sha256: sha256(fontAssayContents) });
-  return { root, runtime, journeys, performance, fontAssay, files, contents };
+  files.push({ path: "resilience.json", kind: "resilience", bytes: resilienceContents.length, sha256: sha256(resilienceContents) });
+  return { root, runtime, journeys, performance, fontAssay, resilience, files, contents };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

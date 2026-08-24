@@ -6,7 +6,10 @@ import sharp from "sharp";
 
 // Node executes this tooling directly, so the TypeScript path alias is unavailable.
 // eslint-disable-next-line no-restricted-imports
-import { GOLDEN_FONT_ASSAY } from "../../../src/app/dev/phase5a2/_golden/font-assay.ts";
+import {
+  GOLDEN_FONT_ASSAY,
+  GOLDEN_FONT_ASSAY_PACKET_FILES,
+} from "../../../src/app/dev/phase5a2/_golden/font-assay.ts";
 
 import {
   GOLDEN_COMMITTED_BINARY_LIMIT_BYTES,
@@ -163,14 +166,47 @@ for (const [index, capture] of GOLDEN_MOTION_RECORDINGS.entries()) {
 if (
   retainedBytes !== manifest.retainedBytes ||
   retainedBytes > GOLDEN_COMMITTED_BINARY_LIMIT_BYTES ||
-  retained.length !== 84 ||
+  retained.length !== 90 ||
   manifest.fontBytes !== GOLDEN_FONT_ASSAY.transferBytes ||
   manifest.typographyDisposition !== GOLDEN_FONT_ASSAY.status ||
   !manifest.fontAssay ||
   typeof manifest.fontAssay !== "object" ||
   Array.isArray(manifest.fontAssay) ||
-  (manifest.fontAssay as Record<string, unknown>).transferredBytes !== GOLDEN_FONT_ASSAY.transferBytes
+  (manifest.fontAssay as Record<string, unknown>).transferredBytes !== GOLDEN_FONT_ASSAY.transferBytes ||
+  !manifest.resilience ||
+  typeof manifest.resilience !== "object" ||
+  Array.isArray(manifest.resilience)
 ) fail("staged-packet-contract-invalid");
+
+for (const asset of GOLDEN_FONT_ASSAY_PACKET_FILES) {
+  const retainedAsset = retained.find((file) => file.path === asset.path);
+  if (
+    !retainedAsset ||
+    retainedAsset.kind !== asset.kind ||
+    retainedAsset.bytes !== asset.bytes ||
+    retainedAsset.sha256 !== asset.sha256
+  ) fail("staged-font-assay-asset-invalid");
+}
+const fontAssay = manifest.fontAssay as Record<string, unknown>;
+const subsetting = fontAssay.subsetting;
+if (
+  !Array.isArray(fontAssay.computedTypeScale) ||
+  fontAssay.computedTypeScale.length !== 8 ||
+  !subsetting ||
+  typeof subsetting !== "object" ||
+  Array.isArray(subsetting) ||
+  (subsetting as Record<string, unknown>).deterministicRerunRequired !== false ||
+  (subsetting as Record<string, unknown>).deterministicRerunVerified !== true
+) fail("staged-font-assay-proof-invalid");
+const resilience = manifest.resilience as Record<string, unknown>;
+if (
+  !Array.isArray(resilience.textSpacing) ||
+  resilience.textSpacing.length !== 6 ||
+  !Array.isArray(resilience.reflow) ||
+  resilience.reflow.length !== 6 ||
+  !Array.isArray(resilience.typography) ||
+  resilience.typography.length !== 4
+) fail("staged-resilience-proof-invalid");
 
 const sensitivePatterns = [
   /[A-Za-z]:\\/u,

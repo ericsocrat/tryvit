@@ -38,6 +38,15 @@ const outputFilename = path.join(
   "correction-cycle-1",
   "evidence-comparison.md",
 );
+const priorManifestFilename = path.join(
+  repositoryRoot,
+  "docs",
+  "phase5a2",
+  "checkpoint-2",
+  "reviews",
+  "correction-cycle-1",
+  "prior-reviewed-manifest.json",
+);
 
 function sha256(contents: string | Buffer): string {
   return createHash("sha256").update(contents).digest("hex");
@@ -137,7 +146,7 @@ The unchanged set by kind is ${[...unchangedKinds.entries()].sort().map(([kind, 
 
 Canonical unchanged-set proof: ordinal path order, UTF-8 records encoded as \`path<TAB>bytes<TAB>sha256<LF>\`, ${Buffer.byteLength(unchangedCanonical).toLocaleString("en-US")} bytes, SHA-256 \`${sha256(unchangedCanonical)}\`.
 
-Both complete manifests remain the authoritative per-file proof. Historical scorecards are superseded and are not reused.
+Both complete manifests remain the authoritative per-file proof. The canonical prior manifest is retained beside this report as \`prior-reviewed-manifest.json\` so a reviewer can recompute every old-side claim without reading historical scorecards or implementation material. Historical scores are superseded and are not reused.
 
 ## Changed and added files
 
@@ -156,5 +165,6 @@ ${metadataTable}
 The manifest itself changes by construction and is excluded from the listed-file comparison counts.
 `;
 
+writeFileSync(priorManifestFilename, priorText, "utf8");
 writeFileSync(outputFilename, output, "utf8");
 process.stdout.write(`Wrote correction packet comparison to ${path.relative(repositoryRoot, outputFilename)}\n`);

@@ -1,3 +1,5 @@
+import { writeFileSync } from "node:fs";
+
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "./fixtures/safe-test";
 
@@ -8,7 +10,7 @@ import {
   GOLDEN_STATE_CAPTURES,
   defaultGoldenState,
 } from "@/../tooling/design-system/golden-reference/capture-contract";
-import { openGoldenBoard } from "./helpers/phase5a2-golden-reference";
+import { goldenOutputPath, openGoldenBoard } from "./helpers/phase5a2-golden-reference";
 
 type TypographyGeometry = {
   readonly boardOverflow: number;
@@ -26,6 +28,28 @@ type TypographyGeometry = {
   }[];
   readonly siblingOverlaps: readonly string[];
 };
+
+const textSpacingEvidence: Array<Readonly<{
+  reference: string;
+  locale: "pl";
+  documentOverflow: number;
+  rootOverflow: number;
+  offenderCount: number;
+}>> = [];
+const reflowEvidence: Array<Readonly<{
+  reference: string;
+  locale: "en";
+  viewport: Readonly<{ width: 384; height: 844 }>;
+  overflow: number;
+}>> = [];
+const typographyGeometryEvidence: Array<Readonly<{
+  scenario: string;
+  documentOverflow: number;
+  siblingOverlapCount: number;
+  clippedCount: number;
+  minimumMetadataSize: number;
+  computedSizes: readonly number[];
+}>> = [];
 
 async function readTypographyGeometry(page: Page): Promise<TypographyGeometry> {
   return page.locator("[data-golden-asset-board='typography']").evaluate((board) => {
@@ -196,6 +220,13 @@ for (const capture of GOLDEN_POLISH_MOBILE_STILLS) {
           width: Math.round(rect.width),
         })),
     }));
+    textSpacingEvidence.push({
+      reference: capture.reference,
+      locale: "pl",
+      documentOverflow: geometry.documentOverflow,
+      rootOverflow: geometry.rootOverflow,
+      offenderCount: geometry.offenders.length,
+    });
     expect(geometry.documentOverflow, JSON.stringify(geometry.offenders, null, 2)).toBeLessThanOrEqual(1);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
@@ -208,6 +239,12 @@ for (const reference of GOLDEN_REFERENCE_IDS) {
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
+    reflowEvidence.push({
+      reference,
+      locale: "en",
+      viewport: { width: 384, height: 844 },
+      overflow,
+    });
     expect(overflow).toBeLessThanOrEqual(1);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
@@ -269,6 +306,16 @@ for (const theme of ["light", "dark"] as const) {
   test(`typography board has truthful, contained, non-overlapping scale · ${theme}`, async ({ page }) => {
     await openGoldenBoard(page, "typography", theme);
     const geometry = await readTypographyGeometry(page);
+    typographyGeometryEvidence.push({
+      scenario: `default-${theme}`,
+      documentOverflow: geometry.documentOverflow,
+      siblingOverlapCount: geometry.siblingOverlaps.length,
+      clippedCount: geometry.specimens.filter(({ clipped, contained, labelOverlap }) =>
+        clipped || !contained || labelOverlap,
+      ).length,
+      minimumMetadataSize: geometry.minimumMetadataSize,
+      computedSizes: geometry.specimens.map(({ computedSize }) => computedSize),
+    });
     expect(geometry.specimens).toHaveLength(8);
     expect(geometry.minimumMetadataSize).toBeGreaterThanOrEqual(12);
     expect(new Set(geometry.specimens.map(({ computedSize }) => computedSize)).size).toBe(4);
@@ -296,6 +343,16 @@ test("typography board survives 200-percent equivalent reflow", async ({ page })
   await openGoldenBoard(page, "typography");
   await page.setViewportSize({ width: 720, height: 450 });
   const geometry = await readTypographyGeometry(page);
+  typographyGeometryEvidence.push({
+    scenario: "200-percent-equivalent-reflow",
+    documentOverflow: geometry.documentOverflow,
+    siblingOverlapCount: geometry.siblingOverlaps.length,
+    clippedCount: geometry.specimens.filter(({ clipped, contained, labelOverlap }) =>
+      clipped || !contained || labelOverlap,
+    ).length,
+    minimumMetadataSize: geometry.minimumMetadataSize,
+    computedSizes: geometry.specimens.map(({ computedSize }) => computedSize),
+  });
   expect(geometry.documentOverflow).toBeLessThanOrEqual(1);
   expect(geometry.siblingOverlaps).toEqual([]);
   for (const specimen of geometry.specimens) {
@@ -318,6 +375,16 @@ test("typography board preserves every proof under WCAG text spacing", async ({ 
     `,
   });
   const geometry = await readTypographyGeometry(page);
+  typographyGeometryEvidence.push({
+    scenario: "wcag-text-spacing",
+    documentOverflow: geometry.documentOverflow,
+    siblingOverlapCount: geometry.siblingOverlaps.length,
+    clippedCount: geometry.specimens.filter(({ clipped, contained, labelOverlap }) =>
+      clipped || !contained || labelOverlap,
+    ).length,
+    minimumMetadataSize: geometry.minimumMetadataSize,
+    computedSizes: geometry.specimens.map(({ computedSize }) => computedSize),
+  });
   expect(geometry.documentOverflow).toBeLessThanOrEqual(1);
   expect(geometry.siblingOverlaps).toEqual([]);
   for (const specimen of geometry.specimens) {
@@ -325,6 +392,19 @@ test("typography board preserves every proof under WCAG text spacing", async ({ 
     expect(specimen.clipped, specimen.id).toBe(false);
     expect(specimen.labelOverlap, specimen.id).toBe(false);
   }
+});
+
+test("identity board remains fully contained by the 1440x900 canvas", async ({ page }) => {
+  await openGoldenBoard(page, "identity");
+  const geometry = await page.locator("[data-golden-asset-board='identity']").evaluate((board) => ({
+    boardBottom: board.getBoundingClientRect().bottom,
+    viewportHeight: innerHeight,
+    articleBottoms: [...board.querySelectorAll("article")].map(
+      (article) => article.getBoundingClientRect().bottom,
+    ),
+  }));
+  expect(geometry.boardBottom).toBeLessThanOrEqual(geometry.viewportHeight);
+  expect(Math.max(...geometry.articleBottoms)).toBeLessThanOrEqual(geometry.viewportHeight - 1);
 });
 
 test("long German landing actions remain inside the governed desktop capture", async ({ page }) => {
@@ -351,3 +431,31 @@ for (const localization of [
     await expect(page.getByRole("heading", { level: 1 })).not.toContainText("review fixture");
   });
 }
+
+test.afterAll(() => {
+  const sourceSha = process.env.PHASE5A2_GOLDEN_SOURCE_SHA ?? "";
+  const sourceTreeSha = process.env.PHASE5A2_GOLDEN_SOURCE_TREE_SHA ?? "";
+  if (!/^[0-9a-f]{40}$/u.test(sourceSha) || !/^[0-9a-f]{40}$/u.test(sourceTreeSha)) return;
+  expect(textSpacingEvidence).toHaveLength(6);
+  expect(reflowEvidence).toHaveLength(6);
+  expect(typographyGeometryEvidence).toHaveLength(4);
+  writeFileSync(
+    goldenOutputPath("resilience.json"),
+    `${JSON.stringify({
+      schemaVersion: 1,
+      kind: "phase5a2-golden-resilience-evidence",
+      sourceSha,
+      sourceTreeSha,
+      reviewOnly: true,
+      methodology: {
+        textSpacing: "Polish 390x844 with line-height 1.5, letter-spacing 0.12em, word-spacing 0.16em, and paragraph margin 2em.",
+        reflow: "200-percent equivalent CSS viewport of 384x844 with horizontal overflow bounded to 1px.",
+        typography: "Original 1440x900 light/dark geometry plus 720x450 reflow and WCAG text-spacing override.",
+      },
+      textSpacing: textSpacingEvidence,
+      reflow: reflowEvidence,
+      typography: typographyGeometryEvidence,
+    }, null, 2)}\n`,
+    "utf8",
+  );
+});

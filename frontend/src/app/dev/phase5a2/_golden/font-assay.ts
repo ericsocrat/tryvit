@@ -19,6 +19,7 @@ export const GOLDEN_FONT_ASSAY = Object.freeze({
       commit: "6f81ebecdf65e4463b798cc07b16a4f8d5216917",
       version: "4.504",
       licensePath: "font-assay/licenses/MANROPE-OFL.txt",
+      licenseBytes: 4_383,
       upstreamLicenseSha256: "e01b637272e0cbdfb240184dd98ea5cc671556d9894dae2668d92ab2c906787c",
       licenseSha256: "f612090fb72b6dca3e807e66fa0d2b5def163cef86f1a3209b5c897cba5ee4b7",
       reservedFontNames: Object.freeze([]),
@@ -44,6 +45,7 @@ export const GOLDEN_FONT_ASSAY = Object.freeze({
       releaseAssetBytes: 11_623_196,
       releaseAssetSha256: "af10e80dcd2296748b04cb9917db9f7ba0ae65101165fd2f0c16b9812d9abd28",
       licensePath: "font-assay/licenses/SOURCE-SERIF-4-OFL.md",
+      licenseBytes: 4_491,
       upstreamLicenseSha256: "75784a295293a8992f5a8d99210566e0064a012e6dab6731305e3787f15896c7",
       licenseSha256: "c21d7293d87b6d7ab1d0229a2f55b77f33a7613a6a4e66f6693d68d7d8d09464",
       reservedFontNames: Object.freeze(["Source"]),
@@ -111,9 +113,26 @@ export const GOLDEN_FONT_ASSAY = Object.freeze({
     brotli: "1.2.0",
     features: "kern,liga,clig,calt,locl,mark,mkmk,tnum",
     hinting: "retained",
-    deterministicRerunRequired: true,
+    deterministicRerunRequired: false,
+    deterministicRerunVerified: true,
   }),
 });
+
+export const GOLDEN_FONT_ASSAY_PACKET_FILES = Object.freeze([
+  ...GOLDEN_FONT_ASSAY.files.map((file) => Object.freeze({ ...file, kind: "font" as const })),
+  Object.freeze({
+    path: GOLDEN_FONT_ASSAY.sources.manrope.licensePath,
+    kind: "license" as const,
+    bytes: GOLDEN_FONT_ASSAY.sources.manrope.licenseBytes,
+    sha256: GOLDEN_FONT_ASSAY.sources.manrope.licenseSha256,
+  }),
+  Object.freeze({
+    path: GOLDEN_FONT_ASSAY.sources.sourceSerif4.licensePath,
+    kind: "license" as const,
+    bytes: GOLDEN_FONT_ASSAY.sources.sourceSerif4.licenseBytes,
+    sha256: GOLDEN_FONT_ASSAY.sources.sourceSerif4.licenseSha256,
+  }),
+]);
 
 export const GOLDEN_TYPE_SCALE = Object.freeze({
   display: 48,

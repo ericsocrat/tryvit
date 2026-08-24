@@ -66,9 +66,11 @@ test("retains exact font transfer, coverage, tabular figures and fallback CLS", 
     )].map((element) => {
       const rect = element.getBoundingClientRect();
       return {
+        specimen: element.closest<HTMLElement>("[data-golden-type-specimen]")?.dataset.goldenTypeSpecimen,
         top: rect.top,
         height: rect.height,
         fontFamily: getComputedStyle(element).fontFamily,
+        computedSize: Number.parseFloat(getComputedStyle(element).fontSize),
       };
     });
     const fontResources = performance.getEntriesByType("resource")
@@ -162,6 +164,8 @@ test("retains exact font transfer, coverage, tabular figures and fallback CLS", 
       fallbackMetrics: GOLDEN_FONT_ASSAY.fallbackMetrics,
       fallbackCls: result.cls,
       fallbackGeometryDeltaPx: geometryDelta,
+      expectedTypeScale: GOLDEN_TYPE_SCALE,
+      computedTypeScale: result.after.map(({ specimen, computedSize }) => ({ specimen, computedSize })),
       files: GOLDEN_FONT_ASSAY.files,
       sources: GOLDEN_FONT_ASSAY.sources,
       subsetting: GOLDEN_FONT_ASSAY.subsetting,

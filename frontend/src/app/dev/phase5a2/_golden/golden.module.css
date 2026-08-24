@@ -457,7 +457,11 @@
 
 .identityHero {
   grid-column: span 3;
-  min-height: 420px !important;
+  min-height: 360px !important;
+}
+
+.identityBoard > article:not(.identityHero) {
+  min-height: 220px;
 }
 
 .identityHero > svg[data-golden-wordmark] {
