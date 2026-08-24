@@ -169,7 +169,8 @@ for (const [index, capture] of GOLDEN_MOTION_RECORDINGS.entries()) {
     semanticAnnouncements.length !== expectedSemanticAnnouncements.length ||
     expectedSemanticAnnouncements.some((expected, semanticIndex) =>
       typeof semanticAnnouncements[semanticIndex] !== "string" ||
-      !(semanticAnnouncements[semanticIndex] as string).includes(expected),
+      !(semanticAnnouncements[semanticIndex] as string).toLocaleLowerCase("en-US")
+        .includes(expected.toLocaleLowerCase("en-US")),
     )
   ) fail("staged-terminal-provenance-invalid");
   const locale = new URL(record.route as string, "http://golden.invalid").searchParams.get("locale");

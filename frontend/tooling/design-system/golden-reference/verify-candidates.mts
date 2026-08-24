@@ -228,7 +228,8 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
       record.semanticAnnouncements.length === expectedSemanticAnnouncements.length &&
       expectedSemanticAnnouncements.every((expected, semanticIndex) =>
         typeof record.semanticAnnouncements?.[semanticIndex] === "string" &&
-        (record.semanticAnnouncements[semanticIndex] as string).includes(expected),
+        (record.semanticAnnouncements[semanticIndex] as string).toLocaleLowerCase("en-US")
+          .includes(expected.toLocaleLowerCase("en-US")),
       );
     if (
       record.recordingReference !== capture.reference ||

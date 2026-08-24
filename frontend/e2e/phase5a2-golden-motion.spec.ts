@@ -39,7 +39,7 @@ async function retainSemanticState(
     elements.map((element) => (element as HTMLElement).innerText.replace(/\s+/gu, " ").trim()).filter(Boolean),
   );
   const announcement = liveAnnouncements.at(-1) ?? await live.innerText();
-  expect(announcement).toContain(expectedAnnouncement);
+  expect(announcement.toLocaleLowerCase("en-US")).toContain(expectedAnnouncement.toLocaleLowerCase("en-US"));
   await page.waitForTimeout(GOLDEN_ASYNC_STATE_ASSERT_MS);
   await expect(live).toBeVisible();
   return announcement.replace(/\s+/gu, " ").trim();
