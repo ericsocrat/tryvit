@@ -1,10 +1,10 @@
 # Phase 5A.2 Checkpoint 2 — Golden Reference review handoff
 
-> **Status:** Current main integrated and exact-source packet regenerated; fresh integrated review, exact-head CI, and Eric approval pending
+> **Status:** Current main integrated and final corrected exact-source packet verified; bounded final review recheck, exact-head CI, and Eric approval pending
 > **Production migration:** Prohibited
-> **Capture source:** `c5edd0f6e43ff86646617a026ffbd0db3e579ad1`
-> **Capture tree:** `3c56ce832a0d2c9ddea6d16006150400656f2b76`
-> **Manifest SHA-256:** `4ff5884a147bacb290a260fc64edc5f05821503641c8ff60aabacb841248f085`
+> **Capture source:** `7e44b4b4dad5cb940f9b4f3cb7f7579aa4f1cf59`
+> **Capture tree:** `174cd4986085bb71946a1ed094b8093d996bd432`
+> **Manifest SHA-256:** `ef97f4fb04a0a283d90392639d7d90ca13e7e189da2e68aab0cbb336cb24d5d7`
 
 This packet implements exactly six complete non-production Golden References:
 
@@ -40,7 +40,7 @@ Query input is fail-closed and limited to `locale`, `theme`, `motion`, `state`, 
 
 ## Evidence packet
 
-The committed packet contains 91 files and 7,388,236 bytes:
+The committed packet contains 91 files and 7,461,860 bytes:
 
 - 36 core stills: six references × 390/768/1440 × light/dark;
 - 12 localized stills: Polish mobile and long-German desktop for each reference;
@@ -58,12 +58,13 @@ and the 15 MiB ceiling.
 
 ## Review boundary
 
-The initial 91/89 and corrected-packet 93/95 reviews remain historical. None approves
-this integrated packet. Current main changed browser/test/form/icon/performance
-dependencies, so all media and performance evidence was regenerated from the exact
-integrated source. Two new decision reviewers and one non-taste provenance/visual lane
-must now inspect the packet without seeing one another's result. The authorized brief
-and old/new comparison are under `reviews/integration-cycle-1/`.
+The initial 91/89, corrected-packet 93/95, and initial integrated conditional/HOLD
+reviews remain historical. None approves this final packet. The initial integrated
+review required localization, semantic dwell, evidence hierarchy, and identity
+containment corrections; those corrections and zero-scroll capture binding are now
+included in a new complete exact-source packet. The same three independent lanes must
+complete a bounded final recheck without seeing one another's result. The authorized
+brief and comparisons are under `reviews/integration-cycle-1/`.
 
 Native Polish/German review, trademark/legal clearance, real assistive-technology and
 device testing, branded Safari, real camera/password-manager behavior, and production

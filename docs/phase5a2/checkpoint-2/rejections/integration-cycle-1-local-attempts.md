@@ -21,3 +21,21 @@ hidden or retried unchanged.
 The first packet-commit invocation was issued from `frontend/` with a repository-root
 pathspec, so Git rejected the path before staging or committing anything. The command
 was corrected by running the same bounded add/commit from the repository root.
+
+## Review-driven packet history
+
+- initial integrated review packet: source `c5edd0f6…`, manifest `4ff5884a…`; initial
+  decision reviews returned conditional PASS/HOLD and required correction;
+- source `a26fac2e…`: 113/116 passed; German landing boundary and case-sensitive
+  semantic-announcement assertions failed, so no packet staged;
+- pre-auth owner packet: source `d640605b…`, manifest `b01f84fe…`, retained at commit
+  `919392b6…` before direct mobile ownership was added;
+- duplicated-owner packet: source `919392b6…`, manifest `ad736880…`, retained at
+  `6eba2ac9…` after primary visual inspection found repeated TryVit wording;
+- clipped-auth-owner packet: source `bd9426a2…`, manifest `5e4e41b3…`, retained at
+  `8ebb82f9…` after primary inspection found a negative mobile top boundary;
+- scroll-offset packet: source `57a562e3…`, manifest `f7204eed…`, retained at
+  `60dad6cc…` after Axe was shown to leave a core capture scroll offset;
+- final packet: source `7e44b4b4…`, manifest `ef97f4fb…`; 116/116 and both candidate
+  and staged verifiers pass with zero-scroll capture asserted immediately before every
+  screenshot.

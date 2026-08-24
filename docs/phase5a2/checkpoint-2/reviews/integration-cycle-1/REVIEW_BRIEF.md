@@ -7,14 +7,16 @@ output before submitting.
 ## Packet binding
 
 - selected system: Folded Label Register;
-- source/tree: `c5edd0f6e43ff86646617a026ffbd0db3e579ad1` / `3c56ce832a0d2c9ddea6d16006150400656f2b76`;
-- manifest SHA-256: `4ff5884a147bacb290a260fc64edc5f05821503641c8ff60aabacb841248f085`;
-- packet: 91 files / 7,388,236 bytes including the manifest;
-- comparison: `reviews/integration-cycle-1/evidence-comparison.md`;
+- source/tree: `7e44b4b4dad5cb940f9b4f3cb7f7579aa4f1cf59` / `174cd4986085bb71946a1ed094b8093d996bd432`;
+- manifest SHA-256: `ef97f4fb04a0a283d90392639d7d90ca13e7e189da2e68aab0cbb336cb24d5d7`;
+- packet: 91 files / 7,461,860 bytes including the manifest;
+- comparison: `reviews/integration-cycle-1/final-evidence-comparison.md`;
 - media: `evidence/` contains 68 PNGs and 12 complete WebMs;
 - status: review-only, non-production, production migration prohibited.
 
-Historical scores do not approve this integrated packet.
+Historical scores, including the initial integrated HOLD/conditional review under
+`initial/`, do not approve this final corrected packet and must not be read before the
+bounded final recheck is submitted.
 
 ## Required inspection
 
