@@ -4,7 +4,7 @@
   "provenance": {
     "baseSha": "c21d9bb8a25ddf3deee7b11a2386dfa59cccac7c",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "9b43e33c9c168045b549f6251706bca5fe748fbe9c2676a2b26dd59fe10ec2eb"
+    "sourceFingerprint": "5ecb4b7ca218c972803e04eec0a94ab99e2d1dcd9367485899bad560a8735749"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -3637,7 +3637,6 @@
         "frontend/src/app/dev/phase5a2/_golden/ProductActions.client.tsx",
         "frontend/src/app/dev/phase5a2/_golden/common-copy.ts",
         "frontend/src/app/dev/phase5a2/_golden/contract.ts",
-        "frontend/src/app/dev/phase5a2/_golden/fixture.ts",
         "frontend/src/design-system/patterns/PageState/PageState.tsx",
         "frontend/src/design-system/primitives/Tabs/index.ts"
       ],
@@ -3949,7 +3948,6 @@
       "runtimeBoundary": "client-reachable",
       "directModuleImports": [],
       "directConsumers": [
-        "frontend/src/app/dev/phase5a2/_golden/ProductReference.tsx",
         "frontend/src/app/dev/phase5a2/_golden/SearchWorkspace.client.tsx"
       ],
       "transitiveRouteConsumers": [
@@ -21152,7 +21150,7 @@
     ],
     "inspectedModuleCount": 542,
     "violations": [],
-    "sourceFingerprint": "56be8da9f64c5cb4238e21b0eca43e5f736a6fe0b77e43627d1d06edba3d9e67"
+    "sourceFingerprint": "cd0efbbc03b28526435594720b454cfe6dbe512944a7b3930874257da2c920e0"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
