@@ -16,6 +16,7 @@ export function PackageLabelNarrative({
   decisionLabel,
   themeActionLabel,
   themeResetLabel,
+  initialDark,
 }: Readonly<{
   actionLabel: string;
   resetLabel: string;
@@ -25,9 +26,10 @@ export function PackageLabelNarrative({
   decisionLabel: string;
   themeActionLabel: string;
   themeResetLabel: string;
+  initialDark: boolean;
 }>) {
   const [expanded, setExpanded] = useState(false);
-  const [darkPreview, setDarkPreview] = useState(false);
+  const [darkPreview, setDarkPreview] = useState(initialDark);
   const rootRef = useRef<HTMLElement>(null);
   useEffect(() => {
     rootRef.current?.setAttribute("data-golden-client-ready", "true");

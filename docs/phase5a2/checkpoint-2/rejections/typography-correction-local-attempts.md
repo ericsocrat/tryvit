@@ -93,3 +93,20 @@ no retained computed-style scale record, and no retained reflow/text-spacing rep
 Their scores do not qualify. The causal correction adds the missing evidence, makes
 font subsetting explicitly rerun-verified, and reduces the identity hero/variant tracks
 again before a new exact-source capture.
+
+## Rejected audit-ready packet
+
+The expanded packet was bound to source/tree
+`9fe14f14e00185cc1f1319d132e6853fa90e1723` /
+`5d8911cb326b0356e3a89a1a304dcea8c86b79bb`, manifest
+`10662acdc566f445b6c30615c6c7ed87954c1ea689d48d3a5bab6fbe61d0cfd5`, and
+91 files / 7,280,743 bytes. It passed 111/111 Golden checks and the complete packet
+verifier. Reviewer B nevertheless found that dark landing stills displayed the stale
+action “Preview dark system” / “Dunkles System anzeigen” while dark was already active.
+Landing truth fell below the category floor, so no score qualifies.
+
+The same review requested explicit enumeration of nonzero diagnostic edge rectangles
+in the resilience report and direct proof that identity marks are either accessibly
+named or decorative. The causal correction initializes the theme control from the
+route theme, retains every edge rectangle, and records labeled/decorative/invalid mark
+counts for the identity and lockup boards.

@@ -324,7 +324,9 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
     !Array.isArray(resilience.reflow) ||
     resilience.reflow.length !== GOLDEN_REFERENCE_IDS.length ||
     !Array.isArray(resilience.typography) ||
-    resilience.typography.length !== 4
+    resilience.typography.length !== 4 ||
+    !Array.isArray(resilience.identitySemantics) ||
+    resilience.identitySemantics.length !== 2
   ) fail("resilience-contract-invalid");
   for (const value of [...resilience.textSpacing, ...resilience.reflow] as unknown[]) {
     if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -333,6 +335,40 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
     const record = value as Record<string, unknown>;
     const overflow = "overflow" in record ? record.overflow : record.documentOverflow;
     if (typeof overflow !== "number" || overflow > 1) fail("resilience-geometry-invalid");
+    if (
+      "offenderCount" in record &&
+      (typeof record.offenderCount !== "number" ||
+        !Array.isArray(record.edgeRects) ||
+        record.edgeRects.length !== record.offenderCount)
+    ) fail("resilience-geometry-invalid");
+  }
+  for (const value of resilience.typography as unknown[]) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      fail("resilience-typography-invalid");
+    }
+    const record = value as Record<string, unknown>;
+    if (
+      record.documentOverflow !== 0 ||
+      record.siblingOverlapCount !== 0 ||
+      record.clippedCount !== 0 ||
+      typeof record.minimumMetadataSize !== "number" ||
+      record.minimumMetadataSize < 12 ||
+      !Array.isArray(record.computedSizes) ||
+      record.computedSizes.length !== 8
+    ) fail("resilience-typography-invalid");
+  }
+  for (const value of resilience.identitySemantics as unknown[]) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      fail("resilience-identity-semantics-invalid");
+    }
+    const record = value as Record<string, unknown>;
+    if (
+      record.invalidMarks !== 0 ||
+      typeof record.totalMarks !== "number" ||
+      typeof record.labeledMarks !== "number" ||
+      typeof record.decorativeMarks !== "number" ||
+      (record.labeledMarks as number) + (record.decorativeMarks as number) !== record.totalMarks
+    ) fail("resilience-identity-semantics-invalid");
   }
   for (const [index, reference] of GOLDEN_REFERENCE_IDS.entries()) {
     const candidate = performance.summaries[index];

@@ -173,6 +173,7 @@ export function LandingReference({ route }: Readonly<{ route: GoldenRouteState }
           actionLabel={copy.decode}
           decisionLabel={copy.decision}
           derivedLabel={copy.derived}
+          initialDark={route.theme === "dark"}
           observedLabel={copy.observed}
           packageLabel={copy.package}
           resetLabel={copy.reset}

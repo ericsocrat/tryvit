@@ -35,6 +35,14 @@ const textSpacingEvidence: Array<Readonly<{
   documentOverflow: number;
   rootOverflow: number;
   offenderCount: number;
+  edgeRects: readonly Readonly<{
+    tag: string;
+    className: string;
+    text?: string;
+    left: number;
+    right: number;
+    width: number;
+  }>[];
 }>> = [];
 const reflowEvidence: Array<Readonly<{
   reference: string;
@@ -49,6 +57,14 @@ const typographyGeometryEvidence: Array<Readonly<{
   clippedCount: number;
   minimumMetadataSize: number;
   computedSizes: readonly number[];
+}>> = [];
+const identitySemanticsEvidence: Array<Readonly<{
+  board: string;
+  totalMarks: number;
+  labeledMarks: number;
+  decorativeMarks: number;
+  invalidMarks: number;
+  labeledWordmarks: number;
 }>> = [];
 
 async function readTypographyGeometry(page: Page): Promise<TypographyGeometry> {
@@ -226,6 +242,7 @@ for (const capture of GOLDEN_POLISH_MOBILE_STILLS) {
       documentOverflow: geometry.documentOverflow,
       rootOverflow: geometry.rootOverflow,
       offenderCount: geometry.offenders.length,
+      edgeRects: geometry.offenders,
     });
     expect(geometry.documentOverflow, JSON.stringify(geometry.offenders, null, 2)).toBeLessThanOrEqual(1);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -405,6 +422,33 @@ test("identity board remains fully contained by the 1440x900 canvas", async ({ p
   }));
   expect(geometry.boardBottom).toBeLessThanOrEqual(geometry.viewportHeight);
   expect(Math.max(...geometry.articleBottoms)).toBeLessThanOrEqual(geometry.viewportHeight - 1);
+  for (const boardName of ["identity", "lockups"] as const) {
+    await openGoldenBoard(page, boardName);
+    const semantics = await page.locator(`[data-golden-asset-board='${boardName}']`).evaluate((board) => {
+      const marks = [...board.querySelectorAll<SVGElement>("svg[data-golden-mark]")];
+      const labeledMarks = marks.filter((mark) =>
+        mark.getAttribute("role") === "img" && Boolean(mark.getAttribute("aria-label")?.trim()),
+      ).length;
+      const decorativeMarks = marks.filter((mark) => mark.getAttribute("aria-hidden") === "true").length;
+      const wordmarks = [...board.querySelectorAll<SVGElement>("svg[data-golden-wordmark]")];
+      return {
+        totalMarks: marks.length,
+        labeledMarks,
+        decorativeMarks,
+        invalidMarks: marks.length - labeledMarks - decorativeMarks,
+        labeledWordmarks: wordmarks.filter((wordmark) =>
+          wordmark.getAttribute("role") === "img" && Boolean(wordmark.getAttribute("aria-label")?.trim()),
+        ).length,
+      };
+    });
+    identitySemanticsEvidence.push({ board: boardName, ...semantics });
+    expect(semantics.invalidMarks, boardName).toBe(0);
+    if (boardName === "identity") expect(semantics.labeledMarks).toBeGreaterThan(0);
+    if (boardName === "lockups") {
+      expect(semantics.decorativeMarks).toBeGreaterThan(0);
+      expect(semantics.labeledWordmarks).toBeGreaterThan(0);
+    }
+  }
 });
 
 test("long German landing actions remain inside the governed desktop capture", async ({ page }) => {
@@ -419,6 +463,19 @@ test("long German landing actions remain inside the governed desktop capture", a
     expect(geometry.bottom, name).toBeLessThanOrEqual(geometry.viewportHeight - 1);
   }
 });
+
+for (const localization of [
+  { locale: "en" as const, label: "Return to light system" },
+  { locale: "de" as const, label: "Zum hellen System zurückkehren" },
+]) {
+  test(`landing theme action reflects the initial dark theme · ${localization.locale}`, async ({ page }) => {
+    await admit(page, routeFor("landing", "ready", localization.locale, "dark"));
+    const action = page.getByRole("button", { name: localization.label, exact: true });
+    await expect(action).toBeVisible();
+    await action.click();
+    await expect(page.locator("[data-golden-reference='landing']")).toHaveAttribute("data-theme", "light");
+  });
+}
 
 for (const localization of [
   { locale: "pl" as const, title: "North Grain Oat Drink — rekord testowy" },
@@ -439,6 +496,7 @@ test.afterAll(() => {
   expect(textSpacingEvidence).toHaveLength(6);
   expect(reflowEvidence).toHaveLength(6);
   expect(typographyGeometryEvidence).toHaveLength(4);
+  expect(identitySemanticsEvidence).toHaveLength(2);
   writeFileSync(
     goldenOutputPath("resilience.json"),
     `${JSON.stringify({
@@ -448,13 +506,14 @@ test.afterAll(() => {
       sourceTreeSha,
       reviewOnly: true,
       methodology: {
-        textSpacing: "Polish 390x844 with line-height 1.5, letter-spacing 0.12em, word-spacing 0.16em, and paragraph margin 2em.",
+        textSpacing: "Polish 390x844 with line-height 1.5, letter-spacing 0.12em, word-spacing 0.16em, and paragraph margin 2em. edgeRects enumerates diagnostic child rectangles outside the viewport while document/root overflow remains the blocking metric.",
         reflow: "200-percent equivalent CSS viewport of 384x844 with horizontal overflow bounded to 1px.",
         typography: "Original 1440x900 light/dark geometry plus 720x450 reflow and WCAG text-spacing override.",
       },
       textSpacing: textSpacingEvidence,
       reflow: reflowEvidence,
       typography: typographyGeometryEvidence,
+      identitySemantics: identitySemanticsEvidence,
     }, null, 2)}\n`,
     "utf8",
   );

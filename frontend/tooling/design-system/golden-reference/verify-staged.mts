@@ -205,7 +205,9 @@ if (
   !Array.isArray(resilience.reflow) ||
   resilience.reflow.length !== 6 ||
   !Array.isArray(resilience.typography) ||
-  resilience.typography.length !== 4
+  resilience.typography.length !== 4 ||
+  !Array.isArray(resilience.identitySemantics) ||
+  resilience.identitySemantics.length !== 2
 ) fail("staged-resilience-proof-invalid");
 
 const sensitivePatterns = [
