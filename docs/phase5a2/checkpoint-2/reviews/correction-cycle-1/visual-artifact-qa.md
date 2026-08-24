@@ -1,7 +1,6 @@
 # Independent visual and provenance QA — typography-correction cycle 1
 
-> Provenance: **PASS**  
-> Visual QA: **PASS**
+> Provenance: **PASS**; visual QA: **PASS**
 
 The fresh non-taste lane inspected every retained original at its original resolution:
 68 PNGs (eight boards, six contact sheets, 36 core stills, 12 localized stills, and six
