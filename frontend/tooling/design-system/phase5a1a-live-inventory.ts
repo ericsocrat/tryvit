@@ -44,7 +44,16 @@ export type ModuleClassification =
 export type RuntimeBoundary = "client-entry" | "client-reachable" | "server-only";
 
 export type RedesignPhase =
-  "5A.1a" | "5A.1b" | "5A.3" | "5B" | "5C.1" | "5C.2" | "5D" | "5E" | "5F";
+  | "5A.1a"
+  | "5A.1b"
+  | "5A.2"
+  | "5A.3"
+  | "5B"
+  | "5C.1"
+  | "5C.2"
+  | "5D"
+  | "5E"
+  | "5F";
 
 export type ModuleDisposition = "migrate-to-v2" | "retain-v2" | "retain-behavior";
 
@@ -1058,6 +1067,14 @@ function buildCompatibilityFacadeAudit(
 function routeRedesignPhase(route: RouteConsumer): RedesignPhase {
   const routePath = route.routePath;
   if (routePath === "/dev/components" || routePath.startsWith("/dev/components/")) return "5A.1b";
+  if (
+    routePath === "/dev/phase5a2/golden" ||
+    routePath.startsWith("/dev/phase5a2/golden/") ||
+    routePath === "/dev/phase5a2/golden-assets" ||
+    routePath.startsWith("/dev/phase5a2/golden-assets/")
+  ) {
+    return "5A.2";
+  }
   if (routePath === "/api" || routePath.startsWith("/api/")) return "5F";
   if (routePath === "/onboarding" || routePath.startsWith("/onboarding/")) return "5D";
   if (!routePath.startsWith("/app")) return "5A.3";
@@ -1084,6 +1101,13 @@ function routeRedesignPhase(route: RouteConsumer): RedesignPhase {
 
 function pathFallbackPhase(modulePath: string): RedesignPhase {
   if (modulePath.startsWith("frontend/src/app/dev/components/")) return "5A.1b";
+  if (
+    modulePath.startsWith("frontend/src/app/dev/phase5a2/_golden/") ||
+    modulePath.startsWith("frontend/src/app/dev/phase5a2/golden/") ||
+    modulePath.startsWith("frontend/src/app/dev/phase5a2/golden-assets/")
+  ) {
+    return "5A.2";
+  }
   if (modulePath.startsWith("frontend/src/app/app/admin/")) return "5F";
   if (
     modulePath.startsWith("frontend/src/app/app/scan/") ||
@@ -1118,6 +1142,13 @@ function designSystemStatus(modulePath: string): DesignSystemStatus {
   if (modulePath.startsWith("frontend/src/design-system/compat-v1/")) return "v1";
   if (modulePath.startsWith("frontend/src/design-system/")) return "v2";
   if (modulePath.startsWith("frontend/src/app/dev/components/")) return "mixed";
+  if (
+    modulePath.startsWith("frontend/src/app/dev/phase5a2/_golden/") ||
+    modulePath.startsWith("frontend/src/app/dev/phase5a2/golden/") ||
+    modulePath.startsWith("frontend/src/app/dev/phase5a2/golden-assets/")
+  ) {
+    return "v2";
+  }
   return "v1";
 }
 
@@ -1146,8 +1177,14 @@ function governanceForModule(
   const modulePath = relativePath(repositoryRoot, sourceModule.filename);
   const status = designSystemStatus(modulePath);
   const behaviorOnly = isBehaviorOnlyModule(sourceModule);
+  const goldenReferenceModule =
+    modulePath.startsWith("frontend/src/app/dev/phase5a2/_golden/") ||
+    modulePath.startsWith("frontend/src/app/dev/phase5a2/golden/") ||
+    modulePath.startsWith("frontend/src/app/dev/phase5a2/golden-assets/");
   let targetRedesignPhases: RedesignPhase[];
-  if (status === "v2") {
+  if (goldenReferenceModule) {
+    targetRedesignPhases = ["5A.2"];
+  } else if (status === "v2") {
     targetRedesignPhases = [isPhase5A1bDesignSystemModule(modulePath) ? "5A.1b" : "5A.1a"];
   }
   else if (

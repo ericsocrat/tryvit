@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a2-golden-reference-performance",
+  "sourceSha": "d88979863666a4b2fba5de60d2bf8bc0238d7236",
+  "sourceTreeSha": "7520ff8dfa3f7948bde1522898da6029175c8dcb",
+  "reviewOnly": true,
+  "productionCoreWebVitals": false,
+  "methodology": {
+    "profile": "Playwright Chromium · 390x844 CSS px · local production build · cache disabled · full motion",
+    "samplesPerReference": 5,
+    "lcp": "Buffered LargestContentfulPaint entries in the guarded review environment.",
+    "cls": "LayoutShift values without recent input in the guarded review environment.",
+    "tbt": "Sum of observed main-thread long-task duration above 50ms; not field INP.",
+    "ttfb": "PerformanceNavigationTiming.responseStart from navigation start.",
+    "assets": "Unique requested Next.js JS/CSS build assets compressed locally with gzip level 9; font/image payloads use encodedBodySize.",
+    "animationCoverage": "Long-task and layout-shift observers remain active through full-motion settlement."
+  },
+  "runtime": {
+    "browserName": "chromium",
+    "browserVersion": "151.0.7922.34",
+    "nodeVersion": "v24.11.1",
+    "platform": "win32",
+    "architecture": "x64"
+  },
+  "targets": {
+    "lcpMsMaximum": 2500,
+    "tbtMsMaximum": 200,
+    "landingClsMaximum": 0.05,
+    "otherClsMaximum": 0.1,
+    "ttfbMsMaximum": 800,
+    "animationTaskMsMaximum": 50,
+    "candidateFontBytesMaximum": 102400
+  },
+  "conservativeProductionConstraint": {
+    "appMobileScoreBaseline": 0.83,
+    "target": 0.85,
+    "retainedTbtSampleMs": 538,
+    "laterStableObservation": 0.87,
+    "disposition": "debt-retained; production migration prohibited"
+  },
+  "attempts": [
+    {
+      "reference": "landing",
+      "sample": 1,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "landing",
+      "sample": 2,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "landing",
+      "sample": 3,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "landing",
+      "sample": 4,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "landing",
+      "sample": 5,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "authentication",
+      "sample": 1,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "authentication",
+      "sample": 2,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "authentication",
+      "sample": 3,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "authentication",
+      "sample": 4,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "authentication",
+      "sample": 5,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "home",
+      "sample": 1,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "home",
+      "sample": 2,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "home",
+      "sample": 3,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "home",
+      "sample": 4,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "home",
+      "sample": 5,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "search",
+      "sample": 1,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "search",
+      "sample": 2,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "search",
+      "sample": 3,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "search",
+      "sample": 4,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "search",
+      "sample": 5,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "product",
+      "sample": 1,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "product",
+      "sample": 2,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "product",
+      "sample": 3,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "product",
+      "sample": 4,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "product",
+      "sample": 5,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "scanner",
+      "sample": 1,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "scanner",
+      "sample": 2,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "scanner",
+      "sample": 3,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "scanner",
+      "sample": 4,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    },
+    {
+      "reference": "scanner",
+      "sample": 5,
+      "status": "failed-before-valid-measurement",
+      "failure": "[P5A2_GOLDEN_PERF] build-asset-invalid"
+    }
+  ],
+  "summaries": [
+    {
+      "reference": "landing",
+      "status": "incomplete"
+    },
+    {
+      "reference": "authentication",
+      "status": "incomplete"
+    },
+    {
+      "reference": "home",
+      "status": "incomplete"
+    },
+    {
+      "reference": "search",
+      "status": "incomplete"
+    },
+    {
+      "reference": "product",
+      "status": "incomplete"
+    },
+    {
+      "reference": "scanner",
+      "status": "incomplete"
+    }
+  ],
+  "failures": [
+    "valid-sample-count"
+  ]
+}

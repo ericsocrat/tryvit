@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a2-golden-reference-runtime",
+  "sourceSha": "303b7bc156490ddf207df668d2d70ea5e0661cd3",
+  "sourceTreeSha": "19140d9fecff098c9deccf851e1348aff8241e01",
+  "fixtureContractVersion": "phase5a2-golden-fixture-v1",
+  "playwrightVersion": "1.62.1",
+  "browserName": "chromium",
+  "browserVersion": "151.0.7922.34",
+  "timezoneId": "UTC",
+  "browserLocale": "en-US",
+  "nodeVersion": "v24.11.1",
+  "osPlatform": "win32",
+  "osArch": "x64"
+}

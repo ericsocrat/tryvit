@@ -75,6 +75,7 @@ const HAS_PHASE5A1_CATALOG = process.env.PHASE5A1_CATALOG === "1";
 const HAS_PHASE5A2_CROSS_BROWSER = enabled("PHASE5A2_CROSS_BROWSER");
 const HAS_PHASE5A2_DIRECTION_REVIEW = enabled("PHASE5A2_DIRECTION_REVIEW");
 const HAS_PHASE5A2_DIRECTION_BEHAVIOR = enabled("PHASE5A2_DIRECTION_BEHAVIOR");
+const HAS_PHASE5A2_GOLDEN = enabled("PHASE5A2_GOLDEN");
 
 const proxyServer = process.env.VISUAL_SAFETY_PROXY
   ? canonicalizeLoopbackOrigin(process.env.VISUAL_SAFETY_PROXY).origin
@@ -513,6 +514,108 @@ const phase5a2DirectionBehaviorProject = {
   },
 };
 
+const phase5a2GoldenChromiumProject = {
+  name: "phase5a2-golden-chromium",
+  testMatch: /phase5a2-golden-cross-browser\.spec\.ts/,
+  dependencies: ["auth-setup"],
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    browserName: "chromium" as const,
+    viewport: { width: 390, height: 844 },
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    contextOptions: { reducedMotion: "no-preference" as const },
+    storageState: authStatePath("user.json"),
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
+const phase5a2GoldenFirefoxProject = {
+  ...phase5a2GoldenChromiumProject,
+  name: "phase5a2-golden-firefox",
+  use: {
+    ...phase5a2GoldenChromiumProject.use,
+    ...devices["Desktop Firefox"],
+    browserName: "firefox" as const,
+    viewport: { width: 390, height: 844 },
+  },
+};
+
+const phase5a2GoldenWebkitProject = {
+  ...phase5a2GoldenChromiumProject,
+  name: "phase5a2-golden-webkit",
+  use: {
+    ...phase5a2GoldenChromiumProject.use,
+    ...devices["Desktop Safari"],
+    browserName: "webkit" as const,
+    viewport: { width: 390, height: 844 },
+  },
+};
+
+const phase5a2GoldenResilienceProject = {
+  ...phase5a2GoldenChromiumProject,
+  name: "phase5a2-golden-resilience",
+  testMatch: /phase5a2-golden-resilience\.spec\.ts/,
+};
+
+const phase5a2GoldenCoarseProject = {
+  ...phase5a2GoldenChromiumProject,
+  name: "phase5a2-golden-coarse",
+  testMatch: /phase5a2-golden-coarse\.spec\.ts/,
+  use: {
+    ...phase5a2GoldenChromiumProject.use,
+    hasTouch: true,
+    isMobile: true,
+  },
+};
+
+const phase5a2GoldenNoJavaScriptProject = {
+  ...phase5a2GoldenChromiumProject,
+  name: "phase5a2-golden-no-javascript",
+  testMatch: /phase5a2-golden-no-javascript\.spec\.ts/,
+  use: {
+    ...phase5a2GoldenChromiumProject.use,
+    javaScriptEnabled: false,
+  },
+};
+
+const phase5a2GoldenCaptureProject = {
+  ...phase5a2GoldenChromiumProject,
+  name: "phase5a2-golden-capture",
+  testMatch: /phase5a2-golden-capture\.spec\.ts/,
+  use: {
+    ...phase5a2GoldenChromiumProject.use,
+    viewport: { width: 1440, height: 900 },
+  },
+};
+
+const phase5a2GoldenMotionProject = {
+  ...phase5a2GoldenChromiumProject,
+  name: "phase5a2-golden-motion",
+  testMatch: /phase5a2-golden-motion\.spec\.ts/,
+};
+
+const phase5a2GoldenPerformanceProject = {
+  ...phase5a2GoldenChromiumProject,
+  name: "phase5a2-golden-performance",
+  testMatch: /phase5a2-golden-performance\.spec\.ts/,
+};
+
+const phase5a2GoldenTypographyProject = {
+  ...phase5a2GoldenChromiumProject,
+  name: "phase5a2-golden-typography",
+  testMatch: /phase5a2-golden-typography\.spec\.ts/,
+  use: {
+    ...phase5a2GoldenChromiumProject.use,
+    viewport: { width: 1440, height: 900 },
+  },
+};
+
 const projects = [
   ...(LOCAL_AUTHENTICATED ? [authSetupProject, functionalAuthSetupProject] : []),
   smokeProject,
@@ -537,6 +640,20 @@ const projects = [
         phase5a2DirectionStillsProject,
         phase5a2DirectionMotionProject,
         phase5a2DirectionScannerProject,
+      ]
+    : []),
+  ...(HAS_PHASE5A2_GOLDEN && LOCAL_AUTHENTICATED
+    ? [
+        phase5a2GoldenChromiumProject,
+        phase5a2GoldenFirefoxProject,
+        phase5a2GoldenWebkitProject,
+        phase5a2GoldenResilienceProject,
+        phase5a2GoldenCoarseProject,
+        phase5a2GoldenNoJavaScriptProject,
+        phase5a2GoldenCaptureProject,
+        phase5a2GoldenMotionProject,
+        phase5a2GoldenPerformanceProject,
+        phase5a2GoldenTypographyProject,
       ]
     : []),
   ...(HAS_SCREENSHOTS ? [screenshotsProject] : []),

@@ -1,0 +1,553 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a2-golden-resilience-evidence",
+  "sourceSha": "303b7bc156490ddf207df668d2d70ea5e0661cd3",
+  "sourceTreeSha": "19140d9fecff098c9deccf851e1348aff8241e01",
+  "reviewOnly": true,
+  "methodology": {
+    "textSpacing": "Polish 390x844 with line-height 1.5, letter-spacing 0.12em, word-spacing 0.16em, and paragraph margin 2em. edgeRects enumerates every child rectangle outside the viewport and proves each is contained by an intentional horizontal scroller while document/root overflow remains bounded.",
+    "reflow": "200-percent equivalent CSS viewport of 384x844 with horizontal overflow bounded to 1px.",
+    "typography": "Original 1440x900 light/dark geometry plus 720x450 reflow and WCAG text-spacing override."
+  },
+  "textSpacing": [
+    {
+      "reference": "landing",
+      "locale": "pl",
+      "documentOverflow": 0,
+      "rootOverflow": 0,
+      "offenderCount": 4,
+      "edgeRects": [
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Panel główny",
+          "left": 277,
+          "right": 423,
+          "width": 146,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Wyszukiwanie",
+          "left": 423,
+          "right": 571,
+          "width": 148,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Produkt i dane",
+          "left": 571,
+          "right": 730,
+          "width": 159,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Skaner",
+          "left": 730,
+          "right": 823,
+          "width": 93,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        }
+      ]
+    },
+    {
+      "reference": "authentication",
+      "locale": "pl",
+      "documentOverflow": 0,
+      "rootOverflow": 0,
+      "offenderCount": 4,
+      "edgeRects": [
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Panel główny",
+          "left": 277,
+          "right": 423,
+          "width": 146,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Wyszukiwanie",
+          "left": 423,
+          "right": 571,
+          "width": 148,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Produkt i dane",
+          "left": 571,
+          "right": 730,
+          "width": 159,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Skaner",
+          "left": 730,
+          "right": 823,
+          "width": 93,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        }
+      ]
+    },
+    {
+      "reference": "home",
+      "locale": "pl",
+      "documentOverflow": 0,
+      "rootOverflow": 0,
+      "offenderCount": 4,
+      "edgeRects": [
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Panel główny",
+          "left": 277,
+          "right": 423,
+          "width": 146,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Wyszukiwanie",
+          "left": 423,
+          "right": 571,
+          "width": 148,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Produkt i dane",
+          "left": 571,
+          "right": 730,
+          "width": 159,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Skaner",
+          "left": 730,
+          "right": 823,
+          "width": 93,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        }
+      ]
+    },
+    {
+      "reference": "search",
+      "locale": "pl",
+      "documentOverflow": 0,
+      "rootOverflow": 0,
+      "offenderCount": 4,
+      "edgeRects": [
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Panel główny",
+          "left": 277,
+          "right": 423,
+          "width": 146,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Wyszukiwanie",
+          "left": 423,
+          "right": 571,
+          "width": 148,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Produkt i dane",
+          "left": 571,
+          "right": 730,
+          "width": 159,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Skaner",
+          "left": 730,
+          "right": 823,
+          "width": 93,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        }
+      ]
+    },
+    {
+      "reference": "product",
+      "locale": "pl",
+      "documentOverflow": 0,
+      "rootOverflow": 0,
+      "offenderCount": 7,
+      "edgeRects": [
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Panel główny",
+          "left": 277,
+          "right": 423,
+          "width": 146,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Wyszukiwanie",
+          "left": 423,
+          "right": 571,
+          "width": 148,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Produkt i dane",
+          "left": 571,
+          "right": 730,
+          "width": 159,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Skaner",
+          "left": 730,
+          "right": 823,
+          "width": 93,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "button",
+          "className": "tabs_tab__3l7nV",
+          "text": "Alergeny",
+          "left": 336,
+          "right": 449,
+          "width": 112,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "div",
+          "scrollerRole": "tablist"
+        },
+        {
+          "tag": "button",
+          "className": "tabs_tab__3l7nV",
+          "text": "Metoda",
+          "left": 449,
+          "right": 549,
+          "width": 100,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "div",
+          "scrollerRole": "tablist"
+        },
+        {
+          "tag": "button",
+          "className": "tabs_tab__3l7nV",
+          "text": "Alternatywy",
+          "left": 549,
+          "right": 689,
+          "width": 140,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "div",
+          "scrollerRole": "tablist"
+        }
+      ]
+    },
+    {
+      "reference": "scanner",
+      "locale": "pl",
+      "documentOverflow": 0,
+      "rootOverflow": 0,
+      "offenderCount": 4,
+      "edgeRects": [
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Panel główny",
+          "left": 277,
+          "right": 423,
+          "width": 146,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Wyszukiwanie",
+          "left": 423,
+          "right": 571,
+          "width": 148,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Produkt i dane",
+          "left": 571,
+          "right": 730,
+          "width": 159,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        },
+        {
+          "tag": "a",
+          "className": "golden_referenceLink__rGVVw",
+          "text": "Skaner",
+          "left": 730,
+          "right": 823,
+          "width": 93,
+          "containedByHorizontalScroller": true,
+          "scrollerTag": "nav"
+        }
+      ]
+    }
+  ],
+  "reflow": [
+    {
+      "reference": "landing",
+      "locale": "en",
+      "viewport": {
+        "width": 384,
+        "height": 844
+      },
+      "overflow": 0
+    },
+    {
+      "reference": "authentication",
+      "locale": "en",
+      "viewport": {
+        "width": 384,
+        "height": 844
+      },
+      "overflow": 0
+    },
+    {
+      "reference": "home",
+      "locale": "en",
+      "viewport": {
+        "width": 384,
+        "height": 844
+      },
+      "overflow": 0
+    },
+    {
+      "reference": "search",
+      "locale": "en",
+      "viewport": {
+        "width": 384,
+        "height": 844
+      },
+      "overflow": 0
+    },
+    {
+      "reference": "product",
+      "locale": "en",
+      "viewport": {
+        "width": 384,
+        "height": 844
+      },
+      "overflow": 0
+    },
+    {
+      "reference": "scanner",
+      "locale": "en",
+      "viewport": {
+        "width": 384,
+        "height": 844
+      },
+      "overflow": 0
+    }
+  ],
+  "typography": [
+    {
+      "scenario": "default-light",
+      "documentOverflow": 0,
+      "siblingOverlapCount": 0,
+      "clippedCount": 0,
+      "minimumMetadataSize": 12,
+      "computedSizes": [
+        48,
+        30,
+        22,
+        26,
+        48,
+        30,
+        22,
+        26
+      ]
+    },
+    {
+      "scenario": "default-dark",
+      "documentOverflow": 0,
+      "siblingOverlapCount": 0,
+      "clippedCount": 0,
+      "minimumMetadataSize": 12,
+      "computedSizes": [
+        48,
+        30,
+        22,
+        26,
+        48,
+        30,
+        22,
+        26
+      ]
+    },
+    {
+      "scenario": "200-percent-equivalent-reflow",
+      "documentOverflow": 0,
+      "siblingOverlapCount": 0,
+      "clippedCount": 0,
+      "minimumMetadataSize": 12,
+      "computedSizes": [
+        48,
+        30,
+        22,
+        26,
+        48,
+        30,
+        22,
+        26
+      ]
+    },
+    {
+      "scenario": "wcag-text-spacing",
+      "documentOverflow": 0,
+      "siblingOverlapCount": 0,
+      "clippedCount": 0,
+      "minimumMetadataSize": 12,
+      "computedSizes": [
+        48,
+        30,
+        22,
+        26,
+        48,
+        30,
+        22,
+        26
+      ]
+    }
+  ],
+  "identitySemantics": [
+    {
+      "board": "identity",
+      "totalMarks": 4,
+      "labeledMarks": 4,
+      "decorativeMarks": 0,
+      "invalidMarks": 0,
+      "labeledWordmarks": 1
+    },
+    {
+      "board": "lockups",
+      "totalMarks": 6,
+      "labeledMarks": 0,
+      "decorativeMarks": 6,
+      "invalidMarks": 0,
+      "labeledWordmarks": 4
+    }
+  ],
+  "liveIdentitySemantics": [
+    {
+      "reference": "landing",
+      "ownerLockups": 1,
+      "totalMarks": 4,
+      "invalidMarks": 0,
+      "totalGlyphs": 11,
+      "invalidGlyphs": 0,
+      "labeledWordmarks": 2,
+      "productRecordMasterMarks": 0,
+      "ownerBoundaryViolations": 0
+    },
+    {
+      "reference": "authentication",
+      "ownerLockups": 1,
+      "totalMarks": 4,
+      "invalidMarks": 0,
+      "totalGlyphs": 3,
+      "invalidGlyphs": 0,
+      "labeledWordmarks": 2,
+      "productRecordMasterMarks": 0,
+      "ownerBoundaryViolations": 0
+    },
+    {
+      "reference": "home",
+      "ownerLockups": 1,
+      "totalMarks": 3,
+      "invalidMarks": 0,
+      "totalGlyphs": 4,
+      "invalidGlyphs": 0,
+      "labeledWordmarks": 2,
+      "productRecordMasterMarks": 0,
+      "ownerBoundaryViolations": 0
+    },
+    {
+      "reference": "search",
+      "ownerLockups": 1,
+      "totalMarks": 4,
+      "invalidMarks": 0,
+      "totalGlyphs": 4,
+      "invalidGlyphs": 0,
+      "labeledWordmarks": 2,
+      "productRecordMasterMarks": 0,
+      "ownerBoundaryViolations": 0
+    },
+    {
+      "reference": "product",
+      "ownerLockups": 1,
+      "totalMarks": 3,
+      "invalidMarks": 0,
+      "totalGlyphs": 5,
+      "invalidGlyphs": 0,
+      "labeledWordmarks": 2,
+      "productRecordMasterMarks": 0,
+      "ownerBoundaryViolations": 0
+    },
+    {
+      "reference": "scanner",
+      "ownerLockups": 1,
+      "totalMarks": 3,
+      "invalidMarks": 0,
+      "totalGlyphs": 2,
+      "invalidGlyphs": 0,
+      "labeledWordmarks": 2,
+      "productRecordMasterMarks": 0,
+      "ownerBoundaryViolations": 0
+    }
+  ]
+}
