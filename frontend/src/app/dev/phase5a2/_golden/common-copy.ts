@@ -51,7 +51,7 @@ export const GOLDEN_COMMON_COPY: Readonly<Record<GoldenLocale, GoldenCommonCopy>
     retry: "Try again",
     close: "Close",
     states: "Reference states",
-    ownerLabel: "TryVit · review method owner",
+    ownerLabel: "Review method owner",
     referenceNames: {
       landing: "Landing",
       authentication: "Authentication",
@@ -84,7 +84,7 @@ export const GOLDEN_COMMON_COPY: Readonly<Record<GoldenLocale, GoldenCommonCopy>
     retry: "Spróbuj ponownie",
     close: "Zamknij",
     states: "Stany widoku",
-    ownerLabel: "TryVit · właściciel metody przeglądowej",
+    ownerLabel: "Właściciel metody przeglądowej",
     referenceNames: {
       landing: "Strona główna",
       authentication: "Logowanie",
@@ -117,7 +117,7 @@ export const GOLDEN_COMMON_COPY: Readonly<Record<GoldenLocale, GoldenCommonCopy>
     retry: "Erneut versuchen",
     close: "Schließen",
     states: "Referenzzustände",
-    ownerLabel: "TryVit · Inhaber der Prüfmethode",
+    ownerLabel: "Inhaber der Prüfmethode",
     referenceNames: {
       landing: "Startseite",
       authentication: "Anmeldung",
