@@ -141,7 +141,7 @@ describe("Phase 5A.2 Golden Reference rendered contracts", () => {
     fireEvent.click(screen.getByRole("button", { name: "Create account" }));
     fireEvent.change(screen.getByRole("textbox", { name: /Display name/u }), { target: { value: "Marta" } });
     fireEvent.click(screen.getByRole("button", { name: "Review registration" }));
-    await screen.findByText("Local sign-in completed");
+    await screen.findByText("Local sign-in completed", {}, { timeout: 2_500 });
     cleanup();
 
     renderFramed(route("authentication", "sign-in"));
@@ -175,7 +175,6 @@ describe("Phase 5A.2 Golden Reference rendered contracts", () => {
 
   it("executes Search query, deterministic settlement, filters, and retry", async () => {
     const view = renderFramed(route("search", "no-query"));
-    const workspace = within(view.container.querySelector("[data-golden-client='search-workspace']") as HTMLElement);
     const resultCount = view.container.querySelector("[data-golden-result-count]") as HTMLElement;
     const input = screen.getByLabelText("Search synthetic products");
     fireEvent.change(input, { target: { value: "oat" } });

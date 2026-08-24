@@ -8,13 +8,13 @@ import { Checkbox, Input } from "@/design-system/primitives/Field";
 import { Sheet } from "@/design-system/primitives/Overlay";
 
 import type { GoldenCommonCopy } from "./common-copy";
-import { GOLDEN_ASYNC_STATE_DWELL_MS, type GOLDEN_REFERENCE_STATES, type GoldenRouteState } from "./contract";
+import { GOLDEN_ASYNC_STATE_DWELL_MS, type GoldenRouteState, type GoldenSearchState } from "./contract";
 import { GOLDEN_SEARCH_PRODUCTS, type GoldenProductFixture } from "./fixture";
 import type { SearchCopy } from "./search-copy";
 import { GoldenGlyph } from "./GoldenGlyph";
 import styles from "./golden.module.css";
 
-type SearchState = (typeof GOLDEN_REFERENCE_STATES.search)[number];
+type SearchState = GoldenSearchState;
 
 function scoreStatusOf(product: GoldenProductFixture): GoldenProductFixture["decisionScoreStatus"] {
   return product.decisionScoreStatus;

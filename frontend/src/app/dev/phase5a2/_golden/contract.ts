@@ -116,6 +116,10 @@ export const GOLDEN_LOCALE_TAG: Readonly<Record<GoldenLocale, string>> = Object.
   de: "de-DE",
 });
 
+export type GoldenAuthenticationState = (typeof GOLDEN_REFERENCE_STATES.authentication)[number];
+export type GoldenSearchState = (typeof GOLDEN_REFERENCE_STATES.search)[number];
+export type GoldenScannerState = (typeof GOLDEN_REFERENCE_STATES.scanner)[number];
+
 const GOLDEN_QUERY_KEYS = new Set(["locale", "theme", "motion", "state", "capture"]);
 
 function isAllowed<T extends string>(value: string, allowed: readonly T[]): value is T {

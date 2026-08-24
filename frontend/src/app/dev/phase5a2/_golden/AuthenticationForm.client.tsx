@@ -9,13 +9,14 @@ import type { AuthCopy } from "./authentication-copy";
 import {
   GOLDEN_ASYNC_STATE_DWELL_MS,
   GOLDEN_REDIRECT_DWELL_MS,
+  type GoldenAuthenticationState,
+  type GoldenRouteState,
 } from "./contract";
-import type { GOLDEN_REFERENCE_STATES, GoldenRouteState } from "./contract";
 import { GoldenGlyph } from "./GoldenGlyph";
 import styles from "./golden.module.css";
 
 type AuthMode = "sign-in" | "registration" | "recovery";
-type AuthState = (typeof GOLDEN_REFERENCE_STATES.authentication)[number];
+type AuthState = GoldenAuthenticationState;
 
 function initialMode(state: AuthState): AuthMode {
   if (state === "registration") return "registration";

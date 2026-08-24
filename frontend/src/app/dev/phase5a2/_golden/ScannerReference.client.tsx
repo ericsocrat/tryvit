@@ -6,14 +6,14 @@ import { Button } from "@/design-system/primitives/Button/Button";
 import { Input } from "@/design-system/primitives/Field";
 
 import type { GoldenCommonCopy } from "./common-copy";
-import { GOLDEN_ASYNC_STATE_DWELL_MS, type GOLDEN_REFERENCE_STATES, type GoldenRouteState } from "./contract";
+import { GOLDEN_ASYNC_STATE_DWELL_MS, type GoldenRouteState, type GoldenScannerState } from "./contract";
 import { DecisionSummary } from "./GoldenEvidence";
 import { GoldenGlyph } from "./GoldenGlyph";
 import { GoldenSurfaceOwner } from "./GoldenIdentity";
 import type { ScannerCopy } from "./scanner-copy";
 import styles from "./golden.module.css";
 
-type ScannerState = (typeof GOLDEN_REFERENCE_STATES.scanner)[number];
+type ScannerState = GoldenScannerState;
 type ScannerEvent =
   | "request"
   | "grant"
