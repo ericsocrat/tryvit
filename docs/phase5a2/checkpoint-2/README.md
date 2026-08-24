@@ -1,6 +1,6 @@
 # Phase 5A.2 Checkpoint 2 — Golden Reference review handoff
 
-> **Status:** Current main integrated; Linux-renderer packet verified locally; bounded renderer recheck and exact-head Golden CI pending
+> **Status:** Current main integrated; Linux-renderer packet and independent recheck passed; exact-head Golden CI and Eric approval pending
 > **Production migration:** Prohibited
 > **Capture source:** `303b7bc156490ddf207df668d2d70ea5e0661cd3`
 > **Capture tree:** `19140d9fecff098c9deccf851e1348aff8241e01`
@@ -66,8 +66,9 @@ included in a new complete exact-source packet. The same three independent lanes
 completed a bounded final recheck without seeing one another's result: PASS 94/100,
 PASS 93.5/100, and non-taste PASS / PASS with no defect. Exact Linux CI then exposed
 fallback/canvas differences, so those scores are superseded for the renderer-corrected
-packet. A bounded recheck of the 18-file delta is pending; the implementation agent
-does not qualify and Eric's explicit approval remains required.
+packet. A bounded recheck of the 18-file delta retained PASS 94/100, PASS 93.5/100,
+and non-taste PASS / PASS with no defect. The implementation agent does not qualify;
+exact-head Ubuntu certification and Eric's explicit approval remain required.
 
 Native Polish/German review, trademark/legal clearance, real assistive-technology and
 device testing, branded Safari, real camera/password-manager behavior, and production

@@ -1,6 +1,6 @@
 # Checkpoint 2 validation and impact
 
-> **Status:** Current main integrated; Linux-renderer exact-source local validation passed; bounded renderer recheck and authoritative Golden CI pending
+> **Status:** Current main integrated; Linux-renderer exact-source local validation and independent recheck passed; authoritative Golden CI pending
 
 ## Implemented boundary
 
@@ -54,9 +54,9 @@ Golden consumers outside the two guarded routes.
   Chromium/Firefox/WebKit plus full resilience/capture/performance, raw and staged
   artifact retention, and no-backup runtime teardown; local workflow contracts and
   `actionlint` passed.
-- historical 91/89, 93/95, initial integrated conditional/HOLD, and pre-Linux 94/93.5
-  reviews are superseded; a bounded renderer-delta recheck and Eric's approval are
-  pending.
+- historical 91/89, 93/95, and initial integrated conditional/HOLD reviews are
+  superseded; the final Linux-renderer recheck retained PASS 94/100, PASS 93.5/100,
+  and non-taste PASS / PASS with no defect. Eric's approval is pending.
 - exact source/tree: `303b7bc156490ddf207df668d2d70ea5e0661cd3` /
   `19140d9fecff098c9deccf851e1348aff8241e01`.
 

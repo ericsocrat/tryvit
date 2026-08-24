@@ -59,3 +59,7 @@ retained. The correction reserves cross-platform specimen boxes, compacts the go
 typography canvas without hiding overflow, and binds the German assertion to the actual
 `capture=1` artifact canvas. No threshold, proof string, type size, font byte, or
 Lighthouse limit was reduced.
+
+The first Linux-review documentation commit was again invoked from `frontend/` with
+repository-root pathspecs; Git rejected it without staging. The commit was issued from
+the repository root and no content was lost.
