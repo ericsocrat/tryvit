@@ -78,6 +78,7 @@ const liveIdentitySemanticsEvidence: Array<Readonly<{
   invalidGlyphs: number;
   labeledWordmarks: number;
   productRecordMasterMarks: number;
+  ownerBoundaryViolations: number;
 }>> = [];
 
 async function readTypographyGeometry(page: Page): Promise<TypographyGeometry> {
@@ -485,13 +486,16 @@ test("identity board remains fully contained by the 1440x900 canvas", async ({ p
 });
 
 test("every live reference keeps TryVit ownership distinct from product-record glyphs", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.setViewportSize({ width: 390, height: 844 });
   for (const reference of GOLDEN_REFERENCE_IDS) {
     await admit(page, routeFor(reference, defaultGoldenState(reference)));
     const semantics = await page.locator("[data-golden-reference]").evaluate((root) => {
       const marks = [...root.querySelectorAll<SVGElement>("svg[data-golden-mark]")];
       const glyphs = [...root.querySelectorAll<SVGElement>("svg[data-golden-glyph]")];
       const wordmarks = [...root.querySelectorAll<SVGElement>("svg[data-golden-wordmark]")];
+      const rootRect = root.getBoundingClientRect();
+      const ownerRects = [...root.querySelectorAll<HTMLElement>("[data-golden-surface-owner]")]
+        .map((owner) => owner.getBoundingClientRect());
       const validGraphic = (graphic: SVGElement) =>
         graphic.getAttribute("aria-hidden") === "true" ||
         (graphic.getAttribute("role") === "img" && Boolean(graphic.getAttribute("aria-label")?.trim()));
@@ -505,6 +509,9 @@ test("every live reference keeps TryVit ownership distinct from product-record g
           wordmark.getAttribute("role") === "img" && Boolean(wordmark.getAttribute("aria-label")?.trim()),
         ).length,
         productRecordMasterMarks: root.querySelectorAll("[data-golden-product-record] svg[data-golden-mark]").length,
+        ownerBoundaryViolations: ownerRects.filter((rect) =>
+          rect.top < -1 || rect.left < rootRect.left - 1 || rect.right > rootRect.right + 1,
+        ).length,
       };
     });
     liveIdentitySemanticsEvidence.push({ reference, ...semantics });
@@ -513,6 +520,7 @@ test("every live reference keeps TryVit ownership distinct from product-record g
     expect(semantics.invalidMarks, reference).toBe(0);
     expect(semantics.invalidGlyphs, reference).toBe(0);
     expect(semantics.productRecordMasterMarks, reference).toBe(0);
+    expect(semantics.ownerBoundaryViolations, reference).toBe(0);
   }
 });
 

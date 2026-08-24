@@ -237,7 +237,8 @@ for (const value of resilience.liveIdentitySemantics as unknown[]) {
     record.labeledWordmarks < 1 ||
     record.invalidMarks !== 0 ||
     record.invalidGlyphs !== 0 ||
-    record.productRecordMasterMarks !== 0
+    record.productRecordMasterMarks !== 0 ||
+    record.ownerBoundaryViolations !== 0
   ) fail("staged-live-identity-semantics-invalid");
 }
 

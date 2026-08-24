@@ -406,7 +406,8 @@ export async function verifyGoldenCandidates(frontendRoot = process.cwd()): Prom
       record.labeledWordmarks < 1 ||
       record.invalidMarks !== 0 ||
       record.invalidGlyphs !== 0 ||
-      record.productRecordMasterMarks !== 0
+      record.productRecordMasterMarks !== 0 ||
+      record.ownerBoundaryViolations !== 0
     ) fail("resilience-live-identity-semantics-invalid");
   }
   for (const [index, reference] of GOLDEN_REFERENCE_IDS.entries()) {

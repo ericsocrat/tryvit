@@ -2360,6 +2360,7 @@
 
   .authPanel {
     order: 1;
+    align-self: start;
     margin-inline: auto;
   }
 }
