@@ -2,9 +2,9 @@
 
 ## Source binding
 
-- Capture source: `67c0c3f9e23b4fe1197e7b9da900f3d71716bdf8`.
-- Capture tree: `3f3865a8b21c4f79ad8e77dc7ef3c135005d5b5e`.
-- Manifest SHA-256: `b286061aecd0637f29da76b11dbdac72955bdac57c66efbdaf4afbd1a30518c5`.
+- Capture source: `4d29d5007511a438e14e002b3a0df122007b8de5`.
+- Capture tree: `d1875fccb9b9b0d4f45ff8191bf8cbcee21ce38f`.
+- Manifest SHA-256: `85309352e63b40d5e735d260c68d35668f0582ec0d0e10f8b10f85ece1ca7cf8`.
 - Checkpoint 1 canonical manifest remains
   `9c10d0243b5208319fc8c3b1497ca9dae552f7fdfd899823ae2fca39f8993c1e`.
 
@@ -33,8 +33,14 @@ nine domain glyphs are authored code-native vector paths/CSS in the source above
 contain no external identity asset, AI raster, live SVG text, filter, gradient, emoji,
 or added icon library. Product data and package art are visibly synthetic.
 
-The system font stack is the rendered control and transfers zero font bytes. Manrope
-and Source Serif 4 remain blocked assay candidates; no WOFF2 or font license is staged.
+The system font stack remains the rendered control. A guarded, review-only comparison
+loads deterministic Manrope Regular/SemiBold subsets and a Source-Serif-4-derived
+subset renamed `TryVit Assay Serif`: 75,004 transferred bytes total. Exact official
+source commits/releases, upstream and output hashes, SIL OFL texts, the `Source`
+reserved-font-name disposition, EN/PL/DE coverage, fallback metrics, and zero-CLS proof
+are retained in `TYPOGRAPHY_ASSAY.md`, `font-assay.ts`, and `evidence/font-assay.json`.
+No package dependency, public font file, root preload, production font, or adoption
+decision is added.
 
 No photography or third-party illustration is included. Originality screening is
 preliminary and does not establish trademark or legal clearance.

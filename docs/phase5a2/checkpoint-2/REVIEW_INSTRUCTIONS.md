@@ -1,12 +1,12 @@
 # Checkpoint 2 independent review instructions
 
 Review manifest SHA-256:
-`b286061aecd0637f29da76b11dbdac72955bdac57c66efbdaf4afbd1a30518c5`.
+`85309352e63b40d5e735d260c68d35668f0582ec0d0e10f8b10f85ece1ca7cf8`.
 
-This is the revision-cycle-1 replacement packet. The initial packet was rejected and
-is retained in Git history. Each initial reviewer must inspect the complete replacement
-packet from source `67c0c3f9e23b4fe1197e7b9da900f3d71716bdf8`; neither replacement reviewer may
-read the other replacement score before submitting.
+This is the bounded typography-correction replacement. All earlier packets and scores
+are historical and superseded. Two new reviewers inspect the complete packet from
+source `4d29d5007511a438e14e002b3a0df122007b8de5`; neither may read the other current
+score before submitting. A third lane performs non-taste visual/provenance QA.
 
 Each reviewer must:
 
@@ -14,7 +14,8 @@ Each reviewer must:
 2. receive this brief, the governing product requirements, retained evidence, and
    interaction paths—but not implementation rationale or another score;
 3. inspect original PNGs and WebMs, not only contact sheets;
-4. review all seven identity/typography/glyph boards and `evidence/performance.json`;
+4. review all seven board concepts, both light/dark typography captures,
+   `evidence/performance.json`, and `evidence/font-assay.json`;
 5. record per-reference and overall scores, reasoning, generic-template concerns,
    identity concerns, hierarchy/content/motion/accessibility/performance concerns,
    disagreements, vetoes, and required corrections;
@@ -39,5 +40,6 @@ Passage requires overall and each reference ≥88/100, no category below 75%, no
 truth/accessibility/privacy/performance veto, no severe generic-template concern, both
 reviews, and Eric's explicit approval. Do not average away a veto or self-approve.
 
-Write separate scorecards under `reviews/replacement/`. Do not read the other
-reviewer's replacement scorecard before submitting.
+Use `reviews/correction-cycle-1/REVIEW_BRIEF.md`. The primary agent records separate
+current scorecards under that directory only after both independent responses exist.
+Do not read the other current reviewer's score before submitting.

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a2-golden-font-assay",
-  "sourceSha": "eaffa77e67d0bee5566966b9d17e021117e60058",
-  "sourceTreeSha": "7019042ee0326c183e707af6ab403460824045d0",
+  "sourceSha": "4d29d5007511a438e14e002b3a0df122007b8de5",
+  "sourceTreeSha": "d1875fccb9b9b0d4f45ff8191bf8cbcee21ce38f",
   "reviewOnly": true,
   "productionAdoption": false,
   "status": "comparison-ready-decision-pending",

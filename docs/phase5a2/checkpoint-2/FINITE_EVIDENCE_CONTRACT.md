@@ -18,8 +18,10 @@ contract.
 | State/recovery contact sheets | 6 | Every finite state and recovery for one reference |
 | Normal-motion recordings | 6 | One complete deterministic journey per reference |
 | Reduced-motion recordings | 6 | Same journey and information at the 0ms endpoint |
-| Asset boards | 7 | Identity, lockups, compact/favicon, maskable, social/OG, typography, glyphs |
+| Asset-board concepts | 7 | Identity, lockups, compact/favicon, maskable, social/OG, typography, glyphs |
+| Asset-board captures | 8 | One light capture per concept plus intentional dark typography proof |
 | Performance report | 1 | Five valid cold local-production samples for every reference, with every sample retained |
+| Font-assay report | 1 | Exact official sources, WOFF2 hashes/bytes, coverage, fallback metrics, tabular figures, and CLS |
 
 Behavioral coverage also runs at 320, 390, 768, 1024, 1280, and 1440; 200% zoom;
 WCAG text spacing; coarse/fine pointer; hover/no-hover; selected RTL-sensitive
@@ -36,7 +38,7 @@ prepaint, truncated endings, and mismatched manifest bytes.
 
 The raw matrix belongs in GitHub Actions artifacts. The committed review packet is
 limited to `15 MiB` and contains only essential stills, contact sheets, complete
-recordings, boards, performance data, and the exact manifest. Rejected evidence is retained under a
+recordings, boards, performance/font-assay data, and the exact manifest. Rejected evidence is retained under a
 versioned rejection namespace; replacement evidence is generated only from a new exact
 source SHA after a causal correction.
 

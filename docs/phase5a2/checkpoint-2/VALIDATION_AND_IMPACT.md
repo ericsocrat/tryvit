@@ -1,6 +1,6 @@
 # Checkpoint 2 validation and impact
 
-> **Status:** Exact-source replacement evidence and local performance complete; authoritative CI pending
+> **Status:** Exact-source typography correction and local performance complete; fresh review and authoritative CI pending
 
 ## Implemented boundary
 
@@ -11,22 +11,22 @@
   lockfile, production brand, metadata, favicon, social asset, or font change;
 - Checkpoint 1 source and evidence unchanged.
 
-The regenerated schema-v3 inventory contains 436 modules. It classifies 27 exact Golden
+The regenerated schema-v3 inventory contains 437 modules. It classifies 28 exact Golden
 modules as Phase 5A.2/V2, records zero forbidden runtime boundaries, and records zero
 Golden consumers outside the two guarded routes.
 
 ## Local verification retained before review
 
 - prompt and repository entry gate: passed;
-- focused Golden contract: 10/10 passed;
+- focused Golden contract: 12/12 passed;
 - Phase 5A.1b architecture contract plus live inventory cohort: passed;
-- deterministic live inventory regenerated: 436 production modules, 27 exact Golden
+- deterministic live inventory regenerated: 437 production modules, 28 exact Golden
   Phase 5A.2 modules, zero forbidden runtime boundaries, and zero production consumers;
 - type-check: passed;
 - source lint and focused E2E/tooling lint: passed;
-- complete frontend unit suite: 6,721 passed and 19 skipped across 410 files;
+- complete frontend unit suite: 6,732 passed and 19 skipped across 411 files;
 - production build: passed with Golden routes dynamic and guarded;
-- exact-head retries-disabled browser/resilience run: 99/99 passed;
+- exact-source retries-disabled Golden matrix: 107/107 passed;
 - Chromium, Firefox, and WebKit six-reference journeys: 6/6 in each engine;
 - whole-document Axe: all 59 server-addressable states passed with zero serious or
   critical violations and no exclusions/disabled rules;
@@ -37,21 +37,21 @@ Golden consumers outside the two guarded routes.
 - JavaScript-disabled landing comprehension: passed;
 - scanner media-device calls: zero;
 - every Golden browser spec uses the repository's automatic fail-closed egress fixture;
-- replacement capture: 113 stills + seven boards + 12 complete recordings + 12
-  terminal frames + 30 valid performance samples, passed;
+- replacement capture: 113 reference/state stills + eight board captures + 12 complete
+  recordings + 12 terminal frames + 30 valid performance samples + one font assay,
+  passed;
 - terminal verifier: Authentication ends at `home/returning/#golden-main` and Home
   ends at `product/partial/#golden-main` in normal and reduced recordings;
-- staged evidence verifier: 83/83 files, 7,084,033 bytes, passed with manifest SHA-256
-  `b286061aecd0637f29da76b11dbdac72955bdac57c66efbdaf4afbd1a30518c5`.
+- staged evidence verifier: 85/85 files, 7,197,539 bytes, passed with manifest SHA-256
+  `85309352e63b40d5e735d260c68d35668f0582ec0d0e10f8b10f85ece1ca7cf8`.
 - dedicated CI workflow: exact-revision Ubuntu 24.04 admission, retries disabled,
   Chromium/Firefox/WebKit plus full resilience/capture/performance, raw and staged
   artifact retention, and no-backup runtime teardown; local workflow contracts and
   `actionlint` passed.
-- independent replacement review: Reviewer A 91/100 and Reviewer B 89/100; each
-  reference ≥88 in both reviews, all category floors passed, and no governed veto
-  remains. Eric's approval is still pending.
-- local Supabase and deterministic fixtures: stopped and removed without backup after
-  verification.
+- historical 91/89 reviews are superseded; two new scorecards and the third non-taste
+  QA lane are pending. Eric's approval is still pending.
+- exact source/tree: `4d29d5007511a438e14e002b3a0df122007b8de5` /
+  `d1875fccb9b9b0d4f45ff8191bf8cbcee21ce38f`.
 
 The initial reviewed packet remains recoverable in Git history. Superseded raw visual,
 browser, media, performance, and terminal-verifier packages remain outside the
@@ -78,25 +78,31 @@ approval for a future production route.
 
 ## Performance disposition
 
-- candidate font transfer: `0` bytes in all 30 samples;
-- committed review packet: `7,084,033` bytes, not application payload;
+- candidate comparison transfer: `75,004` bytes only on the guarded typography board;
+- Golden reference routes retain `0` font/image bytes in all 30 samples;
+- committed review packet: `7,197,539` bytes, not application payload;
 - measurements use cache-disabled Playwright Chromium at 390×844 against the guarded
   local production build. They are review-environment lab results, not production
   Core Web Vitals;
 
 | Reference | JS gzip | CSS gzip | LCP median (range) | TBT median (range) | TTFB median (range) | CLS median (range) |
 |---|---:|---:|---:|---:|---:|---:|
-| Landing | 203,009 B | 48,522 B | 120 ms (116–200) | 0 ms (0–0) | 68.4 ms (65.7–72.1) | 0 (0–0) |
-| Authentication | 203,009 B | 48,522 B | 128 ms (124–152) | 0 ms (0–0) | 67.1 ms (64.7–73.1) | 0 (0–0) |
-| Home | 203,009 B | 48,522 B | 108 ms (108–148) | 0 ms (0–0) | 62.1 ms (62.0–69.4) | 0 (0–0) |
-| Search | 203,009 B | 48,522 B | 120 ms (112–180) | 0 ms (0–0) | 70.7 ms (61.4–93.0) | 0 (0–0) |
-| Product | 203,009 B | 48,522 B | 128 ms (124–148) | 0 ms (0–0) | 66.7 ms (65.5–69.7) | 0 (0–0) |
-| Scanner | 203,009 B | 48,522 B | 128 ms (120–148) | 0 ms (0–0) | 73.6 ms (63.7–78.0) | 0 (0–0) |
+| Landing | 203,085 B | 49,065 B | 92 ms (88–164) | 0 ms (0–0) | 55.5 ms (52.6–59.3) | 0 (0–0) |
+| Authentication | 203,085 B | 49,065 B | 96 ms (96–128) | 0 ms (0–0) | 54.6 ms (51.6–58.4) | 0 (0–0) |
+| Home | 203,085 B | 49,065 B | 92 ms (88–100) | 0 ms (0–0) | 53.5 ms (52.0–53.9) | 0 (0–0) |
+| Search | 203,085 B | 49,065 B | 92 ms (88–96) | 0 ms (0–0) | 54.1 ms (52.6–55.1) | 0 (0–0) |
+| Product | 203,085 B | 49,065 B | 100 ms (100–104) | 0 ms (0–0) | 53.5 ms (52.8–55.5) | 0 (0–0) |
+| Scanner | 203,085 B | 49,065 B | 96 ms (92–96) | 0 ms (0–0) | 53.0 ms (52.0–54.7) | 0 (0–0) |
 
 Every final sample reports 0 image bytes, 0 font bytes, no long task, no
 animation-attributable long task, and no layout shift. Every threshold passes. A
 rejected earlier exact-source attempt retained a 57 ms non-animation long task and
 7 ms TBT in Landing sample 1; it was not hidden or averaged into the replacement.
+
+The guarded font comparison separately passes 75,004 transferred bytes, complete
+English/Polish/German proof coverage, `0px` tabular-digit width spread, `0` fallback
+CLS, and `0px` before/after geometry delta. It remains an assay with Eric's later
+typography choice pending, not production adoption.
 
 - production Route-JS comparison: pending the repository workflow;
 - conservative `/app` evidence remains `0.83` against `0.85`, including retained
