@@ -83,6 +83,12 @@ test("retains exact font transfer, coverage, tabular figures and fallback CLS", 
         };
       })
       .sort((left, right) => left.path.localeCompare(right.path, "en"));
+    const computedTypeScale = [...document.querySelectorAll<HTMLElement>(
+      "[data-golden-type-specimen] [data-golden-type-copy]",
+    )].map((element) => ({
+      specimen: element.closest<HTMLElement>("[data-golden-type-specimen]")?.dataset.goldenTypeSpecimen,
+      computedSize: Number.parseFloat(getComputedStyle(element).fontSize),
+    }));
     const digitProbe = document.createElement("div");
     Object.assign(digitProbe.style, {
       position: "fixed",
@@ -107,6 +113,7 @@ test("retains exact font transfer, coverage, tabular figures and fallback CLS", 
       after,
       cls: (window as ShiftWindow).__goldenTypographyCls ?? 0,
       fontResources,
+      computedTypeScale,
       transferredBytes: fontResources.reduce((sum, font) => sum + font.encodedBodySize, 0),
       expectedBytes,
       coverage: {
@@ -165,7 +172,7 @@ test("retains exact font transfer, coverage, tabular figures and fallback CLS", 
       fallbackCls: result.cls,
       fallbackGeometryDeltaPx: geometryDelta,
       expectedTypeScale: GOLDEN_TYPE_SCALE,
-      computedTypeScale: result.after.map(({ specimen, computedSize }) => ({ specimen, computedSize })),
+      computedTypeScale: result.computedTypeScale,
       files: GOLDEN_FONT_ASSAY.files,
       sources: GOLDEN_FONT_ASSAY.sources,
       subsetting: GOLDEN_FONT_ASSAY.subsetting,
