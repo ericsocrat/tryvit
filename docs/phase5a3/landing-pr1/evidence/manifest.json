@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-pr1-media-manifest",
+  "captureSourceCommit": "1e11c9f764b7095d134df9f0d16fa104b218df82",
+  "captureSourceTree": "100907edbb036541254c9793d2356f7f22f60f24",
+  "route": "/",
+  "productionBaseline": false,
+  "files": [
+    { "path": "evidence/landing-motion-performance.json", "bytes": 141, "sha256": "5dac9de88be75d1b739519c2c260b0552944e14f0abe62a1a4f4860a94d57c70" },
+    { "path": "evidence/motion/landing--normal--390x844--en.webm", "bytes": 287735, "sha256": "68033ab59043f186684d4ea429d15d6b2712d3db5ab70635fcf573cf07c016c2" },
+    { "path": "evidence/motion/landing--reduced--390x844--en.webm", "bytes": 184423, "sha256": "f9151f794be568f0b6009aca974c0b6efea1b33eb11f3bbb84489ccf90f7a495" },
+    { "path": "evidence/stills/landing--1440x900--dark--de.png", "bytes": 101210, "sha256": "12127401a475f199f4c55a1e959b0617980785d239b023960fd2b55fa62cda06" },
+    { "path": "evidence/stills/landing--1440x900--dark--en.png", "bytes": 92350, "sha256": "51dc71952123d186312657cb931ff8d67d41c008daabe7f86720ec036a166455" },
+    { "path": "evidence/stills/landing--1440x900--light--en.png", "bytes": 92395, "sha256": "de04324dd4ea7cf475954edd6ab7c70fcec1a105a389f401c8904981503bea32" },
+    { "path": "evidence/stills/landing--320x900--reflow--en.png", "bytes": 40611, "sha256": "1b200685c9491b4c7faf3a497cca72aacf38650c51cf954e08af0687d9558f8c" },
+    { "path": "evidence/stills/landing--390x844--dark--en.png", "bytes": 41798, "sha256": "4b1c77fab5bf00e20af0c3e1a2b9b31a8d7f1e8a338e33a99f5ce910c92a4198" },
+    { "path": "evidence/stills/landing--390x844--forced-colors--en.png", "bytes": 30000, "sha256": "466589de9fb7f57a926a1ca6dc19b7eb70f5b9054516774f7db7e34013473ee0" },
+    { "path": "evidence/stills/landing--390x844--light--en.png", "bytes": 41784, "sha256": "40905d8cfe31060b7b7ef0ac804b93884e182960cdcf5d313a2216ec8dc1f3eb" },
+    { "path": "evidence/stills/landing--390x844--no-javascript--dark--en.png", "bytes": 41465, "sha256": "dc77f0296ceab3c07a4c0e158bcfc80f703f1ceb460e0c4d0b350e991dcf1123" },
+    { "path": "evidence/stills/landing--390x844--no-javascript--light--en.png", "bytes": 41784, "sha256": "40905d8cfe31060b7b7ef0ac804b93884e182960cdcf5d313a2216ec8dc1f3eb" },
+    { "path": "evidence/stills/landing--390x844--text-spacing--pl.png", "bytes": 43328, "sha256": "ea56e0d752263cd5a7561c923717b38d98d72af1bd0f088f187ad5e9a146bb61" },
+    { "path": "evidence/stills/landing--640x900--200-percent-equivalent--en.png", "bytes": 63074, "sha256": "5c76bd33398c6b3a77e2efc0fece866987d433a27642ebc07fec409d16bb5b35" },
+    { "path": "evidence/stills/landing--768x1024--dark--en.png", "bytes": 62960, "sha256": "367a31a1e60d7896dea10086aeb093d2c985830a9603626619422a6701a94dd4" },
+    { "path": "evidence/stills/landing--768x1024--light--en.png", "bytes": 63037, "sha256": "d5b5dc1e86bc60e85de63582fddfa3ff1705f42aa89d7d7cb203b65b671acf2c" }
+  ]
+}

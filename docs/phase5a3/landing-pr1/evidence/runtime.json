@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-pr1-local-runtime",
+  "captureSourceCommit": "1e11c9f764b7095d134df9f0d16fa104b218df82",
+  "captureSourceTree": "100907edbb036541254c9793d2356f7f22f60f24",
+  "operatingSystem": "Microsoft Windows 11 Pro 10.0.26200 build 26200 AMD64",
+  "node": "24.11.1",
+  "npm": "11.6.2",
+  "next": "16.2.12",
+  "playwright": "1.62.1",
+  "chromiumRevision": "1234",
+  "packageLockSha256": "efd2a6e4c7906f3d6362336d9a841141008752e11cd34e10e55b0a00d4e863c5",
+  "playwrightConfigSha256": "a2fee35d4de77678142ad5e2d315eccf8a5bd2b42b9f228ed2604e4b3469b4bc",
+  "environmentClass": "local guarded production build",
+  "authoritativeLinuxCandidateRun": 32803841385
+}

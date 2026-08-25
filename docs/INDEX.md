@@ -5,8 +5,9 @@
 > **Phase 5 future-experience governance updated:** 2026-08-10
 > **Phase 5A.2 Checkpoint 1 handoff updated:** 2026-08-17
 > **Phase 5A.2 Checkpoint 2 approval recorded:** 2026-08-25
+> **Phase 5A.3 landing PR 1 draft evidence added:** 2026-08-25
 > **Status:** Active — update when adding, renaming, or archiving docs
-> **Tracked inventory:** 72 top-level Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 8 generated/supporting artifacts in `docs/phase5/`; 45 Checkpoint 1 files and 132 Checkpoint 2 files in `docs/phase5a2/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
+> **Tracked inventory:** 72 top-level Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 8 generated/supporting artifacts in `docs/phase5/`; 45 Checkpoint 1 files and 132 Checkpoint 2 files in `docs/phase5a2/`; 6 Phase 5A.3 landing packet documents in `docs/phase5a3/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
 
 ---
@@ -25,7 +26,7 @@
 | [Security & Compliance](#security--compliance)           | 5     | Root policy, audit report, access audit, privacy checklist, rate limiting                                                                                                                                                                                                             |
 | [Observability & Operations](#observability--operations) | 9     | Monitoring, observability, log schema, alerts, on-call policy, SLOs, metrics, incident response, disaster drill                                                                                                                                                                       |
 | [DevOps & Environment](#devops--environment)             | 3     | Environment strategy, staging setup, Sonar config                                                                                                                                                                                                                                     |
-| [Frontend & UX](#frontend--ux)                           | 34    | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec, product positioning, Phase 5 audit/blueprint/roadmap, visual-test safety, route/PWA policy, provider/locale/rendering contract, performance/visual gates, private PWA cache safety, Design System V2 foundations, completed Experience Architecture gate, and Checkpoint 1/2 handoffs |
+| [Frontend & UX](#frontend--ux)                           | 35    | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec, product positioning, Phase 5 audit/blueprint/roadmap, visual-test safety, route/PWA policy, provider/locale/rendering contract, performance/visual gates, private PWA cache safety, Design System V2 foundations, completed Experience Architecture gate, Checkpoint 1/2 handoffs, and the Phase 5A.3 landing draft evidence packet |
 | [Process & Workflow](#process--workflow)                 | 9     | Agent workflow reference, agent review workflow, research workflow, viewing & testing, backfill standard, migration conventions, labels, country expansion, demo script                                                                                                               |
 | [Governance & Policy](#governance--policy)               | 6     | Feature sunsetting, performance report, performance guardrails, doc governance, repo governance, this index                                                                                                                                                                           |
 | [Architecture Decisions](#architecture-decisions-adrs)   | 11    | MADR template + 10 ADRs (stack, scoring, country isolation, pipeline, API versioning, migrations, ingredients, nutrient density, scoring calibration, ingredient language model)                                                                                                      |
@@ -237,6 +238,7 @@
 | [phase5a2/checkpoint-1/ERIC_SELECTION.md](phase5a2/checkpoint-1/ERIC_SELECTION.md)           | Recorded conditional hybrid, Source Fold identity, typography control and bounded Checkpoint 2 authorization            | Phase 5A.2                                              | 2026-08-17   |
 | [phase5a2/checkpoint-2/README.md](phase5a2/checkpoint-2/README.md)                           | Canonical six-reference evidence handoff, review lineage and completed non-production gate boundary                     | Phase 5A.2                                              | 2026-08-25   |
 | [phase5a2/checkpoint-2/ERIC_APPROVAL.md](phase5a2/checkpoint-2/ERIC_APPROVAL.md)             | Eric's selected system, identity, evidence architecture, later typography direction and merge/certification record      | Phase 5A.2                                              | 2026-08-25   |
+| [phase5a3/landing-pr1/README.md](phase5a3/landing-pr1/README.md)                             | Draft production landing/public-shell evidence, performance blockers, legal screen, and baseline acceptance boundary    | Phase 5A.3 PR 1                                         | 2026-08-25   |
 
 ## Process & Workflow
 

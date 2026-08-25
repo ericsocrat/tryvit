@@ -15,6 +15,10 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
+- Add the Phase 5A.3 PR 1 source-bound landing evidence packet, including complete
+  light/dark, localization, reflow, no-JavaScript and motion media; retained Lighthouse
+  samples; rejected font trials; public trademark-similarity screening; and the
+  separately governed visual-baseline/route-JS acceptance boundary.
 - Record Eric's approved Phase 5A.2 Checkpoint 2 decisions and PR `#1295` squash
   lineage; mark Phase 5A.0–5A.2 complete as non-production gates; preserve the later
   typography, production-performance, localization, legal, accessibility, device, and
