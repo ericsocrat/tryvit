@@ -1,37 +1,29 @@
 # Eric exact-candidate decision request
 
-Current disposition: **FRESH REVIEW PENDING**.
+Requested disposition: **REVISE**.
 
-The engineering candidate now passes the strict source-bound LCP, Route-JS,
-truthfulness, metadata, accessibility, responsive, cross-browser, no-JavaScript,
-motion, and evidence-integrity gates. The final APPROVE/REVISE/REJECT request will be
-set only after two fresh independent reviews and non-taste QA inspect the sealed packet.
+The replacement source fixes the content-truth, social-preview, manifest, first-party
+console/404, mobile-navigation, disclosure, anchor, first-fold, and critical-text-size
+findings. It remains unapprovable because:
 
-## Decisions Codex cannot make
+1. authoritative Linux mobile LCP median is `2630.71 ms`, and every sample exceeds
+   `2500 ms`;
+2. one mobile TBT sample is `262 ms`;
+3. the authoritative Linux 390 package specimen visibly overlaps its synthetic label
+   and package name.
 
-### Identity and trademark risk
+The bounded forensic review found no new performance cause not already rejected. Do
+not rerun the cohort unchanged or begin a third experiment.
 
-`TRYVITE` EUTM `018026887` remains material. This packet is not legal clearance.
-Before production adoption, Eric must choose one:
+Separate human/operational gates also remain:
 
-1. obtain professional trademark assessment;
-2. provisionally accept the risk with a named owner and deadline before public
-   launch/indexing; or
-3. reject or revise the identity.
+- professional `TRYVITE` EUTM `018026887` assessment or Eric’s named provisional
+  risk decision;
+- qualified Polish and German copy review;
+- operational confirmation that deployment configuration/kill switch matches actual
+  service readiness;
+- branded Safari, qualified screen-reader/voice-control, and physical-device review;
+- later, separately authorized baseline acceptance.
 
-### Language review
-
-Qualified Polish and German review remains pending. Automated locale, spacing,
-metadata, and screenshot checks do not substitute for native-language approval.
-
-### Platform review
-
-WebKit is not branded Safari approval. No qualified screen-reader, voice-control,
-camera, or representative physical-device approval is claimed.
-
-### Baseline acceptance
-
-PR `#1301` must not replace its own immutable landing baseline. If this exact
-candidate is approved, baseline acceptance requires a separate authorized PR.
-
-PR `#1301` remains draft and unmerged.
+Keep PR `#1301` draft, open, unapproved, and unmerged. Do not start another route
+family.

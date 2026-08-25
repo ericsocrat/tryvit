@@ -1,34 +1,35 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "kind": "phase5a3-landing-revision-cycle-2-runtime",
-  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
-  "productionSourceTree": "251c6622f14ebfbf170882d33dafe326509da2a8",
-  "localCapture": {
-    "operatingSystem": "Microsoft Windows 11 Pro",
-    "osVersion": "10.0.26200.0",
-    "node": "v24.11.1",
-    "npm": "11.6.2",
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "productionSourceTree": "e82f1ce3b0f9fdfd8d41f02b04fb8d25a5b81da6",
+  "container": {
+    "image": "mcr.microsoft.com/playwright:v1.62.1-noble",
+    "digest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac",
+    "operatingSystem": "Ubuntu 24.04",
+    "node": "v24.18.1",
+    "npm": "11.16.0",
     "playwright": "1.62.1",
     "lighthouse": "12.6.1",
-    "chromium": "151.0.7922.34",
-    "ffmpeg": "9.0-full_build-www.gyan.dev",
-    "buildId": "uRqTECBMepcbLsYWcx8wZ",
-    "buildFingerprint": "4009a0727b6c855baeca8618ffdbab50211cf3c5a51dde6fe441ea6a6c8160f7",
-    "assetDigest": "9e687843df15ba7fddaf02ba5b3a772e70ba07a3b32d23cce0476d32ef2042b8"
+    "chromium": "151.0.7922.34"
+  },
+  "captureBuild": {
+    "buildId": "Rx6qScSHdhff6fIcRZFin",
+    "buildFingerprint": "1101b397cf20a497966f06237868475545842257acfb0a8b97e92a1b705ebdfd",
+    "assetDigest": "b0a0b9922aa955389b2596f1bd2383d85e8f9f136f9e1e242268174a31c5c9ff",
+    "mode": "public",
+    "supabaseOrigin": "none"
   },
   "performanceBuild": {
-    "buildId": "rq2vxOdZwiVsx7vOdULa7",
-    "buildFingerprint": "7e868e3942ab2bd7633cc7404db301bd24808e82a8c144b94d4cabb7124d4cac",
+    "buildId": "RkiZx6Y57nyDf42ou3nTL",
+    "buildFingerprint": "e3084a81196f6766173f96ad292c84478081ede92194c23ed4959634ed27a0a9",
     "sameAcrossProfiles": true,
-    "mobileMetadataChecksum": "742d3e5feb1bf8e3b8596ce266fad100581f8f50cb3111709f08fe0eb1a81ca8",
-    "desktopMetadataChecksum": "cba4e6edeca680976be7fe193ff4de4631f52456067e388a570c8b831b96b4ce"
+    "mobileMetadataChecksum": "1f4cb99f1481482da73dd93beb2df85c3ff2d9ca1ca8482653820b95753eb8f2",
+    "desktopMetadataChecksum": "0c42cd63b2adcd3acee7319b351b23c5afd278583e325cec3605aca579f47fda"
   },
-  "linuxCandidate": {
-    "captureHead": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
-    "productionEquivalent": true,
+  "githubLinuxCandidate": {
     "imageOS": "ubuntu24",
-    "imageVersion": "20260816.277.1",
-    "arch": "x64",
+    "imageVersion": "20260823.283.1",
     "node": "v22.21.1",
     "npm": "10.9.4",
     "playwright": "1.62.1",
@@ -41,7 +42,9 @@
     "externalNetwork": "contained-by-loopback-egress-proxy",
     "dataMode": "demo",
     "fontTransfers": 0,
-    "imageTransfers": 0,
+    "imageTransfersOnLanding": 0,
+    "consoleErrors": 0,
+    "unexpectedFirstParty4xx": 0,
     "fixtureTeardownPassed": true,
     "noBackupSupabaseShutdownPassed": true
   },
@@ -49,6 +52,7 @@
     "The 640 CSS-pixel still is an effective-viewport proxy, not branded browser zoom evidence.",
     "WebKit is not branded Safari approval.",
     "No qualified screen-reader, voice-control, camera, or physical-device approval is claimed.",
-    "Polish and German copy remains pending qualified human review."
+    "Polish and German copy remains pending qualified human review.",
+    "Live readiness is configuration and kill-switch truth; no metadata-time health network request is made."
   ]
 }

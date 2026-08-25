@@ -1,34 +1,27 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "kind": "phase5a3-landing-revision-cycle-2-linux-candidate",
-  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
-  "productionSourceTree": "251c6622f14ebfbf170882d33dafe326509da2a8",
-  "captureHead": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
-  "productionEquivalent": {
-    "value": true,
-    "onlyInterveningFile": "frontend/e2e/smoke-responsive.spec.ts",
-    "productionDiffEmpty": true
-  },
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "productionSourceTree": "e82f1ce3b0f9fdfd8d41f02b04fb8d25a5b81da6",
   "workflow": {
-    "runId": 32876097007,
-    "url": "https://github.com/ericsocrat/tryvit/actions/runs/32876097007",
+    "runId": 32882780652,
+    "url": "https://github.com/ericsocrat/tryvit/actions/runs/32882780652",
+    "result": "success",
     "candidateArtifact": {
-      "id": 9574218255,
-      "name": "phase5a0d-visual-baseline-candidates-ab0a43ecfcfbb064553a02a722263fda07b06ae8",
-      "archiveBytes": 665054,
-      "archiveDigest": "sha256:802928e227f38c4f67a7af98cfd5c6adb445f6060680d0955c8658d88fb8baeb"
+      "id": 9576665378,
+      "archiveBytes": 664942,
+      "archiveDigest": "sha256:9478ff2abee760a4cfa3ca019e0a99f3a59b0263513053e36fd3e7a8e7c1a891"
     },
     "determinismArtifact": {
-      "id": 9574218864,
-      "name": "phase5a0d-visual-determinism-evidence-ab0a43ecfcfbb064553a02a722263fda07b06ae8",
-      "archiveBytes": 4267,
-      "archiveDigest": "sha256:4af8ec736fb650d6b05b2f6e82ace6b1204b172e6c24c8ea43d1b59939e0c10d"
+      "id": 9576666159,
+      "archiveBytes": 4276,
+      "archiveDigest": "sha256:96efb4c6c3db413602e9f53b8114c18c3f293c810f32465eb8e644f72e6cebde"
     }
   },
   "renderer": {
     "class": "ci-linux-authoritative",
     "imageOS": "ubuntu24",
-    "imageVersion": "20260816.277.1",
+    "imageVersion": "20260823.283.1",
     "arch": "x64",
     "node": "v22.21.1",
     "npm": "10.9.4",
@@ -36,36 +29,34 @@
     "playwright": "1.62.1",
     "chromium": "151.0.7922.34"
   },
-  "candidateManifestChecksum": "d4c6d5fcd1a1f0b27d5d5606d71aa5cb38458c1666b639c02e3fa02506ebcd53",
-  "firstFilesSha256": "8ea8c810325f33a355f29dd4360c40dea334144ebe67250e09993e1f4d1f9ab5",
-  "secondFilesSha256": "8ea8c810325f33a355f29dd4360c40dea334144ebe67250e09993e1f4d1f9ab5",
-  "firstManifestSha256": "50145375eb1537c54241a9f279352e24bcbc394c77482f0af414dd14705388f3",
-  "secondManifestSha256": "50145375eb1537c54241a9f279352e24bcbc394c77482f0af414dd14705388f3",
+  "candidateManifestChecksum": "2dda393c10ad343990d939ec3086872ce0535a4b5110027ec9598d93835f8c32",
+  "firstFilesLedgerSha256": "3ecf713937a9dc5449a8ee4627bdd9fd062e9a5bfb220dcbeb5634a818ab16d8",
+  "secondFilesLedgerSha256": "3ecf713937a9dc5449a8ee4627bdd9fd062e9a5bfb220dcbeb5634a818ab16d8",
+  "firstManifestSha256": "c8859a69545634dd88b27dcef43b3b831233b2bcf2d44855781205797f8f2732",
+  "secondManifestSha256": "c8859a69545634dd88b27dcef43b3b831233b2bcf2d44855781205797f8f2732",
   "byteIdentical": true,
   "landingCandidates": [
     {
       "viewport": "390x844",
       "path": "candidates/smoke-visual.spec.ts/p5a0d-landing-390x844-light-reduced.png",
-      "bytes": 67489,
-      "sha256": "43fe9d0f01f063b8e27612aed831b2b08d9bed809139daa5cb95a140f6e82400",
-      "primaryActionFullyVisible": true,
-      "secondaryActionFullyVisible": true,
-      "packageSignatureFullyVisible": true,
-      "mobileNavigationFullyVisible": true
+      "bytes": 68791,
+      "sha256": "20d1a453ccbac121db9795fbeac49b801bf534f734585d99f52651a5f4855ec4",
+      "firstFoldContained": true,
+      "visualOverlap": "The 12 px synthetic-example label overlaps the package name in the authoritative Linux specimen."
     },
     {
       "viewport": "768x1024",
       "path": "candidates/smoke-visual.spec.ts/p5a0d-landing-768x1024-light-reduced.png",
-      "bytes": 106278,
-      "sha256": "4e7a2aa47b3793253c7f27f622eb61a859a20ce609f61b00c2534c51bb15551d",
+      "bytes": 105693,
+      "sha256": "cf64eb5bb69a4838a526a2b7c769ac0a5ccd9efb208c0b7d9421b1e325fdad00",
       "actionsFullyVisible": true,
       "packageSignatureFullyVisible": true
     },
     {
       "viewport": "1440x900",
       "path": "candidates/smoke-visual.spec.ts/p5a0d-landing-1440x900-light-reduced.png",
-      "bytes": 104590,
-      "sha256": "9f887467894e9bae8e1c70fed6f427e48e9f5f8b45962f08ca21672598846097",
+      "bytes": 103920,
+      "sha256": "3576ae129190d734648fd6e5c8af3fe4581cf030dd61b58307e6048c04c4e99f",
       "actionsFullyVisible": true,
       "packageSignatureFullyVisible": true,
       "duplicateMasthead": false
@@ -74,6 +65,8 @@
   "fixtureTeardownPassed": true,
   "noBackupSupabaseShutdownPassed": true,
   "baselineMutated": false,
-  "disposition": "candidate-only; immutable production baseline unchanged in PR #1301",
-  "passed": true
+  "determinismPassed": true,
+  "visualAcceptancePassed": false,
+  "passed": false,
+  "disposition": "REVISE"
 }

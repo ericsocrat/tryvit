@@ -1,52 +1,33 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "kind": "phase5a3-landing-revision-cycle-2-cross-browser",
-  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
-  "playwright": "1.62.1",
-  "finalMatrix": [
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "environment": {
+    "class": "pinned-playwright-linux-container",
+    "image": "mcr.microsoft.com/playwright:v1.62.1-noble",
+    "digest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac",
+    "playwright": "1.62.1"
+  },
+  "projects": [
     {
-      "project": "phase5a3-landing-firefox",
       "engine": "firefox",
       "javaScript": true,
-      "motionModes": [
-        "normal",
-        "reduced"
-      ],
-      "tests": 2,
-      "passed": true
+      "testsPassed": 3
     },
     {
-      "project": "phase5a3-landing-webkit",
       "engine": "webkit",
       "javaScript": true,
-      "motionModes": [
-        "normal",
-        "reduced"
-      ],
-      "tests": 2,
-      "passed": true
+      "testsPassed": 3
     },
     {
-      "project": "phase5a3-landing-firefox-no-javascript",
       "engine": "firefox",
       "javaScript": false,
-      "motionModes": [
-        "normal",
-        "reduced"
-      ],
-      "tests": 2,
-      "passed": true
+      "testsPassed": 3
     },
     {
-      "project": "phase5a3-landing-webkit-no-javascript",
       "engine": "webkit",
       "javaScript": false,
-      "motionModes": [
-        "normal",
-        "reduced"
-      ],
-      "tests": 2,
-      "passed": true
+      "testsPassed": 3
     }
   ],
   "behavior": {
@@ -59,36 +40,15 @@
     "pointerOpenClose": true,
     "keyboardEnterOpen": true,
     "keyboardSpaceClose": true,
-    "openLabelTruthful": true,
-    "closedLabelTruthful": true,
+    "openClosedLabelsTruthful": true,
     "keyboardFocusVisible": true,
+    "normalReducedMotion": true,
+    "tabletStickyAnchorsClear": true,
     "horizontalOverflow": false,
-    "nativeDetailsSummaryRetained": true,
-    "scriptedAriaReplacementAdded": false
+    "nativeDetailsSummaryRetained": true
   },
-  "retainedHarnessCorrections": [
-    {
-      "attempt": 1,
-      "result": "8 failed",
-      "cause": "The test used programmatic focus and incorrectly expected the keyboard-only :focus-visible state.",
-      "productionFailure": false,
-      "unchangedRerun": false
-    },
-    {
-      "attempt": 2,
-      "result": "4 passed, 4 failed",
-      "cause": "The keyboard sequence resumed after the pointer-focused disclosure in Firefox.",
-      "productionFailure": false,
-      "unchangedRerun": false
-    },
-    {
-      "attempt": 3,
-      "result": "8 passed",
-      "cause": "Pointer and keyboard journeys were separated by a clean reload.",
-      "productionFailure": false,
-      "unchangedRerun": false
-    }
-  ],
+  "testsPassed": 12,
+  "testsFailed": 0,
   "limitations": [
     "WebKit is not branded Safari approval.",
     "No qualified screen-reader or voice-control approval is claimed.",

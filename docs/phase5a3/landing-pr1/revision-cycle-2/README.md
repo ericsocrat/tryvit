@@ -1,93 +1,89 @@
-# Phase 5A.3 PR 1 — bounded revision cycle 2
+# Phase 5A.3 PR 1 — bounded revision cycle 2 replacement
 
-Status: **FRESH REVIEW PENDING**. PR `#1301` remains draft, open, unmerged, and
-unapproved.
+Status: **REVISE**. PR `#1301` remains draft, open, unmerged, and unapproved.
 
-The production candidate is frozen at
-`14c8b19fc7aa59f58811ef96989291e2b3893bfe`, tree
-`251c6622f14ebfbf170882d33dafe326509da2a8`, over exact main
-`61c52e73eed0393e24b0597d63c47cb7b5cdbe7e`. Commit `ab0a43ec` changes only
-the generic mobile-header smoke contract; production files are byte-identical to the
-freeze.
+Replacement production source:
+`6f675ffe8c4091ed98db2f53298fe4acc19f6895`, tree
+`e82f1ce3b0f9fdfd8d41f02b04fb8d25a5b81da6`, over exact main
+`61c52e73eed0393e24b0597d63c47cb7b5cdbe7e`.
 
-Revision cycle 1 remains immutable at tree
-`e986591713654daf73a998b8bdb22318e01f4d5f`. This packet does not relabel,
-rewrite, or remove any cycle-1 artifact.
+The first cycle-2 candidate and its rejected packet are retained unchanged under
+`revision-cycle-2-candidate-1/`. Cycle 1 remains immutable at tree
+`e986591713654daf73a998b8bdb22318e01f4d5f`.
 
-## Corrections completed
+## Replacement corrections
 
-- EN/PL/DE privacy copy now distinguishes live readiness from demo readiness. Live
-  copy truthfully describes the minimal existing-session check; demo copy states that
-  account/session lookup, camera, and product lookup are not initialized.
-- Landing title, description, Open Graph, Twitter, locale, and WebSite JSON-LD now
-  resolve from one EN/PL/DE × live/demo source. Demo metadata explicitly says live
-  product data is paused. Live PL/DE WebApplication structured data is localized.
-- One two-level header exposes Evidence, Method, Trust, Contact, service/auth state,
-  and theme at 320 and 390 CSS pixels without JavaScript or duplicate hidden links.
-- The native package disclosure now keeps only phrasing content inside `summary`.
-  Firefox and WebKit cover pointer and keyboard open/close, normal/reduced motion,
-  and JavaScript-on/off behavior.
-- The header owns the one full TryVit lockup and Poland/Germany descriptor. The
-  duplicate hero masthead is removed and responsive spacing is tightened around the
-  unchanged Folded Label Register composition.
-- First-fold geometry requires complete heading/primary-action containment, at least
-  72 visible package pixels at 390, complete package containment at 768 and 1440, and
-  both desktop actions fully visible. The captured result exceeds those thresholds.
+- readiness-truthful EN/PL/DE privacy, metadata, Open Graph, Twitter, and WebSite
+  structured data;
+- one complete two-level mobile navigation and one header-owned identity;
+- conforming native disclosure with an accessible synthetic-example context;
+- 12 px minimum critical mobile metadata;
+- measured sticky-anchor offsets at 768, 1024, and 1440;
+- trilingual, readiness-neutral Open Graph and Twitter images with no remote font or
+  score/health/scan claims;
+- capability-neutral manifest copy with no instant/health-score claim;
+- no Speed Insights client on exact cold `/`, eliminating the retained first-party
+  404 and console error;
+- complete Firefox/WebKit, JavaScript-on/off, normal/reduced, and tablet-anchor
+  coverage.
 
-## Exact performance closeout
+## What now passes
 
-The one permitted source-bound cohort retained all five mobile and five desktop
-landing samples.
+- full unit: 6,746 passed / 19 skipped;
+- design system: 256 passed;
+- landing review: 29/29;
+- pinned Linux Firefox/WebKit: 12/12;
+- type-check, full lint, repeated production builds;
+- full Axe with no exclusions;
+- zero landing console errors, unexpected first-party 4xx, font requests, or image
+  transfers;
+- Route-JS: `182,291 B` gzip against a `184,320 B` target;
+- 13 stills, two full recordings, social images, no-JS, forced colors, text spacing,
+  and first-fold containment;
+- two-pass Linux byte determinism and fixture/no-backup teardown.
 
-| Profile | Performance | LCP samples ms | Median / max | TBT max | CLS max | TTFB max | Transfer max | Fonts |
-| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Mobile | 0.98 median | 2260.90, 2259.43, 2259.64, 2258.55, 2257.91 | **2259.43 / 2260.90** | 79 ms | 0 | 24.45 ms | 263,536 B | 0 B |
-| Desktop | 1.00 median | 554.80, 558.29, 591.06, 566.14, 563.47 | **563.47 / 591.06** | 7 ms | 0 | 13.98 ms | 263,554 B | 0 B |
+## Blocking result
 
-The strict mobile median and every-sample LCP gates now pass. No sample was removed,
-classified as infrastructure, or rerun.
+The one allowed replacement cohort ran in the pinned Linux container and retained all
+samples.
 
-Stable base-owned Route-JS run `32874788727` reports landing gzip
-`250,043 → 182,291 B` (`−67,752 B`, `−27.1%`), below the unchanged
-`184,320 B` target and inside the unchanged +10 KiB/+5% regression guard.
+| Profile | Performance | LCP samples ms | Median / max | TBT max | CLS max | TTFB max | Transfer max |
+| --- | ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| Mobile | 0.96 median | 2821.25, 2630.71, 2672.31, 2612.07, 2617.58 | **2630.71 / 2821.25** | **262 ms** | 0 | 44.10 ms | 260,291 B |
+| Desktop | 1.00 median | 549.82, 589.62, 582.19, 544.25, 565.36 | 565.36 / 589.62 | 5 ms | 0 | 25.43 ms | 260,290 B |
 
-## Verification completed before sealing
+Every mobile LCP sample exceeds 2500 ms; median exceeds 2400 ms; one TBT sample
+exceeds 200 ms. The bounded forensic review found the previously documented
+Lighthouse/Lantern cutoff pattern and no new causal source not already rejected.
+No third experiment or unchanged cohort rerun is authorized.
 
-- focused readiness/metadata/privacy/disclosure/provider contracts: 50/50;
-- full unit suite: 6,741 passed, 19 intentionally skipped;
-- design-system gate: 256/256;
-- type-check, full lint, and repeated production builds;
-- governed landing review: 25/25;
-- Firefox/WebKit disclosure and mobile navigation: 8/8;
-- responsive smoke correction: 24/24;
-- serious/critical/full WCAG 2.1 AA Axe: zero violations, no exclusions;
-- 320–1440 reflow, forced colors, text spacing, no-JavaScript, normal/reduced motion;
-- CodeQL, dependency, license, repository-hygiene, Vercel, renderer-attestation, and
-  Golden Reference admission checks on the production source.
+The authoritative Linux 390 still also exposes visible overlap between the enlarged
+synthetic-example label and the package name. Correcting it would change production
+after the final allowed cohort, so it remains an explicit REVISE finding rather than
+being hidden or silently recaptured.
 
-The immutable visual-baseline mismatch remains intentionally red. It is not treated as
-an implementation failure and is not changed by this PR.
+## Open gates
 
-## Human gates that remain open
-
-- `TRYVITE` EUTM `018026887` remains a material trademark-similarity finding.
-  This packet is not legal clearance.
-- Qualified Polish and German review remains pending.
-- WebKit is not branded Safari approval. No qualified screen-reader, voice-control,
-  camera, or physical-device approval is claimed.
-- Baseline acceptance remains a separately authorized later PR.
+- strict mobile LCP/TBT and Linux 390 overlap;
+- `TRYVITE` EUTM `018026887` legal/identity decision;
+- qualified Polish and German review;
+- operational confirmation that deployment configuration/kill switch matches actual
+  service readiness;
+- branded Safari, qualified AT/voice control, and physical-device review;
+- separately authorized baseline acceptance.
 
 ## Evidence map
 
 - [Evidence contract](EVIDENCE_CONTRACT.md)
 - [Validation and impact](VALIDATION_AND_IMPACT.md)
+- [LCP forensics](LCP_FORENSICS.md)
 - [Source and artifact inventory](SOURCE_AND_ARTIFACT_INVENTORY.md)
 - [Cycle comparison](CYCLE_COMPARISON.md)
 - [Decision request](DECISION_REQUEST.md)
-- [Performance ledger](evidence/performance.json)
-- [Truth and metadata matrix](evidence/truth-and-metadata.json)
-- [Geometry measurements](evidence/geometry.json)
-- [Cross-browser ledger](evidence/cross-browser.json)
-- [Motion ledger](evidence/landing-motion-performance.json)
-- [Video validation](evidence/video-validation.json)
-- [Route-JS summary](evidence/route-js/summary.json)
+- [Performance](evidence/performance.json)
+- [Truth and metadata](evidence/truth-and-metadata.json)
+- [Social previews](evidence/social-previews.json)
+- [Geometry](evidence/geometry.json)
+- [Cross-browser](evidence/cross-browser.json)
+- [Route-JS](evidence/route-js/summary.json)
+- [Linux candidates](evidence/linux-candidate/summary.json)

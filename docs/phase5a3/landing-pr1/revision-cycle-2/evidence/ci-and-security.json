@@ -1,105 +1,98 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "kind": "phase5a3-landing-revision-cycle-2-ci-and-security",
-  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
-  "testContractHead": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
-  "testContractTree": "97902231f04e14a94159cb8d7292158f83654532",
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "productionSourceTree": "e82f1ce3b0f9fdfd8d41f02b04fb8d25a5b81da6",
   "baseCommit": "61c52e73eed0393e24b0597d63c47cb7b5cdbe7e",
   "syntheticMerge": {
-    "commit": "b7b5b4972ebf2435d157a67be308bb81c5d9c4df",
+    "commit": "e398ff7c444be2a9cb8725ec24f6e320d0b7c9f4",
     "parents": [
       "61c52e73eed0393e24b0597d63c47cb7b5cdbe7e",
-      "ab0a43ecfcfbb064553a02a722263fda07b06ae8"
+      "6f675ffe8c4091ed98db2f53298fe4acc19f6895"
     ],
-    "tree": "97902231f04e14a94159cb8d7292158f83654532",
+    "tree": "e82f1ce3b0f9fdfd8d41f02b04fb8d25a5b81da6",
     "treeMatchesHead": true
   },
   "checks": [
     {
       "name": "PR Gate",
-      "runId": 32875922871,
+      "runId": 32882770502,
       "result": "success"
     },
     {
       "name": "Quality Gate",
-      "runId": 32875922786,
+      "runId": 32882770602,
       "result": "success"
     },
     {
       "name": "Lighthouse CI",
-      "runId": 32875922703,
-      "result": "success"
+      "runId": 32882770618,
+      "artifactId": 9577022322,
+      "artifactDigest": "sha256:8d433d6426e3cb85e49e305cea4e13132bf2c1c59129ac37e099d4131ab6e57e",
+      "result": "failure",
+      "landingMobileMedianLcpMs": 2643.3,
+      "workflowFailure": "local-authenticated/mobile/app-shell performance-score range exceeded 0.1",
+      "scopeDecision": "Retained. Another production route is not modified to improve this landing PR."
     },
     {
       "name": "Route JavaScript Regression Guard",
-      "runId": 32874788727,
-      "head": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+      "runId": 32882770645,
       "result": "success"
     },
     {
       "name": "CodeQL Security Analysis",
-      "runId": 32875922738,
+      "runId": 32882770565,
       "result": "success"
     },
     {
       "name": "Dependency Audit",
-      "runId": 32875922773,
+      "runId": 32882770617,
       "result": "success"
     },
     {
       "name": "License Compliance",
-      "runId": 32875922706,
+      "runId": 32882770515,
       "result": "success"
     },
     {
       "name": "Repo Hygiene Verify",
-      "runId": 32875922689,
+      "runId": 32882770548,
       "result": "success"
     },
     {
       "name": "Golden Reference admission",
-      "runId": 32875922702,
+      "runId": 32882770536,
       "result": "success"
     },
     {
       "name": "Renderer Attestation",
-      "runId": 32875920353,
+      "runId": 32882768238,
       "result": "success"
     },
     {
       "name": "PR Screenshots",
-      "runId": 32875922694,
+      "runId": 32882770586,
       "result": "success"
     },
     {
       "name": "Linux deterministic candidates",
-      "runId": 32876097007,
+      "runId": 32882780652,
       "result": "success"
     },
     {
       "name": "Immutable visual baselines",
-      "runId": 32875922735,
+      "runId": 32882770708,
       "result": "expected-failure",
       "reason": "PR #1301 is prohibited from replacing its own redesigned landing baseline."
     }
   ],
-  "retainedDeterministicFailure": {
-    "runId": 32874788611,
-    "head": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
-    "failedCheck": "Playwright Smoke",
-    "cause": "The prior generic smoke contract capped every mobile header at 80 px.",
-    "correctionCommit": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
-    "productionChanged": false,
-    "correctedRunId": 32875922871,
-    "correctedResult": "success"
-  },
   "mainCertification": {
     "mainCommit": "61c52e73eed0393e24b0597d63c47cb7b5cdbe7e",
     "runId": 32835024932,
     "result": "success"
   },
   "deployment": {
-    "vercelPreview": "https://vercel.com/erics-projects-faa226e7/tryvit/EvfiU8Ly9Nt1QZDRJDhyJBECgTJC",
+    "vercelPreview": "https://vercel.com/erics-projects-faa226e7/tryvit/3Abv4wCgMqv9wQFme6BSgNjZSsvq",
     "result": "success"
   },
   "alerts": {
@@ -112,6 +105,7 @@
     ],
     "dependabotBaselineChanged": false
   },
-  "finalEvidenceHeadChecks": "recorded in the PR description after the evidence seal to avoid superseding the certified commit",
-  "passed": true
+  "finalEvidenceHeadChecks": "recorded in the PR description after the evidence/review seal",
+  "passed": false,
+  "disposition": "REVISE"
 }

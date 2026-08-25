@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "phase5a0d-lighthouse-run/v1",
+  "sourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+  "mode": "public",
+  "profile": "mobile",
+  "runCount": 5,
+  "routes": [
+    {
+      "id": "landing",
+      "seoApplicable": true,
+      "url": "http://127.0.0.1:3000/"
+    },
+    {
+      "id": "login",
+      "seoApplicable": false,
+      "url": "http://127.0.0.1:3000/auth/login"
+    },
+    {
+      "id": "contact",
+      "seoApplicable": true,
+      "url": "http://127.0.0.1:3000/contact"
+    }
+  ],
+  "buildId": "rq2vxOdZwiVsx7vOdULa7",
+  "buildFingerprint": "7e868e3942ab2bd7633cc7404db301bd24808e82a8c144b94d4cabb7124d4cac",
+  "sourceConfigSha256": "29b7a7ac0dc3ce98633e1013f57486c878c33dd6271d9d7462e2f4804c32285e",
+  "runtime": {
+    "node": "v24.11.1",
+    "lighthouse": "12.6.1",
+    "chromium": "151.0.7922.34"
+  },
+  "effectiveSettings": {
+    "formFactor": "mobile",
+    "onlyCategories": [
+      "performance",
+      "accessibility",
+      "best-practices",
+      "seo"
+    ],
+    "throttling": {
+      "rttMs": 150,
+      "throughputKbps": 1638.4,
+      "requestLatencyMs": 562.5,
+      "downloadThroughputKbps": 1474.56,
+      "uploadThroughputKbps": 675,
+      "cpuSlowdownMultiplier": 4
+    },
+    "skipAudits": [
+      "uses-http2"
+    ],
+    "throttlingMethod": "simulate",
+    "screenEmulation": {
+      "mobile": true,
+      "width": 412,
+      "height": 823,
+      "deviceScaleFactor": 1.75,
+      "disabled": false
+    },
+    "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36",
+    "locale": "en-US"
+  },
+  "metadataChecksum": "742d3e5feb1bf8e3b8596ce266fad100581f8f50cb3111709f08fe0eb1a81ca8"
+}

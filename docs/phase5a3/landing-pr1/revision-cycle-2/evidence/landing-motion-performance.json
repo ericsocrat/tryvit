@@ -11,48 +11,48 @@
       "checkpoints": [
         {
           "name": "first-viewport",
-          "timeMs": 516.4000000022352,
+          "timeMs": 383.5999999977648,
           "scrollY": 0
         },
         {
           "name": "dark-theme",
-          "timeMs": 998.3000000007451,
+          "timeMs": 862.2999999970198,
           "scrollY": 0
         },
         {
           "name": "package-expanded",
-          "timeMs": 1557.5,
+          "timeMs": 1411,
           "scrollY": 0
         },
         {
           "name": "evidence",
-          "timeMs": 2262.5,
-          "scrollY": 1035
+          "timeMs": 2109,
+          "scrollY": 1001
         },
         {
           "name": "method",
-          "timeMs": 2729.800000000745,
-          "scrollY": 2116
+          "timeMs": 2575.39999999851,
+          "scrollY": 2126
         },
         {
           "name": "trust",
-          "timeMs": 3214.60000000149,
-          "scrollY": 2785
+          "timeMs": 3042.89999999851,
+          "scrollY": 2796
         },
         {
           "name": "final-action",
-          "timeMs": 3680.60000000149,
-          "scrollY": 2785
+          "timeMs": 3509.199999999255,
+          "scrollY": 2796
         },
         {
           "name": "footer",
-          "timeMs": 4162.70000000298,
-          "scrollY": 3361
+          "timeMs": 3975.699999999255,
+          "scrollY": 3327
         },
         {
           "name": "terminal-focus",
-          "timeMs": 4665.70000000298,
-          "scrollY": 3361
+          "timeMs": 4465.39999999851,
+          "scrollY": 3327
         }
       ],
       "observerSupport": {
@@ -60,308 +60,312 @@
         "layoutShift": true
       },
       "observationStartTimeMs": 0,
-      "observationEndTimeMs": 5097.20000000298,
+      "observationEndTimeMs": 4890.29999999702,
       "cls": 0,
       "layoutShifts": [
         {
-          "startTimeMs": 979.9000000022352,
+          "startTimeMs": 840.0999999977648,
           "value": 0.00001975443452499224,
           "hadRecentInput": true
         },
         {
-          "startTimeMs": 1535.9000000022352,
-          "value": 0.08098235404899674,
+          "startTimeMs": 1380.2999999970198,
+          "value": 0.08994338021987895,
           "hadRecentInput": true
         }
       ],
       "longTasks": [
         {
-          "startTimeMs": 307.6000000014901,
-          "durationMs": 64
+          "startTimeMs": 80.29999999701977,
+          "durationMs": 50
+        },
+        {
+          "startTimeMs": 170.69999999925494,
+          "durationMs": 75
         }
       ],
       "motionIntervals": [
         {
           "kind": "transition",
           "name": "background-color",
-          "startTimeMs": 993.6000000014901,
-          "endTimeMs": 1160.300000000745
+          "startTimeMs": 856.2999999970198,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 993.6000000014901,
-          "endTimeMs": 1309.9000000022352
+          "startTimeMs": 856.3999999985099,
+          "endTimeMs": 1172.7999999970198
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 993.7000000029802,
-          "endTimeMs": 1309.9000000022352
+          "startTimeMs": 856.5,
+          "endTimeMs": 1172.699999999255
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 993.7000000029802,
-          "endTimeMs": 1160.4000000022352
+          "startTimeMs": 856.5999999977648,
+          "endTimeMs": 1023.2999999970198
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 993.8000000007451,
-          "endTimeMs": 1160.300000000745
+          "startTimeMs": 856.5999999977648,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 993.8000000007451,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 856.5999999977648,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 993.8000000007451,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 856.6999999992549,
+          "endTimeMs": 1023.0999999977648
         },
         {
           "kind": "transition",
           "name": "background-color",
-          "startTimeMs": 993.8000000007451,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 856.7999999970198,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "border-bottom-color",
-          "startTimeMs": 993.8000000007451,
-          "endTimeMs": 1160.300000000745
+          "startTimeMs": 856.7999999970198,
+          "endTimeMs": 1023.2999999970198
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 993.9000000022352,
-          "endTimeMs": 1160.1000000014901
+          "startTimeMs": 856.7999999970198,
+          "endTimeMs": 1023
         },
         {
           "kind": "transition",
           "name": "background-color",
-          "startTimeMs": 993.9000000022352,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 856.7999999970198,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "border-bottom-color",
-          "startTimeMs": 994,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 856.7999999970198,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "border-left-color",
-          "startTimeMs": 994,
-          "endTimeMs": 1160.300000000745
+          "startTimeMs": 856.8999999985099,
+          "endTimeMs": 1023.2999999970198
         },
         {
           "kind": "transition",
           "name": "border-right-color",
-          "startTimeMs": 994,
-          "endTimeMs": 1160.300000000745
+          "startTimeMs": 856.8999999985099,
+          "endTimeMs": 1023.2999999970198
         },
         {
           "kind": "transition",
           "name": "border-top-color",
-          "startTimeMs": 994.1000000014901,
-          "endTimeMs": 1160.300000000745
+          "startTimeMs": 856.8999999985099,
+          "endTimeMs": 1023.2999999970198
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 994.1000000014901,
-          "endTimeMs": 1160
+          "startTimeMs": 856.8999999985099,
+          "endTimeMs": 1023
         },
         {
           "kind": "transition",
           "name": "background-color",
-          "startTimeMs": 994.2000000029802,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 857,
+          "endTimeMs": 1023.0999999977648
         },
         {
           "kind": "transition",
           "name": "border-bottom-color",
-          "startTimeMs": 994.2000000029802,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 857.0999999977648,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "border-left-color",
-          "startTimeMs": 994.2000000029802,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 857.0999999977648,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "border-right-color",
-          "startTimeMs": 994.3000000007451,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 857.1999999992549,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "border-top-color",
-          "startTimeMs": 994.3000000007451,
-          "endTimeMs": 1160.300000000745
+          "startTimeMs": 857.2999999970198,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 994.3000000007451,
-          "endTimeMs": 1160
+          "startTimeMs": 857.2999999970198,
+          "endTimeMs": 1023
         },
         {
           "kind": "transition",
           "name": "background-color",
-          "startTimeMs": 994.4000000022352,
-          "endTimeMs": 1160.1000000014901
+          "startTimeMs": 857.2999999970198,
+          "endTimeMs": 1023
         },
         {
           "kind": "transition",
           "name": "border-bottom-color",
-          "startTimeMs": 994.4000000022352,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 857.3999999985099,
+          "endTimeMs": 1023.0999999977648
         },
         {
           "kind": "transition",
           "name": "border-left-color",
-          "startTimeMs": 994.4000000022352,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 857.3999999985099,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "border-right-color",
-          "startTimeMs": 994.5,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 857.3999999985099,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "border-top-color",
-          "startTimeMs": 994.5,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 857.5,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 994.6000000014901,
-          "endTimeMs": 1129.9000000022352
+          "startTimeMs": 857.5,
+          "endTimeMs": 992.3999999985099
         },
         {
           "kind": "transition",
           "name": "background-color",
-          "startTimeMs": 994.6000000014901,
-          "endTimeMs": 1160.1000000014901
+          "startTimeMs": 857.5,
+          "endTimeMs": 1023
         },
         {
           "kind": "transition",
           "name": "border-bottom-color",
-          "startTimeMs": 994.6000000014901,
-          "endTimeMs": 1160.1000000014901
+          "startTimeMs": 857.5999999977648,
+          "endTimeMs": 1023
         },
         {
           "kind": "transition",
           "name": "border-left-color",
-          "startTimeMs": 994.6000000014901,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 857.5999999977648,
+          "endTimeMs": 1023.0999999977648
         },
         {
           "kind": "transition",
           "name": "border-right-color",
-          "startTimeMs": 994.6000000014901,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 857.6999999992549,
+          "endTimeMs": 1023.0999999977648
         },
         {
           "kind": "transition",
           "name": "border-top-color",
-          "startTimeMs": 994.6000000014901,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 857.6999999992549,
+          "endTimeMs": 1023.1999999992549
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 994.6000000014901,
-          "endTimeMs": 1013
+          "startTimeMs": 857.6999999992549,
+          "endTimeMs": 876.8999999985099
         },
         {
           "kind": "transition",
           "name": "background-color",
-          "startTimeMs": 994.6000000014901,
-          "endTimeMs": 1129.9000000022352
+          "startTimeMs": 857.6999999992549,
+          "endTimeMs": 992.3999999985099
         },
         {
           "kind": "transition",
           "name": "border-bottom-color",
-          "startTimeMs": 994.6000000014901,
-          "endTimeMs": 1160.1000000014901
+          "startTimeMs": 857.7999999970198,
+          "endTimeMs": 1023
         },
         {
           "kind": "transition",
           "name": "border-left-color",
-          "startTimeMs": 994.6000000014901,
-          "endTimeMs": 1160.1000000014901
+          "startTimeMs": 857.8999999985099,
+          "endTimeMs": 1023
         },
         {
           "kind": "transition",
           "name": "border-right-color",
-          "startTimeMs": 994.6000000014901,
-          "endTimeMs": 1160.1000000014901
+          "startTimeMs": 857.8999999985099,
+          "endTimeMs": 1023
         },
         {
           "kind": "transition",
           "name": "border-top-color",
-          "startTimeMs": 994.6000000014901,
-          "endTimeMs": 1160.2000000029802
+          "startTimeMs": 857.8999999985099,
+          "endTimeMs": 1023
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 994.6000000014901,
-          "endTimeMs": 1013
+          "startTimeMs": 857.8999999985099,
+          "endTimeMs": 876.7999999970198
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 1143.800000000745,
-          "endTimeMs": 1160
+          "startTimeMs": 1006.7999999970198,
+          "endTimeMs": 1022.8999999985099
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 1143.9000000022352,
-          "endTimeMs": 1160
+          "startTimeMs": 1007,
+          "endTimeMs": 1022.7999999970198
         },
         {
           "kind": "transition",
           "name": "background-color",
-          "startTimeMs": 1560.4000000022352,
-          "endTimeMs": 1726.9000000022352
+          "startTimeMs": 1406.3999999985099,
+          "endTimeMs": 1573
         },
         {
           "kind": "transition",
           "name": "border-bottom-color",
-          "startTimeMs": 1560.4000000022352,
-          "endTimeMs": 1726.9000000022352
+          "startTimeMs": 1406.3999999985099,
+          "endTimeMs": 1573.0999999977648
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 1560.4000000022352,
-          "endTimeMs": 1726.9000000022352
+          "startTimeMs": 1406.5,
+          "endTimeMs": 1573.0999999977648
         },
         {
           "kind": "transition",
           "name": "box-shadow",
-          "startTimeMs": 1560.5,
-          "endTimeMs": 2043.300000000745
+          "startTimeMs": 1406.5999999977648,
+          "endTimeMs": 1889.5
         },
         {
           "kind": "transition",
           "name": "transform",
-          "startTimeMs": 1560.6000000014901,
-          "endTimeMs": 2043.300000000745
+          "startTimeMs": 1406.5999999977648,
+          "endTimeMs": 1889.5999999977648
         }
       ],
       "animationAttributableLayoutShifts": [],
@@ -378,48 +382,48 @@
       "checkpoints": [
         {
           "name": "first-viewport",
-          "timeMs": 298.8999999985099,
+          "timeMs": 243.39999999850988,
           "scrollY": 0
         },
         {
           "name": "dark-theme",
-          "timeMs": 529.5,
+          "timeMs": 438.3999999985099,
           "scrollY": 0
         },
         {
           "name": "package-expanded",
-          "timeMs": 797.3999999985099,
+          "timeMs": 670.8000000007451,
           "scrollY": 0
         },
         {
           "name": "evidence",
-          "timeMs": 975.3999999985099,
-          "scrollY": 1035
+          "timeMs": 841.5,
+          "scrollY": 1001
         },
         {
           "name": "method",
-          "timeMs": 1142.8999999985099,
-          "scrollY": 2116
+          "timeMs": 1009,
+          "scrollY": 2126
         },
         {
           "name": "trust",
-          "timeMs": 1307.1000000014901,
-          "scrollY": 2785
+          "timeMs": 1175.800000000745,
+          "scrollY": 2796
         },
         {
           "name": "final-action",
-          "timeMs": 1489.699999999255,
-          "scrollY": 2785
+          "timeMs": 1340.8999999985099,
+          "scrollY": 2796
         },
         {
           "name": "footer",
-          "timeMs": 1659.1000000014901,
-          "scrollY": 3361
+          "timeMs": 1508.300000000745,
+          "scrollY": 3327
         },
         {
           "name": "terminal-focus",
-          "timeMs": 1914,
-          "scrollY": 3361
+          "timeMs": 1700.0999999977648,
+          "scrollY": 3327
         }
       ],
       "observerSupport": {
@@ -427,134 +431,129 @@
         "layoutShift": true
       },
       "observationStartTimeMs": 0,
-      "observationEndTimeMs": 2080.60000000149,
+      "observationEndTimeMs": 1825.199999999255,
       "cls": 0,
       "layoutShifts": [
         {
-          "startTimeMs": 477.80000000074506,
+          "startTimeMs": 416.8999999985099,
           "value": 0.00001975443452499224,
           "hadRecentInput": true
         },
         {
-          "startTimeMs": 767,
-          "value": 0.08098235404899674,
+          "startTimeMs": 645.1999999992549,
+          "value": 0.08994338021987895,
           "hadRecentInput": true
         }
       ],
-      "longTasks": [
-        {
-          "startTimeMs": 143,
-          "durationMs": 51
-        }
-      ],
+      "longTasks": [],
       "motionIntervals": [
         {
           "kind": "transition",
           "name": "border-bottom-color",
-          "startTimeMs": 490.69999999925494,
-          "endTimeMs": 490.8999999985099
+          "startTimeMs": 438.8999999985099,
+          "endTimeMs": 439.0999999977648
         },
         {
           "kind": "transition",
           "name": "border-left-color",
-          "startTimeMs": 491,
-          "endTimeMs": 491
+          "startTimeMs": 439.0999999977648,
+          "endTimeMs": 439.0999999977648
         },
         {
           "kind": "transition",
           "name": "border-right-color",
-          "startTimeMs": 491,
-          "endTimeMs": 491
+          "startTimeMs": 439.30000000074506,
+          "endTimeMs": 439.30000000074506
         },
         {
           "kind": "transition",
           "name": "border-top-color",
-          "startTimeMs": 491,
-          "endTimeMs": 491
+          "startTimeMs": 439.30000000074506,
+          "endTimeMs": 439.3999999985099
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 491,
-          "endTimeMs": 491
+          "startTimeMs": 439.3999999985099,
+          "endTimeMs": 439.3999999985099
         },
         {
           "kind": "transition",
           "name": "background-color",
-          "startTimeMs": 491,
-          "endTimeMs": 491.1000000014901
+          "startTimeMs": 439.3999999985099,
+          "endTimeMs": 439.3999999985099
         },
         {
           "kind": "transition",
           "name": "border-bottom-color",
-          "startTimeMs": 491.1000000014901,
-          "endTimeMs": 491.19999999925494
+          "startTimeMs": 439.3999999985099,
+          "endTimeMs": 439.3999999985099
         },
         {
           "kind": "transition",
           "name": "border-left-color",
-          "startTimeMs": 491.19999999925494,
-          "endTimeMs": 491.19999999925494
+          "startTimeMs": 439.5,
+          "endTimeMs": 439.5999999977648
         },
         {
           "kind": "transition",
           "name": "border-right-color",
-          "startTimeMs": 491.19999999925494,
-          "endTimeMs": 491.30000000074506
+          "startTimeMs": 439.5999999977648,
+          "endTimeMs": 439.5999999977648
         },
         {
           "kind": "transition",
           "name": "border-top-color",
-          "startTimeMs": 491.30000000074506,
-          "endTimeMs": 491.3999999985099
+          "startTimeMs": 439.5999999977648,
+          "endTimeMs": 439.69999999925494
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 491.3999999985099,
-          "endTimeMs": 491.3999999985099
+          "startTimeMs": 439.69999999925494,
+          "endTimeMs": 439.80000000074506
         },
         {
           "kind": "transition",
           "name": "border-bottom-color",
-          "startTimeMs": 491.3999999985099,
-          "endTimeMs": 491.5
+          "startTimeMs": 439.80000000074506,
+          "endTimeMs": 439.80000000074506
         },
         {
           "kind": "transition",
           "name": "border-left-color",
-          "startTimeMs": 491.5,
-          "endTimeMs": 491.5
+          "startTimeMs": 439.80000000074506,
+          "endTimeMs": 439.8999999985099
         },
         {
           "kind": "transition",
           "name": "border-right-color",
-          "startTimeMs": 491.6000000014901,
-          "endTimeMs": 491.6000000014901
+          "startTimeMs": 439.8999999985099,
+          "endTimeMs": 439.8999999985099
         },
         {
           "kind": "transition",
           "name": "border-top-color",
-          "startTimeMs": 491.6000000014901,
-          "endTimeMs": 491.6000000014901
+          "startTimeMs": 439.8999999985099,
+          "endTimeMs": 439.8999999985099
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 491.6000000014901,
-          "endTimeMs": 491.6000000014901
+          "startTimeMs": 439.8999999985099,
+          "endTimeMs": 439.8999999985099
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 517.8999999985099,
-          "endTimeMs": 518
+          "startTimeMs": 461.69999999925494,
+          "endTimeMs": 461.69999999925494
         },
         {
           "kind": "transition",
           "name": "color",
-          "startTimeMs": 518,
-          "endTimeMs": 518.1000000014901
+          "startTimeMs": 461.69999999925494,
+          "endTimeMs": 461.80000000074506
         }
       ],
       "animationAttributableLayoutShifts": [],

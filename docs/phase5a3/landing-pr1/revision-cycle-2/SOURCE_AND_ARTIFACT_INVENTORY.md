@@ -1,42 +1,39 @@
 # Source and artifact inventory
 
-## Production source
+## Complete PR production boundary
 
-The production freeze changes only the landing route family and its existing
-server-only metadata contract:
+The complete PR versus main changes 21 production files:
 
-- `frontend/src/app/page.tsx` and `HomePageContent.tsx`;
-- `frontend/src/app/LandingSections.tsx`;
-- `frontend/src/app/_landing-v2/copy.ts`, `LandingPublicShell.tsx`,
-  `PackageLabelNarrative.tsx`, and `landing.module.css`;
-- `frontend/src/app/layout.tsx` and `frontend/src/lib/site-metadata.ts` for localized
-  server-only WebApplication JSON-LD;
-- focused unit/browser contracts and Playwright project registration;
-- the governed live-route component inventory.
+- the landing page, server composition, sections, identity, public shell, theme and
+  live-auth islands, native package narrative, copy, and CSS;
+- root layout, exact cold-request provider boundary, shared live-public auth boundary,
+  and skip-link split;
+- server metadata, Open Graph, Twitter, and manifest content;
+- the code-native trilingual landing social card.
 
-No package, lockfile, font, API, database, Supabase migration, RLS, scanner, PWA,
-service-worker, authenticated-route, or immutable-baseline file changed.
+The exact file list is recorded in `evidence/predecessor-and-change.json`.
 
-The source commit contains 20 changed files: 9 production files, 1 generated
-inventory, and 10 focused test/config files. The following test-only commit changes one additional
-generic smoke file and no production code.
+## Replacement revision delta
 
-## Evidence artifacts
+The candidate-2 source commit changes social/manifest truth, Speed Insights ownership,
+mobile metadata size/accessibility, sticky anchor behavior, focused contracts, and the
+generated live-route inventory. It does not change dependencies, lockfile, APIs,
+database, RLS, Supabase migrations, scanner behavior, PWA caching, authenticated route
+migration, or immutable baselines.
 
-- 13 PNG stills under `evidence/stills/`;
-- 2 VP8 WebMs under `evidence/motion/`;
-- capture-build, motion, video, geometry, cross-browser, truth/metadata, runtime,
-  performance, CI/security, predecessor/change, and comparison ledgers;
-- 10 raw landing LHRs plus 2 guarded run metadata files;
-- base/head Route-JS reports, provenance, comparison, and summary;
-- seven-image Linux candidate artifact, two deterministic ledgers/manifests, and
-  compact summary;
-- `evidence/manifest.json` with byte count and SHA-256 for every staged evidence
-  file.
+## Replacement evidence
 
-## Historical evidence
+- 13 PNG stills;
+- 2 VP8 WebM journeys;
+- 2 rendered social-preview PNGs;
+- 10 raw landing LHRs and 2 guarded metadata files;
+- 4 Route-JS source artifacts plus summary;
+- 7 Linux candidate PNGs, manifests, determinism ledgers, and summary;
+- machine-readable truth, geometry, cross-browser, performance, forensics, video,
+  runtime, verification, CI/security, predecessor, and file-comparison records.
 
-Cycle 1 remains unchanged under
-`docs/phase5a3/landing-pr1/revision-cycle-1/`. The original predecessor packet and
-reviews outside that directory also remain unchanged. Cycle-2 reviewers are stored
-only under `revision-cycle-2/reviews/` after the evidence seal.
+## Historical packets
+
+- Cycle 1: `revision-cycle-1/`;
+- rejected Cycle 2 candidate 1: `revision-cycle-2-candidate-1/`;
+- final Cycle 2 replacement: this directory.

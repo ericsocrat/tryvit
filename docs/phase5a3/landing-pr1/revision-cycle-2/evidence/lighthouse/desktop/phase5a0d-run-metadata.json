@@ -1,6 +1,6 @@
 {
   "schemaVersion": "phase5a0d-lighthouse-run/v1",
-  "sourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+  "sourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
   "mode": "public",
   "profile": "desktop",
   "runCount": 5,
@@ -21,11 +21,11 @@
       "url": "http://127.0.0.1:3000/contact"
     }
   ],
-  "buildId": "rq2vxOdZwiVsx7vOdULa7",
-  "buildFingerprint": "7e868e3942ab2bd7633cc7404db301bd24808e82a8c144b94d4cabb7124d4cac",
+  "buildId": "RkiZx6Y57nyDf42ou3nTL",
+  "buildFingerprint": "e3084a81196f6766173f96ad292c84478081ede92194c23ed4959634ed27a0a9",
   "sourceConfigSha256": "e2c2279410348292cb9744ad8cd12b75e2459a00a7eaba84f9ca36bb5db0ca9f",
   "runtime": {
-    "node": "v24.11.1",
+    "node": "v24.18.1",
     "lighthouse": "12.6.1",
     "chromium": "151.0.7922.34"
   },
@@ -60,5 +60,5 @@
     "emulatedUserAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
     "locale": "en-US"
   },
-  "metadataChecksum": "cba4e6edeca680976be7fe193ff4de4631f52456067e388a570c8b831b96b4ce"
+  "metadataChecksum": "0c42cd63b2adcd3acee7319b351b23c5afd278583e325cec3605aca579f47fda"
 }

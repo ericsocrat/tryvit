@@ -1,117 +1,79 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "kind": "phase5a3-landing-revision-cycle-2-predecessor-and-change",
-  "predecessor": {
+  "cycle1": {
     "productionSourceCommit": "64f015ee8be3a929c2239b7aa94abcac7e36aaa1",
     "productionSourceTree": "4b3d17f8918392b7e375c6fbd1e2518a7ecdb66c",
     "evidenceSealCommit": "10d889f36cb13d50d1b69813722c6116eca3c665",
-    "evidenceTree": "3a1debecd71b06deece304c7b84538ee48fb4221",
-    "packetPath": "docs/phase5a3/landing-pr1/revision-cycle-1",
     "packetTree": "e986591713654daf73a998b8bdb22318e01f4d5f",
     "disposition": "REVISE"
   },
-  "current": {
+  "cycle2Candidate1": {
     "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
     "productionSourceTree": "251c6622f14ebfbf170882d33dafe326509da2a8",
     "testContractCommit": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
-    "testContractTree": "97902231f04e14a94159cb8d7292158f83654532",
-    "productionEquivalentAcrossTestCommit": true
+    "evidenceHead": "23abb74545e87bbc2f4f3ad09e9673ef7982e4db",
+    "packetTree": "7284db2ff5c5f7cb5f9cde06b3abb918894c0803",
+    "retainedPath": "docs/phase5a3/landing-pr1/revision-cycle-2-candidate-1",
+    "reviewerA": "REVISE 82/100",
+    "reviewerB": "REVISE 82/100",
+    "nonTasteQa": "FAIL",
+    "rejectionCause": "Legacy contradictory social previews, stale manifest claims, non-authoritative strict performance, and first-party Speed Insights 404/console debt."
   },
-  "changes": [
-    {
-      "path": "docs/phase5/live-route-component-inventory.json",
-      "category": "generated-inventory"
-    },
-    {
-      "path": "frontend/e2e/phase5a3-landing-cross-browser.spec.ts",
-      "category": "test-contract"
-    },
-    {
-      "path": "frontend/e2e/phase5a3-landing-evidence.spec.ts",
-      "category": "test-contract"
-    },
-    {
-      "path": "frontend/e2e/phase5a3-landing-localized.spec.ts",
-      "category": "test-contract"
-    },
-    {
-      "path": "frontend/e2e/phase5a3-landing-no-javascript.spec.ts",
-      "category": "test-contract"
-    },
-    {
-      "path": "frontend/playwright.config.ts",
-      "category": "test-contract"
-    },
-    {
-      "path": "frontend/src/app/HomePageContent.tsx",
-      "category": "production"
-    },
-    {
-      "path": "frontend/src/app/LandingSections.server.test.tsx",
-      "category": "test-contract"
-    },
-    {
-      "path": "frontend/src/app/LandingSections.test.tsx",
-      "category": "test-contract"
-    },
-    {
-      "path": "frontend/src/app/LandingSections.tsx",
-      "category": "production"
-    },
-    {
-      "path": "frontend/src/app/_landing-v2/LandingPublicShell.tsx",
-      "category": "production"
-    },
-    {
-      "path": "frontend/src/app/_landing-v2/PackageLabelNarrative.tsx",
-      "category": "production"
-    },
-    {
-      "path": "frontend/src/app/_landing-v2/copy.ts",
-      "category": "production"
-    },
-    {
-      "path": "frontend/src/app/_landing-v2/landing.module.css",
-      "category": "production"
-    },
-    {
-      "path": "frontend/src/app/layout.tsx",
-      "category": "production"
-    },
-    {
-      "path": "frontend/src/app/page.test.tsx",
-      "category": "test-contract"
-    },
-    {
-      "path": "frontend/src/app/page.tsx",
-      "category": "production"
-    },
-    {
-      "path": "frontend/src/lib/site-metadata.test.ts",
-      "category": "test-contract"
-    },
-    {
-      "path": "frontend/src/lib/site-metadata.ts",
-      "category": "production"
-    },
-    {
-      "path": "frontend/tests/phase5a3-landing-contract.test.ts",
-      "category": "test-contract"
-    }
+  "cycle2Replacement": {
+    "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+    "productionSourceTree": "e82f1ce3b0f9fdfd8d41f02b04fb8d25a5b81da6",
+    "sourceCorrections": [
+      "Trilingual readiness-neutral Open Graph and Twitter images",
+      "Separate Twitter image URL",
+      "Truthful capability-neutral manifest copy",
+      "No Speed Insights client on exact cold landing",
+      "12 px minimum critical mobile metadata",
+      "Accessible synthetic-example disclosure context",
+      "Sticky anchor offsets and cross-browser click coverage"
+    ],
+    "performanceDisposition": "REVISE",
+    "authoritativeMobileLcpMedianMs": 2630.7072,
+    "authoritativeMobileLcpMaximumMs": 2821.2529,
+    "authoritativeMobileTbtMaximumMs": 262
+  },
+  "fullPrProductionSourceBoundary": [
+    "frontend/public/manifest.webmanifest",
+    "frontend/src/app/HomePageContent.tsx",
+    "frontend/src/app/LandingSections.tsx",
+    "frontend/src/app/_landing-v2/LandingIdentity.tsx",
+    "frontend/src/app/_landing-v2/LandingLiveAuthAction.client.tsx",
+    "frontend/src/app/_landing-v2/LandingPublicShell.tsx",
+    "frontend/src/app/_landing-v2/LandingSocialCard.tsx",
+    "frontend/src/app/_landing-v2/LandingThemeToggle.client.tsx",
+    "frontend/src/app/_landing-v2/PackageLabelNarrative.tsx",
+    "frontend/src/app/_landing-v2/copy.ts",
+    "frontend/src/app/_landing-v2/landing.module.css",
+    "frontend/src/app/layout.tsx",
+    "frontend/src/app/opengraph-image.tsx",
+    "frontend/src/app/page.tsx",
+    "frontend/src/app/twitter-image.tsx",
+    "frontend/src/components/layout/LivePublicAuthActions.tsx",
+    "frontend/src/design-system/accessibility/SkipLink.tsx",
+    "frontend/src/design-system/accessibility/SkipLinkControl.client.tsx",
+    "frontend/src/lib/request-provider-boundary.ts",
+    "frontend/src/lib/site-metadata.ts",
+    "frontend/src/proxy.ts"
   ],
   "boundaries": {
     "packageOrLockfileChanged": false,
     "dependenciesChanged": false,
     "apiDatabaseRlsChanged": false,
-    "pwaOrScannerChanged": false,
+    "pwaCachingOrScannerBehaviorChanged": false,
     "authenticatedRouteMigrated": false,
     "immutableBaselineChanged": false,
     "cycle1Changed": false
   },
   "retainedHistory": {
+    "candidate1Packet": true,
     "rejectedPerformanceTrials": true,
     "predecessorMedia": true,
     "predecessorReviews": true,
-    "oldLighthouseSamples": true
+    "allValidLighthouseSamples": true
   }
 }

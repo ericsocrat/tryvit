@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-revision-cycle-2-predecessor-and-change",
+  "predecessor": {
+    "productionSourceCommit": "64f015ee8be3a929c2239b7aa94abcac7e36aaa1",
+    "productionSourceTree": "4b3d17f8918392b7e375c6fbd1e2518a7ecdb66c",
+    "evidenceSealCommit": "10d889f36cb13d50d1b69813722c6116eca3c665",
+    "evidenceTree": "3a1debecd71b06deece304c7b84538ee48fb4221",
+    "packetPath": "docs/phase5a3/landing-pr1/revision-cycle-1",
+    "packetTree": "e986591713654daf73a998b8bdb22318e01f4d5f",
+    "disposition": "REVISE"
+  },
+  "current": {
+    "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+    "productionSourceTree": "251c6622f14ebfbf170882d33dafe326509da2a8",
+    "testContractCommit": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
+    "testContractTree": "97902231f04e14a94159cb8d7292158f83654532",
+    "productionEquivalentAcrossTestCommit": true
+  },
+  "changes": [
+    {
+      "path": "docs/phase5/live-route-component-inventory.json",
+      "category": "generated-inventory"
+    },
+    {
+      "path": "frontend/e2e/phase5a3-landing-cross-browser.spec.ts",
+      "category": "test-contract"
+    },
+    {
+      "path": "frontend/e2e/phase5a3-landing-evidence.spec.ts",
+      "category": "test-contract"
+    },
+    {
+      "path": "frontend/e2e/phase5a3-landing-localized.spec.ts",
+      "category": "test-contract"
+    },
+    {
+      "path": "frontend/e2e/phase5a3-landing-no-javascript.spec.ts",
+      "category": "test-contract"
+    },
+    {
+      "path": "frontend/playwright.config.ts",
+      "category": "test-contract"
+    },
+    {
+      "path": "frontend/src/app/HomePageContent.tsx",
+      "category": "production"
+    },
+    {
+      "path": "frontend/src/app/LandingSections.server.test.tsx",
+      "category": "test-contract"
+    },
+    {
+      "path": "frontend/src/app/LandingSections.test.tsx",
+      "category": "test-contract"
+    },
+    {
+      "path": "frontend/src/app/LandingSections.tsx",
+      "category": "production"
+    },
+    {
+      "path": "frontend/src/app/_landing-v2/LandingPublicShell.tsx",
+      "category": "production"
+    },
+    {
+      "path": "frontend/src/app/_landing-v2/PackageLabelNarrative.tsx",
+      "category": "production"
+    },
+    {
+      "path": "frontend/src/app/_landing-v2/copy.ts",
+      "category": "production"
+    },
+    {
+      "path": "frontend/src/app/_landing-v2/landing.module.css",
+      "category": "production"
+    },
+    {
+      "path": "frontend/src/app/layout.tsx",
+      "category": "production"
+    },
+    {
+      "path": "frontend/src/app/page.test.tsx",
+      "category": "test-contract"
+    },
+    {
+      "path": "frontend/src/app/page.tsx",
+      "category": "production"
+    },
+    {
+      "path": "frontend/src/lib/site-metadata.test.ts",
+      "category": "test-contract"
+    },
+    {
+      "path": "frontend/src/lib/site-metadata.ts",
+      "category": "production"
+    },
+    {
+      "path": "frontend/tests/phase5a3-landing-contract.test.ts",
+      "category": "test-contract"
+    }
+  ],
+  "boundaries": {
+    "packageOrLockfileChanged": false,
+    "dependenciesChanged": false,
+    "apiDatabaseRlsChanged": false,
+    "pwaOrScannerChanged": false,
+    "authenticatedRouteMigrated": false,
+    "immutableBaselineChanged": false,
+    "cycle1Changed": false
+  },
+  "retainedHistory": {
+    "rejectedPerformanceTrials": true,
+    "predecessorMedia": true,
+    "predecessorReviews": true,
+    "oldLighthouseSamples": true
+  }
+}

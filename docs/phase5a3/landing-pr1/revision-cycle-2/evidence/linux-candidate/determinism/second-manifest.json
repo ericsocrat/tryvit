@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a0d-visual-baselines",
-  "sourceCommit": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
+  "sourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
   "rendererClass": "ci-linux-authoritative",
   "runner": {
     "imageOS": "ubuntu24",
-    "imageVersion": "20260816.277.1",
+    "imageVersion": "20260823.283.1",
     "arch": "x64"
   },
   "versions": {
@@ -38,8 +38,8 @@
       "height": 844,
       "fixtureState": "public-static",
       "relativeFile": "smoke-visual.spec.ts/p5a0d-landing-390x844-light-reduced.png",
-      "sha256": "43fe9d0f01f063b8e27612aed831b2b08d9bed809139daa5cb95a140f6e82400",
-      "bytes": 67489
+      "sha256": "20d1a453ccbac121db9795fbeac49b801bf534f734585d99f52651a5f4855ec4",
+      "bytes": 68791
     },
     {
       "id": "landing-768x1024",
@@ -50,8 +50,8 @@
       "height": 1024,
       "fixtureState": "public-static",
       "relativeFile": "smoke-visual.spec.ts/p5a0d-landing-768x1024-light-reduced.png",
-      "sha256": "4e7a2aa47b3793253c7f27f622eb61a859a20ce609f61b00c2534c51bb15551d",
-      "bytes": 106278
+      "sha256": "cf64eb5bb69a4838a526a2b7c769ac0a5ccd9efb208c0b7d9421b1e325fdad00",
+      "bytes": 105693
     },
     {
       "id": "landing-1440x900",
@@ -62,8 +62,8 @@
       "height": 900,
       "fixtureState": "public-static",
       "relativeFile": "smoke-visual.spec.ts/p5a0d-landing-1440x900-light-reduced.png",
-      "sha256": "9f887467894e9bae8e1c70fed6f427e48e9f5f8b45962f08ca21672598846097",
-      "bytes": 104590
+      "sha256": "3576ae129190d734648fd6e5c8af3fe4581cf030dd61b58307e6048c04c4e99f",
+      "bytes": 103920
     },
     {
       "id": "login-390x844",
@@ -114,5 +114,5 @@
       "bytes": 61059
     }
   ],
-  "manifestChecksum": "d4c6d5fcd1a1f0b27d5d5606d71aa5cb38458c1666b639c02e3fa02506ebcd53"
+  "manifestChecksum": "2dda393c10ad343990d939ec3086872ce0535a4b5110027ec9598d93835f8c32"
 }

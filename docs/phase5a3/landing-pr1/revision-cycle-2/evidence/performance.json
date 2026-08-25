@@ -1,237 +1,499 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "kind": "phase5a3-landing-revision-cycle-2-performance",
-  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
-  "productionSourceTree": "251c6622f14ebfbf170882d33dafe326509da2a8",
-  "environmentClass": "contained-local-windows",
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "productionSourceTree": "e82f1ce3b0f9fdfd8d41f02b04fb8d25a5b81da6",
+  "environmentClass": "pinned-playwright-linux-container",
+  "containerImage": "mcr.microsoft.com/playwright:v1.62.1-noble",
+  "containerDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac",
   "cohortPolicy": {
-    "frozenCandidateCount": 1,
+    "frozenCandidateCount": 2,
+    "maximumReplacementCandidates": 1,
     "retainedAllValidSamples": true,
     "removedOutliers": 0,
     "reranUnchangedCohort": false,
-    "thresholdsUnchanged": true
+    "thresholdsUnchanged": true,
+    "stoppedAfterBoundedForensics": true
   },
   "profiles": {
     "mobile": {
       "metadata": {
-        "sourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
-        "buildId": "rq2vxOdZwiVsx7vOdULa7",
-        "buildFingerprint": "7e868e3942ab2bd7633cc7404db301bd24808e82a8c144b94d4cabb7124d4cac",
-        "node": "v24.11.1",
+        "sourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+        "buildId": "RkiZx6Y57nyDf42ou3nTL",
+        "buildFingerprint": "e3084a81196f6766173f96ad292c84478081ede92194c23ed4959634ed27a0a9",
+        "node": "v24.18.1",
         "lighthouse": "12.6.1",
         "chromium": "151.0.7922.34",
-        "metadataChecksum": "742d3e5feb1bf8e3b8596ce266fad100581f8f50cb3111709f08fe0eb1a81ca8"
+        "metadataChecksum": "1f4cb99f1481482da73dd93beb2df85c3ff2d9ca1ca8482653820b95753eb8f2"
       },
       "samples": [
         {
-          "file": "127_0_0_1--2026_08_25_16_56_25.report.json",
-          "bytes": 603468,
-          "sha256": "8b2ffa16b29078848398b1f51902874d3e92b6c1a645bde2c8361163ef811749",
+          "file": "127_0_0_1--2026_08_25_18_08_38.report.json",
+          "bytes": 601550,
+          "sha256": "c9a04cdc3a9aedd92f974018d4860983df0a605076e45ba19a09c5af520adfee",
           "scores": {
-            "performance": 0.98,
+            "performance": 0.9,
             "accessibility": 1.0,
-            "bestPractices": 0.96,
+            "bestPractices": 1.0,
             "seo": 1.0
           },
           "metrics": {
-            "lcpMs": 2260.9048000000003,
-            "tbtMs": 70.99999999999977,
+            "lcpMs": 2821.2529,
+            "tbtMs": 262.0,
             "cls": 0.0,
-            "ttfbMs": 24.448,
-            "coldTransferBytes": 263535.0,
+            "ttfbMs": 37.857,
+            "coldTransferBytes": 260272.0,
             "fontTransferBytes": 0,
-            "observedLcpMs": 123.0,
-            "observedFcpMs": 123.0
+            "observedLcpMs": 288.0,
+            "observedFcpMs": 288.0
           },
           "lcpElement": {
             "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
             "label": "Read the package. See the reasoning. Make your own call.",
             "rect": {
-              "top": 172,
-              "bottom": 346,
+              "top": 179,
+              "bottom": 309,
               "left": 29,
               "right": 383,
               "width": 354,
-              "height": 174
+              "height": 131
             }
           },
           "simulatedLcpPhases": {
-            "timeToFirstByteMs": 455.4524,
+            "timeToFirstByteMs": 457.62645,
             "resourceLoadDelayMs": 0.0,
             "resourceLoadDurationMs": 0.0,
-            "elementRenderDelayMs": 1805.4524000000001
-          }
+            "elementRenderDelayMs": 2363.6264499999997
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
         },
         {
-          "file": "127_0_0_1--2026_08_25_16_56_38.report.json",
-          "bytes": 602921,
-          "sha256": "2bb1c0b9864b12d5a4752e7d6ef310560f021bbdb293abb1a236ba31c18777b5",
+          "file": "127_0_0_1--2026_08_25_18_08_50.report.json",
+          "bytes": 601187,
+          "sha256": "14015ad94eec4dceab4dfdc7aeb9d18b99ecab367297d0be1c72c70926ac3ab1",
           "scores": {
-            "performance": 0.99,
+            "performance": 0.96,
             "accessibility": 1.0,
-            "bestPractices": 0.96,
+            "bestPractices": 1.0,
             "seo": 1.0
           },
           "metrics": {
-            "lcpMs": 2259.4275,
-            "tbtMs": 64.0,
+            "lcpMs": 2630.7072,
+            "tbtMs": 115.0,
             "cls": 0.0,
-            "ttfbMs": 17.744999999999997,
-            "coldTransferBytes": 263535.0,
+            "ttfbMs": 44.099,
+            "coldTransferBytes": 260271.0,
             "fontTransferBytes": 0,
-            "observedLcpMs": 109.0,
-            "observedFcpMs": 109.0
+            "observedLcpMs": 192.0,
+            "observedFcpMs": 192.0
           },
           "lcpElement": {
             "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
             "label": "Read the package. See the reasoning. Make your own call.",
             "rect": {
-              "top": 172,
-              "bottom": 346,
+              "top": 179,
+              "bottom": 309,
               "left": 29,
               "right": 383,
               "width": 354,
-              "height": 174
+              "height": 131
             }
           },
           "simulatedLcpPhases": {
-            "timeToFirstByteMs": 454.71375,
+            "timeToFirstByteMs": 457.85360000000003,
             "resourceLoadDelayMs": 0.0,
             "resourceLoadDurationMs": 0.0,
-            "elementRenderDelayMs": 1804.71375
-          }
+            "elementRenderDelayMs": 2172.8536
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
         },
         {
-          "file": "127_0_0_1--2026_08_25_16_56_50.report.json",
-          "bytes": 603634,
-          "sha256": "21a9d603703d8178ecf6a70c79460fd27dceb959b22747b23c8610ce9b17e73c",
+          "file": "127_0_0_1--2026_08_25_18_09_02.report.json",
+          "bytes": 600793,
+          "sha256": "95ff0ce1b12067e4c7a7a7c7feea4c19c80b140ae94f2a924b56bfa747feaa6e",
           "scores": {
-            "performance": 0.98,
+            "performance": 0.95,
             "accessibility": 1.0,
-            "bestPractices": 0.96,
+            "bestPractices": 1.0,
             "seo": 1.0
           },
           "metrics": {
-            "lcpMs": 2259.6440000000002,
-            "tbtMs": 75.99999999999977,
+            "lcpMs": 2672.3067,
+            "tbtMs": 141.0,
             "cls": 0.0,
-            "ttfbMs": 13.951,
-            "coldTransferBytes": 263534.0,
+            "ttfbMs": 25.97,
+            "coldTransferBytes": 260291.0,
             "fontTransferBytes": 0,
-            "observedLcpMs": 117.0,
-            "observedFcpMs": 117.0
+            "observedLcpMs": 202.0,
+            "observedFcpMs": 202.0
           },
           "lcpElement": {
             "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
             "label": "Read the package. See the reasoning. Make your own call.",
             "rect": {
-              "top": 172,
-              "bottom": 346,
+              "top": 179,
+              "bottom": 309,
               "left": 29,
               "right": 383,
               "width": 354,
-              "height": 174
+              "height": 131
             }
           },
           "simulatedLcpPhases": {
-            "timeToFirstByteMs": 454.822,
+            "timeToFirstByteMs": 457.65335,
             "resourceLoadDelayMs": 0.0,
             "resourceLoadDurationMs": 0.0,
-            "elementRenderDelayMs": 1804.8220000000001
-          }
+            "elementRenderDelayMs": 2214.65335
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
         },
         {
-          "file": "127_0_0_1--2026_08_25_16_57_03.report.json",
-          "bytes": 602927,
-          "sha256": "dbcfef49630390983b6a94821032999a2b31a3228fb935b86c6a562d6dcd1ceb",
+          "file": "127_0_0_1--2026_08_25_18_09_13.report.json",
+          "bytes": 600671,
+          "sha256": "78a39601ab5a8f4d7e7c1bf269d30f05709d1f1287b237ff5141af6b10dda696",
           "scores": {
-            "performance": 0.98,
+            "performance": 0.96,
             "accessibility": 1.0,
-            "bestPractices": 0.96,
+            "bestPractices": 1.0,
             "seo": 1.0
           },
           "metrics": {
-            "lcpMs": 2258.5521,
-            "tbtMs": 79.0,
+            "lcpMs": 2612.0706,
+            "tbtMs": 107.0,
             "cls": 0.0,
-            "ttfbMs": 15.668000000000001,
-            "coldTransferBytes": 263536.0,
+            "ttfbMs": 23.686,
+            "coldTransferBytes": 260271.0,
             "fontTransferBytes": 0,
-            "observedLcpMs": 120.0,
-            "observedFcpMs": 120.0
+            "observedLcpMs": 164.0,
+            "observedFcpMs": 164.0
           },
           "lcpElement": {
             "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
             "label": "Read the package. See the reasoning. Make your own call.",
             "rect": {
-              "top": 172,
-              "bottom": 346,
+              "top": 179,
+              "bottom": 309,
               "left": 29,
               "right": 383,
               "width": 354,
-              "height": 174
+              "height": 131
             }
           },
           "simulatedLcpPhases": {
-            "timeToFirstByteMs": 454.27605,
+            "timeToFirstByteMs": 455.5353,
             "resourceLoadDelayMs": 0.0,
             "resourceLoadDurationMs": 0.0,
-            "elementRenderDelayMs": 1804.27605
-          }
+            "elementRenderDelayMs": 2156.5353
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
         },
         {
-          "file": "127_0_0_1--2026_08_25_16_57_16.report.json",
-          "bytes": 603057,
-          "sha256": "2254775c77065e7caa4bed6b087fcb4a6a2560133c596b9ed9cc151ca05b5a67",
+          "file": "127_0_0_1--2026_08_25_18_09_24.report.json",
+          "bytes": 600591,
+          "sha256": "70a1f74669456c2bf9b41673157c26b65d35fd59e242fae579ac2ae05b0f52c3",
           "scores": {
-            "performance": 0.98,
+            "performance": 0.96,
             "accessibility": 1.0,
-            "bestPractices": 0.96,
+            "bestPractices": 1.0,
             "seo": 1.0
           },
           "metrics": {
-            "lcpMs": 2257.9084000000003,
-            "tbtMs": 67.99999999999977,
+            "lcpMs": 2617.5804,
+            "tbtMs": 108.0,
             "cls": 0.0,
-            "ttfbMs": 11.915,
-            "coldTransferBytes": 263534.0,
+            "ttfbMs": 16.676,
+            "coldTransferBytes": 260291.0,
             "fontTransferBytes": 0,
-            "observedLcpMs": 107.0,
-            "observedFcpMs": 107.0
+            "observedLcpMs": 154.0,
+            "observedFcpMs": 154.0
           },
           "lcpElement": {
             "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
             "label": "Read the package. See the reasoning. Make your own call.",
             "rect": {
-              "top": 172,
-              "bottom": 346,
+              "top": 179,
+              "bottom": 309,
               "left": 29,
               "right": 383,
               "width": 354,
-              "height": 174
+              "height": 131
             }
           },
           "simulatedLcpPhases": {
-            "timeToFirstByteMs": 453.9542,
+            "timeToFirstByteMs": 455.7902,
             "resourceLoadDelayMs": 0.0,
             "resourceLoadDurationMs": 0.0,
-            "elementRenderDelayMs": 1803.9542000000001
-          }
+            "elementRenderDelayMs": 2161.7902
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
         }
       ],
       "summary": {
-        "performanceMedian": 0.98,
-        "lcpMedianMs": 2259.4275,
-        "lcpMaximumMs": 2260.9048000000003,
-        "tbtMedianMs": 70.99999999999977,
-        "tbtMaximumMs": 79.0,
+        "performanceMedian": 0.96,
+        "lcpMedianMs": 2630.7072,
+        "lcpMaximumMs": 2821.2529,
+        "tbtMedianMs": 115.0,
+        "tbtMaximumMs": 262.0,
         "clsMedian": 0.0,
         "clsMaximum": 0.0,
-        "ttfbMedianMs": 15.668000000000001,
-        "ttfbMaximumMs": 24.448,
-        "coldTransferMedianBytes": 263535.0,
-        "coldTransferMaximumBytes": 263536.0,
-        "fontTransferMaximumBytes": 0.0
+        "ttfbMedianMs": 25.97,
+        "ttfbMaximumMs": 44.099,
+        "coldTransferMedianBytes": 260272.0,
+        "coldTransferMaximumBytes": 260291.0,
+        "fontTransferMaximumBytes": 0.0,
+        "consoleErrorMaximum": 0.0,
+        "unexpectedFirstParty4xxMaximum": 0.0
+      },
+      "acceptance": {
+        "performanceMedianAtLeastTarget": true,
+        "tbtMaximumAtMost200Ms": false,
+        "clsMaximumAtMost0_05": true,
+        "ttfbMaximumAtMost800Ms": true,
+        "coldTransferMaximumAtMost900KiB": true,
+        "fontTransferIsZero": true,
+        "consoleErrorsAreZero": true,
+        "unexpectedFirstParty4xxAreZero": true,
+        "mobileLcpMedianAtMost2400Ms": false,
+        "everyMobileLcpSampleAtMost2500Ms": false
+      }
+    },
+    "desktop": {
+      "metadata": {
+        "sourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+        "buildId": "RkiZx6Y57nyDf42ou3nTL",
+        "buildFingerprint": "e3084a81196f6766173f96ad292c84478081ede92194c23ed4959634ed27a0a9",
+        "node": "v24.18.1",
+        "lighthouse": "12.6.1",
+        "chromium": "151.0.7922.34",
+        "metadataChecksum": "0c42cd63b2adcd3acee7319b351b23c5afd278583e325cec3605aca579f47fda"
+      },
+      "samples": [
+        {
+          "file": "127_0_0_1--2026_08_25_18_11_42.report.json",
+          "bytes": 571423,
+          "sha256": "b2bcc88dc8fef70f007fb07f6943af5ea7c40f128364d3489d28bcbcf9f357f8",
+          "scores": {
+            "performance": 1.0,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 549.8174,
+            "tbtMs": 0.0,
+            "cls": 0.0,
+            "ttfbMs": 23.485,
+            "coldTransferBytes": 260272.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 178.0,
+            "observedFcpMs": 178.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 212,
+              "bottom": 530,
+              "left": 95,
+              "right": 696,
+              "width": 601,
+              "height": 318
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 124.9087,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 424.9087
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        },
+        {
+          "file": "127_0_0_1--2026_08_25_18_11_54.report.json",
+          "bytes": 572140,
+          "sha256": "dcc467b57068cad2111ff38ca1ac2476de334591458a0b6d55e75f97e6078306",
+          "scores": {
+            "performance": 1.0,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 589.6212,
+            "tbtMs": 0.0,
+            "cls": 0.0,
+            "ttfbMs": 13.076,
+            "coldTransferBytes": 260271.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 192.0,
+            "observedFcpMs": 192.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 212,
+              "bottom": 530,
+              "left": 95,
+              "right": 696,
+              "width": 601,
+              "height": 318
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 126.3106,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 463.3106
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        },
+        {
+          "file": "127_0_0_1--2026_08_25_18_12_06.report.json",
+          "bytes": 572217,
+          "sha256": "36919b64e37f44f44a45e7ddd16df3b9db2d8a01d05163c17f8b18813312cfef",
+          "scores": {
+            "performance": 1.0,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 582.1859999999999,
+            "tbtMs": 5.0,
+            "cls": 0.0,
+            "ttfbMs": 25.427999999999997,
+            "coldTransferBytes": 260290.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 209.0,
+            "observedFcpMs": 209.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 212,
+              "bottom": 530,
+              "left": 95,
+              "right": 696,
+              "width": 601,
+              "height": 318
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 126.093,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 456.0929999999999
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        },
+        {
+          "file": "127_0_0_1--2026_08_25_18_12_17.report.json",
+          "bytes": 571305,
+          "sha256": "6ec33f0bfecb6dae88ea1ca464bb29326d2bb5a60b6d7f143a5c655b259f738d",
+          "scores": {
+            "performance": 1.0,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 544.2455,
+            "tbtMs": 0.0,
+            "cls": 0.0,
+            "ttfbMs": 18.361,
+            "coldTransferBytes": 260271.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 170.0,
+            "observedFcpMs": 170.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 212,
+              "bottom": 530,
+              "left": 95,
+              "right": 696,
+              "width": 601,
+              "height": 318
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 125.12275,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 419.12275
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        },
+        {
+          "file": "127_0_0_1--2026_08_25_18_12_29.report.json",
+          "bytes": 571062,
+          "sha256": "0349ded5429067ad6ac93f455eaef8553dca9834d091115a5b3bd52b1b338ad5",
+          "scores": {
+            "performance": 1.0,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 565.3567,
+            "tbtMs": 0.0,
+            "cls": 0.0,
+            "ttfbMs": 18.695999999999998,
+            "coldTransferBytes": 260271.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 141.0,
+            "observedFcpMs": 141.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 212,
+              "bottom": 530,
+              "left": 95,
+              "right": 696,
+              "width": 601,
+              "height": 318
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 125.17835,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 440.17835
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        }
+      ],
+      "summary": {
+        "performanceMedian": 1.0,
+        "lcpMedianMs": 565.3567,
+        "lcpMaximumMs": 589.6212,
+        "tbtMedianMs": 0.0,
+        "tbtMaximumMs": 5.0,
+        "clsMedian": 0.0,
+        "clsMaximum": 0.0,
+        "ttfbMedianMs": 18.695999999999998,
+        "ttfbMaximumMs": 25.427999999999997,
+        "coldTransferMedianBytes": 260271.0,
+        "coldTransferMaximumBytes": 260290.0,
+        "fontTransferMaximumBytes": 0.0,
+        "consoleErrorMaximum": 0.0,
+        "unexpectedFirstParty4xxMaximum": 0.0
       },
       "acceptance": {
         "performanceMedianAtLeastTarget": true,
@@ -240,252 +502,42 @@
         "ttfbMaximumAtMost800Ms": true,
         "coldTransferMaximumAtMost900KiB": true,
         "fontTransferIsZero": true,
-        "mobileLcpMedianAtMost2400Ms": true,
-        "everyMobileLcpSampleAtMost2500Ms": true
-      }
-    },
-    "desktop": {
-      "metadata": {
-        "sourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
-        "buildId": "rq2vxOdZwiVsx7vOdULa7",
-        "buildFingerprint": "7e868e3942ab2bd7633cc7404db301bd24808e82a8c144b94d4cabb7124d4cac",
-        "node": "v24.11.1",
-        "lighthouse": "12.6.1",
-        "chromium": "151.0.7922.34",
-        "metadataChecksum": "cba4e6edeca680976be7fe193ff4de4631f52456067e388a570c8b831b96b4ce"
-      },
-      "samples": [
-        {
-          "file": "127_0_0_1--2026_08_25_16_59_36.report.json",
-          "bytes": 604398,
-          "sha256": "050303ab176bcda2f4ca5ffb334da9230cf6cc28e3c4c946bdbffce1d0bfa38c",
-          "scores": {
-            "performance": 1.0,
-            "accessibility": 1.0,
-            "bestPractices": 0.96,
-            "seo": 1.0
-          },
-          "metrics": {
-            "lcpMs": 554.798,
-            "tbtMs": 0.0,
-            "cls": 0.0,
-            "ttfbMs": 11.472,
-            "coldTransferBytes": 263554.0,
-            "fontTransferBytes": 0,
-            "observedLcpMs": 123.0,
-            "observedFcpMs": 123.0
-          },
-          "lcpElement": {
-            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
-            "label": "Read the package. See the reasoning. Make your own call.",
-            "rect": {
-              "top": 212,
-              "bottom": 530,
-              "left": 95,
-              "right": 696,
-              "width": 601,
-              "height": 318
-            }
-          },
-          "simulatedLcpPhases": {
-            "timeToFirstByteMs": 122.899,
-            "resourceLoadDelayMs": 0.0,
-            "resourceLoadDurationMs": 0.0,
-            "elementRenderDelayMs": 431.899
-          }
-        },
-        {
-          "file": "127_0_0_1--2026_08_25_16_59_49.report.json",
-          "bytes": 604697,
-          "sha256": "f94ea782abca39d5d4b65529a18484766b7b8452f8bcc45246aefb570b77520b",
-          "scores": {
-            "performance": 1.0,
-            "accessibility": 1.0,
-            "bestPractices": 0.96,
-            "seo": 1.0
-          },
-          "metrics": {
-            "lcpMs": 558.2867,
-            "tbtMs": 0.0,
-            "cls": 0.0,
-            "ttfbMs": 9.753,
-            "coldTransferBytes": 263535.0,
-            "fontTransferBytes": 0,
-            "observedLcpMs": 128.0,
-            "observedFcpMs": 128.0
-          },
-          "lcpElement": {
-            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
-            "label": "Read the package. See the reasoning. Make your own call.",
-            "rect": {
-              "top": 212,
-              "bottom": 530,
-              "left": 95,
-              "right": 696,
-              "width": 601,
-              "height": 318
-            }
-          },
-          "simulatedLcpPhases": {
-            "timeToFirstByteMs": 124.14335,
-            "resourceLoadDelayMs": 0.0,
-            "resourceLoadDurationMs": 0.0,
-            "elementRenderDelayMs": 434.14335
-          }
-        },
-        {
-          "file": "127_0_0_1--2026_08_25_17_00_01.report.json",
-          "bytes": 606297,
-          "sha256": "65d6b968f637c591742f1ab56a0e5f9d3c2c98f0d2dc44d8a882208c4d5c87cb",
-          "scores": {
-            "performance": 1.0,
-            "accessibility": 1.0,
-            "bestPractices": 0.96,
-            "seo": 1.0
-          },
-          "metrics": {
-            "lcpMs": 591.0627,
-            "tbtMs": 7.0,
-            "cls": 0.0,
-            "ttfbMs": 11.754,
-            "coldTransferBytes": 263536.0,
-            "fontTransferBytes": 0,
-            "observedLcpMs": 156.0,
-            "observedFcpMs": 156.0
-          },
-          "lcpElement": {
-            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
-            "label": "Read the package. See the reasoning. Make your own call.",
-            "rect": {
-              "top": 212,
-              "bottom": 530,
-              "left": 95,
-              "right": 696,
-              "width": 601,
-              "height": 318
-            }
-          },
-          "simulatedLcpPhases": {
-            "timeToFirstByteMs": 127.03135,
-            "resourceLoadDelayMs": 0.0,
-            "resourceLoadDurationMs": 0.0,
-            "elementRenderDelayMs": 464.03135
-          }
-        },
-        {
-          "file": "127_0_0_1--2026_08_25_17_00_15.report.json",
-          "bytes": 604699,
-          "sha256": "801d9aa7dce6a095c92aac26cf00021ba997dbbc09b2e41c992d3fca45af2922",
-          "scores": {
-            "performance": 1.0,
-            "accessibility": 1.0,
-            "bestPractices": 0.96,
-            "seo": 1.0
-          },
-          "metrics": {
-            "lcpMs": 566.1414,
-            "tbtMs": 0.0,
-            "cls": 0.0,
-            "ttfbMs": 13.977,
-            "coldTransferBytes": 263536.0,
-            "fontTransferBytes": 0,
-            "observedLcpMs": 149.0,
-            "observedFcpMs": 149.0
-          },
-          "lcpElement": {
-            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
-            "label": "Read the package. See the reasoning. Make your own call.",
-            "rect": {
-              "top": 212,
-              "bottom": 530,
-              "left": 95,
-              "right": 696,
-              "width": 601,
-              "height": 318
-            }
-          },
-          "simulatedLcpPhases": {
-            "timeToFirstByteMs": 124.5707,
-            "resourceLoadDelayMs": 0.0,
-            "resourceLoadDurationMs": 0.0,
-            "elementRenderDelayMs": 441.5707
-          }
-        },
-        {
-          "file": "127_0_0_1--2026_08_25_17_00_27.report.json",
-          "bytes": 604599,
-          "sha256": "da0243c9a17a19a80c99db342b96f64dddaf27c8004d0e84087f890bbc850262",
-          "scores": {
-            "performance": 1.0,
-            "accessibility": 1.0,
-            "bestPractices": 0.96,
-            "seo": 1.0
-          },
-          "metrics": {
-            "lcpMs": 563.4683,
-            "tbtMs": 0.0,
-            "cls": 0.0,
-            "ttfbMs": 11.438,
-            "coldTransferBytes": 263535.0,
-            "fontTransferBytes": 0,
-            "observedLcpMs": 139.0,
-            "observedFcpMs": 139.0
-          },
-          "lcpElement": {
-            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
-            "label": "Read the package. See the reasoning. Make your own call.",
-            "rect": {
-              "top": 212,
-              "bottom": 530,
-              "left": 95,
-              "right": 696,
-              "width": 601,
-              "height": 318
-            }
-          },
-          "simulatedLcpPhases": {
-            "timeToFirstByteMs": 124.23415,
-            "resourceLoadDelayMs": 0.0,
-            "resourceLoadDurationMs": 0.0,
-            "elementRenderDelayMs": 439.23415
-          }
-        }
-      ],
-      "summary": {
-        "performanceMedian": 1.0,
-        "lcpMedianMs": 563.4683,
-        "lcpMaximumMs": 591.0627,
-        "tbtMedianMs": 0.0,
-        "tbtMaximumMs": 7.0,
-        "clsMedian": 0.0,
-        "clsMaximum": 0.0,
-        "ttfbMedianMs": 11.472,
-        "ttfbMaximumMs": 13.977,
-        "coldTransferMedianBytes": 263536.0,
-        "coldTransferMaximumBytes": 263554.0,
-        "fontTransferMaximumBytes": 0.0
-      },
-      "acceptance": {
-        "performanceMedianAtLeastTarget": true,
-        "tbtMaximumAtMost200Ms": true,
-        "clsMaximumAtMost0_05": true,
-        "ttfbMaximumAtMost800Ms": true,
-        "coldTransferMaximumAtMost900KiB": true,
-        "fontTransferIsZero": true
+        "consoleErrorsAreZero": true,
+        "unexpectedFirstParty4xxAreZero": true
       }
     }
   },
-  "predecessor": {
-    "sourceCommit": "64f015ee8be3a929c2239b7aa94abcac7e36aaa1",
-    "mobileLcpMs": [
-      2779.0078,
-      2410.0545,
-      2835.2156,
-      2310.6435,
-      2299.1734
-    ],
-    "mobileMedianLcpMs": 2410.0545,
-    "passed": false
-  },
-  "passed": true
+  "history": [
+    {
+      "label": "candidate-1-local-windows",
+      "sourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+      "mobileLcpMs": [
+        2260.9048,
+        2259.4275,
+        2259.644,
+        2258.5521,
+        2257.9084
+      ],
+      "mobileMedianLcpMs": 2259.4275,
+      "performancePassed": true,
+      "disposition": "superseded-after-social-preview-truth-failure-and-non-authoritative-runtime"
+    },
+    {
+      "label": "candidate-1-remote-linux",
+      "sourceCommit": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
+      "productionEquivalentTo": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+      "mobileLcpMs": [
+        2162.6461,
+        2180.3058,
+        2624.9714,
+        2696.9879,
+        2711.0741
+      ],
+      "mobileMedianLcpMs": 2624.9714,
+      "performancePassed": false,
+      "disposition": "retained-aggregate-authoritative-runtime"
+    }
+  ],
+  "passed": false,
+  "disposition": "REVISE"
 }

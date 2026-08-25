@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-revision-cycle-2-runtime",
+  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+  "productionSourceTree": "251c6622f14ebfbf170882d33dafe326509da2a8",
+  "localCapture": {
+    "operatingSystem": "Microsoft Windows 11 Pro",
+    "osVersion": "10.0.26200.0",
+    "node": "v24.11.1",
+    "npm": "11.6.2",
+    "playwright": "1.62.1",
+    "lighthouse": "12.6.1",
+    "chromium": "151.0.7922.34",
+    "ffmpeg": "9.0-full_build-www.gyan.dev",
+    "buildId": "uRqTECBMepcbLsYWcx8wZ",
+    "buildFingerprint": "4009a0727b6c855baeca8618ffdbab50211cf3c5a51dde6fe441ea6a6c8160f7",
+    "assetDigest": "9e687843df15ba7fddaf02ba5b3a772e70ba07a3b32d23cce0476d32ef2042b8"
+  },
+  "performanceBuild": {
+    "buildId": "rq2vxOdZwiVsx7vOdULa7",
+    "buildFingerprint": "7e868e3942ab2bd7633cc7404db301bd24808e82a8c144b94d4cabb7124d4cac",
+    "sameAcrossProfiles": true,
+    "mobileMetadataChecksum": "742d3e5feb1bf8e3b8596ce266fad100581f8f50cb3111709f08fe0eb1a81ca8",
+    "desktopMetadataChecksum": "cba4e6edeca680976be7fe193ff4de4631f52456067e388a570c8b831b96b4ce"
+  },
+  "linuxCandidate": {
+    "captureHead": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
+    "productionEquivalent": true,
+    "imageOS": "ubuntu24",
+    "imageVersion": "20260816.277.1",
+    "arch": "x64",
+    "node": "v22.21.1",
+    "npm": "10.9.4",
+    "playwright": "1.62.1",
+    "chromium": "151.0.7922.34",
+    "byteIdentical": true
+  },
+  "safety": {
+    "appOrigin": "http://127.0.0.1:3000",
+    "serviceWorkers": "blocked",
+    "externalNetwork": "contained-by-loopback-egress-proxy",
+    "dataMode": "demo",
+    "fontTransfers": 0,
+    "imageTransfers": 0,
+    "fixtureTeardownPassed": true,
+    "noBackupSupabaseShutdownPassed": true
+  },
+  "limitations": [
+    "The 640 CSS-pixel still is an effective-viewport proxy, not branded browser zoom evidence.",
+    "WebKit is not branded Safari approval.",
+    "No qualified screen-reader, voice-control, camera, or physical-device approval is claimed.",
+    "Polish and German copy remains pending qualified human review."
+  ]
+}

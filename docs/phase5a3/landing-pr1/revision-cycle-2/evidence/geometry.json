@@ -1,85 +1,92 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a3-landing-revision-cycle-2-geometry",
-  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
-  "captureBuildId": "uRqTECBMepcbLsYWcx8wZ",
-  "renderer": "Codex in-app Chromium",
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "productionSourceTree": "e82f1ce3b0f9fdfd8d41f02b04fb8d25a5b81da6",
+  "measurementRenderer": "Codex in-app Chromium",
+  "linuxGeometryContractsPassed": true,
   "measurements": [
     {
       "descriptorCount": 1,
-      "documentWidth": 305,
+      "documentClientWidth": 305,
+      "documentScrollWidth": 305,
+      "fontSizes": {
+        "descriptor": "12px",
+        "navigation": "12px",
+        "synthetic": "12px"
+      },
       "header": {
-        "bottom": 112.94,
+        "bottom": 133.77,
         "fullyContained": true,
-        "height": 112.94,
+        "height": 133.77,
         "left": 0,
         "right": 305,
         "top": 0,
-        "visibleHeight": 112.94,
+        "visibleHeight": 133.77,
         "width": 305
       },
       "heading": {
-        "bottom": 370.52,
+        "bottom": 391.34,
         "fullyContained": true,
         "height": 180.39,
         "left": 22.39,
         "right": 282.61,
-        "top": 190.13,
+        "top": 210.95,
         "visibleHeight": 180.39,
         "width": 260.22
       },
       "horizontalOverflow": false,
       "lockupCount": 1,
       "packageSignature": {
-        "bottom": 856.23,
+        "bottom": 877.06,
         "fullyContained": true,
         "height": 212.14,
         "left": 22.39,
         "right": 282.61,
-        "top": 644.09,
+        "top": 664.92,
         "visibleHeight": 212.14,
         "width": 260.22
       },
       "primaryAction": {
-        "bottom": 557.3,
+        "bottom": 578.13,
         "fullyContained": true,
         "height": 50.8,
         "left": 22.39,
         "right": 282.61,
-        "top": 506.5,
+        "top": 527.33,
         "visibleHeight": 50.8,
         "width": 260.22
       },
       "primaryDestinationCount": 4,
       "primaryNavigation": {
-        "bottom": 106.34,
+        "bottom": 127.17,
         "fullyContained": true,
         "height": 45,
         "left": 12,
         "right": 293,
-        "top": 61.34,
+        "top": 82.17,
         "visibleHeight": 45,
         "width": 281
       },
       "secondaryAction": {
-        "bottom": 620.09,
+        "bottom": 640.92,
         "fullyContained": true,
         "height": 50.8,
         "left": 22.39,
         "right": 282.61,
-        "top": 569.3,
+        "top": 590.13,
         "visibleHeight": 50.8,
         "width": 260.22
       },
       "utilityNavigation": {
-        "bottom": 54.27,
+        "bottom": 64.67,
         "fullyContained": true,
         "height": 44,
-        "left": 170,
+        "left": 165.39,
         "right": 293,
-        "top": 10.27,
+        "top": 20.67,
         "visibleHeight": 44,
-        "width": 123
+        "width": 127.61
       },
       "viewport": {
         "height": 900,
@@ -88,79 +95,85 @@
     },
     {
       "descriptorCount": 1,
-      "documentWidth": 375,
+      "documentClientWidth": 375,
+      "documentScrollWidth": 375,
+      "fontSizes": {
+        "descriptor": "12px",
+        "navigation": "12px",
+        "synthetic": "12px"
+      },
       "header": {
-        "bottom": 112.94,
+        "bottom": 119.97,
         "fullyContained": true,
-        "height": 112.94,
+        "height": 119.97,
         "left": 0,
         "right": 375,
         "top": 0,
-        "visibleHeight": 112.94,
+        "visibleHeight": 119.97,
         "width": 375
       },
       "heading": {
-        "bottom": 336.28,
+        "bottom": 343.31,
         "fullyContained": true,
         "height": 164.75,
         "left": 27.3,
         "right": 347.7,
-        "top": 171.53,
+        "top": 178.56,
         "visibleHeight": 164.75,
         "width": 320.41
       },
       "horizontalOverflow": false,
       "lockupCount": 1,
       "packageSignature": {
-        "bottom": 751.44,
+        "bottom": 758.47,
         "fullyContained": true,
         "height": 166.38,
         "left": 27.3,
         "right": 347.7,
-        "top": 585.06,
+        "top": 592.09,
         "visibleHeight": 166.38,
         "width": 320.41
       },
       "primaryAction": {
-        "bottom": 498.27,
+        "bottom": 505.3,
         "fullyContained": true,
         "height": 50.8,
         "left": 27.3,
         "right": 347.7,
-        "top": 447.47,
+        "top": 454.5,
         "visibleHeight": 50.8,
         "width": 320.41
       },
       "primaryDestinationCount": 4,
       "primaryNavigation": {
-        "bottom": 106.34,
+        "bottom": 113.38,
         "fullyContained": true,
         "height": 45,
         "left": 12,
         "right": 363,
-        "top": 61.34,
+        "top": 68.38,
         "visibleHeight": 45,
         "width": 351
       },
       "secondaryAction": {
-        "bottom": 561.06,
+        "bottom": 568.09,
         "fullyContained": true,
         "height": 50.8,
         "left": 27.3,
         "right": 347.7,
-        "top": 510.27,
+        "top": 517.3,
         "visibleHeight": 50.8,
         "width": 320.41
       },
       "utilityNavigation": {
-        "bottom": 54.27,
+        "bottom": 57.78,
         "fullyContained": true,
         "height": 44,
-        "left": 240,
+        "left": 235.39,
         "right": 363,
-        "top": 10.27,
+        "top": 13.78,
         "visibleHeight": 44,
-        "width": 123
+        "width": 127.61
       },
       "viewport": {
         "height": 844,
@@ -169,7 +182,13 @@
     },
     {
       "descriptorCount": 1,
-      "documentWidth": 753,
+      "documentClientWidth": 753,
+      "documentScrollWidth": 753,
+      "fontSizes": {
+        "descriptor": "12px",
+        "navigation": "12.48px",
+        "synthetic": "12px"
+      },
       "header": {
         "bottom": 113.97,
         "fullyContained": true,
@@ -250,7 +269,100 @@
     },
     {
       "descriptorCount": 1,
-      "documentWidth": 1425,
+      "documentClientWidth": 1009,
+      "documentScrollWidth": 1009,
+      "fontSizes": {
+        "descriptor": "12px",
+        "navigation": "12.48px",
+        "synthetic": "12px"
+      },
+      "header": {
+        "bottom": 113.97,
+        "fullyContained": true,
+        "height": 113.97,
+        "left": 0,
+        "right": 1009,
+        "top": 0,
+        "visibleHeight": 113.97,
+        "width": 1009
+      },
+      "heading": {
+        "bottom": 520.98,
+        "fullyContained": true,
+        "height": 240.81,
+        "left": 71.67,
+        "right": 519.63,
+        "top": 280.17,
+        "visibleHeight": 240.81,
+        "width": 447.95
+      },
+      "horizontalOverflow": false,
+      "lockupCount": 1,
+      "packageSignature": {
+        "bottom": 585.48,
+        "fullyContained": true,
+        "height": 224.05,
+        "left": 570.81,
+        "right": 937.33,
+        "top": 361.44,
+        "visibleHeight": 224.05,
+        "width": 366.52
+      },
+      "primaryAction": {
+        "bottom": 697.34,
+        "fullyContained": true,
+        "height": 50.8,
+        "left": 71.67,
+        "right": 265.22,
+        "top": 646.55,
+        "visibleHeight": 50.8,
+        "width": 193.55
+      },
+      "primaryDestinationCount": 4,
+      "primaryNavigation": {
+        "bottom": 105.78,
+        "fullyContained": true,
+        "height": 45,
+        "left": 30.72,
+        "right": 978.28,
+        "top": 60.78,
+        "visibleHeight": 45,
+        "width": 947.56
+      },
+      "secondaryAction": {
+        "bottom": 697.34,
+        "fullyContained": true,
+        "height": 50.8,
+        "left": 277.22,
+        "right": 372.59,
+        "top": 646.55,
+        "visibleHeight": 50.8,
+        "width": 95.38
+      },
+      "utilityNavigation": {
+        "bottom": 55.19,
+        "fullyContained": true,
+        "height": 44,
+        "left": 836.72,
+        "right": 978.28,
+        "top": 11.19,
+        "visibleHeight": 44,
+        "width": 141.56
+      },
+      "viewport": {
+        "height": 900,
+        "width": 1024
+      }
+    },
+    {
+      "descriptorCount": 1,
+      "documentClientWidth": 1425,
+      "documentScrollWidth": 1425,
+      "fontSizes": {
+        "descriptor": "12px",
+        "navigation": "12.48px",
+        "synthetic": "12px"
+      },
       "header": {
         "bottom": 76,
         "fullyContained": true,
@@ -335,13 +447,20 @@
     "identityOwnerCount": 1,
     "marketDescriptorCount": 1,
     "mobileDestinationCount": 4,
+    "minimumCriticalMobileFontPx": 12,
     "headingFullyContained": true,
     "primaryActionFullyContained": true,
-    "packageMinimumVisiblePixelsAt390": 72,
-    "packageActualVisiblePixelsAt390": 166.38,
+    "packageFullyContainedAt320": true,
+    "packageFullyContainedAt390": true,
     "packageFullyContainedAt768": true,
+    "packageFullyContainedAt1024": true,
     "packageFullyContainedAt1440": true,
-    "secondaryActionFullyContainedAt1440": true
+    "secondaryActionFullyContainedAt1440": true,
+    "stickyAnchorsClearAt": [
+      768,
+      1024,
+      1440
+    ]
   },
   "passed": true
 }

@@ -5,12 +5,12 @@
     "appOrigin": "http://127.0.0.1:3000",
     "supabaseOrigin": "none",
     "publicBuildAdapterId": "none",
-    "sourceGitSha": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
-    "buildId": "uRqTECBMepcbLsYWcx8wZ",
+    "sourceGitSha": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+    "buildId": "Rx6qScSHdhff6fIcRZFin",
     "buildInputIds": [
-      "assets:9e687843df15ba7fddaf02ba5b3a772e70ba07a3b32d23cce0476d32ef2042b8"
+      "assets:b0a0b9922aa955389b2596f1bd2383d85e8f9f136f9e1e242268174a31c5c9ff"
     ],
-    "fingerprint": "4009a0727b6c855baeca8618ffdbab50211cf3c5a51dde6fe441ea6a6c8160f7"
+    "fingerprint": "1101b397cf20a497966f06237868475545842257acfb0a8b97e92a1b705ebdfd"
   },
-  "assetDigest": "9e687843df15ba7fddaf02ba5b3a772e70ba07a3b32d23cce0476d32ef2042b8"
+  "assetDigest": "b0a0b9922aa955389b2596f1bd2383d85e8f9f136f9e1e242268174a31c5c9ff"
 }
