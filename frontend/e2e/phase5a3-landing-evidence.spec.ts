@@ -1,4 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
+import { writeFile } from "node:fs/promises";
 
 import { expect, test, type Page, type TestInfo } from "./fixtures/safe-test";
 
@@ -112,4 +113,54 @@ test("retains keyboard order and visible skip navigation", async ({ page }) => {
   await expect(page.locator("#main-content")).toBeFocused();
   await page.keyboard.press("Tab");
   await expect(page.locator(":focus")).toHaveAttribute("href", "#evidence");
+});
+
+test("records zero animation-attributable long tasks and layout shift", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.addInitScript(() => {
+    const evidence = { cls: 0, longTasks: [] as Array<{ startTime: number; duration: number }> };
+    Object.defineProperty(globalThis, "__phase5a3MotionEvidence", {
+      configurable: true,
+      value: evidence,
+    });
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries()) {
+        evidence.longTasks.push({ startTime: entry.startTime, duration: entry.duration });
+      }
+    }).observe({ type: "longtask", buffered: true });
+    new PerformanceObserver((list) => {
+      for (const entry of list.getEntries() as PerformanceEntryList & Array<{ value: number; hadRecentInput: boolean }>) {
+        if (!entry.hadRecentInput) evidence.cls += entry.value;
+      }
+    }).observe({ type: "layout-shift", buffered: true });
+  });
+  await page.emulateMedia({ colorScheme: "light", reducedMotion: "no-preference" });
+  await page.goto("/");
+  await page.evaluate(() => document.fonts.ready);
+  const startTime = await page.evaluate(() => performance.now());
+  const narrative = page.locator('main button[aria-expanded]');
+  await narrative.click();
+  await page.waitForTimeout(650);
+  const endTime = await page.evaluate(() => performance.now());
+  const captured = await page.evaluate(() => {
+    const value = (
+      globalThis as typeof globalThis & {
+        __phase5a3MotionEvidence: {
+          cls: number;
+          longTasks: Array<{ startTime: number; duration: number }>;
+        };
+      }
+    ).__phase5a3MotionEvidence;
+    return { cls: value.cls, longTasks: value.longTasks };
+  });
+  const attributable = captured.longTasks.filter(
+    (task) => task.startTime <= endTime && task.startTime + task.duration >= startTime,
+  );
+  expect(captured.cls).toBeLessThanOrEqual(0.05);
+  expect(attributable.filter((task) => task.duration > 50)).toEqual([]);
+  await writeFile(
+    testInfo.outputPath("landing-motion-performance.json"),
+    `${JSON.stringify({ startTime, endTime, ...captured, animationAttributableLongTasks: attributable }, null, 2)}\n`,
+    "utf8",
+  );
 });
