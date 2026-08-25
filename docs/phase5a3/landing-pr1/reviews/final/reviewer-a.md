@@ -37,4 +37,3 @@ Vetoes at review close:
 Post-review factual update: run `32823920912` subsequently passed two-pass byte identity
 and published candidate artifacts. That clears only the pending determinism fact; the
 reviewer's REVISE verdict and other vetoes remain.
-

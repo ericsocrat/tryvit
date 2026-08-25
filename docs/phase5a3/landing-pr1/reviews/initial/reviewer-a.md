@@ -30,4 +30,3 @@ Additional corrections requested:
 - avoid `LinkText` semantics for non-interactive forced-color identity;
 - make no-JavaScript controls look and behave inert;
 - replace the paused-mode footer's unconditional sign-in link with status navigation.
-

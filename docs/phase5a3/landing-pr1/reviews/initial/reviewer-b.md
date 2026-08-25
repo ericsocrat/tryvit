@@ -28,4 +28,3 @@ Manifest categories; and the 368×800 encoded video dimensions were undisclosed.
 The review noted that Axe covers one EN/light/mobile/collapsed state and the keyboard
 test proves only skip-link → main → Evidence, so neither is described as complete
 assistive-technology approval.
-

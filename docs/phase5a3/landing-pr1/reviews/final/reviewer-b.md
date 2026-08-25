@@ -38,4 +38,3 @@ baseline, inherited JSON-LD truth mismatch, and absent legal/native-language/AT/
 human gates. At review close the corrected Linux candidate run had not yet sealed; run
 `32823920912` subsequently passed and published artifacts, clearing only that pending
 determinism fact.
-
