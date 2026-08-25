@@ -13,7 +13,7 @@ test("retains complete server-rendered meaning without JavaScript", async ({ pag
   expect(html).toContain("The website is available; live product data is paused");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await expect(page.locator("main button[aria-expanded]")).toBeDisabled();
-  await expect(page.locator('header button[type="button"]')).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Theme", exact: true })).toBeDisabled();
   const footer = page.locator("footer");
   await expect(footer.locator('a[href="#service-status"]')).toHaveText("Demo mode");
   await expect(footer.locator('a[href="/auth/login"]')).toHaveCount(0);

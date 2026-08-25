@@ -53,6 +53,24 @@
 }
 
 @media (prefers-color-scheme: dark) {
+  :global(html:not([data-theme])) .themeGlyph::after {
+    inset: -4px;
+    border: 0;
+    box-shadow:
+      0 -8px 0 -6px currentColor,
+      0 8px 0 -6px currentColor,
+      8px 0 0 -6px currentColor,
+      -8px 0 0 -6px currentColor;
+  }
+
+  :global(html:not([data-theme])) .themeLightAction {
+    display: none;
+  }
+
+  :global(html:not([data-theme])) .themeDarkAction {
+    display: inline;
+  }
+
   :global(html:not([data-theme])) .shell {
     --landing-canvas: #15231c;
     --landing-paper: #1d3026;
@@ -174,6 +192,14 @@
   cursor: pointer;
 }
 
+.themeToggleInteractive {
+  display: none;
+}
+
+:global([data-theme]) .themeToggleInteractive {
+  display: inline-flex;
+}
+
 .themeGlyph {
   position: relative;
   width: 20px;
@@ -191,7 +217,7 @@
   border-radius: 50%;
 }
 
-.themeGlyph[data-mode="dark"]::after {
+:global([data-theme="dark"]) .themeGlyph::after {
   inset: -4px;
   border: 0;
   box-shadow:
@@ -199,6 +225,18 @@
     0 8px 0 -6px currentColor,
     8px 0 0 -6px currentColor,
     -8px 0 0 -6px currentColor;
+}
+
+.themeDarkAction {
+  display: none;
+}
+
+:global([data-theme="dark"]) .themeLightAction {
+  display: none;
+}
+
+:global([data-theme="dark"]) .themeDarkAction {
+  display: inline;
 }
 
 .visuallyHidden {
