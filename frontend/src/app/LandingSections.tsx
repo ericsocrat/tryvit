@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 import type { SupportedLanguage } from "@/stores/language-store";
 import { getLandingCopy, type LandingCopy } from "./_landing-v2/copy";
 import {
@@ -57,9 +55,9 @@ function Hero({ dataAvailable, copy }: Readonly<{ dataAvailable: boolean; copy: 
               signedOutLabel={copy.secondary}
             />
           ) : (
-            <Link className={styles.secondaryAction} href="/contact">
+            <a className={styles.secondaryAction} href="/contact">
               {copy.navigation.contact}
-            </Link>
+            </a>
           )}
         </div>
       </div>
@@ -164,9 +162,9 @@ function FinalAction({ dataAvailable, copy }: Readonly<{ dataAvailable: boolean;
             signedOutLabel={copy.finalSecondary}
           />
         ) : (
-          <Link className={styles.secondaryAction} href="/contact">
+          <a className={styles.secondaryAction} href="/contact">
             {copy.navigation.contact}
-          </Link>
+          </a>
         )}
       </div>
     </section>

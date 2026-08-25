@@ -11,14 +11,6 @@ vi.mock("@/components/layout/LivePublicAuthActions", () => ({
   useLivePublicAuth: mockUseLivePublicAuth,
 }));
 
-vi.mock("next/link", () => ({
-  default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
-    <a href={href} {...rest}>
-      {children}
-    </a>
-  ),
-}));
-
 beforeEach(() => mockUseLivePublicAuth.mockReset());
 
 describe("LandingLiveAuthAction", () => {

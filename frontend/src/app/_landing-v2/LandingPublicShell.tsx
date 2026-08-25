@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
 
 import type { LandingCopy } from "./copy";
@@ -17,17 +16,18 @@ export function LandingPublicShell({
       className={styles.shell}
       data-design-system="v2"
       data-landing-shell="folded-label-register"
+      id="landing-top"
     >
       <header className={styles.header}>
-        <Link aria-label="TryVit" className={styles.lockupLink} href="/">
+        <a aria-label="TryVit" className={styles.lockupLink} href="#landing-top">
           <LandingLockup />
-        </Link>
+        </a>
         <p className={styles.identityLabel}>{copy.identityLabel}</p>
         <nav aria-label={copy.primaryNavigationLabel} className={styles.navigation}>
           <a href="#evidence">{copy.navigation.evidence}</a>
           <a href="#method">{copy.navigation.method}</a>
           <a href="#trust">{copy.navigation.trust}</a>
-          <Link href="/contact">{copy.navigation.contact}</Link>
+          <a href="/contact">{copy.navigation.contact}</a>
           {dataAvailable ? (
             <LandingLiveAuthAction
               dashboardLabel={copy.navigation.dashboard}
@@ -56,10 +56,10 @@ export function LandingPublicShell({
         <LandingLockup compact />
         <p>{copy.footerStatement}</p>
         <nav aria-label={copy.footerNavigationLabel}>
-          <Link href="/learn">{copy.navigation.learn}</Link>
-          <Link href="/privacy">{copy.navigation.privacy}</Link>
-          <Link href="/terms">{copy.navigation.terms}</Link>
-          <Link href="/contact">{copy.navigation.contact}</Link>
+          <a href="/learn">{copy.navigation.learn}</a>
+          <a href="/privacy">{copy.navigation.privacy}</a>
+          <a href="/terms">{copy.navigation.terms}</a>
+          <a href="/contact">{copy.navigation.contact}</a>
           {dataAvailable ? (
             <LandingLiveAuthAction
               dashboardLabel={copy.navigation.dashboard}

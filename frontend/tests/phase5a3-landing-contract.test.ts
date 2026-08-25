@@ -102,6 +102,13 @@ describe("Phase 5A.3 landing production boundary", () => {
     expect(home).toContain("LivePublicAuthProvider");
     expect(home).toContain("dataAvailable ? <LivePublicAuthProvider>");
     expect(globalProviders).not.toContain("LivePublicAuth");
+    for (const path of [
+      join(LANDING_ROOT, "LandingPublicShell.tsx"),
+      join(LANDING_ROOT, "LandingLiveAuthAction.client.tsx"),
+      join(ROOT, "src", "app", "LandingSections.tsx"),
+    ]) {
+      expect(readFileSync(path, "utf8"), path).not.toContain("next/link");
+    }
   });
 
   it("records route-family authorization without implying blanket Phase 5A.3 authority", () => {

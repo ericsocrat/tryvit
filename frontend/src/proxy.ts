@@ -19,6 +19,11 @@ import {
   resolveRateLimitTier,
 } from "@/lib/rate-limiter";
 import { getDeploymentReadiness } from "@/lib/deployment-readiness";
+import {
+  APPLICATION_PROVIDER_BOUNDARY,
+  LANDING_PROVIDER_BOUNDARY,
+  PROVIDER_BOUNDARY_REQUEST_HEADER,
+} from "@/lib/request-provider-boundary";
 import { ROUTE_CLASS, getRoutePolicy } from "@/lib/route-policy";
 import { createMiddlewareClient } from "@/lib/supabase/middleware";
 import { type NextRequest, NextResponse } from "next/server";
@@ -108,14 +113,35 @@ async function applyRateLimit(request: NextRequest, response: NextResponse): Pro
 
 // ─── Main Proxy ──────────────────────────────────────────────────────────────
 
+function isColdLandingDocumentRequest(request: NextRequest): boolean {
+  if (request.method !== "GET" || request.nextUrl.pathname !== "/" || request.nextUrl.search) {
+    return false;
+  }
+
+  return ![
+    request.headers.get("rsc") === "1",
+    request.headers.has("next-router-state-tree"),
+    request.headers.get("next-router-prefetch") === "1",
+    request.headers.get("x-middleware-prefetch") === "1",
+    request.headers.get("purpose")?.toLowerCase() === "prefetch",
+  ].some(Boolean);
+}
+
 export async function proxy(request: NextRequest) {
-  const response = NextResponse.next({ request });
+  const { pathname } = request.nextUrl;
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(
+    PROVIDER_BOUNDARY_REQUEST_HEADER,
+    isColdLandingDocumentRequest(request)
+      ? LANDING_PROVIDER_BOUNDARY
+      : APPLICATION_PROVIDER_BOUNDARY,
+  );
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
 
   // ── Request ID correlation (#183) ─────────────────────────────────────────
   const requestId = request.headers.get("x-request-id") ?? crypto.randomUUID();
   response.headers.set("x-request-id", requestId);
 
-  const { pathname } = request.nextUrl;
   const routePolicy = getRoutePolicy(pathname);
 
   // ── API routes: rate limiting only (no auth enforcement) ──────────────────

@@ -112,6 +112,58 @@ describe("proxy", () => {
     });
   });
 
+  describe("provider boundary", () => {
+    it("stamps the lean boundary only on the exact landing request", async () => {
+      const landing = await proxy(createRequest("/"));
+      const contact = await proxy(createRequest("/contact"));
+
+      expect(
+        landing.headers.get("x-middleware-request-x-tryvit-provider-boundary"),
+      ).toBe("landing-lean");
+      expect(
+        contact.headers.get("x-middleware-request-x-tryvit-provider-boundary"),
+      ).toBe("application");
+    });
+
+    it("overwrites a forged provider-boundary request header", async () => {
+      const request = new NextRequest(new URL("/contact", "http://localhost:3000"), {
+        headers: { "x-tryvit-provider-boundary": "landing-lean" },
+      });
+
+      const response = await proxy(request);
+      expect(
+        response.headers.get("x-middleware-request-x-tryvit-provider-boundary"),
+      ).toBe("application");
+    });
+
+    it.each([
+      ["query", new NextRequest(new URL("/?source=client", "http://localhost:3000"))],
+      [
+        "RSC navigation",
+        new NextRequest(new URL("/", "http://localhost:3000"), {
+          headers: { rsc: "1", "next-router-state-tree": "[]" },
+        }),
+      ],
+      [
+        "router prefetch",
+        new NextRequest(new URL("/", "http://localhost:3000"), {
+          headers: { "next-router-prefetch": "1" },
+        }),
+      ],
+      [
+        "generic prefetch",
+        new NextRequest(new URL("/", "http://localhost:3000"), {
+          headers: { purpose: "prefetch" },
+        }),
+      ],
+    ])("keeps the application boundary for a %s request", async (_label, request) => {
+      const response = await proxy(request);
+      expect(
+        response.headers.get("x-middleware-request-x-tryvit-provider-boundary"),
+      ).toBe("application");
+    });
+  });
+
   describe("backend-independent policy routes", () => {
     const routes = [
       "/",

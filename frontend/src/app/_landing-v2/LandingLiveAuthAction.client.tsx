@@ -1,7 +1,6 @@
 "use client";
 
 import { useLivePublicAuth } from "@/components/layout/LivePublicAuthActions";
-import Link from "next/link";
 
 export function LandingLiveAuthAction({
   className,
@@ -17,8 +16,8 @@ export function LandingLiveAuthAction({
   const isAuthenticated = useLivePublicAuth();
 
   return (
-    <Link className={className} href={isAuthenticated ? "/app" : signedOutHref}>
+    <a className={className} href={isAuthenticated ? "/app" : signedOutHref}>
       {isAuthenticated ? dashboardLabel : signedOutLabel}
-    </Link>
+    </a>
   );
 }
