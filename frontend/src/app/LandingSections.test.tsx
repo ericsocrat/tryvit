@@ -38,15 +38,15 @@ describe("LandingSections", () => {
 
   it("retains meaningful package-to-label content before interaction", async () => {
     const user = userEvent.setup();
-    render(<LandingSections language="en" />);
-    const button = screen.getByRole("button", { name: "Unfold the evidence" });
-    expect(button).toHaveAttribute("aria-expanded", "false");
+    const { container } = render(<LandingSections language="en" />);
+    const disclosure = container.querySelector("details");
+    expect(disclosure).not.toHaveAttribute("open");
     expect(screen.getByText("Package source")).toBeInTheDocument();
     expect(screen.getAllByText("Decision and next action").length).toBeGreaterThanOrEqual(2);
 
-    await user.click(button);
-    expect(button).toHaveAttribute("aria-expanded", "true");
-    expect(button).toHaveTextContent("Fold back to source");
+    await user.click(screen.getByText("Unfold the evidence"));
+    expect(disclosure).toHaveAttribute("open");
+    expect(screen.getByText("Fold back to source")).toBeInTheDocument();
   });
 
   it("renders production-safe live actions", () => {

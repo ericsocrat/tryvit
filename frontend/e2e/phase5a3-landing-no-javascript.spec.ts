@@ -12,12 +12,25 @@ test("retains complete server-rendered meaning without JavaScript", async ({ pag
   expect(html).toContain("Method before mystique");
   expect(html).toContain("The website is available; live product data is paused");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-  await expect(page.locator("main button[aria-expanded]")).toBeDisabled();
+  const disclosure = page.locator('details[aria-label="Package source"]');
+  await expect(disclosure).not.toHaveAttribute("open", "");
+  const summary = disclosure.locator("summary");
+  await summary.click();
+  await expect(disclosure).toHaveAttribute("open", "");
+  await expect(disclosure.getByText("Decision and next action")).toBeVisible();
+  await summary.click();
+  await expect(disclosure).not.toHaveAttribute("open", "");
+  await page.evaluate(() => scrollTo(0, 0));
   await expect(page.getByRole("button", { name: "Theme", exact: true })).toBeDisabled();
   const footer = page.locator("footer");
   await expect(footer.locator('a[href="#service-status"]')).toHaveText("Demo mode");
   await expect(footer.locator('a[href="/auth/login"]')).toHaveCount(0);
-  await expect(page.getByText("Decision and next action").first()).toBeVisible();
+  await expect(
+    page.locator("#evidence").getByRole("heading", {
+      level: 3,
+      name: "Decision and next action",
+    }),
+  ).toBeVisible();
   if (dark) {
     await expect(page.locator('[data-landing-shell="folded-label-register"]')).toHaveCSS(
       "color-scheme",
