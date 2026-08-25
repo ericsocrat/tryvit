@@ -62,9 +62,13 @@ synthetic-example label and the package name. Correcting it would change product
 after the final allowed cohort, so it remains an explicit REVISE finding rather than
 being hidden or silently recaptured.
 
+Fresh final review also confirmed that query-bearing initial landing entries such as
+`/?utm_*` take the application-provider boundary. The lean Route-JS/runtime proof is
+therefore exact-queryless-`/` evidence, not coverage of routine tagged entry URLs.
+
 ## Open gates
 
-- strict mobile LCP/TBT and Linux 390 overlap;
+- strict mobile LCP/TBT, Linux 390 overlap, and query-bearing landing boundary;
 - `TRYVITE` EUTM `018026887` legal/identity decision;
 - qualified Polish and German review;
 - operational confirmation that deployment configuration/kill switch matches actual
@@ -87,3 +91,4 @@ being hidden or silently recaptured.
 - [Cross-browser](evidence/cross-browser.json)
 - [Route-JS](evidence/route-js/summary.json)
 - [Linux candidates](evidence/linux-candidate/summary.json)
+- [Final review synthesis](reviews/synthesis.md)

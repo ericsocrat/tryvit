@@ -10,7 +10,9 @@ findings. It remains unapprovable because:
    `2500 ms`;
 2. one mobile TBT sample is `262 ms`;
 3. the authoritative Linux 390 package specimen visibly overlaps its synthetic label
-   and package name.
+   and package name;
+4. common query-bearing landing entries take the application-provider path, so the
+   lean-runtime proof covers only exact queryless `/`.
 
 The bounded forensic review found no new performance cause not already rejected. Do
 not rerun the cohort unchanged or begin a third experiment.

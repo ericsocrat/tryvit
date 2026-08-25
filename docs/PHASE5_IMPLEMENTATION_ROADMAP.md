@@ -26,8 +26,10 @@ redesign may begin only after that gate receives Eric's explicit approval and a 
 route-family implementation authorization. Phase 5A.2 received approval and was merged
 as a non-production gate in PR `#1295`. Eric separately authorized the bounded landing
 draft in PR `#1301`; the base-owned landing-governance prerequisite landed in PR `#1302`,
-and one bounded correction cycle is complete with a `REVISE` disposition because the
-exact mobile LCP gate remains red. No other Phase 5A.3 route family is authorized. The former
+and the latest bounded revision cycle remains `REVISE`: the exact Linux mobile LCP/TBT
+gate is red and the authoritative 390 px candidate has a visible specimen-label
+collision; query-bearing landing entries also bypass the lean provider boundary. No
+other Phase 5A.3 route family is authorized. The former
 `codex/phase-5a-visitor-experience` branch predates the allergen preflight and must never
 be reused or merged into this program.
 
@@ -282,7 +284,11 @@ Deliver the approved public experience only after Phase 5A.2 passes and Eric sep
 authorizes each route-family implementation PR. The landing-only draft is authorized in
 PR `#1301`, remains unmerged, and now runs against the stable measurement and
 metadata-truth contracts established by merged prerequisite PR `#1302`. Its bounded
-revision packet remains `REVISE`; no later route family is authorized.
+Cycle 2 replacement is source-bound under
+`docs/phase5a3/landing-pr1/revision-cycle-2/` and remains `REVISE` because strict Linux
+mobile LCP/TBT and the 390 px specimen-label geometry fail; no later route family is
+authorized. Query-bearing initial landing entries also remain outside the proved lean
+runtime boundary.
 
 ### Scope
 

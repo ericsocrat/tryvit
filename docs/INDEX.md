@@ -243,6 +243,8 @@
 | [phase5a2/checkpoint-2/ERIC_APPROVAL.md](phase5a2/checkpoint-2/ERIC_APPROVAL.md)             | Eric's selected system, identity, evidence architecture, later typography direction and merge/certification record      | Phase 5A.2                                              | 2026-08-25   |
 | [phase5a3/landing-pr1/README.md](phase5a3/landing-pr1/README.md)                             | Draft production landing/public-shell packet index and historical/current evidence boundary                              | Phase 5A.3 PR 1                                         | 2026-08-25   |
 | [phase5a3/landing-pr1/revision-cycle-1/README.md](phase5a3/landing-pr1/revision-cycle-1/README.md) | Source-bound bounded-revision packet, complete journeys, performance trials, Linux candidates, and REVISE decision request | Phase 5A.3 PR 1 revision cycle 1                        | 2026-08-25   |
+| [phase5a3/landing-pr1/revision-cycle-2-candidate-1/README.md](phase5a3/landing-pr1/revision-cycle-2-candidate-1/README.md) | Immutable rejected first candidate, evidence, and review history for Cycle 2                                      | Phase 5A.3 PR 1 revision cycle 2 candidate 1            | 2026-08-25   |
+| [phase5a3/landing-pr1/revision-cycle-2/README.md](phase5a3/landing-pr1/revision-cycle-2/README.md) | Final source-bound Cycle 2 replacement, strict performance forensics, Linux candidates, and REVISE decision request | Phase 5A.3 PR 1 revision cycle 2 replacement            | 2026-08-25   |
 
 ## Process & Workflow
 

@@ -15,6 +15,10 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
+- Seal the Phase 5A.3 landing Revision Cycle 2 replacement and preserve its rejected
+  first candidate separately; retain exact Linux visual, social-preview, motion,
+  cross-browser, Route-JS, CI/security, and five-run Lighthouse evidence with a
+  truthful `REVISE` disposition for strict mobile performance and 390 px geometry.
 - Add the Phase 5A.3 PR 1 source-bound landing evidence packet, including complete
   light/dark, localization, reflow, no-JavaScript and motion media; retained Lighthouse
   samples; rejected font trials; public trademark-similarity screening; and the

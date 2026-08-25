@@ -9,27 +9,37 @@ later Phase 5 waves remain outside this authorization.
 
 ## Current replacement packet
 
-The bounded correction cycle is under [revision-cycle-1](revision-cycle-1/README.md).
-It binds production source `64f015ee8be3a929c2239b7aa94abcac7e36aaa1`, tree
-`4b3d17f8918392b7e375c6fbd1e2518a7ecdb66c`, over exact main `61c52e73`.
+The current bounded packet is [revision cycle 2](revision-cycle-2/README.md). It binds
+production source `6f675ffe8c4091ed98db2f53298fe4acc19f6895`, tree
+`e82f1ce3b0f9fdfd8d41f02b04fb8d25a5b81da6`, over exact main `61c52e73`, and was
+sealed independently at evidence commit `c07f9f10190bd4f8c1e3c6f6af00fe9460fbaa02`.
 
-Completed corrections include the stable base merge, one skip-link contract,
-live-auth ownership, localized navigation/title semantics, lean cold-provider boundary,
-complete normal/reduced journeys, exact Route-JS comparison, and fresh deterministic
-Linux candidates.
+This replacement corrects readiness and privacy truth, EN/PL/DE metadata, linked
+social cards, manifest copy, mobile navigation and identity ownership, native
+disclosure semantics, critical text size, sticky-anchor offsets, cold-landing runtime
+errors, first-fold geometry, and the Firefox/WebKit no-JavaScript/reduced-motion matrix.
 
-The current disposition remains **REVISE** because the final mobile LCP median is
-`2410.05 ms` against `2400 ms`, with two valid samples above `2500 ms`. Legal identity,
-qualified PL/DE, and representative AT/device gates also remain unresolved. The
-immutable landing baseline is intentionally unchanged.
+The disposition remains **REVISE**. The authoritative five-run Linux mobile cohort has
+an LCP median of `2630.71 ms`; every sample exceeds `2500 ms`, and one TBT sample is
+`262 ms`. The authoritative Linux 390 still also shows a visible collision between the
+synthetic-example label and package name. Query-bearing landing entries also take the
+application-provider path, so lean-runtime evidence covers exact queryless `/`. Legal
+identity, qualified PL/DE, deployment readiness, branded Safari, representative
+AT/device, and separately authorized baseline gates remain open. The immutable landing
+baseline is unchanged.
 
-## Historical packet
+## Historical packets
 
-The original `1f7ad2c0` packet remains in the existing top-level evidence and review
-paths. Its media, measurements, findings, and scores are historical and were not
-rewritten as if they reviewed the replacement source.
+The rejected first Cycle 2 candidate is retained intact under
+[revision-cycle-2-candidate-1](revision-cycle-2-candidate-1/README.md), including its
+measurements and reviews. Cycle 1 and the original top-level packet also remain
+immutable; their media, measurements, findings, and scores are historical rather than
+current authority.
 
-- [Historical evidence contract](EVIDENCE_CONTRACT.md)
-- [Historical validation](VALIDATION_AND_IMPACT.md)
-- [Historical final synthesis](reviews/final/synthesis.md)
-- [Current decision request](revision-cycle-1/DECISION_REQUEST.md)
+- [Current evidence contract](revision-cycle-2/EVIDENCE_CONTRACT.md)
+- [Current validation](revision-cycle-2/VALIDATION_AND_IMPACT.md)
+- [Current decision request](revision-cycle-2/DECISION_REQUEST.md)
+- [Current final review synthesis](revision-cycle-2/reviews/synthesis.md)
+- [Cycle 1 packet](revision-cycle-1/README.md)
+- [Original historical evidence contract](EVIDENCE_CONTRACT.md)
+- [Original historical final synthesis](reviews/final/synthesis.md)
