@@ -6,7 +6,7 @@ export const landingSans = localFont({
     { path: "./fonts/manrope-semibold.woff2", weight: "600 800", style: "normal" },
   ],
   display: "swap",
-  preload: false,
+  preload: true,
   adjustFontFallback: false,
   fallback: ["Landing Manrope Fallback", "Arial", "sans-serif"],
   variable: "--font-landing-sans",
@@ -15,7 +15,7 @@ export const landingSans = localFont({
 export const landingSerif = localFont({
   src: [{ path: "./fonts/tryvit-assay-serif-regular.woff2", weight: "400", style: "normal" }],
   display: "swap",
-  preload: false,
+  preload: true,
   adjustFontFallback: false,
   fallback: ["Landing Serif Fallback", "Georgia", "serif"],
   variable: "--font-landing-serif",

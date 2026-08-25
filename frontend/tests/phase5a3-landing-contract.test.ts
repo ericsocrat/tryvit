@@ -36,10 +36,10 @@ describe("Phase 5A.3 landing production boundary", () => {
     expect(expected.slice(0, 3).reduce((total, [, bytes]) => total + bytes, 0)).toBe(75_004);
   });
 
-  it("keeps font loading route-local with no preload or package dependency", () => {
+  it("keeps font loading route-local with route-only preload and no package dependency", () => {
     const fontSource = readFileSync(join(LANDING_ROOT, "fonts.ts"), "utf8");
     const packageJson = readFileSync(join(ROOT, "package.json"), "utf8");
-    expect(fontSource.match(/preload:\s*false/gu)).toHaveLength(2);
+    expect(fontSource.match(/preload:\s*true/gu)).toHaveLength(2);
     expect(fontSource).toContain('variable: "--font-landing-sans"');
     expect(fontSource).toContain('variable: "--font-landing-serif"');
     expect(packageJson).not.toContain("@fontsource");
