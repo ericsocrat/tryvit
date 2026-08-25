@@ -1,7 +1,6 @@
 "use client";
 
 import { ButtonLink } from "@/components/common/Button";
-import { createClient } from "@/lib/supabase/client";
 import { ChevronRight } from "lucide-react";
 import { createContext, useContext, useEffect, useState } from "react";
 
@@ -13,29 +12,30 @@ export function LivePublicAuthProvider({ children }: { readonly children: React.
 
   useEffect(() => {
     let active = true;
+    let unsubscribe: (() => void) | undefined;
 
-    try {
-      const client = createClient();
-      void client.auth
-        .getUser()
-        .then(({ data }) => {
-          if (active) setIsAuthenticated(Boolean(data.user));
-        })
-        .catch(() => undefined);
+    void import("@/lib/supabase/client")
+      .then(({ createClient }) => {
+        if (!active) return;
+        const client = createClient();
+        void client.auth
+          .getUser()
+          .then(({ data }) => {
+            if (active) setIsAuthenticated(Boolean(data.user));
+          })
+          .catch(() => undefined);
 
-      const listener = client.auth.onAuthStateChange?.((_event, session) => {
-        if (active) setIsAuthenticated(Boolean(session?.user));
-      });
+        const listener = client.auth.onAuthStateChange?.((_event, session) => {
+          if (active) setIsAuthenticated(Boolean(session?.user));
+        });
+        unsubscribe = () => listener?.data.subscription.unsubscribe();
+      })
+      .catch(() => undefined);
 
-      return () => {
-        active = false;
-        listener?.data.subscription.unsubscribe();
-      };
-    } catch {
-      return () => {
-        active = false;
-      };
-    }
+    return () => {
+      active = false;
+      unsubscribe?.();
+    };
   }, []);
 
   return (
