@@ -73,16 +73,20 @@ test.describe("Landing page responsive behavior", () => {
 });
 
 test.describe("Header responsive behavior", () => {
-  test("header renders and has appropriate height on mobile", async ({ page }) => {
+  test("two-level landing header stays compact and complete on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
     const header = page.locator("header").first();
     await expect(header).toBeVisible();
     const box = await header.boundingBox();
     expect(box).not.toBeNull();
-    // Header should be reasonably sized (not collapsed)
-    expect(box!.height).toBeGreaterThanOrEqual(40);
-    expect(box!.height).toBeLessThanOrEqual(80);
+    expect(box!.height).toBeGreaterThanOrEqual(88);
+    expect(box!.height).toBeLessThanOrEqual(120);
+
+    const navigation = page.getByRole("navigation", { name: "Primary navigation" });
+    for (const name of ["Evidence", "Method", "Trust", "Contact"]) {
+      await expect(navigation.getByRole("link", { name, exact: true })).toBeVisible();
+    }
   });
 });
 
