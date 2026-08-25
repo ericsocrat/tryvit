@@ -32,17 +32,19 @@ RUM. Browser automation does not substitute for those checks.
 
 ## Transfer and performance
 
-The final system-font candidate has median cold transfer 300,006 bytes mobile and
-300,004 bytes desktop. Median resource transfer is approximately 198.4 KB script,
-36.0 KB stylesheet, 0 font, 1.9 KB shared/global image, and 46.7 KB document. The landing
-adds no raster hero media; hero-media transfer is 0 bytes.
+The corrected system-font candidate has median cold transfer 300,089 bytes mobile and
+300,063 bytes desktop. Median resource transfer is approximately 198.5 KB script,
+36.0 KB stylesheet, 0 font, 1.9 KB shared/global image, 46.7 KB document, 5.9 KB fetch,
+and 1.9 KB manifest. The `Other` class is 9.2 KB. Per-type values are medians computed
+independently, so their sum need not equal the median of per-run totals. The landing adds
+no raster hero media; hero-media transfer is 0 bytes.
 
 Five-run Lighthouse medians:
 
 | Profile | Performance | LCP | TBT | CLS | TTFB | Transfer | Result |
 |---|---:|---:|---:|---:|---:|---:|---|
-| Mobile | 0.97 | 2557.1 ms | 59 ms | 0.00002 | 13.6 ms | 300,006 B | **BLOCK: LCP +57.1 ms** |
-| Desktop | 1.00 | 635.2 ms | 0 ms | 0 | 13.0 ms | 300,004 B | PASS |
+| Mobile | 0.97 | 2558.5 ms | 65 ms | 0.00002 | 15.5 ms | 300,089 B | **BLOCK: LCP +58.5 ms** |
+| Desktop | 1.00 | 640.9 ms | 0 ms | 0 | 14.4 ms | 300,063 B | PASS |
 
 All samples and ranges are in `evidence/performance.json`. Motion observation records
 zero CLS and no long tasks. A Chrome DevTools trace was unavailable because no supported
@@ -66,7 +68,7 @@ Passing local checks retained during implementation:
 
 ## Blocking and external items
 
-1. Mobile LCP misses the blocking target by 57.1 ms.
+1. Mobile LCP misses the blocking target by 58.5 ms.
 2. The trusted route-JS base harness cannot identify the redesigned landing because it
    hard-codes the retired H1. PR run `32803213246` therefore failed before producing a
    comparison. The PR deliberately did not change the base-owned judge.

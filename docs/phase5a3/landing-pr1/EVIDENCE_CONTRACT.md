@@ -3,7 +3,7 @@
 The media in this directory is review evidence, not an accepted production baseline.
 Every retained media file and the motion observation are hashed in
 `evidence/manifest.json` and bound to source commit
-`1e11c9f764b7095d134df9f0d16fa104b218df82`.
+`1f7ad2c0e52833f06a3d17e010ad653b366ee291`.
 
 ## Stills
 

@@ -8,12 +8,12 @@ product, or scanner routes. Global favicon, PWA icons, social-image routes, prov
 API behavior, database/RLS, Supabase migrations, hosted configuration, and cache policy
 remain unchanged.
 
-The production candidate is bound to implementation commit
-`1e11c9f764b7095d134df9f0d16fa104b218df82`, tree
-`100907edbb036541254c9793d2356f7f22f60f24`, on base
-`3f1c11f6d46fc1fd58a67c9c7be8296e8fdb345a`. Later commit `ce422e56` only
-regenerated the live route inventory, restored the immutable route-JS marker contract,
-and isolated Phase 5A.2 test parsing from the new Phase 5A.3 projects.
+The corrected production candidate and media are bound to implementation commit
+`1f7ad2c0e52833f06a3d17e010ad653b366ee291`, tree
+`c6b75ba217967b1dcdb6a4c0b09adbe07514765d`, on base
+`3f1c11f6d46fc1fd58a67c9c7be8296e8fdb345a`. Commit `ce422e56` only regenerated
+the live route inventory, restored the immutable route-JS marker contract, and isolated
+Phase 5A.2 test parsing from the new Phase 5A.3 projects.
 
 ## Candidate summary
 
@@ -33,7 +33,7 @@ and isolated Phase 5A.2 test parsing from the new Phase 5A.3 projects.
 ## Current decision
 
 The request is **REVISE**, not approve. The stable mobile Lighthouse median LCP is
-2557.1 ms, 57.1 ms above the 2500 ms blocking target. The immutable route-JS comparator
+2558.5 ms, 58.5 ms above the 2500 ms blocking target. The immutable route-JS comparator
 also cannot measure the redesigned landing because its base-owned identity assertion is
 hard-coded to the retired hero headline. Changing that trusted comparator inside this
 implementation PR would let the PR redefine its own judge, so it was not done.

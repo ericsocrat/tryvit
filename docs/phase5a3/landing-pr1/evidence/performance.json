@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a3-landing-pr1-lighthouse",
-  "sourceCommit": "3896979847b6f4e3009e4e40265601a91b411fe3",
-  "profileNote": "Five retained local guarded production-build runs per profile. The evidence harness changed after this SHA; production landing bytes did not.",
+  "sourceCommit": "1f7ad2c0e52833f06a3d17e010ad653b366ee291",
+  "profileNote": "Five retained local guarded production-build runs per profile on the corrected production candidate.",
   "targets": {
     "mobilePerformance": 0.9,
     "desktopPerformance": 0.95,
@@ -14,30 +14,30 @@
     "fontTransferBytes": 102400
   },
   "mobile": {
-    "performance": [0.97, 0.97, 0.97, 0.97, 0.97],
-    "lcpMilliseconds": [2560.1, 2557.2, 2557.0, 2557.1, 2556.1],
-    "tbtMilliseconds": [60, 58, 75, 59, 59],
+    "performance": [0.96, 0.97, 0.97, 0.97, 0.97],
+    "lcpMilliseconds": [2562.9, 2558.5, 2558.9, 2451.1, 2555.7],
+    "tbtMilliseconds": [78, 65, 68, 38, 62],
     "cls": [0.00002, 0, 0.00002, 0.00002, 0.00002],
-    "ttfbMilliseconds": [24.3, 14.4, 13.6, 12.1, 12.4],
-    "coldTransferBytes": [300003, 300022, 299999, 300006, 300042],
-    "median": { "performance": 0.97, "lcpMilliseconds": 2557.1, "tbtMilliseconds": 59, "cls": 0.00002, "ttfbMilliseconds": 13.6, "coldTransferBytes": 300006 },
-    "range": { "performance": [0.97, 0.97], "lcpMilliseconds": [2556.1, 2560.1], "tbtMilliseconds": [58, 75], "cls": [0, 0.00002], "ttfbMilliseconds": [12.1, 24.3], "coldTransferBytes": [299999, 300042] },
-    "disposition": "BLOCK: median LCP exceeds the 2500 ms target by 57.1 ms"
+    "ttfbMilliseconds": [22.1, 15.5, 15.5, 15.1, 12.8],
+    "coldTransferBytes": [300089, 300106, 300107, 298908, 298888],
+    "median": { "performance": 0.97, "lcpMilliseconds": 2558.5, "tbtMilliseconds": 65, "cls": 0.00002, "ttfbMilliseconds": 15.5, "coldTransferBytes": 300089 },
+    "range": { "performance": [0.96, 0.97], "lcpMilliseconds": [2451.1, 2562.9], "tbtMilliseconds": [38, 78], "cls": [0, 0.00002], "ttfbMilliseconds": [12.8, 22.1], "coldTransferBytes": [298888, 300107] },
+    "disposition": "BLOCK: median LCP exceeds the 2500 ms target by 58.5 ms"
   },
   "desktop": {
     "performance": [1, 1, 1, 1, 1],
-    "lcpMilliseconds": [639.7, 635.2, 633.8, 641.9, 635.2],
+    "lcpMilliseconds": [649.5, 639.3, 640.9, 637.2, 641.8],
     "tbtMilliseconds": [0, 0, 0, 0, 0],
     "cls": [0, 0, 0, 0, 0],
-    "ttfbMilliseconds": [19.7, 17.2, 13, 12.6, 11.4],
-    "coldTransferBytes": [299969, 300002, 300004, 300004, 300155],
-    "median": { "performance": 1, "lcpMilliseconds": 635.2, "tbtMilliseconds": 0, "cls": 0, "ttfbMilliseconds": 13, "coldTransferBytes": 300004 },
-    "range": { "performance": [1, 1], "lcpMilliseconds": [633.8, 641.9], "tbtMilliseconds": [0, 0], "cls": [0, 0], "ttfbMilliseconds": [11.4, 19.7], "coldTransferBytes": [299969, 300155] },
+    "ttfbMilliseconds": [20.9, 15.5, 14.4, 14.3, 13.4],
+    "coldTransferBytes": [300059, 300064, 300021, 300079, 300063],
+    "median": { "performance": 1, "lcpMilliseconds": 640.9, "tbtMilliseconds": 0, "cls": 0, "ttfbMilliseconds": 14.4, "coldTransferBytes": 300063 },
+    "range": { "performance": [1, 1], "lcpMilliseconds": [637.2, 649.5], "tbtMilliseconds": [0, 0], "cls": [0, 0], "ttfbMilliseconds": [13.4, 20.9], "coldTransferBytes": [300021, 300079] },
     "disposition": "PASS"
   },
   "medianTransferByResourceTypeBytes": {
-    "mobile": { "script": 198445, "stylesheet": 35965, "font": 0, "image": 1930, "document": 46658, "other": 9241 },
-    "desktop": { "script": 198443, "stylesheet": 35965, "font": 0, "image": 1930, "document": 46658, "other": 9241 }
+    "mobile": { "script": 198477, "stylesheet": 36003, "font": 0, "image": 1930, "document": 46652, "fetch": 5857, "manifest": 1911, "other": 9241 },
+    "desktop": { "script": 198475, "stylesheet": 36003, "font": 0, "image": 1930, "document": 46651, "fetch": 5850, "manifest": 1911, "other": 9241 }
   },
   "heroMediaBytes": 0,
   "motion": { "cls": 0, "longTasks": [], "animationAttributableLongTasks": [] },

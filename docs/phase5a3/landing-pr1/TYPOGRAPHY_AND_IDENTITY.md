@@ -12,7 +12,8 @@ Adoption nevertheless failed the production performance condition:
 - preload plus `font-display: swap`: five-run mobile median LCP 2561.1 ms, including
   retained 3450.4 and 3006.7 ms outliers;
 - `font-display: optional`: observed LCP 2556.4 ms;
-- system-font candidate: stable five-run median LCP 2557.1 ms.
+- corrected system-font candidate: five-run median LCP 2558.5 ms, including one retained
+  passing 2451.1 ms sample and four retained misses.
 
 Because every tested delivery strategy missed 2500 ms, all candidate WOFF2 files,
 route font declarations, and copied license files were removed from production. The
