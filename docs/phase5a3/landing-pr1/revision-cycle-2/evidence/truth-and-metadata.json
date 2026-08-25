@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-revision-cycle-2-truth-matrix",
+  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+  "states": [
+    {
+      "language": "en",
+      "mode": "live",
+      "title": "TryVit — Food intelligence you can inspect",
+      "description": "TryVit separates label facts from calculations, context, and decisions—so confidence and missing evidence stay visible.",
+      "openGraphTitle": "TryVit — Food intelligence you can inspect",
+      "openGraphDescription": "Food intelligence with the package facts, reasoning, confidence, and unknowns kept attached.",
+      "twitterTitle": "TryVit — Food intelligence you can inspect",
+      "twitterDescription": "Food intelligence with the package facts, reasoning, confidence, and unknowns kept attached.",
+      "locale": "en_US",
+      "webSiteDescription": "TryVit separates label facts from calculations, context, and decisions—so confidence and missing evidence stay visible.",
+      "privacyBody": "This page uses a synthetic example and checks only whether you already have a TryVit session so it can show the right account action. It does not start the camera or look up product data before you choose to continue.",
+      "accountBehavior": "minimal-existing-session-check",
+      "cameraInitialized": false,
+      "productLookupInitialized": false,
+      "syntheticExample": true,
+      "hostedProductFallback": false
+    },
+    {
+      "language": "en",
+      "mode": "demo",
+      "title": "TryVit — Food intelligence you can inspect",
+      "description": "TryVit separates label facts from calculations, context, and decisions. The method remains available while live product data is paused.",
+      "openGraphTitle": "TryVit — Food intelligence you can inspect",
+      "openGraphDescription": "TryVit’s evidence-first method remains available while live product data is paused; every example is synthetic.",
+      "twitterTitle": "TryVit — Food intelligence you can inspect",
+      "twitterDescription": "TryVit’s evidence-first method remains available while live product data is paused; every example is synthetic.",
+      "locale": "en_US",
+      "webSiteDescription": "TryVit separates label facts from calculations, context, and decisions. The method remains available while live product data is paused.",
+      "privacyBody": "This demonstration does not check for an account or session, start the camera, or look up product data. Every example is synthetic, and no hosted product service is used as a fallback.",
+      "accountBehavior": "no-account-or-session-check",
+      "cameraInitialized": false,
+      "productLookupInitialized": false,
+      "syntheticExample": true,
+      "hostedProductFallback": false
+    },
+    {
+      "language": "pl",
+      "mode": "live",
+      "title": "TryVit — dane o żywności, które można sprawdzić",
+      "description": "TryVit oddziela dane z etykiety od obliczeń, kontekstu i decyzji—wiarygodność i brakujące informacje pozostają widoczne.",
+      "openGraphTitle": "TryVit — dane o żywności, które można sprawdzić",
+      "openGraphDescription": "Dane o żywności z widocznym źródłem, tokiem rozumowania, wiarygodnością i brakami.",
+      "twitterTitle": "TryVit — dane o żywności, które można sprawdzić",
+      "twitterDescription": "Dane o żywności z widocznym źródłem, tokiem rozumowania, wiarygodnością i brakami.",
+      "locale": "pl_PL",
+      "webSiteDescription": "TryVit oddziela dane z etykiety od obliczeń, kontekstu i decyzji—wiarygodność i brakujące informacje pozostają widoczne.",
+      "privacyBody": "Ta strona korzysta z syntetycznego przykładu i sprawdza jedynie, czy masz już sesję TryVit, aby wyświetlić właściwe działanie dotyczące konta. Nie uruchamia aparatu ani wyszukiwania danych produktów, dopóki nie zdecydujesz się kontynuować.",
+      "accountBehavior": "minimal-existing-session-check",
+      "cameraInitialized": false,
+      "productLookupInitialized": false,
+      "syntheticExample": true,
+      "hostedProductFallback": false
+    },
+    {
+      "language": "pl",
+      "mode": "demo",
+      "title": "TryVit — dane o żywności, które można sprawdzić",
+      "description": "TryVit oddziela dane z etykiety od obliczeń, kontekstu i decyzji. Metoda pozostaje dostępna, gdy dane produktów na żywo są wstrzymane.",
+      "openGraphTitle": "TryVit — dane o żywności, które można sprawdzić",
+      "openGraphDescription": "Metoda TryVit oparta na danych i źródłach pozostaje dostępna, gdy dane produktów na żywo są wstrzymane; wszystkie przykłady są syntetyczne.",
+      "twitterTitle": "TryVit — dane o żywności, które można sprawdzić",
+      "twitterDescription": "Metoda TryVit oparta na danych i źródłach pozostaje dostępna, gdy dane produktów na żywo są wstrzymane; wszystkie przykłady są syntetyczne.",
+      "locale": "pl_PL",
+      "webSiteDescription": "TryVit oddziela dane z etykiety od obliczeń, kontekstu i decyzji. Metoda pozostaje dostępna, gdy dane produktów na żywo są wstrzymane.",
+      "privacyBody": "Ta wersja demonstracyjna nie sprawdza konta ani sesji, nie uruchamia aparatu i nie wyszukuje danych produktów. Wszystkie przykłady są syntetyczne; usługa z danymi produktów nie jest używana awaryjnie.",
+      "accountBehavior": "no-account-or-session-check",
+      "cameraInitialized": false,
+      "productLookupInitialized": false,
+      "syntheticExample": true,
+      "hostedProductFallback": false
+    },
+    {
+      "language": "de",
+      "mode": "live",
+      "title": "TryVit — nachprüfbare Lebensmittelinformation",
+      "description": "TryVit trennt Verpackungsangaben von Berechnungen, Kontext und Entscheidungen—Datenverlässlichkeit und fehlende Evidenz bleiben sichtbar.",
+      "openGraphTitle": "TryVit — nachprüfbare Lebensmittelinformation",
+      "openGraphDescription": "Lebensmittelinformation mit verbundener Quelle, Begründung, Datenverlässlichkeit und offenen Fragen.",
+      "twitterTitle": "TryVit — nachprüfbare Lebensmittelinformation",
+      "twitterDescription": "Lebensmittelinformation mit verbundener Quelle, Begründung, Datenverlässlichkeit und offenen Fragen.",
+      "locale": "de_DE",
+      "webSiteDescription": "TryVit trennt Verpackungsangaben von Berechnungen, Kontext und Entscheidungen—Datenverlässlichkeit und fehlende Evidenz bleiben sichtbar.",
+      "privacyBody": "Diese Seite verwendet ein synthetisches Beispiel und prüft nur, ob bereits eine TryVit-Sitzung besteht, damit sie die passende Kontoaktion anzeigen kann. Sie startet weder die Kamera noch eine Produktdatensuche, bevor Sie sich zum Fortfahren entscheiden.",
+      "accountBehavior": "minimal-existing-session-check",
+      "cameraInitialized": false,
+      "productLookupInitialized": false,
+      "syntheticExample": true,
+      "hostedProductFallback": false
+    },
+    {
+      "language": "de",
+      "mode": "demo",
+      "title": "TryVit — nachprüfbare Lebensmittelinformation",
+      "description": "TryVit trennt Verpackungsangaben von Berechnungen, Kontext und Entscheidungen. Die Methode bleibt verfügbar, während Live-Produktdaten pausiert sind.",
+      "openGraphTitle": "TryVit — nachprüfbare Lebensmittelinformation",
+      "openGraphDescription": "Die evidenzorientierte TryVit-Methode bleibt verfügbar, während Live-Produktdaten pausiert sind; alle Beispiele sind synthetisch.",
+      "twitterTitle": "TryVit — nachprüfbare Lebensmittelinformation",
+      "twitterDescription": "Die evidenzorientierte TryVit-Methode bleibt verfügbar, während Live-Produktdaten pausiert sind; alle Beispiele sind synthetisch.",
+      "locale": "de_DE",
+      "webSiteDescription": "TryVit trennt Verpackungsangaben von Berechnungen, Kontext und Entscheidungen. Die Methode bleibt verfügbar, während Live-Produktdaten pausiert sind.",
+      "privacyBody": "Diese Demoversion prüft weder Konto noch Sitzung, startet die Kamera nicht und sucht keine Produktdaten. Alle Beispiele sind synthetisch; ein gehosteter Produktdienst wird nicht als Ausweichlösung verwendet.",
+      "accountBehavior": "no-account-or-session-check",
+      "cameraInitialized": false,
+      "productLookupInitialized": false,
+      "syntheticExample": true,
+      "hostedProductFallback": false
+    }
+  ],
+  "claims": {
+    "duplicatedTryVitSuffix": false,
+    "unsupportedInstantClaim": false,
+    "unsupportedLiveSpeedClaim": false,
+    "unsupportedScienceDrivenClaim": false
+  },
+  "automatedCoverage": {
+    "unitMatrixCases": 6,
+    "renderedDemoLocales": [
+      "en",
+      "pl",
+      "de"
+    ],
+    "liveSourceAndComponentCases": [
+      "en",
+      "pl",
+      "de"
+    ]
+  },
+  "humanLanguageReview": {
+    "pl": "pending-qualified-review",
+    "de": "pending-qualified-review"
+  },
+  "passed": true
+}

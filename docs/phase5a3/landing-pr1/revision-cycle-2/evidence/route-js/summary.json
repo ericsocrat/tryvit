@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-revision-cycle-2-route-js",
+  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+  "productionSourceTree": "251c6622f14ebfbf170882d33dafe326509da2a8",
+  "baseCommit": "61c52e73eed0393e24b0597d63c47cb7b5cdbe7e",
+  "workflow": {
+    "runId": 32874788727,
+    "artifactId": 9573818282,
+    "artifactName": "route-js-phase5a0d-evidence",
+    "archiveDigest": "sha256:2d89dc5f4e44ff70abd65db371650defb60c19b174430691d99ec01ebb9ee1b4",
+    "archiveBytes": 10965
+  },
+  "harnessSource": "pr-base",
+  "regressionEnforced": true,
+  "landing": {
+    "base": {
+      "gzipBytes": 250043,
+      "sharedGzipBytes": 248797,
+      "routeOwnedGzipBytes": 1246,
+      "encodedTransferBytes": 250564
+    },
+    "head": {
+      "gzipBytes": 182291,
+      "sharedGzipBytes": 179063,
+      "routeOwnedGzipBytes": 3228,
+      "encodedTransferBytes": 182634
+    },
+    "deltaGzipBytes": -67752,
+    "deltaPercent": -27.1,
+    "targetGzipBytes": 184320,
+    "targetMet": true
+  },
+  "regressionPolicy": {
+    "absoluteBytes": 10240,
+    "relativePercent": 5,
+    "operator": "or"
+  },
+  "passed": true
+}

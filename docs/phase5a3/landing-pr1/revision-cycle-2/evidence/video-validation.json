@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-revision-cycle-2-video-validation",
+  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+  "verificationRuntime": {
+    "ffprobe": "9.0-full_build-www.gyan.dev",
+    "ffmpeg": "9.0-full_build-www.gyan.dev",
+    "blackDetection": "blackdetect=d=0.1:pix_th=0.02"
+  },
+  "videos": [
+    {
+      "path": "motion/landing--normal--390x844--en.webm",
+      "bytes": 387917,
+      "sha256": "4c6364760c8debade7a493e4b06cdbc50223cdfca52af2dc001f61426bfc20a8",
+      "codec": "vp8",
+      "encodedWidth": 368,
+      "encodedHeight": 800,
+      "framesPerSecond": 25,
+      "decodedFrames": 165,
+      "durationSeconds": 6.6,
+      "blackSegmentDetected": false,
+      "checkpointCount": 9,
+      "terminalCheckpointMs": 4665.7,
+      "terminalHoldMs": 1934.3,
+      "completeFooterVisible": true,
+      "terminalFocusVisible": true,
+      "truncated": false
+    },
+    {
+      "path": "motion/landing--reduced--390x844--en.webm",
+      "bytes": 245520,
+      "sha256": "5d881a735299442138215eeeb289acad9b201c58f8f218c5612d9b3a3dcc4763",
+      "codec": "vp8",
+      "encodedWidth": 368,
+      "encodedHeight": 800,
+      "framesPerSecond": 25,
+      "decodedFrames": 75,
+      "durationSeconds": 3,
+      "blackSegmentDetected": false,
+      "checkpointCount": 9,
+      "terminalCheckpointMs": 1914,
+      "terminalHoldMs": 1086,
+      "completeFooterVisible": true,
+      "terminalFocusVisible": true,
+      "truncated": false
+    }
+  ],
+  "journey": [
+    "first-viewport",
+    "dark-theme",
+    "package-expanded",
+    "evidence",
+    "method",
+    "trust",
+    "final-action",
+    "footer",
+    "terminal-focus"
+  ],
+  "motionAcceptance": {
+    "normalCls": 0,
+    "reducedCls": 0,
+    "normalMotionAttributableLongTasksOver50Ms": 0,
+    "reducedMotionAttributableLongTasksOver50Ms": 0,
+    "normalMotionAttributableLayoutShifts": 0,
+    "reducedMotionAttributableLayoutShifts": 0
+  },
+  "passed": true
+}
