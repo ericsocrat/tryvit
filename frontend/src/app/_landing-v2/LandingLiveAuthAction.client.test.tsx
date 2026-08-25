@@ -7,7 +7,7 @@ const { mockUseLivePublicAuth } = vi.hoisted(() => ({
   mockUseLivePublicAuth: vi.fn(),
 }));
 
-vi.mock("@/components/layout/LivePublicAuthState", () => ({
+vi.mock("@/components/layout/LivePublicAuthActions", () => ({
   useLivePublicAuth: mockUseLivePublicAuth,
 }));
 
