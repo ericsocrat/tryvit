@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-linux-candidate-summary",
+  "sourceCommit": "64f015ee8be3a929c2239b7aa94abcac7e36aaa1",
+  "sourceTree": "4b3d17f8918392b7e375c6fbd1e2518a7ecdb66c",
+  "workflowRunId": 32858309119,
+  "workflowUrl": "https://github.com/ericsocrat/tryvit/actions/runs/32858309119",
+  "candidateArtifact": {
+    "id": 9567416562,
+    "name": "phase5a0d-visual-baseline-candidates-64f015ee8be3a929c2239b7aa94abcac7e36aaa1",
+    "fullSevenImageArtifactRetained": true,
+    "manifestSha256": "5ac3b0c4c79ced7759db445ce28bea4e6fdb4237ce739f8a03d5fbf6f799ecd8"
+  },
+  "determinismArtifact": {
+    "id": 9567417080,
+    "name": "phase5a0d-visual-determinism-evidence-64f015ee8be3a929c2239b7aa94abcac7e36aaa1",
+    "byteIdentical": true,
+    "filesListSha256": "70eaf018fcaef30d84aecf16daa97607055472b2543088e418a077b452528a73",
+    "manifestSha256": "5ac3b0c4c79ced7759db445ce28bea4e6fdb4237ce739f8a03d5fbf6f799ecd8",
+    "provenanceSha256": "25138128b2d7d71a9c80a8cd8bb121b52e7d9282afdd98fe0f477c753dbd3ae1"
+  },
+  "landingCandidates": [
+    {
+      "file": "p5a0d-landing-1440x900-light-reduced.png",
+      "bytes": 107361,
+      "sha256": "c0e5eb44865c37eb003c0ae429c9bf151fafd887a569c9ba73888c8f0d1b3f4a"
+    },
+    {
+      "file": "p5a0d-landing-390x844-light-reduced.png",
+      "bytes": 58884,
+      "sha256": "4ce9d3e5fba0001979f0311538e916cdac2713f04795a81c4fa358cdf76bf910"
+    },
+    {
+      "file": "p5a0d-landing-768x1024-light-reduced.png",
+      "bytes": 98034,
+      "sha256": "203266e724853b24cccc4c1cece6a100524bfff30967a196a3dd21eb19407a29"
+    }
+  ],
+  "disposition": "candidate-only; immutable production baseline unchanged in PR #1301"
+}

@@ -25,9 +25,9 @@ non-production Experience Architecture and Golden Reference Gate. Production vis
 redesign may begin only after that gate receives Eric's explicit approval and a separate
 route-family implementation authorization. Phase 5A.2 received approval and was merged
 as a non-production gate in PR `#1295`. Eric separately authorized the bounded landing
-draft in PR `#1301`; its correction and measurement remain blocked until the base-owned
-landing-governance prerequisite in PR `#1302` lands. No other Phase 5A.3 route family is
-authorized. The former
+draft in PR `#1301`; the base-owned landing-governance prerequisite landed in PR `#1302`,
+and one bounded correction cycle is complete with a `REVISE` disposition because the
+exact mobile LCP gate remains red. No other Phase 5A.3 route family is authorized. The former
 `codex/phase-5a-visitor-experience` branch predates the allergen preflight and must never
 be reused or merged into this program.
 
@@ -280,8 +280,9 @@ gate.
 
 Deliver the approved public experience only after Phase 5A.2 passes and Eric separately
 authorizes each route-family implementation PR. The landing-only draft is authorized in
-PR `#1301`, remains unmerged, and must not continue until PR `#1302` establishes the
-base-owned stable measurement and metadata-truth contracts.
+PR `#1301`, remains unmerged, and now runs against the stable measurement and
+metadata-truth contracts established by merged prerequisite PR `#1302`. Its bounded
+revision packet remains `REVISE`; no later route family is authorized.
 
 ### Scope
 

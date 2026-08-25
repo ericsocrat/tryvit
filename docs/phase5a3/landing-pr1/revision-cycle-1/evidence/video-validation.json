@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-video-validation",
+  "sourceCommit": "64f015ee8be3a929c2239b7aa94abcac7e36aaa1",
+  "sourceTree": "4b3d17f8918392b7e375c6fbd1e2518a7ecdb66c",
+  "captureViewport": {
+    "width": 390,
+    "height": 844
+  },
+  "encodedContentArea": {
+    "width": 368,
+    "height": 800
+  },
+  "videos": [
+    {
+      "file": "landing--normal--390x844--en.webm",
+      "bytes": 334231,
+      "sha256": "392fc7fdb119e1d48b65d4867ce202f5cc8e7495bd87468bd94a221734109c29",
+      "format": "matroska,webm",
+      "durationSeconds": 6.16,
+      "codec": "vp8",
+      "width": 368,
+      "height": 800,
+      "frameRate": "25/1",
+      "decodedFrameCount": 154,
+      "completeDecodePassed": true,
+      "blackSegments": []
+    },
+    {
+      "file": "landing--reduced--390x844--en.webm",
+      "bytes": 186733,
+      "sha256": "1094abec4935a0e3843961b8c1af31f4478899d2800ebed72567b9dc4ea0a7b2",
+      "format": "matroska,webm",
+      "durationSeconds": 2.8,
+      "codec": "vp8",
+      "width": 368,
+      "height": 800,
+      "frameRate": "25/1",
+      "decodedFrameCount": 70,
+      "completeDecodePassed": true,
+      "blackSegments": []
+    }
+  ],
+  "review": {
+    "firstContentAppearsPromptly": true,
+    "blankInitialSegment": false,
+    "completeFooterShown": true,
+    "terminalFocusShown": true,
+    "truncatedEnding": false,
+    "timelineInspectedViaContactSheets": true
+  },
+  "decoder": "ffmpeg 9.0 full_build (Windows host)"
+}

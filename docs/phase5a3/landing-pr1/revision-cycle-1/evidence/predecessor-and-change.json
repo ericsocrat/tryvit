@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-predecessor-and-change-ledger",
+  "predecessor": {
+    "productionSourceCommit": "1f7ad2c0e52833f06a3d17e010ad653b366ee291",
+    "productionSourceTree": "c6b75ba217967b1dcdb6a4c0b09adbe07514765d",
+    "evidenceSealCommit": "f0674a59f4f0342c0d4f37e73c436ea8add526d5",
+    "evidenceSealTree": "78d03040e8b66c7089b0e7d625db098e2eb4848a",
+    "manifestSha256": "17b24873d98f14281f9ed325f86153a80588552f2014cb9d512a6679963f6725",
+    "performanceSha256": "eec1e90a3b292d42e99f3918ce06f42f4d7e05be9c4d43afa1c28b79fae1fcb1",
+    "runtimeSha256": "32470a68b657034d465745a0eec6a1a0eb152464225c86e9fc50522e96722294",
+    "linuxLedgerSha256": "3663631c5f5a114cecb24f4c336096062aae7e9cdb0ba072bd61c532e3bbf542",
+    "linuxRunId": 32823920912,
+    "linuxArtifactIds": [
+      9554388580,
+      9554388909
+    ]
+  },
+  "replacement": {
+    "sourceCommit": "64f015ee8be3a929c2239b7aa94abcac7e36aaa1",
+    "sourceTree": "4b3d17f8918392b7e375c6fbd1e2518a7ecdb66c",
+    "status": "revision-cycle-1",
+    "oldPacketPreserved": true,
+    "oldReviewsPreserved": true
+  },
+  "comparisons": [
+    {
+      "path": "stills/landing--1440x900--dark--de.png",
+      "predecessorBytes": 101210,
+      "predecessorSha256": "12127401a475f199f4c55a1e959b0617980785d239b023960fd2b55fa62cda06",
+      "replacementBytes": 118053,
+      "replacementSha256": "e16ce83ea8a861b556455236de517469c463cb96b09aaefbd3a6d8828258dbba",
+      "status": "changed"
+    },
+    {
+      "path": "stills/landing--1440x900--dark--en.png",
+      "predecessorBytes": 92350,
+      "predecessorSha256": "51dc71952123d186312657cb931ff8d67d41c008daabe7f86720ec036a166455",
+      "replacementBytes": 109765,
+      "replacementSha256": "54c02774b4132404f343887fcffb1324c32bf1362429786dfc15f6b38332d919",
+      "status": "changed"
+    },
+    {
+      "path": "stills/landing--1440x900--light--en.png",
+      "predecessorBytes": 92395,
+      "predecessorSha256": "de04324dd4ea7cf475954edd6ab7c70fcec1a105a389f401c8904981503bea32",
+      "replacementBytes": 110753,
+      "replacementSha256": "f34e5979f6bc4bfc90cf305c99fb4dbfefae656eeb462c30c492d221d2f4300e",
+      "status": "changed"
+    },
+    {
+      "path": "stills/landing--320x900--reflow--en.png",
+      "predecessorBytes": 40611,
+      "predecessorSha256": "1b200685c9491b4c7faf3a497cca72aacf38650c51cf954e08af0687d9558f8c",
+      "replacementBytes": 61322,
+      "replacementSha256": "ad4b68f4176d693e04025222b62b75f17d8d4940823b4e94200398d7b163071a",
+      "status": "changed"
+    },
+    {
+      "path": "stills/landing--390x844--dark--en.png",
+      "predecessorBytes": 41798,
+      "predecessorSha256": "4b1c77fab5bf00e20af0c3e1a2b9b31a8d7f1e8a338e33a99f5ce910c92a4198",
+      "replacementBytes": 64158,
+      "replacementSha256": "bcc67daff1af8676c0d75fc3f43bcee77e766d879f299db57b7018d31a596ba1",
+      "status": "changed"
+    },
+    {
+      "path": "stills/landing--390x844--forced-colors--en.png",
+      "predecessorBytes": 29749,
+      "predecessorSha256": "5a3e16d747ba6aa3d2d963a5cec3e85970f84d04478961726339741360a444d3",
+      "replacementBytes": 51091,
+      "replacementSha256": "635555b54fc12dfcde7254d78d207ecb46a1c25c0669f500eb9ab3cde68a8022",
+      "status": "changed"
+    },
+    {
+      "path": "stills/landing--390x844--light--en.png",
+      "predecessorBytes": 41784,
+      "predecessorSha256": "40905d8cfe31060b7b7ef0ac804b93884e182960cdcf5d313a2216ec8dc1f3eb",
+      "replacementBytes": 64352,
+      "replacementSha256": "10a46c4bb2213ac157ae92c31090a9e2fec6b2c83305afc99fcb776c40660e3f",
+      "status": "changed"
+    },
+    {
+      "path": "stills/landing--390x844--no-javascript--dark--en.png",
+      "predecessorBytes": 41398,
+      "predecessorSha256": "f11405c387d6ec8bfe31992927aeec13b7fb45659266690ba218ac2339a0fc79",
+      "replacementBytes": 64007,
+      "replacementSha256": "8cc4982dcbc8e7f33a36c8bed6d761c7747efe8c4477027f10d0d1459194fc85",
+      "status": "changed"
+    },
+    {
+      "path": "stills/landing--390x844--no-javascript--light--en.png",
+      "predecessorBytes": 41745,
+      "predecessorSha256": "f8d68988536d155a28b409f89299a4c39c8763f0d3c2a8f46fc31d572ba29b19",
+      "replacementBytes": 64319,
+      "replacementSha256": "c0cd22bfde3af120430caf6f230a4492561de982d335d4a2a3b96d14aeec2b9b",
+      "status": "changed"
+    },
+    {
+      "path": "stills/landing--390x844--text-spacing--pl.png",
+      "predecessorBytes": 43328,
+      "predecessorSha256": "ea56e0d752263cd5a7561c923717b38d98d72af1bd0f088f187ad5e9a146bb61",
+      "replacementBytes": 62026,
+      "replacementSha256": "aa16cd272ac31300a05b9d2d3bf5923bba0060c00953dca3e6434159ca6436ee",
+      "status": "changed"
+    },
+    {
+      "path": "stills/landing--640x900--200-percent-equivalent--en.png",
+      "predecessorBytes": 63074,
+      "predecessorSha256": "5c76bd33398c6b3a77e2efc0fece866987d433a27642ebc07fec409d16bb5b35",
+      "replacementBytes": 92709,
+      "replacementSha256": "482df4d5e74a1dfbbc998624c550c9544b6c06673766184d3909327487bd480f",
+      "status": "changed"
+    },
+    {
+      "path": "stills/landing--768x1024--dark--en.png",
+      "predecessorBytes": 62960,
+      "predecessorSha256": "367a31a1e60d7896dea10086aeb093d2c985830a9603626619422a6701a94dd4",
+      "replacementBytes": 95856,
+      "replacementSha256": "67233a4661b03ed2e631743c958692005a7294cec65c6f0cf8767a7dfd017f87",
+      "status": "changed"
+    },
+    {
+      "path": "stills/landing--768x1024--light--en.png",
+      "predecessorBytes": 63037,
+      "predecessorSha256": "d5b5dc1e86bc60e85de63582fddfa3ff1705f42aa89d7d7cb203b65b671acf2c",
+      "replacementBytes": 95870,
+      "replacementSha256": "c88c47cc06b4aaf382e93b920cb1de9125602ee7e00962bef0e252aedfae1451",
+      "status": "changed"
+    },
+    {
+      "path": "motion/landing--normal--390x844--en.webm",
+      "predecessorBytes": 298128,
+      "predecessorSha256": "0251c3f402466cb0d7ec3a88510bd44075f488ef3bf305dea7c804e86b9ba231",
+      "replacementBytes": 334231,
+      "replacementSha256": "392fc7fdb119e1d48b65d4867ce202f5cc8e7495bd87468bd94a221734109c29",
+      "status": "changed"
+    },
+    {
+      "path": "motion/landing--reduced--390x844--en.webm",
+      "predecessorBytes": 177900,
+      "predecessorSha256": "bbde80a7c6de4f828941b51d48d219e3544cacc6be132104b4351b536eb2ef09",
+      "replacementBytes": 186733,
+      "replacementSha256": "1094abec4935a0e3843961b8c1af31f4478899d2800ebed72567b9dc4ea0a7b2",
+      "status": "changed"
+    },
+    {
+      "path": "landing-motion-performance.json",
+      "predecessorBytes": 141,
+      "predecessorSha256": "e3fa4457e126a9898f85fffff82c97779c38dd424923243a8431be80785bf4ff",
+      "replacementBytes": 14239,
+      "replacementSha256": "8fe4bfbc1ca65a3e5d993666f2179b060118aa30cffd6e0879476b4662d58ce1",
+      "status": "changed"
+    },
+    {
+      "path": "performance.json",
+      "predecessorBytes": 3505,
+      "predecessorSha256": "eec1e90a3b292d42e99f3918ce06f42f4d7e05be9c4d43afa1c28b79fae1fcb1",
+      "replacementBytes": 28852,
+      "replacementSha256": "72939fcbbb479da0c5a3f08f8b27204f222fbb329de548817d712e9f2e43d31a",
+      "status": "changed"
+    },
+    {
+      "path": "runtime.json",
+      "predecessorBytes": 1092,
+      "predecessorSha256": "32470a68b657034d465745a0eec6a1a0eb152464225c86e9fc50522e96722294",
+      "replacementBytes": 2099,
+      "replacementSha256": "08a4e294978e90b152b5cc43876eb271be59b881d03b14fdcbb6c94edfa86648",
+      "status": "changed"
+    }
+  ]
+}

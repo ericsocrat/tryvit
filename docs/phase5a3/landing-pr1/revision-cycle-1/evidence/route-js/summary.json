@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-route-js-summary",
+  "provenance": {
+    "schemaVersion": 1,
+    "baseSha": "61c52e73eed0393e24b0597d63c47cb7b5cdbe7e",
+    "headSha": "64f015ee8be3a929c2239b7aa94abcac7e36aaa1",
+    "harnessSource": "pr-base",
+    "regressionEnforced": true
+  },
+  "threshold": {
+    "absoluteGrowthBytes": 10240,
+    "relativeGrowthPercent": 5,
+    "unchanged": true
+  },
+  "landing": {
+    "base": {
+      "totalGzipBytes": 250045,
+      "sharedGzipBytes": 248799,
+      "routeOwnedGzipBytes": 1246
+    },
+    "head": {
+      "totalGzipBytes": 182296,
+      "sharedGzipBytes": 179066,
+      "routeOwnedGzipBytes": 3230
+    },
+    "delta": {
+      "totalGzipBytes": -67749,
+      "sharedGzipBytes": -69733,
+      "routeOwnedGzipBytes": 1984,
+      "percent": -27.09472294986902
+    },
+    "targetGzipBytes": 184320,
+    "targetMet": true,
+    "regressionPassed": true
+  }
+}
