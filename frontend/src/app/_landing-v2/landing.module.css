@@ -89,21 +89,6 @@
   outline-offset: 3px;
 }
 
-.skipLink {
-  position: fixed;
-  z-index: 100;
-  inset: 0 auto auto 1rem;
-  padding: 0.75rem 1rem;
-  color: var(--landing-paper);
-  background: var(--landing-brand);
-  transform: translateY(-130%);
-  transition: transform 180ms cubic-bezier(0.32, 0.72, 0, 1);
-}
-
-.skipLink:focus {
-  transform: translateY(0);
-}
-
 .header {
   position: sticky;
   z-index: 40;

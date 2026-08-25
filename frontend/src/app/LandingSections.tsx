@@ -8,6 +8,7 @@ import {
   LandingMark,
   type LandingGlyphName,
 } from "./_landing-v2/LandingIdentity";
+import { LandingLiveAuthAction } from "./_landing-v2/LandingLiveAuthAction.client";
 import { PackageLabelNarrative } from "./_landing-v2/PackageLabelNarrative.client";
 import styles from "./_landing-v2/landing.module.css";
 
@@ -48,9 +49,18 @@ function Hero({ dataAvailable, copy }: Readonly<{ dataAvailable: boolean; copy: 
           <a className={styles.primaryAction} href="#evidence">
             {copy.primary}
           </a>
-          <Link className={styles.secondaryAction} href={dataAvailable ? "/auth/signup" : "/contact"}>
-            {dataAvailable ? copy.secondary : copy.navigation.contact}
-          </Link>
+          {dataAvailable ? (
+            <LandingLiveAuthAction
+              className={styles.secondaryAction}
+              dashboardLabel={copy.navigation.dashboard}
+              signedOutHref="/auth/signup"
+              signedOutLabel={copy.secondary}
+            />
+          ) : (
+            <Link className={styles.secondaryAction} href="/contact">
+              {copy.navigation.contact}
+            </Link>
+          )}
         </div>
       </div>
       <div aria-hidden="true" className={styles.heroWatermark}>
@@ -146,9 +156,18 @@ function FinalAction({ dataAvailable, copy }: Readonly<{ dataAvailable: boolean;
         <a className={styles.primaryAction} href="#method">
           {copy.finalPrimary}
         </a>
-        <Link className={styles.secondaryAction} href={dataAvailable ? "/auth/login" : "/contact"}>
-          {dataAvailable ? copy.finalSecondary : copy.navigation.contact}
-        </Link>
+        {dataAvailable ? (
+          <LandingLiveAuthAction
+            className={styles.secondaryAction}
+            dashboardLabel={copy.navigation.dashboard}
+            signedOutHref="/auth/login"
+            signedOutLabel={copy.finalSecondary}
+          />
+        ) : (
+          <Link className={styles.secondaryAction} href="/contact">
+            {copy.navigation.contact}
+          </Link>
+        )}
       </div>
     </section>
   );

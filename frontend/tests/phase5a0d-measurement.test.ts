@@ -59,8 +59,8 @@ const routeJsCliSource = readFileSync(
   path.resolve(process.cwd(), "tooling", "phase5a0d-route-js-cli.mts"),
   "utf8",
 );
-const homePageSource = readFileSync(
-  path.resolve(process.cwd(), "src", "app", "HomePageContent.tsx"),
+const landingShellSource = readFileSync(
+  path.resolve(process.cwd(), "src", "app", "_landing-v2", "LandingPublicShell.tsx"),
   "utf8",
 );
 
@@ -215,7 +215,7 @@ describe("Phase 5A.0d measurement contract", () => {
       markerValue: "public-landing",
       boundarySelector: "main#main-content",
     });
-    expect(homePageSource).toContain('data-route-id="public-landing"');
+    expect(landingShellSource).toContain('data-route-id="public-landing"');
   });
 
   it("requires a deterministic positive fixture product ID", () => {

@@ -8,7 +8,8 @@ export interface LandingCopy {
     readonly description: string;
     readonly socialDescription: string;
   };
-  readonly skip: string;
+  readonly primaryNavigationLabel: string;
+  readonly footerNavigationLabel: string;
   readonly navigation: {
     readonly evidence: string;
     readonly method: string;
@@ -18,6 +19,7 @@ export interface LandingCopy {
     readonly terms: string;
     readonly contact: string;
     readonly signIn: string;
+    readonly dashboard: string;
     readonly statusLink: string;
     readonly theme: string;
     readonly lightTheme: string;
@@ -80,7 +82,8 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
       socialDescription:
         "Food intelligence with the package facts, reasoning, confidence, and unknowns kept attached.",
     },
-    skip: "Skip to landing content",
+    primaryNavigationLabel: "Primary navigation",
+    footerNavigationLabel: "Footer navigation",
     navigation: {
       evidence: "Evidence",
       method: "Method",
@@ -90,6 +93,7 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
       terms: "Terms of Service",
       contact: "Contact",
       signIn: "Sign in",
+      dashboard: "Dashboard",
       statusLink: "Demo mode",
       theme: "Theme",
       lightTheme: "Use light theme",
@@ -158,7 +162,8 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
       socialDescription:
         "Dane o żywności z widocznym źródłem, tokiem rozumowania, wiarygodnością i brakami.",
     },
-    skip: "Przejdź do treści strony głównej",
+    primaryNavigationLabel: "Główna nawigacja",
+    footerNavigationLabel: "Nawigacja w stopce",
     navigation: {
       evidence: "Dane",
       method: "Metoda",
@@ -168,6 +173,7 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
       terms: "Warunki korzystania",
       contact: "Kontakt",
       signIn: "Zaloguj się",
+      dashboard: "Panel",
       statusLink: "Tryb demonstracyjny",
       theme: "Motyw",
       lightTheme: "Włącz jasny motyw",
@@ -236,7 +242,8 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
       socialDescription:
         "Lebensmittelinformation mit verbundener Quelle, Begründung, Datenverlässlichkeit und offenen Fragen.",
     },
-    skip: "Zum Inhalt der Startseite springen",
+    primaryNavigationLabel: "Hauptnavigation",
+    footerNavigationLabel: "Fußzeilennavigation",
     navigation: {
       evidence: "Evidenz",
       method: "Methode",
@@ -246,6 +253,7 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
       terms: "Nutzungsbedingungen",
       contact: "Kontakt",
       signIn: "Anmelden",
+      dashboard: "Dashboard",
       statusLink: "Demomodus",
       theme: "Darstellung",
       lightTheme: "Helles Design verwenden",
@@ -317,7 +325,7 @@ export function buildLandingMetadata(language: SupportedLanguage): Metadata {
   const copy = getLandingCopy(language);
 
   return {
-    title: copy.metadata.title,
+    title: { absolute: copy.metadata.title },
     description: copy.metadata.description,
     openGraph: {
       title: copy.metadata.title,

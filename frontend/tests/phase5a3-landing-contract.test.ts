@@ -54,13 +54,14 @@ describe("Phase 5A.3 landing production boundary", () => {
     expect(packageJson).not.toContain("@fontsource");
   });
 
-  it("admits exactly two explicit client islands", () => {
+  it("admits exactly three explicit route-local client islands", () => {
     const clientFiles = walk(LANDING_ROOT)
       .filter((path) => path.endsWith(".tsx"))
       .filter((path) => /^\s*["']use client["'];/mu.test(readFileSync(path, "utf8")))
       .map((path) => relative(LANDING_ROOT, path).replaceAll("\\", "/"))
       .sort();
     expect(clientFiles).toEqual([
+      "LandingLiveAuthAction.client.tsx",
       "LandingThemeToggle.client.tsx",
       "PackageLabelNarrative.client.tsx",
     ]);
@@ -87,6 +88,10 @@ describe("Phase 5A.3 landing production boundary", () => {
     const copy = readFileSync(join(LANDING_ROOT, "copy.ts"), "utf8");
     const css = readFileSync(join(LANDING_ROOT, "landing.module.css"), "utf8");
     const home = readFileSync(join(ROOT, "src", "app", "HomePageContent.tsx"), "utf8");
+    const globalProviders = readFileSync(
+      join(ROOT, "src", "components", "Providers.tsx"),
+      "utf8",
+    );
     expect(copy).toContain("Odczytaj opakowanie");
     expect(copy).toContain("Datenverlässlichkeit");
     expect(copy).toContain("Verarbeitung nicht bewertet");
@@ -94,7 +99,9 @@ describe("Phase 5A.3 landing production boundary", () => {
     expect(css).toContain("ui-sans-serif, system-ui");
     expect(css).toContain("ui-serif, Georgia");
     expect(home).not.toContain("@/lib/supabase");
-    expect(home).not.toContain("LivePublicAuth");
+    expect(home).toContain("LivePublicAuthProvider");
+    expect(home).toContain("dataAvailable ? <LivePublicAuthProvider>");
+    expect(globalProviders).not.toContain("LivePublicAuth");
   });
 
   it("records route-family authorization without implying blanket Phase 5A.3 authority", () => {

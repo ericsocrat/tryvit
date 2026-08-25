@@ -41,6 +41,7 @@ async function openLanding(page: Page, capture: CaptureCase): Promise<void> {
   expect(response?.status()).toBe(200);
   await page.evaluate(() => document.fonts.ready);
   await expect(page.locator("html")).toHaveAttribute("lang", capture.language);
+  await expect(page).toHaveTitle("TryVit — Food intelligence you can inspect");
   await expect(page.locator('[data-landing-shell="folded-label-register"]')).toBeVisible();
   if (capture.textSpacing) {
     await page.addStyleTag({
@@ -109,10 +110,14 @@ test("passes full-page Axe without exclusions or disabled rules", async ({ page 
 
 test("retains keyboard order and visible skip navigation", async ({ page }) => {
   await openLanding(page, CAPTURES[0]);
+  const skipLink = page.getByRole("link", { name: "Skip to content", exact: true });
+  await expect(skipLink).toHaveCount(1);
   await page.keyboard.press("Tab");
-  await expect(page.locator(":focus")).toHaveAttribute("href", "#main-content");
+  await expect(skipLink).toBeFocused();
+  await expect(skipLink).toHaveAttribute("href", "#main-content");
   await page.keyboard.press("Enter");
   await expect(page.locator("#main-content")).toBeFocused();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   await page.keyboard.press("Tab");
   await expect(page.locator(":focus")).toHaveAttribute("href", "#evidence");
 });

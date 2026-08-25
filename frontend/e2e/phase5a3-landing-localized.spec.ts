@@ -14,6 +14,27 @@ test("retains exact project-locale landing evidence", async ({ page }, testInfo)
   expect(response?.status()).toBe(200);
   await page.evaluate(() => document.fonts.ready);
   await expect(page.locator("html")).toHaveAttribute("lang", language);
+  await expect(
+    page.getByRole("link", {
+      name: polish ? "Przejdź do treści" : "Zum Inhalt springen",
+      exact: true,
+    }),
+  ).toHaveCount(1);
+  await expect(
+    page.getByRole("navigation", {
+      name: polish ? "Główna nawigacja" : "Hauptnavigation",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("navigation", {
+      name: polish ? "Nawigacja w stopce" : "Fußzeilennavigation",
+    }),
+  ).toBeVisible();
+  await expect(page).toHaveTitle(
+    polish
+      ? "TryVit — dane o żywności, które można sprawdzić"
+      : "TryVit — nachprüfbare Lebensmittelinformation",
+  );
 
   if (polish) {
     await expect(

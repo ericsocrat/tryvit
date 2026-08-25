@@ -16,9 +16,12 @@ export function LivePublicAuthProvider({ children }: { readonly children: React.
 
     try {
       const client = createClient();
-      void client.auth.getUser().then(({ data }) => {
-        if (active) setIsAuthenticated(Boolean(data.user));
-      });
+      void client.auth
+        .getUser()
+        .then(({ data }) => {
+          if (active) setIsAuthenticated(Boolean(data.user));
+        })
+        .catch(() => undefined);
 
       const listener = client.auth.onAuthStateChange?.((_event, session) => {
         if (active) setIsAuthenticated(Boolean(session?.user));
@@ -42,7 +45,7 @@ export function LivePublicAuthProvider({ children }: { readonly children: React.
   );
 }
 
-function useIsAuthenticated(): boolean {
+export function useLivePublicAuth(): boolean {
   return useContext(LivePublicAuthContext);
 }
 
@@ -53,7 +56,7 @@ export function LiveHeaderAuthAction({
   readonly signInLabel: string;
   readonly dashboardLabel: string;
 }) {
-  const isAuthenticated = useIsAuthenticated();
+  const isAuthenticated = useLivePublicAuth();
 
   return (
     <ButtonLink href={isAuthenticated ? "/app" : "/auth/login"}>
@@ -73,7 +76,7 @@ export function LiveLandingAuthActions({
   readonly signInLabel: string;
   readonly dashboardLabel: string;
 }) {
-  const isAuthenticated = useIsAuthenticated();
+  const isAuthenticated = useLivePublicAuth();
   const padding = placement === "hero" ? "px-8" : "px-10";
 
   if (isAuthenticated) {

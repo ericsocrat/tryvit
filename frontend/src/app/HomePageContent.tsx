@@ -1,3 +1,4 @@
+import { LivePublicAuthProvider } from "@/components/layout/LivePublicAuthActions";
 import { getDeploymentReadiness } from "@/lib/deployment-readiness";
 import { buildWebSiteStructuredData } from "@/lib/site-metadata";
 import type { SupportedLanguage } from "@/stores/language-store";
@@ -16,7 +17,7 @@ export function HomePageContent({ language }: Readonly<{ language: SupportedLang
     inLanguage: language,
   };
 
-  return (
+  const content = (
     <LandingPublicShell copy={copy} dataAvailable={dataAvailable}>
       <LandingSections dataAvailable={dataAvailable} language={language} />
       <script
@@ -25,4 +26,6 @@ export function HomePageContent({ language }: Readonly<{ language: SupportedLang
       />
     </LandingPublicShell>
   );
+
+  return dataAvailable ? <LivePublicAuthProvider>{content}</LivePublicAuthProvider> : content;
 }
