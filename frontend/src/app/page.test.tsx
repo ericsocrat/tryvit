@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { HomePageContent } from "./HomePageContent";
-import { metadata } from "./page";
+import { generateMetadata } from "./page";
 
 function HomePage() {
   return <HomePageContent language="en" />;
@@ -155,6 +155,7 @@ describe("HomePage — Hero section", () => {
       container.querySelector('script[type="application/ld+json"]')!.textContent!,
     );
     expect(structuredData.potentialAction).toBeUndefined();
+    expect(structuredData.description).toContain("live product data is unavailable");
   });
 });
 
@@ -289,6 +290,18 @@ describe("HomePage — Layout", () => {
     expect(screen.getByRole("main")).toBeInTheDocument();
   });
 
+  it.each(["live", "demo"] as const)(
+    "keeps one stable landing route marker in %s readiness",
+    (mode) => {
+      vi.stubEnv("TRYVIT_DATA_BACKEND_MODE", mode);
+      const { container } = render(<HomePage />);
+      const markers = container.querySelectorAll("[data-route-id]");
+      expect(markers).toHaveLength(1);
+      expect(markers[0]).toHaveAttribute("data-route-id", "public-landing");
+      expect(markers[0].matches("main#main-content")).toBe(true);
+    },
+  );
+
   it("renders accessible section headings", () => {
     render(<HomePage />);
     const h2s = screen.getAllByRole("heading", { level: 2 });
@@ -301,16 +314,20 @@ describe("HomePage — Layout", () => {
 
 describe("HomePage — SEO metadata", () => {
   it("exports page-level metadata with title", () => {
+    const metadata = generateMetadata();
     expect(metadata).toBeDefined();
-    expect(metadata.title).toBe("TryVit — Know What You Eat");
+    expect(metadata.title).toEqual({ absolute: "TryVit — Know What You Eat" });
   });
 
   it("exports metadata without an unverified live product-count claim", () => {
-    expect(metadata.description).toContain("service availability");
+    const metadata = generateMetadata();
+    expect(metadata.description).toContain("food-product tools");
     expect(metadata.description).not.toMatch(/2[,. ]400\+/);
+    expect(metadata.description).not.toMatch(/instantly|science-driven|health score/iu);
   });
 
   it("exports openGraph metadata with type website", () => {
+    const metadata = generateMetadata();
     const og = metadata.openGraph as Record<string, unknown>;
     expect(og).toBeDefined();
     expect(og.type).toBe("website");
@@ -318,9 +335,22 @@ describe("HomePage — SEO metadata", () => {
   });
 
   it("exports twitter card metadata", () => {
+    const metadata = generateMetadata();
     const tw = metadata.twitter as Record<string, unknown>;
     expect(tw).toBeDefined();
     expect(tw.card).toBe("summary_large_image");
+  });
+
+  it("uses paused descriptions consistently when the backend is unavailable", () => {
+    vi.stubEnv("TRYVIT_DATA_BACKEND_MODE", "demo");
+    const metadata = generateMetadata();
+    expect(metadata.description).toContain("Live data features are currently unavailable");
+    expect((metadata.openGraph as Record<string, unknown>).description).toBe(
+      metadata.description,
+    );
+    expect((metadata.twitter as Record<string, unknown>).description).toBe(
+      metadata.description,
+    );
   });
 });
 
@@ -334,6 +364,7 @@ describe("HomePage — JSON-LD", () => {
     const jsonLd = JSON.parse(script!.textContent!);
     expect(jsonLd["@type"]).toBe("WebSite");
     expect(jsonLd.name).toBe("TryVit");
+    expect(jsonLd["@id"]).toBe("https://tryvit.vercel.app/#website");
   });
 
   it("includes SearchAction in JSON-LD", () => {
