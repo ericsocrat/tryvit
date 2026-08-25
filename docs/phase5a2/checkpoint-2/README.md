@@ -1,6 +1,6 @@
 # Phase 5A.2 Checkpoint 2 — Golden Reference review handoff
 
-> **Status:** Current main integrated; Linux-renderer packet and independent recheck passed; exact-head Golden CI and Eric approval pending
+> **Status:** Approved by Eric; PR `#1295` squash-merged; Phase 5A.2 completed as a non-production gate
 > **Production migration:** Prohibited
 > **Capture source:** `303b7bc156490ddf207df668d2d70ea5e0661cd3`
 > **Capture tree:** `19140d9fecff098c9deccf851e1348aff8241e01`
@@ -19,6 +19,26 @@ The selected system is **Folded Label Register**: Source Fold owns the master id
 warm editorial expression, folded-package metaphor, vector imagery, and brand motion;
 Evidence Register owns decision-first product architecture, evidence ordering, compact
 density, confidence, missingness, comparison, and recovery.
+
+Eric's authoritative approval, merge lineage, selected later typography direction,
+retained production constraints, and unresolved review gates are recorded in
+[`ERIC_APPROVAL.md`](ERIC_APPROVAL.md).
+
+## Approval and merge lineage
+
+- Approved Golden Reference PR: `#1295`.
+- Approved source head: `1a60ba8fc0a1ddf55ff8137a893b32032958fe5e`.
+- Approved source tree: `f76dfd5436470ec5690abacc15272b35f22d1b8d`.
+- Squash merge: `fd75e5503ca4b3c996a704b41d8a2582905492c9`; its tree is
+  exactly the approved source tree.
+- Certified current main at closure entry: `1c5586bfca7598e14359b472658fe8451c0fa0e5`.
+  It is the direct child of the Golden squash and differs only by the three pinned
+  CodeQL Action updates merged in PR `#1299`.
+
+Checkpoint 2 approval selects Manrope with restrained Source Serif 4 as the preferred
+direction for later production typography work. Neither font was adopted by PR `#1295`;
+route-family licensing, provenance, transfer, fallback, CLS, and performance gates remain
+blocking.
 
 ## Guarded review routes
 
@@ -56,10 +76,10 @@ artifact material rather than committed binary files. The repository verifier ch
 every retained byte, hash, dimension, WebM container, path, provenance value, count,
 and the 15 MiB ceiling.
 
-## Review boundary
+## Completed review boundary
 
 The initial 91/89, corrected-packet 93/95, and initial integrated conditional/HOLD
-reviews remain historical. None approves this final packet. The initial integrated
+reviews remain historical and do not describe the final decision. The initial integrated
 review required localization, semantic dwell, evidence hierarchy, and identity
 containment corrections; those corrections and zero-scroll capture binding are now
 included in a new complete exact-source packet. The same three independent lanes
@@ -67,14 +87,18 @@ completed a bounded final recheck without seeing one another's result: PASS 94/1
 PASS 93.5/100, and non-taste PASS / PASS with no defect. Exact Linux CI then exposed
 fallback/canvas differences, so those scores are superseded for the renderer-corrected
 packet. A bounded recheck of the 18-file delta retained PASS 94/100, PASS 93.5/100,
-and non-taste PASS / PASS with no defect. The implementation agent does not qualify;
-exact-head Ubuntu certification and Eric's explicit approval remain required.
+and non-taste PASS / PASS with no defect. Exact-head Ubuntu certification passed, and
+Eric explicitly approved the final non-production gate before authorizing its normal
+squash merge.
 
 Native Polish/German review, trademark/legal clearance, real assistive-technology and
 device testing, branded Safari, real camera/password-manager behavior, and production
-performance remain unresolved. The system stack remains the rendered control. The
-75,004-byte Manrope plus renamed restrained-serif comparison is review-only and awaits
-an explicit later Eric choice; no font is adopted in production.
+performance remain unresolved. The conservative production constraint remains `/app`
+mobile `0.83` against target `0.85`, the retained `538 ms` TBT sample, and the retained
+landing `0.65` outlier. The system stack remains the rendered control. The 75,004-byte
+Manrope plus renamed restrained-serif comparison remains review-only; no font is adopted
+in production.
 
-Keep the PR draft and unmerged. Stop for Eric after independent review and no more than
-two bounded visual revision cycles.
+Phase 5A.2 is complete. Phase 5A.3 is the next planned route-family phase, but it requires
+separate authorization and has not begun. This approval does not authorize production
+migration, production identity/font adoption, release, or a performance-debt waiver.

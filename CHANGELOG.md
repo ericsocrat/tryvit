@@ -15,6 +15,11 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
+- Record Eric's approved Phase 5A.2 Checkpoint 2 decisions and PR `#1295` squash
+  lineage; mark Phase 5A.0–5A.2 complete as non-production gates; preserve the later
+  typography, production-performance, localization, legal, accessibility, device, and
+  scanner review boundaries; and identify Phase 5A.3 as next planned but separately
+  authorized.
 - Add the Phase 5A.2 Checkpoint 1 human-selection handoff, candidate and identity
   coverage ledger, blinded-review protocol, validation/performance limits,
   source/artifact inventory, originality/licensing boundary, two independent

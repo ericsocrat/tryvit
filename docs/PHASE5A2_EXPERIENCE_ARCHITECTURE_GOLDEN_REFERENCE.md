@@ -1,9 +1,9 @@
 # Phase 5A.2 — Experience Architecture and Golden Reference Gate
 
-> **Last updated:** 2026-08-17
-> **Status:** Checkpoint 1 conditional hybrid selected; Checkpoint 2 Golden References authorized but not started; production migration remains prohibited
+> **Last updated:** 2026-08-25
+> **Status:** Completed — Checkpoint 2 approved and merged as a non-production gate; production migration remains separately authorized
 > **Entry gate:** Phase 5A.1a and Phase 5A.1b are reviewed, merged, and green on authoritative `main`, followed by explicit authorization from Eric
-> **Exit gate:** Eric explicitly selects the art direction and identity and approves all six Golden References after independent review
+> **Exit gate:** Satisfied by Eric's approval and the normal squash merge of PR `#1295`
 
 ## Purpose and boundary
 
@@ -44,6 +44,24 @@ Phase 5A.2 uses two approval checkpoints without adding roadmap phases:
 Checkpoint 1 evidence is staged at
 [`phase5a2/checkpoint-1/`](phase5a2/checkpoint-1/README.md). Completing Checkpoint 1 does
 not satisfy this document's final exit gate and does not authorize production work.
+
+### Approved Checkpoint 2 decision
+
+Eric approved the six Golden References and selected **Folded Label Register** as the
+visual and interaction system. **Source Fold** owns the master identity and expressive
+language; **Evidence Register** owns the product/evidence information architecture.
+Manrope with restrained Source Serif 4 is the preferred direction for later production
+typography, but PR `#1295` did not adopt either font in production.
+
+The authoritative decision and merge/certification lineage are recorded in
+[`phase5a2/checkpoint-2/ERIC_APPROVAL.md`](phase5a2/checkpoint-2/ERIC_APPROVAL.md).
+Historical candidate language below remains the original governing brief, not an open
+art-direction decision.
+
+Phase 5A.2 is complete only as a non-production design and evidence gate. Production
+route migration, production identity/font adoption, release, and performance-debt waiver
+remain outside this approval. Phase 5A.3 is the next planned phase and requires separate
+implementation authorization.
 
 ## Product north star
 
@@ -287,7 +305,8 @@ layout shift, and no route-JS increase exceeding either 10 KiB gzip or 5%.
 
 ## Production-migration handoff and completion
 
-After approval, the production program generates a route × state × theme × viewport ×
+After separate production-migration authorization, the production program generates a
+route × state × theme × viewport ×
 motion × approval ledger from code and governing manifests wherever practical. Every
 active user-facing production route must be migrated to V2 and redesigned or explicitly
 removed from the product. “Intentionally retained” and “deferred” do not count as Phase
