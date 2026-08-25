@@ -18,6 +18,10 @@ import {
   loadSafetyContractFromEnvironment,
   validateInvocationProof,
 } from "./e2e/helpers/visual-safety";
+import {
+  DESKTOP_VIEWPORT,
+  PORTFOLIO_CAPTURE_TOGGLE,
+} from "./e2e/helpers/portfolio-media";
 
 const safetyContract = loadSafetyContractFromEnvironment(process.env);
 const LOCAL_AUTHENTICATED = safetyContract.mode === "local-authenticated";
@@ -76,6 +80,7 @@ const HAS_PHASE5A2_CROSS_BROWSER = enabled("PHASE5A2_CROSS_BROWSER");
 const HAS_PHASE5A2_DIRECTION_REVIEW = enabled("PHASE5A2_DIRECTION_REVIEW");
 const HAS_PHASE5A2_DIRECTION_BEHAVIOR = enabled("PHASE5A2_DIRECTION_BEHAVIOR");
 const HAS_PHASE5A2_GOLDEN = enabled("PHASE5A2_GOLDEN");
+const HAS_PORTFOLIO_MEDIA = enabled(PORTFOLIO_CAPTURE_TOGGLE);
 
 const proxyServer = process.env.VISUAL_SAFETY_PROXY
   ? canonicalizeLoopbackOrigin(process.env.VISUAL_SAFETY_PROXY).origin
@@ -270,6 +275,28 @@ const screenshotsProject = {
     bypassCSP: LOCAL_AUTHENTICATED,
     actionTimeout: 15_000,
     navigationTimeout: 20_000,
+  },
+};
+
+const portfolioMediaProject = {
+  name: "portfolio-media",
+  testMatch: /portfolio-media-capture\.spec\.ts/,
+  dependencies: ["functional-auth-setup"],
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    viewport: DESKTOP_VIEWPORT,
+    deviceScaleFactor: 1,
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    contextOptions: { reducedMotion: "reduce" as const },
+    storageState: authStatePath("functional-user.json"),
+    permissions: [] as string[],
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
   },
 };
 
@@ -657,6 +684,7 @@ const projects = [
       ]
     : []),
   ...(HAS_SCREENSHOTS ? [screenshotsProject] : []),
+  ...(HAS_PORTFOLIO_MEDIA && LOCAL_AUTHENTICATED ? [portfolioMediaProject] : []),
   ...(HAS_PR_SCREENSHOTS ? [prScreenshotsProject] : []),
 ];
 

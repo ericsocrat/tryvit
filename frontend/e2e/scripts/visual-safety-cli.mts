@@ -1392,6 +1392,9 @@ async function runPlaywright(
   if (normalized.projects.has("screenshots")) {
     sanitized.CAPTURE_SCREENSHOTS = "true";
   }
+  if (normalized.projects.has("portfolio-media")) {
+    sanitized.PORTFOLIO_MEDIA_CAPTURE = "true";
+  }
   if (normalized.projects.has("pr-screenshots")) {
     sanitized.PR_SCREENSHOTS = "true";
   }
