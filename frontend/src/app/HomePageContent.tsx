@@ -1,4 +1,4 @@
-import { LivePublicAuthProvider } from "@/components/layout/LivePublicAuthActions";
+import { LivePublicAuthProvider } from "@/components/layout/LivePublicAuthState";
 import { getDeploymentReadiness } from "@/lib/deployment-readiness";
 import { buildWebSiteStructuredData } from "@/lib/site-metadata";
 import type { SupportedLanguage } from "@/stores/language-store";

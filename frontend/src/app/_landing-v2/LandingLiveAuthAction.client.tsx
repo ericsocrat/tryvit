@@ -1,6 +1,6 @@
 "use client";
 
-import { useLivePublicAuth } from "@/components/layout/LivePublicAuthActions";
+import { useLivePublicAuth } from "@/components/layout/LivePublicAuthState";
 
 export function LandingLiveAuthAction({
   className,
