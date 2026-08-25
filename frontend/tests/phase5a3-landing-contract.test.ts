@@ -54,13 +54,16 @@ describe("Phase 5A.3 landing production boundary", () => {
     expect(packageJson).not.toContain("@fontsource");
   });
 
-  it("admits exactly one explicit route-local client island", () => {
+  it("admits exactly two explicit route-local client islands", () => {
     const clientFiles = walk(LANDING_ROOT)
       .filter((path) => path.endsWith(".tsx"))
       .filter((path) => /^\s*["']use client["'];/mu.test(readFileSync(path, "utf8")))
       .map((path) => relative(LANDING_ROOT, path).replaceAll("\\", "/"))
       .sort();
-    expect(clientFiles).toEqual(["LandingLiveAuthAction.client.tsx"]);
+    expect(clientFiles).toEqual([
+      "LandingLiveAuthAction.client.tsx",
+      "LandingThemeToggle.client.tsx",
+    ]);
   });
 
   it("keeps the landing module out of unrelated production routes", () => {
