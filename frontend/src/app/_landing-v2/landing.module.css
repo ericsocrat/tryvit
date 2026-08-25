@@ -794,6 +794,28 @@
 
   .statusBand {
     grid-template-columns: 1fr;
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 291px;
+  }
+
+  .editorialSection {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 1072px;
+  }
+
+  .principles {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 931px;
+  }
+
+  .finalAction {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 450px;
+  }
+
+  .footer {
+    content-visibility: auto;
+    contain-intrinsic-block-size: auto 284px;
   }
 
   .hero {
@@ -853,6 +875,22 @@
 
   .statusBand dl {
     grid-template-columns: 1fr;
+  }
+
+  .statusBand {
+    contain-intrinsic-block-size: auto 377px;
+  }
+
+  .editorialSection {
+    contain-intrinsic-block-size: auto 1163px;
+  }
+
+  .principles {
+    contain-intrinsic-block-size: auto 1056px;
+  }
+
+  .finalAction {
+    contain-intrinsic-block-size: auto 512px;
   }
 
   .statusBand dl > div + div {
