@@ -859,10 +859,6 @@
     display: none;
   }
 
-  .surfaceOwner {
-    display: none;
-  }
-
   .navigation {
     grid-column: 2;
     grid-row: 1;
@@ -928,6 +924,12 @@
 
   .footer nav {
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .header .lockupLink svg[role="img"] {
+    display: none;
   }
 }
 
