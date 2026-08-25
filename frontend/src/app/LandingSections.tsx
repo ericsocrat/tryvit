@@ -1,503 +1,172 @@
-// ─── Server-rendered landing page sections ──────────────────────────────────
+import Link from "next/link";
 
-import { ButtonLink } from "@/components/common/Button";
-import { Logo } from "@/components/common/Logo";
-import { LiveLandingAuthActions } from "@/components/layout/LivePublicAuthActions";
-import { translate } from "@/lib/i18n-core";
 import type { SupportedLanguage } from "@/stores/language-store";
+import { getLandingCopy, type LandingCopy } from "./_landing-v2/copy";
 import {
-  BarChart3,
-  Camera,
-  Database,
-  Layers,
-  Search,
-  Shield,
-  ShoppingBasket,
-  type LucideIcon,
-} from "lucide-react";
+  LandingGlyph,
+  LandingLockup,
+  LandingMark,
+  type LandingGlyphName,
+} from "./_landing-v2/LandingIdentity";
+import { PackageLabelNarrative } from "./_landing-v2/PackageLabelNarrative.client";
+import styles from "./_landing-v2/landing.module.css";
 
-function getTranslator(language: SupportedLanguage) {
-  return (key: string) => translate(language, key);
+function StatusBand({ copy }: Readonly<{ copy: LandingCopy }>) {
+  return (
+    <section aria-labelledby="service-status-heading" className={styles.statusBand} id="service-status">
+      <div>
+        <p className={styles.eyebrow}>{copy.statusEyebrow}</p>
+        <h2 id="service-status-heading">{copy.statusTitle}</h2>
+        <p>{copy.statusBody}</p>
+      </div>
+      <dl>
+        <div>
+          <dt>{copy.siteStatus}</dt>
+          <dd>{copy.siteAvailable}</dd>
+        </div>
+        <div>
+          <dt>{copy.dataStatus}</dt>
+          <dd>{copy.dataPaused}</dd>
+        </div>
+      </dl>
+    </section>
+  );
 }
 
-// ─── Hero ───────────────────────────────────────────────────────────────────
-
-function HeroSection({
-  dataAvailable,
-  language,
-}: {
-  dataAvailable: boolean;
-  language: SupportedLanguage;
-}) {
-  const t = getTranslator(language);
+function Hero({ dataAvailable, copy }: Readonly<{ dataAvailable: boolean; copy: LandingCopy }>) {
   return (
-    <section className="relative isolate overflow-hidden bg-linear-to-b from-brand/12 via-surface to-surface pb-16 pt-16 sm:pb-24 sm:pt-20">
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -left-20 top-6 h-56 w-56 rounded-full bg-brand/20 blur-3xl" />
-        <div className="absolute -right-16 top-10 h-64 w-64 rounded-full bg-brand/14 blur-3xl" />
-        <div className="absolute bottom-0 left-1/2 h-40 w-[80%] -translate-x-1/2 rounded-full bg-brand/10 blur-3xl" />
-        <div className="absolute inset-x-0 top-0 h-28 bg-linear-to-b from-surface/40 to-transparent" />
-      </div>
-
-      <div className="mx-auto max-w-5xl px-4">
-        <div className="rounded-3xl border border-strong/45 bg-surface/90 p-5 shadow-lg backdrop-blur sm:p-8 lg:p-10 dark:border-white/15 dark:bg-white/[0.03] dark:shadow-[0_14px_40px_rgba(0,0,0,0.35)]">
-          <div className="grid items-center gap-8 lg:grid-cols-[1.15fr,0.85fr] lg:gap-10">
-            <div>
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-strong/60 bg-surface-subtle px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-foreground-secondary">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-                {t("landing.productLabel")}
-              </div>
-
-              <div className="mb-5 flex items-center gap-4">
-                <Logo variant="icon" size={62} />
-                <div className="hidden sm:block">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-foreground-secondary">
-                    TryVit
-                  </p>
-                  <p className="text-sm text-foreground-secondary">
-                    {t("landing.productSubtitle")}
-                  </p>
-                </div>
-              </div>
-
-              <h1 className="mb-4 text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                {t("landing.tagline")}
-              </h1>
-              <p className="mb-8 max-w-2xl text-lg leading-relaxed text-foreground-secondary sm:text-xl">
-                {t(dataAvailable ? "landing.description" : "landing.demoDescription")}
-              </p>
-
-              <div className="flex flex-col gap-3 sm:flex-row">
-                {!dataAvailable ? (
-                  <>
-                    <ButtonLink href="#service-status" size="lg" className="w-full px-8 sm:w-auto">
-                      {t("landing.viewStatus")}
-                    </ButtonLink>
-                    <ButtonLink
-                      href="/contact"
-                      variant="secondary"
-                      size="lg"
-                      className="w-full px-8 sm:w-auto"
-                    >
-                      {t("layout.contact")}
-                    </ButtonLink>
-                  </>
-                ) : (
-                  <LiveLandingAuthActions
-                    placement="hero"
-                    getStartedLabel={t("landing.getStarted")}
-                    signInLabel={t("landing.signIn")}
-                    dashboardLabel={t("auth.dashboard")}
-                  />
-                )}
-              </div>
-            </div>
-
-            <aside className="rounded-2xl border border-strong/50 bg-surface-subtle/80 p-4 shadow-sm dark:border-white/12 dark:bg-white/[0.02]">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.1em] text-foreground-secondary">
-                {t("landing.modelSnapshot")}
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-strong/50 bg-surface px-3 py-3 text-center dark:border-white/12 dark:bg-white/[0.03]">
-                  <p className="text-2xl font-bold text-foreground">
-                    {t("landing.statProductsValue")}
-                  </p>
-                  <p className="text-xs text-foreground-secondary">
-                    {t("landing.snapshotProducts")}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-strong/50 bg-surface px-3 py-3 text-center dark:border-white/12 dark:bg-white/[0.03]">
-                  <p className="text-2xl font-bold text-foreground">9</p>
-                  <p className="text-xs text-foreground-secondary">
-                    {t("landing.snapshotFactors")}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-strong/50 bg-surface px-3 py-3 text-center dark:border-white/12 dark:bg-white/[0.03]">
-                  <p className="text-2xl font-bold text-foreground">2</p>
-                  <p className="text-xs text-foreground-secondary">
-                    {t("landing.snapshotCountries")}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-strong/50 bg-surface px-3 py-3 text-center dark:border-white/12 dark:bg-white/[0.03]">
-                  <p className="text-2xl font-bold text-foreground">A-E</p>
-                  <p className="text-xs text-foreground-secondary">
-                    {t("landing.snapshotNutriScore")}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-4 rounded-xl border border-brand/25 bg-brand/10 px-3 py-2 text-xs text-foreground-secondary">
-                {t("landing.snapshotDescription")}
-              </div>
-            </aside>
-          </div>
+    <section className={styles.hero} aria-labelledby="landing-title">
+      <div className={styles.heroCopy}>
+        <div className={styles.surfaceOwner}>
+          <LandingLockup />
+          <span>{copy.identityLabel}</span>
         </div>
+        <p className={styles.eyebrow}>{copy.eyebrow}</p>
+        <h1 id="landing-title">{copy.title}</h1>
+        <p className={styles.heroIntro}>{dataAvailable ? copy.liveIntro : copy.demoIntro}</p>
+        <div className={styles.heroActions}>
+          <a className={styles.primaryAction} href="#evidence">
+            {copy.primary}
+          </a>
+          <Link className={styles.secondaryAction} href={dataAvailable ? "/auth/signup" : "/contact"}>
+            {dataAvailable ? copy.secondary : copy.navigation.contact}
+          </Link>
+        </div>
+      </div>
+      <div aria-hidden="true" className={styles.heroWatermark}>
+        <LandingMark size={80} />
+      </div>
+      <PackageLabelNarrative
+        actionLabel={copy.decode}
+        contextualLabel={copy.contextual}
+        decisionLabel={copy.decision}
+        derivedLabel={copy.derived}
+        observedLabel={copy.observed}
+        packageLabel={copy.package}
+        packageName={copy.packageName}
+        resetLabel={copy.reset}
+        syntheticLabel={copy.synthetic}
+      />
+    </section>
+  );
+}
+
+interface EvidenceRowProps {
+  readonly kind: LandingGlyphName;
+  readonly label: string;
+  readonly title: string;
+  readonly detail: string;
+  readonly meta: string;
+}
+
+function EvidenceRow({ kind, label, title, detail, meta }: EvidenceRowProps) {
+  return (
+    <article className={styles.evidenceRow} data-evidence-kind={kind}>
+      <div className={styles.evidenceKind}>
+        <LandingGlyph name={kind} />
+        <span>{label}</span>
+      </div>
+      <div>
+        <h3>{title}</h3>
+        <p>{detail}</p>
+      </div>
+      <p className={styles.evidenceMeta}>{meta}</p>
+    </article>
+  );
+}
+
+function EvidenceSection({ copy }: Readonly<{ copy: LandingCopy }>) {
+  return (
+    <section aria-labelledby="evidence-title" className={styles.editorialSection} id="evidence">
+      <header className={styles.sectionHeading}>
+        <p className={styles.eyebrow}>01 · {copy.navigation.evidence}</p>
+        <h2 id="evidence-title">{copy.evidenceTitle}</h2>
+        <p className={styles.editorialLead}>{copy.evidenceIntro}</p>
+      </header>
+      <div className={styles.evidenceSpine}>
+        <EvidenceRow kind="observed" label={copy.observed} title={copy.observed} detail={copy.observedDetail} meta={copy.observedMeta} />
+        <EvidenceRow kind="derived" label={copy.derived} title={copy.derived} detail={copy.derivedDetail} meta={copy.derivedMeta} />
+        <EvidenceRow kind="context" label={copy.contextual} title={copy.contextual} detail={copy.contextDetail} meta={copy.contextMeta} />
+        <EvidenceRow kind="decision" label={copy.decision} title={copy.decision} detail={copy.decisionDetail} meta={copy.decisionMeta} />
       </div>
     </section>
   );
 }
 
-function ServiceStatusBanner({ language }: { language: SupportedLanguage }) {
-  const t = getTranslator(language);
-
-  return (
-    <section
-      id="service-status"
-      aria-labelledby="service-status-heading"
-      className="border-b border-warning/35 bg-warning/10"
-    >
-      <div className="mx-auto max-w-5xl px-4 py-5">
-        <div className="rounded-2xl border border-warning/45 bg-surface/95 p-5 shadow-sm">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.1em] text-warning-text">
-            {t("landing.demoMode")}
-          </p>
-          <h2 id="service-status-heading" className="text-lg font-bold text-foreground">
-            {t("landing.serviceStatusTitle")}
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-foreground-secondary">
-            {t("landing.serviceStatusDescription")}
-          </p>
-          <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-3">
-            <div className="rounded-xl bg-success/10 px-3 py-2">
-              <dt className="font-semibold text-foreground">{t("landing.applicationStatus")}</dt>
-              <dd className="text-foreground-secondary">{t("landing.available")}</dd>
-            </div>
-            <div className="rounded-xl bg-warning/10 px-3 py-2">
-              <dt className="font-semibold text-foreground">{t("landing.dataStatus")}</dt>
-              <dd className="text-foreground-secondary">{t("landing.paused")}</dd>
-            </div>
-            <div className="rounded-xl bg-surface-subtle px-3 py-2">
-              <dt className="font-semibold text-foreground">{t("landing.productReadiness")}</dt>
-              <dd className="text-foreground-secondary">{t("landing.demoOnly")}</dd>
-            </div>
-          </dl>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Features ───────────────────────────────────────────────────────────────
-
-function FeaturesSection({ language }: { language: SupportedLanguage }) {
-  const t = getTranslator(language);
-  const features: { icon: LucideIcon; title: string; desc: string }[] = [
-    { icon: Search, title: t("landing.featureSearch"), desc: t("landing.featureSearchDesc") },
-    { icon: Camera, title: t("landing.featureScan"), desc: t("landing.featureScanDesc") },
-    { icon: BarChart3, title: t("landing.featureCompare"), desc: t("landing.featureCompareDesc") },
+function Principles({ copy }: Readonly<{ copy: LandingCopy }>) {
+  const principles = [
+    { id: "method", number: "02", glyph: "derived" as const, title: copy.methodTitle, body: copy.methodBody },
+    { id: "labels", number: "03", glyph: "context" as const, title: copy.marketTitle, body: copy.marketBody },
+    { id: "trust", number: "04", glyph: "confidence" as const, title: copy.privacyTitle, body: copy.privacyBody },
   ];
+
   return (
-    <section
-      aria-labelledby="features-heading"
-      className="relative isolate overflow-hidden py-16 sm:py-20"
-    >
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-10 top-10 h-44 w-44 rounded-full bg-brand/12 blur-3xl" />
-        <div className="absolute bottom-8 right-10 h-40 w-40 rounded-full bg-brand/10 blur-3xl" />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-linear-to-t from-brand/5 to-transparent" />
-      </div>
-
-      <div className="mx-auto max-w-5xl px-4">
-        <h2
-          id="features-heading"
-          className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl"
-        >
-          {t("landing.featuresHeading")}
-        </h2>
-        <p className="mx-auto mb-8 max-w-2xl text-center text-sm text-foreground-secondary sm:text-base">
-          {t("landing.featuresDescription")}
-        </p>
-        <div className="mb-8 flex flex-wrap items-center justify-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-foreground-secondary">
-          <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">
-            {t("landing.searchFirst")}
-          </span>
-          <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">
-            {t("landing.scanFast")}
-          </span>
-          <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">
-            {t("landing.compareClearly")}
-          </span>
-        </div>
-        <div className="grid gap-6 sm:grid-cols-3">
-          {features.map((f, idx) => (
-            <article
-              key={f.title}
-              className="group relative overflow-hidden rounded-2xl border border-strong/50 bg-surface px-5 py-6 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand/40 hover:shadow-lg dark:border-white/15 dark:bg-white/[0.03] dark:hover:border-brand/55"
-            >
-              <div className="pointer-events-none absolute inset-x-5 top-0 h-px bg-linear-to-r from-transparent via-brand/35 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-              <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-brand/8 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
-
-              <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl border border-brand/30 bg-brand/12 transition-colors duration-300 group-hover:bg-brand/18">
-                <f.icon size={28} aria-hidden="true" className="text-brand" />
-              </div>
-
-              <div className="mb-3 flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-foreground-secondary">
-                  0{idx + 1}
-                </span>
-              </div>
-
-              <h3 className="mb-2 text-lg font-semibold text-foreground">{f.title}</h3>
-              <p className="text-sm leading-relaxed text-foreground-secondary">{f.desc}</p>
-
-              <div className="mt-4 h-1 w-16 rounded-full bg-brand/30 transition-all duration-300 group-hover:w-24 group-hover:bg-brand/55" />
-            </article>
-          ))}
-        </div>
-      </div>
+    <section aria-label={copy.navigation.method} className={styles.principles}>
+      {principles.map((principle) => (
+        <article id={principle.id} key={principle.number}>
+          <LandingGlyph name={principle.glyph} />
+          <p className={styles.eyebrow}>{principle.number}</p>
+          <h2>{principle.title}</h2>
+          <p>{principle.body}</p>
+        </article>
+      ))}
     </section>
   );
 }
 
-// ─── How It Works ───────────────────────────────────────────────────────────
-
-function HowItWorksSection({ language }: { language: SupportedLanguage }) {
-  const t = getTranslator(language);
-  const steps: { num: number; icon: LucideIcon; title: string; desc: string }[] = [
-    { num: 1, icon: Search, title: t("landing.step1Title"), desc: t("landing.step1Desc") },
-    { num: 2, icon: Shield, title: t("landing.step2Title"), desc: t("landing.step2Desc") },
-    { num: 3, icon: ShoppingBasket, title: t("landing.step3Title"), desc: t("landing.step3Desc") },
-  ];
+function FinalAction({ dataAvailable, copy }: Readonly<{ dataAvailable: boolean; copy: LandingCopy }>) {
   return (
-    <section
-      aria-labelledby="how-it-works-heading"
-      className="relative isolate overflow-hidden bg-surface-subtle py-16 sm:py-20"
-    >
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-0 top-12 h-40 w-40 rounded-full bg-brand/12 blur-3xl" />
-        <div className="absolute right-0 top-20 h-48 w-48 rounded-full bg-brand/10 blur-3xl" />
-        <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-brand/6 to-transparent" />
+    <section aria-labelledby="landing-final-title" className={styles.finalAction}>
+      <div>
+        <p className={styles.eyebrow}>05 · {copy.finalEyebrow}</p>
+        <h2 id="landing-final-title">{copy.finalTitle}</h2>
+        <p>{copy.finalBody}</p>
       </div>
-
-      <div className="mx-auto max-w-5xl px-4">
-        <h2
-          id="how-it-works-heading"
-          className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl"
-        >
-          {t("landing.howItWorksHeading")}
-        </h2>
-        <p className="mx-auto mb-10 max-w-2xl text-center text-sm text-foreground-secondary sm:text-base">
-          {t("landing.howItWorksDescription")}
-        </p>
-
-        <div className="mb-8 flex items-center justify-center gap-3 text-xs font-medium uppercase tracking-[0.08em] text-foreground-secondary">
-          <span>{t("landing.discover")}</span>
-          <span className="h-px w-8 bg-brand/45" />
-          <span>{t("landing.evaluate")}</span>
-          <span className="h-px w-8 bg-brand/45" />
-          <span>{t("landing.choose")}</span>
-        </div>
-
-        <div className="grid gap-6 sm:grid-cols-3">
-          {steps.map((s, idx) => (
-            <article
-              key={s.num}
-              className="group relative flex flex-col rounded-2xl border border-strong/50 bg-surface px-5 py-6 text-left shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand/45 hover:shadow-lg dark:border-white/15 dark:bg-white/[0.03] dark:hover:border-brand/55"
-            >
-              {idx < steps.length - 1 && (
-                <div className="pointer-events-none absolute -right-3 top-1/2 hidden h-px w-6 -translate-y-1/2 bg-brand/35 sm:block" />
-              )}
-
-              <div className="mb-4 flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-foreground-secondary">
-                  {t("landing.stepLabel")}
-                </span>
-                <span className="rounded-full border border-brand/30 bg-brand/10 px-2 py-0.5 text-xs font-bold text-brand">
-                  {s.num}
-                </span>
-              </div>
-
-              <div className="relative mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border border-brand/25 bg-brand/12 text-brand transition-colors duration-300 group-hover:bg-brand/20">
-                <s.icon size={28} aria-hidden="true" />
-              </div>
-
-              <h3 className="mb-2 text-lg font-semibold text-foreground">{s.title}</h3>
-              <p className="text-sm leading-relaxed text-foreground-secondary">{s.desc}</p>
-
-              <div className="mt-4 h-1 w-14 rounded-full bg-brand/30 transition-all duration-300 group-hover:w-24 group-hover:bg-brand/55" />
-            </article>
-          ))}
-        </div>
+      <div className={styles.finalActions}>
+        <a className={styles.primaryAction} href="#method">
+          {copy.finalPrimary}
+        </a>
+        <Link className={styles.secondaryAction} href={dataAvailable ? "/auth/login" : "/contact"}>
+          {dataAvailable ? copy.finalSecondary : copy.navigation.contact}
+        </Link>
       </div>
     </section>
   );
 }
-
-// ─── Data Stats ─────────────────────────────────────────────────────────────
-
-function DataStatsSection({
-  dataAvailable,
-  language,
-}: {
-  dataAvailable: boolean;
-  language: SupportedLanguage;
-}) {
-  const t = getTranslator(language);
-  const stats: { icon: LucideIcon; value: string; label: string }[] = [
-    {
-      icon: ShoppingBasket,
-      value: t("landing.statProductsValue"),
-      label: t("landing.statProducts"),
-    },
-    { icon: Layers, value: t("landing.statCategoriesValue"), label: t("landing.statCategories") },
-    { icon: Database, value: t("landing.statFactorsValue"), label: t("landing.statFactors") },
-    { icon: Shield, value: t("landing.statCountriesValue"), label: t("landing.statCountries") },
-  ];
-  return (
-    <section
-      aria-labelledby="stats-heading"
-      className="relative isolate overflow-hidden py-16 sm:py-20"
-    >
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -left-8 bottom-4 h-44 w-44 rounded-full bg-brand/12 blur-3xl" />
-        <div className="absolute -right-8 top-4 h-52 w-52 rounded-full bg-brand/10 blur-3xl" />
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-brand/6 to-transparent" />
-      </div>
-
-      <div className="mx-auto max-w-5xl px-4">
-        <h2
-          id="stats-heading"
-          className="mb-3 text-center text-2xl font-bold text-foreground sm:text-3xl"
-        >
-          {t("landing.statsHeading")}
-        </h2>
-        <p className="mx-auto mb-8 max-w-2xl text-center text-sm text-foreground-secondary sm:text-base">
-          {t("landing.statsDescription")}
-        </p>
-
-        <div className="mx-auto mb-8 max-w-3xl rounded-2xl border border-strong/60 bg-surface/90 px-4 py-3 text-center text-xs font-medium uppercase tracking-[0.08em] text-foreground-secondary shadow-sm dark:border-white/12 dark:bg-white/[0.03]">
-          {t(dataAvailable ? "landing.liveMetrics" : "landing.demoMetrics")}
-        </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-          {stats.map((s, idx) => (
-            <article
-              key={s.label}
-              className={`group relative overflow-hidden rounded-2xl border bg-surface px-4 py-5 text-center shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg sm:px-5 sm:py-6 dark:bg-white/[0.03] ${
-                idx === 0
-                  ? "border-brand/50 shadow-md hover:border-brand/65 dark:border-brand/45"
-                  : "border-strong/50 hover:border-brand/40 dark:border-white/15 dark:hover:border-brand/55"
-              }`}
-            >
-              <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-brand/8 blur-2xl" />
-
-              <div className="mx-auto mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-brand/25 bg-brand/12 text-brand transition-colors duration-300 group-hover:bg-brand/18">
-                <s.icon size={22} aria-hidden="true" />
-              </div>
-
-              <span className="block text-3xl font-extrabold leading-none text-foreground sm:text-4xl">
-                {s.value}
-              </span>
-              <span className="mt-2 block text-xs font-medium uppercase tracking-[0.06em] text-foreground-secondary sm:text-sm">
-                {s.label}
-              </span>
-
-              <div className="mt-4 h-1 w-16 rounded-full bg-brand/30 transition-all duration-300 group-hover:w-24 group-hover:bg-brand/55" />
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── CTA Repeat ─────────────────────────────────────────────────────────────
-
-function CtaRepeatSection({
-  dataAvailable,
-  language,
-}: {
-  dataAvailable: boolean;
-  language: SupportedLanguage;
-}) {
-  const t = getTranslator(language);
-  return (
-    <section className="relative isolate overflow-hidden bg-linear-to-b from-brand/10 via-surface to-surface py-16 sm:py-20">
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand/14 blur-3xl" />
-        <div className="absolute -left-10 bottom-8 h-40 w-40 rounded-full bg-brand/10 blur-3xl" />
-        <div className="absolute -right-10 top-8 h-40 w-40 rounded-full bg-brand/10 blur-3xl" />
-      </div>
-
-      <div className="mx-auto max-w-4xl px-4 text-center">
-        <div className="rounded-3xl border border-strong/55 bg-surface/90 px-6 py-10 shadow-lg backdrop-blur sm:px-10 sm:py-12 dark:border-white/15 dark:bg-white/[0.03] dark:shadow-[0_12px_36px_rgba(0,0,0,0.35)]">
-          <div className="mb-5 flex justify-center">
-            <Logo variant="lockup" size={28} />
-          </div>
-
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-strong/60 bg-surface-subtle px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-foreground-secondary">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-            {t(dataAvailable ? "landing.readyLabel" : "landing.demoMode")}
-          </div>
-
-          <h2 className="mb-4 text-2xl font-bold text-foreground sm:text-3xl">
-            {t(dataAvailable ? "landing.ctaHeading" : "landing.demoCtaHeading")}
-          </h2>
-          <p className="mx-auto mb-8 max-w-xl text-foreground-secondary">
-            {t(dataAvailable ? "landing.ctaDescription" : "landing.demoCtaDescription")}
-          </p>
-
-          {dataAvailable && (
-            <div className="mb-8 flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-foreground-secondary">
-              <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">
-                {t("landing.noCreditCard")}
-              </span>
-              <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">
-                {t("landing.fastOnboarding")}
-              </span>
-              <span className="rounded-full border border-strong/60 bg-surface-subtle px-3 py-1">
-                {t("landing.transparentScoring")}
-              </span>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-            {!dataAvailable ? (
-              <>
-                <ButtonLink href="#service-status" size="lg" className="w-full px-10 sm:w-auto">
-                  {t("landing.viewStatus")}
-                </ButtonLink>
-                <ButtonLink
-                  href="/contact"
-                  variant="secondary"
-                  size="lg"
-                  className="w-full px-10 sm:w-auto"
-                >
-                  {t("layout.contact")}
-                </ButtonLink>
-              </>
-            ) : (
-              <LiveLandingAuthActions
-                placement="closing"
-                getStartedLabel={t("landing.getStarted")}
-                signInLabel={t("landing.signIn")}
-                dashboardLabel={t("auth.dashboard")}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Combined export ────────────────────────────────────────────────────────
 
 export function LandingSections({
   dataAvailable = true,
   language,
-}: {
-  dataAvailable?: boolean;
-  language: SupportedLanguage;
-}) {
+}: Readonly<{ dataAvailable?: boolean; language: SupportedLanguage }>) {
+  const copy = getLandingCopy(language);
+
   return (
     <>
-      {!dataAvailable && <ServiceStatusBanner language={language} />}
-      <HeroSection dataAvailable={dataAvailable} language={language} />
-      <FeaturesSection language={language} />
-      <HowItWorksSection language={language} />
-      <DataStatsSection dataAvailable={dataAvailable} language={language} />
-      <CtaRepeatSection dataAvailable={dataAvailable} language={language} />
+      <Hero copy={copy} dataAvailable={dataAvailable} />
+      {!dataAvailable ? <StatusBand copy={copy} /> : null}
+      <EvidenceSection copy={copy} />
+      <Principles copy={copy} />
+      <FinalAction copy={copy} dataAvailable={dataAvailable} />
     </>
   );
 }

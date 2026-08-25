@@ -120,30 +120,30 @@ test.describe("Landing page features", () => {
   test("hero subtitle describes the paused demo truthfully", async ({ page }) => {
     await page.goto("/");
     await expect(
-      page.getByText("Live catalog, scanning, and account features are temporarily paused", {
+      page.getByText("The method remains available while live product data is paused", {
         exact: false,
       }),
     ).toBeVisible();
   });
 
-  test("renders Search feature card", async ({ page }) => {
+  test("renders the observed evidence layer", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("Find products by name, brand, or category")).toBeVisible();
+    await expect(page.getByText("Sugars 3.2 g and saturated fat 0.4 g per 100 ml")).toBeVisible();
   });
 
-  test("renders Scan feature card", async ({ page }) => {
+  test("renders the derived evidence layer", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("Scan barcodes for instant product info")).toBeVisible();
+    await expect(page.getByText("72 / 100 provisional method output")).toBeVisible();
   });
 
-  test("renders Compare feature card", async ({ page }) => {
+  test("renders explicit missingness", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("See health scores and find better alternatives")).toBeVisible();
+    await expect(page.getByText(/processing is not assessed/i)).toBeVisible();
   });
 
   test("demo CTA links to the service-status explanation", async ({ page }) => {
     await page.goto("/");
-    const cta = page.getByRole("link", { name: "View service status" }).first();
+    const cta = page.locator("header").getByRole("link", { name: "Demo mode" });
     await expect(cta).toBeVisible();
     await expect(cta).toHaveAttribute("href", "#service-status");
   });

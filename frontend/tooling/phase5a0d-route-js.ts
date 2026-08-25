@@ -605,7 +605,7 @@ async function assertMeasuredRouteIdentity(page: Page, route: MeasurementRoute):
     await assertExactVisibleText(
       page,
       "main#main-content h1",
-      "healthier choices, made simple",
+      "Read the package. See the reasoning. Make your own call.",
       route.id,
     );
   } else if (route.id === "login") {
