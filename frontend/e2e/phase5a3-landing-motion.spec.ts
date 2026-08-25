@@ -186,7 +186,9 @@ async function collectJourneyEvidence(page: Page) {
       animationAttributableLongTasks,
       terminalState: {
         theme: document.documentElement.dataset.theme,
-        narrativeExpanded: document.querySelector("main details")?.hasAttribute("open") ?? false,
+        narrativeExpanded: document
+          .querySelector('main button[aria-expanded]')
+          ?.getAttribute("aria-expanded"),
         focusedText: document.activeElement?.textContent?.trim() ?? "",
         focusedHref:
           document.activeElement instanceof HTMLAnchorElement
@@ -237,17 +239,16 @@ async function runJourney(page: Page, motion: MotionMode) {
   await recordCheckpoint(page, checkpoints, "dark-theme");
   await page.waitForTimeout(dwell);
 
-  const narrative = page.locator('details[aria-label="Package source"]');
-  const narrativeButton = narrative.locator("summary");
-  await expect(narrative).not.toHaveAttribute("open", "");
+  const narrative = page.getByRole("region", { name: "Unfold the evidence" });
+  const narrativeButton = narrative.getByRole("button");
+  await expect(narrativeButton).toHaveAttribute("aria-expanded", "false");
   await narrativeButton.scrollIntoViewIfNeeded();
   await expect(narrativeButton).toBeInViewport();
   const narrativeScroll = await page.evaluate(() => window.scrollY);
   await narrativeButton.click();
-  await expect(narrative).toHaveAttribute("open", "");
-  await expect(narrativeButton.getByText("Fold back to source")).toBeVisible();
-  await expect(narrative.locator("li")).toHaveCount(4);
-  await expect(narrative.getByText("Decision and next action")).toBeVisible();
+  await expect(narrativeButton).toHaveAttribute("aria-expanded", "true");
+  await expect(narrativeButton).toHaveText("Fold back to source");
+  await expect(narrative.locator('li[data-active="true"]')).toHaveCount(5);
   expect(Math.abs((await page.evaluate(() => window.scrollY)) - narrativeScroll)).toBeLessThanOrEqual(
     1,
   );
@@ -290,7 +291,7 @@ async function runJourney(page: Page, motion: MotionMode) {
   await expect(terminalLink).toHaveAttribute("href", "#service-status");
   expect(await terminalLink.evaluate((element) => element.matches(":focus-visible"))).toBe(true);
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
-  await expect(narrative).toHaveAttribute("open", "");
+  await expect(narrativeButton).toHaveAttribute("aria-expanded", "true");
   await recordCheckpoint(page, checkpoints, "terminal-focus");
   await page.waitForTimeout(dwell);
 

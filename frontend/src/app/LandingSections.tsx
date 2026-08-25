@@ -7,7 +7,7 @@ import {
   type LandingGlyphName,
 } from "./_landing-v2/LandingIdentity";
 import { LandingLiveAuthAction } from "./_landing-v2/LandingLiveAuthAction.client";
-import { PackageLabelNarrative } from "./_landing-v2/PackageLabelNarrative";
+import { PackageLabelNarrative } from "./_landing-v2/PackageLabelNarrative.client";
 import styles from "./_landing-v2/landing.module.css";
 
 function StatusBand({ copy }: Readonly<{ copy: LandingCopy }>) {
