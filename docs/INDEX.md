@@ -7,7 +7,7 @@
 > **Phase 5A.2 Checkpoint 2 approval recorded:** 2026-08-25
 > **Phase 5A.3 landing PR 1 draft evidence added:** 2026-08-25
 > **Status:** Active — update when adding, renaming, or archiving docs
-> **Tracked inventory:** 72 top-level Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 8 generated/supporting artifacts in `docs/phase5/`; 45 Checkpoint 1 files and 132 Checkpoint 2 files in `docs/phase5a2/`; 6 Phase 5A.3 landing packet documents in `docs/phase5a3/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
+> **Tracked inventory:** 72 top-level Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 8 generated/supporting artifacts in `docs/phase5/`; 45 Checkpoint 1 files and 132 Checkpoint 2 files in `docs/phase5a2/`; 14 Phase 5A.3 landing packet documents in `docs/phase5a3/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
 
 ---

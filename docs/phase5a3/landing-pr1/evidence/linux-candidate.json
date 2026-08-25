@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-linux-baseline-candidate",
+  "workflowRun": 32823920912,
+  "sourceCommit": "f0674a59f4f0342c0d4f37e73c436ea8add526d5",
+  "productionSourceCommit": "1f7ad2c0e52833f06a3d17e010ad653b366ee291",
+  "renderer": {
+    "imageOS": "ubuntu24",
+    "imageVersion": "20260816.277.1",
+    "arch": "x64",
+    "node": "v22.21.1",
+    "npm": "10.9.4",
+    "next": "16.2.12",
+    "playwright": "1.62.1",
+    "chromium": "151.0.7922.34"
+  },
+  "artifact": "phase5a0d-visual-baseline-candidates-f0674a59f4f0342c0d4f37e73c436ea8add526d5",
+  "artifactId": 9554388580,
+  "determinismArtifact": "phase5a0d-visual-determinism-evidence-f0674a59f4f0342c0d4f37e73c436ea8add526d5",
+  "determinismArtifactId": 9554388909,
+  "byteIdentical": true,
+  "manifestChecksum": "9dea98b90ce3fe6c9b2812375a747d412fd8c322309ff420e7e7ccef81752d78",
+  "candidateFiles": [
+    {
+      "viewport": "390x844",
+      "path": "evidence/linux-candidate/p5a0d-landing-390x844-light-reduced.png",
+      "bytes": 59026,
+      "sha256": "8c008f742b3e0c2bd0359411876a60a2641900067ea0e63097716905ced193b9",
+      "acceptedBaselineSha256": "e5704802156929b1ae99ed1ea8c9570091c9f3afe685ba1c5de544c20cd73c3e",
+      "rawChannelDeltaOverPoint2Ratio": 0.2357850285575404
+    },
+    {
+      "viewport": "768x1024",
+      "path": "evidence/linux-candidate/p5a0d-landing-768x1024-light-reduced.png",
+      "bytes": 95456,
+      "sha256": "9c33693d4a7036b34685dc59915badbd6886bc9558ab53e9ca28a1c3672b3b99",
+      "acceptedBaselineSha256": "abd72cef9693d7d87a44a64d7967b4c363739cef59a541c71f76828bbbfff790",
+      "rawChannelDeltaOverPoint2Ratio": 0.18062464396158853
+    },
+    {
+      "viewport": "1440x900",
+      "path": "evidence/linux-candidate/p5a0d-landing-1440x900-light-reduced.png",
+      "bytes": 118278,
+      "sha256": "23f2a40bf9fae2483b66f3826701d0ebebc5a321a7474ca2dae03271fb71482b",
+      "acceptedBaselineSha256": "0688d51c24ead7a8642569a68dd1d52189b8f460b7215ca340ed142224609efc",
+      "rawChannelDeltaOverPoint2Ratio": 0.13582716049382715
+    }
+  ],
+  "diagnosticNote": "Raw ratios count pixels with any RGB channel delta above 0.2 (51/255). They are a review diagnostic, not Playwright's perceptual comparator and not baseline acceptance."
+}

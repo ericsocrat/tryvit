@@ -24,7 +24,8 @@ remove `_landing-v2`. Evidence tests and live inventory can be reverted independ
 - Forced colors: dedicated capture retained.
 - No JavaScript: complete light/dark proposition, evidence, method, privacy, actions,
   navigation, and footer remain server rendered.
-- Reduced motion: complete equivalent recording retained.
+- Reduced motion: equivalent content-through-final-action recording retained; the footer
+  is not shown in the recordings.
 
 Not performed: qualified screen-reader/voice-control audit, physical keyboard and touch
 device matrix, real camera/scanner work (out of scope), native PL/DE review, or field
@@ -73,6 +74,6 @@ Passing local checks retained during implementation:
    hard-codes the retired H1. PR run `32803213246` therefore failed before producing a
    comparison. The PR deliberately did not change the base-owned judge.
 3. Immutable visual baseline verification fails by design until a separately authorized
-   baseline update is approved. Manual Linux candidate run `32803841385` additionally
-   failed its mandatory two-pass byte-identity check and withheld its artifact.
+   baseline update is approved. Corrected Linux run `32823920912` now supplies a
+   byte-identical candidate artifact, but it cannot accept or replace its own baseline.
 4. Formal trademark clearance and qualified native-language approval are absent.

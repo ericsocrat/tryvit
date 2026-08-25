@@ -38,12 +38,19 @@ also cannot measure the redesigned landing because its base-owned identity asser
 hard-coded to the retired hero headline. Changing that trusted comparator inside this
 implementation PR would let the PR redefine its own judge, so it was not done.
 
-The authoritative Linux candidate-baseline dispatch completed both guarded capture
-passes safely but failed their byte-identical comparison, so it withheld the candidate
-artifact. That determinism failure is retained rather than averaged away.
+The first Linux candidate-baseline attempt failed byte identity and withheld artifacts.
+The corrected exact-source rerun `32823920912` then passed both guarded capture passes
+byte-for-byte and produced source-bound candidate and determinism artifacts. Those
+artifacts are proposals only; the immutable baseline remains unchanged and unapproved.
 
 Formal trademark/legal clearance and qualified PL/DE language review are also absent.
 Eric's explicit identity-adoption risk decision remains mandatory.
+
+The inherited root WebApplication JSON-LD still advertises instant scanning and a
+science-driven health score while this route truthfully reports paused live data; a
+landing-only page cannot suppress that parent-layout script. Final review also found a
+redundant pair of inherited and route-local skip links. Both require revision rather
+than a post-evidence silent change.
 
 See:
 
@@ -52,5 +59,8 @@ See:
 - [Legal screening](LEGAL_SCREENING.md)
 - [Baseline strategy](BASELINE_STRATEGY.md)
 - [Validation and impact](VALIDATION_AND_IMPACT.md)
+- [Source and artifact inventory](SOURCE_AND_ARTIFACT_INVENTORY.md)
+- [Final review synthesis](reviews/final/synthesis.md)
 - [Media manifest](evidence/manifest.json)
 - [Performance samples](evidence/performance.json)
+- [Authoritative Linux candidates](evidence/linux-candidate.json)

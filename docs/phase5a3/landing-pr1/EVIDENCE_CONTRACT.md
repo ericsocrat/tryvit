@@ -1,7 +1,7 @@
 # Phase 5A.3 landing evidence contract
 
 The media in this directory is review evidence, not an accepted production baseline.
-Every retained media file and the motion observation are hashed in
+Every retained local-capture media file and the motion observation are hashed in
 `evidence/manifest.json` and bound to source commit
 `1f7ad2c0e52833f06a3d17e010ad653b366ee291`.
 
@@ -24,9 +24,10 @@ separate 320-pixel capture proves the stricter reflow case.
 
 ## Motion
 
-The normal and reduced-motion WebM recordings traverse the same complete landing
-journey. Reduced motion removes non-essential transition movement without removing
-meaning or interaction. `landing-motion-performance.json` records zero layout shift,
+The normal and reduced-motion WebM recordings traverse the same content journey through
+the final-action section; they do not show the footer. Reduced motion removes
+non-essential transition movement without removing meaning or interaction.
+`landing-motion-performance.json` records zero layout shift,
 zero long tasks, and zero animation-attributable tasks over 50 ms for the measured
 interaction window.
 
@@ -50,9 +51,15 @@ The automated Polish assertion proves horizontal containment. Original-resolutio
 review found no observed overlap, but the harness does not geometrically prove absence
 of every possible occlusion.
 
+The motion performance observation covers the measured narrative interaction window,
+not the complete recorded scroll/theme sequence.
+
 The recordings are initiated from a 390×844 page viewport; Playwright's encoded video
 content area is 368×800. The filenames retain the requested page viewport while the
 encoded dimensions are disclosed here.
 
 This is browser automation evidence, not assistive-technology, real-device, or native
 language approval.
+
+The separately generated authoritative Linux baseline candidates are hashed and bound
+in `evidence/linux-candidate.json`; they are not accepted production baselines.

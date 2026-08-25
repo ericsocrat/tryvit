@@ -39,6 +39,28 @@
     "mobile": { "script": 198477, "stylesheet": 36003, "font": 0, "image": 1930, "document": 46652, "fetch": 5857, "manifest": 1911, "other": 9241 },
     "desktop": { "script": 198475, "stylesheet": 36003, "font": 0, "image": 1930, "document": 46651, "fetch": 5850, "manifest": 1911, "other": 9241 }
   },
+  "transferByResourceTypeBytesSamples": {
+    "mobile": {
+      "script": [198477, 198477, 198477, 198477, 198477],
+      "stylesheet": [36003, 36003, 36003, 36003, 36003],
+      "font": [0, 0, 0, 0, 0],
+      "image": [1930, 1930, 1930, 1930, 1930],
+      "document": [46670, 46650, 46652, 46669, 46650],
+      "fetch": [5857, 5894, 5893, 4677, 4676],
+      "manifest": [1911, 1911, 1911, 1911, 1911],
+      "other": [9241, 9241, 9241, 9241, 9241]
+    },
+    "desktop": {
+      "script": [198475, 198475, 198475, 198475, 198475],
+      "stylesheet": [36003, 36003, 36003, 36003, 36003],
+      "font": [0, 0, 0, 0, 0],
+      "image": [1930, 1930, 1930, 1930, 1930],
+      "document": [46649, 46651, 46650, 46670, 46651],
+      "fetch": [5850, 5853, 5811, 5849, 5852],
+      "manifest": [1911, 1911, 1911, 1911, 1911],
+      "other": [9241, 9241, 9241, 9241, 9241]
+    }
+  },
   "heroMediaBytes": 0,
   "motion": { "cls": 0, "longTasks": [], "animationAttributableLongTasks": [] },
   "traceLane": "Unavailable: the Chrome DevTools performance tool required a stable-system Chrome executable that was not installed. Repository-pinned Playwright Chromium and guarded Lighthouse were used."
