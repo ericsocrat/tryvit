@@ -12,5 +12,6 @@
   "packageLockSha256": "efd2a6e4c7906f3d6362336d9a841141008752e11cd34e10e55b0a00d4e863c5",
   "playwrightConfigSha256": "a2fee35d4de77678142ad5e2d315eccf8a5bd2b42b9f228ed2604e4b3469b4bc",
   "environmentClass": "local guarded production build",
-  "authoritativeLinuxCandidateRun": 32803841385
+  "authoritativeLinuxCandidateRun": 32803841385,
+  "authoritativeLinuxCandidateDisposition": "FAILED: second seven-image set was not byte-identical; artifacts withheld"
 }

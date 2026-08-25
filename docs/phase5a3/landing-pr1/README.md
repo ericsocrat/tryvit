@@ -38,6 +38,10 @@ also cannot measure the redesigned landing because its base-owned identity asser
 hard-coded to the retired hero headline. Changing that trusted comparator inside this
 implementation PR would let the PR redefine its own judge, so it was not done.
 
+The authoritative Linux candidate-baseline dispatch completed both guarded capture
+passes safely but failed their byte-identical comparison, so it withheld the candidate
+artifact. That determinism failure is retained rather than averaged away.
+
 Formal trademark/legal clearance and qualified PL/DE language review are also absent.
 Eric's explicit identity-adoption risk decision remains mandatory.
 
@@ -50,4 +54,3 @@ See:
 - [Validation and impact](VALIDATION_AND_IMPACT.md)
 - [Media manifest](evidence/manifest.json)
 - [Performance samples](evidence/performance.json)
-

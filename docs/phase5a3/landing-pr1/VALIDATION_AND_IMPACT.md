@@ -58,10 +58,9 @@ Passing local checks retained during implementation:
 - targeted responsive guarded review (24 tests);
 - exact Polish text-spacing check;
 - route-JS public capture itself (three public routes) when run with the head harness;
-- regenerated live route inventory and four affected governance suites (79 tests).
-
-The full exact-head unit suite and final guarded smoke are rerun before handoff; their
-final results will be recorded in the PR description and reviewer synthesis.
+- regenerated live route inventory and four affected governance suites (79 tests);
+- full unit suite: 411 files passed, 1 skipped; 6,710 tests passed, 19 skipped;
+- final guarded public smoke: 154/154 passed.
 
 ## Blocking and external items
 
@@ -70,6 +69,6 @@ final results will be recorded in the PR description and reviewer synthesis.
    hard-codes the retired H1. PR run `32803213246` therefore failed before producing a
    comparison. The PR deliberately did not change the base-owned judge.
 3. Immutable visual baseline verification fails by design until a separately authorized
-   baseline update is approved.
+   baseline update is approved. Manual Linux candidate run `32803841385` additionally
+   failed its mandatory two-pass byte-identity check and withheld its artifact.
 4. Formal trademark clearance and qualified native-language approval are absent.
-
