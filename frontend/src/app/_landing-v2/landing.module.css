@@ -878,7 +878,17 @@
   }
 }
 
+@media (max-width: 520px) {
+  .header .lockupLink svg[role="img"] {
+    display: none;
+  }
+}
+
 @media (max-width: 390px) {
+  .navigation > a:first-child {
+    display: none;
+  }
+
   .statusBand dl {
     grid-template-columns: 1fr;
   }
