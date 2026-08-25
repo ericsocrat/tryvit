@@ -23,6 +23,8 @@ const CAPTURES: readonly CaptureCase[] = [
   { name: "landing--768x1024--dark--en.png", width: 768, height: 1024, locale: "en-US", language: "en", theme: "dark" },
   { name: "landing--1440x900--light--en.png", width: 1440, height: 900, locale: "en-US", language: "en", theme: "light" },
   { name: "landing--1440x900--dark--en.png", width: 1440, height: 900, locale: "en-US", language: "en", theme: "dark" },
+  // A 1280 CSS-pixel desktop viewport at 200% browser zoom exposes 640 CSS pixels.
+  { name: "landing--640x900--200-percent-equivalent--en.png", width: 640, height: 900, locale: "en-US", language: "en", theme: "light" },
   { name: "landing--320x900--reflow--en.png", width: 320, height: 900, locale: "en-US", language: "en", theme: "light" },
   { name: "landing--390x844--forced-colors--en.png", width: 390, height: 844, locale: "en-US", language: "en", theme: "light", forcedColors: true },
 ];
