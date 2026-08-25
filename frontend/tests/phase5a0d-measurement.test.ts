@@ -59,6 +59,10 @@ const routeJsCliSource = readFileSync(
   path.resolve(process.cwd(), "tooling", "phase5a0d-route-js-cli.mts"),
   "utf8",
 );
+const homePageSource = readFileSync(
+  path.resolve(process.cwd(), "src", "app", "HomePageContent.tsx"),
+  "utf8",
+);
 
 function stableJson(value: unknown): string {
   if (value === null || typeof value !== "object") return JSON.stringify(value);
@@ -205,6 +209,13 @@ describe("Phase 5A.0d measurement contract", () => {
       "app-shell",
       "product-detail",
     ]);
+    expect(MEASUREMENT_ROUTES.find((route) => route.id === "landing")?.stableIdentity).toEqual({
+      pathname: "/",
+      markerAttribute: "data-route-id",
+      markerValue: "public-landing",
+      boundarySelector: "main#main-content",
+    });
+    expect(homePageSource).toContain('data-route-id="public-landing"');
   });
 
   it("requires a deterministic positive fixture product ID", () => {
@@ -427,7 +438,9 @@ describe("cold-browser route JavaScript evidence", () => {
     expect(routeJsToolSource).toContain("script-request-terminal-event-missing");
     expect(routeJsToolSource).toContain("route-error-or-not-found-shell");
     for (const routeMarker of [
-      "healthier choices, made simple",
+      "route-pathname-mismatch",
+      "route-ready-marker-duplicate",
+      "route-identity-boundary-mismatch",
       "Welcome back",
       "mailto:hello@example.com",
       "new-user-welcome",
@@ -436,6 +449,7 @@ describe("cold-browser route JavaScript evidence", () => {
     ]) {
       expect(routeJsToolSource).toContain(routeMarker);
     }
+    expect(routeJsToolSource).not.toContain("healthier choices, made simple");
   });
 
   it("preserves validated containment markers through mode and final reports", () => {

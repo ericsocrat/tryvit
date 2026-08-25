@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "72eb2ab55c89a1913488cbd7447d03982da5e503",
+    "baseSha": "3f1c11f6d46fc1fd58a67c9c7be8296e8fdb345a",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "eef92d8ffb64be965fdbb769f53fe01a786b480007fb7d7f8e70245962c6f1cf"
+    "sourceFingerprint": "4fc7af214541616f8e874ab68cf162c538e7f354c81a38209f66a9a4e3ab507f"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -33,6 +33,7 @@
         "frontend/src/components/layout/PublicHeader.tsx",
         "frontend/src/lib/deployment-readiness.ts",
         "frontend/src/lib/i18n-core.ts",
+        "frontend/src/lib/site-metadata.ts",
         "frontend/src/stores/language-store.ts"
       ],
       "directConsumers": [
@@ -4571,9 +4572,11 @@
         "frontend/src/components/Providers.tsx",
         "frontend/src/components/ThemeScript.tsx",
         "frontend/src/design-system/accessibility/theme-contract.ts",
+        "frontend/src/lib/deployment-readiness.ts",
         "frontend/src/lib/i18n-server.ts",
         "frontend/src/lib/qa-mode.ts",
-        "frontend/src/lib/server-locale.ts"
+        "frontend/src/lib/server-locale.ts",
+        "frontend/src/lib/site-metadata.ts"
       ],
       "directConsumers": [],
       "transitiveRouteConsumers": [
@@ -5865,7 +5868,9 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/app/HomePageContent.tsx",
-        "frontend/src/lib/server-locale.ts"
+        "frontend/src/lib/deployment-readiness.ts",
+        "frontend/src/lib/server-locale.ts",
+        "frontend/src/lib/site-metadata.ts"
       ],
       "directConsumers": [],
       "transitiveRouteConsumers": [
@@ -21154,9 +21159,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 542,
+    "inspectedModuleCount": 543,
     "violations": [],
-    "sourceFingerprint": "4e5136246fb2cafbb25f11e27750ee527f11723e9240ebe96ef5dce0386cae5b"
+    "sourceFingerprint": "752164d79a4363b067d32a61192963a7e55fd71c54c70cd894ec07823a6e068f"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

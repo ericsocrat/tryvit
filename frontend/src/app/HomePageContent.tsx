@@ -3,31 +3,14 @@ import { PublicHeader } from "@/components/layout/PublicHeader";
 import { LivePublicAuthProvider } from "@/components/layout/LivePublicAuthActions";
 import { getDeploymentReadiness } from "@/lib/deployment-readiness";
 import { translate } from "@/lib/i18n-core";
+import { buildWebSiteStructuredData } from "@/lib/site-metadata";
 import type { SupportedLanguage } from "@/stores/language-store";
 import { LandingSections } from "./LandingSections";
 
 export function HomePageContent({ language }: { language: SupportedLanguage }) {
   const readiness = getDeploymentReadiness();
   const dataAvailable = readiness.dataBackend === "available";
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "TryVit",
-    url: "https://tryvit.vercel.app",
-    description: "Compare food products, understand nutrition scores, and make healthier choices.",
-    ...(dataAvailable
-      ? {
-          potentialAction: {
-            "@type": "SearchAction",
-            target: {
-              "@type": "EntryPoint",
-              urlTemplate: "https://tryvit.vercel.app/app/search?q={search_term_string}",
-            },
-            "query-input": "required name=search_term_string",
-          },
-        }
-      : {}),
-  };
+  const jsonLd = buildWebSiteStructuredData(readiness);
 
   const content = (
     <div className="flex min-h-screen flex-col">
@@ -42,7 +25,7 @@ export function HomePageContent({ language }: { language: SupportedLanguage }) {
         darkThemeLabel={translate(language, "theme.dark")}
       />
 
-      <main id="main-content" className="flex-1">
+      <main id="main-content" data-route-id="public-landing" className="flex-1">
         <LandingSections dataAvailable={dataAvailable} language={language} />
       </main>
 

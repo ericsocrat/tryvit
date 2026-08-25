@@ -5,29 +5,16 @@
 
 import type { Metadata } from "next";
 
+import { getDeploymentReadiness } from "@/lib/deployment-readiness";
 import { getServerLocale } from "@/lib/server-locale";
+import { buildLandingMetadata } from "@/lib/site-metadata";
 import { HomePageContent } from "./HomePageContent";
 
 // ─── SEO metadata (merged with root layout defaults) ────────────────────────
 
-export const metadata: Metadata = {
-  title: "TryVit — Know What You Eat",
-  description:
-    "Explore TryVit food scoring, ingredient transparency, and healthier-choice tools. Live data features depend on current service availability.",
-  openGraph: {
-    title: "TryVit — Know What You Eat",
-    description:
-      "Explore TryVit food scoring, ingredient transparency, and healthier-choice tools. Live data features depend on current service availability.",
-    images: ["/opengraph-image"],
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "TryVit — Know What You Eat",
-    description: "Compare food products, understand nutrition scores, and make healthier choices.",
-    images: ["/opengraph-image"],
-  },
-};
+export function generateMetadata(): Metadata {
+  return buildLandingMetadata(getDeploymentReadiness());
+}
 
 export default async function HomePage() {
   const language = await getServerLocale();

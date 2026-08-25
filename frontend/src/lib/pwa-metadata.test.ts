@@ -119,35 +119,39 @@ describe("Icon Assets", () => {
 describe("Root Layout Metadata", () => {
   const layoutPath = join(appDir, "layout.tsx");
   const layoutSrc = readFileSync(layoutPath, "utf-8");
+  const metadataSrc = readFileSync(join(__dirname, "site-metadata.ts"), "utf-8");
 
   it("exports a title template", () => {
-    expect(layoutSrc).toContain("template:");
-    expect(layoutSrc).toContain("%s");
+    expect(layoutSrc).toContain("generateMetadata");
+    expect(metadataSrc).toContain("template:");
+    expect(metadataSrc).toContain("%s");
   });
 
   it("declares metadataBase", () => {
-    expect(layoutSrc).toContain("metadataBase");
+    expect(metadataSrc).toContain("metadataBase");
   });
 
   it("includes openGraph defaults", () => {
-    expect(layoutSrc).toContain("openGraph:");
-    expect(layoutSrc).toContain("siteName:");
+    expect(metadataSrc).toContain("openGraph:");
+    expect(metadataSrc).toContain("siteName:");
   });
 
   it("includes twitter defaults", () => {
-    expect(layoutSrc).toContain("twitter:");
-    expect(layoutSrc).toContain('card: "summary_large_image"');
+    expect(metadataSrc).toContain("twitter:");
+    expect(metadataSrc).toContain('card: "summary_large_image"');
   });
 
   it("sets robots metadata", () => {
-    expect(layoutSrc).toContain("robots:");
-    expect(layoutSrc).toContain("index: true");
-    expect(layoutSrc).toContain("follow: true");
+    expect(metadataSrc).toContain("robots:");
+    expect(metadataSrc).toContain("index: true");
+    expect(metadataSrc).toContain("follow: true");
   });
 
   it("includes Schema.org WebApplication JSON-LD", () => {
     expect(layoutSrc).toContain("application/ld+json");
-    expect(layoutSrc).toContain("WebApplication");
+    expect(layoutSrc).toContain("buildRootWebApplicationStructuredData");
+    expect(metadataSrc).toContain("WebApplication");
+    expect(metadataSrc).toContain('if (readiness.dataBackend !== "available") return null');
   });
 });
 
