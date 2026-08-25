@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import type { LandingCopy } from "./copy";
-import { landingSans, landingSerif } from "./fonts";
 import { LandingLockup } from "./LandingIdentity";
 import { LandingThemeToggle } from "./LandingThemeToggle.client";
 import styles from "./landing.module.css";
@@ -14,7 +13,7 @@ export function LandingPublicShell({
 }: Readonly<{ copy: LandingCopy; dataAvailable: boolean; children: ReactNode }>) {
   return (
     <div
-      className={`${styles.shell} ${landingSans.variable} ${landingSerif.variable}`}
+      className={styles.shell}
       data-design-system="v2"
       data-landing-shell="folded-label-register"
     >

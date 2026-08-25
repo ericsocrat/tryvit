@@ -6,6 +6,15 @@ import { describe, expect, it } from "vitest";
 
 const ROOT = process.cwd();
 const LANDING_ROOT = join(ROOT, "src", "app", "_landing-v2");
+const ASSAY_ROOT = join(
+  ROOT,
+  "..",
+  "docs",
+  "phase5a2",
+  "checkpoint-2",
+  "evidence",
+  "font-assay",
+);
 
 function sha256(path: string): string {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
@@ -19,7 +28,7 @@ function walk(path: string): string[] {
 }
 
 describe("Phase 5A.3 landing production boundary", () => {
-  it("retains the exact audited route-local font and license bytes", () => {
+  it("retains the exact audited assay and license bytes outside production", () => {
     const expected = [
       ["fonts/manrope-regular.woff2", 27_300, "aa08da8e2396fd24c9cca149bcc1ffb6601b62c7dd771e1346406ed444493d59"],
       ["fonts/manrope-semibold.woff2", 27_412, "8ba9a04089cdc0fd8ba4e95da82d3ee0bacb82ebc7f9f3100f78a7bad76c35ad"],
@@ -29,20 +38,19 @@ describe("Phase 5A.3 landing production boundary", () => {
     ] as const;
 
     for (const [relativePath, bytes, hash] of expected) {
-      const path = join(LANDING_ROOT, relativePath);
+      const path = join(ASSAY_ROOT, relativePath.replace(/^fonts\//u, ""));
       expect(statSync(path).size, relativePath).toBe(bytes);
       expect(sha256(path), relativePath).toBe(hash);
     }
     expect(expected.slice(0, 3).reduce((total, [, bytes]) => total + bytes, 0)).toBe(75_004);
   });
 
-  it("keeps font loading route-local with route-only preload and no package dependency", () => {
-    const fontSource = readFileSync(join(LANDING_ROOT, "fonts.ts"), "utf8");
+  it("blocks candidate font adoption after the performance proof failed", () => {
     const packageJson = readFileSync(join(ROOT, "package.json"), "utf8");
-    expect(fontSource.match(/preload:\s*true/gu)).toHaveLength(2);
-    expect(fontSource.match(/display:\s*"optional"/gu)).toHaveLength(2);
-    expect(fontSource).toContain('variable: "--font-landing-sans"');
-    expect(fontSource).toContain('variable: "--font-landing-serif"');
+    const productionFonts = walk(LANDING_ROOT).filter((path) => path.endsWith(".woff2"));
+    const shellSource = readFileSync(join(LANDING_ROOT, "LandingPublicShell.tsx"), "utf8");
+    expect(productionFonts).toEqual([]);
+    expect(shellSource).not.toContain("next/font/local");
     expect(packageJson).not.toContain("@fontsource");
   });
 
@@ -83,8 +91,8 @@ describe("Phase 5A.3 landing production boundary", () => {
     expect(copy).toContain("Datenverlässlichkeit");
     expect(copy).toContain("Verarbeitung nicht bewertet");
     expect(css).toContain("font-variant-numeric: tabular-nums");
-    expect(css).toContain("size-adjust: 97.58%");
-    expect(css).toContain("size-adjust: 102.12%");
+    expect(css).toContain("ui-sans-serif, system-ui");
+    expect(css).toContain("ui-serif, Georgia");
     expect(home).not.toContain("@/lib/supabase");
     expect(home).not.toContain("LivePublicAuth");
   });

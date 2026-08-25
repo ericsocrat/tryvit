@@ -59,7 +59,7 @@ for (const capture of CAPTURES) {
   });
 }
 
-test("has zero backend traffic and exact route-local font transfer", async ({ page }) => {
+test("has zero backend traffic and retains the system font fallback", async ({ page }) => {
   const forbidden: string[] = [];
   const fontResponses = new Map<string, number>();
   const imageRequests: string[] = [];
@@ -83,11 +83,10 @@ test("has zero backend traffic and exact route-local font transfer", async ({ pa
   await page.waitForLoadState("networkidle");
   expect(forbidden).toEqual([]);
   expect(imageRequests).toEqual([]);
-  expect([...fontResponses.values()].sort((a, b) => a - b)).toEqual([20_292, 27_300, 27_412]);
-  expect([...fontResponses.values()].reduce((total, bytes) => total + bytes, 0)).toBe(75_004);
+  expect([...fontResponses.values()]).toEqual([]);
 });
 
-test("does not load landing fonts on authentication", async ({ page }) => {
+test("does not load candidate fonts on authentication", async ({ page }) => {
   const fontRequests: string[] = [];
   page.on("request", (request) => {
     if (/\.woff2(?:\?|$)/u.test(request.url())) fontRequests.push(request.url());
