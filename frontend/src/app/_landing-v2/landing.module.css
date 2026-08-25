@@ -82,6 +82,28 @@
   color-scheme: dark;
 }
 
+@media (prefers-color-scheme: dark) {
+  :global(html:not([data-theme])) .shell {
+    --landing-canvas: #15231c;
+    --landing-paper: #1d3026;
+    --landing-raised: #294336;
+    --landing-ink: #f7efdf;
+    --landing-secondary: #c0c9c1;
+    --landing-brand: #c1dfc4;
+    --landing-brand-support: #9fc8a8;
+    --landing-soft: #294336;
+    --landing-rust: #ef9d75;
+    --landing-rust-soft: #5a2d21;
+    --landing-rule: #718077;
+    --landing-rule-soft: #3e5648;
+    --landing-focus: #d5efcf;
+    --landing-warning: #f0c27b;
+    --landing-mark-front: #f7efdf;
+    --landing-mark-fold: #ef9d75;
+    color-scheme: dark;
+  }
+}
+
 .shell *,
 .shell *::before,
 .shell *::after {
