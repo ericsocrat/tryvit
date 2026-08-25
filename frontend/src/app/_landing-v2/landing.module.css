@@ -826,6 +826,10 @@
     font-size: 0.78rem;
   }
 
+  .packageNarrative[data-expanded="false"] .narrativeSteps li:not([data-active="true"]) {
+    display: none;
+  }
+
   .evidenceRow {
     grid-template-columns: 1fr;
     gap: 0.5rem;
