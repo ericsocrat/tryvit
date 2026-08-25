@@ -55,10 +55,114 @@ async function openLanding(page: Page, capture: CaptureCase): Promise<void> {
   );
 }
 
+async function expectFullyInViewport(page: Page, selector: string): Promise<void> {
+  const geometry = await page.locator(selector).evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      top: rect.top,
+      right: rect.right,
+      bottom: rect.bottom,
+      left: rect.left,
+      viewportWidth: innerWidth,
+      viewportHeight: innerHeight,
+    };
+  });
+  expect(geometry.top).toBeGreaterThanOrEqual(-1);
+  expect(geometry.left).toBeGreaterThanOrEqual(-1);
+  expect(geometry.right).toBeLessThanOrEqual(geometry.viewportWidth + 1);
+  expect(geometry.bottom).toBeLessThanOrEqual(geometry.viewportHeight + 1);
+}
+
 for (const capture of CAPTURES) {
   test(`retains ${capture.name}`, async ({ page }, testInfo: TestInfo) => {
     await openLanding(page, capture);
     await page.screenshot({ path: testInfo.outputPath(capture.name), animations: "disabled" });
+  });
+}
+
+for (const width of [320, 390]) {
+  test(`keeps every mobile destination available at ${width}px`, async ({ page }) => {
+    await openLanding(page, {
+      name: `mobile-navigation-${width}`,
+      width,
+      height: width === 320 ? 900 : 844,
+      locale: "en-US",
+      language: "en",
+      theme: "light",
+    });
+
+    const primary = page.getByRole("navigation", { name: "Primary navigation" });
+    for (const [name, href] of [
+      ["Evidence", "#evidence"],
+      ["Method", "#method"],
+      ["Trust", "#trust"],
+      ["Contact", "/contact"],
+    ] as const) {
+      const destination = primary.getByRole("link", { name, exact: true });
+      await expect(destination).toBeVisible();
+      await expect(destination).toHaveAttribute("href", href);
+      expect(await destination.evaluate((element) => element.getBoundingClientRect().width)).toBeGreaterThan(0);
+    }
+
+    const utilities = page.getByRole("navigation", {
+      name: "Account, service, and display",
+    });
+    await expect(utilities.getByRole("link", { name: "Demo mode" })).toBeVisible();
+    await expect(utilities.getByRole("button", { name: "Use dark theme" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      width,
+    );
+  });
+}
+
+for (const fold of [
+  { width: 390, height: 844, minimumPackagePixels: 72, requireFullPackage: false },
+  { width: 768, height: 1024, minimumPackagePixels: 0, requireFullPackage: true },
+  { width: 1440, height: 900, minimumPackagePixels: 0, requireFullPackage: true },
+] as const) {
+  test(`meets the ${fold.width}x${fold.height} first-fold geometry contract`, async ({ page }) => {
+    await openLanding(page, {
+      name: `first-fold-${fold.width}x${fold.height}`,
+      width: fold.width,
+      height: fold.height,
+      locale: "en-US",
+      language: "en",
+      theme: "light",
+    });
+
+    await expect(page.locator('[data-landing-lockup="horizontal"]')).toHaveCount(1);
+    await expect(page.locator("[data-landing-market-descriptor]")).toHaveCount(1);
+    await expectFullyInViewport(page, "#landing-title");
+    await expectFullyInViewport(
+      page,
+      'section[aria-labelledby="landing-title"] a[href="#evidence"]',
+    );
+
+    if (fold.width >= 768) {
+      await expectFullyInViewport(
+        page,
+        'section[aria-labelledby="landing-title"] a[href="/contact"]',
+      );
+    }
+
+    const packageGeometry = await page
+      .locator("[data-landing-package-signature]")
+      .evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          top: rect.top,
+          bottom: rect.bottom,
+          visibleHeight: Math.max(0, Math.min(rect.bottom, innerHeight) - Math.max(rect.top, 0)),
+          viewportHeight: innerHeight,
+        };
+      });
+    expect(packageGeometry.top).toBeLessThan(fold.height);
+    if (fold.requireFullPackage) {
+      expect(packageGeometry.top).toBeGreaterThanOrEqual(-1);
+      expect(packageGeometry.bottom).toBeLessThanOrEqual(packageGeometry.viewportHeight + 1);
+    } else {
+      expect(packageGeometry.visibleHeight).toBeGreaterThanOrEqual(fold.minimumPackagePixels);
+    }
   });
 }
 
@@ -87,6 +191,37 @@ test("has zero backend traffic and retains the system font fallback", async ({ p
   expect(forbidden).toEqual([]);
   expect(imageRequests).toEqual([]);
   expect([...fontResponses.values()]).toEqual([]);
+});
+
+test("keeps demo metadata and WebSite structured data aligned with visible copy", async ({
+  page,
+}) => {
+  await openLanding(page, CAPTURES[0]);
+  const description =
+    "TryVit separates label facts from calculations, context, and decisions. The method remains available while live product data is paused.";
+  const socialDescription =
+    "TryVit’s evidence-first method remains available while live product data is paused; every example is synthetic.";
+
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", description);
+  await expect(page.locator('meta[property="og:description"]')).toHaveAttribute(
+    "content",
+    socialDescription,
+  );
+  await expect(page.locator('meta[name="twitter:description"]')).toHaveAttribute(
+    "content",
+    socialDescription,
+  );
+
+  const structuredData = await page
+    .locator('script[type="application/ld+json"]')
+    .evaluateAll((scripts) => scripts.map((script) => JSON.parse(script.textContent ?? "{}")));
+  expect(structuredData).toHaveLength(1);
+  expect(structuredData[0]).toMatchObject({
+    "@type": "WebSite",
+    inLanguage: "en",
+    description,
+  });
+  expect(structuredData[0]).not.toHaveProperty("potentialAction");
 });
 
 test("does not load candidate fonts on authentication", async ({ page }) => {

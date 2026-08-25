@@ -4,7 +4,7 @@
   "provenance": {
     "baseSha": "61c52e73eed0393e24b0597d63c47cb7b5cdbe7e",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "568440dcea789782b7377856388cb471c50313486fbe32c3ffa4055d5f2beac2"
+    "sourceFingerprint": "078ba016e8236cb55f63e9d08c5eee9150945fbd37a58860133ab6d3caa912c4"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -241,6 +241,7 @@
       "hasUseClientDirective": false,
       "runtimeBoundary": "server-only",
       "directModuleImports": [
+        "frontend/src/lib/deployment-readiness.ts",
         "frontend/src/stores/language-store.ts"
       ],
       "directConsumers": [
@@ -6005,6 +6006,7 @@
       "directModuleImports": [
         "frontend/src/app/HomePageContent.tsx",
         "frontend/src/app/_landing-v2/copy.ts",
+        "frontend/src/lib/deployment-readiness.ts",
         "frontend/src/lib/server-locale.ts"
       ],
       "directConsumers": [],
@@ -21271,7 +21273,7 @@
     ],
     "inspectedModuleCount": 551,
     "violations": [],
-    "sourceFingerprint": "4eaa9ebb05c9ee6381ad044acecd3427dfe72b9a8d5c2f93ce5a06b238259183"
+    "sourceFingerprint": "300353c472dbe8afa1b3c1f542c8a4173e6bd58f15d44e38f19566ba3b0744b6"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

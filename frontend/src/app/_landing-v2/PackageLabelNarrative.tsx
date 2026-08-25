@@ -24,9 +24,13 @@ export function PackageLabelNarrative({
   syntheticLabel,
 }: PackageLabelNarrativeProps) {
   return (
-    <details aria-label={packageLabel} className={styles.packageNarrative}>
+    <details
+      aria-label={packageLabel}
+      className={styles.packageNarrative}
+      data-landing-package-signature
+    >
       <summary className={styles.narrativeSummary}>
-        <div className={styles.packageSpecimen} aria-hidden="true">
+        <span className={styles.packageSpecimen} aria-hidden="true">
           <span className={styles.packageFold} />
           <span className={styles.packageFace}>
             TryVit
@@ -34,7 +38,7 @@ export function PackageLabelNarrative({
             {packageName}
           </span>
           <span className={styles.packageSynthetic}>{syntheticLabel}</span>
-        </div>
+        </span>
         <span className={styles.narrativePreview}>
           <span aria-hidden="true" className={styles.narrativeSource}>
             <span>01</span>

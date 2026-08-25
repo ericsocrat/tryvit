@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import type { DeploymentReadiness } from "./deployment-readiness";
 import {
-  buildLandingMetadata,
   buildRootMetadata,
   buildRootWebApplicationStructuredData,
   buildWebSiteStructuredData,
@@ -54,13 +53,18 @@ describe("readiness-aware public metadata", () => {
   });
 
   it("emits WebApplication only when the data backend is available", () => {
-    expect(buildRootWebApplicationStructuredData(demo, publicEnvironment)).toBeNull();
-    const structuredData = buildRootWebApplicationStructuredData(live, publicEnvironment);
+    expect(buildRootWebApplicationStructuredData(demo, "en", publicEnvironment)).toBeNull();
+    const structuredData = buildRootWebApplicationStructuredData(
+      live,
+      "en",
+      publicEnvironment,
+    );
     expect(structuredData).toMatchObject({
       "@type": "WebApplication",
       "@id": "https://example.test/#web-application",
       isPartOf: { "@id": "https://example.test/#website" },
       applicationCategory: "LifestyleApplication",
+      inLanguage: "en",
       featureList: ["Food product search", "Barcode scanning", "Product scoring evidence"],
     });
     expect(JSON.stringify(structuredData)).not.toMatch(/instantly|science-driven|health score/iu);
@@ -68,7 +72,11 @@ describe("readiness-aware public metadata", () => {
 
   it("keeps WebSite and WebApplication identities complementary rather than duplicate", () => {
     const website = buildWebSiteStructuredData(live, publicEnvironment);
-    const application = buildRootWebApplicationStructuredData(live, publicEnvironment)!;
+    const application = buildRootWebApplicationStructuredData(
+      live,
+      "en",
+      publicEnvironment,
+    )!;
     expect(website["@id"]).toBe("https://example.test/#website");
     expect(application["@id"]).not.toBe(website["@id"]);
     expect(application.isPartOf["@id"]).toBe(website["@id"]);
@@ -81,10 +89,25 @@ describe("readiness-aware public metadata", () => {
     expect(website.description).toContain("live product data is unavailable");
   });
 
-  it.each([live, demo])("uses one absolute landing title in $mode mode", (readiness) => {
-    const metadata = buildLandingMetadata(readiness);
-    expect(metadata.title).toEqual({ absolute: "TryVit — Know What You Eat" });
-    expect((metadata.openGraph as { title: string }).title).toBe("TryVit — Know What You Eat");
-    expect((metadata.twitter as { title: string }).title).toBe("TryVit — Know What You Eat");
+  it.each([
+    [
+      "pl" as const,
+      "Wyszukuj produkty spożywcze",
+      "Wyszukiwanie produktów",
+    ],
+    [
+      "de" as const,
+      "Lebensmittel suchen",
+      "Lebensmittelsuche",
+    ],
+  ])("localizes live WebApplication evidence for %s", (language, description, feature) => {
+    const application = buildRootWebApplicationStructuredData(
+      live,
+      language,
+      publicEnvironment,
+    )!;
+    expect(application.inLanguage).toBe(language);
+    expect(application.description).toContain(description);
+    expect(application.featureList).toContain(feature);
   });
 });

@@ -93,7 +93,7 @@ describe("Phase 5A.3 landing production boundary", () => {
     );
     expect(copy).toContain("Odczytaj opakowanie");
     expect(copy).toContain("Datenverlässlichkeit");
-    expect(copy).toContain("Verarbeitung nicht bewertet");
+    expect(copy).toContain("Verarbeitungsgrad nicht bewertet");
     expect(css).toContain("font-variant-numeric: tabular-nums");
     expect(css).toContain("ui-sans-serif, system-ui");
     expect(css).toContain("ui-serif, Georgia");
@@ -108,6 +108,29 @@ describe("Phase 5A.3 landing production boundary", () => {
     ]) {
       expect(readFileSync(path, "utf8"), path).not.toContain("next/link");
     }
+  });
+
+  it("keeps readiness truth, mobile destinations, and disclosure semantics server-led", () => {
+    const copy = readFileSync(join(LANDING_ROOT, "copy.ts"), "utf8");
+    const shell = readFileSync(join(LANDING_ROOT, "LandingPublicShell.tsx"), "utf8");
+    const narrative = readFileSync(join(LANDING_ROOT, "PackageLabelNarrative.tsx"), "utf8");
+    const sections = readFileSync(join(ROOT, "src", "app", "LandingSections.tsx"), "utf8");
+    const css = readFileSync(join(LANDING_ROOT, "landing.module.css"), "utf8");
+
+    expect(copy).toContain("readiness: DeploymentReadiness");
+    expect(copy).toContain("privacyBody: {");
+    expect(copy).toContain("does not check for an account or session");
+    expect(copy).toContain("prüft nur, ob bereits eine TryVit-Sitzung besteht");
+    expect(shell).toContain("styles.sectionNavigation");
+    expect(shell).toContain("styles.utilityNavigation");
+    for (const href of ["#evidence", "#method", "#trust", "/contact"]) {
+      expect(shell).toContain(`href="${href}"`);
+    }
+    expect(css).not.toMatch(/\.navigation\s*>\s*a:nth-child/u);
+    expect(narrative).toContain('<span className={styles.packageSpecimen} aria-hidden="true">');
+    expect(narrative).not.toContain('<div className={styles.packageSpecimen}');
+    expect(sections).not.toContain("<LandingLockup");
+    expect(shell).toContain("data-landing-market-descriptor");
   });
 
   it("records route-family authorization without implying blanket Phase 5A.3 authority", () => {

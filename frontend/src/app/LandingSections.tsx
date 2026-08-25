@@ -2,7 +2,6 @@ import type { SupportedLanguage } from "@/stores/language-store";
 import { getLandingCopy, type LandingCopy } from "./_landing-v2/copy";
 import {
   LandingGlyph,
-  LandingLockup,
   LandingMark,
   type LandingGlyphName,
 } from "./_landing-v2/LandingIdentity";
@@ -36,10 +35,6 @@ function Hero({ dataAvailable, copy }: Readonly<{ dataAvailable: boolean; copy: 
   return (
     <section className={styles.hero} aria-labelledby="landing-title">
       <div className={styles.heroCopy}>
-        <div className={styles.surfaceOwner}>
-          <LandingLockup />
-          <span>{copy.identityLabel}</span>
-        </div>
         <p className={styles.eyebrow}>{copy.eyebrow}</p>
         <h1 id="landing-title">{copy.title}</h1>
         <p className={styles.heroIntro}>{dataAvailable ? copy.liveIntro : copy.demoIntro}</p>
@@ -121,11 +116,20 @@ function EvidenceSection({ copy }: Readonly<{ copy: LandingCopy }>) {
   );
 }
 
-function Principles({ copy }: Readonly<{ copy: LandingCopy }>) {
+function Principles({
+  copy,
+  dataAvailable,
+}: Readonly<{ copy: LandingCopy; dataAvailable: boolean }>) {
   const principles = [
     { id: "method", number: "02", glyph: "derived" as const, title: copy.methodTitle, body: copy.methodBody },
     { id: "labels", number: "03", glyph: "context" as const, title: copy.marketTitle, body: copy.marketBody },
-    { id: "trust", number: "04", glyph: "confidence" as const, title: copy.privacyTitle, body: copy.privacyBody },
+    {
+      id: "trust",
+      number: "04",
+      glyph: "confidence" as const,
+      title: copy.privacyTitle,
+      body: dataAvailable ? copy.privacyBody.live : copy.privacyBody.demo,
+    },
   ];
 
   return (
@@ -182,7 +186,7 @@ export function LandingSections({
       <Hero copy={copy} dataAvailable={dataAvailable} />
       {!dataAvailable ? <StatusBand copy={copy} /> : null}
       <EvidenceSection copy={copy} />
-      <Principles copy={copy} />
+      <Principles copy={copy} dataAvailable={dataAvailable} />
       <FinalAction copy={copy} dataAvailable={dataAvailable} />
     </>
   );

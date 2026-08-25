@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 
+import type { DeploymentReadiness } from "@/lib/deployment-readiness";
 import type { SupportedLanguage } from "@/stores/language-store";
 
 export interface LandingCopy {
   readonly metadata: {
     readonly title: string;
-    readonly description: string;
-    readonly socialDescription: string;
+    readonly liveSocialDescription: string;
+    readonly demoSocialDescription: string;
   };
   readonly primaryNavigationLabel: string;
+  readonly utilityNavigationLabel: string;
   readonly footerNavigationLabel: string;
   readonly navigation: {
     readonly evidence: string;
@@ -56,7 +58,10 @@ export interface LandingCopy {
   readonly marketTitle: string;
   readonly marketBody: string;
   readonly privacyTitle: string;
-  readonly privacyBody: string;
+  readonly privacyBody: {
+    readonly live: string;
+    readonly demo: string;
+  };
   readonly statusEyebrow: string;
   readonly statusTitle: string;
   readonly statusBody: string;
@@ -77,12 +82,13 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
   en: {
     metadata: {
       title: "TryVit — Food intelligence you can inspect",
-      description:
-        "Read package facts, see how TryVit separates calculations from context, and keep missing evidence visible.",
-      socialDescription:
+      liveSocialDescription:
         "Food intelligence with the package facts, reasoning, confidence, and unknowns kept attached.",
+      demoSocialDescription:
+        "TryVit’s evidence-first method remains available while live product data is paused; every example is synthetic.",
     },
     primaryNavigationLabel: "Primary navigation",
+    utilityNavigationLabel: "Account, service, and display",
     footerNavigationLabel: "Footer navigation",
     navigation: {
       evidence: "Evidence",
@@ -133,10 +139,14 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
       "Observed package facts stay separate from calculated results. A method version, source date, and missing-input state travel with every conclusion.",
     marketTitle: "Designed for European labels",
     marketBody:
-      "Polish and German expansion, metric units, serving-basis differences, and incomplete records are interface requirements—not footnotes after launch.",
+      "Polish and German copy, metric units, serving-basis differences, and incomplete records are interface requirements—not footnotes after launch.",
     privacyTitle: "Private before personal",
-    privacyBody:
-      "The public landing does not initialize an account, camera, hosted product lookup, or authenticated feature flag. Interactive examples use synthetic data.",
+    privacyBody: {
+      live:
+        "This page uses a synthetic example and checks only whether you already have a TryVit session so it can show the right account action. It does not start the camera or look up product data before you choose to continue.",
+      demo:
+        "This demonstration does not check for an account or session, start the camera, or look up product data. Every example is synthetic, and no hosted product service is used as a fallback.",
+    },
     statusEyebrow: "Current service state",
     statusTitle: "The website is available; live product data is paused",
     statusBody:
@@ -157,12 +167,13 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
   pl: {
     metadata: {
       title: "TryVit — dane o żywności, które można sprawdzić",
-      description:
-        "Odczytaj dane z opakowania, sprawdź tok rozumowania TryVit i zobacz brakujące informacje.",
-      socialDescription:
+      liveSocialDescription:
         "Dane o żywności z widocznym źródłem, tokiem rozumowania, wiarygodnością i brakami.",
+      demoSocialDescription:
+        "Metoda TryVit oparta na danych i źródłach pozostaje dostępna, gdy dane produktów na żywo są wstrzymane; wszystkie przykłady są syntetyczne.",
     },
     primaryNavigationLabel: "Główna nawigacja",
+    utilityNavigationLabel: "Konto, usługa i wygląd",
     footerNavigationLabel: "Nawigacja w stopce",
     navigation: {
       evidence: "Dane",
@@ -207,7 +218,7 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     contextDetail: "Porównanie napojów owsianych; przetworzenia nie oceniono",
     contextMeta: "Umiarkowana wiarygodność · brak jednej ważnej informacji",
     decisionDetail: "Sprawdź aktualne opakowanie i brakującą klasyfikację przetworzenia.",
-    decisionMeta: "Następny krok · dane pozostają dostępne",
+    decisionMeta: "Następny krok · źródła i uzasadnienie pozostają powiązane",
     methodTitle: "Najpierw metoda, potem efekt",
     methodBody:
       "Dane z opakowania pozostają oddzielone od obliczeń. Wersja metody, data źródła i brakujące informacje towarzyszą każdemu wnioskowi.",
@@ -215,8 +226,12 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     marketBody:
       "Polskie i niemieckie teksty, jednostki metryczne, różne porcje i niepełne rekordy są wymaganiami interfejsu, a nie późniejszym przypisem.",
     privacyTitle: "Prywatność przed personalizacją",
-    privacyBody:
-      "Publiczna strona nie uruchamia konta, aparatu, zewnętrznego wyszukiwania produktów ani flag aplikacji. Przykłady korzystają z danych syntetycznych.",
+    privacyBody: {
+      live:
+        "Ta strona korzysta z syntetycznego przykładu i sprawdza jedynie, czy masz już sesję TryVit, aby wyświetlić właściwe działanie dotyczące konta. Nie uruchamia aparatu ani wyszukiwania danych produktów, dopóki nie zdecydujesz się kontynuować.",
+      demo:
+        "Ta wersja demonstracyjna nie sprawdza konta ani sesji, nie uruchamia aparatu i nie wyszukuje danych produktów. Wszystkie przykłady są syntetyczne; usługa z danymi produktów nie jest używana awaryjnie.",
+    },
     statusEyebrow: "Aktualny stan usługi",
     statusTitle: "Strona działa; dane produktów na żywo są wstrzymane",
     statusBody:
@@ -237,12 +252,13 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
   de: {
     metadata: {
       title: "TryVit — nachprüfbare Lebensmittelinformation",
-      description:
-        "Verpackungsangaben lesen, die TryVit-Begründung nachvollziehen und fehlende Evidenz sichtbar halten.",
-      socialDescription:
+      liveSocialDescription:
         "Lebensmittelinformation mit verbundener Quelle, Begründung, Datenverlässlichkeit und offenen Fragen.",
+      demoSocialDescription:
+        "Die evidenzorientierte TryVit-Methode bleibt verfügbar, während Live-Produktdaten pausiert sind; alle Beispiele sind synthetisch.",
     },
     primaryNavigationLabel: "Hauptnavigation",
+    utilityNavigationLabel: "Konto, Dienst und Darstellung",
     footerNavigationLabel: "Fußzeilennavigation",
     navigation: {
       evidence: "Evidenz",
@@ -284,7 +300,7 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     observedMeta: "Synthetische Verpackungsabschrift · 14. Juli 2026",
     derivedDetail: "72 / 100 · vorläufiges Methodenergebnis",
     derivedMeta: "Abgeleitet · Methode v0.9 · unvollständige Eingaben",
-    contextDetail: "Vergleichbare Hafergetränke; Verarbeitung nicht bewertet",
+    contextDetail: "Verglichen auf Haferdrink-Basis; Verarbeitungsgrad nicht bewertet",
     contextMeta: "Mittlere Datenverlässlichkeit · eine wesentliche Angabe fehlt",
     decisionDetail: "Aktuelle Verpackung und fehlende Verarbeitungseingabe prüfen.",
     decisionMeta: "Nächster Schritt · Evidenz bleibt verbunden",
@@ -295,8 +311,12 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     marketBody:
       "Polnische und deutsche Textlängen, metrische Einheiten, Bezugsgrößen und unvollständige Datensätze sind Anforderungen an die Oberfläche—keine spätere Fußnote.",
     privacyTitle: "Datenschutz vor Personalisierung",
-    privacyBody:
-      "Die öffentliche Startseite initialisiert weder Konto noch Kamera, externe Produktsuche oder authentifizierte Funktionsschalter. Beispiele verwenden synthetische Daten.",
+    privacyBody: {
+      live:
+        "Diese Seite verwendet ein synthetisches Beispiel und prüft nur, ob bereits eine TryVit-Sitzung besteht, damit sie die passende Kontoaktion anzeigen kann. Sie startet weder die Kamera noch eine Produktdatensuche, bevor Sie sich zum Fortfahren entscheiden.",
+      demo:
+        "Diese Demoversion prüft weder Konto noch Sitzung, startet die Kamera nicht und sucht keine Produktdaten. Alle Beispiele sind synthetisch; ein gehosteter Produktdienst wird nicht als Ausweichlösung verwendet.",
+    },
     statusEyebrow: "Aktueller Dienststatus",
     statusTitle: "Die Website ist verfügbar; Live-Produktdaten sind pausiert",
     statusBody:
@@ -321,23 +341,48 @@ export function getLandingCopy(language: SupportedLanguage): LandingCopy {
   return LANDING_COPY[language];
 }
 
-export function buildLandingMetadata(language: SupportedLanguage): Metadata {
+export interface LandingMetadataCopy {
+  readonly title: string;
+  readonly description: string;
+  readonly socialDescription: string;
+}
+
+export function getLandingMetadataCopy(
+  language: SupportedLanguage,
+  readiness: DeploymentReadiness,
+): LandingMetadataCopy {
   const copy = getLandingCopy(language);
+  const live = readiness.dataBackend === "available";
 
   return {
-    title: { absolute: copy.metadata.title },
-    description: copy.metadata.description,
+    title: copy.metadata.title,
+    description: live ? copy.liveIntro : copy.demoIntro,
+    socialDescription: live
+      ? copy.metadata.liveSocialDescription
+      : copy.metadata.demoSocialDescription,
+  };
+}
+
+export function buildLandingMetadata(
+  language: SupportedLanguage,
+  readiness: DeploymentReadiness,
+): Metadata {
+  const copy = getLandingMetadataCopy(language, readiness);
+
+  return {
+    title: { absolute: copy.title },
+    description: copy.description,
     openGraph: {
-      title: copy.metadata.title,
-      description: copy.metadata.socialDescription,
+      title: copy.title,
+      description: copy.socialDescription,
       images: ["/opengraph-image"],
       type: "website",
       locale: language === "pl" ? "pl_PL" : language === "de" ? "de_DE" : "en_US",
     },
     twitter: {
       card: "summary_large_image",
-      title: copy.metadata.title,
-      description: copy.metadata.socialDescription,
+      title: copy.title,
+      description: copy.socialDescription,
       images: ["/opengraph-image"],
     },
   };

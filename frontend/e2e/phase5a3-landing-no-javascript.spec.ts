@@ -12,6 +12,10 @@ test("retains complete server-rendered meaning without JavaScript", async ({ pag
   expect(html).toContain("Method before mystique");
   expect(html).toContain("The website is available; live product data is paused");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });
+  for (const name of ["Evidence", "Method", "Trust", "Contact"]) {
+    await expect(primaryNavigation.getByRole("link", { name, exact: true })).toBeVisible();
+  }
   const disclosure = page.locator('details[aria-label="Package source"]');
   await expect(disclosure).not.toHaveAttribute("open", "");
   const summary = disclosure.locator("summary");

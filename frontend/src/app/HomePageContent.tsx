@@ -3,7 +3,7 @@ import { getDeploymentReadiness } from "@/lib/deployment-readiness";
 import { buildWebSiteStructuredData } from "@/lib/site-metadata";
 import type { SupportedLanguage } from "@/stores/language-store";
 
-import { getLandingCopy } from "./_landing-v2/copy";
+import { getLandingCopy, getLandingMetadataCopy } from "./_landing-v2/copy";
 import { LandingPublicShell } from "./_landing-v2/LandingPublicShell";
 import { LandingSections } from "./LandingSections";
 
@@ -11,9 +11,10 @@ export function HomePageContent({ language }: Readonly<{ language: SupportedLang
   const readiness = getDeploymentReadiness();
   const dataAvailable = readiness.dataBackend === "available";
   const copy = getLandingCopy(language);
+  const metadataCopy = getLandingMetadataCopy(language, readiness);
   const jsonLd = {
     ...buildWebSiteStructuredData(readiness),
-    description: dataAvailable ? copy.metadata.description : copy.demoIntro,
+    description: metadataCopy.description,
     inLanguage: language,
   };
 

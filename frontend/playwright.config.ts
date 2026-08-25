@@ -689,6 +689,60 @@ const phase5a3LandingMotionProject = {
   },
 };
 
+const phase5a3LandingFirefoxProject = {
+  ...phase5a3LandingEvidenceProject,
+  name: "phase5a3-landing-firefox",
+  testMatch: /phase5a3-landing-cross-browser\.spec\.ts/,
+  use: {
+    ...devices["Desktop Firefox"],
+    browserName: "firefox" as const,
+    viewport: { width: 390, height: 844 },
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
+const phase5a3LandingWebkitProject = {
+  ...phase5a3LandingEvidenceProject,
+  name: "phase5a3-landing-webkit",
+  testMatch: /phase5a3-landing-cross-browser\.spec\.ts/,
+  use: {
+    ...devices["Desktop Safari"],
+    browserName: "webkit" as const,
+    viewport: { width: 390, height: 844 },
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
+const phase5a3LandingFirefoxNoJavaScriptProject = {
+  ...phase5a3LandingFirefoxProject,
+  name: "phase5a3-landing-firefox-no-javascript",
+  use: {
+    ...phase5a3LandingFirefoxProject.use,
+    javaScriptEnabled: false,
+  },
+};
+
+const phase5a3LandingWebkitNoJavaScriptProject = {
+  ...phase5a3LandingWebkitProject,
+  name: "phase5a3-landing-webkit-no-javascript",
+  use: {
+    ...phase5a3LandingWebkitProject.use,
+    javaScriptEnabled: false,
+  },
+};
+
 const projects = [
   ...(LOCAL_AUTHENTICATED ? [authSetupProject, functionalAuthSetupProject] : []),
   smokeProject,
@@ -737,6 +791,10 @@ const projects = [
         phase5a3LandingNoJavaScriptProject,
         phase5a3LandingNoJavaScriptDarkProject,
         phase5a3LandingMotionProject,
+        phase5a3LandingFirefoxProject,
+        phase5a3LandingWebkitProject,
+        phase5a3LandingFirefoxNoJavaScriptProject,
+        phase5a3LandingWebkitNoJavaScriptProject,
       ]
     : []),
   ...(HAS_SCREENSHOTS ? [screenshotsProject] : []),

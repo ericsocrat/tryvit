@@ -7,6 +7,12 @@ test("retains exact project-locale landing evidence", async ({ page }, testInfo)
   const filename = polish
     ? "landing--390x844--text-spacing--pl.png"
     : "landing--1440x900--dark--de.png";
+  const description = polish
+    ? "TryVit oddziela dane z etykiety od obliczeń, kontekstu i decyzji. Metoda pozostaje dostępna, gdy dane produktów na żywo są wstrzymane."
+    : "TryVit trennt Verpackungsangaben von Berechnungen, Kontext und Entscheidungen. Die Methode bleibt verfügbar, während Live-Produktdaten pausiert sind.";
+  const socialDescription = polish
+    ? "Metoda TryVit oparta na danych i źródłach pozostaje dostępna, gdy dane produktów na żywo są wstrzymane; wszystkie przykłady są syntetyczne."
+    : "Die evidenzorientierte TryVit-Methode bleibt verfügbar, während Live-Produktdaten pausiert sind; alle Beispiele sind synthetisch.";
 
   await page.addInitScript((mode: string) => localStorage.setItem("theme", mode), theme);
   await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
@@ -27,6 +33,11 @@ test("retains exact project-locale landing evidence", async ({ page }, testInfo)
   ).toBeVisible();
   await expect(
     page.getByRole("navigation", {
+      name: polish ? "Konto, usługa i wygląd" : "Konto, Dienst und Darstellung",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("navigation", {
       name: polish ? "Nawigacja w stopce" : "Fußzeilennavigation",
     }),
   ).toBeVisible();
@@ -35,6 +46,24 @@ test("retains exact project-locale landing evidence", async ({ page }, testInfo)
       ? "TryVit — dane o żywności, które można sprawdzić"
       : "TryVit — nachprüfbare Lebensmittelinformation",
   );
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", description);
+  await expect(page.locator('meta[property="og:description"]')).toHaveAttribute(
+    "content",
+    socialDescription,
+  );
+  await expect(page.locator('meta[name="twitter:description"]')).toHaveAttribute(
+    "content",
+    socialDescription,
+  );
+  const structuredData = await page
+    .locator('script[type="application/ld+json"]')
+    .evaluateAll((scripts) => scripts.map((script) => JSON.parse(script.textContent ?? "{}")));
+  expect(structuredData).toHaveLength(1);
+  expect(structuredData[0]).toMatchObject({
+    "@type": "WebSite",
+    inLanguage: language,
+    description,
+  });
 
   if (polish) {
     await expect(

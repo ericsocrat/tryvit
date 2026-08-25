@@ -112,7 +112,8 @@
   z-index: 40;
   top: 0;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: minmax(0, auto) 1fr auto;
+  gap: 0.75rem;
   align-items: center;
   min-height: 76px;
   padding: 0.7rem clamp(1rem, 3vw, 3rem);
@@ -121,7 +122,7 @@
 }
 
 .lockupLink,
-.lockupLink > span,
+.lockupLink > [data-landing-lockup],
 .footer > span {
   display: inline-flex;
   align-items: center;
@@ -133,6 +134,7 @@
 .lockupLink {
   min-width: 44px;
   min-height: 44px;
+  gap: 1rem;
 }
 
 .lockupLink svg[role="img"] {
@@ -142,15 +144,17 @@
 
 .identityLabel {
   margin: 0;
-  padding-inline: 1.25rem;
+  max-width: 34ch;
   color: var(--landing-secondary);
   font-size: 0.75rem;
   font-weight: 700;
+  line-height: 1.25;
   letter-spacing: 0.075em;
   text-transform: uppercase;
 }
 
-.navigation {
+.sectionNavigation,
+.utilityNavigation {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -159,7 +163,8 @@
   white-space: nowrap;
 }
 
-.navigation a,
+.sectionNavigation a,
+.utilityNavigation a,
 .themeToggle {
   min-width: 44px;
   min-height: 44px;
@@ -181,7 +186,8 @@
     background-color 180ms ease;
 }
 
-.navigation a:hover,
+.sectionNavigation a:hover,
+.utilityNavigation a:hover,
 .themeToggle:hover {
   color: var(--landing-ink);
   border-bottom-color: var(--landing-rust);
@@ -313,10 +319,10 @@
   position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr);
-  gap: clamp(2rem, 6vw, 7rem);
+  gap: clamp(1.5rem, 5vw, 5rem);
   align-items: center;
-  min-height: min(760px, calc(100vh - 76px));
-  padding: clamp(4rem, 9vw, 8rem) clamp(1rem, 7vw, 7rem);
+  min-height: min(720px, calc(100svh - 76px));
+  padding: clamp(3rem, 7vw, 6rem) clamp(1rem, 7vw, 7rem);
   border-bottom: 1px solid var(--landing-rule);
 }
 
@@ -333,37 +339,6 @@
   position: relative;
   z-index: 2;
   max-width: 760px;
-}
-
-.surfaceOwner {
-  width: fit-content;
-  max-width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding: 0.45rem 0.6rem;
-  border: 1px solid var(--landing-rule-soft);
-  color: var(--landing-brand);
-  background: var(--landing-paper);
-}
-
-.surfaceOwner > span:first-child {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.surfaceOwner svg[role="img"] {
-  width: 76px;
-  height: 19px;
-}
-
-.surfaceOwner > span:last-child {
-  color: var(--landing-secondary);
-  font-size: 0.75rem;
-  font-weight: 700;
 }
 
 .eyebrow {
@@ -387,7 +362,7 @@
 
 .heroIntro {
   max-width: 62ch;
-  margin: 1.7rem 0 0;
+  margin: 1.4rem 0 0;
   color: var(--landing-secondary);
   font-size: clamp(1rem, 1.4vw, 1.25rem);
   line-height: 1.65;
@@ -399,7 +374,7 @@
   flex-wrap: wrap;
   gap: 0.75rem;
   align-items: center;
-  margin-top: 2rem;
+  margin-top: 1.5rem;
 }
 
 .primaryAction,
@@ -516,6 +491,7 @@
 
 .packageSpecimen {
   position: relative;
+  display: block;
   width: 142px;
   aspect-ratio: 0.78;
   border: 1px solid var(--landing-rule);
@@ -795,18 +771,21 @@
 
 @media (max-width: 1050px) {
   .header {
-    grid-template-columns: auto 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 0.35rem;
+    padding-bottom: 0.45rem;
   }
 
-  .identityLabel {
+  .sectionNavigation {
     grid-column: 1 / -1;
     grid-row: 2;
-    padding: 0.35rem 0 0;
+    justify-content: flex-start;
+    border-top: 1px solid var(--landing-rule-soft);
   }
 
-  .navigation {
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
+  .utilityNavigation {
+    grid-column: 2;
+    grid-row: 1;
   }
 }
 
@@ -851,25 +830,62 @@
 @media (max-width: 720px) {
   .header {
     position: relative;
-    grid-template-columns: auto minmax(0, 1fr);
-    min-height: 76px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 0;
+    padding: 0.45rem 0.75rem 0.35rem;
+    row-gap: 0.25rem;
+  }
+
+  .lockupLink {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .lockupLink > [data-landing-lockup] {
+    gap: 0.35rem;
+  }
+
+  .lockupLink [data-landing-lockup="horizontal"] > svg:first-child {
+    width: 28px;
+    height: 28px;
+  }
+
+  .lockupLink svg[role="img"] {
+    width: 68px;
+    height: 17px;
   }
 
   .identityLabel {
-    display: none;
+    max-width: 24ch;
+    font-size: 0.56rem;
+    line-height: 1.15;
+    letter-spacing: 0.055em;
   }
 
-  .navigation {
-    grid-column: 2;
-    grid-row: 1;
-    justify-content: flex-start;
-    margin-inline-start: 0.75rem;
+  .sectionNavigation {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0;
   }
 
-  .navigation > a:nth-child(2),
-  .navigation > a:nth-child(3),
-  .navigation > a:nth-child(4) {
-    display: none;
+  .sectionNavigation a {
+    min-width: 0;
+    padding-inline: 0.2rem;
+    font-size: 0.7rem;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .utilityNavigation {
+    gap: 0;
+  }
+
+  .utilityNavigation a,
+  .utilityNavigation .themeToggle {
+    padding-inline: 0.45rem;
+    font-size: 0.7rem;
   }
 
   .statusBand {
@@ -877,11 +893,24 @@
   }
 
   .hero {
-    padding-top: 3.5rem;
+    gap: 1.5rem;
+    padding-top: 1.75rem;
+    padding-bottom: 3rem;
   }
 
   .hero h1 {
-    font-size: clamp(2.5rem, 11.5vw, 3.5rem);
+    font-size: clamp(2.35rem, 11vw, 3.25rem);
+    line-height: 0.96;
+  }
+
+  .heroIntro {
+    margin-top: 1.05rem;
+    line-height: 1.55;
+  }
+
+  .heroActions,
+  .finalActions {
+    margin-top: 1.25rem;
   }
 
   .packageNarrative {
@@ -927,17 +956,7 @@
   }
 }
 
-@media (max-width: 520px) {
-  .header .lockupLink svg[role="img"] {
-    display: none;
-  }
-}
-
 @media (max-width: 390px) {
-  .navigation > a:first-child {
-    display: none;
-  }
-
   .statusBand dl {
     grid-template-columns: 1fr;
   }

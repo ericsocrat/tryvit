@@ -42,7 +42,7 @@ export default async function RootLayout({
   const [language, requestHeaders] = await Promise.all([getServerLocale(), headers()]);
   const usesLandingProviderBoundary =
     requestHeaders.get(PROVIDER_BOUNDARY_REQUEST_HEADER) === LANDING_PROVIDER_BOUNDARY;
-  const jsonLd = buildRootWebApplicationStructuredData(getDeploymentReadiness());
+  const jsonLd = buildRootWebApplicationStructuredData(getDeploymentReadiness(), language);
 
   return (
     <html

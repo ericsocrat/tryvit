@@ -17,7 +17,7 @@ describe("LandingSections", () => {
 
   it("renders the selected identity and decision-first hero", () => {
     render(<LandingSections language="en" />);
-    expect(screen.getByRole("img", { name: "TryVit" })).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "TryVit" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "Read the package. See the reasoning. Make your own call.",
     );
@@ -40,7 +40,13 @@ describe("LandingSections", () => {
     const user = userEvent.setup();
     const { container } = render(<LandingSections language="en" />);
     const disclosure = container.querySelector("details");
+    const summary = disclosure?.querySelector("summary");
     expect(disclosure).not.toHaveAttribute("open");
+    expect(summary).not.toBeNull();
+    expect(summary?.querySelector("div, section, article, button, a, input")).toBeNull();
+    expect(
+      [...(summary?.children ?? [])].every((element) => element.tagName === "SPAN"),
+    ).toBe(true);
     expect(screen.getByText("Package source")).toBeInTheDocument();
     expect(screen.getAllByText("Decision and next action").length).toBeGreaterThanOrEqual(2);
 
@@ -59,6 +65,10 @@ describe("LandingSections", () => {
       "href",
       "/auth/login",
     );
+    expect(
+      screen.getByText(/checks only whether you already have a TryVit session/iu),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/does not start the camera or look up product data/iu)).toBeInTheDocument();
   });
 
   it("renders a truthful demo state without account actions", () => {
@@ -71,6 +81,8 @@ describe("LandingSections", () => {
     expect(screen.queryByRole("link", { name: "Create an account" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "Contact" }).length).toBeGreaterThan(0);
+    expect(screen.getByText(/does not check for an account or session/iu)).toBeInTheDocument();
+    expect(screen.getByText(/no hosted product service is used as a fallback/iu)).toBeInTheDocument();
   });
 
   it("uses complete heading and landmark-compatible section structure", () => {

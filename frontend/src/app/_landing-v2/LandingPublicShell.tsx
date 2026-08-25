@@ -21,13 +21,17 @@ export function LandingPublicShell({
       <header className={styles.header}>
         <a aria-label="TryVit" className={styles.lockupLink} href="#landing-top">
           <LandingLockup />
+          <span className={styles.identityLabel} data-landing-market-descriptor>
+            {copy.identityLabel}
+          </span>
         </a>
-        <p className={styles.identityLabel}>{copy.identityLabel}</p>
-        <nav aria-label={copy.primaryNavigationLabel} className={styles.navigation}>
+        <nav aria-label={copy.primaryNavigationLabel} className={styles.sectionNavigation}>
           <a href="#evidence">{copy.navigation.evidence}</a>
           <a href="#method">{copy.navigation.method}</a>
           <a href="#trust">{copy.navigation.trust}</a>
           <a href="/contact">{copy.navigation.contact}</a>
+        </nav>
+        <nav aria-label={copy.utilityNavigationLabel} className={styles.utilityNavigation}>
           {dataAvailable ? (
             <LandingLiveAuthAction
               dashboardLabel={copy.navigation.dashboard}
