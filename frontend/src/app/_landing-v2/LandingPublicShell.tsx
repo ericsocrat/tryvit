@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import type { LandingCopy } from "./copy";
 import { LandingLockup } from "./LandingIdentity";
 import { LandingLiveAuthAction } from "./LandingLiveAuthAction.client";
-import { LandingThemeToggle } from "./LandingThemeToggle.client";
+import { LandingThemeToggle } from "./LandingThemeToggle";
 import styles from "./landing.module.css";
 
 export function LandingPublicShell({
