@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "72eb2ab55c89a1913488cbd7447d03982da5e503",
+    "baseSha": "3f1c11f6d46fc1fd58a67c9c7be8296e8fdb345a",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "eef92d8ffb64be965fdbb769f53fe01a786b480007fb7d7f8e70245962c6f1cf"
+    "sourceFingerprint": "c995e046f2dff8e7862101af4b3daa940b45df9fefe649ac1d1985b27797b61c"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12,9 +12,9 @@
     "frontend/src/design-system"
   ],
   "moduleCounts": {
-    "total": 437,
+    "total": 442,
     "route-module": 92,
-    "app-support-module": 80,
+    "app-support-module": 85,
     "shared-component-module": 196,
     "design-system-module": 69
   },
@@ -28,11 +28,9 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/app/LandingSections.tsx",
-        "frontend/src/components/layout/LivePublicAuthActions.tsx",
-        "frontend/src/components/layout/PublicFooter.tsx",
-        "frontend/src/components/layout/PublicHeader.tsx",
+        "frontend/src/app/_landing-v2/LandingPublicShell.tsx",
+        "frontend/src/app/_landing-v2/copy.ts",
         "frontend/src/lib/deployment-readiness.ts",
-        "frontend/src/lib/i18n-core.ts",
         "frontend/src/stores/language-store.ts"
       ],
       "directConsumers": [
@@ -62,10 +60,9 @@
       "hasUseClientDirective": false,
       "runtimeBoundary": "server-only",
       "directModuleImports": [
-        "frontend/src/components/common/Button.tsx",
-        "frontend/src/components/common/Logo.tsx",
-        "frontend/src/components/layout/LivePublicAuthActions.tsx",
-        "frontend/src/lib/i18n-core.ts",
+        "frontend/src/app/_landing-v2/LandingIdentity.tsx",
+        "frontend/src/app/_landing-v2/PackageLabelNarrative.client.tsx",
+        "frontend/src/app/_landing-v2/copy.ts",
         "frontend/src/stores/language-store.ts"
       ],
       "directConsumers": [
@@ -85,51 +82,154 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/_landing-v2/LandingIdentity.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/LandingSections.tsx",
+        "frontend/src/app/_landing-v2/LandingPublicShell.tsx"
+      ],
+      "transitiveRouteConsumers": [
         {
-          "category": "arbitrary-shadow",
-          "occurrences": [
-            {
-              "value": "shadow-[0_12px_36px_rgba(0,0,0,0.35)]",
-              "count": 1
-            },
-            {
-              "value": "shadow-[0_14px_40px_rgba(0,0,0,0.35)]",
-              "count": 1
-            }
-          ]
-        },
-        {
-          "category": "arbitrary-tracking",
-          "occurrences": [
-            {
-              "value": "tracking-[0.06em]",
-              "count": 1
-            },
-            {
-              "value": "tracking-[0.08em]",
-              "count": 7
-            },
-            {
-              "value": "tracking-[0.12em]",
-              "count": 1
-            },
-            {
-              "value": "tracking-[0.1em]",
-              "count": 2
-            }
-          ]
-        },
-        {
-          "category": "transition-all",
-          "occurrences": [
-            {
-              "value": "transition-all",
-              "count": 6
-            }
-          ]
+          "modulePath": "frontend/src/app/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/"
         }
-      ]
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/_landing-v2/LandingPublicShell.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/_landing-v2/LandingIdentity.tsx",
+        "frontend/src/app/_landing-v2/LandingThemeToggle.client.tsx",
+        "frontend/src/app/_landing-v2/copy.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/HomePageContent.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/_landing-v2/LandingThemeToggle.client.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/hooks/use-theme.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/_landing-v2/LandingPublicShell.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/_landing-v2/PackageLabelNarrative.client.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/LandingSections.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/_landing-v2/copy.ts",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/stores/language-store.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/HomePageContent.tsx",
+        "frontend/src/app/LandingSections.tsx",
+        "frontend/src/app/_landing-v2/LandingPublicShell.tsx",
+        "frontend/src/app/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/api/flags/route.ts",
@@ -5865,6 +5965,7 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/app/HomePageContent.tsx",
+        "frontend/src/app/_landing-v2/copy.ts",
         "frontend/src/lib/server-locale.ts"
       ],
       "directConsumers": [],
@@ -6695,7 +6796,6 @@
         "frontend/src/design-system/compat-v1/Button.tsx"
       ],
       "directConsumers": [
-        "frontend/src/app/LandingSections.tsx",
         "frontend/src/app/app/admin/submissions/page.tsx",
         "frontend/src/app/app/categories/[slug]/page.tsx",
         "frontend/src/app/app/categories/page.tsx",
@@ -6983,11 +7083,6 @@
           "modulePath": "frontend/src/app/onboarding/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/onboarding"
-        },
-        {
-          "modulePath": "frontend/src/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/"
         },
         {
           "modulePath": "frontend/src/app/privacy/page.tsx",
@@ -8219,7 +8314,6 @@
       "runtimeBoundary": "client-reachable",
       "directModuleImports": [],
       "directConsumers": [
-        "frontend/src/app/LandingSections.tsx",
         "frontend/src/app/app/layout.tsx",
         "frontend/src/app/auth/forgot-password/ForgotPasswordForm.tsx",
         "frontend/src/app/auth/layout.tsx",
@@ -8328,11 +8422,6 @@
           "modulePath": "frontend/src/app/onboarding/layout.tsx",
           "routeModuleKind": "layout",
           "routePath": "/onboarding"
-        },
-        {
-          "modulePath": "frontend/src/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/"
         },
         {
           "modulePath": "frontend/src/app/privacy/page.tsx",
@@ -14121,8 +14210,6 @@
         "frontend/src/lib/supabase/client.ts"
       ],
       "directConsumers": [
-        "frontend/src/app/HomePageContent.tsx",
-        "frontend/src/app/LandingSections.tsx",
         "frontend/src/components/layout/PublicHeader.tsx"
       ],
       "transitiveRouteConsumers": [
@@ -14175,11 +14262,6 @@
           "modulePath": "frontend/src/app/learn/tryvit-score/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/learn/tryvit-score"
-        },
-        {
-          "modulePath": "frontend/src/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/"
         },
         {
           "modulePath": "frontend/src/app/privacy/page.tsx",
@@ -14299,7 +14381,6 @@
         "frontend/src/components/common/Logo.tsx"
       ],
       "directConsumers": [
-        "frontend/src/app/HomePageContent.tsx",
         "frontend/src/components/layout/Footer.tsx"
       ],
       "transitiveRouteConsumers": [
@@ -14354,11 +14435,6 @@
           "routePath": "/learn/tryvit-score"
         },
         {
-          "modulePath": "frontend/src/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/"
-        },
-        {
           "modulePath": "frontend/src/app/privacy/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/privacy"
@@ -14392,7 +14468,6 @@
         "frontend/src/components/layout/ThemeToggle.tsx"
       ],
       "directConsumers": [
-        "frontend/src/app/HomePageContent.tsx",
         "frontend/src/components/layout/Header.tsx"
       ],
       "transitiveRouteConsumers": [
@@ -14445,11 +14520,6 @@
           "modulePath": "frontend/src/app/learn/tryvit-score/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/learn/tryvit-score"
-        },
-        {
-          "modulePath": "frontend/src/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/"
         },
         {
           "modulePath": "frontend/src/app/privacy/page.tsx",
@@ -14548,11 +14618,6 @@
           "modulePath": "frontend/src/app/learn/tryvit-score/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/learn/tryvit-score"
-        },
-        {
-          "modulePath": "frontend/src/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/"
         },
         {
           "modulePath": "frontend/src/app/privacy/page.tsx",
@@ -17901,11 +17966,6 @@
           "routePath": "/onboarding"
         },
         {
-          "modulePath": "frontend/src/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/"
-        },
-        {
           "modulePath": "frontend/src/app/privacy/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/privacy"
@@ -20462,16 +20522,6 @@
       "category": "arbitrary-shadow",
       "occurrences": [
         {
-          "path": "frontend/src/app/LandingSections.tsx",
-          "value": "shadow-[0_12px_36px_rgba(0,0,0,0.35)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/LandingSections.tsx",
-          "value": "shadow-[0_14px_40px_rgba(0,0,0,0.35)]",
-          "count": 1
-        },
-        {
           "path": "frontend/src/app/app/scan/page.tsx",
           "value": "shadow-[0_0_12px_rgba(234,179,8,0.5)]",
           "count": 1
@@ -20951,26 +21001,6 @@
       "category": "arbitrary-tracking",
       "occurrences": [
         {
-          "path": "frontend/src/app/LandingSections.tsx",
-          "value": "tracking-[0.06em]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/LandingSections.tsx",
-          "value": "tracking-[0.08em]",
-          "count": 7
-        },
-        {
-          "path": "frontend/src/app/LandingSections.tsx",
-          "value": "tracking-[0.12em]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/LandingSections.tsx",
-          "value": "tracking-[0.1em]",
-          "count": 2
-        },
-        {
           "path": "frontend/src/app/contact/page.tsx",
           "value": "tracking-[0.2em]",
           "count": 1
@@ -21005,11 +21035,6 @@
     {
       "category": "transition-all",
       "occurrences": [
-        {
-          "path": "frontend/src/app/LandingSections.tsx",
-          "value": "transition-all",
-          "count": 6
-        },
         {
           "path": "frontend/src/app/app/categories/page.tsx",
           "value": "transition-all",
@@ -21154,9 +21179,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 542,
+    "inspectedModuleCount": 547,
     "violations": [],
-    "sourceFingerprint": "4e5136246fb2cafbb25f11e27750ee527f11723e9240ebe96ef5dce0386cae5b"
+    "sourceFingerprint": "e6562386723ac058ddb0132134049751cdbdb8634b9924da2a18c6791098be7b"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
@@ -21170,7 +21195,6 @@
           "buttonClasses"
         ],
         "directConsumers": [
-          "frontend/src/app/LandingSections.tsx",
           "frontend/src/app/app/admin/submissions/page.tsx",
           "frontend/src/app/app/categories/[slug]/page.tsx",
           "frontend/src/app/app/categories/page.tsx",
@@ -21457,11 +21481,6 @@
             "modulePath": "frontend/src/app/onboarding/page.tsx",
             "routeModuleKind": "page",
             "routePath": "/onboarding"
-          },
-          {
-            "modulePath": "frontend/src/app/page.tsx",
-            "routeModuleKind": "page",
-            "routePath": "/"
           },
           {
             "modulePath": "frontend/src/app/privacy/page.tsx",
@@ -21779,6 +21798,6 @@
         ]
       }
     ],
-    "sourceFingerprint": "4daf94084e2480085c91b0ffe0f0b5f392ca80062874ac8f8a1b8be578ec5332"
+    "sourceFingerprint": "36f35ef528e1732ae2bf64f59a8de26c18b7a64a5113c98def74831039d58387"
   }
 }

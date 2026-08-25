@@ -538,7 +538,7 @@ describe("Phase 5A.2 recording contract wiring", () => {
     const scanner = readFrontend("e2e/phase5a2-direction-selection-scanner.spec.ts");
     const projectBlock = config.slice(
       config.indexOf("const phase5a2DirectionStillsProject"),
-      config.indexOf("const projects ="),
+      config.indexOf("const phase5a3LandingEvidenceProject"),
     );
     const recordingStart = "startDirectionSelectionRecording(page, capture)";
 

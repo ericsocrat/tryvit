@@ -427,7 +427,7 @@ describe("cold-browser route JavaScript evidence", () => {
     expect(routeJsToolSource).toContain("script-request-terminal-event-missing");
     expect(routeJsToolSource).toContain("route-error-or-not-found-shell");
     for (const routeMarker of [
-      "Read the package. See the reasoning. Make your own call.",
+      "healthier choices, made simple",
       "Welcome back",
       "mailto:hello@example.com",
       "new-user-welcome",

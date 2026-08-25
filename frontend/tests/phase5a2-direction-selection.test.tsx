@@ -508,7 +508,7 @@ describe("Phase 5A.2 direction-selection contract", () => {
     }
     const projectBlock = config.slice(
       config.indexOf("const phase5a2DirectionStillsProject"),
-      config.indexOf("const projects ="),
+      config.indexOf("const phase5a3LandingEvidenceProject"),
     );
     expect(projectBlock.match(/dependencies: \["auth-setup"\]/gu)).toHaveLength(5);
     expect(projectBlock.match(/serviceWorkers: "block"/gu)).toHaveLength(5);
