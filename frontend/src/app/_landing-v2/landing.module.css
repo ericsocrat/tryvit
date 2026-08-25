@@ -802,7 +802,6 @@
 
   .hero h1 {
     font-size: clamp(2.5rem, 11.5vw, 3.5rem);
-    text-wrap: wrap;
   }
 
   .packageNarrative {
