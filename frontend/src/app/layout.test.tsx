@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest";
-import RootLayout from "./layout";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import RootLayout, { generateMetadata } from "./layout";
 
 const { mockGetServerLocale } = vi.hoisted(() => ({
   mockGetServerLocale: vi.fn(),
@@ -19,4 +19,22 @@ describe("RootLayout document language", () => {
       expect(result.props["data-design-system"]).toBe("v1");
     },
   );
+});
+
+describe("RootLayout metadata readiness", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("publishes live capability metadata only with complete readiness", () => {
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "public-anon-key");
+    vi.stubEnv("TRYVIT_DATA_BACKEND_MODE", "live");
+    expect(generateMetadata().description).toContain("scan barcodes");
+  });
+
+  it("publishes an explicit paused description in demo mode", () => {
+    vi.stubEnv("TRYVIT_DATA_BACKEND_MODE", "demo");
+    expect(generateMetadata().description).toContain(
+      "Live product data is currently unavailable",
+    );
+  });
 });

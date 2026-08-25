@@ -31,6 +31,7 @@
         "frontend/src/app/_landing-v2/LandingPublicShell.tsx",
         "frontend/src/app/_landing-v2/copy.ts",
         "frontend/src/lib/deployment-readiness.ts",
+        "frontend/src/lib/site-metadata.ts",
         "frontend/src/stores/language-store.ts"
       ],
       "directConsumers": [
@@ -4671,9 +4672,11 @@
         "frontend/src/components/Providers.tsx",
         "frontend/src/components/ThemeScript.tsx",
         "frontend/src/design-system/accessibility/theme-contract.ts",
+        "frontend/src/lib/deployment-readiness.ts",
         "frontend/src/lib/i18n-server.ts",
         "frontend/src/lib/qa-mode.ts",
-        "frontend/src/lib/server-locale.ts"
+        "frontend/src/lib/server-locale.ts",
+        "frontend/src/lib/site-metadata.ts"
       ],
       "directConsumers": [],
       "transitiveRouteConsumers": [

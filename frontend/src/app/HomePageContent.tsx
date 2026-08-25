@@ -1,4 +1,5 @@
 import { getDeploymentReadiness } from "@/lib/deployment-readiness";
+import { buildWebSiteStructuredData } from "@/lib/site-metadata";
 import type { SupportedLanguage } from "@/stores/language-store";
 
 import { getLandingCopy } from "./_landing-v2/copy";
@@ -10,24 +11,9 @@ export function HomePageContent({ language }: Readonly<{ language: SupportedLang
   const dataAvailable = readiness.dataBackend === "available";
   const copy = getLandingCopy(language);
   const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "TryVit",
-    url: "https://tryvit.vercel.app",
-    description: copy.metadata.description,
+    ...buildWebSiteStructuredData(readiness),
+    description: dataAvailable ? copy.metadata.description : copy.demoIntro,
     inLanguage: language,
-    ...(dataAvailable
-      ? {
-          potentialAction: {
-            "@type": "SearchAction",
-            target: {
-              "@type": "EntryPoint",
-              urlTemplate: "https://tryvit.vercel.app/app/search?q={search_term_string}",
-            },
-            "query-input": "required name=search_term_string",
-          },
-        }
-      : {}),
   };
 
   return (

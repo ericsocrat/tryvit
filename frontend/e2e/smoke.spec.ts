@@ -41,7 +41,16 @@ test.describe("Public pages", () => {
     expect(serverHtml).toMatch(/<html[^>]+lang="en"/u);
 
     await page.waitForLoadState("networkidle");
-    await expect(page.getByRole("heading", { name: "Read the package. See the reasoning. Make your own call." })).toBeVisible();
+    await expect(page).toHaveURL(/\/$/u);
+    await expect(page.locator('[data-route-id="public-landing"]')).toHaveCount(1);
+    await expect(
+      page.locator('main#main-content[data-route-id="public-landing"]'),
+    ).toHaveCount(1);
+    await expect(
+      page.getByRole("heading", {
+        name: "Read the package. See the reasoning. Make your own call.",
+      }),
+    ).toBeVisible();
     await expect(page.getByText("Demo mode").first()).toBeVisible();
     expect(forbiddenRequests).toEqual([]);
   });
@@ -55,7 +64,7 @@ test.describe("Public pages", () => {
 
   test("landing page has correct title", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle(/TryVit/);
+    await expect(page).toHaveTitle("TryVit — Know What You Eat");
   });
 
   test("login page renders form", async ({ page }) => {

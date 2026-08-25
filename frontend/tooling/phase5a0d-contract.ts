@@ -24,6 +24,12 @@ export interface MeasurementRoute {
   readonly requiresLocalFixture: boolean;
   readonly boundary: "server-led-public" | "client-auth-entry" | "authenticated-client-surface";
   readonly initialJsTargetGzipBytes: number | null;
+  readonly stableIdentity?: Readonly<{
+    pathname: "/";
+    markerAttribute: "data-route-id";
+    markerValue: "public-landing";
+    boundarySelector: "main#main-content";
+  }>;
 }
 
 export const MEASUREMENT_ROUTES: readonly MeasurementRoute[] = Object.freeze([
@@ -34,6 +40,12 @@ export const MEASUREMENT_ROUTES: readonly MeasurementRoute[] = Object.freeze([
     requiresLocalFixture: false,
     boundary: "server-led-public",
     initialJsTargetGzipBytes: 180 * 1024,
+    stableIdentity: Object.freeze({
+      pathname: "/",
+      markerAttribute: "data-route-id",
+      markerValue: "public-landing",
+      boundarySelector: "main#main-content",
+    }),
   },
   {
     id: "login",
@@ -298,6 +310,7 @@ export function assertRepresentativeRouteContract(): void {
     throw new Error("[P5_ROUTE_MATRIX] representative-route-drift");
   }
   const paths = new Set(MEASUREMENT_ROUTES.map((route) => route.path));
+  const landing = MEASUREMENT_ROUTES.find((route) => route.id === "landing");
   if (
     paths.size !== MEASUREMENT_ROUTES.length ||
     MEASUREMENT_ROUTES.some(
@@ -308,6 +321,14 @@ export function assertRepresentativeRouteContract(): void {
           (!Number.isSafeInteger(route.initialJsTargetGzipBytes) ||
             route.initialJsTargetGzipBytes <= 0)) ||
         (route.boundary === "authenticated-client-surface") !== route.requiresLocalFixture,
+    ) ||
+    !landing?.stableIdentity ||
+    landing.path !== landing.stableIdentity.pathname ||
+    landing.stableIdentity.markerAttribute !== "data-route-id" ||
+    landing.stableIdentity.markerValue !== "public-landing" ||
+    landing.stableIdentity.boundarySelector !== "main#main-content" ||
+    MEASUREMENT_ROUTES.some(
+      (route) => route.id !== "landing" && route.stableIdentity !== undefined,
     ) ||
     MEASUREMENT_ROUTES.filter((route) => route.path.includes(":fixtureProductId"))
       .map((route) => route.id)

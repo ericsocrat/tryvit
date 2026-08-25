@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { getServerLocale } from "@/lib/server-locale";
+
 import { buildLandingMetadata } from "./_landing-v2/copy";
 import { HomePageContent } from "./HomePageContent";
 

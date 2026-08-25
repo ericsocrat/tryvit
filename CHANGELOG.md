@@ -19,6 +19,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
   light/dark, localization, reflow, no-JavaScript and motion media; retained Lighthouse
   samples; rejected font trials; public trademark-similarity screening; and the
   separately governed visual-baseline/route-JS acceptance boundary.
+- Document the bounded Phase 5A.3 landing-governance prerequisite, stable route identity,
+  readiness-aware metadata/structured-data truth table, and the requirement that draft
+  landing PR `#1301` remain untouched until the base-owned judge is merged and certified.
 - Record Eric's approved Phase 5A.2 Checkpoint 2 decisions and PR `#1295` squash
   lineage; mark Phase 5A.0–5A.2 complete as non-production gates; preserve the later
   typography, production-performance, localization, legal, accessibility, device, and
@@ -51,6 +54,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### CI
 
+- Replace copy-based landing identity in the base-owned Route-JS harness with exact
+  pathname plus a unique nonvisual marker on the owned main boundary, retaining the
+  +10 KiB-or-5% thresholds and all safety/cleanup semantics.
 - Add one loopback-only service-worker browser project that proves protected
   content cannot cross logout/account boundaries while every existing visual
   and Lighthouse project retains its service-worker block.

@@ -599,15 +599,50 @@ async function assertExactVisibleText(
   }
 }
 
-async function assertMeasuredRouteIdentity(page: Page, route: MeasurementRoute): Promise<void> {
+async function assertStableRouteIdentity(
+  page: Page,
+  route: MeasurementRoute,
+  requestedPath: string,
+  expectedOrigin?: string,
+): Promise<void> {
+  const identity = route.stableIdentity;
+  if (!identity) fail(`route-stable-identity-missing:${route.id}`);
+  const currentUrl = new URL(page.url());
+  if (
+    (expectedOrigin !== undefined && currentUrl.origin !== expectedOrigin) ||
+    currentUrl.pathname !== requestedPath ||
+    currentUrl.pathname !== identity.pathname ||
+    currentUrl.search !== "" ||
+    currentUrl.hash !== ""
+  ) {
+    fail(`route-pathname-mismatch:${route.id}`);
+  }
+  const allMarkers = page.locator(`[${identity.markerAttribute}]`);
+  const markerCount = await allMarkers.count();
+  if (markerCount === 0) fail(`route-ready-marker-missing:${route.id}`);
+  if (markerCount > 1) fail(`route-ready-marker-duplicate:${route.id}`);
+  if ((await allMarkers.getAttribute(identity.markerAttribute)) !== identity.markerValue) {
+    fail(`route-identity-mismatch:${route.id}`);
+  }
+  const markerSelector = `[${identity.markerAttribute}="${identity.markerValue}"]`;
+  const boundary = page.locator(`${identity.boundarySelector}${markerSelector}`);
+  if ((await boundary.count()) !== 1) fail(`route-identity-boundary-mismatch:${route.id}`);
+  try {
+    await boundary.waitFor({ state: "visible", timeout: 15_000 });
+  } catch {
+    fail(`route-ready-marker-missing:${route.id}`);
+  }
+}
+
+export async function assertMeasuredRouteIdentity(
+  page: Page,
+  route: MeasurementRoute,
+  requestedPath: string,
+  expectedOrigin?: string,
+): Promise<void> {
   await assertNoErrorOrNotFoundShell(page, route.id);
   if (route.id === "landing") {
-    await assertExactVisibleText(
-      page,
-      "main#main-content h1",
-      "healthier choices, made simple",
-      route.id,
-    );
+    await assertStableRouteIdentity(page, route, requestedPath, expectedOrigin);
   } else if (route.id === "login") {
     await assertExactVisibleText(page, "#main-content h1", "Welcome back", route.id);
     for (const selector of ['form input#email[type="email"]', "form input#password"]) {
@@ -755,7 +790,7 @@ export async function captureRouteJavaScript(options: {
         }),
       );
     });
-    await assertMeasuredRouteIdentity(options.page, route);
+    await assertMeasuredRouteIdentity(options.page, route, requestedPath, expectedOrigin.origin);
     const settleDeadline = Date.now() + 15_000;
     while (observedResponses.size === 0 || Date.now() - lastTrackedResponseAt < 750) {
       if (Date.now() >= settleDeadline) fail(`tracked-script-settle-timeout:${route.id}`);
