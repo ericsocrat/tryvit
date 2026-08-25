@@ -1,7 +1,7 @@
 # Phase 5 Implementation Roadmap
 
-> **Last updated:** 2026-08-10
-> **Status:** Active — staged implementation plan; no implementation is included
+> **Last updated:** 2026-08-25
+> **Status:** Active — Phase 5A.0–5A.2 completed; Phase 5A.3 is next planned and separately authorized
 > **Owner issue:** Frontend domain
 
 ## Decision
@@ -22,7 +22,10 @@ merged 5A.0f rather than bypassing either hardening phase.
 
 Phase 5A then continues with exactly two Design System V2 PRs, followed by a
 non-production Experience Architecture and Golden Reference Gate. Production visitor
-redesign begins only after that gate receives Eric's explicit approval. The former
+redesign may begin only after that gate receives Eric's explicit approval and a separate
+route-family implementation authorization. Phase 5A.2 received approval and was merged
+as a non-production gate in PR `#1295`; this roadmap update does not grant the separate
+Phase 5A.3 implementation authority. The former
 `codex/phase-5a-visitor-experience` branch predates the allergen preflight and must never
 be reused or merged into this program.
 
@@ -59,14 +62,27 @@ These apply to every Phase 5 PR:
 - Every PR has a route-level rollback boundary and remains draft until its required verification passes.
 - No active user-facing route may remain visually deferred when Phase 5 is declared complete; it must be migrated to the approved V2 experience or removed.
 
+## Current program status
+
+- **Phase 5A.0:** completed through the six merged foundation/hardening PRs.
+- **Phase 5A.1:** completed through exactly two merged Design System V2 PRs.
+- **Phase 5A.2:** approved by Eric, squash-merged in PR `#1295`, and completed as a
+  non-production design and evidence gate.
+- **Phase 5A.3:** next planned route-family phase; separate implementation authorization
+  is still required, and no Phase 5A.3 implementation has begun.
+
+The conservative production-performance constraint remains `/app` mobile `0.83` against
+target `0.85`, the retained `538 ms` TBT sample, and the retained landing `0.65` outlier.
+Phase 5A.2 approval does not waive this debt.
+
 ## Roadmap overview
 
 | Phase | Objective | Primary surface | PR shape | Recommended model / effort |
 |---|---|---|---|---|
 | 5A.0 | Make public/demo rendering truthful, backend-independent and measurable | Visual safety, proxy/PWA, provider topology, landing architecture, visual/perf CI, accessibility remediation, private-cache safety | Six focused PRs, 5A.0a–5A.0f; completed before 5A.1 | GPT-5.6 Sol / Ultra |
-| 5A.1 | Establish Design System V2 foundations, primitives and compatibility | Tokens, typography, theme, primitives, route locale, component catalog | Exactly 2 focused PRs; no 5A.1c | GPT-5.6 Sol / XHigh |
-| 5A.2 | Challenge and approve experience architecture and Golden References | Non-production art direction, identity, content, motion and six reference experiences | Approval package; no production migration | Highest-capability Sol/frontier model / Ultra |
-| 5A.3 | Deliver the approved landing, Learn/legal/support and auth visual cohesion | Public visitor journey | 2–3 route-family PRs | GPT-5.6 Sol / Ultra for landing; High for follow-ups |
+| 5A.1 | Establish Design System V2 foundations, primitives and compatibility | Tokens, typography, theme, primitives, route locale, component catalog | Completed in exactly 2 focused PRs; no 5A.1c | GPT-5.6 Sol / XHigh |
+| 5A.2 | Challenge and approve experience architecture and Golden References | Non-production art direction, identity, content, motion and six reference experiences | Completed approval package; no production migration | Highest-capability Sol/frontier model / Ultra |
+| 5A.3 | Deliver the approved landing, Learn/legal/support and auth visual cohesion | Public visitor journey | Next planned; 2–3 separately authorized route-family PRs | GPT-5.6 Sol / Ultra for landing; High for follow-ups |
 | 5B | Create one app shell, route manifest and accessible navigation/overlay system | `/app` shell and global interactions | 2 focused PRs | GPT-5.6 Sol / XHigh |
 | 5C.1 | Redesign discovery | Search, filters, categories | 2 PRs | GPT-5.6 Sol / High |
 | 5C.2 | Redesign product decision and evidence | Product, ingredient, compare, alternatives | 2–3 PRs | GPT-5.6 Sol / Ultra |
@@ -241,6 +257,13 @@ governed by
   remains.
 - Eric explicitly selects and approves the direction and identity.
 
+**Completion record:** Eric approved Folded Label Register, the Source Fold identity,
+the Evidence Register product architecture, and all six Golden References. PR `#1295`
+was squash-merged as `fd75e5503ca4b3c996a704b41d8a2582905492c9`. Manrope with
+restrained Source Serif 4 is the preferred later production direction, not a production
+font adoption. The durable approval record is
+[`phase5a2/checkpoint-2/ERIC_APPROVAL.md`](phase5a2/checkpoint-2/ERIC_APPROVAL.md).
+
 ### Rollback
 
 Revert the non-production reference artifacts and decision record. No production route,
@@ -251,7 +274,9 @@ gate.
 
 ### Objective
 
-Deliver the approved public experience only after Phase 5A.2 passes.
+Deliver the approved public experience only after Phase 5A.2 passes and Eric separately
+authorizes the first route-family implementation PR. Phase 5A.3 is next planned; it has
+not begun and is not authorized by the Phase 5A.2 closure merge.
 
 ### Scope
 
