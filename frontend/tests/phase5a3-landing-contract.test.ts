@@ -54,7 +54,7 @@ describe("Phase 5A.3 landing production boundary", () => {
     expect(packageJson).not.toContain("@fontsource");
   });
 
-  it("admits exactly three explicit route-local client islands", () => {
+  it("admits exactly two explicit route-local client islands", () => {
     const clientFiles = walk(LANDING_ROOT)
       .filter((path) => path.endsWith(".tsx"))
       .filter((path) => /^\s*["']use client["'];/mu.test(readFileSync(path, "utf8")))
@@ -63,7 +63,6 @@ describe("Phase 5A.3 landing production boundary", () => {
     expect(clientFiles).toEqual([
       "LandingLiveAuthAction.client.tsx",
       "LandingThemeToggle.client.tsx",
-      "PackageLabelNarrative.client.tsx",
     ]);
   });
 
