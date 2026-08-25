@@ -4,7 +4,7 @@
   "provenance": {
     "baseSha": "61c52e73eed0393e24b0597d63c47cb7b5cdbe7e",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "078ba016e8236cb55f63e9d08c5eee9150945fbd37a58860133ab6d3caa912c4"
+    "sourceFingerprint": "09a9ed6ead31e7fc73d10d46bb7063e17199999c1e06f2f0caa863147e7e638e"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12,9 +12,9 @@
     "frontend/src/design-system"
   ],
   "moduleCounts": {
-    "total": 444,
+    "total": 445,
     "route-module": 92,
-    "app-support-module": 86,
+    "app-support-module": 87,
     "shared-component-module": 196,
     "design-system-module": 70
   },
@@ -168,6 +168,28 @@
           "routePath": "/"
         }
       ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/_landing-v2/LandingSocialCard.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/opengraph-image.tsx",
+        "frontend/src/app/twitter-image.tsx"
+      ],
+      "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
         "5A.3"
       ],
@@ -5984,7 +6006,9 @@
       "routePath": null,
       "hasUseClientDirective": false,
       "runtimeBoundary": "server-only",
-      "directModuleImports": [],
+      "directModuleImports": [
+        "frontend/src/app/_landing-v2/LandingSocialCard.tsx"
+      ],
       "directConsumers": [],
       "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
@@ -6158,7 +6182,9 @@
       "routePath": null,
       "hasUseClientDirective": false,
       "runtimeBoundary": "server-only",
-      "directModuleImports": [],
+      "directModuleImports": [
+        "frontend/src/app/_landing-v2/LandingSocialCard.tsx"
+      ],
       "directConsumers": [],
       "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
@@ -21271,9 +21297,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 551,
+    "inspectedModuleCount": 552,
     "violations": [],
-    "sourceFingerprint": "300353c472dbe8afa1b3c1f542c8a4173e6bd58f15d44e38f19566ba3b0744b6"
+    "sourceFingerprint": "295c176c45b037c196ea175abf9f4275a951a3f027fac3adb509fbb8520e12a0"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

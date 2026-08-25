@@ -113,11 +113,15 @@ describe("localized landing metadata", () => {
     expect((metadata.openGraph as { description: string }).description).toBe(
       expected.socialDescription,
     );
+    expect((metadata.openGraph as { images: string[] }).images).toEqual([
+      "/opengraph-image",
+    ]);
     expect((metadata.openGraph as Record<string, unknown>).locale).toBe(locale);
     expect(metadata.twitter).toMatchObject({
       card: "summary_large_image",
       title: copy.metadata.title,
       description: expected.socialDescription,
+      images: ["/twitter-image"],
     });
     expect(JSON.stringify(metadata)).not.toMatch(/instantly|science-driven|health score/iu);
     if (mode === "demo") {

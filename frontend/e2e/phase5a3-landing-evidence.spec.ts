@@ -115,6 +115,40 @@ for (const width of [320, 390]) {
   });
 }
 
+for (const viewport of [
+  { width: 768, height: 1024 },
+  { width: 1024, height: 900 },
+  { width: 1440, height: 900 },
+]) {
+  test(`keeps sticky destinations below the header at ${viewport.width}px`, async ({
+    page,
+  }) => {
+    await openLanding(page, {
+      name: `sticky-destinations-${viewport.width}`,
+      ...viewport,
+      locale: "en-US",
+      language: "en",
+      theme: "light",
+    });
+
+    for (const [href, target] of [
+      ["#evidence", "#evidence"],
+      ["#method", "#method"],
+      ["#trust", "#trust"],
+      ["#service-status", "#service-status"],
+    ] as const) {
+      await page.locator(`header a[href="${href}"]`).click();
+      await expect(page).toHaveURL(new RegExp(`${href.replace("#", "#")}$`, "u"));
+      const geometry = await page.locator(target).evaluate((element) => {
+        const targetRect = element.getBoundingClientRect();
+        const headerRect = document.querySelector("header")!.getBoundingClientRect();
+        return { targetTop: targetRect.top, headerBottom: headerRect.bottom };
+      });
+      expect(geometry.targetTop + 1).toBeGreaterThanOrEqual(geometry.headerBottom);
+    }
+  });
+}
+
 for (const fold of [
   { width: 390, height: 844, minimumPackagePixels: 72, requireFullPackage: false },
   { width: 768, height: 1024, minimumPackagePixels: 0, requireFullPackage: true },
@@ -222,6 +256,49 @@ test("keeps demo metadata and WebSite structured data aligned with visible copy"
     description,
   });
   expect(structuredData[0]).not.toHaveProperty("potentialAction");
+});
+
+test("keeps linked social and manifest surfaces truthful without first-party failures", async ({
+  page,
+}) => {
+  const consoleErrors: string[] = [];
+  const firstPartyFailures: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  page.on("response", (response) => {
+    const url = new URL(response.url());
+    if (url.origin === "http://127.0.0.1:3000" && response.status() >= 400) {
+      firstPartyFailures.push(`${response.status()} ${url.pathname}`);
+    }
+  });
+
+  await openLanding(page, CAPTURES[0]);
+  await page.waitForLoadState("networkidle");
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    "content",
+    /\/opengraph-image/iu,
+  );
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
+    "content",
+    /\/twitter-image/iu,
+  );
+
+  for (const pathname of ["/opengraph-image", "/twitter-image"]) {
+    const response = await page.request.get(pathname);
+    expect(response.status()).toBe(200);
+    expect(response.headers()["content-type"]).toContain("image/png");
+    expect((await response.body()).byteLength).toBeGreaterThan(10_000);
+  }
+  const manifestResponse = await page.request.get("/manifest.webmanifest");
+  expect(manifestResponse.status()).toBe(200);
+  const manifest = await manifestResponse.json();
+  expect(JSON.stringify(manifest)).not.toMatch(
+    /instantly|health score|healthy|harmful|scan, score|multi-axis/iu,
+  );
+
+  expect(consoleErrors).toEqual([]);
+  expect(firstPartyFailures).toEqual([]);
 });
 
 test("does not load candidate fonts on authentication", async ({ page }) => {

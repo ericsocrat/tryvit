@@ -122,7 +122,7 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     decode: "Unfold the evidence",
     reset: "Fold back to source",
     packageName: "Oat drink",
-    synthetic: "Deterministic synthetic label",
+    synthetic: "Synthetic example",
     evidenceTitle: "One answer, four accountable layers",
     evidenceIntro:
       "A conclusion is useful only when you can trace what came from the package, what TryVit calculated, what context was applied, and what remains unknown.",
@@ -207,7 +207,7 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     decode: "Rozwiń dane",
     reset: "Wróć do źródła",
     packageName: "Napój owsiany",
-    synthetic: "Deterministyczna etykieta syntetyczna",
+    synthetic: "Przykład syntetyczny",
     evidenceTitle: "Jedna odpowiedź, cztery rozliczalne warstwy",
     evidenceIntro:
       "Wniosek jest użyteczny, gdy można sprawdzić dane z opakowania, obliczenia TryVit, zastosowany kontekst i to, czego nadal nie wiadomo.",
@@ -292,7 +292,7 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     decode: "Evidenz entfalten",
     reset: "Zur Quelle zurückfalten",
     packageName: "Haferdrink",
-    synthetic: "Deterministische synthetische Kennzeichnung",
+    synthetic: "Synthetisches Beispiel",
     evidenceTitle: "Eine Antwort, vier nachvollziehbare Ebenen",
     evidenceIntro:
       "Eine Schlussfolgerung ist erst nützlich, wenn Verpackungsangaben, TryVit-Berechnung, angewandter Kontext und offene Fragen nachvollziehbar bleiben.",
@@ -383,7 +383,7 @@ export function buildLandingMetadata(
       card: "summary_large_image",
       title: copy.title,
       description: copy.socialDescription,
-      images: ["/opengraph-image"],
+      images: ["/twitter-image"],
     },
   };
 }

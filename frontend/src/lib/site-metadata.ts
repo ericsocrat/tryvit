@@ -128,7 +128,7 @@ export function buildRootMetadata(
       card: "summary_large_image",
       title: "TryVit",
       description,
-      images: ["/opengraph-image"],
+      images: ["/twitter-image"],
     },
     robots: {
       index: true,

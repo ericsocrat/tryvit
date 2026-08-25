@@ -47,6 +47,7 @@ describe("LandingSections", () => {
     expect(
       [...(summary?.children ?? [])].every((element) => element.tagName === "SPAN"),
     ).toBe(true);
+    expect(summary).toHaveTextContent("Synthetic example");
     expect(screen.getByText("Package source")).toBeInTheDocument();
     expect(screen.getAllByText("Decision and next action").length).toBeGreaterThanOrEqual(2);
 

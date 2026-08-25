@@ -59,3 +59,25 @@ for (const reducedMotion of [false, true]) {
     );
   });
 }
+
+test("keeps tablet anchor destinations clear of the sticky header", async ({ page }) => {
+  await page.setViewportSize({ width: 768, height: 1024 });
+  await page.setExtraHTTPHeaders({ "Accept-Language": "en-US" });
+  const response = await page.goto("/");
+  expect(response?.status()).toBe(200);
+
+  for (const [href, target] of [
+    ["#evidence", "#evidence"],
+    ["#method", "#method"],
+    ["#trust", "#trust"],
+    ["#service-status", "#service-status"],
+  ] as const) {
+    await page.locator(`header a[href="${href}"]`).click();
+    const geometry = await page.locator(target).evaluate((element) => {
+      const targetRect = element.getBoundingClientRect();
+      const headerRect = document.querySelector("header")!.getBoundingClientRect();
+      return { targetTop: targetRect.top, headerBottom: headerRect.bottom };
+    });
+    expect(geometry.targetTop + 1).toBeGreaterThanOrEqual(geometry.headerBottom);
+  }
+});

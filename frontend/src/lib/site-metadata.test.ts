@@ -33,6 +33,7 @@ describe("readiness-aware public metadata", () => {
         "Search food products, scan barcodes, and inspect TryVit scoring evidence for foods sold in Poland.",
     });
     expect(metadata.metadataBase?.toString()).toBe("https://example.test/");
+    expect((metadata.twitter as { images: string[] }).images).toEqual(["/twitter-image"]);
     expect(JSON.stringify(metadata)).not.toMatch(/instantly|science-driven|health score/iu);
   });
 

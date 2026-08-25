@@ -82,7 +82,7 @@ export default async function RootLayout({
             {children}
           </Providers>
         )}
-        {!IS_QA_MODE && <SpeedInsights />}
+        {!IS_QA_MODE && !usesLandingProviderBoundary && <SpeedInsights />}
       </body>
     </html>
   );

@@ -15,13 +15,7 @@ vi.mock("next/og", () => {
 describe("opengraph-image root", () => {
   beforeEach(() => {
     vi.resetModules();
-    // Mock global fetch for the font loader
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
-      }),
-    );
+    vi.stubGlobal("fetch", vi.fn());
   });
 
   it("exports correct size (1200×630)", async () => {
@@ -52,7 +46,8 @@ describe("opengraph-image root", () => {
   it("calls ImageResponse when invoked", async () => {
     const { ImageResponse } = await import("next/og");
     const mod = await import("./opengraph-image");
-    await mod.default();
+    mod.default();
     expect(ImageResponse).toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

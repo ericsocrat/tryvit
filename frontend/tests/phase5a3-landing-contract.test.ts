@@ -71,7 +71,9 @@ describe("Phase 5A.3 landing production boundary", () => {
     const allowed = new Set([
       "HomePageContent.tsx",
       "LandingSections.tsx",
+      "opengraph-image.tsx",
       "page.tsx",
+      "twitter-image.tsx",
     ]);
     const consumers = walk(appRoot)
       .filter((path) => /\.(?:ts|tsx)$/u.test(path))
@@ -116,6 +118,11 @@ describe("Phase 5A.3 landing production boundary", () => {
     const narrative = readFileSync(join(LANDING_ROOT, "PackageLabelNarrative.tsx"), "utf8");
     const sections = readFileSync(join(ROOT, "src", "app", "LandingSections.tsx"), "utf8");
     const css = readFileSync(join(LANDING_ROOT, "landing.module.css"), "utf8");
+    const socialCard = readFileSync(join(LANDING_ROOT, "LandingSocialCard.tsx"), "utf8");
+    const openGraph = readFileSync(join(ROOT, "src", "app", "opengraph-image.tsx"), "utf8");
+    const twitter = readFileSync(join(ROOT, "src", "app", "twitter-image.tsx"), "utf8");
+    const layout = readFileSync(join(ROOT, "src", "app", "layout.tsx"), "utf8");
+    const manifest = readFileSync(join(ROOT, "public", "manifest.webmanifest"), "utf8");
 
     expect(copy).toContain("readiness: DeploymentReadiness");
     expect(copy).toContain("privacyBody: {");
@@ -131,6 +138,14 @@ describe("Phase 5A.3 landing production boundary", () => {
     expect(narrative).not.toContain('<div className={styles.packageSpecimen}');
     expect(sections).not.toContain("<LandingLockup");
     expect(shell).toContain("data-landing-market-descriptor");
+    expect(copy).toContain('images: ["/twitter-image"]');
+    expect(layout).toContain("!usesLandingProviderBoundary && <SpeedInsights />");
+    for (const source of [socialCard, openGraph, twitter, manifest]) {
+      expect(source).not.toMatch(
+        /instantly|health score|healthy|harmful|scan, score|multi-axis/iu,
+      );
+      expect(source).not.toContain("fonts.gstatic.com");
+    }
   });
 
   it("records route-family authorization without implying blanket Phase 5A.3 authority", () => {

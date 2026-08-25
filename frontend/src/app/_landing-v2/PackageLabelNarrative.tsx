@@ -45,6 +45,7 @@ export function PackageLabelNarrative({
             <span>{packageLabel}</span>
           </span>
           <span className={styles.narrativeButton}>
+            <span className={styles.visuallyHidden}>{syntheticLabel}</span>
             <span className={styles.narrativeClosedLabel}>{actionLabel}</span>
             <span className={styles.narrativeOpenLabel}>{resetLabel}</span>
           </span>
