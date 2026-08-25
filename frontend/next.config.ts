@@ -60,7 +60,6 @@ const cspValue = [
 const nextConfig: NextConfig = {
   // Enable View Transitions API for smoother page navigations (#61)
   experimental: {
-    inlineCss: true,
     viewTransition: true,
     // TypeScript 7 does not expose the compiler API that Next.js normally uses.
     // Delegate type checking to the TypeScript CLI instead.
