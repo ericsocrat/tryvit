@@ -117,6 +117,9 @@ test("retains keyboard order and visible skip navigation", async ({ page }) => {
   await page.keyboard.press("Enter");
   await expect(page.locator("#main-content")).toBeFocused();
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await page.evaluate(
+    () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+  );
   await page.keyboard.press("Tab");
   await expect(page.locator(":focus")).toHaveAttribute("href", "#evidence");
 });
