@@ -35,4 +35,3 @@ PR `#1301` must not replace its own immutable landing baseline. If this exact
 candidate is approved, baseline acceptance requires a separate authorized PR.
 
 PR `#1301` remains draft and unmerged.
-

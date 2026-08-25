@@ -70,4 +70,3 @@ immutability.
 
 Automated review does not close the legal, qualified PL/DE, branded Safari,
 assistive-technology, or physical-device gates.
-

@@ -36,4 +36,3 @@ the production source, build, runtime, and measured values changed. Review files
 and cannot be inherited from cycle 1.
 
 No cycle-1 file is modified in place.
-

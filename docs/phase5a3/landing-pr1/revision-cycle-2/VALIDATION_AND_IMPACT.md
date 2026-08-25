@@ -64,4 +64,3 @@ Impact is limited to `/`, its route-local shell, and the narrow server metadata
 contract already used by the root layout. Rollback is commit-local: revert
 `14c8b19f` and the test-only `ab0a43ec`. Evidence commits remain independently
 removable.
-
