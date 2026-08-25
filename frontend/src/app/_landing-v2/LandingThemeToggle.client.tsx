@@ -26,6 +26,7 @@ export function LandingThemeToggle({
     <button
       aria-label={nextLabel}
       className={styles.themeToggle}
+      disabled={!mounted}
       onClick={() => setMode(resolved === "dark" ? "light" : "dark")}
       title={nextLabel}
       type="button"

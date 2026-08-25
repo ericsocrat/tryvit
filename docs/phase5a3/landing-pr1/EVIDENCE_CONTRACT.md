@@ -1,7 +1,8 @@
 # Phase 5A.3 landing evidence contract
 
 The media in this directory is review evidence, not an accepted production baseline.
-Every retained file is hashed in `evidence/manifest.json` and bound to source commit
+Every retained media file and the motion observation are hashed in
+`evidence/manifest.json` and bound to source commit
 `1e11c9f764b7095d134df9f0d16fa104b218df82`.
 
 ## Stills
@@ -45,6 +46,13 @@ They must be reviewed from beginning to end rather than sampled from thumbnails.
 - horizontal reflow bounds for every still;
 - exact project locale for EN, PL, and DE.
 
+The automated Polish assertion proves horizontal containment. Original-resolution visual
+review found no observed overlap, but the harness does not geometrically prove absence
+of every possible occlusion.
+
+The recordings are initiated from a 390×844 page viewport; Playwright's encoded video
+content area is 368×800. The filenames retain the requested page viewport while the
+encoded dimensions are disclosed here.
+
 This is browser automation evidence, not assistive-technology, real-device, or native
 language approval.
-

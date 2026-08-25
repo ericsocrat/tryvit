@@ -52,4 +52,3 @@ review unregistered marketplace/domain use.
 
 Eric must explicitly accept, defer, or reject the Source Fold identity-adoption risk.
 This PR cannot self-approve that decision.
-

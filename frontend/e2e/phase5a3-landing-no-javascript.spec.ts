@@ -12,6 +12,8 @@ test("retains complete server-rendered meaning without JavaScript", async ({ pag
   expect(html).toContain("Method before mystique");
   expect(html).toContain("The website is available; live product data is paused");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  await expect(page.locator("main button[aria-expanded]")).toBeDisabled();
+  await expect(page.locator('header button[type="button"]')).toBeDisabled();
   await expect(page.getByText("Decision and next action").first()).toBeVisible();
   if (dark) {
     await expect(page.locator('[data-landing-shell="folded-label-register"]')).toHaveCSS(

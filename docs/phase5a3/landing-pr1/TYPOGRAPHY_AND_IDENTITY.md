@@ -31,4 +31,3 @@ availability. The public similarity screen found a potentially relevant register
 `TRYVITE` EUTM and could not complete all desired registry/image searches. Formal legal
 review is unresolved, and Eric must explicitly decide whether to accept that adoption
 risk before merge.
-

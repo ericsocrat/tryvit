@@ -53,7 +53,11 @@ export function LandingPublicShell({
           <Link href="/privacy">{copy.navigation.privacy}</Link>
           <Link href="/terms">{copy.navigation.terms}</Link>
           <Link href="/contact">{copy.navigation.contact}</Link>
-          <Link href="/auth/login">{copy.navigation.signIn}</Link>
+          {dataAvailable ? (
+            <Link href="/auth/login">{copy.navigation.signIn}</Link>
+          ) : (
+            <a href="#service-status">{copy.navigation.statusLink}</a>
+          )}
         </nav>
         <p>{copy.copyright}</p>
       </footer>

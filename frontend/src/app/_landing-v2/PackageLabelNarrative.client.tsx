@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 import styles from "./landing.module.css";
 
@@ -16,6 +16,10 @@ interface PackageLabelNarrativeProps {
   readonly syntheticLabel: string;
 }
 
+const emptySubscribe = () => () => {};
+const getMountedSnapshot = () => globalThis.window !== undefined;
+const getMountedServerSnapshot = () => false;
+
 export function PackageLabelNarrative({
   actionLabel,
   resetLabel,
@@ -28,6 +32,11 @@ export function PackageLabelNarrative({
   syntheticLabel,
 }: PackageLabelNarrativeProps) {
   const [expanded, setExpanded] = useState(false);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    getMountedSnapshot,
+    getMountedServerSnapshot,
+  );
 
   return (
     <section
@@ -53,6 +62,7 @@ export function PackageLabelNarrative({
       <button
         aria-expanded={expanded}
         className={styles.narrativeButton}
+        disabled={!mounted}
         onClick={() => setExpanded((current) => !current)}
         type="button"
       >

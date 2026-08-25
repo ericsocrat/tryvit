@@ -18,7 +18,9 @@ remove `_landing-v2`. Evidence tests and live inventory can be reverted independ
 - Full-page Axe: zero violations with no exclusions or disabled rules.
 - Keyboard: skip link is first, transfers focus to `main`, then reaches Evidence.
 - Reflow: 320 CSS pixels and the 200% equivalent capture have no horizontal overflow.
-- WCAG text spacing: Polish capture passes without clipping or overlap.
+- WCAG text spacing: Polish capture proves horizontal containment; original-resolution
+  review found no observed clipping or overlap, but no complete geometry/occlusion proof
+  is claimed.
 - Forced colors: dedicated capture retained.
 - No JavaScript: complete light/dark proposition, evidence, method, privacy, actions,
   navigation, and footer remain server rendered.

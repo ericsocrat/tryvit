@@ -422,6 +422,13 @@
   transform: translateY(-2px);
 }
 
+.themeToggle:disabled,
+.narrativeButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
 .heroWatermark {
   position: absolute;
   z-index: 0;
@@ -904,8 +911,8 @@
     --landing-raised: Canvas;
     --landing-ink: CanvasText;
     --landing-secondary: CanvasText;
-    --landing-brand: LinkText;
-    --landing-brand-support: LinkText;
+    --landing-brand: CanvasText;
+    --landing-brand-support: CanvasText;
     --landing-soft: Canvas;
     --landing-rust: CanvasText;
     --landing-rust-soft: Canvas;
@@ -924,6 +931,10 @@
     border-color: ButtonText;
     background: Highlight;
     forced-color-adjust: none;
+  }
+
+  .lockupLink {
+    color: LinkText;
   }
 
   .heroWatermark {
