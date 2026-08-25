@@ -64,7 +64,7 @@ test.describe("Public pages", () => {
 
   test("landing page has correct title", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle("TryVit — Know What You Eat");
+    await expect(page).toHaveTitle("TryVit — Food intelligence you can inspect");
   });
 
   test("login page renders form", async ({ page }) => {
