@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import type { DeploymentReadiness } from "./deployment-readiness";
 
-const DEFAULT_PUBLIC_APP_URL = "https://tryvit.vercel.app";
+export const DEFAULT_PUBLIC_APP_URL = "https://tryvit.app";
 const ROOT_TITLE = "TryVit — Food Intelligence";
 
 const descriptionFor = (readiness: DeploymentReadiness): string =>
@@ -10,7 +10,7 @@ const descriptionFor = (readiness: DeploymentReadiness): string =>
     ? "Search food products, scan barcodes, and inspect TryVit scoring evidence for foods sold in Poland."
     : "Explore TryVit food-scoring methodology and public information for foods sold in Poland. Live product data is currently unavailable.";
 
-function publicBaseUrl(env: NodeJS.ProcessEnv): string {
+export function publicBaseUrl(env: NodeJS.ProcessEnv = process.env): string {
   const configured = new URL(env.NEXT_PUBLIC_APP_URL ?? DEFAULT_PUBLIC_APP_URL);
   return new URL("/", configured).toString().replace(/\/$/u, "");
 }

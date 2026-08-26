@@ -166,6 +166,7 @@ describe("ProductLayout", () => {
     expect(jsonLd.gtin13).toBe("5900820012345");
     expect(jsonLd.image).toBe("https://example.com/skyr.jpg");
     expect(jsonLd.brand).toEqual({ "@type": "Brand", name: "Piątnica" });
+    expect(jsonLd.url).toBe("https://tryvit.app/app/product/42");
   });
 
   it("includes nutrition information in JSON-LD", async () => {

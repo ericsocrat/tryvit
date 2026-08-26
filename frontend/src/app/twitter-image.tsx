@@ -172,7 +172,7 @@ export default async function TwitterImage() {
           letterSpacing: "0.04em",
         }}
       >
-        tryvit.vercel.app
+        tryvit.app
       </div>
     </div>,
     {

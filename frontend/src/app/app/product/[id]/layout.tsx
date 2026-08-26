@@ -14,6 +14,7 @@ import {
 } from "@tanstack/react-query";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { queryKeys } from "@/lib/query-keys";
+import { publicBaseUrl } from "@/lib/site-metadata";
 
 /* ---------- helpers ---------- */
 
@@ -98,8 +99,7 @@ function buildProductJsonLd(
   const imageUrl = profile.images?.primary?.url ?? undefined;
 
   const nutrition = profile.nutrition ?? {};
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://tryvit.vercel.app";
+  const baseUrl = publicBaseUrl();
 
   // Schema.org NutritionInformation (per 100 g)
   const nutritionInfo: Record<string, unknown> = {
