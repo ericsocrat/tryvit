@@ -134,7 +134,9 @@ describe("Phase 5A.3 landing production boundary", () => {
       expect(shell).toContain(`href="${href}"`);
     }
     expect(css).not.toMatch(/\.navigation\s*>\s*a:nth-child/u);
-    expect(narrative).toContain('<span className={styles.packageSpecimen} aria-hidden="true">');
+    expect(narrative).toContain("data-landing-package-specimen");
+    expect(narrative).toContain("data-landing-package-title");
+    expect(narrative).toContain("data-landing-synthetic-marker");
     expect(narrative).not.toContain('<div className={styles.packageSpecimen}');
     expect(sections).not.toContain("<LandingLockup");
     expect(shell).toContain("data-landing-market-descriptor");

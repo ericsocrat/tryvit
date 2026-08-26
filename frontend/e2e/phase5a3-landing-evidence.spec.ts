@@ -1,5 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page, type TestInfo } from "./fixtures/safe-test";
+import { expectLandingPackageTextRegions } from "./helpers/landing-package-geometry";
 
 type Theme = "light" | "dark";
 
@@ -76,6 +77,7 @@ async function expectFullyInViewport(page: Page, selector: string): Promise<void
 for (const capture of CAPTURES) {
   test(`retains ${capture.name}`, async ({ page }, testInfo: TestInfo) => {
     await openLanding(page, capture);
+    await expectLandingPackageTextRegions(page);
     await page.screenshot({ path: testInfo.outputPath(capture.name), animations: "disabled" });
   });
 }
@@ -150,7 +152,9 @@ for (const viewport of [
 }
 
 for (const fold of [
+  { width: 320, height: 900, minimumPackagePixels: 0, requireFullPackage: true },
   { width: 390, height: 844, minimumPackagePixels: 72, requireFullPackage: false },
+  { width: 640, height: 900, minimumPackagePixels: 0, requireFullPackage: true },
   { width: 768, height: 1024, minimumPackagePixels: 0, requireFullPackage: true },
   { width: 1440, height: 900, minimumPackagePixels: 0, requireFullPackage: true },
 ] as const) {
@@ -225,6 +229,47 @@ test("has zero backend traffic and retains the system font fallback", async ({ p
   expect(forbidden).toEqual([]);
   expect(imageRequests).toEqual([]);
   expect([...fontResponses.values()]).toEqual([]);
+});
+
+test("keeps harmless query-bearing demo documents lean and backend-independent", async ({
+  page,
+}) => {
+  const backendRequests: string[] = [];
+  const hostedRequests: string[] = [];
+  const speedInsightsRequests: string[] = [];
+  page.on("request", (request) => {
+    const url = new URL(request.url());
+    if (
+      /\/(?:auth|rest|realtime|storage|functions|graphql)\/v1(?:\/|$)/iu.test(url.pathname) ||
+      url.pathname === "/api/flags"
+    ) {
+      backendRequests.push(`${request.method()} ${url.href}`);
+    }
+    if (!["127.0.0.1", "localhost", "::1"].includes(url.hostname)) {
+      hostedRequests.push(`${request.method()} ${url.href}`);
+    }
+    if (url.pathname === "/_vercel/speed-insights/script.js") {
+      speedInsightsRequests.push(`${request.method()} ${url.href}`);
+    }
+  });
+
+  for (const pathname of [
+    "/?utm_source=test",
+    "/?utm_source=test&utm_campaign=x",
+    "/?ref=newsletter",
+    "/?foo=bar",
+  ]) {
+    const response = await page.goto(pathname);
+    expect(response?.status()).toBe(200);
+    await expect(page.locator("body")).toHaveAttribute("data-provider-boundary", "landing");
+    await expect(page.locator('[data-landing-shell="folded-label-register"]')).toBeVisible();
+    await expect(page.getByRole("link", { name: "Skip to content", exact: true })).toHaveCount(1);
+    await page.waitForLoadState("networkidle");
+  }
+
+  expect(backendRequests).toEqual([]);
+  expect(hostedRequests).toEqual([]);
+  expect(speedInsightsRequests).toEqual([]);
 });
 
 test("keeps demo metadata and WebSite structured data aligned with visible copy", async ({
@@ -338,7 +383,7 @@ test("retains keyboard order and visible skip navigation", async ({ page }) => {
 
 test("keeps provider ownership coherent across cold, RSC, and document navigation", async ({ page }) => {
   await page.goto("/?source=client");
-  await expect(page.locator("body")).toHaveAttribute("data-provider-boundary", "application");
+  await expect(page.locator("body")).toHaveAttribute("data-provider-boundary", "landing");
   await expect(page.getByRole("link", { name: "Skip to content", exact: true })).toHaveCount(1);
 
   await page.goto("/contact");

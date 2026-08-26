@@ -1,4 +1,5 @@
 import { expect, test } from "./fixtures/safe-test";
+import { expectLandingPackageTextRegions } from "./helpers/landing-package-geometry";
 
 test("retains exact project-locale landing evidence", async ({ page }, testInfo) => {
   const polish = testInfo.project.name === "phase5a3-landing-polish";
@@ -86,8 +87,28 @@ test("retains exact project-locale landing evidence", async ({ page }, testInfo)
     await expect(page.getByText(/Datenverlässlichkeit/iu).first()).toBeVisible();
   }
 
+  await expectLandingPackageTextRegions(page);
+
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
     await page.evaluate(() => window.innerWidth),
   );
   await page.screenshot({ path: testInfo.outputPath(filename), animations: "disabled" });
+});
+
+test("keeps localized package text regions separate at 390px", async ({ page }, testInfo) => {
+  const polish = testInfo.project.name === "phase5a3-landing-polish";
+  await page.setViewportSize({ width: 390, height: 844 });
+  const response = await page.goto("/");
+  expect(response?.status()).toBe(200);
+  await expect(page.locator("html")).toHaveAttribute("lang", polish ? "pl" : "de");
+  if (polish) {
+    await page.addStyleTag({
+      content: `
+        * { letter-spacing: 0.12em !important; line-height: 1.5 !important; word-spacing: 0.16em !important; }
+        p { margin-bottom: 2em !important; }
+      `,
+    });
+  }
+  await expectLandingPackageTextRegions(page);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });

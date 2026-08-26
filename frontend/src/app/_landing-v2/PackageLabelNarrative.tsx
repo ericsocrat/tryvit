@@ -30,14 +30,20 @@ export function PackageLabelNarrative({
       data-landing-package-signature
     >
       <summary className={styles.narrativeSummary}>
-        <span className={styles.packageSpecimen} aria-hidden="true">
+        <span
+          className={styles.packageSpecimen}
+          aria-hidden="true"
+          data-landing-package-specimen
+        >
           <span className={styles.packageFold} />
-          <span className={styles.packageFace}>
+          <span className={styles.packageFace} data-landing-package-title>
             TryVit
             <br />
             {packageName}
           </span>
-          <span className={styles.packageSynthetic}>{syntheticLabel}</span>
+          <span className={styles.packageSynthetic} data-landing-synthetic-marker>
+            {syntheticLabel}
+          </span>
         </span>
         <span className={styles.narrativePreview}>
           <span aria-hidden="true" className={styles.narrativeSource}>

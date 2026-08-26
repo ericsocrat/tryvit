@@ -1,4 +1,5 @@
 import { expect, test } from "./fixtures/safe-test";
+import { expectLandingPackageTextRegions } from "./helpers/landing-package-geometry";
 
 for (const reducedMotion of [false, true]) {
   test(`keeps mobile navigation and disclosure native with reduced motion ${reducedMotion}`, async ({
@@ -19,6 +20,7 @@ for (const reducedMotion of [false, true]) {
     for (const name of ["Evidence", "Method", "Trust", "Contact"]) {
       await expect(primary.getByRole("link", { name, exact: true })).toBeVisible();
     }
+    await expectLandingPackageTextRegions(page);
 
     const disclosure = page.locator('details[aria-label="Package source"]');
     const summary = disclosure.locator("summary");

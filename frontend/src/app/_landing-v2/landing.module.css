@@ -496,14 +496,26 @@
 }
 
 .packageSpecimen {
+  --package-fold-size: 32px;
+
   position: relative;
-  display: block;
+  display: grid;
+  grid-template-rows: auto minmax(4px, 1fr) auto;
+  row-gap: 0.4rem;
+  box-sizing: border-box;
   width: 142px;
-  aspect-ratio: 0.78;
+  min-height: 182px;
+  padding: 58px 14px 14px;
   border: 1px solid var(--landing-rule);
   background: var(--landing-raised);
-  clip-path: polygon(0 0, 78% 0, 100% 18%, 100% 100%, 0 100%);
-  transform-origin: 78% 18%;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--package-fold-size)) 0,
+    100% var(--package-fold-size),
+    100% 100%,
+    0 100%
+  );
+  transform-origin: calc(100% - var(--package-fold-size)) var(--package-fold-size);
   transition:
     transform 500ms cubic-bezier(0.32, 0.72, 0, 1),
     box-shadow 500ms cubic-bezier(0.32, 0.72, 0, 1);
@@ -517,28 +529,33 @@
 .packageFold {
   position: absolute;
   inset: 0 0 auto auto;
-  width: 22%;
-  aspect-ratio: 1;
+  width: var(--package-fold-size);
+  height: var(--package-fold-size);
   background: var(--landing-rust);
   clip-path: polygon(0 0, 100% 100%, 0 100%);
 }
 
 .packageFace {
-  position: absolute;
-  inset: 32% 12% auto;
+  grid-row: 1;
+  min-width: 0;
+  align-self: start;
   color: var(--landing-brand);
   font-size: 1.1rem;
   font-weight: 800;
   letter-spacing: 0.03em;
-  line-height: 0.95;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .packageSynthetic {
-  position: absolute;
-  inset: auto 10% 8%;
+  grid-row: 3;
+  min-width: 0;
+  align-self: end;
   color: var(--landing-secondary);
   font-size: 0.75rem;
   font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
   text-transform: uppercase;
 }
 
@@ -932,11 +949,15 @@
   }
 
   .narrativeSummary {
-    grid-template-columns: 92px 1fr;
+    grid-template-columns: 92px minmax(0, 1fr);
   }
 
   .packageSpecimen {
+    --package-fold-size: 19px;
+
     width: 88px;
+    min-height: 113px;
+    padding: 36px 9px 9px;
   }
 
   .packageFace {

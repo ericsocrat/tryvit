@@ -114,16 +114,23 @@ async function applyRateLimit(request: NextRequest, response: NextResponse): Pro
 // ─── Main Proxy ──────────────────────────────────────────────────────────────
 
 function isColdLandingDocumentRequest(request: NextRequest): boolean {
-  if (request.method !== "GET" || request.nextUrl.pathname !== "/" || request.nextUrl.search) {
+  if (request.method !== "GET" || request.nextUrl.pathname !== "/") {
     return false;
   }
 
   return ![
-    request.headers.get("rsc") === "1",
+    request.headers.has("rsc"),
     request.headers.has("next-router-state-tree"),
-    request.headers.get("next-router-prefetch") === "1",
-    request.headers.get("x-middleware-prefetch") === "1",
+    request.headers.has("next-router-prefetch"),
+    request.headers.has("next-router-segment-prefetch"),
+    request.headers.has("x-middleware-prefetch"),
+    request.nextUrl.searchParams.has("_rsc"),
     request.headers.get("purpose")?.toLowerCase() === "prefetch",
+    request.headers
+      .get("sec-purpose")
+      ?.toLowerCase()
+      .split(/[;,]/u)
+      .some((token) => token.trim() === "prefetch"),
   ].some(Boolean);
 }
 
