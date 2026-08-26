@@ -17,6 +17,10 @@ const methodologyDocument = readFileSync(
   join(process.cwd(), "..", "docs", "PHASE5A3_ROUTE_MIGRATION_LAB_PERFORMANCE.md"),
   "utf8",
 );
+const lighthouseWorkflow = readFileSync(
+  join(process.cwd(), "..", ".github", "workflows", "lighthouse-ci.yml"),
+  "utf8",
+);
 
 function sample(
   id: string,
@@ -79,6 +83,13 @@ describe("Phase 5A.3 route-migration lab-performance methodology", () => {
     expect(methodologyDocument).toContain("No Lighthouse run was repeated");
     expect(methodologyDocument).toContain("| Mobile LCP median | `2218.88 ms` | **PASS** |");
     expect(methodologyDocument).toContain("| Mobile p75 | `2268.47 ms` | **PASS** |");
+  });
+
+  it("skips new Lighthouse collection only for this methodology governance branch", () => {
+    expect(lighthouseWorkflow).toContain(
+      "if: ${{ github.head_ref != 'codex/phase-5a3-lab-performance-methodology' }}",
+    );
+    expect(lighthouseWorkflow.match(/phase-5a3-lab-performance-methodology/gu)).toHaveLength(1);
   });
 
   it("defines five-run p75 as the fourth ordered sample", () => {
