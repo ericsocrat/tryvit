@@ -138,7 +138,7 @@ describe("verifyTurnstileToken", () => {
     }
   });
 
-  it("should gracefully degrade when Edge Function is unreachable", async () => {
+  it("should fail closed when Edge Function is unreachable", async () => {
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     mockInvoke.mockResolvedValueOnce({
       data: null,
@@ -146,7 +146,10 @@ describe("verifyTurnstileToken", () => {
     });
 
     const result = await verifyTurnstileToken(fakeSupabase, "some-token");
-    expect(result.valid).toBe(true);
+    expect(result).toEqual({
+      valid: false,
+      error: "Turnstile verification unavailable.",
+    });
     expect(consoleSpy).toHaveBeenCalledWith(
       "Turnstile verification unavailable:",
       "Function not found",
@@ -154,7 +157,7 @@ describe("verifyTurnstileToken", () => {
     consoleSpy.mockRestore();
   });
 
-  it("should gracefully degrade on unexpected response shape", async () => {
+  it("should fail closed on unexpected response shape", async () => {
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     mockInvoke.mockResolvedValueOnce({
       data: "unexpected string",
@@ -162,7 +165,10 @@ describe("verifyTurnstileToken", () => {
     });
 
     const result = await verifyTurnstileToken(fakeSupabase, "some-token");
-    expect(result.valid).toBe(true);
+    expect(result).toEqual({
+      valid: false,
+      error: "Unexpected Turnstile verification response.",
+    });
     expect(consoleSpy).toHaveBeenCalledWith(
       "Unexpected Turnstile response:",
       "unexpected string",
@@ -170,12 +176,15 @@ describe("verifyTurnstileToken", () => {
     consoleSpy.mockRestore();
   });
 
-  it("should gracefully degrade on network error", async () => {
+  it("should fail closed on network error", async () => {
     const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
     mockInvoke.mockRejectedValueOnce(new Error("Network error"));
 
     const result = await verifyTurnstileToken(fakeSupabase, "some-token");
-    expect(result.valid).toBe(true);
+    expect(result).toEqual({
+      valid: false,
+      error: "Turnstile verification unavailable.",
+    });
     expect(consoleSpy).toHaveBeenCalledWith(
       "Turnstile verification network error",
     );

@@ -12,6 +12,8 @@
 
 const TURNSTILE_VERIFY_URL =
   "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+const EXPECTED_ACTION = "signup";
+const MAX_TOKEN_LENGTH = 2048;
 
 interface TurnstileVerifyResponse {
   success: boolean;
@@ -20,6 +22,15 @@ interface TurnstileVerifyResponse {
   hostname?: string;
   action?: string;
   cdata?: string;
+}
+
+function expectedHostnames(): Set<string> {
+  return new Set(
+    (Deno.env.get("TURNSTILE_HOSTNAMES") ?? "")
+      .split(",")
+      .map((hostname) => hostname.trim().toLowerCase())
+      .filter(Boolean),
+  );
 }
 
 interface VerifyRequest {
@@ -85,7 +96,12 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   // Validate token presence
   const token = body?.token;
-  if (!token || typeof token !== "string" || token.trim().length === 0) {
+  if (
+    !token ||
+    typeof token !== "string" ||
+    token.trim().length === 0 ||
+    token.length > MAX_TOKEN_LENGTH
+  ) {
     return jsonResponse(
       { valid: false, error: "Missing or empty Turnstile token." },
       400,
@@ -94,13 +110,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   // Get secret key from environment
   const secretKey = Deno.env.get("TURNSTILE_SECRET_KEY");
-  if (!secretKey) {
-    // Graceful degradation: if no secret key configured, allow through
-    // This enables local development without Turnstile setup
-    console.warn(
-      "TURNSTILE_SECRET_KEY not set — allowing request (graceful degradation)",
+  const hostnames = expectedHostnames();
+  if (!secretKey || hostnames.size === 0) {
+    console.error("Turnstile verification is not configured");
+    return jsonResponse(
+      { valid: false, error: "Turnstile verification is not configured." },
+      503,
     );
-    return jsonResponse({ valid: true }, 200);
   }
 
   // Extract client IP for additional verification
@@ -113,8 +129,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   try {
     const verifyResponse = await fetch(TURNSTILE_VERIFY_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      signal: AbortSignal.timeout(10_000),
+      body: new URLSearchParams({
         secret: secretKey,
         response: token,
         remoteip: ip,
@@ -125,13 +142,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
       console.error(
         `Turnstile API returned ${verifyResponse.status}: ${verifyResponse.statusText}`,
       );
-      // Graceful degradation on Turnstile API failure
-      return jsonResponse({ valid: true }, 200);
+      return jsonResponse(
+        { valid: false, error: "Turnstile verification unavailable." },
+        403,
+      );
     }
 
     const data: TurnstileVerifyResponse = await verifyResponse.json();
 
-    if (data.success) {
+    if (
+      data.success &&
+      data.action === EXPECTED_ACTION &&
+      typeof data.hostname === "string" &&
+      hostnames.has(data.hostname.toLowerCase())
+    ) {
       return jsonResponse(
         {
           valid: true,
@@ -146,13 +170,19 @@ Deno.serve(async (req: Request): Promise<Response> => {
       {
         valid: false,
         error: "Turnstile verification failed.",
-        error_codes: data["error-codes"],
+        error_codes:
+          data["error-codes"] ??
+          (data.action !== EXPECTED_ACTION
+            ? ["action-mismatch"]
+            : ["hostname-mismatch"]),
       },
       403,
     );
   } catch (err) {
-    // Graceful degradation: if Turnstile is unreachable, allow through
     console.error("Turnstile verification error:", err);
-    return jsonResponse({ valid: true }, 200);
+    return jsonResponse(
+      { valid: false, error: "Turnstile verification unavailable." },
+      403,
+    );
   }
 });
