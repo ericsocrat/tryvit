@@ -234,6 +234,18 @@ derived manifest checksum may reflect the observed exact-base candidate. A
 product PR cannot use this path because any additional changed file fails the
 base-owned scope check.
 
+A retained candidate from an approved source-equivalent implementation may be
+used only through the separately installed v2 contract. That path requires a
+fresh repository-owner comment bound to the final metadata-PR head and a later
+owner-applied renderer-attestation label. The trusted base policy independently
+binds the candidate source commit/tree, synchronized implementation PR/head/tree,
+successful manual workflow run, candidate and determinism artifact IDs, digests,
+sizes, and timestamps. It proves ancestry, byte-identical normal landing runtime
+sources, identical package and lockfile inputs, two-pass determinism, and seven
+candidate PNGs identical to committed baselines. The existing exact-main v1 path
+remains unchanged; any source, pixel, runtime, settings, dependency, scope, path,
+or authorization mismatch fails closed.
+
 Manual generation retains two artifacts. The candidate artifact remains the
 exact seven PNGs plus manifest intended for review. A separate compact
 determinism artifact retains both pass manifests, both sorted eight-file hash
