@@ -73,9 +73,15 @@ Every machine-readable report binds:
 Authoritative measurements use `ubuntu-24.04`, Node `22.21.1`, the repository
 lockfile, Playwright-managed Chromium, Lighthouse `12.6.1`, Supabase CLI
 `2.111.0`, a clean production build, and loopback
-`http://127.0.0.1:3000`. A tool or runner version change is environment drift
-and requires a new reviewed candidate; it is not compared as if it were the
-same renderer.
+`http://127.0.0.1:3000`. A pinned tool/runtime, runner OS family, or architecture
+change is environment drift and requires a new reviewed candidate; it is not
+compared as if it were the same renderer. GitHub's hosted-runner
+`imageVersion` build identifier is retained as an observation rather than an
+identity blocker: phased fleet rollout can change that identifier while the
+pinned runtime/browser contract and exact rendered PNG bytes remain identical.
+Every comparison prints the manifest and actual image versions and records them
+in the Actions summary. OS, architecture, pinned versions, deterministic
+settings, and pixel equality remain blocking.
 
 The existing Open Graph image modules request a fixed Inter font URL while
 Next.js builds those routes. Phase 5A.0d pins that exact response as a test-only
@@ -207,13 +213,21 @@ change fails closed through the strict renderer-attestation path.
 
 ### Renderer/runtime attestation maintenance
 
-A runner-image or lockfile-pinned renderer change is not treated as a product
-redesign. It still requires a separate maintenance sequence because a pull
-request may not install the rule that authorizes its own manifest change. The
-first maintenance PR installs the base-owned comparator and the read-only
-`pull_request_target` evidence gate without changing the manifest or any PNG.
-Only after that policy is on `main` may a second, metadata-only attestation PR
-be opened.
+The hosted Ubuntu image build identifier alone does not require renderer
+metadata migration. Phase 5A.0d retained exact-source runs on image versions
+`20260816.277.1` and `20260823.283.1`; all seven candidate PNGs were
+byte-identical across the two runs. That evidence makes the build identifier
+useful provenance, but not a better gate than the pinned renderer inputs and
+the pixels themselves. The following maintenance lane remains applicable when
+a blocking renderer/runtime field changes or when pixels change.
+
+A runner OS/architecture or lockfile-pinned renderer change is not treated as
+a product redesign. It still requires a separate maintenance sequence because
+a pull request may not install the rule that authorizes its own manifest
+change. The first maintenance PR installs the base-owned comparator and the
+read-only `pull_request_target` evidence gate without changing the manifest or
+any PNG. Only after that policy is on `main` may a second, metadata-only
+attestation PR be opened.
 
 The attestation PR is externally authorized by the exact
 `phase5a0d-renderer-attestation-approved` label and the dedicated
@@ -233,6 +247,18 @@ the base files. Only `sourceCommit`, runner identity, runtime versions, and the
 derived manifest checksum may reflect the observed exact-base candidate. A
 product PR cannot use this path because any additional changed file fails the
 base-owned scope check.
+
+A retained candidate from an approved source-equivalent implementation may be
+used only through the separately installed v2 contract. That path requires a
+fresh repository-owner comment bound to the final metadata-PR head and a later
+owner-applied renderer-attestation label. The trusted base policy independently
+binds the candidate source commit/tree, synchronized implementation PR/head/tree,
+successful manual workflow run, candidate and determinism artifact IDs, digests,
+sizes, and timestamps. It proves ancestry, byte-identical normal landing runtime
+sources, identical package and lockfile inputs, two-pass determinism, and seven
+candidate PNGs identical to committed baselines. The existing exact-main v1 path
+remains unchanged; any source, pixel, runtime, settings, dependency, scope, path,
+or authorization mismatch fails closed.
 
 Manual generation retains two artifacts. The candidate artifact remains the
 exact seven PNGs plus manifest intended for review. A separate compact

@@ -42,6 +42,7 @@ import {
   type RouteJsModeReport,
 } from "../tooling/phase5a0d-route-js";
 import {
+  compareRendererIdentity,
   listPhase5BaselinePngs,
   prepareVisualBaselineWriteTargets,
   rendererIdentityMismatchFields,
@@ -626,6 +627,41 @@ describe("visual baseline manifest contract", () => {
     expect(rendererIdentityMismatchFields(expected, actual)).toEqual([
       "runner.imageVersion",
       "versions.npm",
+    ]);
+  });
+
+  it("records hosted image rollout drift without weakening deterministic renderer blockers", () => {
+    const expected = visualManifest();
+    expected.runner.imageVersion = "20260720.247.2";
+    for (const imageVersion of ["20260816.277.1", "20260823.283.1"]) {
+      const actual = structuredClone(expected);
+      actual.runner.imageVersion = imageVersion;
+      expect(compareRendererIdentity(expected, actual)).toEqual({
+        blockingMismatches: [],
+        hostedImageVersionObservation: {
+          manifest: "20260720.247.2",
+          actual: imageVersion,
+        },
+      });
+    }
+
+    const actual = structuredClone(expected);
+
+    actual.runner.imageOS = "ubuntu26";
+    actual.runner.arch = "arm64";
+    actual.versions.node = "v99.0.0";
+    actual.versions.npm = "99.0.0";
+    actual.versions.next = "99.0.0";
+    actual.versions.playwright = "99.0.0";
+    actual.versions.chromium = "999.0.0.0";
+    expect(compareRendererIdentity(expected, actual).blockingMismatches).toEqual([
+      "runner.imageOS",
+      "runner.arch",
+      "versions.node",
+      "versions.npm",
+      "versions.next",
+      "versions.playwright",
+      "versions.chromium",
     ]);
   });
 

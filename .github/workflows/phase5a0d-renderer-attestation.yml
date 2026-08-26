@@ -8,6 +8,7 @@ on:
 permissions:
   actions: read
   contents: read
+  issues: read
   pull-requests: read
 
 concurrency:
@@ -92,6 +93,10 @@ jobs:
         id: evidence
         shell: bash
         env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
@@ -111,7 +116,9 @@ jobs:
           const fs = require("node:fs");
           const evidence = JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP + "/phase5a0d-renderer-attestation.json", "utf8"));
           const candidate = evidence.candidate ?? {};
+          const sourceEquivalent = evidence.schemaVersion === 2;
           const values = {
+            evidence_mode: sourceEquivalent ? "source-equivalence" : "exact-main",
             run_id: candidate.workflowRunId,
             run_attempt: candidate.workflowRunAttempt,
             run_created_at: candidate.runCreatedAt,
@@ -120,15 +127,42 @@ jobs:
             artifact_name: candidate.artifactName,
             archive_digest: candidate.archiveDigest,
             archive_bytes: candidate.archiveBytes,
+            candidate_source_commit: sourceEquivalent ? evidence.candidateSource?.headSha : process.env.BASE_SHA,
+            candidate_source_tree: sourceEquivalent ? evidence.candidateSource?.tree : undefined,
+            synchronized_pr_number: sourceEquivalent ? evidence.synchronizedImplementation?.prNumber : undefined,
+            synchronized_head_sha: sourceEquivalent ? evidence.synchronizedImplementation?.headSha : undefined,
+            synchronized_tree: sourceEquivalent ? evidence.synchronizedImplementation?.tree : undefined,
+            determinism_artifact_id: sourceEquivalent ? candidate.determinismArtifactId : undefined,
+            determinism_artifact_name: sourceEquivalent ? candidate.determinismArtifactName : undefined,
+            determinism_archive_digest: sourceEquivalent ? candidate.determinismArchiveDigest : undefined,
+            determinism_archive_bytes: sourceEquivalent ? candidate.determinismArchiveBytes : undefined,
           };
           for (const [key, value] of Object.entries(values)) {
+            if (value === undefined) continue;
             const rendered = String(value);
             if (!/^[A-Za-z0-9_.:+-]+$/.test(rendered)) throw new Error(`unsafe-attestation-field:${key}`);
             fs.appendFileSync(process.argv[2], `${key}=${rendered}\n`);
           }
           NODE
+          if [ "$(jq -r '.schemaVersion' "$RUNNER_TEMP/phase5a0d-renderer-attestation.json")" = "2" ]; then
+            gh api --paginate "repos/$REPOSITORY/issues/$PR_NUMBER/comments?per_page=100" \
+              | jq -s 'add' > "$RUNNER_TEMP/phase5a0d-renderer-comments.json"
+            gh api --paginate "repos/$REPOSITORY/issues/$PR_NUMBER/events?per_page=100" \
+              | jq -s 'add' > "$RUNNER_TEMP/phase5a0d-renderer-events.json"
+            node .github/scripts/phase5a0d-renderer-attestation.mjs extract-approval \
+              --comments-file "$RUNNER_TEMP/phase5a0d-renderer-comments.json" \
+              --events-file "$RUNNER_TEMP/phase5a0d-renderer-events.json" \
+              --owner "$REPOSITORY_OWNER" \
+              --head-sha "$HEAD_SHA" \
+              --head-ref "$HEAD_REF" \
+              --labels-json "$LABELS_JSON" \
+              --approval-file "$RUNNER_TEMP/phase5a0d-renderer-approval.json" \
+              --github-output "$GITHUB_OUTPUT"
+          else
+            echo "approval_mode=exact-main" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Bind the candidate run and artifact to the exact base
+      - name: Bind the candidate run and artifacts
         if: steps.scope.outputs.required == 'true'
         shell: bash
         env:
@@ -136,6 +170,12 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
+          APPROVAL_MODE: ${{ steps.evidence.outputs.approval_mode }}
+          CANDIDATE_SOURCE_COMMIT: ${{ steps.evidence.outputs.candidate_source_commit }}
+          CANDIDATE_SOURCE_TREE: ${{ steps.evidence.outputs.candidate_source_tree }}
+          SYNCHRONIZED_PR_NUMBER: ${{ steps.evidence.outputs.synchronized_pr_number }}
+          SYNCHRONIZED_HEAD_SHA: ${{ steps.evidence.outputs.synchronized_head_sha }}
+          SYNCHRONIZED_TREE: ${{ steps.evidence.outputs.synchronized_tree }}
           RUN_ID: ${{ steps.evidence.outputs.run_id }}
           RUN_ATTEMPT: ${{ steps.evidence.outputs.run_attempt }}
           RUN_CREATED_AT: ${{ steps.evidence.outputs.run_created_at }}
@@ -144,19 +184,47 @@ jobs:
           ARTIFACT_NAME: ${{ steps.evidence.outputs.artifact_name }}
           ARCHIVE_DIGEST: ${{ steps.evidence.outputs.archive_digest }}
           ARCHIVE_BYTES: ${{ steps.evidence.outputs.archive_bytes }}
+          DETERMINISM_ARTIFACT_ID: ${{ steps.evidence.outputs.determinism_artifact_id }}
+          DETERMINISM_ARTIFACT_NAME: ${{ steps.evidence.outputs.determinism_artifact_name }}
+          DETERMINISM_ARCHIVE_DIGEST: ${{ steps.evidence.outputs.determinism_archive_digest }}
+          DETERMINISM_ARCHIVE_BYTES: ${{ steps.evidence.outputs.determinism_archive_bytes }}
         run: |
           set -euo pipefail
           run_json="$RUNNER_TEMP/phase5a0d-candidate-run.json"
           artifacts_json="$RUNNER_TEMP/phase5a0d-candidate-artifacts.json"
+          if [ "$APPROVAL_MODE" = "source-equivalence" ]; then
+            git fetch --no-tags --no-write-fetch-head origin \
+              "$CANDIDATE_SOURCE_COMMIT" "$SYNCHRONIZED_HEAD_SHA"
+            test "$(git rev-parse "$CANDIDATE_SOURCE_COMMIT^{tree}")" = "$CANDIDATE_SOURCE_TREE"
+            test "$(git rev-parse "$SYNCHRONIZED_HEAD_SHA^{tree}")" = "$SYNCHRONIZED_TREE"
+            gh api "repos/$REPOSITORY/pulls/$SYNCHRONIZED_PR_NUMBER" \
+              > "$RUNNER_TEMP/phase5a0d-synchronized-pr.json"
+            jq -e \
+              --argjson number "$SYNCHRONIZED_PR_NUMBER" \
+              --arg sha "$SYNCHRONIZED_HEAD_SHA" \
+              '.number == $number and .head.sha == $sha and .state == "open"' \
+              "$RUNNER_TEMP/phase5a0d-synchronized-pr.json" > /dev/null
+          fi
           gh api "repos/$REPOSITORY/actions/runs/$RUN_ID" > "$run_json"
-          jq -e \
-            --arg sha "$BASE_SHA" \
-            --arg prCreatedAt "$PR_CREATED_AT" \
-            --argjson attempt "$RUN_ATTEMPT" \
-            --arg createdAt "$RUN_CREATED_AT" \
-            --arg completedAt "$RUN_COMPLETED_AT" \
-            '.event == "workflow_dispatch" and .head_sha == $sha and .head_branch == "main" and .status == "completed" and .conclusion == "success" and .run_attempt == $attempt and .created_at == $createdAt and .updated_at == $completedAt and .created_at < $prCreatedAt and .path == ".github/workflows/phase5a0d-visual-baselines.yml"' \
-            "$run_json" > /dev/null
+          if [ "$APPROVAL_MODE" = "source-equivalence" ]; then
+            jq -e \
+              --arg sha "$CANDIDATE_SOURCE_COMMIT" \
+              --arg prCreatedAt "$PR_CREATED_AT" \
+              --argjson attempt "$RUN_ATTEMPT" \
+              --arg createdAt "$RUN_CREATED_AT" \
+              --arg completedAt "$RUN_COMPLETED_AT" \
+              '.event == "workflow_dispatch" and .head_sha == $sha and .status == "completed" and .conclusion == "success" and .run_attempt == $attempt and .created_at == $createdAt and .updated_at == $completedAt and .created_at < $prCreatedAt and .path == ".github/workflows/phase5a0d-visual-baselines.yml"' \
+              "$run_json" > /dev/null
+          else
+            jq -e \
+              --arg sha "$BASE_SHA" \
+              --arg prCreatedAt "$PR_CREATED_AT" \
+              --argjson attempt "$RUN_ATTEMPT" \
+              --arg createdAt "$RUN_CREATED_AT" \
+              --arg completedAt "$RUN_COMPLETED_AT" \
+              '.event == "workflow_dispatch" and .head_sha == $sha and .head_branch == "main" and .status == "completed" and .conclusion == "success" and .run_attempt == $attempt and .created_at == $createdAt and .updated_at == $completedAt and .created_at < $prCreatedAt and .path == ".github/workflows/phase5a0d-visual-baselines.yml"' \
+              "$run_json" > /dev/null
+          fi
           gh api "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" > "$artifacts_json"
           jq -e \
             --argjson id "$ARTIFACT_ID" \
@@ -165,14 +233,33 @@ jobs:
             --argjson bytes "$ARCHIVE_BYTES" \
             '[.artifacts[] | select(.id == $id and .name == $name and .expired == false and .digest == $digest and .size_in_bytes == $bytes)] | length == 1' \
             "$artifacts_json" > /dev/null
+          if [ "$APPROVAL_MODE" = "source-equivalence" ]; then
+            jq -e \
+              --argjson id "$DETERMINISM_ARTIFACT_ID" \
+              --arg name "$DETERMINISM_ARTIFACT_NAME" \
+              --arg digest "$DETERMINISM_ARCHIVE_DIGEST" \
+              --argjson bytes "$DETERMINISM_ARCHIVE_BYTES" \
+              '[.artifacts[] | select(.id == $id and .name == $name and .expired == false and .digest == $digest and .size_in_bytes == $bytes)] | length == 1' \
+              "$artifacts_json" > /dev/null
+          fi
           gh api "repos/$REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" \
             > "$RUNNER_TEMP/phase5a0d-renderer-candidate.zip"
           test "$(stat -c '%s' "$RUNNER_TEMP/phase5a0d-renderer-candidate.zip")" = "$ARCHIVE_BYTES"
           echo "${ARCHIVE_DIGEST#sha256:}  $RUNNER_TEMP/phase5a0d-renderer-candidate.zip" | sha256sum -c -
+          if [ "$APPROVAL_MODE" = "source-equivalence" ]; then
+            gh api "repos/$REPOSITORY/actions/artifacts/$DETERMINISM_ARTIFACT_ID/zip" \
+              > "$RUNNER_TEMP/phase5a0d-renderer-determinism.zip"
+            test "$(stat -c '%s' "$RUNNER_TEMP/phase5a0d-renderer-determinism.zip")" = \
+              "$DETERMINISM_ARCHIVE_BYTES"
+            echo "${DETERMINISM_ARCHIVE_DIGEST#sha256:}  $RUNNER_TEMP/phase5a0d-renderer-determinism.zip" \
+              | sha256sum -c -
+          fi
 
       - name: Safely extract the exact eight-file candidate
         if: steps.scope.outputs.required == 'true'
         shell: bash
+        env:
+          APPROVAL_MODE: ${{ steps.evidence.outputs.approval_mode }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -181,28 +268,50 @@ jobs:
           import stat
           import zipfile
 
-          archive = pathlib.Path(os.environ["RUNNER_TEMP"]) / "phase5a0d-renderer-candidate.zip"
-          destination = pathlib.Path(os.environ["RUNNER_TEMP"]) / "phase5a0d-renderer-candidate"
-          destination.mkdir(mode=0o700)
-          with zipfile.ZipFile(archive) as candidate:
-              entries = candidate.infolist()
-              if len(entries) != 8:
-                  raise RuntimeError("candidate-entry-count-invalid")
-              names = []
-              for entry in entries:
-                  path = pathlib.PurePosixPath(entry.filename)
-                  if entry.is_dir() or path.is_absolute() or ".." in path.parts or len(path.parts) not in (1, 2):
-                      raise RuntimeError("candidate-path-invalid")
-                  if stat.S_ISLNK(entry.external_attr >> 16):
-                      raise RuntimeError("candidate-symlink-forbidden")
-                  names.append(entry.filename)
-              if len(set(names)) != 8:
-                  raise RuntimeError("candidate-path-duplicate")
-              for entry in entries:
-                  target = destination / entry.filename
-                  target.parent.mkdir(parents=True, exist_ok=True)
-                  with candidate.open(entry) as source, target.open("xb") as output:
-                      output.write(source.read())
+          runner_temp = pathlib.Path(os.environ["RUNNER_TEMP"])
+
+          def extract(name, expected_names):
+              archive = runner_temp / f"phase5a0d-renderer-{name}.zip"
+              destination = runner_temp / f"phase5a0d-renderer-{name}"
+              destination.mkdir(mode=0o700)
+              with zipfile.ZipFile(archive) as candidate:
+                  entries = candidate.infolist()
+                  if len(entries) != len(expected_names):
+                      raise RuntimeError(f"{name}-entry-count-invalid")
+                  names = []
+                  for entry in entries:
+                      path = pathlib.PurePosixPath(entry.filename)
+                      if entry.is_dir() or path.is_absolute() or ".." in path.parts or len(path.parts) not in (1, 2):
+                          raise RuntimeError(f"{name}-path-invalid")
+                      if stat.S_ISLNK(entry.external_attr >> 16):
+                          raise RuntimeError(f"{name}-symlink-forbidden")
+                      names.append(entry.filename)
+                  if sorted(names) != sorted(expected_names):
+                      raise RuntimeError(f"{name}-file-set-invalid")
+                  for entry in entries:
+                      target = destination / entry.filename
+                      target.parent.mkdir(parents=True, exist_ok=True)
+                      with candidate.open(entry) as source, target.open("xb") as output:
+                          output.write(source.read())
+
+          extract("candidate", [
+              "phase5a0d-manifest.json",
+              "authenticated-visual.spec.ts/p5a0d-app-shell-new-user-1440x900-light-reduced.png",
+              "authenticated-visual.spec.ts/p5a0d-app-shell-new-user-390x844-light-reduced.png",
+              "smoke-visual.spec.ts/p5a0d-landing-1440x900-light-reduced.png",
+              "smoke-visual.spec.ts/p5a0d-landing-390x844-light-reduced.png",
+              "smoke-visual.spec.ts/p5a0d-landing-768x1024-light-reduced.png",
+              "smoke-visual.spec.ts/p5a0d-login-1440x900-light-reduced.png",
+              "smoke-visual.spec.ts/p5a0d-login-390x844-light-reduced.png",
+          ])
+          if os.environ["APPROVAL_MODE"] == "source-equivalence":
+              extract("determinism", [
+                  "first-files.sha256",
+                  "first-manifest.json",
+                  "provenance.json",
+                  "second-files.sha256",
+                  "second-manifest.json",
+              ])
           PY
 
       - name: Validate with the base-owned comparator
@@ -211,6 +320,7 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          APPROVAL_MODE: ${{ steps.evidence.outputs.approval_mode }}
           RUN_ID: ${{ steps.evidence.outputs.run_id }}
           RUN_ATTEMPT: ${{ steps.evidence.outputs.run_attempt }}
           RUN_CREATED_AT: ${{ steps.evidence.outputs.run_created_at }}
@@ -219,11 +329,15 @@ jobs:
           ARTIFACT_NAME: ${{ steps.evidence.outputs.artifact_name }}
           ARCHIVE_DIGEST: ${{ steps.evidence.outputs.archive_digest }}
           ARCHIVE_BYTES: ${{ steps.evidence.outputs.archive_bytes }}
+          DETERMINISM_ARTIFACT_ID: ${{ steps.evidence.outputs.determinism_artifact_id }}
+          DETERMINISM_ARTIFACT_NAME: ${{ steps.evidence.outputs.determinism_artifact_name }}
+          DETERMINISM_ARCHIVE_DIGEST: ${{ steps.evidence.outputs.determinism_archive_digest }}
+          DETERMINISM_ARCHIVE_BYTES: ${{ steps.evidence.outputs.determinism_archive_bytes }}
         run: |
           set -euo pipefail
           git show "$BASE_SHA:.github/scripts/phase5a0d-renderer-attestation.mjs" \
             > "$RUNNER_TEMP/phase5a0d-renderer-attestation.mjs"
-          node "$RUNNER_TEMP/phase5a0d-renderer-attestation.mjs" \
+          validation_args=(
             --repository-root "$GITHUB_WORKSPACE" \
             --candidate-root "$RUNNER_TEMP/phase5a0d-renderer-candidate" \
             --base-sha "$BASE_SHA" \
@@ -236,6 +350,20 @@ jobs:
             --artifact-name "$ARTIFACT_NAME" \
             --archive-digest "$ARCHIVE_DIGEST" \
             --archive-bytes "$ARCHIVE_BYTES"
+          )
+          if [ "$APPROVAL_MODE" = "source-equivalence" ]; then
+            validation_args+=(
+              --determinism-root "$RUNNER_TEMP/phase5a0d-renderer-determinism"
+              --approval-file "$RUNNER_TEMP/phase5a0d-renderer-approval.json"
+              --run-file "$RUNNER_TEMP/phase5a0d-candidate-run.json"
+              --artifacts-file "$RUNNER_TEMP/phase5a0d-candidate-artifacts.json"
+              --determinism-artifact-id "$DETERMINISM_ARTIFACT_ID"
+              --determinism-artifact-name "$DETERMINISM_ARTIFACT_NAME"
+              --determinism-archive-digest "$DETERMINISM_ARCHIVE_DIGEST"
+              --determinism-archive-bytes "$DETERMINISM_ARCHIVE_BYTES"
+            )
+          fi
+          node "$RUNNER_TEMP/phase5a0d-renderer-attestation.mjs" "${validation_args[@]}"
 
       - name: Record the bounded disposition
         if: always()

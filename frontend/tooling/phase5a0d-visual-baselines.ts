@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
+  appendFileSync,
   copyFileSync,
   existsSync,
   lstatSync,
@@ -265,6 +266,45 @@ export function rendererIdentityMismatchFields(
   return mismatches;
 }
 
+export interface RendererIdentityComparison {
+  readonly blockingMismatches: readonly string[];
+  readonly hostedImageVersionObservation: {
+    readonly manifest: string;
+    readonly actual: string;
+  };
+}
+
+export function compareRendererIdentity(
+  expected: Pick<VisualBaselineManifest, "runner" | "versions">,
+  actual: Pick<VisualBaselineManifest, "runner" | "versions">,
+): RendererIdentityComparison {
+  return Object.freeze({
+    blockingMismatches: Object.freeze(
+      rendererIdentityMismatchFields(expected, actual).filter(
+        (field) => field !== "runner.imageVersion",
+      ),
+    ),
+    hostedImageVersionObservation: Object.freeze({
+      manifest: expected.runner.imageVersion,
+      actual: actual.runner.imageVersion,
+    }),
+  });
+}
+
+function recordHostedImageVersionObservation(
+  observation: RendererIdentityComparison["hostedImageVersionObservation"],
+): void {
+  const detail = `manifest=${JSON.stringify(observation.manifest)},actual=${JSON.stringify(observation.actual)}`;
+  console.log(`[P5_VISUAL] hosted-runner-image-version-observation:${detail}`);
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    appendFileSync(
+      process.env.GITHUB_STEP_SUMMARY,
+      `\n### Phase 5A.0d hosted runner observation\n\n- Manifest image version: \`${observation.manifest}\`\n- Actual image version: \`${observation.actual}\`\n- Disposition: observational; deterministic renderer settings and exact pixels remain blocking.\n`,
+      "utf8",
+    );
+  }
+}
+
 export async function generateVisualBaselineManifest(
   frontendRoot = process.cwd(),
 ): Promise<VisualBaselineManifest> {
@@ -519,7 +559,10 @@ export async function verifyVisualBaselineManifest(
 ): Promise<VisualBaselineManifest> {
   const manifest = readVerifiedVisualBaselineFiles(frontendRoot);
   const renderer = await currentRendererIdentity(frontendRoot);
-  const mismatches = rendererIdentityMismatchFields(manifest, renderer);
-  if (mismatches.length > 0) fail(`baseline-renderer-mismatch:${mismatches.join(",")}`);
+  const comparison = compareRendererIdentity(manifest, renderer);
+  recordHostedImageVersionObservation(comparison.hostedImageVersionObservation);
+  if (comparison.blockingMismatches.length > 0) {
+    fail(`baseline-renderer-mismatch:${comparison.blockingMismatches.join(",")}`);
+  }
   return manifest;
 }
