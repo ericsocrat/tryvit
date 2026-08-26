@@ -66,8 +66,8 @@ export function isTurnstileConfigured(): boolean {
 
 /**
  * Verify a Turnstile token via the Edge Function.
- * Returns { valid: true } on success or graceful degradation (Edge Function
- * unavailable), { valid: false, error } on rejection.
+ * Verification fails closed when the function is unavailable, returns an
+ * unexpected payload, or rejects the token.
  */
 export async function verifyTurnstileToken(
   supabase: SupabaseClient,
@@ -84,22 +84,19 @@ export async function verifyTurnstileToken(
     );
 
     if (error) {
-      // Graceful degradation: if Edge Function is unreachable, allow through
       console.warn("Turnstile verification unavailable:", error.message);
-      return { valid: true };
+      return { valid: false, error: "Turnstile verification unavailable." };
     }
 
     if (data && typeof data === "object" && "valid" in data) {
       return data as TurnstileVerifyResult;
     }
 
-    // Unexpected response shape — graceful degradation
     console.warn("Unexpected Turnstile response:", data);
-    return { valid: true };
+    return { valid: false, error: "Unexpected Turnstile verification response." };
   } catch {
-    // Network error — graceful degradation
     console.warn("Turnstile verification network error");
-    return { valid: true };
+    return { valid: false, error: "Turnstile verification unavailable." };
   }
 }
 

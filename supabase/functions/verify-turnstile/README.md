@@ -21,7 +21,7 @@ Server-side Cloudflare Turnstile CAPTCHA token verification. Called by the front
 
 ```jsonc
 // Success
-{ "valid": true, "challenge_ts": "2026-01-01T00:00:00Z", "hostname": "tryvit.com" }
+{ "valid": true, "challenge_ts": "2026-01-01T00:00:00Z", "hostname": "tryvit.app" }
 
 // Failure
 { "valid": false, "error": "Token verification failed", "error_codes": ["invalid-input-response"] }
@@ -45,6 +45,7 @@ supabase functions deploy verify-turnstile --no-verify-jwt
 | Secret                 | Description                         |
 | ---------------------- | ----------------------------------- |
 | `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile server-side secret key |
+| `TURNSTILE_HOSTNAMES`  | Comma-separated production hostname allowlist (`tryvit.app`) |
 
 ```bash
 supabase secrets set TURNSTILE_SECRET_KEY=<key>

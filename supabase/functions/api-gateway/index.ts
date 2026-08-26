@@ -142,6 +142,16 @@ interface TurnstileVerifyResponse {
   "error-codes"?: string[];
   challenge_ts?: string;
   hostname?: string;
+  action?: string;
+}
+
+function expectedTurnstileHostnames(): Set<string> {
+  return new Set(
+    (Deno.env.get("TURNSTILE_HOSTNAMES") ?? "")
+      .split(",")
+      .map((hostname) => hostname.trim().toLowerCase())
+      .filter(Boolean),
+  );
 }
 
 /**
@@ -227,27 +237,31 @@ async function lookupTrustScore(userId: string): Promise<number | null> {
 /**
  * Verify a Turnstile token directly with the Cloudflare API.
  * Returns { valid: true } on success, { valid: false, error } on failure.
- * Gracefully degrades if the API is unreachable or no secret key is set.
+ * Fails closed if configuration is missing or Siteverify is unavailable.
  */
 async function verifyTurnstileToken(
   token: string,
   ip: string,
+  expectedAction: string,
 ): Promise<{ valid: true } | { valid: false; error: string }> {
   const secretKey = Deno.env.get("TURNSTILE_SECRET_KEY");
+  const hostnames = expectedTurnstileHostnames();
 
-  if (!secretKey) {
-    // Graceful degradation: no secret key → allow through
-    console.warn(
-      "TURNSTILE_SECRET_KEY not set — allowing request (graceful degradation)",
-    );
-    return { valid: true };
+  if (!secretKey || hostnames.size === 0) {
+    console.error("Turnstile verification is not configured");
+    return { valid: false, error: "Turnstile verification is not configured" };
+  }
+
+  if (!token || token.length > 2048) {
+    return { valid: false, error: "Invalid Turnstile token" };
   }
 
   try {
     const response = await fetch(TURNSTILE_VERIFY_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      signal: AbortSignal.timeout(10_000),
+      body: new URLSearchParams({
         secret: secretKey,
         response: token,
         remoteip: ip,
@@ -258,13 +272,17 @@ async function verifyTurnstileToken(
       console.error(
         `Turnstile API returned ${response.status}: ${response.statusText}`,
       );
-      // Graceful degradation on API failure
-      return { valid: true };
+      return { valid: false, error: "Turnstile verification unavailable" };
     }
 
     const data: TurnstileVerifyResponse = await response.json();
 
-    if (data.success) {
+    if (
+      data.success &&
+      data.action === expectedAction &&
+      typeof data.hostname === "string" &&
+      hostnames.has(data.hostname.toLowerCase())
+    ) {
       return { valid: true };
     }
 
@@ -274,8 +292,7 @@ async function verifyTurnstileToken(
     };
   } catch (err) {
     console.error("Turnstile verification error:", err);
-    // Graceful degradation on network failure
-    return { valid: true };
+    return { valid: false, error: "Turnstile verification unavailable" };
   }
 }
 
@@ -878,7 +895,11 @@ Deno.serve(async (req: Request) => {
         req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
         "";
 
-      const turnstileResult = await verifyTurnstileToken(turnstileToken, ip);
+      const turnstileResult = await verifyTurnstileToken(
+        turnstileToken,
+        ip,
+        action,
+      );
 
       if (!turnstileResult.valid) {
         return new Response(
