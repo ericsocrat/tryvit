@@ -13,6 +13,12 @@ import { fileURLToPath } from "node:url";
 
 export const AUTHORIZATION_LABEL = "phase5a0d-intentional-redesign-approved";
 export const APPROVAL_MARKER = "phase5a0d-intentional-redesign-approval:v1";
+export const EQUIVALENCE_APPROVAL_MARKER =
+  "phase5a0d-intentional-redesign-approval:v2";
+export const APPROVAL_MARKERS = Object.freeze([
+  APPROVAL_MARKER,
+  EQUIVALENCE_APPROVAL_MARKER,
+]);
 export const MANIFEST_PATH =
   "frontend/e2e/__screenshots__/phase5a0d-manifest.json";
 export const VISUAL_WORKFLOW_PATH =
@@ -92,15 +98,139 @@ function normalizeAuthorizedPath(value) {
   return value;
 }
 
+function validateCandidateRecord(candidate, label, sourceCommit) {
+  exactKeys(
+    candidate,
+    [
+      "workflowRunId",
+      "workflowRunAttempt",
+      "runCreatedAt",
+      "runCompletedAt",
+      "artifactId",
+      "artifactName",
+      "archiveDigest",
+      "archiveBytes",
+      "determinismArtifactId",
+      "determinismArtifactName",
+      "determinismArchiveDigest",
+      "determinismArchiveBytes",
+      "sourceCommit",
+    ],
+    label,
+  );
+  requiredInteger(candidate.workflowRunId, `${label}-run-id`);
+  requiredInteger(candidate.workflowRunAttempt, `${label}-run-attempt`);
+  requiredTimestamp(candidate.runCreatedAt, `${label}-run-created`);
+  requiredTimestamp(candidate.runCompletedAt, `${label}-run-completed`);
+  requiredInteger(candidate.artifactId, `${label}-artifact-id`);
+  requiredSafeText(candidate.artifactName, `${label}-artifact-name`);
+  normalizeDigest(candidate.archiveDigest, `${label}-artifact-digest`);
+  requiredInteger(candidate.archiveBytes, `${label}-artifact-bytes`);
+  requiredInteger(candidate.determinismArtifactId, `${label}-determinism-artifact-id`);
+  requiredSafeText(candidate.determinismArtifactName, `${label}-determinism-artifact-name`);
+  normalizeDigest(
+    candidate.determinismArchiveDigest,
+    `${label}-determinism-artifact-digest`,
+  );
+  requiredInteger(
+    candidate.determinismArchiveBytes,
+    `${label}-determinism-artifact-bytes`,
+  );
+  assert.match(candidate.sourceCommit ?? "", COMMIT_PATTERN, `${label}-source-invalid`);
+  assert.equal(candidate.sourceCommit, sourceCommit, `${label}-source-mismatch`);
+  assert.equal(
+    candidate.artifactName,
+    `phase5a0d-visual-baseline-candidates-${sourceCommit}`,
+    `${label}-artifact-name-source-mismatch`,
+  );
+  assert.equal(
+    candidate.determinismArtifactName,
+    `phase5a0d-visual-determinism-evidence-${sourceCommit}`,
+    `${label}-determinism-name-source-mismatch`,
+  );
+}
+
+function validateSourceIdentity(source, label, includePrNumber, additionalKeys = []) {
+  exactKeys(
+    source,
+    [
+      ...(includePrNumber ? ["prNumber"] : []),
+      "headSha",
+      "tree",
+      ...additionalKeys,
+    ],
+    label,
+  );
+  if (includePrNumber) requiredInteger(source.prNumber, `${label}-pr`);
+  assert.match(source.headSha ?? "", COMMIT_PATTERN, `${label}-head-invalid`);
+  assert.match(source.tree ?? "", COMMIT_PATTERN, `${label}-tree-invalid`);
+}
+
 function parseApprovalBody(body) {
   assert.equal(typeof body, "string", "approval-comment-body-invalid");
+  const marker = APPROVAL_MARKERS.find((candidate) => body.includes(candidate));
+  assert.ok(marker, "approval-comment-marker-missing");
   const pattern = new RegExp(
-    `<!--\\s*${APPROVAL_MARKER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\n([\\s\\S]*?)\\n-->`,
+    `<!--\\s*${marker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\n([\\s\\S]*?)\\n-->`,
     "u",
   );
   const match = pattern.exec(body);
   assert.ok(match, "approval-comment-marker-missing");
   const approval = JSON.parse(match[1]);
+  if (marker === EQUIVALENCE_APPROVAL_MARKER) {
+    exactKeys(
+      approval,
+      [
+        "schemaVersion",
+        "approvalType",
+        "baselinePrHead",
+        "approvedVisualSource",
+        "synchronizedImplementation",
+        "authorizedPaths",
+      ],
+      "approval",
+    );
+    assert.equal(approval.schemaVersion, 2, "approval-schema-invalid");
+    assert.equal(
+      approval.approvalType,
+      "phase5a0d-approved-source-equivalence",
+      "approval-type-invalid",
+    );
+    assert.match(approval.baselinePrHead ?? "", COMMIT_PATTERN, "approval-head-invalid");
+    exactKeys(
+      approval.approvedVisualSource,
+      ["headSha", "tree", "candidate"],
+      "approval-visual-source",
+    );
+    validateSourceIdentity(
+      approval.approvedVisualSource,
+      "approval-visual-source",
+      false,
+      ["candidate"],
+    );
+    validateCandidateRecord(
+      approval.approvedVisualSource.candidate,
+      "approval-reference-candidate",
+      approval.approvedVisualSource.headSha,
+    );
+    exactKeys(
+      approval.synchronizedImplementation,
+      ["prNumber", "headSha", "tree", "equivalenceCandidate"],
+      "approval-synchronized-implementation",
+    );
+    validateSourceIdentity(
+      approval.synchronizedImplementation,
+      "approval-synchronized-implementation",
+      true,
+      ["equivalenceCandidate"],
+    );
+    validateCandidateRecord(
+      approval.synchronizedImplementation.equivalenceCandidate,
+      "approval-equivalence-candidate",
+      approval.synchronizedImplementation.headSha,
+    );
+    approval._mode = "source-equivalence";
+  } else {
   exactKeys(
     approval,
     [
@@ -121,82 +251,14 @@ function parseApprovalBody(body) {
   );
   assert.match(approval.baselinePrHead ?? "", COMMIT_PATTERN, "approval-head-invalid");
 
-  exactKeys(
-    approval.approvedImplementation,
-    ["prNumber", "headSha", "tree"],
-    "approval-implementation",
-  );
-  requiredInteger(approval.approvedImplementation.prNumber, "approval-implementation-pr");
-  assert.match(
-    approval.approvedImplementation.headSha ?? "",
-    COMMIT_PATTERN,
-    "approval-implementation-head-invalid",
-  );
-  assert.match(
-    approval.approvedImplementation.tree ?? "",
-    COMMIT_PATTERN,
-    "approval-implementation-tree-invalid",
-  );
-
-  exactKeys(
-    approval.candidate,
-    [
-      "workflowRunId",
-      "workflowRunAttempt",
-      "runCreatedAt",
-      "runCompletedAt",
-      "artifactId",
-      "artifactName",
-      "archiveDigest",
-      "archiveBytes",
-      "determinismArtifactId",
-      "determinismArtifactName",
-      "determinismArchiveDigest",
-      "determinismArchiveBytes",
-      "sourceCommit",
-    ],
-    "approval-candidate",
-  );
-  requiredInteger(approval.candidate.workflowRunId, "approval-run-id");
-  requiredInteger(approval.candidate.workflowRunAttempt, "approval-run-attempt");
-  requiredTimestamp(approval.candidate.runCreatedAt, "approval-run-created");
-  requiredTimestamp(approval.candidate.runCompletedAt, "approval-run-completed");
-  requiredInteger(approval.candidate.artifactId, "approval-artifact-id");
-  requiredSafeText(approval.candidate.artifactName, "approval-artifact-name");
-  normalizeDigest(approval.candidate.archiveDigest, "approval-artifact-digest");
-  requiredInteger(approval.candidate.archiveBytes, "approval-artifact-bytes");
-  requiredInteger(
-    approval.candidate.determinismArtifactId,
-    "approval-determinism-artifact-id",
-  );
-  requiredSafeText(
-    approval.candidate.determinismArtifactName,
-    "approval-determinism-artifact-name",
-  );
-  normalizeDigest(
-    approval.candidate.determinismArchiveDigest,
-    "approval-determinism-artifact-digest",
-  );
-  requiredInteger(
-    approval.candidate.determinismArchiveBytes,
-    "approval-determinism-artifact-bytes",
-  );
-  assert.match(approval.candidate.sourceCommit ?? "", COMMIT_PATTERN, "approval-source-invalid");
-  assert.equal(
-    approval.candidate.sourceCommit,
-    approval.approvedImplementation.headSha,
-    "approval-source-implementation-mismatch",
-  );
-  assert.equal(
-    approval.candidate.artifactName,
-    `phase5a0d-visual-baseline-candidates-${approval.candidate.sourceCommit}`,
-    "approval-artifact-name-source-mismatch",
-  );
-  assert.equal(
-    approval.candidate.determinismArtifactName,
-    `phase5a0d-visual-determinism-evidence-${approval.candidate.sourceCommit}`,
-    "approval-determinism-name-source-mismatch",
-  );
+    validateSourceIdentity(approval.approvedImplementation, "approval-implementation", true);
+    validateCandidateRecord(
+      approval.candidate,
+      "approval-candidate",
+      approval.approvedImplementation.headSha,
+    );
+    approval._mode = "exact-head";
+  }
 
   assert.equal(Array.isArray(approval.authorizedPaths), true, "approval-paths-invalid");
   assert.equal(approval.authorizedPaths.length > 0, true, "approval-paths-empty");
@@ -229,7 +291,7 @@ export function selectExternalApproval({
         comment?.user?.login === owner &&
         comment?.author_association === "OWNER" &&
         typeof comment.body === "string" &&
-        comment.body.includes(APPROVAL_MARKER),
+        APPROVAL_MARKERS.some((marker) => comment.body.includes(marker)),
     )
     .map((comment) => ({
       approval: parseApprovalBody(comment.body),
@@ -321,8 +383,7 @@ export function assertManifestTransition(baseManifest, nextManifest, authorizedP
   }
 }
 
-export function assertRunAndArtifacts(run, artifacts, approval, approvalTime) {
-  const candidate = approval.candidate;
+function assertCandidateRunAndArtifacts(run, artifacts, candidate, approvalTime) {
   assert.equal(run.id, candidate.workflowRunId, "candidate-run-id-invalid");
   assert.equal(run.event, "workflow_dispatch", "candidate-run-event-invalid");
   assert.equal(run.head_sha, candidate.sourceCommit, "candidate-run-head-invalid");
@@ -362,6 +423,15 @@ export function assertRunAndArtifacts(run, artifacts, approval, approvalTime) {
   }
 }
 
+export function assertRunAndArtifacts(run, artifacts, approval, approvalTime) {
+  return assertCandidateRunAndArtifacts(
+    run,
+    artifacts,
+    approval.candidate,
+    approvalTime,
+  );
+}
+
 function listRegularFiles(root) {
   const files = [];
   const visit = (directory) => {
@@ -390,6 +460,105 @@ function git(repositoryRoot, args, encoding = "utf8") {
 
 function gitBytes(repositoryRoot, revision, path) {
   return git(repositoryRoot, ["show", `${revision}:${path}`], null);
+}
+
+function approvalReference(approval) {
+  return approval._mode === "source-equivalence"
+    ? {
+        source: approval.approvedVisualSource,
+        candidate: approval.approvedVisualSource.candidate,
+      }
+    : {
+        source: approval.approvedImplementation,
+        candidate: approval.candidate,
+      };
+}
+
+function approvalSynchronized(approval) {
+  return approval._mode === "source-equivalence"
+    ? {
+        source: approval.synchronizedImplementation,
+        candidate: approval.synchronizedImplementation.equivalenceCandidate,
+      }
+    : null;
+}
+
+function assertCommitTree(repositoryRoot, source, label) {
+  const tree = git(repositoryRoot, ["rev-parse", `${source.headSha}^{tree}`]).trim();
+  assert.equal(tree, source.tree, `${label}-tree-mismatch`);
+}
+
+export function assertVisualSourceAncestor(repositoryRoot, visualSha, synchronizedSha) {
+  try {
+    git(repositoryRoot, ["merge-base", "--is-ancestor", visualSha, synchronizedSha]);
+  } catch {
+    assert.fail("approved-visual-source-not-ancestor");
+  }
+}
+
+function runtimeLandingPaths(repositoryRoot, revision) {
+  const routeLocal = git(repositoryRoot, [
+    "ls-tree",
+    "-r",
+    "--name-only",
+    revision,
+    "--",
+    "frontend/src/app/_landing-v2",
+  ])
+    .trim()
+    .split(/\r?\n/u)
+    .filter(Boolean)
+    .filter(
+      (entry) =>
+        /\.(?:css|ts|tsx)$/u.test(entry) &&
+        !/\.test\.(?:ts|tsx)$/u.test(entry) &&
+        !entry.endsWith("/LandingSocialCard.tsx"),
+    );
+  return [
+    "frontend/src/app/page.tsx",
+    "frontend/src/app/HomePageContent.tsx",
+    "frontend/src/proxy.ts",
+    ...routeLocal,
+  ].sort();
+}
+
+export function assertNormalLandingSourceEquivalent(repositoryRoot, visualSha, synchronizedSha) {
+  const visualPaths = runtimeLandingPaths(repositoryRoot, visualSha);
+  const synchronizedPaths = runtimeLandingPaths(repositoryRoot, synchronizedSha);
+  assert.deepEqual(
+    synchronizedPaths,
+    visualPaths,
+    "approved-landing-render-file-set-drift",
+  );
+  for (const path of visualPaths) {
+    assert.equal(
+      git(repositoryRoot, ["rev-parse", `${visualSha}:${path}`]).trim(),
+      git(repositoryRoot, ["rev-parse", `${synchronizedSha}:${path}`]).trim(),
+      `approved-landing-render-source-drift:${path}`,
+    );
+  }
+  return visualPaths;
+}
+
+export function assertEquivalentCandidateManifests(referenceManifest, equivalenceManifest) {
+  const normalizedReference = stableCopy(referenceManifest);
+  normalizedReference.sourceCommit = equivalenceManifest.sourceCommit;
+  normalizedReference.runner = stableCopy(equivalenceManifest.runner);
+  normalizedReference.versions = stableCopy(equivalenceManifest.versions);
+  normalizedReference.manifestChecksum = equivalenceManifest.manifestChecksum;
+  assert.deepEqual(
+    equivalenceManifest,
+    normalizedReference,
+    "equivalence-candidate-manifest-drift",
+  );
+  for (const manifest of [referenceManifest, equivalenceManifest]) {
+    const { manifestChecksum, ...payload } = manifest;
+    assert.equal(
+      sha256(stableJson(payload)),
+      manifestChecksum,
+      "equivalence-manifest-checksum-mismatch",
+    );
+  }
 }
 
 function parseChangedPathRecords(repositoryRoot, baseSha, headSha) {
@@ -482,16 +651,27 @@ export function validateIntentionalRedesign(options) {
   exactKeys(externalApproval, ["approval", "external"], "external-approval");
   const approval = externalApproval.approval;
   assert.equal(approval.baselinePrHead, options.headSha, "approval-head-mismatch");
-
-  const implementationTree = git(repositoryRoot, [
-    "rev-parse",
-    `${approval.approvedImplementation.headSha}^{tree}`,
-  ]).trim();
-  assert.equal(
-    implementationTree,
-    approval.approvedImplementation.tree,
-    "approval-implementation-tree-mismatch",
-  );
+  const reference = approvalReference(approval);
+  const synchronized = approvalSynchronized(approval);
+  assertCommitTree(repositoryRoot, reference.source, "approval-reference-source");
+  let equivalentRenderPaths = [];
+  if (synchronized) {
+    assertCommitTree(
+      repositoryRoot,
+      synchronized.source,
+      "approval-synchronized-implementation",
+    );
+    assertVisualSourceAncestor(
+      repositoryRoot,
+      reference.source.headSha,
+      synchronized.source.headSha,
+    );
+    equivalentRenderPaths = assertNormalLandingSourceEquivalent(
+      repositoryRoot,
+      reference.source.headSha,
+      synchronized.source.headSha,
+    );
+  }
 
   const changedRecords = parseChangedPathRecords(
     repositoryRoot,
@@ -512,7 +692,7 @@ export function validateIntentionalRedesign(options) {
   const nextManifest = JSON.parse(nextManifestBytes.toString("utf8"));
   assert.equal(
     nextManifest.sourceCommit,
-    approval.approvedImplementation.headSha,
+    reference.source.headSha,
     "manifest-approved-source-mismatch",
   );
   assertManifestTransition(baseManifest, nextManifest, approval.authorizedPaths);
@@ -546,7 +726,7 @@ export function validateIntentionalRedesign(options) {
   );
   assert.equal(
     provenance.sourceCommit,
-    approval.candidate.sourceCommit,
+    reference.candidate.sourceCommit,
     "determinism-source-invalid",
   );
   assert.deepEqual(provenance.runner, nextManifest.runner, "determinism-runner-invalid");
@@ -555,17 +735,83 @@ export function validateIntentionalRedesign(options) {
   const run = JSON.parse(readFileSync(options.runFile, "utf8"));
   const artifactsPayload = JSON.parse(readFileSync(options.artifactsFile, "utf8"));
   assert.equal(Array.isArray(artifactsPayload.artifacts), true, "github-artifacts-invalid");
-  assertRunAndArtifacts(
+  assertCandidateRunAndArtifacts(
     run,
     artifactsPayload.artifacts,
-    approval,
+    reference.candidate,
     externalApproval.external.commentUpdatedAt,
   );
 
+  if (synchronized) {
+    const equivalenceCandidateRoot = resolve(options.equivalenceCandidateRoot);
+    const equivalenceDeterminismRoot = resolve(options.equivalenceDeterminismRoot);
+    const equivalenceManifestBytes = readFileSync(
+      resolve(equivalenceCandidateRoot, MANIFEST_FILE),
+    );
+    const equivalenceManifest = JSON.parse(equivalenceManifestBytes.toString("utf8"));
+    assert.equal(
+      equivalenceManifest.sourceCommit,
+      synchronized.source.headSha,
+      "equivalence-manifest-source-invalid",
+    );
+    assertEquivalentCandidateManifests(nextManifest, equivalenceManifest);
+    assert.deepEqual(
+      listRegularFiles(equivalenceCandidateRoot),
+      expectedCandidateFiles,
+      "equivalence-candidate-file-set-invalid",
+    );
+    for (const entry of nextManifest.cases) {
+      assert.deepEqual(
+        readFileSync(resolve(equivalenceCandidateRoot, entry.relativeFile)),
+        readFileSync(resolve(candidateRoot, entry.relativeFile)),
+        `equivalence-candidate-png-drift:${entry.id}`,
+      );
+    }
+    const equivalenceProvenance = assertDeterminism(
+      equivalenceDeterminismRoot,
+      equivalenceCandidateRoot,
+      equivalenceManifestBytes,
+    );
+    assert.equal(
+      equivalenceProvenance.sourceCommit,
+      synchronized.candidate.sourceCommit,
+      "equivalence-determinism-source-invalid",
+    );
+    assert.deepEqual(
+      equivalenceProvenance.runner,
+      equivalenceManifest.runner,
+      "equivalence-determinism-runner-invalid",
+    );
+    assert.deepEqual(
+      equivalenceProvenance.versions,
+      equivalenceManifest.versions,
+      "equivalence-determinism-versions-invalid",
+    );
+    const equivalenceRun = JSON.parse(readFileSync(options.equivalenceRunFile, "utf8"));
+    const equivalenceArtifacts = JSON.parse(
+      readFileSync(options.equivalenceArtifactsFile, "utf8"),
+    );
+    assert.equal(
+      Array.isArray(equivalenceArtifacts.artifacts),
+      true,
+      "equivalence-github-artifacts-invalid",
+    );
+    assertCandidateRunAndArtifacts(
+      equivalenceRun,
+      equivalenceArtifacts.artifacts,
+      synchronized.candidate,
+      externalApproval.external.commentUpdatedAt,
+    );
+  }
+
   return {
-    approvedImplementation: approval.approvedImplementation,
+    approvalMode: approval._mode,
+    approvedVisualSource: reference.source,
+    synchronizedImplementation: synchronized?.source ?? reference.source,
     authorizedPaths: approval.authorizedPaths,
-    candidateRunId: approval.candidate.workflowRunId,
+    candidateRunId: reference.candidate.workflowRunId,
+    equivalenceRunId: synchronized?.candidate.workflowRunId ?? null,
+    equivalentRenderPaths,
     commentId: externalApproval.external.commentId,
     labelEventId: externalApproval.external.labelEventId,
   };
@@ -590,8 +836,11 @@ function requiredArgument(args, name) {
 }
 
 function writeApprovalOutputs(result, outputFile) {
-  const candidate = result.approval.candidate;
+  const reference = approvalReference(result.approval);
+  const synchronized = approvalSynchronized(result.approval);
+  const candidate = reference.candidate;
   const values = {
+    approval_mode: result.approval._mode,
     source_commit: candidate.sourceCommit,
     run_id: candidate.workflowRunId,
     artifact_id: candidate.artifactId,
@@ -603,6 +852,24 @@ function writeApprovalOutputs(result, outputFile) {
     determinism_archive_digest: candidate.determinismArchiveDigest,
     determinism_archive_bytes: candidate.determinismArchiveBytes,
   };
+  if (synchronized) {
+    Object.assign(values, {
+      equivalence_source_commit: synchronized.candidate.sourceCommit,
+      equivalence_run_id: synchronized.candidate.workflowRunId,
+      equivalence_artifact_id: synchronized.candidate.artifactId,
+      equivalence_artifact_name: synchronized.candidate.artifactName,
+      equivalence_archive_digest: synchronized.candidate.archiveDigest,
+      equivalence_archive_bytes: synchronized.candidate.archiveBytes,
+      equivalence_determinism_artifact_id:
+        synchronized.candidate.determinismArtifactId,
+      equivalence_determinism_artifact_name:
+        synchronized.candidate.determinismArtifactName,
+      equivalence_determinism_archive_digest:
+        synchronized.candidate.determinismArchiveDigest,
+      equivalence_determinism_archive_bytes:
+        synchronized.candidate.determinismArchiveBytes,
+    });
+  }
   for (const [key, value] of Object.entries(values)) {
     const rendered = String(value);
     assert.match(rendered, /^[A-Za-z0-9_.:+-]+$/u, `approval-output-unsafe:${key}`);
@@ -635,6 +902,10 @@ function main() {
       approvalFile: requiredArgument(args, "approval-file"),
       runFile: requiredArgument(args, "run-file"),
       artifactsFile: requiredArgument(args, "artifacts-file"),
+      equivalenceCandidateRoot: args["equivalence-candidate-root"],
+      equivalenceDeterminismRoot: args["equivalence-determinism-root"],
+      equivalenceRunFile: args["equivalence-run-file"],
+      equivalenceArtifactsFile: args["equivalence-artifacts-file"],
       baseSha: requiredArgument(args, "base-sha"),
       headSha: requiredArgument(args, "head-sha"),
     });

@@ -125,9 +125,46 @@ jobs:
           echo "${DETERMINISM_ARCHIVE_DIGEST#sha256:}  $RUNNER_TEMP/phase5a0d-redesign-determinism.zip" \
             | sha256sum -c -
 
+      - name: Bind the synchronized-head equivalence artifacts
+        if: steps.scope.outputs.required == 'true' && steps.approval.outputs.approval_mode == 'source-equivalence'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_COMMIT: ${{ steps.approval.outputs.equivalence_source_commit }}
+          RUN_ID: ${{ steps.approval.outputs.equivalence_run_id }}
+          CANDIDATE_ARTIFACT_ID: ${{ steps.approval.outputs.equivalence_artifact_id }}
+          CANDIDATE_ARCHIVE_DIGEST: ${{ steps.approval.outputs.equivalence_archive_digest }}
+          CANDIDATE_ARCHIVE_BYTES: ${{ steps.approval.outputs.equivalence_archive_bytes }}
+          DETERMINISM_ARTIFACT_ID: ${{ steps.approval.outputs.equivalence_determinism_artifact_id }}
+          DETERMINISM_ARCHIVE_DIGEST: ${{ steps.approval.outputs.equivalence_determinism_archive_digest }}
+          DETERMINISM_ARCHIVE_BYTES: ${{ steps.approval.outputs.equivalence_determinism_archive_bytes }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --no-write-fetch-head origin "$SOURCE_COMMIT"
+          git cat-file -e "$SOURCE_COMMIT^{commit}"
+          gh api "repos/$REPOSITORY/actions/runs/$RUN_ID" \
+            > "$RUNNER_TEMP/phase5a0d-redesign-equivalence-run.json"
+          gh api "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" \
+            > "$RUNNER_TEMP/phase5a0d-redesign-equivalence-artifacts.json"
+          gh api "repos/$REPOSITORY/actions/artifacts/$CANDIDATE_ARTIFACT_ID/zip" \
+            > "$RUNNER_TEMP/phase5a0d-redesign-equivalence-candidate.zip"
+          gh api "repos/$REPOSITORY/actions/artifacts/$DETERMINISM_ARTIFACT_ID/zip" \
+            > "$RUNNER_TEMP/phase5a0d-redesign-equivalence-determinism.zip"
+          test "$(stat -c '%s' "$RUNNER_TEMP/phase5a0d-redesign-equivalence-candidate.zip")" = \
+            "$CANDIDATE_ARCHIVE_BYTES"
+          test "$(stat -c '%s' "$RUNNER_TEMP/phase5a0d-redesign-equivalence-determinism.zip")" = \
+            "$DETERMINISM_ARCHIVE_BYTES"
+          echo "${CANDIDATE_ARCHIVE_DIGEST#sha256:}  $RUNNER_TEMP/phase5a0d-redesign-equivalence-candidate.zip" \
+            | sha256sum -c -
+          echo "${DETERMINISM_ARCHIVE_DIGEST#sha256:}  $RUNNER_TEMP/phase5a0d-redesign-equivalence-determinism.zip" \
+            | sha256sum -c -
+
       - name: Safely extract candidate data without executing it
         if: steps.scope.outputs.required == 'true'
         shell: bash
+        env:
+          APPROVAL_MODE: ${{ steps.approval.outputs.approval_mode }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -171,6 +208,9 @@ jobs:
 
           extract("candidate", 8, 20 * 1024 * 1024)
           extract("determinism", 5, 2 * 1024 * 1024)
+          if os.environ["APPROVAL_MODE"] == "source-equivalence":
+              extract("equivalence-candidate", 8, 20 * 1024 * 1024)
+              extract("equivalence-determinism", 5, 2 * 1024 * 1024)
           PY
 
       - name: Validate with the exact base-owned acceptance policy
@@ -179,10 +219,11 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          APPROVAL_MODE: ${{ steps.approval.outputs.approval_mode }}
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$BASE_SHA"
-          node .github/scripts/phase5a0d-intentional-redesign.mjs validate \
+          validation_args=(
             --repository-root "$GITHUB_WORKSPACE" \
             --candidate-root "$RUNNER_TEMP/phase5a0d-redesign-candidate" \
             --determinism-root "$RUNNER_TEMP/phase5a0d-redesign-determinism" \
@@ -191,6 +232,16 @@ jobs:
             --artifacts-file "$RUNNER_TEMP/phase5a0d-redesign-artifacts.json" \
             --base-sha "$BASE_SHA" \
             --head-sha "$HEAD_SHA"
+          )
+          if [ "$APPROVAL_MODE" = "source-equivalence" ]; then
+            validation_args+=(
+              --equivalence-candidate-root "$RUNNER_TEMP/phase5a0d-redesign-equivalence-candidate"
+              --equivalence-determinism-root "$RUNNER_TEMP/phase5a0d-redesign-equivalence-determinism"
+              --equivalence-run-file "$RUNNER_TEMP/phase5a0d-redesign-equivalence-run.json"
+              --equivalence-artifacts-file "$RUNNER_TEMP/phase5a0d-redesign-equivalence-artifacts.json"
+            )
+          fi
+          node .github/scripts/phase5a0d-intentional-redesign.mjs validate "${validation_args[@]}"
           test "$(git rev-parse HEAD)" = "$BASE_SHA"
 
       - name: Record the bounded disposition
