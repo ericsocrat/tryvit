@@ -20,6 +20,10 @@ source-bound cohort.
 Each route-family candidate retains exactly five valid mobile samples and five valid
 desktop samples from one frozen source/build/environment.
 
+The mobile and desktop profiles each record the exact source commit/tree, build ID,
+and environment identity. Those four values must match across both profiles; mixed
+source, build, or runtime cohorts fail closed.
+
 | Gate | Blocking threshold |
 | --- | ---: |
 | Mobile performance median | `>= 0.90` |
@@ -37,6 +41,8 @@ sorting the five LCP values from lowest to highest.
 ## Retention and causal classification
 
 - Retain every valid sample and its original execution order.
+- Retain the exact profile provenance beside the samples; a valid-looking mixed cohort
+  is not comparable and cannot pass.
 - Never remove a sample, mutate a threshold after measurement, average away a failure,
   or selectively rerun a valid cohort.
 - Every mobile sample above `2500 ms` remains visible in the handoff and receives an
@@ -70,6 +76,10 @@ shared-runtime sample as field-performance evidence.
 
 No Lighthouse run was repeated for this governance decision. The already-retained
 Cycle 3 exact-source Linux cohort is evaluated unchanged.
+
+Both profiles bind to source `020a44da7ae3fc8c7878042da4fecaf7e70cf423`, tree
+`f0006463c288afe22e6e22681ebfa1f8e7669691`, build `y2BuG-m-zogwB7pxYQuRr`, and the
+same pinned Playwright Linux image digest.
 
 Sorted mobile LCP values:
 

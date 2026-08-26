@@ -38,11 +38,20 @@ function sample(
 }
 
 function passingInput(): RouteMigrationLabGateInput {
+  const provenance = {
+    sourceCommit: "020a44da7ae3fc8c7878042da4fecaf7e70cf423",
+    sourceTree: "f0006463c288afe22e6e22681ebfa1f8e7669691",
+    buildId: "y2BuG-m-zogwB7pxYQuRr",
+    environmentIdentity:
+      "mcr.microsoft.com/playwright:v1.62.1-noble@sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac",
+  };
   return {
     mobile: [1, 2, 3, 4, 5].map((index) => sample(`m${index}`)),
     desktop: [1, 2, 3, 4, 5].map((index) =>
       sample(`d${index}`, { performance: 1, lcpMs: 560, tbtMs: 0 }),
     ),
+    mobileProvenance: provenance,
+    desktopProvenance: provenance,
     outlierClassifications: [],
     process: {
       retainedEveryValidSample: true,
@@ -79,6 +88,9 @@ describe("Phase 5A.3 route-migration lab-performance methodology", () => {
       /not a claim that a\s+route passes field Core Web Vitals/u,
     );
     expect(methodologyDocument).toContain("Retain every valid sample");
+    expect(methodologyDocument).toMatch(
+      /source commit\/tree, build ID,\s+and environment identity/u,
+    );
     expect(methodologyDocument).toContain("p75 is defined deterministically as the fourth value");
     expect(methodologyDocument).toContain("No Lighthouse run was repeated");
     expect(methodologyDocument).toContain("| Mobile LCP median | `2218.88 ms` | **PASS** |");
@@ -95,6 +107,17 @@ describe("Phase 5A.3 route-migration lab-performance methodology", () => {
   it("defines five-run p75 as the fourth ordered sample", () => {
     expect(fiveRunP75([2_218.8841, 2_268.474, 2_172.1459, 2_155.4532, 2_593.4573])).toBe(
       2_268.474,
+    );
+  });
+
+  it("fails when mobile and desktop are not from one source, build, and environment", () => {
+    const original = passingInput();
+    const input: RouteMigrationLabGateInput = {
+      ...original,
+      desktopProvenance: { ...original.desktopProvenance, buildId: "differentBuild" },
+    };
+    expect(evaluateRouteMigrationLabGate(input).blockingFailures).toContain(
+      "mobile-desktop-cohort-provenance-mismatch",
     );
   });
 

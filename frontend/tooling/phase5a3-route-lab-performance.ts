@@ -42,9 +42,18 @@ export interface RouteLabProcessAttestation {
   readonly selectiveRerun: boolean;
 }
 
+export interface RouteLabCohortProvenance {
+  readonly sourceCommit: string;
+  readonly sourceTree: string;
+  readonly buildId: string;
+  readonly environmentIdentity: string;
+}
+
 export interface RouteMigrationLabGateInput {
   readonly mobile: readonly RouteLabSample[];
   readonly desktop: readonly RouteLabSample[];
+  readonly mobileProvenance: RouteLabCohortProvenance;
+  readonly desktopProvenance: RouteLabCohortProvenance;
   readonly outlierClassifications: readonly LabOutlierClassification[];
   readonly process: RouteLabProcessAttestation;
   readonly routeJsPassed: boolean;
@@ -94,6 +103,21 @@ function validateSamples(samples: readonly RouteLabSample[], profile: "mobile" |
   }
 }
 
+function validateProvenance(provenance: RouteLabCohortProvenance, profile: string): void {
+  if (!/^[0-9a-f]{40}$/u.test(provenance.sourceCommit)) {
+    throw new Error(`[P5A3_ROUTE_LAB] invalid-${profile}-source-commit`);
+  }
+  if (!/^[0-9a-f]{40}$/u.test(provenance.sourceTree)) {
+    throw new Error(`[P5A3_ROUTE_LAB] invalid-${profile}-source-tree`);
+  }
+  if (!/^[A-Za-z0-9_-]+$/u.test(provenance.buildId)) {
+    throw new Error(`[P5A3_ROUTE_LAB] invalid-${profile}-build-id`);
+  }
+  if (provenance.environmentIdentity.trim().length === 0) {
+    throw new Error(`[P5A3_ROUTE_LAB] invalid-${profile}-environment-identity`);
+  }
+}
+
 function sortedMetric(
   samples: readonly RouteLabSample[],
   metric: "performance" | "lcpMs",
@@ -117,6 +141,8 @@ export function evaluateRouteMigrationLabGate(
 ): RouteMigrationLabGateEvaluation {
   validateSamples(input.mobile, "mobile");
   validateSamples(input.desktop, "desktop");
+  validateProvenance(input.mobileProvenance, "mobile");
+  validateProvenance(input.desktopProvenance, "desktop");
 
   const allSamples = [...input.mobile, ...input.desktop];
   const mobileLcp = sortedMetric(input.mobile, "lcpMs");
@@ -130,6 +156,15 @@ export function evaluateRouteMigrationLabGate(
     ttfbMaximumMs: Math.max(...allSamples.map((sample) => sample.ttfbMs)),
   });
   const blockingFailures: string[] = [];
+
+  if (
+    input.mobileProvenance.sourceCommit !== input.desktopProvenance.sourceCommit ||
+    input.mobileProvenance.sourceTree !== input.desktopProvenance.sourceTree ||
+    input.mobileProvenance.buildId !== input.desktopProvenance.buildId ||
+    input.mobileProvenance.environmentIdentity !== input.desktopProvenance.environmentIdentity
+  ) {
+    blockingFailures.push("mobile-desktop-cohort-provenance-mismatch");
+  }
 
   if (!input.process.retainedEveryValidSample || input.process.removedSampleCount !== 0) {
     blockingFailures.push("sample-retention-policy-failed");
