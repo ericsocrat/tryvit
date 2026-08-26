@@ -155,6 +155,36 @@ a separate, explicitly authorized baseline-update workflow change. A baseline
 update cannot be smuggled into an unrelated product PR. The 74 retained audit
 screenshots remain outside this system.
 
+The reusable intentional-redesign lane is installed base-first and remains
+separate from product work. Its read-only `pull_request_target` workflow checks
+out only the exact pull-request base and treats the proposed manifest, PNGs,
+approval comment, label event, workflow run, and artifacts as untrusted data.
+Acceptance requires the dedicated
+`phase5a0d-intentional-redesign-approved` label on a
+`codex/phase5a0d-accept-*` branch plus a fresh repository-owner approval comment
+bound to the final baseline-PR head, the approved implementation SHA/tree, the
+successful deterministic candidate run, both artifact digests, and every PNG
+path authorized for replacement. A commit after approval invalidates that
+authorization because the recorded head no longer matches.
+
+The candidate must contain the exact seven-case manifest and PNG set, and its
+two retained passes and hash ledgers must be byte-identical. Only declared PNG
+hash/byte fields, the approved implementation source commit, and the derived
+manifest checksum may change. All unrelated PNGs and every route, viewport,
+fixture, locale, theme, motion, clock, mask, threshold, renderer, and dependency
+contract remain immutable. Path traversal, symlink/reparse input, extra files,
+head-authored executable code, and policy changes in the baseline PR fail
+closed.
+
+Because a baseline-only PR still contains the pre-redesign product source, the
+ordinary render comparator is not a truthful acceptance mechanism for that one
+PR: old source is expected to differ from newly approved bytes. The trusted
+artifact/provenance validator owns that bounded decision. Immediately after
+the baseline-only merge, the approved implementation PR must synchronize main;
+the ordinary immutable comparator then becomes authoritative and must pass
+before the product PR may be considered mergeable. This creates no permission
+to weaken or skip ordinary verification for any other pull request.
+
 ### Renderer/runtime attestation maintenance
 
 A runner-image or lockfile-pinned renderer change is not treated as a product

@@ -1,0 +1,204 @@
+name: Phase 5A.0d Intentional Redesign Acceptance
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  actions: read
+  contents: read
+  issues: read
+  pull-requests: read
+
+concurrency:
+  group: phase5a0d-intentional-redesign-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify immutable visual baselines
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout the exact trusted PR base
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch the untrusted head as data only
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+          git fetch --no-tags --no-write-fetch-head origin "$HEAD_SHA"
+          git cat-file -e "$HEAD_SHA^{commit}"
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+
+      - name: Run the trusted policy mutation tests
+        run: node --test .github/scripts/phase5a0d-intentional-redesign.test.mjs
+
+      - name: Detect an intentional baseline replacement
+        id: scope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- \
+            frontend/e2e/__screenshots__/phase5a0d-manifest.json \
+            'frontend/e2e/__screenshots__/p5a0d-*.png' \
+            'frontend/e2e/__screenshots__/**/p5a0d-*.png')"
+          if [ -z "$changed" ]; then
+            echo "required=false" >> "$GITHUB_OUTPUT"
+            echo "No intentional redesign baseline replacement is present."
+          else
+            echo "required=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Read fresh owner authorization from GitHub
+        if: steps.scope.outputs.required == 'true'
+        id: approval
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/$REPOSITORY/issues/$PR_NUMBER/comments?per_page=100" \
+            | jq -s 'add' > "$RUNNER_TEMP/phase5a0d-redesign-comments.json"
+          gh api --paginate "repos/$REPOSITORY/issues/$PR_NUMBER/events?per_page=100" \
+            | jq -s 'add' > "$RUNNER_TEMP/phase5a0d-redesign-events.json"
+          node .github/scripts/phase5a0d-intentional-redesign.mjs extract-approval \
+            --comments-file "$RUNNER_TEMP/phase5a0d-redesign-comments.json" \
+            --events-file "$RUNNER_TEMP/phase5a0d-redesign-events.json" \
+            --owner "$REPOSITORY_OWNER" \
+            --head-sha "$HEAD_SHA" \
+            --head-ref "$HEAD_REF" \
+            --labels-json "$LABELS_JSON" \
+            --approval-file "$RUNNER_TEMP/phase5a0d-redesign-approval.json" \
+            --github-output "$GITHUB_OUTPUT"
+
+      - name: Bind the deterministic candidate run and artifacts
+        if: steps.scope.outputs.required == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          SOURCE_COMMIT: ${{ steps.approval.outputs.source_commit }}
+          RUN_ID: ${{ steps.approval.outputs.run_id }}
+          CANDIDATE_ARTIFACT_ID: ${{ steps.approval.outputs.artifact_id }}
+          CANDIDATE_ARCHIVE_DIGEST: ${{ steps.approval.outputs.archive_digest }}
+          CANDIDATE_ARCHIVE_BYTES: ${{ steps.approval.outputs.archive_bytes }}
+          DETERMINISM_ARTIFACT_ID: ${{ steps.approval.outputs.determinism_artifact_id }}
+          DETERMINISM_ARCHIVE_DIGEST: ${{ steps.approval.outputs.determinism_archive_digest }}
+          DETERMINISM_ARCHIVE_BYTES: ${{ steps.approval.outputs.determinism_archive_bytes }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --no-write-fetch-head origin "$SOURCE_COMMIT"
+          git cat-file -e "$SOURCE_COMMIT^{commit}"
+          gh api "repos/$REPOSITORY/actions/runs/$RUN_ID" \
+            > "$RUNNER_TEMP/phase5a0d-redesign-run.json"
+          gh api "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" \
+            > "$RUNNER_TEMP/phase5a0d-redesign-artifacts.json"
+          gh api "repos/$REPOSITORY/actions/artifacts/$CANDIDATE_ARTIFACT_ID/zip" \
+            > "$RUNNER_TEMP/phase5a0d-redesign-candidate.zip"
+          gh api "repos/$REPOSITORY/actions/artifacts/$DETERMINISM_ARTIFACT_ID/zip" \
+            > "$RUNNER_TEMP/phase5a0d-redesign-determinism.zip"
+          test "$(stat -c '%s' "$RUNNER_TEMP/phase5a0d-redesign-candidate.zip")" = \
+            "$CANDIDATE_ARCHIVE_BYTES"
+          test "$(stat -c '%s' "$RUNNER_TEMP/phase5a0d-redesign-determinism.zip")" = \
+            "$DETERMINISM_ARCHIVE_BYTES"
+          echo "${CANDIDATE_ARCHIVE_DIGEST#sha256:}  $RUNNER_TEMP/phase5a0d-redesign-candidate.zip" \
+            | sha256sum -c -
+          echo "${DETERMINISM_ARCHIVE_DIGEST#sha256:}  $RUNNER_TEMP/phase5a0d-redesign-determinism.zip" \
+            | sha256sum -c -
+
+      - name: Safely extract candidate data without executing it
+        if: steps.scope.outputs.required == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          import pathlib
+          import stat
+          import zipfile
+
+          runner_temp = pathlib.Path(os.environ["RUNNER_TEMP"])
+
+          def extract(name, expected_count, maximum_bytes):
+              archive = runner_temp / f"phase5a0d-redesign-{name}.zip"
+              destination = runner_temp / f"phase5a0d-redesign-{name}"
+              destination.mkdir(mode=0o700)
+              total = 0
+              with zipfile.ZipFile(archive) as source:
+                  entries = source.infolist()
+                  if len(entries) != expected_count:
+                      raise RuntimeError(f"{name}-entry-count-invalid")
+                  names = []
+                  for entry in entries:
+                      path = pathlib.PurePosixPath(entry.filename)
+                      if (
+                          entry.is_dir()
+                          or path.is_absolute()
+                          or ".." in path.parts
+                          or len(path.parts) not in (1, 2)
+                          or stat.S_ISLNK(entry.external_attr >> 16)
+                          or entry.file_size <= 0
+                      ):
+                          raise RuntimeError(f"{name}-path-invalid")
+                      total += entry.file_size
+                      names.append(entry.filename)
+                  if len(set(names)) != expected_count or total > maximum_bytes:
+                      raise RuntimeError(f"{name}-archive-invalid")
+                  for entry in entries:
+                      target = destination / entry.filename
+                      target.parent.mkdir(parents=True, exist_ok=True)
+                      with source.open(entry) as input_file, target.open("xb") as output_file:
+                          output_file.write(input_file.read())
+
+          extract("candidate", 8, 20 * 1024 * 1024)
+          extract("determinism", 5, 2 * 1024 * 1024)
+          PY
+
+      - name: Validate with the exact base-owned acceptance policy
+        if: steps.scope.outputs.required == 'true'
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+          node .github/scripts/phase5a0d-intentional-redesign.mjs validate \
+            --repository-root "$GITHUB_WORKSPACE" \
+            --candidate-root "$RUNNER_TEMP/phase5a0d-redesign-candidate" \
+            --determinism-root "$RUNNER_TEMP/phase5a0d-redesign-determinism" \
+            --approval-file "$RUNNER_TEMP/phase5a0d-redesign-approval.json" \
+            --run-file "$RUNNER_TEMP/phase5a0d-redesign-run.json" \
+            --artifacts-file "$RUNNER_TEMP/phase5a0d-redesign-artifacts.json" \
+            --base-sha "$BASE_SHA" \
+            --head-sha "$HEAD_SHA"
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+
+      - name: Record the bounded disposition
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.scope.outputs.required }}" = "true" ]; then
+            echo "Intentional redesign baseline acceptance was evaluated by the exact PR-base policy." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Intentional redesign baseline acceptance was not applicable." >> "$GITHUB_STEP_SUMMARY"
+          fi
