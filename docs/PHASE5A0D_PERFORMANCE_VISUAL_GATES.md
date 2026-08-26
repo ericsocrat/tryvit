@@ -197,6 +197,14 @@ the ordinary immutable comparator then becomes authoritative and must pass
 before the product PR may be considered mergeable. This creates no permission
 to weaken or skip ordinary verification for any other pull request.
 
+The renderer-attestation target likewise delegates only a baseline-only change
+carrying the repository-owned intentional-redesign authorization label. That
+delegation does not validate or accept the change: the independent intentional-
+redesign target remains responsible for the fresh owner approval, exact head,
+authorized paths, artifacts, provenance, and pixels. Removing the label, adding
+attestation evidence, or mixing any product or workflow path into the baseline
+change fails closed through the strict renderer-attestation path.
+
 ### Renderer/runtime attestation maintenance
 
 A runner-image or lockfile-pinned renderer change is not treated as a product
