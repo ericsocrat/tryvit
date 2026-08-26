@@ -1,10 +1,16 @@
 # Deployment Guide
 
-> **Last updated:** 2026-02-28
+> **Last updated:** 2026-08-26
 
 ## Vercel Deployment
 
 The frontend is deployed on Vercel from the `frontend/` directory.
+
+The canonical production origin is `https://tryvit.app`. Cloudflare owns the
+registration and authoritative DNS; application traffic points directly to
+Vercel with DNS-only records. `https://www.tryvit.app` permanently redirects to
+the apex domain. The `tryvit.vercel.app` deployment URL remains available as an
+operational fallback, but must not be emitted as the canonical public origin.
 
 ### Vercel Project Settings
 
@@ -24,6 +30,7 @@ Set these in **Vercel > Project Settings > Environment Variables**:
 | ------------------------------- | ---------------------------------- |
 | `NEXT_PUBLIC_SUPABASE_URL`      | `https://your-project.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6...`  |
+| `NEXT_PUBLIC_APP_URL`           | `https://tryvit.app`                |
 
 These are public keys (embedded in the client bundle). The anon key only grants access allowed by RLS policies.
 
@@ -38,11 +45,11 @@ These are public keys (embedded in the client bundle). The anon key only grants 
 1. Go to **Supabase Dashboard > Authentication > URL Configuration**
 2. Set **Site URL** to your production domain:
    ```
-   https://your-domain.vercel.app
+   https://tryvit.app
    ```
 3. Add **Redirect URLs** (at minimum):
    ```
-   https://your-domain.vercel.app/auth/callback
+   https://tryvit.app/auth/callback
    ```
 4. Click **Save**
 

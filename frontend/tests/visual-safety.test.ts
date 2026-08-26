@@ -90,6 +90,7 @@ describe("canonicalizeLoopbackOrigin", () => {
 
   it.each([
     "https://example.supabase.co",
+    "https://tryvit.app",
     "https://tryvit.vercel.app",
     "https://example.test",
     "http://localhost.example.com",

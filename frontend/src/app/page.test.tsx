@@ -364,7 +364,7 @@ describe("HomePage — JSON-LD", () => {
     const jsonLd = JSON.parse(script!.textContent!);
     expect(jsonLd["@type"]).toBe("WebSite");
     expect(jsonLd.name).toBe("TryVit");
-    expect(jsonLd["@id"]).toBe("https://tryvit.vercel.app/#website");
+    expect(jsonLd["@id"]).toBe("https://tryvit.app/#website");
   });
 
   it("includes SearchAction in JSON-LD", () => {

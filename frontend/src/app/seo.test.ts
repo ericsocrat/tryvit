@@ -37,7 +37,7 @@ describe("robots()", () => {
     const mod = await import("./robots");
     const result = mod.default();
 
-    expect(result.sitemap).toContain("/sitemap.xml");
+    expect(result.sitemap).toBe("https://tryvit.app/sitemap.xml");
   });
 });
 
@@ -60,6 +60,7 @@ describe("sitemap()", () => {
     expect(urls.some((u) => u.endsWith("/app"))).toBe(true);
     // Root URL should be the base URL without path suffix
     expect(urls.some((u) => !u.includes("/app"))).toBe(true);
+    expect(urls).toContain("https://tryvit.app");
   });
 
   it("entries have lastModified and priority", async () => {
