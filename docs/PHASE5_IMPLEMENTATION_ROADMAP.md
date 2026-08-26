@@ -1,7 +1,7 @@
 # Phase 5 Implementation Roadmap
 
 > **Last updated:** 2026-08-25
-> **Status:** Active — Phase 5A.0–5A.2 completed; the authorized Phase 5A.3 landing draft is gated by a separate base-owned prerequisite
+> **Status:** Active — Phase 5A.0–5A.2 completed; the base-owned prerequisite is merged and the authorized Phase 5A.3 landing draft is in bounded revision
 > **Owner issue:** Frontend domain
 
 ## Decision
@@ -25,9 +25,11 @@ non-production Experience Architecture and Golden Reference Gate. Production vis
 redesign may begin only after that gate receives Eric's explicit approval and a separate
 route-family implementation authorization. Phase 5A.2 received approval and was merged
 as a non-production gate in PR `#1295`. Eric separately authorized the bounded landing
-draft in PR `#1301`; its correction and measurement remain blocked until the base-owned
-landing-governance prerequisite in PR `#1302` lands. No other Phase 5A.3 route family is
-authorized. The former
+draft in PR `#1301`; the base-owned landing-governance prerequisite landed in PR `#1302`,
+and the latest bounded revision cycle remains `REVISE`: the exact Linux mobile LCP/TBT
+gate is red and the authoritative 390 px candidate has a visible specimen-label
+collision; query-bearing landing entries also bypass the lean provider boundary. No
+other Phase 5A.3 route family is authorized. The former
 `codex/phase-5a-visitor-experience` branch predates the allergen preflight and must never
 be reused or merged into this program.
 
@@ -70,9 +72,10 @@ These apply to every Phase 5 PR:
 - **Phase 5A.1:** completed through exactly two merged Design System V2 PRs.
 - **Phase 5A.2:** approved by Eric, squash-merged in PR `#1295`, and completed as a
   non-production design and evidence gate.
-- **Phase 5A.3:** the landing-only draft is authorized in PR `#1301` but remains draft,
-  unmerged, and gated by the separate base-owned prerequisite in PR `#1302`; no other
-  Phase 5A.3 route family has begun.
+- **Phase 5A.3:** each Phase 5A.3 route family requires separate authorization. Eric
+  authorized PR 1 (production landing and its route-local public shell), which remains
+  draft, unmerged, and in bounded revision after the base-owned prerequisite merged in
+  PR `#1302`; no other Phase 5A.3 route family has begun.
 
 The conservative production-performance constraint remains `/app` mobile `0.83` against
 target `0.85`, the retained `538 ms` TBT sample, and the retained landing `0.65` outlier.
@@ -279,8 +282,13 @@ gate.
 
 Deliver the approved public experience only after Phase 5A.2 passes and Eric separately
 authorizes each route-family implementation PR. The landing-only draft is authorized in
-PR `#1301`, remains unmerged, and must not continue until PR `#1302` establishes the
-base-owned stable measurement and metadata-truth contracts.
+PR `#1301`, remains unmerged, and now runs against the stable measurement and
+metadata-truth contracts established by merged prerequisite PR `#1302`. Its bounded
+Cycle 2 replacement is source-bound under
+`docs/phase5a3/landing-pr1/revision-cycle-2/` and remains `REVISE` because strict Linux
+mobile LCP/TBT and the 390 px specimen-label geometry fail; no later route family is
+authorized. Query-bearing initial landing entries also remain outside the proved lean
+runtime boundary.
 
 ### Scope
 

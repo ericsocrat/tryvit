@@ -76,6 +76,7 @@ const HAS_PHASE5A2_CROSS_BROWSER = enabled("PHASE5A2_CROSS_BROWSER");
 const HAS_PHASE5A2_DIRECTION_REVIEW = enabled("PHASE5A2_DIRECTION_REVIEW");
 const HAS_PHASE5A2_DIRECTION_BEHAVIOR = enabled("PHASE5A2_DIRECTION_BEHAVIOR");
 const HAS_PHASE5A2_GOLDEN = enabled("PHASE5A2_GOLDEN");
+const HAS_PHASE5A3_LANDING = enabled("PHASE5A3_LANDING_REVIEW");
 
 const proxyServer = process.env.VISUAL_SAFETY_PROXY
   ? canonicalizeLoopbackOrigin(process.env.VISUAL_SAFETY_PROXY).origin
@@ -616,6 +617,132 @@ const phase5a2GoldenTypographyProject = {
   },
 };
 
+const phase5a3LandingEvidenceProject = {
+  name: "phase5a3-landing-evidence",
+  testMatch: /phase5a3-landing-evidence\.spec\.ts/,
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    browserName: "chromium" as const,
+    viewport: { width: 1440, height: 900 },
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
+const phase5a3LandingNoJavaScriptProject = {
+  ...phase5a3LandingEvidenceProject,
+  name: "phase5a3-landing-no-javascript",
+  testMatch: /phase5a3-landing-no-javascript\.spec\.ts/,
+  use: {
+    ...phase5a3LandingEvidenceProject.use,
+    viewport: { width: 390, height: 844 },
+    javaScriptEnabled: false,
+  },
+};
+
+const phase5a3LandingPolishProject = {
+  ...phase5a3LandingEvidenceProject,
+  name: "phase5a3-landing-polish",
+  testMatch: /phase5a3-landing-localized\.spec\.ts/,
+  use: {
+    ...phase5a3LandingEvidenceProject.use,
+    viewport: { width: 390, height: 844 },
+    locale: "pl-PL",
+  },
+};
+
+const phase5a3LandingNoJavaScriptDarkProject = {
+  ...phase5a3LandingNoJavaScriptProject,
+  name: "phase5a3-landing-no-javascript-dark",
+  use: {
+    ...phase5a3LandingNoJavaScriptProject.use,
+    colorScheme: "dark" as const,
+  },
+};
+
+const phase5a3LandingGermanProject = {
+  ...phase5a3LandingEvidenceProject,
+  name: "phase5a3-landing-german",
+  testMatch: /phase5a3-landing-localized\.spec\.ts/,
+  use: {
+    ...phase5a3LandingEvidenceProject.use,
+    viewport: { width: 1440, height: 900 },
+    locale: "de-DE",
+    colorScheme: "dark" as const,
+  },
+};
+
+const phase5a3LandingMotionProject = {
+  ...phase5a3LandingEvidenceProject,
+  name: "phase5a3-landing-motion",
+  testMatch: /phase5a3-landing-motion\.spec\.ts/,
+  use: {
+    ...phase5a3LandingEvidenceProject.use,
+    viewport: { width: 390, height: 844 },
+    video: "on" as const,
+  },
+};
+
+const phase5a3LandingFirefoxProject = {
+  ...phase5a3LandingEvidenceProject,
+  name: "phase5a3-landing-firefox",
+  testMatch: /phase5a3-landing-cross-browser\.spec\.ts/,
+  use: {
+    ...devices["Desktop Firefox"],
+    browserName: "firefox" as const,
+    viewport: { width: 390, height: 844 },
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
+const phase5a3LandingWebkitProject = {
+  ...phase5a3LandingEvidenceProject,
+  name: "phase5a3-landing-webkit",
+  testMatch: /phase5a3-landing-cross-browser\.spec\.ts/,
+  use: {
+    ...devices["Desktop Safari"],
+    browserName: "webkit" as const,
+    viewport: { width: 390, height: 844 },
+    locale: "en-US",
+    timezoneId: "UTC",
+    colorScheme: "light" as const,
+    serviceWorkers: "block" as const,
+    trace: "off" as const,
+    screenshot: "off" as const,
+    video: "off" as const,
+  },
+};
+
+const phase5a3LandingFirefoxNoJavaScriptProject = {
+  ...phase5a3LandingFirefoxProject,
+  name: "phase5a3-landing-firefox-no-javascript",
+  use: {
+    ...phase5a3LandingFirefoxProject.use,
+    javaScriptEnabled: false,
+  },
+};
+
+const phase5a3LandingWebkitNoJavaScriptProject = {
+  ...phase5a3LandingWebkitProject,
+  name: "phase5a3-landing-webkit-no-javascript",
+  use: {
+    ...phase5a3LandingWebkitProject.use,
+    javaScriptEnabled: false,
+  },
+};
+
 const projects = [
   ...(LOCAL_AUTHENTICATED ? [authSetupProject, functionalAuthSetupProject] : []),
   smokeProject,
@@ -654,6 +781,20 @@ const projects = [
         phase5a2GoldenMotionProject,
         phase5a2GoldenPerformanceProject,
         phase5a2GoldenTypographyProject,
+      ]
+    : []),
+  ...(HAS_PHASE5A3_LANDING && !LOCAL_AUTHENTICATED
+    ? [
+        phase5a3LandingEvidenceProject,
+        phase5a3LandingPolishProject,
+        phase5a3LandingGermanProject,
+        phase5a3LandingNoJavaScriptProject,
+        phase5a3LandingNoJavaScriptDarkProject,
+        phase5a3LandingMotionProject,
+        phase5a3LandingFirefoxProject,
+        phase5a3LandingWebkitProject,
+        phase5a3LandingFirefoxNoJavaScriptProject,
+        phase5a3LandingWebkitNoJavaScriptProject,
       ]
     : []),
   ...(HAS_SCREENSHOTS ? [screenshotsProject] : []),

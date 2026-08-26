@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-revision-cycle-2-ci-and-security",
+  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+  "testContractHead": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
+  "testContractTree": "97902231f04e14a94159cb8d7292158f83654532",
+  "baseCommit": "61c52e73eed0393e24b0597d63c47cb7b5cdbe7e",
+  "syntheticMerge": {
+    "commit": "b7b5b4972ebf2435d157a67be308bb81c5d9c4df",
+    "parents": [
+      "61c52e73eed0393e24b0597d63c47cb7b5cdbe7e",
+      "ab0a43ecfcfbb064553a02a722263fda07b06ae8"
+    ],
+    "tree": "97902231f04e14a94159cb8d7292158f83654532",
+    "treeMatchesHead": true
+  },
+  "checks": [
+    {
+      "name": "PR Gate",
+      "runId": 32875922871,
+      "result": "success"
+    },
+    {
+      "name": "Quality Gate",
+      "runId": 32875922786,
+      "result": "success"
+    },
+    {
+      "name": "Lighthouse CI",
+      "runId": 32875922703,
+      "result": "success"
+    },
+    {
+      "name": "Route JavaScript Regression Guard",
+      "runId": 32874788727,
+      "head": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+      "result": "success"
+    },
+    {
+      "name": "CodeQL Security Analysis",
+      "runId": 32875922738,
+      "result": "success"
+    },
+    {
+      "name": "Dependency Audit",
+      "runId": 32875922773,
+      "result": "success"
+    },
+    {
+      "name": "License Compliance",
+      "runId": 32875922706,
+      "result": "success"
+    },
+    {
+      "name": "Repo Hygiene Verify",
+      "runId": 32875922689,
+      "result": "success"
+    },
+    {
+      "name": "Golden Reference admission",
+      "runId": 32875922702,
+      "result": "success"
+    },
+    {
+      "name": "Renderer Attestation",
+      "runId": 32875920353,
+      "result": "success"
+    },
+    {
+      "name": "PR Screenshots",
+      "runId": 32875922694,
+      "result": "success"
+    },
+    {
+      "name": "Linux deterministic candidates",
+      "runId": 32876097007,
+      "result": "success"
+    },
+    {
+      "name": "Immutable visual baselines",
+      "runId": 32875922735,
+      "result": "expected-failure",
+      "reason": "PR #1301 is prohibited from replacing its own redesigned landing baseline."
+    }
+  ],
+  "retainedDeterministicFailure": {
+    "runId": 32874788611,
+    "head": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+    "failedCheck": "Playwright Smoke",
+    "cause": "The prior generic smoke contract capped every mobile header at 80 px.",
+    "correctionCommit": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
+    "productionChanged": false,
+    "correctedRunId": 32875922871,
+    "correctedResult": "success"
+  },
+  "mainCertification": {
+    "mainCommit": "61c52e73eed0393e24b0597d63c47cb7b5cdbe7e",
+    "runId": 32835024932,
+    "result": "success"
+  },
+  "deployment": {
+    "vercelPreview": "https://vercel.com/erics-projects-faa226e7/tryvit/EvfiU8Ly9Nt1QZDRJDhyJBECgTJC",
+    "result": "success"
+  },
+  "alerts": {
+    "codeScanningOpen": 0,
+    "secretScanningOpen": 0,
+    "dependabotOpen": [
+      92,
+      93,
+      94
+    ],
+    "dependabotBaselineChanged": false
+  },
+  "finalEvidenceHeadChecks": "recorded in the PR description after the evidence seal to avoid superseding the certified commit",
+  "passed": true
+}

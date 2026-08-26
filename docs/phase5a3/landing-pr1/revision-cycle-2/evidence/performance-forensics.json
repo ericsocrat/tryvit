@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-revision-cycle-2-performance-forensics",
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "productionSourceTree": "e82f1ce3b0f9fdfd8d41f02b04fb8d25a5b81da6",
+  "environment": {
+    "class": "pinned-playwright-linux-container",
+    "image": "mcr.microsoft.com/playwright:v1.62.1-noble",
+    "digest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac"
+  },
+  "mobileLcpMs": [
+    2821.2529,
+    2630.7072,
+    2672.3067,
+    2612.0706,
+    2617.5804
+  ],
+  "mobileMedianLcpMs": 2630.7072,
+  "mobileMaximumLcpMs": 2821.2529,
+  "observedLcpMs": [
+    288,
+    192,
+    202,
+    164,
+    154
+  ],
+  "simulatedElementRenderDelayMs": [
+    2363.62645,
+    2172.8536,
+    2214.65335,
+    2156.5353,
+    2161.7902
+  ],
+  "lcpElement": {
+    "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+    "label": "Read the package. See the reasoning. Make your own call.",
+    "rect": {
+      "top": 179,
+      "bottom": 309,
+      "left": 29,
+      "right": 383,
+      "width": 354,
+      "height": 131
+    }
+  },
+  "samplesWithNoTaskOver50Ms": 3,
+  "retainedTbtOutlier": {
+    "tbtMs": 262,
+    "sharedChunkTaskDurationMs": 312,
+    "sharedChunkTaskStartMs": 2572.87935
+  },
+  "resolvedFirstPartyDebt": {
+    "consoleErrorMaximum": 0,
+    "unexpectedFirstParty4xxMaximum": 0,
+    "fontRequestMaximum": 0,
+    "bestPracticesMinimum": 1
+  },
+  "newCausalSourceIdentified": false,
+  "historicalRejectedCauseStillApplicable": "global inline CSS",
+  "thirdSourceExperimentAuthorized": false,
+  "unchangedCohortRerunAuthorized": false,
+  "disposition": "REVISE"
+}

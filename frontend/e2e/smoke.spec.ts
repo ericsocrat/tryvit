@@ -37,7 +37,7 @@ test.describe("Public pages", () => {
     const response = await page.goto("/");
     expect(response).not.toBeNull();
     const serverHtml = await response!.text();
-    expect(serverHtml).toContain("healthier choices, made simple");
+    expect(serverHtml).toContain("Read the package. See the reasoning. Make your own call.");
     expect(serverHtml).toMatch(/<html[^>]+lang="en"/u);
 
     await page.waitForLoadState("networkidle");
@@ -46,7 +46,11 @@ test.describe("Public pages", () => {
     await expect(
       page.locator('main#main-content[data-route-id="public-landing"]'),
     ).toHaveCount(1);
-    await expect(page.locator("text=healthier choices")).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: "Read the package. See the reasoning. Make your own call.",
+      }),
+    ).toBeVisible();
     await expect(page.getByText("Demo mode").first()).toBeVisible();
     expect(forbiddenRequests).toEqual([]);
   });
@@ -55,12 +59,12 @@ test.describe("Public pages", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "How it works" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Method before mystique" })).toBeVisible();
   });
 
   test("landing page has correct title", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle("TryVit — Know What You Eat");
+    await expect(page).toHaveTitle("TryVit — Food intelligence you can inspect");
   });
 
   test("login page renders form", async ({ page }) => {
@@ -149,9 +153,15 @@ test.describe("Polish public locale", () => {
     const hydrationErrors = observeHydrationErrors(page);
 
     const response = await page.goto("/");
-    expect(await response!.text()).toContain("zdrowsze wybory, po prostu");
+    expect(await response!.text()).toContain(
+      "Odczytaj opakowanie. Poznaj tok rozumowania. Podejmij własną decyzję.",
+    );
     await expect(page.locator("html")).toHaveAttribute("lang", "pl");
-    await expect(page.getByRole("heading", { name: "zdrowsze wybory, po prostu" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: "Odczytaj opakowanie. Poznaj tok rozumowania. Podejmij własną decyzję.",
+      }),
+    ).toBeVisible();
     expect(hydrationErrors).toEqual([]);
   });
 
@@ -186,7 +196,7 @@ test.describe("German public locale", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "de");
     await expect(
       page.getByRole("heading", {
-        name: "Gesündere Entscheidungen, einfach gemacht",
+        name: "Verpackung lesen. Begründung verstehen. Selbst entscheiden.",
       }),
     ).toBeVisible();
   });
@@ -219,7 +229,7 @@ test.describe("Server-rendered landing without JavaScript", () => {
 
   test("preserves meaningful paused-mode content", async ({ page }) => {
     const response = await page.goto("/");
-    expect(await response!.text()).toContain("healthier choices, made simple");
+    expect(await response!.text()).toContain("Read the package. See the reasoning. Make your own call.");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.getByText("Demo mode").first()).toBeVisible();
   });

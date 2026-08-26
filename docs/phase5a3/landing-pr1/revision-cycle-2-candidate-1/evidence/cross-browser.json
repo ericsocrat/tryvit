@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-revision-cycle-2-cross-browser",
+  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+  "playwright": "1.62.1",
+  "finalMatrix": [
+    {
+      "project": "phase5a3-landing-firefox",
+      "engine": "firefox",
+      "javaScript": true,
+      "motionModes": [
+        "normal",
+        "reduced"
+      ],
+      "tests": 2,
+      "passed": true
+    },
+    {
+      "project": "phase5a3-landing-webkit",
+      "engine": "webkit",
+      "javaScript": true,
+      "motionModes": [
+        "normal",
+        "reduced"
+      ],
+      "tests": 2,
+      "passed": true
+    },
+    {
+      "project": "phase5a3-landing-firefox-no-javascript",
+      "engine": "firefox",
+      "javaScript": false,
+      "motionModes": [
+        "normal",
+        "reduced"
+      ],
+      "tests": 2,
+      "passed": true
+    },
+    {
+      "project": "phase5a3-landing-webkit-no-javascript",
+      "engine": "webkit",
+      "javaScript": false,
+      "motionModes": [
+        "normal",
+        "reduced"
+      ],
+      "tests": 2,
+      "passed": true
+    }
+  ],
+  "behavior": {
+    "primaryDestinationsVisible": [
+      "Evidence",
+      "Method",
+      "Trust",
+      "Contact"
+    ],
+    "pointerOpenClose": true,
+    "keyboardEnterOpen": true,
+    "keyboardSpaceClose": true,
+    "openLabelTruthful": true,
+    "closedLabelTruthful": true,
+    "keyboardFocusVisible": true,
+    "horizontalOverflow": false,
+    "nativeDetailsSummaryRetained": true,
+    "scriptedAriaReplacementAdded": false
+  },
+  "retainedHarnessCorrections": [
+    {
+      "attempt": 1,
+      "result": "8 failed",
+      "cause": "The test used programmatic focus and incorrectly expected the keyboard-only :focus-visible state.",
+      "productionFailure": false,
+      "unchangedRerun": false
+    },
+    {
+      "attempt": 2,
+      "result": "4 passed, 4 failed",
+      "cause": "The keyboard sequence resumed after the pointer-focused disclosure in Firefox.",
+      "productionFailure": false,
+      "unchangedRerun": false
+    },
+    {
+      "attempt": 3,
+      "result": "8 passed",
+      "cause": "Pointer and keyboard journeys were separated by a clean reload.",
+      "productionFailure": false,
+      "unchangedRerun": false
+    }
+  ],
+  "limitations": [
+    "WebKit is not branded Safari approval.",
+    "No qualified screen-reader or voice-control approval is claimed.",
+    "No physical-device approval is claimed."
+  ],
+  "passed": true
+}

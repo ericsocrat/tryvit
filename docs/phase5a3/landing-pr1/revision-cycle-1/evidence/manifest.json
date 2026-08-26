@@ -1,0 +1,290 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-revision-evidence-manifest",
+  "productionSourceCommit": "64f015ee8be3a929c2239b7aa94abcac7e36aaa1",
+  "productionSourceTree": "4b3d17f8918392b7e375c6fbd1e2518a7ecdb66c",
+  "baseMain": "61c52e73eed0393e24b0597d63c47cb7b5cdbe7e",
+  "predecessorSourceCommit": "1f7ad2c0e52833f06a3d17e010ad653b366ee291",
+  "fileCount": 54,
+  "totalBytes": 8050692,
+  "counts": {
+    "stills": 13,
+    "motionVideos": 2,
+    "landingLhrs": 10,
+    "linuxCandidateFiles": 14,
+    "routeJsFiles": 5
+  },
+  "files": [
+    {
+      "path": "capture-build-provenance.json",
+      "bytes": 587,
+      "sha256": "348442ef788ecb0141e7a06e3690515f3165062245054d63fb849555bd2bdf1d"
+    },
+    {
+      "path": "ci-and-security.json",
+      "bytes": 2753,
+      "sha256": "fb1360ca4ea058418bd23287cb311305c89d28ce1090f35ab1f1bf322392b9bd"
+    },
+    {
+      "path": "landing-motion-performance.json",
+      "bytes": 14239,
+      "sha256": "8fe4bfbc1ca65a3e5d993666f2179b060118aa30cffd6e0879476b4662d58ce1"
+    },
+    {
+      "path": "lighthouse/desktop/127_0_0_1--2026_08_25_14_08_58.report.json",
+      "bytes": 551070,
+      "sha256": "4f4406c70aaf35d7da56043b55f7c068cfee205053cbf9fe7684f1da7f2fd333"
+    },
+    {
+      "path": "lighthouse/desktop/127_0_0_1--2026_08_25_14_09_10.report.json",
+      "bytes": 553004,
+      "sha256": "da7c4dbf9d4a9e2d10aafec16f77ba98c6d052b6acd3c31874da399830354985"
+    },
+    {
+      "path": "lighthouse/desktop/127_0_0_1--2026_08_25_14_09_22.report.json",
+      "bytes": 551736,
+      "sha256": "63e014efa470796d3f1a714485536826c71726130a89b559672db75500237a56"
+    },
+    {
+      "path": "lighthouse/desktop/127_0_0_1--2026_08_25_14_09_33.report.json",
+      "bytes": 552493,
+      "sha256": "41004fd4eb760ee4f26200b1e901ca9469a4663cad8068204497e3e3292a96a3"
+    },
+    {
+      "path": "lighthouse/desktop/127_0_0_1--2026_08_25_14_09_44.report.json",
+      "bytes": 529672,
+      "sha256": "35938e89ed456fc6ba77c9bd335dc5fa9c9108710c09acfcb09169357da0ebbb"
+    },
+    {
+      "path": "lighthouse/desktop/phase5a0d-run-metadata.json",
+      "bytes": 1720,
+      "sha256": "10f3b9a5e421894f575e8d1caadf7eb4951b7df65f3d80edac37e46e7df6d059"
+    },
+    {
+      "path": "lighthouse/mobile/127_0_0_1--2026_08_25_14_06_01.report.json",
+      "bytes": 568082,
+      "sha256": "72484d2382ece6e8eea6af88ae9b3b9b6f6da4816faf6088fa791695b8d72cdb"
+    },
+    {
+      "path": "lighthouse/mobile/127_0_0_1--2026_08_25_14_06_13.report.json",
+      "bytes": 567882,
+      "sha256": "9dab1cd1e49059fbe240b35da3915cc92903ec01c1cbf80729b85f647b18f3f8"
+    },
+    {
+      "path": "lighthouse/mobile/127_0_0_1--2026_08_25_14_06_24.report.json",
+      "bytes": 569107,
+      "sha256": "1a6eb1b665ea275da6cda2569cbf25ea5006cb56fb72b40b34ed039269698985"
+    },
+    {
+      "path": "lighthouse/mobile/127_0_0_1--2026_08_25_14_06_36.report.json",
+      "bytes": 567897,
+      "sha256": "c882e5631c3b7c29081bcedc3ebd6586f1d140500d2af0ca39b7a758af2b3985"
+    },
+    {
+      "path": "lighthouse/mobile/127_0_0_1--2026_08_25_14_06_47.report.json",
+      "bytes": 568040,
+      "sha256": "42c4dd00e4357a4deac62b315efe554f97bf563f85933dcba0baf7183943814d"
+    },
+    {
+      "path": "lighthouse/mobile/phase5a0d-run-metadata.json",
+      "bytes": 1736,
+      "sha256": "47c718bc8f58ea2f81646736e905d5e5f634d02b792b1e718ce3a67293e551b6"
+    },
+    {
+      "path": "linux-candidate/candidates/authenticated-visual.spec.ts/p5a0d-app-shell-new-user-1440x900-light-reduced.png",
+      "bytes": 61059,
+      "sha256": "c1e40efd43128e66c4bb1f87921ffd554c7d2b94b156919f727946f226b8dc2b"
+    },
+    {
+      "path": "linux-candidate/candidates/authenticated-visual.spec.ts/p5a0d-app-shell-new-user-390x844-light-reduced.png",
+      "bytes": 47056,
+      "sha256": "19925c064157c05291ffe4a02b10b66f705268dec916dd26230972b667ad2fa5"
+    },
+    {
+      "path": "linux-candidate/candidates/phase5a0d-manifest.json",
+      "bytes": 3778,
+      "sha256": "5ac3b0c4c79ced7759db445ce28bea4e6fdb4237ce739f8a03d5fbf6f799ecd8"
+    },
+    {
+      "path": "linux-candidate/candidates/smoke-visual.spec.ts/p5a0d-landing-1440x900-light-reduced.png",
+      "bytes": 107361,
+      "sha256": "c0e5eb44865c37eb003c0ae429c9bf151fafd887a569c9ba73888c8f0d1b3f4a"
+    },
+    {
+      "path": "linux-candidate/candidates/smoke-visual.spec.ts/p5a0d-landing-390x844-light-reduced.png",
+      "bytes": 58884,
+      "sha256": "4ce9d3e5fba0001979f0311538e916cdac2713f04795a81c4fa358cdf76bf910"
+    },
+    {
+      "path": "linux-candidate/candidates/smoke-visual.spec.ts/p5a0d-landing-768x1024-light-reduced.png",
+      "bytes": 98034,
+      "sha256": "203266e724853b24cccc4c1cece6a100524bfff30967a196a3dd21eb19407a29"
+    },
+    {
+      "path": "linux-candidate/candidates/smoke-visual.spec.ts/p5a0d-login-1440x900-light-reduced.png",
+      "bytes": 266772,
+      "sha256": "f73f3d3dbb07b356938ec3222c03708e995b8121e665feb470682a0ee880ab66"
+    },
+    {
+      "path": "linux-candidate/candidates/smoke-visual.spec.ts/p5a0d-login-390x844-light-reduced.png",
+      "bytes": 49800,
+      "sha256": "dcb24f7d21fbfcd9c2068982c35ce7abc866139fb628eb77e26bae40de4714b9"
+    },
+    {
+      "path": "linux-candidate/determinism/first-files.sha256",
+      "bytes": 1033,
+      "sha256": "70eaf018fcaef30d84aecf16daa97607055472b2543088e418a077b452528a73"
+    },
+    {
+      "path": "linux-candidate/determinism/first-manifest.json",
+      "bytes": 3778,
+      "sha256": "5ac3b0c4c79ced7759db445ce28bea4e6fdb4237ce739f8a03d5fbf6f799ecd8"
+    },
+    {
+      "path": "linux-candidate/determinism/provenance.json",
+      "bytes": 641,
+      "sha256": "25138128b2d7d71a9c80a8cd8bb121b52e7d9282afdd98fe0f477c753dbd3ae1"
+    },
+    {
+      "path": "linux-candidate/determinism/second-files.sha256",
+      "bytes": 1033,
+      "sha256": "70eaf018fcaef30d84aecf16daa97607055472b2543088e418a077b452528a73"
+    },
+    {
+      "path": "linux-candidate/determinism/second-manifest.json",
+      "bytes": 3778,
+      "sha256": "5ac3b0c4c79ced7759db445ce28bea4e6fdb4237ce739f8a03d5fbf6f799ecd8"
+    },
+    {
+      "path": "linux-candidate/summary.json",
+      "bytes": 1717,
+      "sha256": "c2e225b5e9f76eed92fe2b18b6ba36c0a75725ec27c0cc7c0361c1c5a308823f"
+    },
+    {
+      "path": "motion/landing--normal--390x844--en.webm",
+      "bytes": 334231,
+      "sha256": "392fc7fdb119e1d48b65d4867ce202f5cc8e7495bd87468bd94a221734109c29"
+    },
+    {
+      "path": "motion/landing--reduced--390x844--en.webm",
+      "bytes": 186733,
+      "sha256": "1094abec4935a0e3843961b8c1af31f4478899d2800ebed72567b9dc4ea0a7b2"
+    },
+    {
+      "path": "performance-trials.json",
+      "bytes": 38994,
+      "sha256": "c54a0422bf25f583772dfc1cf6eedee21351f93c68bcad26b18e180112745b74"
+    },
+    {
+      "path": "performance.json",
+      "bytes": 28852,
+      "sha256": "72939fcbbb479da0c5a3f08f8b27204f222fbb329de548817d712e9f2e43d31a"
+    },
+    {
+      "path": "predecessor-and-change.json",
+      "bytes": 7633,
+      "sha256": "83cd456813f8107f405aa0be7ef01d6b44858d15fbfa6ebbb79320c6ff6838ba"
+    },
+    {
+      "path": "route-js/base-route-js.json",
+      "bytes": 45837,
+      "sha256": "1bdc5e57fd406b955881f3e522e01aa0ec4036cf523456364f9c472a18f9fd14"
+    },
+    {
+      "path": "route-js/head-route-js.json",
+      "bytes": 43953,
+      "sha256": "320a71ec38b5a832b5eb203707420d727a00b90a290d6b3c6f3e841e903ca598"
+    },
+    {
+      "path": "route-js/provenance.json",
+      "bytes": 178,
+      "sha256": "07e4edd24ebad1cdd1f930310c217bd81b202149562655a8a878f84e5f9d0972"
+    },
+    {
+      "path": "route-js/route-js-comparison.md",
+      "bytes": 690,
+      "sha256": "a6ae0470784645e000003fc8be9354bdb0b2e92aea3470612f6064b03dfe2be1"
+    },
+    {
+      "path": "route-js/summary.json",
+      "bytes": 948,
+      "sha256": "5b984e838e5bef9c5de75bc966590271b594fa6a9c6db1e475b2d2e8820cc30d"
+    },
+    {
+      "path": "runtime.json",
+      "bytes": 2099,
+      "sha256": "08a4e294978e90b152b5cc43876eb271be59b881d03b14fdcbb6c94edfa86648"
+    },
+    {
+      "path": "stills/landing--1440x900--dark--de.png",
+      "bytes": 118053,
+      "sha256": "e16ce83ea8a861b556455236de517469c463cb96b09aaefbd3a6d8828258dbba"
+    },
+    {
+      "path": "stills/landing--1440x900--dark--en.png",
+      "bytes": 109765,
+      "sha256": "54c02774b4132404f343887fcffb1324c32bf1362429786dfc15f6b38332d919"
+    },
+    {
+      "path": "stills/landing--1440x900--light--en.png",
+      "bytes": 110753,
+      "sha256": "f34e5979f6bc4bfc90cf305c99fb4dbfefae656eeb462c30c492d221d2f4300e"
+    },
+    {
+      "path": "stills/landing--320x900--reflow--en.png",
+      "bytes": 61322,
+      "sha256": "ad4b68f4176d693e04025222b62b75f17d8d4940823b4e94200398d7b163071a"
+    },
+    {
+      "path": "stills/landing--390x844--dark--en.png",
+      "bytes": 64158,
+      "sha256": "bcc67daff1af8676c0d75fc3f43bcee77e766d879f299db57b7018d31a596ba1"
+    },
+    {
+      "path": "stills/landing--390x844--forced-colors--en.png",
+      "bytes": 51091,
+      "sha256": "635555b54fc12dfcde7254d78d207ecb46a1c25c0669f500eb9ab3cde68a8022"
+    },
+    {
+      "path": "stills/landing--390x844--light--en.png",
+      "bytes": 64352,
+      "sha256": "10a46c4bb2213ac157ae92c31090a9e2fec6b2c83305afc99fcb776c40660e3f"
+    },
+    {
+      "path": "stills/landing--390x844--no-javascript--dark--en.png",
+      "bytes": 64007,
+      "sha256": "8cc4982dcbc8e7f33a36c8bed6d761c7747efe8c4477027f10d0d1459194fc85"
+    },
+    {
+      "path": "stills/landing--390x844--no-javascript--light--en.png",
+      "bytes": 64319,
+      "sha256": "c0cd22bfde3af120430caf6f230a4492561de982d335d4a2a3b96d14aeec2b9b"
+    },
+    {
+      "path": "stills/landing--390x844--text-spacing--pl.png",
+      "bytes": 62026,
+      "sha256": "aa16cd272ac31300a05b9d2d3bf5923bba0060c00953dca3e6434159ca6436ee"
+    },
+    {
+      "path": "stills/landing--640x900--200-percent-equivalent--en.png",
+      "bytes": 92709,
+      "sha256": "482df4d5e74a1dfbbc998624c550c9544b6c06673766184d3909327487bd480f"
+    },
+    {
+      "path": "stills/landing--768x1024--dark--en.png",
+      "bytes": 95856,
+      "sha256": "67233a4661b03ed2e631743c958692005a7294cec65c6f0cf8767a7dfd017f87"
+    },
+    {
+      "path": "stills/landing--768x1024--light--en.png",
+      "bytes": 95870,
+      "sha256": "c88c47cc06b4aaf382e93b920cb1de9125602ee7e00962bef0e252aedfae1451"
+    },
+    {
+      "path": "video-validation.json",
+      "bytes": 1521,
+      "sha256": "114704b0ba2b39906966f805793ccb3a06b5bfb3e3a07ff0058b05b69b9c9e5f"
+    }
+  ],
+  "manifestChecksum": "e8d8dc2805e6331e24b55b75283c745b00eecba32a62c0c46379f7ad250c00ed"
+}

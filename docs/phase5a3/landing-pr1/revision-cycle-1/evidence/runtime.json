@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-runtime",
+  "sourceCommit": "64f015ee8be3a929c2239b7aa94abcac7e36aaa1",
+  "sourceTree": "4b3d17f8918392b7e375c6fbd1e2518a7ecdb66c",
+  "environmentClass": "isolated-linux-container",
+  "container": {
+    "image": "mcr.microsoft.com/playwright:v1.62.1-noble",
+    "digest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac",
+    "operatingSystem": "Ubuntu 24.04.4 LTS",
+    "kernel": "Linux 6.6.87.2-microsoft-standard-WSL2 x86_64"
+  },
+  "runtime": {
+    "node": "v24.18.1",
+    "npm": "11.16.0",
+    "playwright": "1.62.1",
+    "lighthouse": "12.6.1",
+    "chromium": "151.0.7922.34",
+    "captureFfmpeg": "n7.0.1-playwright-build-1011",
+    "verificationFfmpeg": "9.0-full_build"
+  },
+  "captureBuild": {
+    "buildId": "WiLZxkqnyZnH1D_HIv4Ju",
+    "buildFingerprint": "1f2cb3ca0613ccdfb7d1a59ae7fa56be48e19a1c25d8b414f4b545fc4ccfbe67",
+    "assetDigest": "e1cace6fd5b2b10b9acd38f788a8ff839382990bd91673a1beee581206fa903e",
+    "mode": "public",
+    "supabaseOrigin": "none"
+  },
+  "lighthouseBuild": {
+    "buildId": "4fvcUsR-DC8AlbWlG6tcd",
+    "buildFingerprint": "6e530e0e379ebfdaf088137d9e5a48019c94569311751826ebd1fa29327c678f",
+    "sameAcrossProfiles": true,
+    "mobileMetadataChecksum": "c3d5280271cc84ebfa4de1fb7dde8a137307ee878779081503c3beef94bc7883",
+    "desktopMetadataChecksum": "87822966e993b8dd0954609bb3de615e188f3d9efd0fc6955d098dde0dcd03c2"
+  },
+  "safety": {
+    "appOrigin": "http://127.0.0.1:3000",
+    "serviceWorkers": "blocked",
+    "externalNetwork": "contained-by-loopback-egress-proxy",
+    "dataMode": "demo",
+    "fontTransfers": 0,
+    "imageTransfers": 0,
+    "separatePortfolioServerUntouched": true
+  },
+  "limitations": [
+    "Chrome DevTools MCP could not run because the configured environment had no stable Chrome executable.",
+    "The 640 CSS-pixel still is a 200-percent effective-viewport proxy, not branded browser zoom evidence.",
+    "No branded Safari, screen-reader, camera, or physical-device approval is claimed."
+  ]
+}

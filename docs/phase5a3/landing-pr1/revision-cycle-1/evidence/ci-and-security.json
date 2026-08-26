@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-ci-security",
+  "productionSourceCommit": "64f015ee8be3a929c2239b7aa94abcac7e36aaa1",
+  "productionSourceTree": "4b3d17f8918392b7e375c6fbd1e2518a7ecdb66c",
+  "baseMain": {
+    "commit": "61c52e73eed0393e24b0597d63c47cb7b5cdbe7e",
+    "tree": "326ccde672bab7a4b7cc6de178addbcd6793a7f6",
+    "mainGateRunId": 32835024932,
+    "mainGateConclusion": "success",
+    "sonarScan": "success",
+    "sonarQualityGate": "success"
+  },
+  "prChecks": [
+    {
+      "workflow": "PR Gate",
+      "runId": 32857250223,
+      "conclusion": "success"
+    },
+    {
+      "workflow": "Quality Gate",
+      "runId": 32857250165,
+      "conclusion": "success"
+    },
+    {
+      "workflow": "Lighthouse CI",
+      "runId": 32857250227,
+      "conclusion": "success"
+    },
+    {
+      "workflow": "Route JavaScript Regression Guard",
+      "runId": 32857250390,
+      "conclusion": "success"
+    },
+    {
+      "workflow": "CodeQL Security Analysis",
+      "runId": 32857250224,
+      "conclusion": "success"
+    },
+    {
+      "workflow": "Dependency Audit",
+      "runId": 32857250268,
+      "conclusion": "success"
+    },
+    {
+      "workflow": "License Compliance",
+      "runId": 32857250240,
+      "conclusion": "success"
+    },
+    {
+      "workflow": "Repo Hygiene Verify",
+      "runId": 32857250175,
+      "conclusion": "success"
+    },
+    {
+      "workflow": "Phase 5A.2 Golden References",
+      "runId": 32857250214,
+      "conclusion": "success"
+    },
+    {
+      "workflow": "Phase 5A.0d Renderer Attestation",
+      "runId": 32857247648,
+      "conclusion": "success"
+    },
+    {
+      "workflow": "Phase 5A.0d Visual Baselines",
+      "runId": 32857250179,
+      "conclusion": "failure-expected-separate-baseline-boundary"
+    },
+    {
+      "workflow": "Manual deterministic candidate generation",
+      "runId": 32858309119,
+      "conclusion": "success"
+    }
+  ],
+  "alerts": {
+    "openCodeScanning": 0,
+    "openSecretScanning": 0,
+    "openDependabot": 3,
+    "inheritedDependabotNumbers": [
+      92,
+      93,
+      94
+    ],
+    "scopeNote": "No package or lockfile change; inherited alerts remain development-scope/default-branch debt."
+  },
+  "boundary": {
+    "exactHeadMainGateAvailablePreMerge": false,
+    "certifiedCurrentMainRetained": true,
+    "immutableBaselineUpdated": false,
+    "prDraft": true,
+    "prMerged": false
+  },
+  "links": {
+    "pullRequest": "https://github.com/ericsocrat/tryvit/pull/1301",
+    "mainGate": "https://github.com/ericsocrat/tryvit/actions/runs/32835024932",
+    "linuxCandidates": "https://github.com/ericsocrat/tryvit/actions/runs/32858309119"
+  }
+}

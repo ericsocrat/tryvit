@@ -1389,6 +1389,9 @@ async function runPlaywright(
   ) {
     sanitized.PHASE5_ROUTE_JS_CAPTURE = "true";
   }
+  if ([...normalized.projects].some((project) => project.startsWith("phase5a3-landing-"))) {
+    sanitized.PHASE5A3_LANDING_REVIEW = "true";
+  }
   if (normalized.projects.has("screenshots")) {
     sanitized.CAPTURE_SCREENSHOTS = "true";
   }

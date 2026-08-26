@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
+  "runner": {
+    "imageOS": "ubuntu24",
+    "imageVersion": "20260816.277.1",
+    "arch": "x64"
+  },
+  "versions": {
+    "node": "v22.21.1",
+    "npm": "10.9.4",
+    "next": "16.2.12",
+    "playwright": "1.62.1",
+    "chromium": "151.0.7922.34"
+  },
+  "generatorArchiveSha256": "76116ab15c9fe2f048adfe8bf092ec67d94b1285a35bee2343597acff022d087",
+  "packageJsonSha256": "876cc558f4f5249eb47cf5532ce70e58be3278b11f02f6a59c44cf16956143cf",
+  "packageLockSha256": "b745161ad82babb6f5095984b1ec7dffb77d3af92b67ed0ed592db6708991e9b",
+  "byteIdentical": true
+}

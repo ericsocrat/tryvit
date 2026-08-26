@@ -1,0 +1,16 @@
+{
+  "contract": {
+    "schemaVersion": "tryvit-visual-safety/v1",
+    "mode": "public",
+    "appOrigin": "http://127.0.0.1:3000",
+    "supabaseOrigin": "none",
+    "publicBuildAdapterId": "none",
+    "sourceGitSha": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+    "buildId": "Rx6qScSHdhff6fIcRZFin",
+    "buildInputIds": [
+      "assets:b0a0b9922aa955389b2596f1bd2383d85e8f9f136f9e1e242268174a31c5c9ff"
+    ],
+    "fingerprint": "1101b397cf20a497966f06237868475545842257acfb0a8b97e92a1b705ebdfd"
+  },
+  "assetDigest": "b0a0b9922aa955389b2596f1bd2383d85e8f9f136f9e1e242268174a31c5c9ff"
+}

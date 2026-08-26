@@ -1,0 +1,1184 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a0d-route-js",
+  "sourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "environmentClass": "ci-linux-authoritative",
+  "platform": "linux",
+  "nodeVersion": "v22.21.1",
+  "zlibVersion": "1.3.1-470d3a2",
+  "nextVersion": "16.2.12",
+  "chromiumVersion": "151.0.7922.34",
+  "compression": "gzip-level-9",
+  "sourceOfTruth": "cold-browser-next-static-script-responses",
+  "sharedDefinition": "asset-observed-on-more-than-one-selected-route-in-the-same-runtime-mode",
+  "routeCount": 5,
+  "uniqueChunkCount": 52,
+  "runtimeModes": [
+    {
+      "mode": "public",
+      "buildId": "noOp2y5TygU2jyjmAKEVh",
+      "buildFingerprint": "bbf4799ec46c3dc45a939c6367d47cc6fa5fc56af545d97d4b47226f13c54e29",
+      "browserProfile": {
+        "id": "playwright-desktop-chrome-1440x900-light-reduced",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.7922.34 Safari/537.36",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "deviceScaleFactor": 1,
+        "locale": "en-US",
+        "timezoneId": "UTC",
+        "colorScheme": "light",
+        "reducedMotion": "reduce"
+      },
+      "fixtureState": {
+        "logicalIdentity": "phase5a0d-public-static-v1",
+        "stateChecksum": "9f86c2820a1cabc1d52c73dcaa5e0a188f1c9fb9eaa8bd06b796e436b7708cf7"
+      },
+      "containmentMarkers": [
+        "contained-local-vercel-speed-insights-inert"
+      ]
+    },
+    {
+      "mode": "local-authenticated",
+      "buildId": "9yUNaaq3CFg43cUNwT2qC",
+      "buildFingerprint": "56c5a4fd9b1f83dd7a8b8b2a16f8954889cd77b225f585e00794179277f01d3d",
+      "browserProfile": {
+        "id": "playwright-desktop-chrome-1440x900-light-reduced",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.7922.34 Safari/537.36",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "deviceScaleFactor": 1,
+        "locale": "en-US",
+        "timezoneId": "UTC",
+        "colorScheme": "light",
+        "reducedMotion": "reduce"
+      },
+      "fixtureState": {
+        "logicalIdentity": "phase5a0d-local-new-user-primary-product-v1",
+        "stateChecksum": "bf8a526ccf1fee9def248328ae344ce45103237b92b58e7a944f15d39b74ac23"
+      },
+      "containmentMarkers": [
+        "contained-local-vercel-speed-insights-inert"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "id": "landing",
+      "label": "Landing",
+      "path": "/",
+      "mode": "public",
+      "boundary": "server-led-public",
+      "requiresLocalFixture": false,
+      "fixtureState": {
+        "logicalIdentity": "phase5a0d-public-static-v1",
+        "stateChecksum": "9f86c2820a1cabc1d52c73dcaa5e0a188f1c9fb9eaa8bd06b796e436b7708cf7"
+      },
+      "containmentMarkers": [],
+      "chunkCount": 13,
+      "rawBytes": 586211,
+      "gzipBytes": 182291,
+      "sharedGzipBytes": 179062,
+      "routeOwnedGzipBytes": 3229,
+      "encodedTransferBytes": 182634,
+      "targetGzipBytes": 184320,
+      "targetMet": true,
+      "assets": [
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739,
+          "encodedBodyBytes": 62880,
+          "decodedBodyBytes": 199870,
+          "sha256": "7ff5b8537a37e131618d624195391e3560abea8667278176b66d71c14576bfe1",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566,
+          "encodedBodyBytes": 5568,
+          "decodedBodyBytes": 14741,
+          "sha256": "9a8a3a4cd75c9d6ca80ee75f2151f03b11a1216319aaf9a02ece96ad80bd05ff",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200,
+          "encodedBodyBytes": 9226,
+          "decodedBodyBytes": 32768,
+          "sha256": "e5f75da90ec45efad14e2a974724aa9796f708128a07d6c9e0c377e5efbea057",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137,
+          "encodedBodyBytes": 18150,
+          "decodedBodyBytes": 51127,
+          "sha256": "88c356eb917504668d886a462fb037ce944e742efe5a92971b0bf66b1c6464bc",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544,
+          "encodedBodyBytes": 3546,
+          "decodedBodyBytes": 8734,
+          "sha256": "61e3dd05777ba82bfbce1cef14a272f0672d7f86b066592342552a7b37603a8a",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/8755-81719165719edb1a.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62900,
+          "encodedBodyBytes": 63054,
+          "decodedBodyBytes": 230499,
+          "sha256": "b523c32ddaeb482722a3e2d1bbfda715fc556ae5b79e61394b6d9c41926dd124",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/app/error-577b482d93205907.js",
+          "rawBytes": 8321,
+          "gzipBytes": 3491,
+          "encodedBodyBytes": 3491,
+          "decodedBodyBytes": 8321,
+          "sha256": "caf120358107280df6e99bf3d84dd12d455c6a98778bd9b288ddb58c39b28231",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-71c7e5f09ebb0c9e.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907,
+          "encodedBodyBytes": 907,
+          "decodedBodyBytes": 1553,
+          "sha256": "3e380d08ba763e0ade2d7f9baa5f4df70917d113d43012fcc72fea72c4bb165b",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-e65cdcb5d6b7753b.js",
+          "rawBytes": 12810,
+          "gzipBytes": 5117,
+          "encodedBodyBytes": 5117,
+          "decodedBodyBytes": 12810,
+          "sha256": "37dee8a516577e27906752c26273d151f010aa0c83c9dc2adb571f5b13373754",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-6400e52512ea6b16.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3425,
+          "encodedBodyBytes": 3425,
+          "decodedBodyBytes": 8345,
+          "sha256": "273086af6ed000909b42339c0000881635bd1f62cc861a881464ca63aebdb95f",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/app/page-d54c852079c521ef.js",
+          "rawBytes": 8179,
+          "gzipBytes": 3229,
+          "encodedBodyBytes": 3228,
+          "decodedBodyBytes": 8179,
+          "sha256": "c292569777ed0756c85db835e6cbf48dd416e60f0a86e9cd1681f3b0b98b6fd9",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/main-app-682f56da4ca02ae8.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1710,
+          "encodedBodyBytes": 1716,
+          "decodedBodyBytes": 4896,
+          "sha256": "32754cbd78a6f79e1f9ca6f3c7e76a6813843aa34481426df0694981c4bfcd5e",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/webpack-d7806778ef3800af.js",
+          "rawBytes": 4368,
+          "gzipBytes": 2326,
+          "encodedBodyBytes": 2326,
+          "decodedBodyBytes": 4368,
+          "sha256": "933af196d5a281c5dd157db414991a250e415f45b91bd51becd5272c80825b3d",
+          "classification": "shared",
+          "routeUsageCount": 3
+        }
+      ]
+    },
+    {
+      "id": "login",
+      "label": "Login",
+      "path": "/auth/login",
+      "mode": "public",
+      "boundary": "client-auth-entry",
+      "requiresLocalFixture": false,
+      "fixtureState": {
+        "logicalIdentity": "phase5a0d-public-static-v1",
+        "stateChecksum": "9f86c2820a1cabc1d52c73dcaa5e0a188f1c9fb9eaa8bd06b796e436b7708cf7"
+      },
+      "containmentMarkers": [
+        "contained-local-vercel-speed-insights-inert"
+      ],
+      "chunkCount": 17,
+      "rawBytes": 858613,
+      "gzipBytes": 256667,
+      "sharedGzipBytes": 179062,
+      "routeOwnedGzipBytes": 77605,
+      "encodedTransferBytes": 257191,
+      "targetGzipBytes": null,
+      "targetMet": null,
+      "assets": [
+        {
+          "path": "/_next/static/chunks/44530001-fa4e007628c008b5.js",
+          "rawBytes": 63843,
+          "gzipBytes": 13770,
+          "encodedBodyBytes": 13836,
+          "decodedBodyBytes": 63843,
+          "sha256": "43e3af27eada0718b8496d2a57a7a9b19cdd7171437201eaf5f7926b4d5bff71",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739,
+          "encodedBodyBytes": 62880,
+          "decodedBodyBytes": 199870,
+          "sha256": "7ff5b8537a37e131618d624195391e3560abea8667278176b66d71c14576bfe1",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/5541-002fd2833d81ee84.js",
+          "rawBytes": 190536,
+          "gzipBytes": 53389,
+          "encodedBodyBytes": 53500,
+          "decodedBodyBytes": 190536,
+          "sha256": "89d06272cfa301c4814d037e2d7fa1a427e742088078ccd3344ec6522a51d0a9",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/5599-09c9b9f074e01f11.js",
+          "rawBytes": 14081,
+          "gzipBytes": 5420,
+          "encodedBodyBytes": 5424,
+          "decodedBodyBytes": 14081,
+          "sha256": "954586b733377baeb4676e6bd4a51861cb12c3d1c1ecf702ce6ea7df2b79a208",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566,
+          "encodedBodyBytes": 5568,
+          "decodedBodyBytes": 14741,
+          "sha256": "9a8a3a4cd75c9d6ca80ee75f2151f03b11a1216319aaf9a02ece96ad80bd05ff",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200,
+          "encodedBodyBytes": 9226,
+          "decodedBodyBytes": 32768,
+          "sha256": "e5f75da90ec45efad14e2a974724aa9796f708128a07d6c9e0c377e5efbea057",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137,
+          "encodedBodyBytes": 18150,
+          "decodedBodyBytes": 51127,
+          "sha256": "88c356eb917504668d886a462fb037ce944e742efe5a92971b0bf66b1c6464bc",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544,
+          "encodedBodyBytes": 3546,
+          "decodedBodyBytes": 8734,
+          "sha256": "61e3dd05777ba82bfbce1cef14a272f0672d7f86b066592342552a7b37603a8a",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/8755-81719165719edb1a.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62900,
+          "encodedBodyBytes": 63054,
+          "decodedBodyBytes": 230499,
+          "sha256": "b523c32ddaeb482722a3e2d1bbfda715fc556ae5b79e61394b6d9c41926dd124",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/app/auth/layout-017bfb3a0f70731a.js",
+          "rawBytes": 6755,
+          "gzipBytes": 2841,
+          "encodedBodyBytes": 2841,
+          "decodedBodyBytes": 6755,
+          "sha256": "63938fdb4739433fbcdff6409cb8721ddb0f0388dc4fdfc28c4582ec1d843144",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/app/auth/login/page-a2f2f8537746df77.js",
+          "rawBytes": 5366,
+          "gzipBytes": 2185,
+          "encodedBodyBytes": 2184,
+          "decodedBodyBytes": 5366,
+          "sha256": "105e7e98c4f8502caf42442934399bac00a5d2cc63e9df546f85f2d29837d7c8",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/app/error-577b482d93205907.js",
+          "rawBytes": 8321,
+          "gzipBytes": 3491,
+          "encodedBodyBytes": 3491,
+          "decodedBodyBytes": 8321,
+          "sha256": "caf120358107280df6e99bf3d84dd12d455c6a98778bd9b288ddb58c39b28231",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-71c7e5f09ebb0c9e.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907,
+          "encodedBodyBytes": 907,
+          "decodedBodyBytes": 1553,
+          "sha256": "3e380d08ba763e0ade2d7f9baa5f4df70917d113d43012fcc72fea72c4bb165b",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-e65cdcb5d6b7753b.js",
+          "rawBytes": 12810,
+          "gzipBytes": 5117,
+          "encodedBodyBytes": 5117,
+          "decodedBodyBytes": 12810,
+          "sha256": "37dee8a516577e27906752c26273d151f010aa0c83c9dc2adb571f5b13373754",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-6400e52512ea6b16.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3425,
+          "encodedBodyBytes": 3425,
+          "decodedBodyBytes": 8345,
+          "sha256": "273086af6ed000909b42339c0000881635bd1f62cc861a881464ca63aebdb95f",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/main-app-682f56da4ca02ae8.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1710,
+          "encodedBodyBytes": 1716,
+          "decodedBodyBytes": 4896,
+          "sha256": "32754cbd78a6f79e1f9ca6f3c7e76a6813843aa34481426df0694981c4bfcd5e",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/webpack-d7806778ef3800af.js",
+          "rawBytes": 4368,
+          "gzipBytes": 2326,
+          "encodedBodyBytes": 2326,
+          "decodedBodyBytes": 4368,
+          "sha256": "933af196d5a281c5dd157db414991a250e415f45b91bd51becd5272c80825b3d",
+          "classification": "shared",
+          "routeUsageCount": 3
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "label": "Contact",
+      "path": "/contact",
+      "mode": "public",
+      "boundary": "server-led-public",
+      "requiresLocalFixture": false,
+      "fixtureState": {
+        "logicalIdentity": "phase5a0d-public-static-v1",
+        "stateChecksum": "9f86c2820a1cabc1d52c73dcaa5e0a188f1c9fb9eaa8bd06b796e436b7708cf7"
+      },
+      "containmentMarkers": [
+        "contained-local-vercel-speed-insights-inert"
+      ],
+      "chunkCount": 15,
+      "rawBytes": 596803,
+      "gzipBytes": 186543,
+      "sharedGzipBytes": 179062,
+      "routeOwnedGzipBytes": 7481,
+      "encodedTransferBytes": 187242,
+      "targetGzipBytes": 153600,
+      "targetMet": false,
+      "assets": [
+        {
+          "path": "/_next/static/chunks/1407-0fcd3a4e0da5c0e3.js",
+          "rawBytes": 11652,
+          "gzipBytes": 4197,
+          "encodedBodyBytes": 4197,
+          "decodedBodyBytes": 11652,
+          "sha256": "3b5202406a1515f99ee50f990bc4f7491d640b58430ff5b55e10822979d24bda",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739,
+          "encodedBodyBytes": 62880,
+          "decodedBodyBytes": 199870,
+          "sha256": "7ff5b8537a37e131618d624195391e3560abea8667278176b66d71c14576bfe1",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/5139-be4b862873e8699f.js",
+          "rawBytes": 6171,
+          "gzipBytes": 2691,
+          "encodedBodyBytes": 2691,
+          "decodedBodyBytes": 6171,
+          "sha256": "4e96ab430f36f758f7ab356c6bd90b7ea3f9bc076c7882a001b78a262c892c52",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566,
+          "encodedBodyBytes": 5568,
+          "decodedBodyBytes": 14741,
+          "sha256": "9a8a3a4cd75c9d6ca80ee75f2151f03b11a1216319aaf9a02ece96ad80bd05ff",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200,
+          "encodedBodyBytes": 9226,
+          "decodedBodyBytes": 32768,
+          "sha256": "e5f75da90ec45efad14e2a974724aa9796f708128a07d6c9e0c377e5efbea057",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137,
+          "encodedBodyBytes": 18150,
+          "decodedBodyBytes": 51127,
+          "sha256": "88c356eb917504668d886a462fb037ce944e742efe5a92971b0bf66b1c6464bc",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544,
+          "encodedBodyBytes": 3546,
+          "decodedBodyBytes": 8734,
+          "sha256": "61e3dd05777ba82bfbce1cef14a272f0672d7f86b066592342552a7b37603a8a",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/8755-81719165719edb1a.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62900,
+          "encodedBodyBytes": 63054,
+          "decodedBodyBytes": 230499,
+          "sha256": "b523c32ddaeb482722a3e2d1bbfda715fc556ae5b79e61394b6d9c41926dd124",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/app/contact/page-76917bd84927491b.js",
+          "rawBytes": 948,
+          "gzipBytes": 593,
+          "encodedBodyBytes": 948,
+          "decodedBodyBytes": 948,
+          "sha256": "917b28734587c0f12b85e59a659b77fa3d09c54dc19f155f0ac26e9168b5ea21",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/app/error-577b482d93205907.js",
+          "rawBytes": 8321,
+          "gzipBytes": 3491,
+          "encodedBodyBytes": 3491,
+          "decodedBodyBytes": 8321,
+          "sha256": "caf120358107280df6e99bf3d84dd12d455c6a98778bd9b288ddb58c39b28231",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-71c7e5f09ebb0c9e.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907,
+          "encodedBodyBytes": 907,
+          "decodedBodyBytes": 1553,
+          "sha256": "3e380d08ba763e0ade2d7f9baa5f4df70917d113d43012fcc72fea72c4bb165b",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-e65cdcb5d6b7753b.js",
+          "rawBytes": 12810,
+          "gzipBytes": 5117,
+          "encodedBodyBytes": 5117,
+          "decodedBodyBytes": 12810,
+          "sha256": "37dee8a516577e27906752c26273d151f010aa0c83c9dc2adb571f5b13373754",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-6400e52512ea6b16.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3425,
+          "encodedBodyBytes": 3425,
+          "decodedBodyBytes": 8345,
+          "sha256": "273086af6ed000909b42339c0000881635bd1f62cc861a881464ca63aebdb95f",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/main-app-682f56da4ca02ae8.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1710,
+          "encodedBodyBytes": 1716,
+          "decodedBodyBytes": 4896,
+          "sha256": "32754cbd78a6f79e1f9ca6f3c7e76a6813843aa34481426df0694981c4bfcd5e",
+          "classification": "shared",
+          "routeUsageCount": 3
+        },
+        {
+          "path": "/_next/static/chunks/webpack-d7806778ef3800af.js",
+          "rawBytes": 4368,
+          "gzipBytes": 2326,
+          "encodedBodyBytes": 2326,
+          "decodedBodyBytes": 4368,
+          "sha256": "933af196d5a281c5dd157db414991a250e415f45b91bd51becd5272c80825b3d",
+          "classification": "shared",
+          "routeUsageCount": 3
+        }
+      ]
+    },
+    {
+      "id": "app-shell",
+      "label": "Authenticated shell",
+      "path": "/app",
+      "mode": "local-authenticated",
+      "boundary": "authenticated-client-surface",
+      "requiresLocalFixture": true,
+      "fixtureState": {
+        "logicalIdentity": "phase5a0d-local-new-user-primary-product-v1",
+        "stateChecksum": "bf8a526ccf1fee9def248328ae344ce45103237b92b58e7a944f15d39b74ac23"
+      },
+      "containmentMarkers": [
+        "contained-local-vercel-speed-insights-inert"
+      ],
+      "chunkCount": 24,
+      "rawBytes": 969179,
+      "gzipBytes": 291064,
+      "sharedGzipBytes": 285389,
+      "routeOwnedGzipBytes": 5675,
+      "encodedTransferBytes": 291630,
+      "targetGzipBytes": null,
+      "targetMet": null,
+      "assets": [
+        {
+          "path": "/_next/static/chunks/369-0914abd1ba92defb.js",
+          "rawBytes": 9699,
+          "gzipBytes": 2885,
+          "encodedBodyBytes": 2886,
+          "decodedBodyBytes": 9699,
+          "sha256": "9d7a3f0fcfa667e596ccb02de192c55ec0d5d412c07cc2891f4f81a8b91c5523",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/3721-0bb186b9fad95825.js",
+          "rawBytes": 8810,
+          "gzipBytes": 3277,
+          "encodedBodyBytes": 3280,
+          "decodedBodyBytes": 8810,
+          "sha256": "3b7f298bb89fed036b190a083d69bfb0e1a009e64e4aae1ed97f1a9006cd5254",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/44530001-fa4e007628c008b5.js",
+          "rawBytes": 63843,
+          "gzipBytes": 13770,
+          "encodedBodyBytes": 13836,
+          "decodedBodyBytes": 63843,
+          "sha256": "43e3af27eada0718b8496d2a57a7a9b19cdd7171437201eaf5f7926b4d5bff71",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739,
+          "encodedBodyBytes": 62880,
+          "decodedBodyBytes": 199870,
+          "sha256": "7ff5b8537a37e131618d624195391e3560abea8667278176b66d71c14576bfe1",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/5512-1cf30a41914d8459.js",
+          "rawBytes": 8060,
+          "gzipBytes": 2445,
+          "encodedBodyBytes": 2445,
+          "decodedBodyBytes": 8060,
+          "sha256": "3b934fae9c11172224f6f88b36b2ae0b04872c577e1e0cc80a35df52a8505536",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/5541-002fd2833d81ee84.js",
+          "rawBytes": 190536,
+          "gzipBytes": 53389,
+          "encodedBodyBytes": 53500,
+          "decodedBodyBytes": 190536,
+          "sha256": "89d06272cfa301c4814d037e2d7fa1a427e742088078ccd3344ec6522a51d0a9",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566,
+          "encodedBodyBytes": 5568,
+          "decodedBodyBytes": 14741,
+          "sha256": "9a8a3a4cd75c9d6ca80ee75f2151f03b11a1216319aaf9a02ece96ad80bd05ff",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200,
+          "encodedBodyBytes": 9226,
+          "decodedBodyBytes": 32768,
+          "sha256": "e5f75da90ec45efad14e2a974724aa9796f708128a07d6c9e0c377e5efbea057",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/6708-3d9f28950fc16cdb.js",
+          "rawBytes": 26103,
+          "gzipBytes": 8679,
+          "encodedBodyBytes": 8691,
+          "decodedBodyBytes": 26103,
+          "sha256": "f08c36f286c786e5f9ccd70206db24bec0e7262cd79e680a5c29c5d53d39f719",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/7818-c9b835e7d2fb9270.js",
+          "rawBytes": 12180,
+          "gzipBytes": 3945,
+          "encodedBodyBytes": 3954,
+          "decodedBodyBytes": 12180,
+          "sha256": "7f7facc7594750373b180c6b1d49eaf906b1ad489a25701ff9d92cadcaa35423",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137,
+          "encodedBodyBytes": 18150,
+          "decodedBodyBytes": 51127,
+          "sha256": "88c356eb917504668d886a462fb037ce944e742efe5a92971b0bf66b1c6464bc",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544,
+          "encodedBodyBytes": 3546,
+          "decodedBodyBytes": 8734,
+          "sha256": "61e3dd05777ba82bfbce1cef14a272f0672d7f86b066592342552a7b37603a8a",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/8597-b270c6982b260683.js",
+          "rawBytes": 3012,
+          "gzipBytes": 1188,
+          "encodedBodyBytes": 1187,
+          "decodedBodyBytes": 3012,
+          "sha256": "f2afa3805d70574ed197787cc213cbca613fb9fe382af9a9469734d69e9198b8",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/8755-81719165719edb1a.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62900,
+          "encodedBodyBytes": 63054,
+          "decodedBodyBytes": 230499,
+          "sha256": "b523c32ddaeb482722a3e2d1bbfda715fc556ae5b79e61394b6d9c41926dd124",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/985-df4c769766199133.js",
+          "rawBytes": 5559,
+          "gzipBytes": 2599,
+          "encodedBodyBytes": 2599,
+          "decodedBodyBytes": 5559,
+          "sha256": "ca001065b2c83db2a98221a2036aab63437eda9224fdb6abb1dccda54983cc13",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/app/app/error-8e04b47bf7dedd2f.js",
+          "rawBytes": 8608,
+          "gzipBytes": 3533,
+          "encodedBodyBytes": 3533,
+          "decodedBodyBytes": 8608,
+          "sha256": "480cb9485244808077367bae37b1cda5a9f5b887eeeeb58fa43fdaeae60b2923",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/app/app/layout-8843f859fbb9be4a.js",
+          "rawBytes": 36537,
+          "gzipBytes": 10616,
+          "encodedBodyBytes": 10625,
+          "decodedBodyBytes": 36537,
+          "sha256": "cd936359f7ef659fda73a8f0488c2dbc12c5d8532120c9eb37ac3b4b6cacc1c2",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/app/app/page-1b26004707f309ce.js",
+          "rawBytes": 18200,
+          "gzipBytes": 5675,
+          "encodedBodyBytes": 5687,
+          "decodedBodyBytes": 18200,
+          "sha256": "e7c13e7620e73f5bb4049cb441f511396f891650e3a927fad4b63ca7870b8eda",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/app/error-577b482d93205907.js",
+          "rawBytes": 8321,
+          "gzipBytes": 3491,
+          "encodedBodyBytes": 3491,
+          "decodedBodyBytes": 8321,
+          "sha256": "caf120358107280df6e99bf3d84dd12d455c6a98778bd9b288ddb58c39b28231",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-71c7e5f09ebb0c9e.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907,
+          "encodedBodyBytes": 907,
+          "decodedBodyBytes": 1553,
+          "sha256": "3e380d08ba763e0ade2d7f9baa5f4df70917d113d43012fcc72fea72c4bb165b",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-e65cdcb5d6b7753b.js",
+          "rawBytes": 12810,
+          "gzipBytes": 5117,
+          "encodedBodyBytes": 5117,
+          "decodedBodyBytes": 12810,
+          "sha256": "37dee8a516577e27906752c26273d151f010aa0c83c9dc2adb571f5b13373754",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-6400e52512ea6b16.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3425,
+          "encodedBodyBytes": 3425,
+          "decodedBodyBytes": 8345,
+          "sha256": "273086af6ed000909b42339c0000881635bd1f62cc861a881464ca63aebdb95f",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/main-app-682f56da4ca02ae8.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1710,
+          "encodedBodyBytes": 1716,
+          "decodedBodyBytes": 4896,
+          "sha256": "32754cbd78a6f79e1f9ca6f3c7e76a6813843aa34481426df0694981c4bfcd5e",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/webpack-056b2239e0e2f920.js",
+          "rawBytes": 4368,
+          "gzipBytes": 2327,
+          "encodedBodyBytes": 2327,
+          "decodedBodyBytes": 4368,
+          "sha256": "bb2e524d58a5155001aabf2f64117d478e8627ce78b290712b2af347251b223f",
+          "classification": "shared",
+          "routeUsageCount": 2
+        }
+      ]
+    },
+    {
+      "id": "product-detail",
+      "label": "Product detail",
+      "path": "/app/product/:fixtureProductId",
+      "mode": "local-authenticated",
+      "boundary": "authenticated-client-surface",
+      "requiresLocalFixture": true,
+      "fixtureState": {
+        "logicalIdentity": "phase5a0d-local-new-user-primary-product-v1",
+        "stateChecksum": "bf8a526ccf1fee9def248328ae344ce45103237b92b58e7a944f15d39b74ac23"
+      },
+      "containmentMarkers": [
+        "contained-local-vercel-speed-insights-inert"
+      ],
+      "chunkCount": 30,
+      "rawBytes": 1079254,
+      "gzipBytes": 321166,
+      "sharedGzipBytes": 285389,
+      "routeOwnedGzipBytes": 35777,
+      "encodedTransferBytes": 321812,
+      "targetGzipBytes": null,
+      "targetMet": null,
+      "assets": [
+        {
+          "path": "/_next/static/chunks/369-0914abd1ba92defb.js",
+          "rawBytes": 9699,
+          "gzipBytes": 2885,
+          "encodedBodyBytes": 2886,
+          "decodedBodyBytes": 9699,
+          "sha256": "9d7a3f0fcfa667e596ccb02de192c55ec0d5d412c07cc2891f4f81a8b91c5523",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/3721-0bb186b9fad95825.js",
+          "rawBytes": 8810,
+          "gzipBytes": 3277,
+          "encodedBodyBytes": 3280,
+          "decodedBodyBytes": 8810,
+          "sha256": "3b7f298bb89fed036b190a083d69bfb0e1a009e64e4aae1ed97f1a9006cd5254",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/44530001-fa4e007628c008b5.js",
+          "rawBytes": 63843,
+          "gzipBytes": 13770,
+          "encodedBodyBytes": 13836,
+          "decodedBodyBytes": 63843,
+          "sha256": "43e3af27eada0718b8496d2a57a7a9b19cdd7171437201eaf5f7926b4d5bff71",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js",
+          "rawBytes": 199870,
+          "gzipBytes": 62739,
+          "encodedBodyBytes": 62880,
+          "decodedBodyBytes": 199870,
+          "sha256": "7ff5b8537a37e131618d624195391e3560abea8667278176b66d71c14576bfe1",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/5023-b41bb8ec6ee26263.js",
+          "rawBytes": 7574,
+          "gzipBytes": 2934,
+          "encodedBodyBytes": 2935,
+          "decodedBodyBytes": 7574,
+          "sha256": "1672f77d437099442bf4da183f0519d2852c4a956a6b4f5eea155bf48e238529",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/5512-1cf30a41914d8459.js",
+          "rawBytes": 8060,
+          "gzipBytes": 2445,
+          "encodedBodyBytes": 2445,
+          "decodedBodyBytes": 8060,
+          "sha256": "3b934fae9c11172224f6f88b36b2ae0b04872c577e1e0cc80a35df52a8505536",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/5541-002fd2833d81ee84.js",
+          "rawBytes": 190536,
+          "gzipBytes": 53389,
+          "encodedBodyBytes": 53500,
+          "decodedBodyBytes": 190536,
+          "sha256": "89d06272cfa301c4814d037e2d7fa1a427e742088078ccd3344ec6522a51d0a9",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/5772-2d538cc4a7c2ac4a.js",
+          "rawBytes": 14741,
+          "gzipBytes": 5566,
+          "encodedBodyBytes": 5568,
+          "decodedBodyBytes": 14741,
+          "sha256": "9a8a3a4cd75c9d6ca80ee75f2151f03b11a1216319aaf9a02ece96ad80bd05ff",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/6263-8fbede21fe50f380.js",
+          "rawBytes": 21671,
+          "gzipBytes": 2913,
+          "encodedBodyBytes": 2959,
+          "decodedBodyBytes": 21671,
+          "sha256": "7c138e861a8b4015fb0e7abafde3241c0cc5620ee818207acc1d1ccd7f83f5fb",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/6609-80e42c74e2ed6b14.js",
+          "rawBytes": 32768,
+          "gzipBytes": 9200,
+          "encodedBodyBytes": 9226,
+          "decodedBodyBytes": 32768,
+          "sha256": "e5f75da90ec45efad14e2a974724aa9796f708128a07d6c9e0c377e5efbea057",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/6654-f061f7342a56ccfb.js",
+          "rawBytes": 18676,
+          "gzipBytes": 4598,
+          "encodedBodyBytes": 4609,
+          "decodedBodyBytes": 18676,
+          "sha256": "204d47fbf5ea30b174d743b87f7fd924e442886e07b6031f47bf934d111863de",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/6708-3d9f28950fc16cdb.js",
+          "rawBytes": 26103,
+          "gzipBytes": 8679,
+          "encodedBodyBytes": 8691,
+          "decodedBodyBytes": 26103,
+          "sha256": "f08c36f286c786e5f9ccd70206db24bec0e7262cd79e680a5c29c5d53d39f719",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/7647-63d08bf7ad438515.js",
+          "rawBytes": 8016,
+          "gzipBytes": 2891,
+          "encodedBodyBytes": 2893,
+          "decodedBodyBytes": 8016,
+          "sha256": "62be6e7c4bbedad2ab2ea5a748de784c3b20c451c332123bfba6b162c6284f03",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/7818-c9b835e7d2fb9270.js",
+          "rawBytes": 12180,
+          "gzipBytes": 3945,
+          "encodedBodyBytes": 3954,
+          "decodedBodyBytes": 12180,
+          "sha256": "7f7facc7594750373b180c6b1d49eaf906b1ad489a25701ff9d92cadcaa35423",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/8182-6576a277016f090c.js",
+          "rawBytes": 51127,
+          "gzipBytes": 18137,
+          "encodedBodyBytes": 18150,
+          "decodedBodyBytes": 51127,
+          "sha256": "88c356eb917504668d886a462fb037ce944e742efe5a92971b0bf66b1c6464bc",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/8500-f62a38ff68ab7f42.js",
+          "rawBytes": 8734,
+          "gzipBytes": 3544,
+          "encodedBodyBytes": 3546,
+          "decodedBodyBytes": 8734,
+          "sha256": "61e3dd05777ba82bfbce1cef14a272f0672d7f86b066592342552a7b37603a8a",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/8597-b270c6982b260683.js",
+          "rawBytes": 3012,
+          "gzipBytes": 1188,
+          "encodedBodyBytes": 1187,
+          "decodedBodyBytes": 3012,
+          "sha256": "f2afa3805d70574ed197787cc213cbca613fb9fe382af9a9469734d69e9198b8",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/8755-81719165719edb1a.js",
+          "rawBytes": 230499,
+          "gzipBytes": 62900,
+          "encodedBodyBytes": 63054,
+          "decodedBodyBytes": 230499,
+          "sha256": "b523c32ddaeb482722a3e2d1bbfda715fc556ae5b79e61394b6d9c41926dd124",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/9099-023f8385980b2a06.js",
+          "rawBytes": 18367,
+          "gzipBytes": 5801,
+          "encodedBodyBytes": 5811,
+          "decodedBodyBytes": 18367,
+          "sha256": "485bf205157ae9455b79f40b0d73ca6d2d46d2c2651ab697486c8774488f1431",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/985-df4c769766199133.js",
+          "rawBytes": 5559,
+          "gzipBytes": 2599,
+          "encodedBodyBytes": 2599,
+          "decodedBodyBytes": 5559,
+          "sha256": "ca001065b2c83db2a98221a2036aab63437eda9224fdb6abb1dccda54983cc13",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/app/app/error-8e04b47bf7dedd2f.js",
+          "rawBytes": 8608,
+          "gzipBytes": 3533,
+          "encodedBodyBytes": 3533,
+          "decodedBodyBytes": 8608,
+          "sha256": "480cb9485244808077367bae37b1cda5a9f5b887eeeeb58fa43fdaeae60b2923",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/app/app/layout-8843f859fbb9be4a.js",
+          "rawBytes": 36537,
+          "gzipBytes": 10616,
+          "encodedBodyBytes": 10625,
+          "decodedBodyBytes": 36537,
+          "sha256": "cd936359f7ef659fda73a8f0488c2dbc12c5d8532120c9eb37ac3b4b6cacc1c2",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/app/app/product/[id]/layout-d70e166982b59ed4.js",
+          "rawBytes": 14730,
+          "gzipBytes": 4630,
+          "encodedBodyBytes": 4629,
+          "decodedBodyBytes": 14730,
+          "sha256": "192898cdc1d81f022cb1dfb9fb85057f98d4cbdc769a75c92d15c17697ac0d87",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/app/app/product/[id]/page-ec677e874a532072.js",
+          "rawBytes": 39241,
+          "gzipBytes": 12010,
+          "encodedBodyBytes": 12033,
+          "decodedBodyBytes": 39241,
+          "sha256": "527bf2be5c26146fef44f552096d3629b4f6405e133dddcb32b58d0bc749055b",
+          "classification": "route-owned",
+          "routeUsageCount": 1
+        },
+        {
+          "path": "/_next/static/chunks/app/error-577b482d93205907.js",
+          "rawBytes": 8321,
+          "gzipBytes": 3491,
+          "encodedBodyBytes": 3491,
+          "decodedBodyBytes": 8321,
+          "sha256": "caf120358107280df6e99bf3d84dd12d455c6a98778bd9b288ddb58c39b28231",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/app/global-error-71c7e5f09ebb0c9e.js",
+          "rawBytes": 1553,
+          "gzipBytes": 907,
+          "encodedBodyBytes": 907,
+          "decodedBodyBytes": 1553,
+          "sha256": "3e380d08ba763e0ade2d7f9baa5f4df70917d113d43012fcc72fea72c4bb165b",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/app/layout-e65cdcb5d6b7753b.js",
+          "rawBytes": 12810,
+          "gzipBytes": 5117,
+          "encodedBodyBytes": 5117,
+          "decodedBodyBytes": 12810,
+          "sha256": "37dee8a516577e27906752c26273d151f010aa0c83c9dc2adb571f5b13373754",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/app/not-found-6400e52512ea6b16.js",
+          "rawBytes": 8345,
+          "gzipBytes": 3425,
+          "encodedBodyBytes": 3425,
+          "decodedBodyBytes": 8345,
+          "sha256": "273086af6ed000909b42339c0000881635bd1f62cc861a881464ca63aebdb95f",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/main-app-682f56da4ca02ae8.js",
+          "rawBytes": 4896,
+          "gzipBytes": 1710,
+          "encodedBodyBytes": 1716,
+          "decodedBodyBytes": 4896,
+          "sha256": "32754cbd78a6f79e1f9ca6f3c7e76a6813843aa34481426df0694981c4bfcd5e",
+          "classification": "shared",
+          "routeUsageCount": 2
+        },
+        {
+          "path": "/_next/static/chunks/webpack-056b2239e0e2f920.js",
+          "rawBytes": 4368,
+          "gzipBytes": 2327,
+          "encodedBodyBytes": 2327,
+          "decodedBodyBytes": 4368,
+          "sha256": "bb2e524d58a5155001aabf2f64117d478e8627ce78b290712b2af347251b223f",
+          "classification": "shared",
+          "routeUsageCount": 2
+        }
+      ]
+    }
+  ],
+  "reportChecksum": "c1c8820d317878ac1289913c080f37b3f858e1167f4bbb0cadef0ba06db31147"
+}

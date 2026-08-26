@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 2,
+  "kind": "phase5a3-landing-revision-cycle-2-runtime",
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "productionSourceTree": "e82f1ce3b0f9fdfd8d41f02b04fb8d25a5b81da6",
+  "container": {
+    "image": "mcr.microsoft.com/playwright:v1.62.1-noble",
+    "digest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac",
+    "operatingSystem": "Ubuntu 24.04",
+    "node": "v24.18.1",
+    "npm": "11.16.0",
+    "playwright": "1.62.1",
+    "lighthouse": "12.6.1",
+    "chromium": "151.0.7922.34"
+  },
+  "captureBuild": {
+    "buildId": "Rx6qScSHdhff6fIcRZFin",
+    "buildFingerprint": "1101b397cf20a497966f06237868475545842257acfb0a8b97e92a1b705ebdfd",
+    "assetDigest": "b0a0b9922aa955389b2596f1bd2383d85e8f9f136f9e1e242268174a31c5c9ff",
+    "mode": "public",
+    "supabaseOrigin": "none"
+  },
+  "performanceBuild": {
+    "buildId": "RkiZx6Y57nyDf42ou3nTL",
+    "buildFingerprint": "e3084a81196f6766173f96ad292c84478081ede92194c23ed4959634ed27a0a9",
+    "sameAcrossProfiles": true,
+    "mobileMetadataChecksum": "1f4cb99f1481482da73dd93beb2df85c3ff2d9ca1ca8482653820b95753eb8f2",
+    "desktopMetadataChecksum": "0c42cd63b2adcd3acee7319b351b23c5afd278583e325cec3605aca579f47fda"
+  },
+  "githubLinuxCandidate": {
+    "imageOS": "ubuntu24",
+    "imageVersion": "20260823.283.1",
+    "node": "v22.21.1",
+    "npm": "10.9.4",
+    "playwright": "1.62.1",
+    "chromium": "151.0.7922.34",
+    "byteIdentical": true
+  },
+  "safety": {
+    "appOrigin": "http://127.0.0.1:3000",
+    "serviceWorkers": "blocked",
+    "externalNetwork": "contained-by-loopback-egress-proxy",
+    "dataMode": "demo",
+    "fontTransfers": 0,
+    "imageTransfersOnLanding": 0,
+    "consoleErrors": 0,
+    "unexpectedFirstParty4xx": 0,
+    "fixtureTeardownPassed": true,
+    "noBackupSupabaseShutdownPassed": true
+  },
+  "limitations": [
+    "The 640 CSS-pixel still is an effective-viewport proxy, not branded browser zoom evidence.",
+    "WebKit is not branded Safari approval.",
+    "No qualified screen-reader, voice-control, camera, or physical-device approval is claimed.",
+    "Polish and German copy remains pending qualified human review.",
+    "Live readiness is configuration and kill-switch truth; no metadata-time health network request is made."
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 2,
+  "kind": "phase5a3-landing-revision-cycle-2-linux-candidate",
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "productionSourceTree": "e82f1ce3b0f9fdfd8d41f02b04fb8d25a5b81da6",
+  "workflow": {
+    "runId": 32882780652,
+    "url": "https://github.com/ericsocrat/tryvit/actions/runs/32882780652",
+    "result": "success",
+    "candidateArtifact": {
+      "id": 9576665378,
+      "archiveBytes": 664942,
+      "archiveDigest": "sha256:9478ff2abee760a4cfa3ca019e0a99f3a59b0263513053e36fd3e7a8e7c1a891"
+    },
+    "determinismArtifact": {
+      "id": 9576666159,
+      "archiveBytes": 4276,
+      "archiveDigest": "sha256:96efb4c6c3db413602e9f53b8114c18c3f293c810f32465eb8e644f72e6cebde"
+    }
+  },
+  "renderer": {
+    "class": "ci-linux-authoritative",
+    "imageOS": "ubuntu24",
+    "imageVersion": "20260823.283.1",
+    "arch": "x64",
+    "node": "v22.21.1",
+    "npm": "10.9.4",
+    "next": "16.2.12",
+    "playwright": "1.62.1",
+    "chromium": "151.0.7922.34"
+  },
+  "candidateManifestChecksum": "2dda393c10ad343990d939ec3086872ce0535a4b5110027ec9598d93835f8c32",
+  "firstFilesLedgerSha256": "3ecf713937a9dc5449a8ee4627bdd9fd062e9a5bfb220dcbeb5634a818ab16d8",
+  "secondFilesLedgerSha256": "3ecf713937a9dc5449a8ee4627bdd9fd062e9a5bfb220dcbeb5634a818ab16d8",
+  "firstManifestSha256": "c8859a69545634dd88b27dcef43b3b831233b2bcf2d44855781205797f8f2732",
+  "secondManifestSha256": "c8859a69545634dd88b27dcef43b3b831233b2bcf2d44855781205797f8f2732",
+  "byteIdentical": true,
+  "landingCandidates": [
+    {
+      "viewport": "390x844",
+      "path": "candidates/smoke-visual.spec.ts/p5a0d-landing-390x844-light-reduced.png",
+      "bytes": 68791,
+      "sha256": "20d1a453ccbac121db9795fbeac49b801bf534f734585d99f52651a5f4855ec4",
+      "firstFoldContained": true,
+      "visualOverlap": "The 12 px synthetic-example label overlaps the package name in the authoritative Linux specimen."
+    },
+    {
+      "viewport": "768x1024",
+      "path": "candidates/smoke-visual.spec.ts/p5a0d-landing-768x1024-light-reduced.png",
+      "bytes": 105693,
+      "sha256": "cf64eb5bb69a4838a526a2b7c769ac0a5ccd9efb208c0b7d9421b1e325fdad00",
+      "actionsFullyVisible": true,
+      "packageSignatureFullyVisible": true
+    },
+    {
+      "viewport": "1440x900",
+      "path": "candidates/smoke-visual.spec.ts/p5a0d-landing-1440x900-light-reduced.png",
+      "bytes": 103920,
+      "sha256": "3576ae129190d734648fd6e5c8af3fe4581cf030dd61b58307e6048c04c4e99f",
+      "actionsFullyVisible": true,
+      "packageSignatureFullyVisible": true,
+      "duplicateMasthead": false
+    }
+  ],
+  "fixtureTeardownPassed": true,
+  "noBackupSupabaseShutdownPassed": true,
+  "baselineMutated": false,
+  "determinismPassed": true,
+  "visualAcceptancePassed": false,
+  "passed": false,
+  "disposition": "REVISE"
+}

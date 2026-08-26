@@ -1,0 +1,569 @@
+{
+  "schemaVersion": 2,
+  "kind": "phase5a3-complete-landing-motion-evidence",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "runs": [
+    {
+      "motion": "normal",
+      "checkpoints": [
+        {
+          "name": "first-viewport",
+          "timeMs": 383.5999999977648,
+          "scrollY": 0
+        },
+        {
+          "name": "dark-theme",
+          "timeMs": 862.2999999970198,
+          "scrollY": 0
+        },
+        {
+          "name": "package-expanded",
+          "timeMs": 1411,
+          "scrollY": 0
+        },
+        {
+          "name": "evidence",
+          "timeMs": 2109,
+          "scrollY": 1001
+        },
+        {
+          "name": "method",
+          "timeMs": 2575.39999999851,
+          "scrollY": 2126
+        },
+        {
+          "name": "trust",
+          "timeMs": 3042.89999999851,
+          "scrollY": 2796
+        },
+        {
+          "name": "final-action",
+          "timeMs": 3509.199999999255,
+          "scrollY": 2796
+        },
+        {
+          "name": "footer",
+          "timeMs": 3975.699999999255,
+          "scrollY": 3327
+        },
+        {
+          "name": "terminal-focus",
+          "timeMs": 4465.39999999851,
+          "scrollY": 3327
+        }
+      ],
+      "observerSupport": {
+        "longtask": true,
+        "layoutShift": true
+      },
+      "observationStartTimeMs": 0,
+      "observationEndTimeMs": 4890.29999999702,
+      "cls": 0,
+      "layoutShifts": [
+        {
+          "startTimeMs": 840.0999999977648,
+          "value": 0.00001975443452499224,
+          "hadRecentInput": true
+        },
+        {
+          "startTimeMs": 1380.2999999970198,
+          "value": 0.08994338021987895,
+          "hadRecentInput": true
+        }
+      ],
+      "longTasks": [
+        {
+          "startTimeMs": 80.29999999701977,
+          "durationMs": 50
+        },
+        {
+          "startTimeMs": 170.69999999925494,
+          "durationMs": 75
+        }
+      ],
+      "motionIntervals": [
+        {
+          "kind": "transition",
+          "name": "background-color",
+          "startTimeMs": 856.2999999970198,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 856.3999999985099,
+          "endTimeMs": 1172.7999999970198
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 856.5,
+          "endTimeMs": 1172.699999999255
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 856.5999999977648,
+          "endTimeMs": 1023.2999999970198
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 856.5999999977648,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 856.5999999977648,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 856.6999999992549,
+          "endTimeMs": 1023.0999999977648
+        },
+        {
+          "kind": "transition",
+          "name": "background-color",
+          "startTimeMs": 856.7999999970198,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "border-bottom-color",
+          "startTimeMs": 856.7999999970198,
+          "endTimeMs": 1023.2999999970198
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 856.7999999970198,
+          "endTimeMs": 1023
+        },
+        {
+          "kind": "transition",
+          "name": "background-color",
+          "startTimeMs": 856.7999999970198,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "border-bottom-color",
+          "startTimeMs": 856.7999999970198,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "border-left-color",
+          "startTimeMs": 856.8999999985099,
+          "endTimeMs": 1023.2999999970198
+        },
+        {
+          "kind": "transition",
+          "name": "border-right-color",
+          "startTimeMs": 856.8999999985099,
+          "endTimeMs": 1023.2999999970198
+        },
+        {
+          "kind": "transition",
+          "name": "border-top-color",
+          "startTimeMs": 856.8999999985099,
+          "endTimeMs": 1023.2999999970198
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 856.8999999985099,
+          "endTimeMs": 1023
+        },
+        {
+          "kind": "transition",
+          "name": "background-color",
+          "startTimeMs": 857,
+          "endTimeMs": 1023.0999999977648
+        },
+        {
+          "kind": "transition",
+          "name": "border-bottom-color",
+          "startTimeMs": 857.0999999977648,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "border-left-color",
+          "startTimeMs": 857.0999999977648,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "border-right-color",
+          "startTimeMs": 857.1999999992549,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "border-top-color",
+          "startTimeMs": 857.2999999970198,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 857.2999999970198,
+          "endTimeMs": 1023
+        },
+        {
+          "kind": "transition",
+          "name": "background-color",
+          "startTimeMs": 857.2999999970198,
+          "endTimeMs": 1023
+        },
+        {
+          "kind": "transition",
+          "name": "border-bottom-color",
+          "startTimeMs": 857.3999999985099,
+          "endTimeMs": 1023.0999999977648
+        },
+        {
+          "kind": "transition",
+          "name": "border-left-color",
+          "startTimeMs": 857.3999999985099,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "border-right-color",
+          "startTimeMs": 857.3999999985099,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "border-top-color",
+          "startTimeMs": 857.5,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 857.5,
+          "endTimeMs": 992.3999999985099
+        },
+        {
+          "kind": "transition",
+          "name": "background-color",
+          "startTimeMs": 857.5,
+          "endTimeMs": 1023
+        },
+        {
+          "kind": "transition",
+          "name": "border-bottom-color",
+          "startTimeMs": 857.5999999977648,
+          "endTimeMs": 1023
+        },
+        {
+          "kind": "transition",
+          "name": "border-left-color",
+          "startTimeMs": 857.5999999977648,
+          "endTimeMs": 1023.0999999977648
+        },
+        {
+          "kind": "transition",
+          "name": "border-right-color",
+          "startTimeMs": 857.6999999992549,
+          "endTimeMs": 1023.0999999977648
+        },
+        {
+          "kind": "transition",
+          "name": "border-top-color",
+          "startTimeMs": 857.6999999992549,
+          "endTimeMs": 1023.1999999992549
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 857.6999999992549,
+          "endTimeMs": 876.8999999985099
+        },
+        {
+          "kind": "transition",
+          "name": "background-color",
+          "startTimeMs": 857.6999999992549,
+          "endTimeMs": 992.3999999985099
+        },
+        {
+          "kind": "transition",
+          "name": "border-bottom-color",
+          "startTimeMs": 857.7999999970198,
+          "endTimeMs": 1023
+        },
+        {
+          "kind": "transition",
+          "name": "border-left-color",
+          "startTimeMs": 857.8999999985099,
+          "endTimeMs": 1023
+        },
+        {
+          "kind": "transition",
+          "name": "border-right-color",
+          "startTimeMs": 857.8999999985099,
+          "endTimeMs": 1023
+        },
+        {
+          "kind": "transition",
+          "name": "border-top-color",
+          "startTimeMs": 857.8999999985099,
+          "endTimeMs": 1023
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 857.8999999985099,
+          "endTimeMs": 876.7999999970198
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 1006.7999999970198,
+          "endTimeMs": 1022.8999999985099
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 1007,
+          "endTimeMs": 1022.7999999970198
+        },
+        {
+          "kind": "transition",
+          "name": "background-color",
+          "startTimeMs": 1406.3999999985099,
+          "endTimeMs": 1573
+        },
+        {
+          "kind": "transition",
+          "name": "border-bottom-color",
+          "startTimeMs": 1406.3999999985099,
+          "endTimeMs": 1573.0999999977648
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 1406.5,
+          "endTimeMs": 1573.0999999977648
+        },
+        {
+          "kind": "transition",
+          "name": "box-shadow",
+          "startTimeMs": 1406.5999999977648,
+          "endTimeMs": 1889.5
+        },
+        {
+          "kind": "transition",
+          "name": "transform",
+          "startTimeMs": 1406.5999999977648,
+          "endTimeMs": 1889.5999999977648
+        }
+      ],
+      "animationAttributableLayoutShifts": [],
+      "animationAttributableLongTasks": [],
+      "terminalState": {
+        "theme": "dark",
+        "narrativeExpanded": true,
+        "focusedText": "Demo mode",
+        "focusedHref": "#service-status"
+      }
+    },
+    {
+      "motion": "reduced",
+      "checkpoints": [
+        {
+          "name": "first-viewport",
+          "timeMs": 243.39999999850988,
+          "scrollY": 0
+        },
+        {
+          "name": "dark-theme",
+          "timeMs": 438.3999999985099,
+          "scrollY": 0
+        },
+        {
+          "name": "package-expanded",
+          "timeMs": 670.8000000007451,
+          "scrollY": 0
+        },
+        {
+          "name": "evidence",
+          "timeMs": 841.5,
+          "scrollY": 1001
+        },
+        {
+          "name": "method",
+          "timeMs": 1009,
+          "scrollY": 2126
+        },
+        {
+          "name": "trust",
+          "timeMs": 1175.800000000745,
+          "scrollY": 2796
+        },
+        {
+          "name": "final-action",
+          "timeMs": 1340.8999999985099,
+          "scrollY": 2796
+        },
+        {
+          "name": "footer",
+          "timeMs": 1508.300000000745,
+          "scrollY": 3327
+        },
+        {
+          "name": "terminal-focus",
+          "timeMs": 1700.0999999977648,
+          "scrollY": 3327
+        }
+      ],
+      "observerSupport": {
+        "longtask": true,
+        "layoutShift": true
+      },
+      "observationStartTimeMs": 0,
+      "observationEndTimeMs": 1825.199999999255,
+      "cls": 0,
+      "layoutShifts": [
+        {
+          "startTimeMs": 416.8999999985099,
+          "value": 0.00001975443452499224,
+          "hadRecentInput": true
+        },
+        {
+          "startTimeMs": 645.1999999992549,
+          "value": 0.08994338021987895,
+          "hadRecentInput": true
+        }
+      ],
+      "longTasks": [],
+      "motionIntervals": [
+        {
+          "kind": "transition",
+          "name": "border-bottom-color",
+          "startTimeMs": 438.8999999985099,
+          "endTimeMs": 439.0999999977648
+        },
+        {
+          "kind": "transition",
+          "name": "border-left-color",
+          "startTimeMs": 439.0999999977648,
+          "endTimeMs": 439.0999999977648
+        },
+        {
+          "kind": "transition",
+          "name": "border-right-color",
+          "startTimeMs": 439.30000000074506,
+          "endTimeMs": 439.30000000074506
+        },
+        {
+          "kind": "transition",
+          "name": "border-top-color",
+          "startTimeMs": 439.30000000074506,
+          "endTimeMs": 439.3999999985099
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 439.3999999985099,
+          "endTimeMs": 439.3999999985099
+        },
+        {
+          "kind": "transition",
+          "name": "background-color",
+          "startTimeMs": 439.3999999985099,
+          "endTimeMs": 439.3999999985099
+        },
+        {
+          "kind": "transition",
+          "name": "border-bottom-color",
+          "startTimeMs": 439.3999999985099,
+          "endTimeMs": 439.3999999985099
+        },
+        {
+          "kind": "transition",
+          "name": "border-left-color",
+          "startTimeMs": 439.5,
+          "endTimeMs": 439.5999999977648
+        },
+        {
+          "kind": "transition",
+          "name": "border-right-color",
+          "startTimeMs": 439.5999999977648,
+          "endTimeMs": 439.5999999977648
+        },
+        {
+          "kind": "transition",
+          "name": "border-top-color",
+          "startTimeMs": 439.5999999977648,
+          "endTimeMs": 439.69999999925494
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 439.69999999925494,
+          "endTimeMs": 439.80000000074506
+        },
+        {
+          "kind": "transition",
+          "name": "border-bottom-color",
+          "startTimeMs": 439.80000000074506,
+          "endTimeMs": 439.80000000074506
+        },
+        {
+          "kind": "transition",
+          "name": "border-left-color",
+          "startTimeMs": 439.80000000074506,
+          "endTimeMs": 439.8999999985099
+        },
+        {
+          "kind": "transition",
+          "name": "border-right-color",
+          "startTimeMs": 439.8999999985099,
+          "endTimeMs": 439.8999999985099
+        },
+        {
+          "kind": "transition",
+          "name": "border-top-color",
+          "startTimeMs": 439.8999999985099,
+          "endTimeMs": 439.8999999985099
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 439.8999999985099,
+          "endTimeMs": 439.8999999985099
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 461.69999999925494,
+          "endTimeMs": 461.69999999925494
+        },
+        {
+          "kind": "transition",
+          "name": "color",
+          "startTimeMs": 461.69999999925494,
+          "endTimeMs": 461.80000000074506
+        }
+      ],
+      "animationAttributableLayoutShifts": [],
+      "animationAttributableLongTasks": [],
+      "terminalState": {
+        "theme": "dark",
+        "narrativeExpanded": true,
+        "focusedText": "Demo mode",
+        "focusedHref": "#service-status"
+      }
+    }
+  ]
+}

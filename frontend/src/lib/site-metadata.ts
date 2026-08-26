@@ -1,9 +1,34 @@
 import type { Metadata } from "next";
 
+import type { SupportedLanguage } from "@/stores/language-store";
+
 import type { DeploymentReadiness } from "./deployment-readiness";
 
 export const DEFAULT_PUBLIC_APP_URL = "https://tryvit.app";
 const ROOT_TITLE = "TryVit — Food Intelligence";
+
+const WEB_APPLICATION_COPY: Readonly<
+  Record<
+    SupportedLanguage,
+    { readonly description: string; readonly featureList: readonly string[] }
+  >
+> = Object.freeze({
+  en: {
+    description:
+      "Search food products, scan barcodes, and inspect TryVit scoring evidence for foods sold in Poland.",
+    featureList: ["Food product search", "Barcode scanning", "Product scoring evidence"],
+  },
+  pl: {
+    description:
+      "Wyszukuj produkty spożywcze, skanuj kody kreskowe i sprawdzaj dane stojące za ocenami TryVit dla żywności sprzedawanej w Polsce.",
+    featureList: ["Wyszukiwanie produktów", "Skanowanie kodów kreskowych", "Dane stojące za oceną produktu"],
+  },
+  de: {
+    description:
+      "Lebensmittel suchen, Barcodes scannen und die Evidenz hinter TryVit-Bewertungen für in Polen verkaufte Lebensmittel prüfen.",
+    featureList: ["Lebensmittelsuche", "Barcode-Scan", "Evidenz zur Produktbewertung"],
+  },
+});
 
 const descriptionFor = (readiness: DeploymentReadiness): string =>
   readiness.dataBackend === "available"
@@ -103,7 +128,7 @@ export function buildRootMetadata(
       card: "summary_large_image",
       title: "TryVit",
       description,
-      images: ["/opengraph-image"],
+      images: ["/twitter-image"],
     },
     robots: {
       index: true,
@@ -118,17 +143,20 @@ export function buildRootMetadata(
 
 export function buildRootWebApplicationStructuredData(
   readiness: DeploymentReadiness,
+  language: SupportedLanguage = "en",
   env: NodeJS.ProcessEnv = process.env,
 ) {
   if (readiness.dataBackend !== "available") return null;
   const baseUrl = publicBaseUrl(env);
+  const copy = WEB_APPLICATION_COPY[language];
   return {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "@id": `${baseUrl}/#web-application`,
     name: "TryVit",
     url: baseUrl,
-    description: descriptionFor(readiness),
+    description: copy.description,
+    inLanguage: language,
     applicationCategory: "LifestyleApplication",
     operatingSystem: "Any",
     browserRequirements: "Requires a modern web browser",
@@ -138,33 +166,8 @@ export function buildRootWebApplicationStructuredData(
       price: "0",
       priceCurrency: "PLN",
     },
-    featureList: ["Food product search", "Barcode scanning", "Product scoring evidence"],
+    featureList: copy.featureList,
   } as const;
-}
-
-export function buildLandingMetadata(readiness: DeploymentReadiness): Metadata {
-  const description =
-    readiness.dataBackend === "available"
-      ? "Explore TryVit food scoring, ingredient transparency, and food-product tools for Poland and Germany."
-      : "Explore TryVit food scoring, ingredient transparency, and methodology. Live data features are currently unavailable.";
-  const title = "TryVit — Know What You Eat";
-
-  return {
-    title: { absolute: title },
-    description,
-    openGraph: {
-      title,
-      description,
-      images: ["/opengraph-image"],
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-      images: ["/opengraph-image"],
-    },
-  };
 }
 
 export function buildWebSiteStructuredData(

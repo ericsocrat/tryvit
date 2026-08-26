@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 2,
+  "kind": "phase5a3-landing-revision-cycle-2-verification",
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "localAndContainer": {
+    "focusedTruthMetadataSocial": {
+      "testsPassed": 73,
+      "testsFailed": 0
+    },
+    "fullUnit": {
+      "filesPassed": 415,
+      "filesSkipped": 1,
+      "testsPassed": 6746,
+      "testsSkipped": 19,
+      "testsFailed": 0
+    },
+    "designSystem": {
+      "filesPassed": 30,
+      "testsPassed": 256,
+      "testsFailed": 0,
+      "tokenArtifactsCurrent": true
+    },
+    "landingReview": {
+      "testsPassed": 29,
+      "testsFailed": 0,
+      "stills": 13,
+      "videos": 2,
+      "socialImages": 2
+    },
+    "crossBrowserLinux": {
+      "testsPassed": 12,
+      "testsFailed": 0,
+      "engines": [
+        "firefox",
+        "webkit"
+      ],
+      "javaScriptStates": [
+        "enabled",
+        "disabled"
+      ],
+      "motionStates": [
+        "normal",
+        "reduced"
+      ],
+      "tabletStickyAnchors": "pass"
+    },
+    "typeCheck": "pass",
+    "fullLint": "pass",
+    "productionBuild": "pass",
+    "axeViolations": 0,
+    "axeExclusions": 0,
+    "reflow320Through1440": "pass",
+    "effective200Percent": "pass",
+    "textSpacing": "pass-with-polish-orphan-punctuation-advisory",
+    "forcedColors": "pass",
+    "noJavaScriptLightDark": "pass",
+    "normalReducedMotion": "pass"
+  },
+  "remoteSourceHead": {
+    "head": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+    "prGateRunId": 32882770502,
+    "prGate": "pass",
+    "routeJsRunId": 32882770645,
+    "routeJs": "pass",
+    "codeQlRunId": 32882770565,
+    "codeQl": "pass",
+    "dependencyAuditRunId": 32882770617,
+    "dependencyAudit": "pass",
+    "licenseRunId": 32882770515,
+    "license": "pass",
+    "hygieneRunId": 32882770548,
+    "hygiene": "pass",
+    "rendererAttestationRunId": 32882768238,
+    "rendererAttestation": "pass",
+    "immutableBaseline": "expected-failure"
+  },
+  "acceptance": {
+    "truthMetadataSocial": true,
+    "accessibilityResponsiveMotion": true,
+    "routeJs": true,
+    "linuxDeterminism": true,
+    "strictPerformance": false,
+    "linuxVisualNoOverlap": false
+  },
+  "fixtureTeardown": "pass",
+  "noBackupRuntimeCleanup": "pass",
+  "passed": false,
+  "disposition": "REVISE"
+}

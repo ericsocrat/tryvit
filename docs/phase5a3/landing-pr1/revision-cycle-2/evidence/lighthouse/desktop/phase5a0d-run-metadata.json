@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "phase5a0d-lighthouse-run/v1",
+  "sourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "mode": "public",
+  "profile": "desktop",
+  "runCount": 5,
+  "routes": [
+    {
+      "id": "landing",
+      "seoApplicable": true,
+      "url": "http://127.0.0.1:3000/"
+    },
+    {
+      "id": "login",
+      "seoApplicable": false,
+      "url": "http://127.0.0.1:3000/auth/login"
+    },
+    {
+      "id": "contact",
+      "seoApplicable": true,
+      "url": "http://127.0.0.1:3000/contact"
+    }
+  ],
+  "buildId": "RkiZx6Y57nyDf42ou3nTL",
+  "buildFingerprint": "e3084a81196f6766173f96ad292c84478081ede92194c23ed4959634ed27a0a9",
+  "sourceConfigSha256": "e2c2279410348292cb9744ad8cd12b75e2459a00a7eaba84f9ca36bb5db0ca9f",
+  "runtime": {
+    "node": "v24.18.1",
+    "lighthouse": "12.6.1",
+    "chromium": "151.0.7922.34"
+  },
+  "effectiveSettings": {
+    "formFactor": "desktop",
+    "onlyCategories": [
+      "performance",
+      "accessibility",
+      "best-practices",
+      "seo"
+    ],
+    "screenEmulation": {
+      "mobile": false,
+      "width": 1350,
+      "height": 940,
+      "deviceScaleFactor": 1,
+      "disabled": false
+    },
+    "skipAudits": [
+      "uses-http2"
+    ],
+    "preset": "desktop",
+    "throttlingMethod": "simulate",
+    "throttling": {
+      "rttMs": 40,
+      "throughputKbps": 10240,
+      "requestLatencyMs": 0,
+      "downloadThroughputKbps": 0,
+      "uploadThroughputKbps": 0,
+      "cpuSlowdownMultiplier": 1
+    },
+    "emulatedUserAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+    "locale": "en-US"
+  },
+  "metadataChecksum": "0c42cd63b2adcd3acee7319b351b23c5afd278583e325cec3605aca579f47fda"
+}
