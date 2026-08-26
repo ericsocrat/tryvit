@@ -69,7 +69,10 @@ function classifyScope(changedPaths, labels = []) {
 
 function manifest() {
   return JSON.parse(
-    readFileSync(new URL("frontend/e2e/__screenshots__/phase5a0d-manifest.json", repositoryRoot), "utf8"),
+    readFileSync(
+      new URL("frontend/e2e/__screenshots__/phase5a0d-manifest.json", repositoryRoot),
+      "utf8",
+    ),
   );
 }
 
@@ -188,10 +191,11 @@ function buildSourceEquivalentFixture(mutate = {}) {
     copyFileSync(source, target);
   }
 
-  const ledger = ["phase5a0d-manifest.json", ...pngs.map(({ file }) => file)]
-    .sort()
-    .map((file) => `${sha256(readFileSync(path.join(candidateRoot, file)))}  ./${file}`)
-    .join("\n") + "\n";
+  const ledger =
+    ["phase5a0d-manifest.json", ...pngs.map(({ file }) => file)]
+      .sort()
+      .map((file) => `${sha256(readFileSync(path.join(candidateRoot, file)))}  ./${file}`)
+      .join("\n") + "\n";
   writeFileSync(path.join(determinismRoot, "first-manifest.json"), candidateManifestBytes);
   writeFileSync(path.join(determinismRoot, "second-manifest.json"), candidateManifestBytes);
   writeFileSync(path.join(determinismRoot, "first-files.sha256"), ledger);
@@ -356,7 +360,8 @@ test("accepts only the exact metadata-only refresh paths", () => {
     /renderer-attestation-scope-invalid/u,
   );
   assert.throws(
-    () => assertChangedPaths([MANIFEST_PATH, "frontend/e2e/__screenshots__/p5a0d-landing-mobile.png"]),
+    () =>
+      assertChangedPaths([MANIFEST_PATH, "frontend/e2e/__screenshots__/p5a0d-landing-mobile.png"]),
     /renderer-attestation-scope-invalid/u,
   );
 });
@@ -366,13 +371,27 @@ test("permits only source and observed runner/runtime metadata", () => {
 
   for (const mutate of [
     (candidate) => candidate.cases.reverse(),
-    (candidate) => { candidate.cases[0].width += 1; },
-    (candidate) => { candidate.cases[0].sha256 = "3".repeat(64); },
-    (candidate) => { candidate.cases[0].bytes += 1; },
-    (candidate) => { candidate.settings.locale = "pl-PL"; },
-    (candidate) => { candidate.settings.maxDiffPixelRatio = 1; },
-    (candidate) => { candidate.fixtureContractChecksum = "4".repeat(64); },
-    (candidate) => { candidate.kind = "replacement-baseline"; },
+    (candidate) => {
+      candidate.cases[0].width += 1;
+    },
+    (candidate) => {
+      candidate.cases[0].sha256 = "3".repeat(64);
+    },
+    (candidate) => {
+      candidate.cases[0].bytes += 1;
+    },
+    (candidate) => {
+      candidate.settings.locale = "pl-PL";
+    },
+    (candidate) => {
+      candidate.settings.maxDiffPixelRatio = 1;
+    },
+    (candidate) => {
+      candidate.fixtureContractChecksum = "4".repeat(64);
+    },
+    (candidate) => {
+      candidate.kind = "replacement-baseline";
+    },
   ]) {
     const candidate = reviewedTransition();
     mutate(candidate);
@@ -425,10 +444,7 @@ test("selects only a fresh owner authorization bound to the exact metadata head"
     headRef: RENDERER_ATTESTATION_BRANCH,
     labels: [RENDERER_AUTHORIZATION_LABEL],
   };
-  assert.equal(
-    selectRendererSourceEquivalenceApproval(input).approval.attestationPrHead,
-    headSha,
-  );
+  assert.equal(selectRendererSourceEquivalenceApproval(input).approval.attestationPrHead, headSha);
   assert.throws(
     () => selectRendererSourceEquivalenceApproval({ ...input, labels: [] }),
     /renderer-approval-label-missing/u,
@@ -461,7 +477,11 @@ test("accepts one exact source-equivalent renderer attestation", () => {
 
 test("rejects wrong source identity and non-equivalent landing runtime", () => {
   withFixture(
-    { evidence: (evidence) => { evidence.candidateSource.tree = "f".repeat(40); } },
+    {
+      evidence: (evidence) => {
+        evidence.candidateSource.tree = "f".repeat(40);
+      },
+    },
     ({ options }) => {
       assert.throws(
         () => validateRendererAttestation(options),
@@ -470,10 +490,7 @@ test("rejects wrong source identity and non-equivalent landing runtime", () => {
     },
   );
   withFixture({ synchronizedRuntime: true }, ({ options }) => {
-    assert.throws(
-      () => validateRendererAttestation(options),
-      /renderer-landing-source-drift/u,
-    );
+    assert.throws(() => validateRendererAttestation(options), /renderer-landing-source-drift/u);
   });
 });
 
@@ -485,13 +502,18 @@ test("rejects candidate pixel drift and nondeterministic evidence", () => {
       },
     },
     ({ options }) => {
+      const started = performance.now();
       assert.throws(() => validateRendererAttestation(options), /candidate-png-changed/u);
+      assert.equal(performance.now() - started < 5_000, true, "png-drift-check-unbounded");
     },
   );
   withFixture(
     {
       candidate: ({ determinismRoot }) => {
-        writeFileSync(path.join(determinismRoot, "second-files.sha256"), `${"0".repeat(64)}  ./wrong\n`);
+        writeFileSync(
+          path.join(determinismRoot, "second-files.sha256"),
+          `${"0".repeat(64)}  ./wrong\n`,
+        );
       },
     },
     ({ options }) => {
@@ -502,9 +524,15 @@ test("rejects candidate pixel drift and nondeterministic evidence", () => {
 
 test("rejects expired, wrong-digest, and wrong-size artifacts", () => {
   for (const mutate of [
-    (artifacts) => { artifacts.artifacts[0].expired = true; },
-    (artifacts) => { artifacts.artifacts[0].digest = `sha256:${"d".repeat(64)}`; },
-    (artifacts) => { artifacts.artifacts[1].size_in_bytes += 1; },
+    (artifacts) => {
+      artifacts.artifacts[0].expired = true;
+    },
+    (artifacts) => {
+      artifacts.artifacts[0].digest = `sha256:${"d".repeat(64)}`;
+    },
+    (artifacts) => {
+      artifacts.artifacts[1].size_in_bytes += 1;
+    },
   ]) {
     withFixture({ artifacts: mutate }, ({ options }) => {
       assert.throws(
@@ -530,7 +558,11 @@ test("rejects runner, settings, product, and committed PNG drift", () => {
     },
   );
   withFixture(
-    { nextManifest: (next) => { next.settings.locale = "pl-PL"; } },
+    {
+      nextManifest: (next) => {
+        next.settings.locale = "pl-PL";
+      },
+    },
     ({ options }) => {
       assert.throws(
         () => validateRendererAttestation(options),
@@ -554,7 +586,10 @@ test("rejects runner, settings, product, and committed PNG drift", () => {
 
 test("rejects extra files and symlink input", () => {
   withFixture(
-    { candidate: ({ determinismRoot }) => writeFileSync(path.join(determinismRoot, "extra.txt"), "extra") },
+    {
+      candidate: ({ determinismRoot }) =>
+        writeFileSync(path.join(determinismRoot, "extra.txt"), "extra"),
+    },
     ({ options }) => {
       assert.throws(() => validateRendererAttestation(options), /determinism-file-set-invalid/u);
     },
@@ -578,14 +613,11 @@ test("delegates only an authorized baseline-only redesign", () => {
     MANIFEST_PATH,
     "frontend/e2e/__screenshots__/smoke-visual.spec.ts/p5a0d-landing-390x844-light-reduced.png",
   ];
-  assert.deepEqual(
-    classifyScope(baselinePaths, ["phase5a0d-intentional-redesign-approved"]),
-    {
-      required: "false",
-      delegated: "true",
-      reason: "intentional-redesign-validator",
-    },
-  );
+  assert.deepEqual(classifyScope(baselinePaths, ["phase5a0d-intentional-redesign-approved"]), {
+    required: "false",
+    delegated: "true",
+    reason: "intentional-redesign-validator",
+  });
   assert.deepEqual(classifyScope(baselinePaths), {
     required: "true",
     delegated: "false",
@@ -664,15 +696,15 @@ test("policy workflows keep target validation base-owned and read-only", () => {
   assert.match(visual, /d9257be564c5097ef473b153202fc8e92c5a70e1/u);
   assert.match(visual, /codex\/phase-5a0d-attestation-flag/u);
   assert.match(visual, /bb70102aa16b4aedf9a968c6c535dc99a3517b1d/u);
+  assert.match(visual, /codex\/phase5a0d-host-runner-observation/u);
+  assert.match(visual, /9c1bab1b4eac28d2cfe24a7cea1f0759fac1eafd/u);
+  assert.match(visual, /frontend\/tooling\/phase5a0d-visual-baselines\.ts/u);
   assert.match(visual, /\.github\/scripts\/phase5a0d-renderer-attestation\.test\.mjs/u);
   assert.match(
     normalizedVisual,
     /printf '%s\\n' \\\n\s+'docs\/evidence\/phase5a0d-renderer-runtime-attestation\.json' \\\n\s+'frontend\/e2e\/__screenshots__\/phase5a0d-manifest\.json' \\\n\s+> "\$expected"/u,
   );
-  assert.doesNotMatch(
-    normalizedVisual,
-    /phase5a0d-attestation-expected\.txt[\s\S]*?<<['"]?EOF/u,
-  );
+  assert.doesNotMatch(normalizedVisual, /phase5a0d-attestation-expected\.txt[\s\S]*?<<['"]?EOF/u);
   assert.match(visual, /Committed Phase 5A\.0d baselines are immutable relative/u);
   assert.match(
     normalizedVisual,
@@ -682,6 +714,9 @@ test("policy workflows keep target validation base-owned and read-only", () => {
     normalizedVisual,
     /outputs\.renderer_attestation \}\}" = "true" \]; then[\s\S]*?git show "\$\{\{ github\.event\.pull_request\.head\.sha \}\}:frontend\/e2e\/__screenshots__\/phase5a0d-manifest\.json"[\s\S]*?rm -rf -- frontend\/e2e frontend\/tooling frontend\/playwright\.config\.ts[\s\S]*?tar -xf "\$RUNNER_TEMP\/phase5a0d-reviewed-visual-verifier\.tar"[\s\S]*?outputs\.renderer_attestation \}\}" = "true" \]; then[\s\S]*?cp -- "\$RUNNER_TEMP\/phase5a0d-attested-head-manifest\.json"[\s\S]*?frontend\/e2e\/__screenshots__\/phase5a0d-manifest\.json/u,
   );
-  assert.equal(normalizedVisual.match(/echo "renderer_attestation=\$renderer_attestation"/gu)?.length, 1);
+  assert.equal(
+    normalizedVisual.match(/echo "renderer_attestation=\$renderer_attestation"/gu)?.length,
+    1,
+  );
   assert.doesNotMatch(visual, /--update-snapshots|git commit|git push/u);
 });
