@@ -15,6 +15,11 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
+- Define the prospective Phase 5A.3 route-migration lab-release methodology: exact
+  five-run mobile/desktop cohorts, mobile LCP median/p75 gates, mandatory visible
+  outlier classification, unchanged Route-JS regression policy, and explicit
+  separation from post-launch field Core Web Vitals; evaluate the retained Cycle 3
+  cohort without rerunning it.
 - Document the bounded Phase 5A.3 landing-governance prerequisite, stable route identity,
   readiness-aware metadata/structured-data truth table, and the requirement that draft
   landing PR `#1301` remain untouched until the base-owned judge is merged and certified.

@@ -542,7 +542,8 @@ Realistic AAA enhancements: 7:1 body-text contrast for long editorial content, 4
 | Landing Lighthouse desktop | ≥ 0.95 performance |
 | Lighthouse accessibility / best practices / SEO | ≥ 0.95 each |
 | Axe | zero critical or serious violations |
-| LCP | ≤ 2.5s |
+| Route-migration mobile LCP lab gate | five-run median ≤2.4s and p75 ≤2.5s |
+| LCP field target | ≤2.5s at p75 of representative production traffic |
 | INP field target | ≤ 200ms at p75 |
 | TBT lab proxy | ≤ 200ms |
 | CLS | ≤ 0.05 landing; never > 0.1 |
@@ -558,7 +559,14 @@ Realistic AAA enhancements: 7:1 body-text contrast for long editorial content, 4
 | Visual diff | ≤ 0.3% critical viewport; ≤ 0.5% full page |
 | Animation | 60fps target; no animation task >50ms; no layout shift |
 
-The official [Core Web Vitals guidance](https://web.dev/articles/vitals) defines “good” LCP at 2.5 seconds, INP at 200ms, and CLS at 0.1 when evaluated at the 75th percentile. TryVit’s stricter landing CLS target preserves room for later variance. TBT is a lab proxy, not a claim about field INP.
+The official [Core Web Vitals guidance](https://web.dev/articles/vitals) defines “good”
+LCP at 2.5 seconds, INP at 200ms, and CLS at 0.1 when evaluated at the 75th
+percentile. TryVit’s stricter landing CLS target preserves room for later variance.
+The Phase 5A.3 route-migration distribution and outlier-classification contract is
+defined in
+[`PHASE5A3_ROUTE_MIGRATION_LAB_PERFORMANCE.md`](PHASE5A3_ROUTE_MIGRATION_LAB_PERFORMANCE.md).
+That deterministic lab-release result does not claim field Core Web Vitals passage;
+TBT likewise remains a lab proxy rather than a field INP claim.
 
 ### Client-component ratchet
 
