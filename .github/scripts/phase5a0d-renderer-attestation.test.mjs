@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import test from "node:test";
 import {
   ATTESTATION_PATH,
@@ -9,6 +12,46 @@ import {
 } from "./phase5a0d-renderer-attestation.mjs";
 
 const repositoryRoot = new URL("../../", import.meta.url);
+const targetWorkflow = readFileSync(
+  new URL(".github/workflows/phase5a0d-renderer-attestation.yml", repositoryRoot),
+  "utf8",
+);
+
+function scopeProgram() {
+  const match = targetWorkflow.match(
+    /# phase5a0d-renderer-attestation-scope:start\s+CHANGED_PATHS="\$changed" node <<'NODE'\r?\n([\s\S]*?)\r?\n\s+NODE\s+# phase5a0d-renderer-attestation-scope:end/u,
+  );
+  assert.ok(match, "renderer-attestation-scope-program-missing");
+  const lines = match[1].split(/\r?\n/u);
+  const indentation = Math.min(
+    ...lines.filter((line) => line.trim()).map((line) => line.match(/^\s*/u)[0].length),
+  );
+  return lines.map((line) => line.slice(indentation)).join("\n");
+}
+
+function classifyScope(changedPaths, labels = []) {
+  const directory = mkdtempSync(path.join(tmpdir(), "phase5a0d-renderer-scope-"));
+  const output = path.join(directory, "github-output.txt");
+  try {
+    execFileSync(process.execPath, ["-e", scopeProgram()], {
+      env: {
+        ...process.env,
+        CHANGED_PATHS: changedPaths.join("\n"),
+        LABELS_JSON: JSON.stringify(labels),
+        GITHUB_OUTPUT: output,
+      },
+      stdio: "pipe",
+    });
+    return Object.fromEntries(
+      readFileSync(output, "utf8")
+        .trim()
+        .split("\n")
+        .map((line) => line.split("=")),
+    );
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+}
 
 function manifest() {
   return JSON.parse(
@@ -69,11 +112,58 @@ test("rejects a refresh with no observed runner/runtime drift", () => {
   );
 });
 
-test("policy workflows keep target validation base-owned and read-only", () => {
-  const target = readFileSync(
-    new URL(".github/workflows/phase5a0d-renderer-attestation.yml", repositoryRoot),
-    "utf8",
+test("delegates only an authorized baseline-only redesign", () => {
+  const baselinePaths = [
+    MANIFEST_PATH,
+    "frontend/e2e/__screenshots__/smoke-visual.spec.ts/p5a0d-landing-390x844-light-reduced.png",
+  ];
+  assert.deepEqual(
+    classifyScope(baselinePaths, ["phase5a0d-intentional-redesign-approved"]),
+    {
+      required: "false",
+      delegated: "true",
+      reason: "intentional-redesign-validator",
+    },
   );
+  assert.deepEqual(classifyScope(baselinePaths), {
+    required: "true",
+    delegated: "false",
+    reason: "renderer-attestation-required",
+  });
+});
+
+test("fails closed when intentional authorization is removed or scope is mixed", () => {
+  const label = ["phase5a0d-intentional-redesign-approved"];
+  const baseline =
+    "frontend/e2e/__screenshots__/smoke-visual.spec.ts/p5a0d-landing-390x844-light-reduced.png";
+  for (const changedPaths of [
+    [baseline, ATTESTATION_PATH],
+    [baseline, "frontend/src/app/page.tsx"],
+    [baseline, ".github/workflows/phase5a0d-renderer-attestation.yml"],
+  ]) {
+    assert.deepEqual(classifyScope(changedPaths, label), {
+      required: "true",
+      delegated: "false",
+      reason: "renderer-attestation-required",
+    });
+  }
+});
+
+test("keeps renderer evidence strict and ordinary product changes unaffected", () => {
+  assert.deepEqual(classifyScope([ATTESTATION_PATH]), {
+    required: "true",
+    delegated: "false",
+    reason: "renderer-attestation-required",
+  });
+  assert.deepEqual(classifyScope(["frontend/src/app/page.tsx"]), {
+    required: "false",
+    delegated: "false",
+    reason: "not-applicable",
+  });
+});
+
+test("policy workflows keep target validation base-owned and read-only", () => {
+  const target = targetWorkflow;
   const visual = readFileSync(
     new URL(".github/workflows/phase5a0d-visual-baselines.yml", repositoryRoot),
     "utf8",
@@ -89,6 +179,9 @@ test("policy workflows keep target validation base-owned and read-only", () => {
   assert.match(target, /git show "\$HEAD_SHA:/u);
   assert.doesNotMatch(target, /ref: \$\{\{ github\.event\.pull_request\.head\.sha \}\}/u);
   assert.match(target, /phase5a0d-renderer-attestation-approved/u);
+  assert.match(target, /phase5a0d-intentional-redesign-approved/u);
+  assert.match(target, /intentional-redesign-validator/u);
+  assert.match(target, /baselineOnly/u);
   assert.match(target, /node "\$RUNNER_TEMP\/phase5a0d-renderer-attestation\.mjs"/u);
   assert.match(
     visual,

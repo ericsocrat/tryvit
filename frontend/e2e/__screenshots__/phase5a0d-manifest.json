@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a0d-visual-baselines",
-  "sourceCommit": "bb4cd53fa37c9e5f6a59a0dbbd9752cbd2e3a03a",
+  "sourceCommit": "020a44da7ae3fc8c7878042da4fecaf7e70cf423",
   "rendererClass": "ci-linux-authoritative",
   "runner": {
     "imageOS": "ubuntu24",
@@ -38,8 +38,8 @@
       "height": 844,
       "fixtureState": "public-static",
       "relativeFile": "smoke-visual.spec.ts/p5a0d-landing-390x844-light-reduced.png",
-      "sha256": "e5704802156929b1ae99ed1ea8c9570091c9f3afe685ba1c5de544c20cd73c3e",
-      "bytes": 85157
+      "sha256": "110b1fc6f950911720cd3559fb5cf29dc1bbe561793caf699751d2c913d597e2",
+      "bytes": 68692
     },
     {
       "id": "landing-768x1024",
@@ -50,8 +50,8 @@
       "height": 1024,
       "fixtureState": "public-static",
       "relativeFile": "smoke-visual.spec.ts/p5a0d-landing-768x1024-light-reduced.png",
-      "sha256": "abd72cef9693d7d87a44a64d7967b4c363739cef59a541c71f76828bbbfff790",
-      "bytes": 139834
+      "sha256": "424f4ba12c297cd837195a5fd2be00148b8486e5edec950d3c500240b77bebc9",
+      "bytes": 105498
     },
     {
       "id": "landing-1440x900",
@@ -62,8 +62,8 @@
       "height": 900,
       "fixtureState": "public-static",
       "relativeFile": "smoke-visual.spec.ts/p5a0d-landing-1440x900-light-reduced.png",
-      "sha256": "0688d51c24ead7a8642569a68dd1d52189b8f460b7215ca340ed142224609efc",
-      "bytes": 178825
+      "sha256": "755eed6c523116bab8764c00b8486783c1361c0283929af589d5167b05e9d6de",
+      "bytes": 103619
     },
     {
       "id": "login-390x844",
@@ -114,5 +114,5 @@
       "bytes": 61059
     }
   ],
-  "manifestChecksum": "3a12a3cb048e1e82fd2cc3493a3c48860a8f2f5268d792510eaa8b8c073423aa"
+  "manifestChecksum": "8d623d6665257758559e1cb9f36b86d2ce9bc20ad98aee473908717398359aae"
 }
