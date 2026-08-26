@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "3f1c11f6d46fc1fd58a67c9c7be8296e8fdb345a",
+    "baseSha": "61c52e73eed0393e24b0597d63c47cb7b5cdbe7e",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "4fc7af214541616f8e874ab68cf162c538e7f354c81a38209f66a9a4e3ab507f"
+    "sourceFingerprint": "3ba411046a2182598ceeddc1fea04e4e0b32183357122642010c6f6985ca5870"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -1105,6 +1105,7 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/lib/query-keys.ts",
+        "frontend/src/lib/site-metadata.ts",
         "frontend/src/lib/supabase/server.ts"
       ],
       "directConsumers": [],
@@ -5934,7 +5935,9 @@
       "routePath": null,
       "hasUseClientDirective": false,
       "runtimeBoundary": "server-only",
-      "directModuleImports": [],
+      "directModuleImports": [
+        "frontend/src/lib/site-metadata.ts"
+      ],
       "directConsumers": [],
       "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
@@ -5953,7 +5956,9 @@
       "routePath": null,
       "hasUseClientDirective": false,
       "runtimeBoundary": "server-only",
-      "directModuleImports": [],
+      "directModuleImports": [
+        "frontend/src/lib/site-metadata.ts"
+      ],
       "directConsumers": [],
       "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
@@ -21161,7 +21166,7 @@
     ],
     "inspectedModuleCount": 543,
     "violations": [],
-    "sourceFingerprint": "752164d79a4363b067d32a61192963a7e55fd71c54c70cd894ec07823a6e068f"
+    "sourceFingerprint": "f68cf87b474e353f20c718021270418cf309c812d9f1a21ef835aeba4a784a04"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
