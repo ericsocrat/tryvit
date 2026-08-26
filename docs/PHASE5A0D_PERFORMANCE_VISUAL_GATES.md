@@ -176,6 +176,18 @@ contract remain immutable. Path traversal, symlink/reparse input, extra files,
 head-authored executable code, and policy changes in the baseline PR fail
 closed.
 
+An approval may separately identify an earlier reviewed visual-source commit
+and a later synchronized implementation only when the visual source is an
+ancestor of that implementation, every normal landing-render source blob is
+unchanged, and complete deterministic candidate artifacts from both commits
+contain seven byte-identical PNGs. The earlier artifact remains the accepted
+visual and renderer provenance; the later artifact is equivalence evidence
+only and cannot replace runner metadata. Both workflow runs, both candidate and
+determinism artifact pairs, both source trees, and the exact authorized paths
+must be present in the fresh owner approval. This does not weaken the ordinary
+exact-head path and fails closed on any source, artifact, pixel, manifest,
+settings, or ancestry mismatch.
+
 Because a baseline-only PR still contains the pre-redesign product source, the
 ordinary render comparator is not a truthful acceptance mechanism for that one
 PR: old source is expected to differ from newly approved bytes. The trusted

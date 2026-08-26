@@ -18,11 +18,15 @@ import test from "node:test";
 
 import {
   APPROVAL_MARKER,
+  EQUIVALENCE_APPROVAL_MARKER,
   AUTHORIZATION_LABEL,
   MANIFEST_PATH,
   assertChangedPathRecords,
+  assertEquivalentCandidateManifests,
   assertManifestTransition,
+  assertNormalLandingSourceEquivalent,
   assertRunAndArtifacts,
+  assertVisualSourceAncestor,
   selectExternalApproval,
   validateIntentionalRedesign,
 } from "./phase5a0d-intentional-redesign.mjs";
@@ -30,6 +34,8 @@ import {
 const OWNER = "ericsocrat";
 const HEAD = "b".repeat(40);
 const TREE = "c".repeat(40);
+const VISUAL_SOURCE = "a".repeat(40);
+const VISUAL_TREE = "d".repeat(40);
 const RUN_CREATED = "2026-08-26T10:00:00Z";
 const RUN_COMPLETED = "2026-08-26T10:30:00Z";
 const COMMENT_CREATED = "2026-08-26T10:31:00Z";
@@ -83,14 +89,45 @@ function approval(head = HEAD) {
   };
 }
 
+function equivalenceApproval(head = HEAD) {
+  const exact = approval(head);
+  const referenceCandidate = structuredClone(exact.candidate);
+  referenceCandidate.workflowRunId = 120;
+  referenceCandidate.artifactId = 450;
+  referenceCandidate.determinismArtifactId = 451;
+  referenceCandidate.sourceCommit = VISUAL_SOURCE;
+  referenceCandidate.artifactName =
+    `phase5a0d-visual-baseline-candidates-${VISUAL_SOURCE}`;
+  referenceCandidate.determinismArtifactName =
+    `phase5a0d-visual-determinism-evidence-${VISUAL_SOURCE}`;
+  return {
+    schemaVersion: 2,
+    approvalType: "phase5a0d-approved-source-equivalence",
+    baselinePrHead: head,
+    approvedVisualSource: {
+      headSha: VISUAL_SOURCE,
+      tree: VISUAL_TREE,
+      candidate: referenceCandidate,
+    },
+    synchronizedImplementation: {
+      prNumber: 1301,
+      headSha: HEAD,
+      tree: TREE,
+      equivalenceCandidate: structuredClone(exact.candidate),
+    },
+    authorizedPaths: [...LANDING_PATHS],
+  };
+}
+
 function approvalComment(value = approval()) {
+  const marker = value.schemaVersion === 2 ? EQUIVALENCE_APPROVAL_MARKER : APPROVAL_MARKER;
   return {
     id: 100,
     user: { login: OWNER },
     author_association: "OWNER",
     created_at: COMMENT_CREATED,
     updated_at: COMMENT_CREATED,
-    body: `<!-- ${APPROVAL_MARKER}\n${JSON.stringify(value)}\n-->`,
+    body: `<!-- ${marker}\n${JSON.stringify(value)}\n-->`,
   };
 }
 
@@ -123,6 +160,14 @@ test("accepts a fresh owner authorization bound to the exact head", () => {
   assert.equal(result.external.labelEventId, 200);
 });
 
+test("accepts a v2 visual-source equivalence authorization without weakening v1", () => {
+  const result = select({ comments: [approvalComment(equivalenceApproval())] });
+  assert.equal(result.approval._mode, "source-equivalence");
+  assert.equal(result.approval.approvedVisualSource.headSha, VISUAL_SOURCE);
+  assert.equal(result.approval.synchronizedImplementation.headSha, HEAD);
+  assert.equal(select().approval._mode, "exact-head");
+});
+
 test("rejects missing, stale, unauthorized, and wrong-branch approval", () => {
   assert.throws(() => select({ labels: [] }), /approval-label-missing/u);
   assert.throws(
@@ -152,7 +197,7 @@ test("rejects unsafe or internally inconsistent approval data", () => {
   wrongSource.candidate.sourceCommit = "f".repeat(40);
   assert.throws(
     () => select({ comments: [approvalComment(wrongSource)] }),
-    /approval-source-implementation-mismatch/u,
+    /approval-candidate-source-mismatch/u,
   );
 
   const traversal = approval();
@@ -277,6 +322,81 @@ test("permits only approved case hashes, sizes, source, and checksum to change",
   }
 });
 
+test("permits only source and observed runner metadata between equivalent candidates", () => {
+  const { next: reference } = approvedManifestTransition();
+  reference.sourceCommit = VISUAL_SOURCE;
+  let { manifestChecksum: _referenceChecksum, ...referencePayload } = reference;
+  reference.manifestChecksum = sha256(stableJson(referencePayload));
+  const equivalent = structuredClone(reference);
+  equivalent.sourceCommit = HEAD;
+  equivalent.runner.imageVersion = "20260823.283.1";
+  equivalent.versions.node = "v22.21.1";
+  let { manifestChecksum: _equivalenceChecksum, ...equivalencePayload } = equivalent;
+  equivalent.manifestChecksum = sha256(stableJson(equivalencePayload));
+  assert.doesNotThrow(() => assertEquivalentCandidateManifests(reference, equivalent));
+
+  const drifted = structuredClone(equivalent);
+  drifted.settings.locale = "pl-PL";
+  ({ manifestChecksum: _equivalenceChecksum, ...equivalencePayload } = drifted);
+  drifted.manifestChecksum = sha256(stableJson(equivalencePayload));
+  assert.throws(
+    () => assertEquivalentCandidateManifests(reference, drifted),
+    /equivalence-candidate-manifest-drift/u,
+  );
+});
+
+test("requires an ancestor visual source and byte-identical normal landing sources", () => {
+  const root = mkdtempSync(path.join(tmpdir(), "tryvit-source-equivalence-"));
+  try {
+    git(root, ["init"]);
+    git(root, ["config", "user.email", "test@example.com"]);
+    git(root, ["config", "user.name", "Policy Test"]);
+    const runtimeFiles = {
+      "frontend/src/app/page.tsx": "page",
+      "frontend/src/app/HomePageContent.tsx": "home",
+      "frontend/src/proxy.ts": "proxy",
+      "frontend/src/app/_landing-v2/LandingPublicShell.tsx": "shell",
+      "frontend/src/app/_landing-v2/landing.module.css": "style",
+      "frontend/src/app/_landing-v2/LandingSocialCard.tsx": "excluded social card",
+      "frontend/src/app/_landing-v2/LandingPublicShell.test.tsx": "excluded test",
+    };
+    for (const [file, contents] of Object.entries(runtimeFiles)) {
+      const target = path.join(root, ...file.split("/"));
+      mkdirSync(path.dirname(target), { recursive: true });
+      writeFileSync(target, contents);
+    }
+    git(root, ["add", "."]);
+    git(root, ["commit", "-m", "visual source"]);
+    const visual = git(root, ["rev-parse", "HEAD"]);
+    writeFileSync(path.join(root, "metadata.txt"), "nonvisual sync");
+    git(root, ["add", "metadata.txt"]);
+    git(root, ["commit", "-m", "synchronized metadata"]);
+    const synchronized = git(root, ["rev-parse", "HEAD"]);
+    assert.doesNotThrow(() => assertVisualSourceAncestor(root, visual, synchronized));
+    assert.doesNotThrow(() =>
+      assertNormalLandingSourceEquivalent(root, visual, synchronized),
+    );
+
+    writeFileSync(
+      path.join(root, "frontend", "src", "app", "_landing-v2", "LandingPublicShell.tsx"),
+      "changed shell",
+    );
+    git(root, ["add", "."]);
+    git(root, ["commit", "-m", "render drift"]);
+    const drifted = git(root, ["rev-parse", "HEAD"]);
+    assert.throws(
+      () => assertNormalLandingSourceEquivalent(root, visual, drifted),
+      /approved-landing-render-source-drift/u,
+    );
+    assert.throws(
+      () => assertVisualSourceAncestor(root, drifted, visual),
+      /approved-visual-source-not-ancestor/u,
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: false });
+  }
+});
+
 test("binds the successful workflow run and both exact artifacts", () => {
   const record = approval();
   const run = {
@@ -343,6 +463,13 @@ test("keeps intentional-redesign acceptance base-owned, read-only, and externall
   assert.match(target, /phase5a0d-intentional-redesign\.mjs extract-approval/u);
   assert.match(target, /phase5a0d-intentional-redesign\.mjs validate/u);
   assert.match(target, /phase5a0d-intentional-redesign\.test\.mjs/u);
+  assert.match(policy, /phase5a0d-intentional-redesign-approval:v2/u);
+  assert.match(policy, /phase5a0d-approved-source-equivalence/u);
+  assert.match(target, /steps\.approval\.outputs\.approval_mode == 'source-equivalence'/u);
+  assert.match(target, /phase5a0d-redesign-equivalence-candidate\.zip/u);
+  assert.match(target, /phase5a0d-redesign-equivalence-determinism\.zip/u);
+  assert.match(target, /--equivalence-candidate-root/u);
+  assert.match(target, /--equivalence-determinism-root/u);
   assert.match(target, /raise RuntimeError\(f"\{name\}-path-invalid"\)/u);
   assert.match(target, /raise RuntimeError\(f"\{name\}-archive-invalid"\)/u);
   assert.doesNotMatch(target, /git checkout .*HEAD_SHA|git switch|git commit|git push/u);
@@ -379,6 +506,19 @@ function integrationFixture() {
 
   const baseManifest = manifest();
   const baseBytes = new Map();
+  const runtimeFiles = {
+    "frontend/src/app/page.tsx": "page",
+    "frontend/src/app/HomePageContent.tsx": "home",
+    "frontend/src/proxy.ts": "proxy",
+    "frontend/src/app/_landing-v2/LandingPublicShell.tsx": "shell",
+    "frontend/src/app/_landing-v2/landing.module.css": "style",
+    "frontend/src/app/_landing-v2/LandingSocialCard.tsx": "excluded social",
+  };
+  for (const [file, contents] of Object.entries(runtimeFiles)) {
+    const target = path.join(root, ...file.split("/"));
+    mkdirSync(path.dirname(target), { recursive: true });
+    writeFileSync(target, contents);
+  }
   for (const entry of baseManifest.cases) {
     const bytes = Buffer.from(`base:${entry.id}`);
     entry.bytes = bytes.byteLength;
@@ -393,6 +533,9 @@ function integrationFixture() {
   git(root, ["commit", "-m", "base"]);
   const baseSha = git(root, ["rev-parse", "HEAD"]);
   const baseTree = git(root, ["rev-parse", "HEAD^{tree}"]);
+  git(root, ["commit", "--allow-empty", "-m", "synchronized implementation"]);
+  const synchronizedSha = git(root, ["rev-parse", "HEAD"]);
+  const synchronizedTree = git(root, ["rev-parse", "HEAD^{tree}"]);
 
   const nextManifest = structuredClone(baseManifest);
   nextManifest.sourceCommit = baseSha;
@@ -505,7 +648,147 @@ function integrationFixture() {
       baseSha,
       headSha,
     },
+    baseTree,
+    synchronizedSha,
+    synchronizedTree,
   };
+}
+
+function sourceEquivalenceFixture() {
+  const fixture = integrationFixture();
+  const referenceCandidateRoot = fixture.options.candidateRoot;
+  const referenceManifestPath = path.join(referenceCandidateRoot, "phase5a0d-manifest.json");
+  const referenceManifest = JSON.parse(readFileSync(referenceManifestPath, "utf8"));
+  const equivalenceCandidateRoot = path.join(fixture.root, "equivalence-candidate");
+  const equivalenceDeterminismRoot = path.join(fixture.root, "equivalence-determinism");
+  cpSync(referenceCandidateRoot, equivalenceCandidateRoot, { recursive: true });
+  cpSync(fixture.options.determinismRoot, equivalenceDeterminismRoot, { recursive: true });
+
+  const equivalenceManifest = structuredClone(referenceManifest);
+  equivalenceManifest.sourceCommit = fixture.synchronizedSha;
+  equivalenceManifest.runner.imageVersion = "20260823.283.1";
+  const { manifestChecksum: _checksum, ...manifestPayload } = equivalenceManifest;
+  equivalenceManifest.manifestChecksum = sha256(stableJson(manifestPayload));
+  const equivalenceManifestBytes = Buffer.from(`${JSON.stringify(equivalenceManifest, null, 2)}\n`);
+  writeFileSync(
+    path.join(equivalenceCandidateRoot, "phase5a0d-manifest.json"),
+    equivalenceManifestBytes,
+  );
+  writeFileSync(
+    path.join(equivalenceDeterminismRoot, "first-manifest.json"),
+    equivalenceManifestBytes,
+  );
+  writeFileSync(
+    path.join(equivalenceDeterminismRoot, "second-manifest.json"),
+    equivalenceManifestBytes,
+  );
+  const candidateFiles = [];
+  const visit = (directory) => {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const absolute = path.join(directory, entry.name);
+      if (entry.isDirectory()) visit(absolute);
+      else {
+        candidateFiles.push(
+          path.relative(equivalenceCandidateRoot, absolute).replaceAll(path.sep, "/"),
+        );
+      }
+    }
+  };
+  visit(equivalenceCandidateRoot);
+  candidateFiles.sort();
+  const ledger = `${candidateFiles
+    .map(
+      (file) =>
+        `${sha256(readFileSync(path.join(equivalenceCandidateRoot, ...file.split("/"))))}  ./${file}`,
+    )
+    .join("\n")}\n`;
+  writeFileSync(path.join(equivalenceDeterminismRoot, "first-files.sha256"), ledger);
+  writeFileSync(path.join(equivalenceDeterminismRoot, "second-files.sha256"), ledger);
+  const provenance = JSON.parse(
+    readFileSync(path.join(equivalenceDeterminismRoot, "provenance.json"), "utf8"),
+  );
+  provenance.sourceCommit = fixture.synchronizedSha;
+  provenance.runner = equivalenceManifest.runner;
+  provenance.versions = equivalenceManifest.versions;
+  writeFileSync(
+    path.join(equivalenceDeterminismRoot, "provenance.json"),
+    `${JSON.stringify(provenance, null, 2)}\n`,
+  );
+
+  const external = JSON.parse(readFileSync(fixture.options.approvalFile, "utf8"));
+  const referenceCandidate = external.approval.candidate;
+  const equivalenceCandidate = structuredClone(referenceCandidate);
+  equivalenceCandidate.workflowRunId = 223;
+  equivalenceCandidate.artifactId = 556;
+  equivalenceCandidate.determinismArtifactId = 557;
+  equivalenceCandidate.sourceCommit = fixture.synchronizedSha;
+  equivalenceCandidate.artifactName =
+    `phase5a0d-visual-baseline-candidates-${fixture.synchronizedSha}`;
+  equivalenceCandidate.determinismArtifactName =
+    `phase5a0d-visual-determinism-evidence-${fixture.synchronizedSha}`;
+  external.approval = {
+    schemaVersion: 2,
+    approvalType: "phase5a0d-approved-source-equivalence",
+    baselinePrHead: fixture.options.headSha,
+    approvedVisualSource: {
+      headSha: fixture.options.baseSha,
+      tree: fixture.baseTree,
+      candidate: referenceCandidate,
+    },
+    synchronizedImplementation: {
+      prNumber: 1301,
+      headSha: fixture.synchronizedSha,
+      tree: fixture.synchronizedTree,
+      equivalenceCandidate,
+    },
+    authorizedPaths: [...LANDING_PATHS],
+    _mode: "source-equivalence",
+  };
+  writeFileSync(fixture.options.approvalFile, JSON.stringify(external));
+  const equivalenceRunFile = path.join(fixture.root, "equivalence-run.json");
+  const equivalenceArtifactsFile = path.join(fixture.root, "equivalence-artifacts.json");
+  writeFileSync(
+    equivalenceRunFile,
+    JSON.stringify({
+      id: 223,
+      event: "workflow_dispatch",
+      head_sha: fixture.synchronizedSha,
+      status: "completed",
+      conclusion: "success",
+      run_attempt: 1,
+      created_at: RUN_CREATED,
+      updated_at: RUN_COMPLETED,
+      path: ".github/workflows/phase5a0d-visual-baselines.yml",
+    }),
+  );
+  writeFileSync(
+    equivalenceArtifactsFile,
+    JSON.stringify({
+      artifacts: [
+        {
+          id: 556,
+          name: equivalenceCandidate.artifactName,
+          expired: false,
+          digest: equivalenceCandidate.archiveDigest,
+          size_in_bytes: 1000,
+        },
+        {
+          id: 557,
+          name: equivalenceCandidate.determinismArtifactName,
+          expired: false,
+          digest: equivalenceCandidate.determinismArchiveDigest,
+          size_in_bytes: 500,
+        },
+      ],
+    }),
+  );
+  Object.assign(fixture.options, {
+    equivalenceCandidateRoot,
+    equivalenceDeterminismRoot,
+    equivalenceRunFile,
+    equivalenceArtifactsFile,
+  });
+  return fixture;
 }
 
 test("accepts one exactly authorized intentional-redesign fixture", () => {
@@ -516,6 +799,79 @@ test("accepts one exactly authorized intentional-redesign fixture", () => {
     assert.equal(result.candidateRunId, 123);
   } finally {
     rmSync(fixture.root, { recursive: true, force: false });
+  }
+});
+
+test("accepts an approved visual source only with complete synchronized-head equivalence", () => {
+  const fixture = sourceEquivalenceFixture();
+  try {
+    const result = validateIntentionalRedesign(fixture.options);
+    assert.equal(result.approvalMode, "source-equivalence");
+    assert.equal(result.approvedVisualSource.headSha, fixture.options.baseSha);
+    assert.equal(
+      result.synchronizedImplementation.headSha,
+      fixture.synchronizedSha,
+    );
+    assert.equal(result.equivalenceRunId, 223);
+    assert.equal(result.equivalentRenderPaths.length > 0, true);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: false });
+  }
+});
+
+test("rejects equivalence PNG drift and a non-ancestor visual source", () => {
+  const drifted = sourceEquivalenceFixture();
+  try {
+    writeFileSync(
+      path.join(
+        drifted.options.equivalenceCandidateRoot,
+        "smoke-visual.spec.ts",
+        "p5a0d-landing-390x844-light-reduced.png",
+      ),
+      "drift",
+    );
+    assert.throws(
+      () => validateIntentionalRedesign(drifted.options),
+      /equivalence-candidate-png-drift/u,
+    );
+  } finally {
+    rmSync(drifted.root, { recursive: true, force: false });
+  }
+
+  const unrelated = sourceEquivalenceFixture();
+  try {
+    const external = JSON.parse(readFileSync(unrelated.options.approvalFile, "utf8"));
+    external.approval.approvedVisualSource.headSha = unrelated.options.headSha;
+    external.approval.approvedVisualSource.tree = git(unrelated.root, [
+      "rev-parse",
+      `${unrelated.options.headSha}^{tree}`,
+    ]);
+    external.approval.approvedVisualSource.candidate.sourceCommit =
+      unrelated.options.headSha;
+    external.approval.approvedVisualSource.candidate.artifactName =
+      `phase5a0d-visual-baseline-candidates-${unrelated.options.headSha}`;
+    external.approval.approvedVisualSource.candidate.determinismArtifactName =
+      `phase5a0d-visual-determinism-evidence-${unrelated.options.headSha}`;
+    writeFileSync(unrelated.options.approvalFile, JSON.stringify(external));
+    assert.throws(
+      () => validateIntentionalRedesign(unrelated.options),
+      /approved-visual-source-not-ancestor/u,
+    );
+  } finally {
+    rmSync(unrelated.root, { recursive: true, force: false });
+  }
+
+  const wrongTree = sourceEquivalenceFixture();
+  try {
+    const external = JSON.parse(readFileSync(wrongTree.options.approvalFile, "utf8"));
+    external.approval.approvedVisualSource.tree = "0".repeat(40);
+    writeFileSync(wrongTree.options.approvalFile, JSON.stringify(external));
+    assert.throws(
+      () => validateIntentionalRedesign(wrongTree.options),
+      /approval-reference-source-tree-mismatch/u,
+    );
+  } finally {
+    rmSync(wrongTree.root, { recursive: true, force: false });
   }
 });
 

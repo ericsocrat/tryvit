@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -117,6 +118,24 @@ const hostedSupabasePatterns: RegExp[] = [
 ];
 
 describe("browser workflow visual-safety contract", () => {
+  it("runs the base-owned intentional-redesign mutation suite", () => {
+    expect(() =>
+      execFileSync(
+        process.execPath,
+        [
+          "--test",
+          path.join(
+            repoRoot,
+            ".github",
+            "scripts",
+            "phase5a0d-intentional-redesign.test.mjs",
+          ),
+        ],
+        { cwd: repoRoot, stdio: "pipe" },
+      ),
+    ).not.toThrow();
+  });
+
   it("keeps unit-test enforcement inside a larger job-level cleanup budget", () => {
     expect(prGateUnitJob).toMatch(/^    timeout-minutes: 8$/mu);
     expect(prGateUnitJob).toMatch(
