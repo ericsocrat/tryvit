@@ -128,7 +128,7 @@
   </g>
 
   <!-- Domain URL (bottom right) -->
-  <text x="1100" y="590" text-anchor="end" fill="#4D7A5E" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', monospace" font-size="13" font-weight="400">tryvit.vercel.app</text>
+  <text x="1100" y="590" text-anchor="end" fill="#4D7A5E" font-family="ui-monospace, 'SF Mono', 'Cascadia Code', monospace" font-size="13" font-weight="400">tryvit.app</text>
 
   <!-- Version badge (top right) -->
   <g transform="translate(1010, 45)">

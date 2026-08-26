@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { DeploymentReadiness } from "./deployment-readiness";
 import {
+  DEFAULT_PUBLIC_APP_URL,
   buildRootMetadata,
   buildRootWebApplicationStructuredData,
   buildWebSiteStructuredData,
@@ -24,6 +25,14 @@ const publicEnvironment: NodeJS.ProcessEnv = {
 };
 
 describe("readiness-aware public metadata", () => {
+  it("uses the owned production domain when no environment override is present", () => {
+    expect(DEFAULT_PUBLIC_APP_URL).toBe("https://tryvit.app");
+    expect(buildRootMetadata(live, {}).metadataBase?.toString()).toBe("https://tryvit.app/");
+    expect(buildWebSiteStructuredData(live, {})["@id"]).toBe(
+      "https://tryvit.app/#website",
+    );
+  });
+
   it("keeps live root metadata truthful without instant or science-driven claims", () => {
     const metadata = buildRootMetadata(live, publicEnvironment);
     expect(metadata).toMatchObject({

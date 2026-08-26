@@ -1,9 +1,8 @@
 import type { MetadataRoute } from "next";
-
-const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL ?? "https://tryvit.vercel.app";
+import { publicBaseUrl } from "@/lib/site-metadata";
 
 export default function robots(): MetadataRoute.Robots {
+  const baseUrl = publicBaseUrl();
   return {
     rules: [
       {
@@ -12,6 +11,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/app/settings"],
       },
     ],
-    sitemap: `${BASE_URL}/sitemap.xml`,
+    sitemap: `${baseUrl}/sitemap.xml`,
   };
 }

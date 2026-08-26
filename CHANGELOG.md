@@ -15,6 +15,11 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Documentation
 
+- Define the prospective Phase 5A.3 route-migration lab-release methodology: exact
+  five-run mobile/desktop cohorts, mobile LCP median/p75 gates, mandatory visible
+  outlier classification, unchanged Route-JS regression policy, and explicit
+  separation from post-launch field Core Web Vitals; evaluate the retained Cycle 3
+  cohort without rerunning it.
 - Seal the Phase 5A.3 landing Revision Cycle 2 replacement and preserve its rejected
   first candidate separately; retain exact Linux visual, social-preview, motion,
   cross-browser, Route-JS, CI/security, and five-run Lighthouse evidence with a

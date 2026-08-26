@@ -71,7 +71,7 @@ describe("production landing composition", () => {
     );
     expect(structuredData).toMatchObject({
       "@type": "WebSite",
-      "@id": "https://tryvit.vercel.app/#website",
+      "@id": "https://tryvit.app/#website",
       inLanguage: "pl",
       description: getLandingMetadataCopy("pl", live).description,
     });

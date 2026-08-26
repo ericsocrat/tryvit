@@ -306,6 +306,10 @@ runtime boundary.
 - The demonstration is deterministic and backend-independent.
 - All Phase 5 budgets remain green; hero media is at most 250 KiB and total cold mobile
   transfer is at most 900 KiB.
+- Route-migration lab approval follows the prospective five-mobile/five-desktop
+  median/p75 and causal-classification contract in
+  [`PHASE5A3_ROUTE_MIGRATION_LAB_PERFORMANCE.md`](PHASE5A3_ROUTE_MIGRATION_LAB_PERFORMANCE.md);
+  it is a deterministic lab-release gate, not a field Core Web Vitals claim.
 - Required 390/768/1440 light/dark screenshots and motion/reduced-motion behavioral
   tests pass.
 - Human approval exists for final headline, support/status path, imagery rights and

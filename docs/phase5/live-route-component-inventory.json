@@ -1261,6 +1261,7 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/lib/query-keys.ts",
+        "frontend/src/lib/site-metadata.ts",
         "frontend/src/lib/supabase/server.ts"
       ],
       "directConsumers": [],
@@ -6095,7 +6096,9 @@
       "routePath": null,
       "hasUseClientDirective": false,
       "runtimeBoundary": "server-only",
-      "directModuleImports": [],
+      "directModuleImports": [
+        "frontend/src/lib/site-metadata.ts"
+      ],
       "directConsumers": [],
       "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
@@ -6114,7 +6117,9 @@
       "routePath": null,
       "hasUseClientDirective": false,
       "runtimeBoundary": "server-only",
-      "directModuleImports": [],
+      "directModuleImports": [
+        "frontend/src/lib/site-metadata.ts"
+      ],
       "directConsumers": [],
       "transitiveRouteConsumers": [],
       "targetRedesignPhases": [

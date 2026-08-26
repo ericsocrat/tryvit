@@ -176,7 +176,7 @@ export function LandingSocialCard({ height }: LandingSocialCardProps) {
         }}
       >
         <div style={{ display: "flex" }}>01 → 02 → 03 → 04</div>
-        <div style={{ display: "flex", fontWeight: 700 }}>tryvit.vercel.app</div>
+        <div style={{ display: "flex", fontWeight: 700 }}>tryvit.app</div>
       </div>
     </div>
   );

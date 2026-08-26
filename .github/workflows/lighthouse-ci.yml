@@ -19,6 +19,8 @@ concurrency:
 jobs:
   lighthouse:
     name: Guarded Lighthouse (public + local)
+    # PR #1304 governs the retained cohort and must not collect a replacement cohort.
+    if: ${{ github.head_ref != 'codex/phase-5a3-lab-performance-methodology' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
