@@ -42,25 +42,50 @@ jobs:
       - name: Run the trusted policy mutation tests
         run: node --test .github/scripts/phase5a0d-renderer-attestation.test.mjs
 
-      - name: Detect an attestation refresh
+      - name: Classify renderer attestation applicability
         id: scope
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
         run: |
           set -euo pipefail
-          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- \
-            frontend/e2e/__screenshots__/phase5a0d-manifest.json \
-            'frontend/e2e/__screenshots__/p5a0d-*.png' \
-            'frontend/e2e/__screenshots__/**/p5a0d-*.png' \
-            docs/evidence/phase5a0d-renderer-runtime-attestation.json)"
-          if [ -z "$changed" ]; then
-            echo "required=false" >> "$GITHUB_OUTPUT"
-            echo "No renderer/runtime attestation refresh is present."
-          else
-            echo "required=true" >> "$GITHUB_OUTPUT"
-          fi
+          changed="$(git diff --name-only "$BASE_SHA" "$HEAD_SHA")"
+          # phase5a0d-renderer-attestation-scope:start
+          CHANGED_PATHS="$changed" node <<'NODE'
+          const fs = require("node:fs");
+
+          const authorizationLabel = "phase5a0d-intentional-redesign-approved";
+          const manifestPath = "frontend/e2e/__screenshots__/phase5a0d-manifest.json";
+          const attestationPath = "docs/evidence/phase5a0d-renderer-runtime-attestation.json";
+          const baselinePng = /^frontend\/e2e\/__screenshots__\/(?:[^/]+\/)*p5a0d-[^/]+\.png$/u;
+          const changedPaths = (process.env.CHANGED_PATHS ?? "")
+            .split("\n")
+            .map((value) => value.trim())
+            .filter(Boolean);
+          const labels = JSON.parse(process.env.LABELS_JSON ?? "[]");
+          const isBaselinePath = (value) => value === manifestPath || baselinePng.test(value);
+          const baselineChanged = changedPaths.some(isBaselinePath);
+          const attestationChanged = changedPaths.includes(attestationPath);
+          const baselineOnly = changedPaths.length > 0 && changedPaths.every(isBaselinePath);
+          const delegated = baselineChanged
+            && baselineOnly
+            && !attestationChanged
+            && labels.includes(authorizationLabel);
+          const required = (baselineChanged || attestationChanged) && !delegated;
+          const reason = delegated
+            ? "intentional-redesign-validator"
+            : required
+              ? "renderer-attestation-required"
+              : "not-applicable";
+
+          for (const [key, value] of Object.entries({ required, delegated, reason })) {
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `${key}=${value}\n`);
+          }
+          process.stdout.write(`Renderer attestation disposition: ${reason}.\n`);
+          NODE
+          # phase5a0d-renderer-attestation-scope:end
 
       - name: Prove external authorization and read the evidence blob
         if: steps.scope.outputs.required == 'true'
@@ -218,6 +243,8 @@ jobs:
         run: |
           if [ "${{ steps.scope.outputs.required }}" = "true" ]; then
             echo "Renderer/runtime attestation was required and evaluated by the exact PR-base policy." >> "$GITHUB_STEP_SUMMARY"
+          elif [ "${{ steps.scope.outputs.delegated }}" = "true" ]; then
+            echo "Renderer/runtime attestation was not applicable because this baseline-only change is delegated to the independent intentional-redesign validator." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Renderer/runtime attestation was not applicable; no baseline or attestation evidence changed." >> "$GITHUB_STEP_SUMMARY"
           fi
