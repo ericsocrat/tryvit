@@ -217,7 +217,7 @@ function hasUsableWarningProvenance(
   product: CompareProduct,
   provenanceByProductId: ComparisonGridProps["provenanceByProductId"],
 ): boolean {
-  if (!provenanceByProductId) return true;
+  if (!provenanceByProductId) return false;
   return WARNING_PROVENANCE_REQUIREMENTS.every((requirement) =>
     hasUsableProvenanceField(
       provenanceByProductId[product.product_id],

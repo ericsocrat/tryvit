@@ -340,6 +340,27 @@ describe("ComparisonGrid", () => {
     ).toBe(false);
   });
 
+  it("withholds public no-warning claims when provenance is omitted", () => {
+    const noFlagProducts = products.map((product) => ({
+      ...product,
+      high_salt: false,
+      high_sugar: false,
+      high_sat_fat: false,
+      high_additive_load: false,
+    }));
+    render(
+      <ComparisonGrid
+        products={noFlagProducts}
+        recommendationAllowed={false}
+      />,
+    );
+
+    expect(screen.queryByText("No warnings")).not.toBeInTheDocument();
+    expect(
+      screen.getAllByText(/Warning evidence is incomplete/).length,
+    ).toBeGreaterThanOrEqual(2);
+  });
+
   it("uses canonical NOVA provenance before ranking the NOVA row", () => {
     const provenanceByProductId = Object.fromEntries(
       products.map((product) => {
