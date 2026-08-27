@@ -1,183 +1,216 @@
 "use client";
 
+import {
+  AuthCard,
+  AuthStatus,
+  PasswordField,
+  authStyles,
+} from "@/components/auth/AuthCard";
 import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
 import { Button } from "@/components/common/Button";
-import { Logo } from "@/components/common/Logo";
+import type { AuthCapabilities } from "@/lib/auth-capabilities";
+import { authErrorMessageKey } from "@/lib/auth-errors";
 import { useTranslation } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
-import { showToast } from "@/lib/toast";
 import type { FormSubmitEvent } from "@/lib/types";
-import { sanitizeRedirect } from "@/lib/validation";
-import { Eye, EyeOff } from "lucide-react";
+import { appendAuthRedirect, sanitizeAuthRedirect } from "@/lib/validation";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-function classifyAuthError(message: string): string {
-  const lower = message.toLowerCase();
-  if (lower.includes("rate") || lower.includes("too many")) {
-    return "auth.tooManyAttempts";
-  }
-  return "auth.invalidCredentials";
+interface LoginFormProps {
+  readonly capabilities: AuthCapabilities;
+  readonly inviteOnly?: boolean;
 }
 
-export function LoginForm() {
+const REASON_MESSAGE_KEYS: Readonly<Record<string, string>> = {
+  expired: "auth.sessionExpiredBanner",
+  "invite-only": "auth.privateBetaDenied",
+  provider: "auth.providerCallbackFailed",
+};
+
+export function LoginForm({ capabilities, inviteOnly = true }: LoginFormProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [formErrorKey, setFormErrorKey] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
 
   const reason = searchParams.get("reason");
   const msg = searchParams.get("msg");
-  const redirect = sanitizeRedirect(searchParams.get("redirect"));
-  let successBannerKey: string | null = null;
-  if (msg === "check-email") {
-    successBannerKey = "auth.checkEmail";
-  } else if (msg === "password-updated") {
-    successBannerKey = "auth.passwordUpdated";
+  const redirect = sanitizeAuthRedirect(searchParams.get("redirect"));
+  const reasonBannerKey = reason ? REASON_MESSAGE_KEYS[reason] : null;
+  const successBannerKey =
+    msg === "check-email"
+      ? "auth.checkEmail"
+      : msg === "password-updated"
+        ? "auth.passwordUpdated"
+        : null;
+  const credentialsInvalid =
+    formErrorKey === "auth.invalidCredentials" ||
+    formErrorKey === "auth.emailNotConfirmed";
+  const authUnavailable = capabilities.status === "unavailable";
+  const renderEmailForm = capabilities.email;
+  const privateBeta = inviteOnly || capabilities.signupDisabled;
+
+  function presentError(messageKey: string) {
+    setFormErrorKey(messageKey);
+    setTimeout(() => errorRef.current?.focus(), 0);
   }
 
-  async function handleLogin(e: FormSubmitEvent) {
-    e.preventDefault();
+  async function handleLogin(event: FormSubmitEvent) {
+    event.preventDefault();
+    setFormErrorKey(null);
     setLoading(true);
 
     try {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
 
       if (error) {
-        showToast({ type: "error", messageKey: classifyAuthError(error.message) });
+        presentError(authErrorMessageKey(error, "login"));
         return;
       }
 
       router.push(redirect);
       router.refresh();
     } catch {
-      showToast({ type: "error", messageKey: "auth.serviceUnavailable" });
+      presentError("auth.serviceUnavailable");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div id="main-content" className="w-full max-w-md">
-      <div className="overflow-hidden rounded-3xl border border-border/70 bg-surface/95 p-6 shadow-[0_24px_72px_rgba(15,23,42,0.14)] backdrop-blur-sm sm:p-8 dark:border-white/10 dark:shadow-[0_28px_76px_rgba(0,0,0,0.38)]">
-        <div className="mb-2 flex justify-center lg:hidden">
-          <Logo variant="lockup" size={36} priority />
-        </div>
-        <p className="mb-5 text-center text-xs font-medium uppercase tracking-widest text-brand lg:hidden">
-          {t("landing.tagline")}
-        </p>
-        <h1 className="mb-2 text-center text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          {t("auth.welcomeBack")}
-        </h1>
-        <p className="mb-7 text-center text-sm text-foreground-secondary sm:text-base">
-          {t("auth.signInSubtitle")}
-        </p>
-
-        {reason === "expired" && (
-          <div className="mb-4 rounded-xl border border-warning-border bg-warning-bg/95 p-3 text-sm text-warning-text shadow-[0_8px_24px_rgba(245,158,11,0.14)]">
-            {t("auth.sessionExpiredBanner")}
-          </div>
-        )}
-
-        {successBannerKey && (
-          <div
-            className="mb-4 rounded-xl border border-success-border bg-success-bg/95 p-3 text-sm text-success-text shadow-[0_8px_24px_rgba(34,197,94,0.12)]"
-            role="status"
-            aria-live="polite"
-          >
-            {t(successBannerKey)}
-          </div>
-        )}
-
-        <SocialLoginButtons />
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="mb-1.5 block text-sm font-medium text-foreground-secondary"
+    <AuthCard
+      eyebrow={
+        privateBeta
+          ? t("auth.privateBetaShort")
+          : t("auth.accountAccess")
+      }
+      title={t("auth.welcomeBack")}
+      description={t("auth.signInSubtitle")}
+      footer={
+        privateBeta ? undefined : (
+          <>
+            {t("auth.noAccount")} {" "}
+            <Link
+              href={appendAuthRedirect("/auth/signup", redirect)}
+              className={authStyles.link}
             >
-              {t("auth.email")}
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              inputMode="email"
-              autoCapitalize="none"
-              spellCheck={false}
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-field"
-              placeholder={t("auth.emailPlaceholder")}
-            />
-          </div>
+              {t("auth.signUp")}
+            </Link>
+          </>
+        )
+      }
+    >
+      {reasonBannerKey ? (
+        <AuthStatus kind="error">{t(reasonBannerKey)}</AuthStatus>
+      ) : null}
+      {successBannerKey ? (
+        <AuthStatus kind="success">{t(successBannerKey)}</AuthStatus>
+      ) : null}
+      {formErrorKey ? (
+        <AuthStatus ref={errorRef} id="auth-login-error" kind="error">
+          {t(formErrorKey)}
+        </AuthStatus>
+      ) : null}
 
-          <div>
-            <label
-              htmlFor="password"
-              className="mb-1.5 block text-sm font-medium text-foreground-secondary"
-            >
-              {t("auth.password")}
-            </label>
-            <div className="relative">
-              <input
+      {authUnavailable ? (
+        <AuthStatus kind="info">{t("auth.providerStatusUnavailable")}</AuthStatus>
+      ) : null}
+      <>
+          <SocialLoginButtons
+            providers={authUnavailable ? [] : capabilities.providers}
+            redirect={redirect}
+            showEmailDivider={capabilities.email}
+            onError={presentError}
+          />
+
+          {renderEmailForm ? (
+            <form onSubmit={handleLogin} className={authStyles.form}>
+              <div className={authStyles.field}>
+                <label htmlFor="email" className={authStyles.label}>
+                  {t("auth.email")}
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  required
+                  aria-invalid={credentialsInvalid}
+                  aria-describedby={credentialsInvalid ? "auth-login-error" : undefined}
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  className={authStyles.input}
+                  placeholder={t("auth.emailPlaceholder")}
+                />
+              </div>
+
+              <PasswordField
                 id="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="current-password"
-                aria-describedby="login-password-help"
-                required
+                name="password"
+                label={t("auth.password")}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-field pr-10"
-                placeholder={t("auth.credentialsPlaceholder")}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+                placeholder={t("auth.passwordPlaceholder")}
+                showLabel={t("auth.showPassword")}
+                hideLabel={t("auth.hidePassword")}
+                error={
+                  credentialsInvalid
+                    ? t(formErrorKey ?? "auth.invalidCredentials")
+                    : null
+                }
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-foreground-muted transition-colors hover:text-foreground-secondary"
-                aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
+
+              <div className={authStyles.inlineRow}>
+                <span />
+                <Link
+                  href={appendAuthRedirect("/auth/forgot-password", redirect)}
+                  className={authStyles.link}
+                >
+                  {t("auth.forgotPassword")}
+                </Link>
+              </div>
+
+              <Button
+                type="submit"
+                loading={loading}
+                disabled={loading}
+                fullWidth
+                className={authStyles.primaryAction}
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            <p id="login-password-help" className="mt-1.5 text-xs text-foreground-muted">
-              {t("auth.passwordHelp")}
-            </p>
-            <div className="mt-2 text-right">
+                {loading ? t("auth.signingIn") : t("auth.signIn")}
+              </Button>
+            </form>
+          ) : capabilities.providers.length === 0 ? (
+            <AuthStatus kind="info">{t("auth.noAuthMethodAvailable")}</AuthStatus>
+          ) : null}
+
+          {privateBeta ? (
+            <div className={authStyles.inviteNote}>
+              <strong>{t("auth.invitedAccountRequired")}</strong>
+              <span>{t("auth.invitedProviderHint")}</span>
               <Link
-                href="/auth/forgot-password"
-                className="rounded-sm text-xs font-semibold text-brand underline-offset-4 transition-colors hover:text-brand-hover hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
+                href={appendAuthRedirect("/auth/signup", redirect)}
+                className={authStyles.link}
               >
-                {t("auth.forgotPassword")}
+                {t("auth.learnAboutPrivateBeta")}
               </Link>
             </div>
-          </div>
-
-          <Button type="submit" disabled={loading} fullWidth>
-            {loading ? t("auth.signingIn") : t("auth.signIn")}
-          </Button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-foreground-secondary">
-          {t("auth.noAccount")}{" "}
-          <Link
-            href="/auth/signup"
-            className="rounded-sm font-semibold text-brand underline-offset-4 transition-colors hover:text-brand-hover hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
-          >
-            {t("auth.signUp")}
-          </Link>
-        </p>
-      </div>
-    </div>
+          ) : null}
+        </>
+    </AuthCard>
   );
 }

@@ -3,11 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LoginForm } from "./LoginForm";
 
-// ─── Mocks ──────────────────────────────────────────────────────────────────
-
 const mockPush = vi.fn();
 const mockRefresh = vi.fn();
 const mockSearchParams = new URLSearchParams();
+const mockSignIn = vi.fn();
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
@@ -15,233 +14,217 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: ({
-    href,
-    children,
-    ...rest
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => (
+  default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...rest}>
       {children}
     </a>
   ),
 }));
 
-const mockSignIn = vi.fn();
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
-    auth: {
-      signInWithPassword: (...args: unknown[]) => mockSignIn(...args),
-    },
-  }),
-}));
-
-vi.mock("@/lib/validation", () => ({
-  sanitizeRedirect: (raw: string | null) =>
-    raw?.startsWith("/") && !raw.startsWith("//") ? raw : "/app/search",
-}));
-
-vi.mock("@/lib/toast", () => ({
-  showToast: vi.fn(),
-}));
-
-vi.mock("@/lib/i18n", () => ({
-  useTranslation: () => ({
-    t: (key: string) => {
-      const map: Record<string, string> = {
-        "auth.email": "Email",
-        "auth.password": "Password",
-        "auth.emailPlaceholder": "you@example.com",
-        "auth.signIn": "Sign In",
-        "auth.noAccount": "Don't have an account?",
-        "auth.signUp": "Sign Up",
-        "auth.signingIn": "Signing in\u2026",
-        "auth.showPassword": "Show password",
-        "auth.hidePassword": "Hide password",
-        "auth.forgotPassword": "Forgot password?",
-        "auth.sessionExpired":
-          "Your session has expired. Please sign in again.",
-        "auth.sessionExpiredBanner":
-          "Your session has expired. Please sign in again.",
-        "auth.checkEmail": "Check your email to confirm your account.",
-        "auth.passwordUpdated": "Password updated successfully.",
-        "landing.tagline": "tagline",
-      };
-      return map[key] ?? key;
-    },
+    auth: { signInWithPassword: (...args: unknown[]) => mockSignIn(...args) },
   }),
 }));
 
 vi.mock("@/components/auth/SocialLoginButtons", () => ({
-  SocialLoginButtons: () => <div data-testid="social-login-buttons" />,
+  SocialLoginButtons: ({ providers }: { providers: string[] }) =>
+    providers.length > 0 ? (
+      <div data-testid="social-login-buttons" data-providers={providers.join(",")} />
+    ) : null,
 }));
+
+vi.mock("@/lib/i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string) =>
+      ({
+        "auth.privateBetaShort": "Private beta",
+        "auth.accountAccess": "Account access",
+        "auth.welcomeBack": "Welcome back",
+        "auth.signInSubtitle": "Sign in in seconds.",
+        "auth.invitedAccessPrompt": "Invitation only.",
+        "auth.learnAboutPrivateBeta": "How private beta works",
+        "auth.noAccount": "Don't have an account?",
+        "auth.signUp": "Sign Up",
+        "auth.signIn": "Sign In",
+        "auth.signingIn": "Signing in…",
+        "auth.email": "Email",
+        "auth.emailPlaceholder": "you@example.com",
+        "auth.password": "Password",
+        "auth.passwordPlaceholder": "Enter your password",
+        "auth.showPassword": "Show password",
+        "auth.hidePassword": "Hide password",
+        "auth.forgotPassword": "Forgot password?",
+        "auth.invalidCredentials": "Invalid email or password.",
+        "auth.emailNotConfirmed": "Confirm your email before signing in.",
+        "auth.tooManyAttempts": "Too many attempts.",
+        "auth.serviceUnavailable": "Account access is temporarily unavailable.",
+        "auth.providerStatusUnavailable":
+          "Social sign-in status is temporarily unavailable. Email sign-in remains available.",
+        "auth.sessionExpiredBanner": "Your session has expired.",
+        "auth.privateBetaDenied": "This account is not admitted.",
+        "auth.providerCallbackFailed": "The provider could not complete sign-in.",
+        "auth.checkEmail": "Check your email.",
+        "auth.passwordUpdated": "Password updated successfully.",
+        "auth.invitedAccountRequired": "An invited account is required.",
+        "auth.invitedProviderHint": "Use the same verified email.",
+        "auth.noAuthMethodAvailable": "No sign-in method is available.",
+      })[key] ?? key,
+  }),
+}));
+
+const READY_CAPABILITIES = {
+  status: "ready" as const,
+  email: true,
+  providers: [] as const,
+  signupDisabled: true,
+};
 
 beforeEach(() => {
   vi.clearAllMocks();
-  // Reset search params
-  for (const key of mockSearchParams.keys()) {
-    mockSearchParams.delete(key);
-  }
+  for (const key of [...mockSearchParams.keys()]) mockSearchParams.delete(key);
 });
 
 describe("LoginForm", () => {
-  it("renders social login buttons", () => {
-    render(<LoginForm />);
-    expect(screen.getByTestId("social-login-buttons")).toBeInTheDocument();
-  });
+  it("shows only provider controls backed by hosted capabilities", () => {
+    const { rerender } = render(<LoginForm capabilities={READY_CAPABILITIES} />);
+    expect(screen.queryByTestId("social-login-buttons")).not.toBeInTheDocument();
 
-  it("renders email and password fields", () => {
-    render(<LoginForm />);
-    expect(screen.getByLabelText("Email")).toBeInTheDocument();
-    expect(screen.getByLabelText("Password")).toBeInTheDocument();
-  });
-
-  it("renders sign in button", () => {
-    render(<LoginForm />);
-    expect(screen.getByRole("button", { name: "Sign In" })).toBeInTheDocument();
-  });
-
-  it("renders sign up link", () => {
-    render(<LoginForm />);
-    expect(screen.getByText("Sign Up").closest("a")).toHaveAttribute(
-      "href",
-      "/auth/signup",
+    rerender(
+      <LoginForm
+        capabilities={{ ...READY_CAPABILITIES, providers: ["google"] }}
+      />,
+    );
+    expect(screen.getByTestId("social-login-buttons")).toHaveAttribute(
+      "data-providers",
+      "google",
     );
   });
 
-  it("shows expired session banner when reason=expired", () => {
-    mockSearchParams.set("reason", "expired");
-    render(<LoginForm />);
-    expect(screen.getByText(/session has expired/i)).toBeInTheDocument();
+  it("renders password-manager-compatible email and password fields", () => {
+    render(<LoginForm capabilities={READY_CAPABILITIES} />);
+    expect(screen.getByLabelText("Email")).toHaveAttribute("autocomplete", "email");
+    expect(screen.getByLabelText("Password")).toHaveAttribute(
+      "autocomplete",
+      "current-password",
+    );
   });
 
-  it("does not show banner when no reason", () => {
-    render(<LoginForm />);
-    expect(screen.queryByText(/session has expired/i)).not.toBeInTheDocument();
-  });
-
-  it("shows check-email banner when msg=check-email", () => {
-    mockSearchParams.set("msg", "check-email");
-    render(<LoginForm />);
-    expect(
-      screen.getByText("Check your email to confirm your account."),
-    ).toBeInTheDocument();
-  });
-
-  it("shows password-updated banner when msg=password-updated", () => {
-    mockSearchParams.set("msg", "password-updated");
-    render(<LoginForm />);
-    expect(
-      screen.getByText("Password updated successfully."),
-    ).toBeInTheDocument();
-  });
-
-  it("calls signInWithPassword on submit", async () => {
+  it("trims email and returns to the intended app destination", async () => {
+    mockSearchParams.set("redirect", "/app/product/42?tab=nutrition");
     mockSignIn.mockResolvedValue({ error: null });
     const user = userEvent.setup();
+    render(<LoginForm capabilities={READY_CAPABILITIES} />);
 
-    render(<LoginForm />);
-    await user.type(screen.getByLabelText("Email"), "a@b.com");
+    await user.type(screen.getByLabelText("Email"), "  a@b.com  ");
     await user.type(screen.getByLabelText("Password"), "secret");
     await user.click(screen.getByRole("button", { name: "Sign In" }));
 
     await waitFor(() => {
-      expect(mockSignIn).toHaveBeenCalledWith({
-        email: "a@b.com",
-        password: "secret",
-      });
-    });
-  });
-
-  it("redirects on success", async () => {
-    mockSignIn.mockResolvedValue({ error: null });
-    const user = userEvent.setup();
-
-    render(<LoginForm />);
-    await user.type(screen.getByLabelText("Email"), "a@b.com");
-    await user.type(screen.getByLabelText("Password"), "pass");
-    await user.click(screen.getByRole("button", { name: "Sign In" }));
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/app/search");
+      expect(mockSignIn).toHaveBeenCalledWith({ email: "a@b.com", password: "secret" });
+      expect(mockPush).toHaveBeenCalledWith("/app/product/42?tab=nutrition");
       expect(mockRefresh).toHaveBeenCalled();
     });
   });
 
-  it("shows invalidCredentials messageKey on auth failure", async () => {
-    const { showToast } = await import("@/lib/toast");
+  it("renders a focused inline error without exposing backend text", async () => {
     mockSignIn.mockResolvedValue({
-      error: { message: "Invalid credentials" },
+      error: { code: "invalid_credentials", message: "backend detail" },
     });
     const user = userEvent.setup();
+    render(<LoginForm capabilities={READY_CAPABILITIES} />);
 
-    render(<LoginForm />);
     await user.type(screen.getByLabelText("Email"), "a@b.com");
     await user.type(screen.getByLabelText("Password"), "wrong");
     await user.click(screen.getByRole("button", { name: "Sign In" }));
 
-    await waitFor(() => {
-      expect(showToast).toHaveBeenCalledWith({
-        type: "error",
-        messageKey: "auth.invalidCredentials",
-      });
-    });
-    expect(mockPush).not.toHaveBeenCalled();
+    await waitFor(() => expect(screen.getByRole("alert")).toHaveFocus());
+    expect(screen.getAllByText("Invalid email or password.").length).toBeGreaterThan(0);
+    expect(screen.queryByText("backend detail")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Email")).toHaveAttribute("aria-invalid", "true");
   });
 
-  it("shows tooManyAttempts messageKey for rate-limit errors", async () => {
-    const { showToast } = await import("@/lib/toast");
-    mockSignIn.mockResolvedValue({
-      error: { message: "Too many requests" },
-    });
+  it("maps stable rate-limit codes", async () => {
+    mockSignIn.mockResolvedValue({ error: { code: "over_request_rate_limit" } });
     const user = userEvent.setup();
+    render(<LoginForm capabilities={READY_CAPABILITIES} />);
 
-    render(<LoginForm />);
     await user.type(screen.getByLabelText("Email"), "a@b.com");
-    await user.type(screen.getByLabelText("Password"), "pass");
+    await user.type(screen.getByLabelText("Password"), "secret");
     await user.click(screen.getByRole("button", { name: "Sign In" }));
 
-    await waitFor(() => {
-      expect(showToast).toHaveBeenCalledWith({
-        type: "error",
-        messageKey: "auth.tooManyAttempts",
-      });
-    });
+    expect(await screen.findByText("Too many attempts.")).toBeInTheDocument();
   });
 
-  it("toggles password visibility", async () => {
-    const user = userEvent.setup();
-    render(<LoginForm />);
+  it.each([
+    ["expired", "Your session has expired."],
+    ["invite-only", "This account is not admitted."],
+    ["provider", "The provider could not complete sign-in."],
+  ])("renders the %s recovery state", (reason, message) => {
+    mockSearchParams.set("reason", reason);
+    render(<LoginForm capabilities={READY_CAPABILITIES} />);
+    expect(screen.getByText(message)).toBeInTheDocument();
+  });
 
-    const passwordInput = screen.getByLabelText("Password");
-    expect(passwordInput).toHaveAttribute("type", "password");
-
-    await user.click(
-      screen.getByRole("button", { name: "Show password" }),
+  it("preserves redirect intent in recovery and beta links", () => {
+    mockSearchParams.set("redirect", "/app/product/42");
+    render(<LoginForm capabilities={READY_CAPABILITIES} />);
+    expect(screen.getByText("Forgot password?").closest("a")).toHaveAttribute(
+      "href",
+      "/auth/forgot-password?redirect=%2Fapp%2Fproduct%2F42",
     );
-    expect(passwordInput).toHaveAttribute("type", "text");
+    expect(screen.getByText("How private beta works").closest("a")).toHaveAttribute(
+      "href",
+      "/auth/signup?redirect=%2Fapp%2Fproduct%2F42",
+    );
   });
 
-  it("renders forgot password link", () => {
-    render(<LoginForm />);
-    const link = screen.getByText("Forgot password?").closest("a");
-    expect(link).toHaveAttribute("href", "/auth/forgot-password");
+  it("keeps the server invitation seal authoritative if hosted settings diverge", () => {
+    render(
+      <LoginForm
+        capabilities={{ ...READY_CAPABILITIES, signupDisabled: false }}
+      />,
+    );
+    expect(screen.getByText("How private beta works")).toBeInTheDocument();
+    expect(screen.queryByText("Sign Up")).not.toBeInTheDocument();
   });
 
-  it("shows 'Signing in…' while loading", async () => {
-    // Never resolve to keep loading state
-    mockSignIn.mockReturnValue(new Promise(() => {}));
+  it("advertises self-service only when both boundaries are open", () => {
+    render(
+      <LoginForm
+        capabilities={{ ...READY_CAPABILITIES, signupDisabled: false }}
+        inviteOnly={false}
+      />,
+    );
+    expect(screen.getByText("Sign Up")).toBeInTheDocument();
+  });
+
+  it("toggles password visibility with pressed state", async () => {
     const user = userEvent.setup();
+    render(<LoginForm capabilities={READY_CAPABILITIES} />);
+    const password = screen.getByLabelText("Password");
+    const toggle = screen.getByRole("button", { name: "Show password" });
+    await user.click(toggle);
+    expect(password).toHaveAttribute("type", "text");
+    expect(screen.getByRole("button", { name: "Hide password" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
 
-    render(<LoginForm />);
-    await user.type(screen.getByLabelText("Email"), "a@b.com");
-    await user.type(screen.getByLabelText("Password"), "pass");
-    await user.click(screen.getByRole("button", { name: "Sign In" }));
-
-    await waitFor(() => {
-      expect(screen.getByText("Signing in…")).toBeInTheDocument();
-    });
+  it("fails closed when Auth capabilities cannot be resolved", () => {
+    render(
+      <LoginForm
+        capabilities={{
+          status: "unavailable",
+          email: true,
+          providers: [],
+          signupDisabled: true,
+        }}
+      />,
+    );
+    expect(screen.getByText(/email sign-in remains available/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Email")).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Sign In" })).toBeEnabled();
   });
 });

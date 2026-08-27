@@ -162,7 +162,7 @@ test.describe("Login page details", () => {
 
   test("shows subtitle text", async ({ page }) => {
     await page.goto("/auth/login");
-    await expect(page.getByText("Sign in to your TryVit account")).toBeVisible();
+    await expect(page.getByText(/sign in in seconds/i)).toBeVisible();
   });
 
   test("Sign In button is present", async ({ page }) => {
@@ -170,9 +170,9 @@ test.describe("Login page details", () => {
     await expect(page.getByRole("button", { name: /Sign In/i })).toBeVisible();
   });
 
-  test("has Sign up link for new users", async ({ page }) => {
+  test("links to the truthful private-beta entry", async ({ page }) => {
     await page.goto("/auth/login");
-    await expect(page.getByText("Don't have an account?", { exact: false })).toBeVisible();
+    await expect(page.getByRole("link", { name: /how private beta works/i })).toBeVisible();
   });
 });
 
@@ -194,19 +194,21 @@ test.describe("Signup page details", () => {
   test("has Sign in and recovery links for invited users", async ({ page }) => {
     await page.goto("/auth/signup");
     await expect(page.getByRole("link", { name: /Sign in/i })).toBeVisible();
-    await expect(page.getByRole("link", { name: /Forgot password/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Recover invited account/i })).toBeVisible();
   });
 });
 
 test.describe("Authentication entry and recovery routes", () => {
-  for (const route of ["/auth/forgot-password", "/auth/update-password"]) {
-    test(`${route} remains reachable while signed out`, async ({ page }) => {
-      const response = await page.goto(route);
+  test("forgot-password remains reachable while signed out", async ({ page }) => {
+    const response = await page.goto("/auth/forgot-password");
+    expect(response?.ok()).toBe(true);
+    await expect(page).not.toHaveURL(/\/auth\/login/);
+  });
 
-      expect(response?.ok(), route).toBe(true);
-      await expect(page).not.toHaveURL(/\/auth\/login/);
-    });
-  }
+  test("update-password fails closed without a recovery session", async ({ page }) => {
+    await page.goto("/auth/update-password");
+    await expect(page).toHaveURL(/\/auth\/login\?reason=expired/u);
+  });
 });
 
 test.describe("Public shared pages", () => {

@@ -1,71 +1,59 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import AuthLayout from "./layout";
 
-// ─── Tests ──────────────────────────────────────────────────────────────────
+vi.mock("@/lib/i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string) =>
+      ({
+        "auth.brandPanelLabel": "TryVit product identity",
+        "auth.brandEyebrow": "Private beta · Source Fold",
+        "auth.brandTitle": "Know what the label really says.",
+        "auth.marketingBlurb": "Search, scan, and compare food products.",
+        "auth.brandRegisterLabel": "TryVit decision path",
+        "auth.brandRegisterSearch": "01 Search",
+        "auth.brandRegisterDecode": "02 Decode",
+        "auth.brandRegisterDecide": "03 Decide",
+        "auth.brandFooter": "Food intelligence, with the evidence left visible.",
+        "auth.accountAccessLabel": "Account access",
+        "auth.privateBetaShort": "Private beta",
+      })[key] ?? key,
+  }),
+}));
 
 describe("AuthLayout", () => {
-  it("renders children in the form panel", () => {
+  it("renders children in the account-access panel", () => {
     render(
       <AuthLayout>
         <div data-testid="child">Form content</div>
       </AuthLayout>,
     );
     expect(screen.getByTestId("child")).toBeInTheDocument();
-    expect(screen.getByText("Form content")).toBeInTheDocument();
+    expect(screen.getByLabelText("Account access")).toContainElement(
+      screen.getByTestId("child"),
+    );
   });
 
-  it("renders illustration panel with welcome image", () => {
+  it("uses the Source Fold identity rather than the old onboarding illustration", () => {
     const { container } = render(
       <AuthLayout>
         <div>Form</div>
       </AuthLayout>,
     );
-    const illustration = container.querySelector(
-      '.auth-illustration img[src="/illustrations/onboarding/step-1-welcome.svg"]',
-    );
-    expect(illustration).toBeInTheDocument();
-  });
-
-  it("renders logo lockup in illustration panel", () => {
-    render(
-      <AuthLayout>
-        <div>Form</div>
-      </AuthLayout>,
-    );
-    // Logo component renders an img with alt="TryVit"
-    const logos = screen.getAllByAltText("TryVit");
-    expect(logos.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("renders brand description text in illustration panel", () => {
-    render(
-      <AuthLayout>
-        <div>Form</div>
-      </AuthLayout>,
-    );
+    expect(screen.getByText("Know what the label really says.")).toBeInTheDocument();
+    expect(screen.getByText("01 Search")).toBeInTheDocument();
     expect(
-      screen.getByText(/Search, scan, and compare food products/),
-    ).toBeInTheDocument();
+      container.querySelector('img[src="/illustrations/onboarding/step-1-welcome.svg"]'),
+    ).not.toBeInTheDocument();
   });
 
-  it("illustration panel has auth-illustration class for gradient", () => {
-    const { container } = render(
+  it("keeps a branded mobile entry header", () => {
+    render(
       <AuthLayout>
         <div>Form</div>
       </AuthLayout>,
     );
-    const panel = container.querySelector(".auth-illustration");
-    expect(panel).toBeInTheDocument();
-  });
-
-  it("illustration panel is hidden on mobile (lg:flex)", () => {
-    const { container } = render(
-      <AuthLayout>
-        <div>Form</div>
-      </AuthLayout>,
-    );
-    const panel = container.querySelector(".auth-illustration");
-    expect(panel).toHaveClass("hidden", "lg:flex");
+    expect(screen.getAllByAltText("TryVit").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText("Private beta").length).toBeGreaterThanOrEqual(1);
   });
 });

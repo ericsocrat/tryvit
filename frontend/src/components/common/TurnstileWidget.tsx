@@ -30,6 +30,8 @@ export interface TurnstileWidgetProps {
   readonly appearance?: "always" | "execute" | "interaction-only";
   /** Widget theme. @default "auto" */
   readonly theme?: "light" | "dark" | "auto";
+  /** Responsive widget footprint. @default "normal" */
+  readonly size?: "normal" | "flexible" | "compact";
   /** Additional CSS classes on the wrapper div. */
   readonly className?: string;
 }
@@ -49,6 +51,7 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
       action,
       appearance = "interaction-only",
       theme = "auto",
+      size = "normal",
       className,
     },
     forwardedRef,
@@ -100,6 +103,7 @@ export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidget
             action,
             appearance,
             theme,
+            size,
           }}
         />
       </div>

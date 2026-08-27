@@ -10,3 +10,14 @@ export function isPrivateBetaInviteOnly(
 ): boolean {
   return value?.trim().toLowerCase() !== "false";
 }
+
+/**
+ * A separate explicit operator seal is required before the dormant signup UI
+ * may trust Supabase Auth to consume CAPTCHA tokens. Hosted Auth does not expose
+ * this setting through its public capabilities endpoint.
+ */
+export function isNativeSignupCaptchaEnabled(
+  value = process.env.TRYVIT_SUPABASE_NATIVE_CAPTCHA_ENABLED,
+): boolean {
+  return value?.trim().toLowerCase() === "true";
+}

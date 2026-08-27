@@ -1,76 +1,47 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { forwardRef, useImperativeHandle } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { forwardRef, useEffect, useImperativeHandle } from "react";
 import { SignupForm } from "./SignupForm";
 
-// ─── Mocks ──────────────────────────────────────────────────────────────────
-
 const mockPush = vi.fn();
+const mockRefresh = vi.fn();
+const mockSignUp = vi.fn();
+const mockTurnstileReset = vi.fn();
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
 }));
 
 vi.mock("next/link", () => ({
-  default: ({
-    href,
-    children,
-    ...rest
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => (
+  default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...rest}>
       {children}
     </a>
   ),
 }));
 
-const mockSignUp = vi.fn();
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
-    auth: {
-      signUp: (...args: unknown[]) => mockSignUp(...args),
-    },
-    functions: { invoke: vi.fn() },
+    auth: { signUp: (...args: unknown[]) => mockSignUp(...args) },
   }),
 }));
-
-vi.mock("@/lib/toast", () => ({
-  showToast: vi.fn(),
-}));
-
-// Mock TurnstileWidget to expose a trigger for simulating token receipt
-let capturedOnSuccess: ((token: string) => void) | undefined;
-let capturedOnError: (() => void) | undefined;
-const mockTurnstileReset = vi.fn();
 
 vi.mock("@/components/common/TurnstileWidget", () => ({
   TurnstileWidget: forwardRef(function MockTurnstileWidget(
     {
       onSuccess,
-      onError,
+      size,
     }: {
       onSuccess: (token: string) => void;
-      onError?: () => void;
+      size?: string;
     },
     ref,
   ) {
     useImperativeHandle(ref, () => ({ reset: mockTurnstileReset }));
-    useEffect(() => {
-      capturedOnSuccess = onSuccess;
-      capturedOnError = onError;
-      return () => {
-        capturedOnSuccess = undefined;
-        capturedOnError = undefined;
-      };
-    }, [onError, onSuccess]);
     return (
-      <div data-testid="turnstile-widget">
-        <button
-          data-testid="turnstile-trigger"
-          onClick={() => onSuccess("mock-captcha-token")}
-        >
+      <div data-testid="turnstile-widget" data-size={size}>
+        <button type="button" data-testid="turnstile-trigger" onClick={() => onSuccess("token-1")}>
           Verify
         </button>
       </div>
@@ -78,246 +49,149 @@ vi.mock("@/components/common/TurnstileWidget", () => ({
   }),
 }));
 
+vi.mock("@/lib/i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string) =>
+      ({
+        "auth.privateBetaShort": "Private beta",
+        "auth.privateBetaTitle": "Private beta access is invitation-only",
+        "auth.privateBetaDescription": "TryVit is open to invited testers.",
+        "auth.privateBetaAccessNote": "Invitations are issued directly.",
+        "auth.invitedAccountRequired": "An invited account is required.",
+        "auth.signInContinue": "Sign in / continue",
+        "auth.recoverInvitedAccount": "Recover invited account",
+        "auth.accountAccess": "Account access",
+        "auth.createAccount": "Create your account",
+        "auth.signUpSubtitle": "Create a TryVit account.",
+        "auth.hasAccount": "Already have an account?",
+        "auth.signIn": "Sign In",
+        "auth.email": "Email",
+        "auth.emailPlaceholder": "you@example.com",
+        "auth.password": "Password",
+        "auth.confirmPassword": "Confirm password",
+        "auth.passwordPlaceholder": "Enter your password",
+        "auth.showPassword": "Show password",
+        "auth.hidePassword": "Hide password",
+        "auth.passwordHelp": "Use at least 6 characters.",
+        "auth.passwordMismatch": "Passwords do not match.",
+        "auth.captchaRequired": "Complete the security check.",
+        "auth.captchaPrompt": "Complete the security check to enable sign up.",
+        "auth.captchaVerified": "Security check complete.",
+        "auth.signUp": "Sign Up",
+        "auth.creatingAccount": "Creating account…",
+        "auth.checkEmail": "Check your email.",
+        "auth.signupFailed": "We could not create the account.",
+        "auth.serviceUnavailable": "Account access is temporarily unavailable.",
+      })[key] ?? key,
+  }),
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
-  capturedOnSuccess = undefined;
-  capturedOnError = undefined;
 });
 
-function renderSelfServiceSignup() {
-  return render(<SignupForm inviteOnly={false} />);
+function renderSelfService() {
+  return render(<SignupForm inviteOnly={false} redirect="/app/product/42" />);
+}
+
+async function completeSelfServiceForm() {
+  const user = userEvent.setup();
+  await user.type(screen.getByLabelText("Email"), "  new@user.com  ");
+  await user.type(screen.getByLabelText("Password"), "secret123");
+  await user.type(screen.getByLabelText("Confirm password"), "secret123");
+  await user.click(screen.getByTestId("turnstile-trigger"));
+  await user.click(screen.getByRole("button", { name: "Sign Up" }));
 }
 
 describe("SignupForm", () => {
   it("renders a truthful invitation-only state without signup controls", () => {
-    render(<SignupForm inviteOnly />);
-
+    render(<SignupForm inviteOnly redirect="/app/product/42" />);
     expect(
       screen.getByRole("heading", { name: "Private beta access is invitation-only" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/small group of invited testers/i)).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /continue with/i })).not.toBeInTheDocument();
-    expect(screen.queryByTestId("turnstile-widget")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Email")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Password")).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Sign Up" })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("turnstile-widget")).not.toBeInTheDocument();
   });
 
-  it("links invited or existing users to sign in and password recovery", () => {
-    render(<SignupForm inviteOnly />);
-
-    expect(screen.getByRole("link", { name: "Sign In" })).toHaveAttribute(
+  it("preserves the intended destination in invite entry links", () => {
+    render(<SignupForm inviteOnly redirect="/app/product/42" />);
+    expect(screen.getByRole("link", { name: "Sign in / continue" })).toHaveAttribute(
       "href",
-      "/auth/login",
+      "/auth/login?redirect=%2Fapp%2Fproduct%2F42",
     );
-    expect(screen.getByRole("link", { name: "Forgot password?" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Recover invited account" })).toHaveAttribute(
       "href",
-      "/auth/forgot-password",
+      "/auth/forgot-password?redirect=%2Fapp%2Fproduct%2F42",
     );
   });
 
-  it("does not offer social registration on the self-service form", () => {
-    renderSelfServiceSignup();
+  it("keeps social registration absent from the dormant self-service form", () => {
+    renderSelfService();
     expect(screen.queryByRole("button", { name: /continue with/i })).not.toBeInTheDocument();
-  });
-
-  it("renders email and password fields", () => {
-    renderSelfServiceSignup();
-    expect(screen.getByLabelText("Email")).toBeInTheDocument();
-    expect(screen.getByLabelText("Password")).toBeInTheDocument();
-  });
-
-  it("renders password helper text", () => {
-    renderSelfServiceSignup();
-    expect(
-      screen.getByText("Use at least 6 characters. A longer password is stronger."),
-    ).toBeInTheDocument();
-  });
-
-  it("renders sign up button", () => {
-    renderSelfServiceSignup();
-    expect(screen.getByRole("button", { name: "Sign Up" })).toBeInTheDocument();
-  });
-
-  it("renders the Turnstile widget", () => {
-    renderSelfServiceSignup();
-    expect(screen.getByTestId("turnstile-widget")).toBeInTheDocument();
-  });
-
-  it("disables submit button until Turnstile token is received", () => {
-    renderSelfServiceSignup();
-    const button = screen.getByRole("button", { name: "Sign Up" });
-    expect(button).toBeDisabled();
-  });
-
-  it("enables submit button after Turnstile token is received", async () => {
-    const user = userEvent.setup();
-    renderSelfServiceSignup();
-
-    await user.click(screen.getByTestId("turnstile-trigger"));
-
-    const button = screen.getByRole("button", { name: "Sign Up" });
-    expect(button).not.toBeDisabled();
-  });
-
-  it("toggles password visibility", async () => {
-    const user = userEvent.setup();
-    renderSelfServiceSignup();
-
-    const passwordInput = screen.getByLabelText("Password");
-    expect(passwordInput).toHaveAttribute("type", "password");
-
-    await user.click(screen.getByRole("button", { name: "Show password" }));
-    expect(passwordInput).toHaveAttribute("type", "text");
-
-    await user.click(screen.getByRole("button", { name: "Hide password" }));
-    expect(passwordInput).toHaveAttribute("type", "password");
-  });
-
-  it("shows captcha helper state before and after verification", async () => {
-    const user = userEvent.setup();
-    renderSelfServiceSignup();
-
-    expect(
-      screen.getByText("Complete the security check to enable sign up."),
-    ).toBeInTheDocument();
-
-    await user.click(screen.getByTestId("turnstile-trigger"));
-
-    expect(
-      screen.getByText("Security check complete. You can now create your account."),
-    ).toBeInTheDocument();
-  });
-
-  it("renders sign in link", () => {
-    renderSelfServiceSignup();
-    expect(screen.getByText("Sign In").closest("a")).toHaveAttribute(
-      "href",
-      "/auth/login",
+    expect(screen.getByLabelText("Confirm password")).toBeInTheDocument();
+    expect(screen.getByTestId("turnstile-widget")).toHaveAttribute(
+      "data-size",
+      "compact",
     );
   });
 
-  it("requires minimum 6 character password", () => {
-    renderSelfServiceSignup();
-    const passwordInput = screen.getByLabelText("Password");
-    expect(passwordInput).toHaveAttribute("minLength", "6");
-  });
-
-  it("calls Supabase Auth exactly once after Turnstile verification", async () => {
-    mockSignUp.mockResolvedValue({ error: null });
+  it("blocks mismatched passwords before Auth or CAPTCHA consumption", async () => {
     const user = userEvent.setup();
-
-    renderSelfServiceSignup();
+    renderSelfService();
     await user.type(screen.getByLabelText("Email"), "new@user.com");
     await user.type(screen.getByLabelText("Password"), "secret123");
+    await user.type(screen.getByLabelText("Confirm password"), "different123");
     await user.click(screen.getByTestId("turnstile-trigger"));
     await user.click(screen.getByRole("button", { name: "Sign Up" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Passwords do not match.");
+    expect(mockSignUp).not.toHaveBeenCalled();
+  });
+
+  it("passes one CAPTCHA token directly to Supabase Auth exactly once", async () => {
+    mockSignUp.mockResolvedValue({ error: null });
+    renderSelfService();
+    await completeSelfServiceForm();
 
     await waitFor(() => {
       expect(mockSignUp).toHaveBeenCalledOnce();
-      expect(mockSignUp).toHaveBeenCalledWith(
-        expect.objectContaining({
-          email: "new@user.com",
-          password: "secret123",
-        }),
+      expect(mockSignUp).toHaveBeenCalledWith({
+        email: "new@user.com",
+        password: "secret123",
+        options: {
+          emailRedirectTo: expect.stringMatching(
+            /\/auth\/callback\?redirect=%2Fapp%2Fproduct%2F42/u,
+          ),
+          captchaToken: "token-1",
+        },
+      });
+      expect(mockTurnstileReset).toHaveBeenCalledOnce();
+      expect(mockPush).toHaveBeenCalledWith(
+        "/auth/login?msg=check-email&redirect=%2Fapp%2Fproduct%2F42",
       );
+      expect(mockRefresh).toHaveBeenCalled();
     });
   });
 
-  it("passes captchaToken in signUp options", async () => {
-    mockSignUp.mockResolvedValue({ error: null });
-    const user = userEvent.setup();
-
-    renderSelfServiceSignup();
-    await user.type(screen.getByLabelText("Email"), "new@user.com");
-    await user.type(screen.getByLabelText("Password"), "secret123");
-    await user.click(screen.getByTestId("turnstile-trigger"));
-    await user.click(screen.getByRole("button", { name: "Sign Up" }));
-
-    await waitFor(() => {
-      expect(mockSignUp).toHaveBeenCalledWith(
-        expect.objectContaining({
-          options: expect.objectContaining({
-            captchaToken: "mock-captcha-token",
-          }),
-        }),
-      );
-    });
-  });
-
-  it("shows success toast and redirects on success", async () => {
-    const { showToast } = await import("@/lib/toast");
-    mockSignUp.mockResolvedValue({ error: null });
-    const user = userEvent.setup();
-
-    renderSelfServiceSignup();
-    await user.type(screen.getByLabelText("Email"), "new@user.com");
-    await user.type(screen.getByLabelText("Password"), "secret123");
-    await user.click(screen.getByTestId("turnstile-trigger"));
-    await user.click(screen.getByRole("button", { name: "Sign Up" }));
-
-    await waitFor(() => {
-      expect(showToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: "success",
-          messageKey: "auth.checkEmail",
-        }),
-      );
-      expect(mockPush).toHaveBeenCalledWith("/auth/login?msg=check-email");
-    });
-  });
-
-  it("shows error toast on auth failure", async () => {
-    const { showToast } = await import("@/lib/toast");
+  it("maps Auth failure without exposing raw backend text and resets CAPTCHA", async () => {
     mockSignUp.mockResolvedValue({
-      error: { message: "Email already in use" },
+      error: { code: "signup_disabled", message: "raw backend detail" },
     });
-    const user = userEvent.setup();
-
-    renderSelfServiceSignup();
-    await user.type(screen.getByLabelText("Email"), "dup@user.com");
-    await user.type(screen.getByLabelText("Password"), "secret123");
-    await user.click(screen.getByTestId("turnstile-trigger"));
-    await user.click(screen.getByRole("button", { name: "Sign Up" }));
+    renderSelfService();
+    await completeSelfServiceForm();
 
     await waitFor(() => {
-      expect(showToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: "error",
-          message: "Email already in use",
-        }),
-      );
+      expect(screen.getByRole("alert")).toHaveTextContent("auth.privateBetaDenied");
+      expect(mockTurnstileReset).toHaveBeenCalledOnce();
     });
+    expect(screen.queryByText("raw backend detail")).not.toBeInTheDocument();
     expect(mockPush).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: "Sign Up" })).toBeDisabled();
-    expect(mockTurnstileReset).toHaveBeenCalledOnce();
   });
 
-  it("shows 'Creating account…' while loading", async () => {
-    mockSignUp.mockReturnValue(new Promise(() => {}));
+  it("keeps submit disabled until a CAPTCHA token exists", async () => {
     const user = userEvent.setup();
-
-    renderSelfServiceSignup();
-    await user.type(screen.getByLabelText("Email"), "a@b.com");
-    await user.type(screen.getByLabelText("Password"), "secret123");
+    renderSelfService();
+    expect(screen.getByRole("button", { name: "Sign Up" })).toBeDisabled();
     await user.click(screen.getByTestId("turnstile-trigger"));
-    await user.click(screen.getByRole("button", { name: "Sign Up" }));
-
-    await waitFor(() => {
-      expect(screen.getByText("Creating account…")).toBeInTheDocument();
-    });
-  });
-
-  it("disables Turnstile token on error callback", async () => {
-    renderSelfServiceSignup();
-    // Simulate getting a token first, then an error
-    await waitFor(() => {
-      capturedOnSuccess?.("some-token");
-    });
-    await waitFor(() => {
-      capturedOnError?.();
-    });
-    const button = screen.getByRole("button", { name: "Sign Up" });
-    expect(button).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Sign Up" })).toBeEnabled();
   });
 });

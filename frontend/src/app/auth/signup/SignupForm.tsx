@@ -1,242 +1,236 @@
 "use client";
 
+import {
+  AuthCard,
+  AuthStatus,
+  PasswordField,
+  authStyles,
+} from "@/components/auth/AuthCard";
 import { Button, ButtonLink } from "@/components/common/Button";
-import { Logo } from "@/components/common/Logo";
 import {
   TurnstileWidget,
   type TurnstileWidgetHandle,
 } from "@/components/common/TurnstileWidget";
+import { authErrorMessageKey } from "@/lib/auth-errors";
 import { useTranslation } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
-import { showToast } from "@/lib/toast";
 import type { FormSubmitEvent } from "@/lib/types";
-import { Eye, EyeOff } from "lucide-react";
+import { appendAuthRedirect } from "@/lib/validation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 
 interface SignupFormProps {
   readonly inviteOnly: boolean;
+  readonly redirect: string;
 }
 
-const SIGNUP_CARD_CLASS_NAME =
-  "overflow-hidden rounded-3xl border border-border/70 bg-surface/95 p-6 shadow-[0_24px_72px_rgba(15,23,42,0.14)] backdrop-blur-sm sm:p-8 dark:border-white/10 dark:shadow-[0_28px_76px_rgba(0,0,0,0.38)]";
-
-export function SignupForm({ inviteOnly }: SignupFormProps) {
-  return inviteOnly ? <InviteOnlySignup /> : <SelfServiceSignupForm />;
-}
-
-function InviteOnlySignup() {
-  const { t } = useTranslation();
-
-  return (
-    <div id="main-content" className="w-full max-w-md">
-      <div className={SIGNUP_CARD_CLASS_NAME}>
-        <div className="mb-2 flex justify-center lg:hidden">
-          <Logo variant="lockup" size={36} />
-        </div>
-
-        <p className="mb-5 text-center text-xs font-medium uppercase tracking-widest text-brand lg:hidden">
-          {t("landing.tagline")}
-        </p>
-
-        <h1 className="mb-3 text-center text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          {t("auth.privateBetaTitle")}
-        </h1>
-        <p className="text-center text-sm text-foreground-secondary sm:text-base">
-          {t("auth.privateBetaDescription")}
-        </p>
-
-        <div className="mt-7 space-y-3">
-          <ButtonLink href="/auth/login" fullWidth>
-            {t("auth.signIn")}
-          </ButtonLink>
-          <ButtonLink href="/auth/forgot-password" variant="secondary" fullWidth>
-            {t("auth.forgotPassword")}
-          </ButtonLink>
-        </div>
-
-        <p className="mt-6 text-center text-xs text-foreground-muted">
-          {t("auth.privateBetaAccessNote")}
-        </p>
-      </div>
-    </div>
+export function SignupForm({ inviteOnly, redirect }: SignupFormProps) {
+  return inviteOnly ? (
+    <InviteOnlySignup redirect={redirect} />
+  ) : (
+    <SelfServiceSignupForm redirect={redirect} />
   );
 }
 
-function SelfServiceSignupForm() {
+function InviteOnlySignup({ redirect }: { readonly redirect: string }) {
+  const { t } = useTranslation();
+
+  return (
+    <AuthCard
+      eyebrow={t("auth.privateBetaShort")}
+      title={t("auth.privateBetaTitle")}
+      description={t("auth.privateBetaDescription")}
+      footer={t("auth.privateBetaAccessNote")}
+    >
+      <div className={authStyles.form}>
+        <AuthStatus kind="info">{t("auth.invitedAccountRequired")}</AuthStatus>
+        <ButtonLink
+          href={appendAuthRedirect("/auth/login", redirect)}
+          fullWidth
+          className={authStyles.primaryAction}
+        >
+          {t("auth.signInContinue")}
+        </ButtonLink>
+        <ButtonLink
+          href={appendAuthRedirect("/auth/forgot-password", redirect)}
+          variant="secondary"
+          fullWidth
+          className={authStyles.secondaryAction}
+        >
+          {t("auth.recoverInvitedAccount")}
+        </ButtonLink>
+      </div>
+    </AuthCard>
+  );
+}
+
+function SelfServiceSignupForm({ redirect }: { readonly redirect: string }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [formErrorKey, setFormErrorKey] = useState<string | null>(null);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
   const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
   const { t } = useTranslation();
+
+  const mismatch = formErrorKey === "auth.passwordMismatch";
 
   const handleTurnstileSuccess = useCallback((token: string) => {
     setTurnstileToken(token);
   }, []);
 
-  const handleTurnstileError = useCallback(() => {
+  const clearTurnstile = useCallback(() => {
     setTurnstileToken(null);
   }, []);
 
-  const handleTurnstileExpire = useCallback(() => {
-    setTurnstileToken(null);
-  }, []);
+  function presentError(messageKey: string) {
+    setFormErrorKey(messageKey);
+    setTimeout(() => errorRef.current?.focus(), 0);
+  }
 
-  async function handleSignup(e: FormSubmitEvent) {
-    e.preventDefault();
+  async function handleSignup(event: FormSubmitEvent) {
+    event.preventDefault();
+    setFormErrorKey(null);
 
+    if (password !== confirmPassword) {
+      presentError("auth.passwordMismatch");
+      return;
+    }
     if (!turnstileToken) {
-      showToast({ type: "error", messageKey: "auth.captchaRequired" });
+      presentError("auth.captchaRequired");
       return;
     }
 
     setLoading(true);
 
     try {
+      const callback = new URL("/auth/callback", globalThis.location.origin);
+      callback.searchParams.set("redirect", redirect);
       const supabase = createClient();
       const { error } = await supabase.auth.signUp({
-        email,
+        email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${globalThis.location.origin}/auth/callback`,
+          emailRedirectTo: callback.toString(),
           captchaToken: turnstileToken,
         },
       });
 
       if (error) {
-        showToast({ type: "error", message: error.message });
+        presentError(authErrorMessageKey(error, "signup"));
         return;
       }
 
-      showToast({ type: "success", messageKey: "auth.checkEmail" });
-      router.push("/auth/login?msg=check-email");
+      router.push(appendAuthRedirect("/auth/login?msg=check-email", redirect));
+      router.refresh();
     } catch {
-      showToast({ type: "error", messageKey: "auth.serviceUnavailable" });
+      presentError("auth.serviceUnavailable");
     } finally {
-      setTurnstileToken(null);
+      clearTurnstile();
       turnstileRef.current?.reset();
       setLoading(false);
     }
   }
 
   return (
-    <div id="main-content" className="w-full max-w-md">
-      <div className={SIGNUP_CARD_CLASS_NAME}>
-        <div className="mb-2 flex justify-center lg:hidden">
-          <Logo variant="lockup" size={36} />
-        </div>
-
-        <p className="mb-5 text-center text-xs font-medium uppercase tracking-widest text-brand lg:hidden">
-          {t("landing.tagline")}
-        </p>
-
-        <h1 className="mb-2 text-center text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          {t("auth.createAccount")}
-        </h1>
-        <p className="mb-7 text-center text-sm text-foreground-secondary sm:text-base">
-          {t("auth.signUpSubtitle")}
-        </p>
-
-        <form onSubmit={handleSignup} className="space-y-4">
-          <div>
-            <label
-              htmlFor="email"
-              className="mb-1.5 block text-sm font-medium text-foreground-secondary"
-            >
-              {t("auth.email")}
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              inputMode="email"
-              autoCapitalize="none"
-              spellCheck={false}
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="input-field"
-              placeholder={t("auth.emailPlaceholder")}
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="mb-1.5 block text-sm font-medium text-foreground-secondary"
-            >
-              {t("auth.password")}
-            </label>
-            <div className="relative">
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                autoComplete="new-password"
-                required
-                minLength={6}
-                aria-describedby="signup-password-help"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="input-field pr-10"
-                placeholder={t("auth.credentialsPlaceholder")}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-0 flex items-center pr-3 text-foreground-muted transition-colors hover:text-foreground-secondary"
-                aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            <p id="signup-password-help" className="mt-1.5 text-xs text-foreground-muted">
-              {t("auth.passwordHelp")}
-            </p>
-          </div>
-
-          <div className="rounded-xl border border-brand/25 bg-brand-subtle/40 p-3 shadow-[0_10px_28px_rgba(14,165,164,0.12)]">
-            <TurnstileWidget
-              ref={turnstileRef}
-              onSuccess={handleTurnstileSuccess}
-              onError={handleTurnstileError}
-              onExpire={handleTurnstileExpire}
-              action="signup"
-              className="flex justify-center"
-            />
-            <p
-              id="signup-captcha-hint"
-              className="mt-2.5 text-center text-xs text-foreground-muted"
-              aria-live="polite"
-            >
-              {turnstileToken ? t("auth.captchaVerified") : t("auth.captchaPrompt")}
-            </p>
-          </div>
-
-          <Button
-            type="submit"
-            disabled={loading || !turnstileToken}
-            aria-describedby={turnstileToken ? undefined : "signup-captcha-hint"}
-            className="mt-1"
-            fullWidth
-          >
-            {loading ? t("auth.creatingAccount") : t("auth.signUp")}
-          </Button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-foreground-secondary">
-          {t("auth.hasAccount")}{" "}
-          <Link
-            href="/auth/login"
-            className="rounded-sm font-semibold text-brand underline-offset-4 transition-colors hover:text-brand-hover hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
-          >
+    <AuthCard
+      eyebrow={t("auth.accountAccess")}
+      title={t("auth.createAccount")}
+      description={t("auth.signUpSubtitle")}
+      footer={
+        <>
+          {t("auth.hasAccount")} {" "}
+          <Link href={appendAuthRedirect("/auth/login", redirect)} className={authStyles.link}>
             {t("auth.signIn")}
           </Link>
-        </p>
-      </div>
-    </div>
+        </>
+      }
+    >
+      {formErrorKey ? (
+        <AuthStatus ref={errorRef} kind="error">
+          {t(formErrorKey)}
+        </AuthStatus>
+      ) : null}
+
+      <form onSubmit={handleSignup} className={authStyles.form}>
+        <div className={authStyles.field}>
+          <label htmlFor="email" className={authStyles.label}>
+            {t("auth.email")}
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            autoCapitalize="none"
+            spellCheck={false}
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            className={authStyles.input}
+            placeholder={t("auth.emailPlaceholder")}
+          />
+        </div>
+
+        <PasswordField
+          id="password"
+          name="password"
+          label={t("auth.password")}
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          autoComplete="new-password"
+          placeholder={t("auth.passwordPlaceholder")}
+          showLabel={t("auth.showPassword")}
+          hideLabel={t("auth.hidePassword")}
+          help={t("auth.passwordHelp")}
+          minLength={6}
+        />
+
+        <PasswordField
+          id="confirm-password"
+          name="confirm-password"
+          label={t("auth.confirmPassword")}
+          value={confirmPassword}
+          onChange={(event) => setConfirmPassword(event.target.value)}
+          autoComplete="new-password"
+          placeholder={t("auth.passwordPlaceholder")}
+          showLabel={t("auth.showPassword")}
+          hideLabel={t("auth.hidePassword")}
+          error={mismatch ? t("auth.passwordMismatch") : null}
+          minLength={6}
+        />
+
+        <div className={authStyles.captchaPanel}>
+          <TurnstileWidget
+            ref={turnstileRef}
+            onSuccess={handleTurnstileSuccess}
+            onError={clearTurnstile}
+            onExpire={clearTurnstile}
+            action="signup"
+            size="compact"
+            className="flex justify-center"
+          />
+          <p id="signup-captcha-hint" className={authStyles.captchaHint} aria-live="polite">
+            {turnstileToken ? t("auth.captchaVerified") : t("auth.captchaPrompt")}
+          </p>
+        </div>
+
+        <Button
+          type="submit"
+          loading={loading}
+          disabled={loading || !turnstileToken}
+          aria-describedby={turnstileToken ? undefined : "signup-captcha-hint"}
+          fullWidth
+          className={authStyles.primaryAction}
+        >
+          {loading ? t("auth.creatingAccount") : t("auth.signUp")}
+        </Button>
+      </form>
+    </AuthCard>
   );
 }

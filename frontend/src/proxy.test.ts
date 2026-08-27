@@ -276,6 +276,24 @@ describe("proxy", () => {
       expect(response.headers.get("location")).toBe("http://localhost:3000/app/search");
     });
 
+    it("returns a logged-in user to the sanitized deep app destination", async () => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: "u1" } } });
+      const response = await proxy(
+        createRequest("/auth/login?redirect=%2Fapp%2Fproduct%2F42%3Ftab%3Dnutrition"),
+      );
+      expect(response.headers.get("location")).toBe(
+        "http://localhost:3000/app/product/42?tab=nutrition",
+      );
+    });
+
+    it("rejects an external signed-in redirect target", async () => {
+      mockGetUser.mockResolvedValue({ data: { user: { id: "u1" } } });
+      const response = await proxy(
+        createRequest("/auth/login?redirect=https%3A%2F%2Fevil.com"),
+      );
+      expect(response.headers.get("location")).toBe("http://localhost:3000/app/search");
+    });
+
     it("does not redirect logged-in user from /", async () => {
       mockGetUser.mockResolvedValue({
         data: { user: { id: "u1" } },

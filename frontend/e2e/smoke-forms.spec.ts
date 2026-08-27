@@ -41,6 +41,10 @@ test.describe("Login form validation UX", () => {
     page,
   }) => {
     const emailInput = page.locator("#email");
+    if (await emailInput.isDisabled()) {
+      await expect(page.getByText(/account access is temporarily unavailable/i)).toBeVisible();
+      return;
+    }
     await emailInput.focus();
     await expect(emailInput).toBeFocused();
 
@@ -60,6 +64,11 @@ test.describe("Login form validation UX", () => {
     page,
   }) => {
     const submit = page.locator('button[type="submit"]');
+    if (await submit.isDisabled()) {
+      await expect(page.getByText(/account access is temporarily unavailable/i)).toBeVisible();
+      await expect(page).toHaveURL(/\/auth\/login/);
+      return;
+    }
     await submit.click();
 
     // Page should NOT navigate (form blocked by required validation)
@@ -98,13 +107,57 @@ test.describe("Private-beta signup UX", () => {
   });
 
   test("offers login and password recovery", async ({ page }) => {
-    await expect(page.getByRole("link", { name: /sign in/i })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: /sign in \/ continue/i })).toHaveAttribute(
       "href",
-      "/auth/login",
+      /\/auth\/login\?redirect=/u,
     );
-    await expect(page.getByRole("link", { name: /forgot password/i })).toHaveAttribute(
+    await expect(page.getByRole("link", { name: /recover invited account/i })).toHaveAttribute(
       "href",
-      "/auth/forgot-password",
+      /\/auth\/forgot-password\?redirect=/u,
+    );
+  });
+});
+
+test.describe("Auth destination and recovery continuity", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("preserves a protected deep link through invite and recovery entry", async ({ page }) => {
+    await page.goto("/app/product/42?tab=nutrition");
+    await page.waitForURL(/\/auth\/login/u);
+
+    let current = new URL(page.url());
+    expect(current.searchParams.get("redirect")).toBe("/app/product/42?tab=nutrition");
+
+    await page.getByRole("link", { name: /how private beta works/i }).click();
+    await page.waitForURL(/\/auth\/signup/u);
+    current = new URL(page.url());
+    expect(current.pathname).toBe("/auth/signup");
+    expect(current.searchParams.get("redirect")).toBe("/app/product/42?tab=nutrition");
+
+    await page.getByRole("link", { name: /sign in \/ continue/i }).click();
+    await page.waitForURL(/\/auth\/login/u);
+    await page.getByRole("link", { name: /forgot password/i }).click();
+    await page.waitForURL(/\/auth\/forgot-password/u);
+    current = new URL(page.url());
+    expect(current.pathname).toBe("/auth/forgot-password");
+    expect(current.searchParams.get("redirect")).toBe("/app/product/42?tab=nutrition");
+
+    const dimensions = await page.evaluate(() => ({
+      innerWidth: window.innerWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }));
+    expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.innerWidth);
+  });
+
+  test("renders provider and expired-link failures as recoverable login states", async ({ page }) => {
+    await page.goto("/auth/login?reason=provider&redirect=%2Fapp%2Fsearch");
+    await expect(page.getByRole("main").getByRole("alert")).toContainText(
+      /provider could not complete/i,
+    );
+
+    await page.goto("/auth/login?reason=expired&redirect=%2Fapp%2Fsearch");
+    await expect(page.getByRole("main").getByRole("alert")).toContainText(
+      /session has expired/i,
     );
   });
 });

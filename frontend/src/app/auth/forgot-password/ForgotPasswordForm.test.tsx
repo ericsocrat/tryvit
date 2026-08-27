@@ -31,10 +31,6 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("@/lib/toast", () => ({
-  showToast: vi.fn(),
-}));
-
 vi.mock("@/lib/i18n", () => ({
   useTranslation: () => ({
     t: (key: string) => {
@@ -50,6 +46,8 @@ vi.mock("@/lib/i18n", () => ({
         "auth.resetEmailSent":
           "If an account exists with that email, you\u2019ll receive a password reset link shortly.",
         "auth.backToLogin": "Back to login",
+        "auth.recoveryEyebrow": "Secure recovery",
+        "auth.serviceUnavailable": "Account access is temporarily unavailable.",
         "landing.tagline": "tagline",
       };
       return map[key] ?? key;
@@ -61,9 +59,13 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
+function renderForm() {
+  return render(<ForgotPasswordForm redirect="/app/product/42" />);
+}
+
 describe("ForgotPasswordForm", () => {
   it("renders email input and submit button", () => {
-    render(<ForgotPasswordForm />);
+    renderForm();
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Send reset link" }),
@@ -71,16 +73,19 @@ describe("ForgotPasswordForm", () => {
   });
 
   it("renders back to login link", () => {
-    render(<ForgotPasswordForm />);
+    renderForm();
     const link = screen.getByText("Back to login").closest("a");
-    expect(link).toHaveAttribute("href", "/auth/login");
+    expect(link).toHaveAttribute(
+      "href",
+      "/auth/login?redirect=%2Fapp%2Fproduct%2F42",
+    );
   });
 
   it("calls resetPasswordForEmail on submit", async () => {
     mockResetPassword.mockResolvedValue({ error: null });
     const user = userEvent.setup();
 
-    render(<ForgotPasswordForm />);
+    renderForm();
     await user.type(screen.getByLabelText("Email"), "test@example.com");
     await user.click(
       screen.getByRole("button", { name: "Send reset link" }),
@@ -88,7 +93,9 @@ describe("ForgotPasswordForm", () => {
 
     await waitFor(() => {
       expect(mockResetPassword).toHaveBeenCalledWith("test@example.com", {
-        redirectTo: expect.stringContaining("/auth/callback?type=recovery"),
+        redirectTo: expect.stringMatching(
+          /\/auth\/callback\?type=recovery&redirect=%2Fapp%2Fproduct%2F42/u,
+        ),
       });
     });
   });
@@ -97,7 +104,7 @@ describe("ForgotPasswordForm", () => {
     mockResetPassword.mockResolvedValue({ error: null });
     const user = userEvent.setup();
 
-    render(<ForgotPasswordForm />);
+    renderForm();
     await user.type(screen.getByLabelText("Email"), "test@example.com");
     await user.click(
       screen.getByRole("button", { name: "Send reset link" }),
@@ -111,28 +118,26 @@ describe("ForgotPasswordForm", () => {
     });
 
     // Back to login button visible in success state
-    expect(screen.getByText("Back to login").closest("a")).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Back to login" })).toHaveAttribute(
       "href",
-      "/auth/login",
+      "/auth/login?redirect=%2Fapp%2Fproduct%2F42",
     );
   });
 
-  it("shows success toast after submission", async () => {
-    const { showToast } = await import("@/lib/toast");
+  it("shows the enumeration-safe success message after submission", async () => {
     mockResetPassword.mockResolvedValue({ error: null });
     const user = userEvent.setup();
 
-    render(<ForgotPasswordForm />);
+    renderForm();
     await user.type(screen.getByLabelText("Email"), "test@example.com");
     await user.click(
       screen.getByRole("button", { name: "Send reset link" }),
     );
 
     await waitFor(() => {
-      expect(showToast).toHaveBeenCalledWith({
-        type: "success",
-        messageKey: "auth.resetEmailSent",
-      });
+      expect(screen.getByRole("status")).toHaveTextContent(
+        /if an account exists/i,
+      );
     });
   });
 
@@ -140,7 +145,7 @@ describe("ForgotPasswordForm", () => {
     mockResetPassword.mockReturnValue(new Promise(() => {}));
     const user = userEvent.setup();
 
-    render(<ForgotPasswordForm />);
+    renderForm();
     await user.type(screen.getByLabelText("Email"), "test@example.com");
     await user.click(
       screen.getByRole("button", { name: "Send reset link" }),
@@ -151,24 +156,22 @@ describe("ForgotPasswordForm", () => {
     });
   });
 
-  it("shows error toast and keeps form visible on reset failure", async () => {
-    const { showToast } = await import("@/lib/toast");
+  it("shows an inline error and keeps the form visible on reset failure", async () => {
     mockResetPassword.mockResolvedValue({
       error: { message: "service unavailable" },
     });
     const user = userEvent.setup();
 
-    render(<ForgotPasswordForm />);
+    renderForm();
     await user.type(screen.getByLabelText("Email"), "test@example.com");
     await user.click(
       screen.getByRole("button", { name: "Send reset link" }),
     );
 
     await waitFor(() => {
-      expect(showToast).toHaveBeenCalledWith({
-        type: "error",
-        messageKey: "auth.resetEmailFailed",
-      });
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Could not send reset email. Please try again.",
+      );
     });
 
     expect(

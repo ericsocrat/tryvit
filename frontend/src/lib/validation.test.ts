@@ -1,8 +1,10 @@
 import {
     computeEanCheckDigit,
+    appendAuthRedirect,
     formatSlug,
     isValidEan,
     isValidEanChecksum,
+    sanitizeAuthRedirect,
     sanitizeRedirect,
     stripNonDigits,
 } from "@/lib/validation";
@@ -23,6 +25,15 @@ describe("sanitizeRedirect", () => {
 
   it("rejects protocol-relative URLs (//evil.com)", () => {
     expect(sanitizeRedirect("//evil.com")).toBe("/app/search");
+  });
+
+  it.each([
+    "/\\evil.com",
+    "/%5cevil.com",
+    "/%2fevil.com",
+    "/app/search\r\nLocation: https://evil.com",
+  ])("rejects browser-normalized redirect attacks: %s", (value) => {
+    expect(sanitizeRedirect(value)).toBe("/app/search");
   });
 
   it("rejects absolute URLs", () => {
@@ -47,6 +58,54 @@ describe("sanitizeRedirect", () => {
 
   it("uses custom fallback when provided", () => {
     expect(sanitizeRedirect(null, "/dashboard")).toBe("/dashboard");
+  });
+
+  it("normalizes a valid same-origin path", () => {
+    expect(sanitizeRedirect("/app/../app/product/42?tab=nutrition#facts")).toBe(
+      "/app/product/42?tab=nutrition#facts",
+    );
+  });
+});
+
+describe("sanitizeAuthRedirect", () => {
+  it("accepts authenticated app destinations", () => {
+    expect(sanitizeAuthRedirect("/app/product/42?tab=nutrition")).toBe(
+      "/app/product/42?tab=nutrition",
+    );
+  });
+
+  it.each(["/app?source=invite", "/app#resume"])(
+    "preserves root app query/hash state: %s",
+    (value) => {
+      expect(sanitizeAuthRedirect(value)).toBe(value);
+    },
+  );
+
+  it.each(["/auth/login", "/auth/callback", "/", "/legal/privacy"])(
+    "rejects auth loops and public destinations: %s",
+    (value) => {
+      expect(sanitizeAuthRedirect(value)).toBe("/app/search");
+    },
+  );
+});
+
+describe("appendAuthRedirect", () => {
+  it("preserves existing auth query parameters", () => {
+    expect(
+      appendAuthRedirect("/auth/login?msg=password-updated", "/app/product/42"),
+    ).toBe("/auth/login?msg=password-updated&redirect=%2Fapp%2Fproduct%2F42");
+  });
+
+  it("sanitizes the post-auth destination", () => {
+    expect(appendAuthRedirect("/auth/forgot-password", "https://evil.com")).toBe(
+      "/auth/forgot-password?redirect=%2Fapp%2Fsearch",
+    );
+  });
+
+  it("rejects non-auth navigation paths", () => {
+    expect(() => appendAuthRedirect("/app/search", "/app/search")).toThrow(
+      /inside \/auth/u,
+    );
   });
 });
 

@@ -1,22 +1,15 @@
-// ─── Social Login Buttons ───────────────────────────────────────────────────
-// Renders Google and Apple OAuth buttons with a divider.
-// Used on both login and signup pages. Calls Supabase signInWithOAuth().
-//
-// Provider config (client IDs, secrets, redirect URLs) is set in Supabase
-// Dashboard → Authentication → Providers. No env vars needed in frontend code.
-
 "use client";
 
+import type { SocialAuthProvider } from "@/lib/auth-capabilities";
+import { authErrorMessageKey } from "@/lib/auth-errors";
 import { useTranslation } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
-import { showToast } from "@/lib/toast";
 import { useState } from "react";
+import styles from "./AuthExperience.module.css";
 
-// ─── Provider brand SVGs ────────────────────────────────────────────────────
-
-function GoogleIcon({ className }: { readonly className?: string }) {
+function GoogleIcon() {
   return (
-    <svg className={className} width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
       <path
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
         fill="#4285F4"
@@ -37,92 +30,70 @@ function GoogleIcon({ className }: { readonly className?: string }) {
   );
 }
 
-function AppleIcon({ className }: { readonly className?: string }) {
-  return (
-    <svg
-      className={className}
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-    </svg>
-  );
+interface SocialLoginButtonsProps {
+  readonly providers: readonly SocialAuthProvider[];
+  readonly redirect: string;
+  readonly showEmailDivider?: boolean;
+  readonly onError: (messageKey: string) => void;
 }
 
-// ─── Component ──────────────────────────────────────────────────────────────
-
-type SocialProvider = "google" | "apple";
-
-export function SocialLoginButtons() {
+export function SocialLoginButtons({
+  providers,
+  redirect,
+  showEmailDivider = true,
+  onError,
+}: SocialLoginButtonsProps) {
   const { t } = useTranslation();
-  const [loadingProvider, setLoadingProvider] = useState<SocialProvider | null>(null);
+  const [loadingProvider, setLoadingProvider] = useState<SocialAuthProvider | null>(null);
 
-  async function handleSocialLogin(provider: SocialProvider) {
+  if (providers.length === 0) return null;
+
+  async function handleSocialLogin(provider: SocialAuthProvider) {
     setLoadingProvider(provider);
 
     try {
+      const callback = new URL("/auth/callback", globalThis.location.origin);
+      callback.searchParams.set("redirect", redirect);
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo: `${globalThis.location.origin}/auth/callback`,
-        },
+        options: { redirectTo: callback.toString() },
       });
 
       if (!error) return;
-
-      setLoadingProvider(null);
-      const providerName = provider === "google" ? "Google" : "Apple";
-      showToast({
-        type: "error",
-        message: t("auth.socialLoginError", { provider: providerName }),
-      });
-    } catch {
-      setLoadingProvider(null);
-      showToast({ type: "error", messageKey: "auth.serviceUnavailable" });
+      onError(authErrorMessageKey(error, "oauth"));
+    } catch (error) {
+      onError(authErrorMessageKey(error, "oauth"));
     }
-    // On success, Supabase redirects to the provider — no further action needed.
+
+    setLoadingProvider(null);
   }
 
   return (
-    <div className="mb-6">
-      {/* ─── Social buttons ─────────────────────────────────────────── */}
-      <div className="space-y-3">
-        <button
-          type="button"
-          disabled={loadingProvider !== null}
-          onClick={() => handleSocialLogin("google")}
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-default bg-surface/95 px-4 py-2.5 text-sm font-medium text-foreground shadow-[0_10px_28px_rgba(15,23,42,0.08)] transition-colors hover:bg-surface-subtle focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50"
-        >
-          <GoogleIcon />
-          {loadingProvider === "google" ? t("auth.redirecting") : t("auth.continueWithGoogle")}
-        </button>
+    <div>
+      <div className={styles.socialStack}>
+        {providers.includes("google") ? (
+          <button
+            type="button"
+            disabled={loadingProvider !== null}
+            aria-busy={loadingProvider === "google" || undefined}
+            onClick={() => handleSocialLogin("google")}
+            className={styles.socialButton}
+          >
+            <GoogleIcon />
+            {loadingProvider === "google"
+              ? t("auth.redirecting")
+              : t("auth.continueWithGoogle")}
+          </button>
+        ) : null}
 
-        <button
-          type="button"
-          disabled={loadingProvider !== null}
-          onClick={() => handleSocialLogin("apple")}
-          className="flex w-full items-center justify-center gap-3 rounded-xl border border-foreground bg-foreground px-4 py-2.5 text-sm font-medium text-foreground-inverse shadow-[0_10px_28px_rgba(2,6,23,0.18)] transition-opacity hover:opacity-90 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50"
-        >
-          <AppleIcon className="text-foreground-inverse" />
-          {loadingProvider === "apple" ? t("auth.redirecting") : t("auth.continueWithApple")}
-        </button>
       </div>
 
-      {/* ─── Divider ─────────────────────────────────────────────────── */}
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-default" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="rounded-full border border-default bg-surface px-3 py-0.5 text-foreground-muted">
-            {t("auth.orContinueWithEmail")}
-          </span>
-        </div>
-      </div>
+      <p className={styles.socialHint}>{t("auth.socialInviteMatchHint")}</p>
+
+      {showEmailDivider ? (
+        <div className={styles.divider}>{t("auth.orContinueWithEmail")}</div>
+      ) : null}
     </div>
   );
 }

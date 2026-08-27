@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "ab2f5cfdf79422710a12679ba07d9d6f1adbe62c",
+    "baseSha": "b29a9a5c54781267d1d08790cfda4bd315f2067e",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "313df35a126d9b858c3583daf15c6b4ec4ea4dcd63c111671a56239edd7c3dcb"
+    "sourceFingerprint": "716209804711e9c598e235ad628e550b251dfa484cf4b30155cb70f1c8f24f34"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12,10 +12,10 @@
     "frontend/src/design-system"
   ],
   "moduleCounts": {
-    "total": 445,
-    "route-module": 92,
+    "total": 447,
+    "route-module": 93,
     "app-support-module": 87,
-    "shared-component-module": 196,
+    "shared-component-module": 197,
     "design-system-module": 70
   },
   "modules": [
@@ -2316,7 +2316,8 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/lib/logger.ts",
-        "frontend/src/lib/supabase/server.ts"
+        "frontend/src/lib/supabase/server.ts",
+        "frontend/src/lib/validation.ts"
       ],
       "directConsumers": [],
       "transitiveRouteConsumers": [
@@ -2343,12 +2344,13 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
+        "frontend/src/components/auth/AuthCard.tsx",
         "frontend/src/components/common/Button.tsx",
-        "frontend/src/components/common/Logo.tsx",
+        "frontend/src/lib/auth-errors.ts",
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/supabase/client.ts",
-        "frontend/src/lib/toast.ts",
-        "frontend/src/lib/types.ts"
+        "frontend/src/lib/types.ts",
+        "frontend/src/lib/validation.ts"
       ],
       "directConsumers": [
         "frontend/src/app/auth/forgot-password/page.tsx"
@@ -2367,30 +2369,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-input-field",
-          "occurrences": [
-            {
-              "value": ".input-field",
-              "count": 1
-            }
-          ]
-        },
-        {
-          "category": "arbitrary-shadow",
-          "occurrences": [
-            {
-              "value": "shadow-[0_24px_72px_rgba(15,23,42,0.14)]",
-              "count": 1
-            },
-            {
-              "value": "shadow-[0_28px_76px_rgba(0,0,0,0.38)]",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/auth/forgot-password/page.tsx",
@@ -2401,7 +2380,8 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/app/auth/forgot-password/ForgotPasswordForm.tsx",
-        "frontend/src/components/common/LoadingSpinner.tsx"
+        "frontend/src/components/common/LoadingSpinner.tsx",
+        "frontend/src/lib/validation.ts"
       ],
       "directConsumers": [],
       "transitiveRouteConsumers": [
@@ -2446,17 +2426,34 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/auth/loading.tsx",
+      "classification": "route-module",
+      "routeModuleKind": "loading",
+      "routePath": "/auth",
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/components/common/LoadingSpinner.tsx"
+      ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [
         {
-          "category": "arbitrary-shadow",
-          "occurrences": [
-            {
-              "value": "shadow-[0_14px_30px_rgba(15,23,42,0.12)]",
-              "count": 1
-            }
-          ]
+          "modulePath": "frontend/src/app/auth/loading.tsx",
+          "routeModuleKind": "loading",
+          "routePath": "/auth"
         }
-      ]
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/auth/login/LoginForm.tsx",
@@ -2466,12 +2463,13 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
+        "frontend/src/components/auth/AuthCard.tsx",
         "frontend/src/components/auth/SocialLoginButtons.tsx",
         "frontend/src/components/common/Button.tsx",
-        "frontend/src/components/common/Logo.tsx",
+        "frontend/src/lib/auth-capabilities.ts",
+        "frontend/src/lib/auth-errors.ts",
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/supabase/client.ts",
-        "frontend/src/lib/toast.ts",
         "frontend/src/lib/types.ts",
         "frontend/src/lib/validation.ts"
       ],
@@ -2492,38 +2490,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-input-field",
-          "occurrences": [
-            {
-              "value": ".input-field",
-              "count": 2
-            }
-          ]
-        },
-        {
-          "category": "arbitrary-shadow",
-          "occurrences": [
-            {
-              "value": "shadow-[0_24px_72px_rgba(15,23,42,0.14)]",
-              "count": 1
-            },
-            {
-              "value": "shadow-[0_28px_76px_rgba(0,0,0,0.38)]",
-              "count": 1
-            },
-            {
-              "value": "shadow-[0_8px_24px_rgba(245,158,11,0.14)]",
-              "count": 1
-            },
-            {
-              "value": "shadow-[0_8px_24px_rgba(34,197,94,0.12)]",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/auth/login/page.tsx",
@@ -2534,7 +2501,9 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/app/auth/login/LoginForm.tsx",
-        "frontend/src/components/common/LoadingSpinner.tsx"
+        "frontend/src/components/common/LoadingSpinner.tsx",
+        "frontend/src/lib/auth-capabilities.ts",
+        "frontend/src/lib/private-beta-admission.ts"
       ],
       "directConsumers": [],
       "transitiveRouteConsumers": [
@@ -2561,13 +2530,14 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
+        "frontend/src/components/auth/AuthCard.tsx",
         "frontend/src/components/common/Button.tsx",
-        "frontend/src/components/common/Logo.tsx",
         "frontend/src/components/common/TurnstileWidget.tsx",
+        "frontend/src/lib/auth-errors.ts",
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/supabase/client.ts",
-        "frontend/src/lib/toast.ts",
-        "frontend/src/lib/types.ts"
+        "frontend/src/lib/types.ts",
+        "frontend/src/lib/validation.ts"
       ],
       "directConsumers": [
         "frontend/src/app/auth/signup/page.tsx"
@@ -2586,34 +2556,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-input-field",
-          "occurrences": [
-            {
-              "value": ".input-field",
-              "count": 2
-            }
-          ]
-        },
-        {
-          "category": "arbitrary-shadow",
-          "occurrences": [
-            {
-              "value": "shadow-[0_10px_28px_rgba(14,165,164,0.12)]",
-              "count": 1
-            },
-            {
-              "value": "shadow-[0_24px_72px_rgba(15,23,42,0.14)]",
-              "count": 1
-            },
-            {
-              "value": "shadow-[0_28px_76px_rgba(0,0,0,0.38)]",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/auth/signup/page.tsx",
@@ -2625,7 +2568,10 @@
       "directModuleImports": [
         "frontend/src/app/auth/signup/SignupForm.tsx",
         "frontend/src/components/common/LoadingSpinner.tsx",
-        "frontend/src/lib/private-beta-admission.ts"
+        "frontend/src/lib/auth-capabilities.ts",
+        "frontend/src/lib/private-beta-admission.ts",
+        "frontend/src/lib/turnstile.ts",
+        "frontend/src/lib/validation.ts"
       ],
       "directConsumers": [],
       "transitiveRouteConsumers": [
@@ -2652,12 +2598,13 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
+        "frontend/src/components/auth/AuthCard.tsx",
         "frontend/src/components/common/Button.tsx",
-        "frontend/src/components/common/Logo.tsx",
+        "frontend/src/lib/auth-errors.ts",
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/supabase/client.ts",
-        "frontend/src/lib/toast.ts",
-        "frontend/src/lib/types.ts"
+        "frontend/src/lib/types.ts",
+        "frontend/src/lib/validation.ts"
       ],
       "directConsumers": [
         "frontend/src/app/auth/update-password/page.tsx"
@@ -2676,30 +2623,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-input-field",
-          "occurrences": [
-            {
-              "value": ".input-field",
-              "count": 2
-            }
-          ]
-        },
-        {
-          "category": "arbitrary-shadow",
-          "occurrences": [
-            {
-              "value": "shadow-[0_24px_72px_rgba(15,23,42,0.14)]",
-              "count": 1
-            },
-            {
-              "value": "shadow-[0_28px_76px_rgba(0,0,0,0.38)]",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/auth/update-password/page.tsx",
@@ -2710,7 +2634,9 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/app/auth/update-password/UpdatePasswordForm.tsx",
-        "frontend/src/components/common/LoadingSpinner.tsx"
+        "frontend/src/components/common/LoadingSpinner.tsx",
+        "frontend/src/lib/supabase/server.ts",
+        "frontend/src/lib/validation.ts"
       ],
       "directConsumers": [],
       "transitiveRouteConsumers": [
@@ -6553,6 +6479,51 @@
       ]
     },
     {
+      "path": "frontend/src/components/auth/AuthCard.tsx",
+      "classification": "shared-component-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/auth/forgot-password/ForgotPasswordForm.tsx",
+        "frontend/src/app/auth/login/LoginForm.tsx",
+        "frontend/src/app/auth/signup/SignupForm.tsx",
+        "frontend/src/app/auth/update-password/UpdatePasswordForm.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/auth/forgot-password/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/auth/forgot-password"
+        },
+        {
+          "modulePath": "frontend/src/app/auth/login/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/auth/login"
+        },
+        {
+          "modulePath": "frontend/src/app/auth/signup/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/auth/signup"
+        },
+        {
+          "modulePath": "frontend/src/app/auth/update-password/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/auth/update-password"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
       "path": "frontend/src/components/auth/SocialLoginButtons.tsx",
       "classification": "shared-component-module",
       "routeModuleKind": null,
@@ -6560,9 +6531,10 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
+        "frontend/src/lib/auth-capabilities.ts",
+        "frontend/src/lib/auth-errors.ts",
         "frontend/src/lib/i18n.ts",
-        "frontend/src/lib/supabase/client.ts",
-        "frontend/src/lib/toast.ts"
+        "frontend/src/lib/supabase/client.ts"
       ],
       "directConsumers": [
         "frontend/src/app/auth/login/LoginForm.tsx"
@@ -6581,21 +6553,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "arbitrary-shadow",
-          "occurrences": [
-            {
-              "value": "shadow-[0_10px_28px_rgba(15,23,42,0.08)]",
-              "count": 1
-            },
-            {
-              "value": "shadow-[0_10px_28px_rgba(2,6,23,0.18)]",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/category/CategoryScoreBar.tsx",
@@ -8288,6 +8246,7 @@
         "frontend/src/app/app/scan/submit/page.tsx",
         "frontend/src/app/app/search/page.tsx",
         "frontend/src/app/auth/forgot-password/page.tsx",
+        "frontend/src/app/auth/loading.tsx",
         "frontend/src/app/auth/login/page.tsx",
         "frontend/src/app/auth/signup/page.tsx",
         "frontend/src/app/auth/update-password/page.tsx",
@@ -8335,6 +8294,11 @@
           "modulePath": "frontend/src/app/auth/forgot-password/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/auth/forgot-password"
+        },
+        {
+          "modulePath": "frontend/src/app/auth/loading.tsx",
+          "routeModuleKind": "loading",
+          "routePath": "/auth"
         },
         {
           "modulePath": "frontend/src/app/auth/login/page.tsx",
@@ -8385,11 +8349,7 @@
       "directModuleImports": [],
       "directConsumers": [
         "frontend/src/app/app/layout.tsx",
-        "frontend/src/app/auth/forgot-password/ForgotPasswordForm.tsx",
         "frontend/src/app/auth/layout.tsx",
-        "frontend/src/app/auth/login/LoginForm.tsx",
-        "frontend/src/app/auth/signup/SignupForm.tsx",
-        "frontend/src/app/auth/update-password/UpdatePasswordForm.tsx",
         "frontend/src/app/compare/shared/[token]/page.tsx",
         "frontend/src/app/lists/shared/[token]/page.tsx",
         "frontend/src/app/onboarding/layout.tsx",
@@ -8404,29 +8364,9 @@
           "routePath": "/app"
         },
         {
-          "modulePath": "frontend/src/app/auth/forgot-password/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/auth/forgot-password"
-        },
-        {
           "modulePath": "frontend/src/app/auth/layout.tsx",
           "routeModuleKind": "layout",
           "routePath": "/auth"
-        },
-        {
-          "modulePath": "frontend/src/app/auth/login/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/auth/login"
-        },
-        {
-          "modulePath": "frontend/src/app/auth/signup/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/auth/signup"
-        },
-        {
-          "modulePath": "frontend/src/app/auth/update-password/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/auth/update-password"
         },
         {
           "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
@@ -13340,6 +13280,11 @@
         {
           "modulePath": "frontend/src/app/auth/layout.tsx",
           "routeModuleKind": "layout",
+          "routePath": "/auth"
+        },
+        {
+          "modulePath": "frontend/src/app/auth/loading.tsx",
+          "routeModuleKind": "loading",
           "routePath": "/auth"
         },
         {
@@ -20608,26 +20553,6 @@
           "count": 1
         },
         {
-          "path": "frontend/src/app/auth/forgot-password/ForgotPasswordForm.tsx",
-          "value": ".input-field",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/auth/login/LoginForm.tsx",
-          "value": ".input-field",
-          "count": 2
-        },
-        {
-          "path": "frontend/src/app/auth/signup/SignupForm.tsx",
-          "value": ".input-field",
-          "count": 2
-        },
-        {
-          "path": "frontend/src/app/auth/update-password/UpdatePasswordForm.tsx",
-          "value": ".input-field",
-          "count": 2
-        },
-        {
           "path": "frontend/src/components/search/SaveSearchDialog.tsx",
           "value": ".input-field",
           "count": 1
@@ -20640,66 +20565,6 @@
         {
           "path": "frontend/src/app/app/scan/page.tsx",
           "value": "shadow-[0_0_12px_rgba(234,179,8,0.5)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/auth/forgot-password/ForgotPasswordForm.tsx",
-          "value": "shadow-[0_24px_72px_rgba(15,23,42,0.14)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/auth/forgot-password/ForgotPasswordForm.tsx",
-          "value": "shadow-[0_28px_76px_rgba(0,0,0,0.38)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/auth/layout.tsx",
-          "value": "shadow-[0_14px_30px_rgba(15,23,42,0.12)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/auth/login/LoginForm.tsx",
-          "value": "shadow-[0_24px_72px_rgba(15,23,42,0.14)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/auth/login/LoginForm.tsx",
-          "value": "shadow-[0_28px_76px_rgba(0,0,0,0.38)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/auth/login/LoginForm.tsx",
-          "value": "shadow-[0_8px_24px_rgba(245,158,11,0.14)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/auth/login/LoginForm.tsx",
-          "value": "shadow-[0_8px_24px_rgba(34,197,94,0.12)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/auth/signup/SignupForm.tsx",
-          "value": "shadow-[0_10px_28px_rgba(14,165,164,0.12)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/auth/signup/SignupForm.tsx",
-          "value": "shadow-[0_24px_72px_rgba(15,23,42,0.14)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/auth/signup/SignupForm.tsx",
-          "value": "shadow-[0_28px_76px_rgba(0,0,0,0.38)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/auth/update-password/UpdatePasswordForm.tsx",
-          "value": "shadow-[0_24px_72px_rgba(15,23,42,0.14)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/auth/update-password/UpdatePasswordForm.tsx",
-          "value": "shadow-[0_28px_76px_rgba(0,0,0,0.38)]",
           "count": 1
         },
         {
@@ -20720,16 +20585,6 @@
         {
           "path": "frontend/src/app/onboarding/OnboardingWizard.tsx",
           "value": "shadow-[0_24px_64px_rgba(0,0,0,0.30)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/components/auth/SocialLoginButtons.tsx",
-          "value": "shadow-[0_10px_28px_rgba(15,23,42,0.08)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/components/auth/SocialLoginButtons.tsx",
-          "value": "shadow-[0_10px_28px_rgba(2,6,23,0.18)]",
           "count": 1
         },
         {
@@ -21295,9 +21150,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 553,
+    "inspectedModuleCount": 557,
     "violations": [],
-    "sourceFingerprint": "2148581693f7f499829455d360bb1cad0f7aa81db77f89fee320e996232f056f"
+    "sourceFingerprint": "d8f6fb7e23de408006ec4b95e80e145feec8f84a110ba221072915e8a46c149f"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
