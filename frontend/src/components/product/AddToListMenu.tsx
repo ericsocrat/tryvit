@@ -15,6 +15,7 @@ import {
     useRemoveFromList,
 } from "@/hooks/use-lists";
 import { useTranslation } from "@/lib/i18n";
+import { showToast } from "@/lib/toast";
 import type { ProductList } from "@/lib/types";
 import { useFavoritesStore } from "@/stores/favorites-store";
 import {
@@ -149,17 +150,37 @@ export function AddToListMenu({ productId, compact }: AddToListMenuProps) {
             e.preventDefault();
             e.stopPropagation();
             if (isFavorite) {
-              removeMutation.mutate({
-                listId: favoritesList.id,
-                productId,
-                listType: "favorites",
-              });
+              removeMutation.mutate(
+                {
+                  listId: favoritesList.id,
+                  productId,
+                  listType: "favorites",
+                },
+                {
+                  onError: () => {
+                    showToast({
+                      type: "error",
+                      messageKey: "productActions.updateFailed",
+                    });
+                  },
+                },
+              );
             } else {
-              addMutation.mutate({
-                listId: favoritesList.id,
-                productId,
-                listType: "favorites",
-              });
+              addMutation.mutate(
+                {
+                  listId: favoritesList.id,
+                  productId,
+                  listType: "favorites",
+                },
+                {
+                  onError: () => {
+                    showToast({
+                      type: "error",
+                      messageKey: "productActions.updateFailed",
+                    });
+                  },
+                },
+              );
             }
           }}
         >
@@ -172,7 +193,7 @@ export function AddToListMenu({ productId, compact }: AddToListMenuProps) {
           />
         </button>
         {mutationError && (
-          <span id={mutationErrorId} role="alert" className="sr-only">
+          <span id={mutationErrorId} className="sr-only">
             {t("productActions.updateFailed")}
           </span>
         )}

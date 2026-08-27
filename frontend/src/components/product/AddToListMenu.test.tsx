@@ -8,6 +8,7 @@ import { AddToListMenu } from "./AddToListMenu";
 
 const mockAddMutate = vi.fn();
 const mockRemoveMutate = vi.fn();
+const mockShowToast = vi.fn();
 let mockAddError: Error | null = null;
 let mockRemoveError: Error | null = null;
 const mockMembership =
@@ -33,6 +34,10 @@ vi.mock("@/hooks/use-lists", () => ({
     error: mockRemoveError,
   }),
   useProductListMembership: () => mockMembership(),
+}));
+
+vi.mock("@/lib/toast", () => ({
+  showToast: (...args: unknown[]) => mockShowToast(...args),
 }));
 
 const mockIsFavorite = vi.fn<(id: number) => boolean>().mockReturnValue(false);
@@ -99,11 +104,14 @@ describe("AddToListMenu — compact mode", () => {
       wrapper: createWrapper(),
     });
     fireEvent.click(screen.getByRole("button", { name: "Add to Favorites" }));
-    expect(mockAddMutate).toHaveBeenCalledWith({
-      listId: 1,
-      productId: 42,
-      listType: "favorites",
-    });
+    expect(mockAddMutate).toHaveBeenCalledWith(
+      {
+        listId: 1,
+        productId: 42,
+        listType: "favorites",
+      },
+      expect.objectContaining({ onError: expect.any(Function) }),
+    );
   });
 
   it("calls removeMutate when toggling off", () => {
@@ -114,14 +122,17 @@ describe("AddToListMenu — compact mode", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Remove from Favorites" }),
     );
-    expect(mockRemoveMutate).toHaveBeenCalledWith({
-      listId: 1,
-      productId: 42,
-      listType: "favorites",
-    });
+    expect(mockRemoveMutate).toHaveBeenCalledWith(
+      {
+        listId: 1,
+        productId: 42,
+        listType: "favorites",
+      },
+      expect.objectContaining({ onError: expect.any(Function) }),
+    );
   });
 
-  it("announces a failed compact mutation and keeps the control retryable", () => {
+  it("describes a failed compact mutation and keeps the control retryable", () => {
     mockAddError = new Error("add denied");
     render(<AddToListMenu productId={42} compact />, {
       wrapper: createWrapper(),
@@ -133,9 +144,27 @@ describe("AddToListMenu — compact mode", () => {
       "aria-describedby",
       "list-membership-error-42",
     );
-    expect(screen.getByRole("alert")).toHaveTextContent(
+    expect(button).toHaveAccessibleDescription(
       "Could not update this list. Your previous state was kept. Try again.",
     );
+  });
+
+  it("shows a visible toast when a compact mutation fails", () => {
+    mockAddMutate.mockImplementationOnce(
+      (_variables: unknown, options?: { onError?: () => void }) => {
+        options?.onError?.();
+      },
+    );
+    render(<AddToListMenu productId={42} compact />, {
+      wrapper: createWrapper(),
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Add to Favorites" }));
+
+    expect(mockShowToast).toHaveBeenCalledWith({
+      type: "error",
+      messageKey: "productActions.updateFailed",
+    });
   });
 });
 

@@ -41,6 +41,13 @@ export default function ListDetailPage() {
   const toggleShareMutation = useToggleShare();
   const revokeShareMutation = useRevokeShare();
 
+  function resetMutationErrors() {
+    removeMutation.reset();
+    updateMutation.reset();
+    toggleShareMutation.reset();
+    revokeShareMutation.reset();
+  }
+
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [editDesc, setEditDesc] = useState("");
@@ -74,6 +81,7 @@ export default function ListDetailPage() {
   function handleSaveEdit(e: FormSubmitEvent) {
     e.preventDefault();
     if (!editName.trim()) return;
+    resetMutationErrors();
     updateMutation.mutate(
       {
         listId,
@@ -87,7 +95,23 @@ export default function ListDetailPage() {
   }
 
   function handleShare(enabled: boolean) {
+    resetMutationErrors();
     toggleShareMutation.mutate({ listId, enabled });
+  }
+
+  function handleRemove(productId: number) {
+    resetMutationErrors();
+    removeMutation.mutate({
+      listId,
+      productId,
+      listType: list?.list_type,
+    });
+  }
+
+  function handleRevokeShare() {
+    resetMutationErrors();
+    revokeShareMutation.mutate(listId);
+    setShowRevokeConfirm(false);
   }
 
   function handleCopyLink() {
@@ -312,13 +336,7 @@ export default function ListDetailPage() {
             <ListItemRow
               key={item.item_id}
               item={item}
-              onRemove={() =>
-                removeMutation.mutate({
-                  listId,
-                  productId: item.product_id,
-                  listType: list?.list_type,
-                })
-              }
+              onRemove={() => handleRemove(item.product_id)}
               isRemoving={removeMutation.isPending}
             />
           ))}
@@ -331,10 +349,7 @@ export default function ListDetailPage() {
         description={t("lists.revokeWarning")}
         confirmLabel={t("lists.revoke")}
         variant="danger"
-        onConfirm={() => {
-          revokeShareMutation.mutate(listId);
-          setShowRevokeConfirm(false);
-        }}
+        onConfirm={handleRevokeShare}
         onCancel={() => setShowRevokeConfirm(false)}
       />
     </div>
