@@ -12,6 +12,7 @@ const browserReachableFiles = [
 
 const allowedServerStaticImports = [
   "src/app/auth/callback/route.ts",
+  "src/app/auth/recovery/callback/route.ts",
   "src/instrumentation.ts",
   "src/lib/api-instrumentation.ts",
 ];

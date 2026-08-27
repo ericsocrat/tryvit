@@ -25,23 +25,33 @@ describe("Auth callback GET route", () => {
     mockExchangeCode.mockResolvedValue({ data: { session: {} }, error: null });
   });
 
-  it("exchanges the code for a session when code param is present", async () => {
-    const res = await GET(makeRequest("/auth/callback?code=abc123"));
+  it("exchanges the code and preserves the intended app destination", async () => {
+    const res = await GET(
+      makeRequest("/auth/callback?code=abc123&redirect=%2Fapp%2Fproduct%2F42"),
+    );
 
     expect(createServerSupabaseClient).toHaveBeenCalled();
     expect(mockExchangeCode).toHaveBeenCalledWith("abc123");
     expect(res.status).toBe(307);
-    expect(new URL(res.headers.get("location")!).pathname).toBe("/app/search");
+    expect(new URL(res.headers.get("location")!).pathname).toBe("/app/product/42");
   });
 
-  it("routes a valid recovery exchange to password update", async () => {
-    const res = await GET(makeRequest("/auth/callback?code=recovery-code&type=recovery"));
+  it("does not let a query parameter select the recovery route", async () => {
+    const res = await GET(
+      makeRequest(
+        "/auth/callback?code=recovery-code&type=recovery&redirect=%2Fapp%2Fproduct%2F42",
+      ),
+    );
 
     expect(mockExchangeCode).toHaveBeenCalledWith("recovery-code");
-    expect(new URL(res.headers.get("location")!).pathname).toBe("/auth/update-password");
+    expect(new URL(res.headers.get("location")!).pathname).toBe("/app/product/42");
   });
 
   it("fails closed to the expired-session state when no code is present", async () => {
+    mockExchangeCode.mockResolvedValue({
+      data: { session: null },
+      error: new Error("missing code"),
+    });
     const res = await GET(makeRequest("/auth/callback"));
 
     expect(createServerSupabaseClient).toHaveBeenCalled();
@@ -73,5 +83,26 @@ describe("Auth callback GET route", () => {
 
     expect(destination.pathname).toBe("/auth/login");
     expect(destination.searchParams.get("reason")).toBe("expired");
+  });
+
+  it("maps signup-disabled OAuth callbacks to the invitation boundary", async () => {
+    const res = await GET(
+      makeRequest(
+        "/auth/callback?error=access_denied&error_code=signup_disabled&redirect=%2Fapp%2Fproduct%2F42",
+      ),
+    );
+    const destination = new URL(res.headers.get("location")!);
+
+    expect(createServerSupabaseClient).not.toHaveBeenCalled();
+    expect(destination.pathname).toBe("/auth/login");
+    expect(destination.searchParams.get("reason")).toBe("invite-only");
+    expect(destination.searchParams.get("redirect")).toBe("/app/product/42");
+  });
+
+  it("rejects external redirect values", async () => {
+    const res = await GET(
+      makeRequest("/auth/callback?code=abc123&redirect=https%3A%2F%2Fevil.com"),
+    );
+    expect(new URL(res.headers.get("location")!).pathname).toBe("/app/search");
   });
 });

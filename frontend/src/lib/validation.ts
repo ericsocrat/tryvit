@@ -10,8 +10,40 @@ export function sanitizeRedirect(
   fallback = "/app/search",
 ): string {
   if (!raw) return fallback;
-  if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
-  return fallback;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return fallback;
+  if (/[\\\u0000-\u001f\u007f]/u.test(raw)) return fallback;
+
+  const pathOnly = raw.split(/[?#]/u, 1)[0] ?? "";
+  if (/%(?:2f|5c)/iu.test(pathOnly)) return fallback;
+
+  try {
+    const trustedOrigin = new URL("https://tryvit.invalid");
+    const resolved = new URL(raw, trustedOrigin);
+    if (resolved.origin !== trustedOrigin.origin) return fallback;
+    return `${resolved.pathname}${resolved.search}${resolved.hash}`;
+  } catch {
+    return fallback;
+  }
+}
+
+/** Keep post-auth navigation inside the authenticated application surface. */
+export function sanitizeAuthRedirect(
+  raw: string | null | undefined,
+  fallback = "/app/search",
+): string {
+  const sanitized = sanitizeRedirect(raw, fallback);
+  const pathname = new URL(sanitized, "https://tryvit.invalid").pathname;
+  return pathname === "/app" || pathname.startsWith("/app/") ? sanitized : fallback;
+}
+
+export function appendAuthRedirect(path: string, redirect: string): string {
+  const trustedOrigin = new URL("https://tryvit.invalid");
+  const destination = new URL(path, trustedOrigin);
+  if (destination.origin !== trustedOrigin.origin || !destination.pathname.startsWith("/auth/")) {
+    throw new Error("Auth navigation path must stay inside /auth");
+  }
+  destination.searchParams.set("redirect", sanitizeAuthRedirect(redirect));
+  return `${destination.pathname}${destination.search}${destination.hash}`;
 }
 
 /**

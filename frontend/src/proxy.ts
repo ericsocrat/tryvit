@@ -26,6 +26,7 @@ import {
 } from "@/lib/request-provider-boundary";
 import { ROUTE_CLASS, getRoutePolicy } from "@/lib/route-policy";
 import { createMiddlewareClient } from "@/lib/supabase/middleware";
+import { sanitizeAuthRedirect } from "@/lib/validation";
 import { type NextRequest, NextResponse } from "next/server";
 
 // ─── Auth Helpers ───────────────────────────────────────────────────────────
@@ -193,7 +194,8 @@ export async function proxy(request: NextRequest) {
   }
 
   if (routePolicy.allowsSignedInRedirect && user) {
-    return NextResponse.redirect(new URL("/app/search", request.url));
+    const redirectTo = sanitizeAuthRedirect(request.nextUrl.searchParams.get("redirect"));
+    return NextResponse.redirect(new URL(redirectTo, request.url));
   }
 
   // Auth-entry routes are public to signed-out visitors.

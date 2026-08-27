@@ -34,6 +34,7 @@ vi.mock("@marsidev/react-turnstile", () => ({
           data-action={options?.action as string}
           data-theme={options?.theme as string}
           data-appearance={options?.appearance as string}
+          data-size={options?.size as string}
         >
           <button
             data-testid="trigger-success"
@@ -101,6 +102,14 @@ describe("TurnstileWidget", () => {
     render(<TurnstileWidget onSuccess={vi.fn()} />);
     const turnstile = screen.getByTestId("mock-turnstile");
     expect(turnstile.getAttribute("data-appearance")).toBe("interaction-only");
+  });
+
+  it("supports compact sizing for narrow forms", () => {
+    render(<TurnstileWidget onSuccess={vi.fn()} size="compact" />);
+    expect(screen.getByTestId("mock-turnstile")).toHaveAttribute(
+      "data-size",
+      "compact",
+    );
   });
 
   it("should apply className to wrapper div", () => {

@@ -89,6 +89,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
   fail auth callbacks closed to the existing recovery path, and retain one
   dormant self-service signup contract that delegates a fresh Turnstile token
   directly to Supabase Auth exactly once.
+- Resolve Google controls from hosted Supabase Auth capabilities,
+  preserve only normalized `/app` redirect intent across password, OAuth, and
+  recovery flows, and keep unknown provider/configuration state fail-closed.
 
 ### Fixed
 
@@ -106,6 +109,10 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Replace the generic auth card/illustration treatment with one responsive
+  Source Fold account-access system across login, invitation entry, password
+  recovery, and reset; retain light/dark, reduced-motion, forced-color,
+  autofill, password-manager, and localized EN/PL/DE behavior.
 - Rename `frontend/src/middleware.ts` → `frontend/src/proxy.ts` and
   exported function `middleware()` → `proxy()` per Next.js 16 deprecation.
   Eliminates the `middleware.ts` deprecation warning at build time.

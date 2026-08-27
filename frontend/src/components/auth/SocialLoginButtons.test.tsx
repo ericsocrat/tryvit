@@ -3,8 +3,6 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SocialLoginButtons } from "./SocialLoginButtons";
 
-// ─── Mocks ──────────────────────────────────────────────────────────────────
-
 const mockSignInWithOAuth = vi.fn();
 
 vi.mock("@/lib/supabase/client", () => ({
@@ -15,166 +13,101 @@ vi.mock("@/lib/supabase/client", () => ({
   }),
 }));
 
-vi.mock("@/lib/toast", () => ({
-  showToast: vi.fn(),
+vi.mock("@/lib/i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string) =>
+      ({
+        "auth.continueWithGoogle": "Continue with Google",
+        "auth.redirecting": "Redirecting…",
+        "auth.orContinueWithEmail": "or continue with email",
+        "auth.socialInviteMatchHint": "Use the same verified email as your invitation.",
+      })[key] ?? key,
+  }),
 }));
 
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
-// ─── Tests ──────────────────────────────────────────────────────────────────
+function renderProviders(
+  providers: readonly "google"[],
+  onError = vi.fn(),
+  showEmailDivider = true,
+) {
+  render(
+    <SocialLoginButtons
+      providers={providers}
+      redirect="/app/product/42?tab=nutrition"
+      showEmailDivider={showEmailDivider}
+      onError={onError}
+    />,
+  );
+  return onError;
+}
 
 describe("SocialLoginButtons", () => {
-  // ─── Rendering ──────────────────────────────────────────────────────────
-
-  it("renders Google login button", () => {
-    render(<SocialLoginButtons />);
-    expect(
-      screen.getByRole("button", { name: /google/i }),
-    ).toBeInTheDocument();
+  it("renders nothing when no hosted provider is enabled", () => {
+    const { container } = render(
+      <SocialLoginButtons providers={[]} redirect="/app/search" onError={vi.fn()} />,
+    );
+    expect(container).toBeEmptyDOMElement();
   });
 
-  it("renders Apple login button", () => {
-    render(<SocialLoginButtons />);
-    expect(
-      screen.getByRole("button", { name: /apple/i }),
-    ).toBeInTheDocument();
+  it("renders only capability-backed providers", () => {
+    renderProviders(["google"]);
+    expect(screen.getByRole("button", { name: /google/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /apple/i })).not.toBeInTheDocument();
+    expect(screen.getByText(/continue with email/i)).toBeInTheDocument();
   });
 
-  it("renders 'or continue with email' divider", () => {
-    render(<SocialLoginButtons />);
-    expect(screen.getByText(/or continue with email/i)).toBeInTheDocument();
+  it("omits the email divider when email Auth is unavailable", () => {
+    renderProviders(["google"], vi.fn(), false);
+    expect(screen.getByRole("button", { name: /google/i })).toBeInTheDocument();
+    expect(screen.queryByText(/continue with email/i)).not.toBeInTheDocument();
   });
 
-  it("renders Google brand icon SVG", () => {
-    render(<SocialLoginButtons />);
-    const btn = screen.getByRole("button", { name: /google/i });
-    expect(btn.querySelector("svg")).toBeInTheDocument();
-  });
-
-  it("renders Apple brand icon SVG", () => {
-    render(<SocialLoginButtons />);
-    const btn = screen.getByRole("button", { name: /apple/i });
-    expect(btn.querySelector("svg")).toBeInTheDocument();
-  });
-
-  // ─── Google OAuth ─────────────────────────────────────────────────────
-
-  it("calls signInWithOAuth with google provider on click", async () => {
+  it("preserves the intended app destination in Google OAuth", async () => {
     mockSignInWithOAuth.mockResolvedValue({ error: null });
     const user = userEvent.setup();
+    renderProviders(["google"]);
 
-    render(<SocialLoginButtons />);
     await user.click(screen.getByRole("button", { name: /google/i }));
 
-    expect(mockSignInWithOAuth).toHaveBeenCalledWith({
-      provider: "google",
-      options: {
-        redirectTo: expect.stringContaining("/auth/callback"),
-      },
+    await waitFor(() => {
+      expect(mockSignInWithOAuth).toHaveBeenCalledWith({
+        provider: "google",
+        options: {
+          redirectTo: expect.stringMatching(
+            /\/auth\/callback\?redirect=%2Fapp%2Fproduct%2F42%3Ftab%3Dnutrition/u,
+          ),
+        },
+      });
     });
   });
 
-  it("disables both buttons while Google login is loading", async () => {
+  it("disables Google while redirecting", async () => {
     mockSignInWithOAuth.mockReturnValue(new Promise(() => {}));
     const user = userEvent.setup();
+    renderProviders(["google"]);
 
-    render(<SocialLoginButtons />);
+    await user.click(screen.getByRole("button", { name: /google/i }));
+
+    expect(screen.getByRole("button", { name: /redirecting/i })).toBeDisabled();
+  });
+
+  it("reports a stable provider error and re-enables controls", async () => {
+    mockSignInWithOAuth.mockResolvedValue({
+      error: { code: "provider_disabled", message: "raw provider text" },
+    });
+    const onError = vi.fn();
+    const user = userEvent.setup();
+    renderProviders(["google"], onError);
+
     await user.click(screen.getByRole("button", { name: /google/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /redirecting/i }),
-      ).toBeDisabled();
-      expect(screen.getByRole("button", { name: /apple/i })).toBeDisabled();
-    });
-  });
-
-  it("shows error toast when Google login fails", async () => {
-    const { showToast } = await import("@/lib/toast");
-    mockSignInWithOAuth.mockResolvedValue({
-      error: { message: "Provider not configured" },
-    });
-    const user = userEvent.setup();
-
-    render(<SocialLoginButtons />);
-    await user.click(screen.getByRole("button", { name: /google/i }));
-
-    await waitFor(() => {
-      expect(showToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: "error",
-        }),
-      );
-    });
-  });
-
-  // ─── Apple OAuth ──────────────────────────────────────────────────────
-
-  it("calls signInWithOAuth with apple provider on click", async () => {
-    mockSignInWithOAuth.mockResolvedValue({ error: null });
-    const user = userEvent.setup();
-
-    render(<SocialLoginButtons />);
-    await user.click(screen.getByRole("button", { name: /apple/i }));
-
-    expect(mockSignInWithOAuth).toHaveBeenCalledWith({
-      provider: "apple",
-      options: {
-        redirectTo: expect.stringContaining("/auth/callback"),
-      },
-    });
-  });
-
-  it("disables both buttons while Apple login is loading", async () => {
-    mockSignInWithOAuth.mockReturnValue(new Promise(() => {}));
-    const user = userEvent.setup();
-
-    render(<SocialLoginButtons />);
-    await user.click(screen.getByRole("button", { name: /apple/i }));
-
-    await waitFor(() => {
-      expect(screen.getByRole("button", { name: /google/i })).toBeDisabled();
-      expect(
-        screen.getByRole("button", { name: /redirecting/i }),
-      ).toBeDisabled();
-    });
-  });
-
-  it("shows error toast when Apple login fails", async () => {
-    const { showToast } = await import("@/lib/toast");
-    mockSignInWithOAuth.mockResolvedValue({
-      error: { message: "Apple auth error" },
-    });
-    const user = userEvent.setup();
-
-    render(<SocialLoginButtons />);
-    await user.click(screen.getByRole("button", { name: /apple/i }));
-
-    await waitFor(() => {
-      expect(showToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: "error",
-        }),
-      );
-    });
-  });
-
-  // ─── Re-enable after error ────────────────────────────────────────────
-
-  it("re-enables buttons after an error", async () => {
-    mockSignInWithOAuth.mockResolvedValue({
-      error: { message: "Failed" },
-    });
-    const user = userEvent.setup();
-
-    render(<SocialLoginButtons />);
-    await user.click(screen.getByRole("button", { name: /google/i }));
-
-    await waitFor(() => {
-      const googleBtn = screen.getByRole("button", { name: /google/i });
-      expect(googleBtn).not.toBeDisabled();
+      expect(onError).toHaveBeenCalledWith("auth.providerUnavailable");
+      expect(screen.getByRole("button", { name: /google/i })).toBeEnabled();
     });
   });
 });

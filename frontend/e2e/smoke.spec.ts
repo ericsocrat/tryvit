@@ -140,12 +140,12 @@ test.describe("Navigation links", () => {
 
   test("login page has link to signup", async ({ page }) => {
     await page.goto("/auth/login");
-    await expect(page.locator('a[href="/auth/signup"]')).toBeVisible();
+    await expect(page.locator('a[href^="/auth/signup?redirect="]')).toBeVisible();
   });
 
   test("signup page has link to login", async ({ page }) => {
     await page.goto("/auth/signup");
-    await expect(page.locator('a[href="/auth/login"]')).toBeVisible();
+    await expect(page.locator('a[href^="/auth/login?redirect="]')).toBeVisible();
   });
 });
 
@@ -249,6 +249,10 @@ test.describe("Login form validation", () => {
   test("email input accepts text", async ({ page }) => {
     await page.goto("/auth/login");
     const emailInput = page.locator('input[type="email"]');
+    if (await emailInput.isDisabled()) {
+      await expect(page.getByText(/account access is temporarily unavailable/i)).toBeVisible();
+      return;
+    }
     await emailInput.fill("test@example.com");
     await expect(emailInput).toHaveValue("test@example.com");
   });
@@ -256,6 +260,10 @@ test.describe("Login form validation", () => {
   test("password input accepts text", async ({ page }) => {
     await page.goto("/auth/login");
     const passwordInput = page.locator('input[type="password"]');
+    if (await passwordInput.isDisabled()) {
+      await expect(page.getByText(/account access is temporarily unavailable/i)).toBeVisible();
+      return;
+    }
     await passwordInput.fill("password123");
     await expect(passwordInput).toHaveValue("password123");
   });

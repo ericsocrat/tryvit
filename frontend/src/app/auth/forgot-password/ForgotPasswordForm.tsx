@@ -1,108 +1,123 @@
 "use client";
 
+import {
+  AuthCard,
+  AuthStatus,
+  authStyles,
+} from "@/components/auth/AuthCard";
 import { Button, ButtonLink } from "@/components/common/Button";
-import { Logo } from "@/components/common/Logo";
+import { authErrorMessageKey } from "@/lib/auth-errors";
 import { useTranslation } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
-import { showToast } from "@/lib/toast";
 import type { FormSubmitEvent } from "@/lib/types";
+import { appendAuthRedirect } from "@/lib/validation";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-export function ForgotPasswordForm() {
+interface ForgotPasswordFormProps {
+  readonly redirect: string;
+}
+
+export function ForgotPasswordForm({ redirect }: ForgotPasswordFormProps) {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [formErrorKey, setFormErrorKey] = useState<string | null>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
 
-  async function handleSubmit(e: FormSubmitEvent) {
-    e.preventDefault();
+  function presentError(messageKey: string) {
+    setFormErrorKey(messageKey);
+    setTimeout(() => errorRef.current?.focus(), 0);
+  }
+
+  async function handleSubmit(event: FormSubmitEvent) {
+    event.preventDefault();
+    setFormErrorKey(null);
     setLoading(true);
 
     try {
+      const callback = new URL("/auth/recovery/callback", globalThis.location.origin);
+      callback.searchParams.set("redirect", redirect);
       const supabase = createClient();
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${globalThis.location.origin}/auth/callback?type=recovery`,
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: callback.toString(),
       });
 
       if (error) {
-        showToast({ type: "error", messageKey: "auth.resetEmailFailed" });
+        presentError(authErrorMessageKey(error, "recovery"));
         return;
       }
 
       setSent(true);
-      showToast({ type: "success", messageKey: "auth.resetEmailSent" });
     } catch {
-      showToast({ type: "error", messageKey: "auth.serviceUnavailable" });
+      presentError("auth.serviceUnavailable");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div id="main-content" className="w-full max-w-md">
-      <div className="overflow-hidden rounded-3xl border border-border/70 bg-surface/95 p-6 shadow-[0_24px_72px_rgba(15,23,42,0.14)] backdrop-blur-sm sm:p-8 dark:border-white/10 dark:shadow-[0_28px_76px_rgba(0,0,0,0.38)]">
-        <div className="mb-2 flex justify-center lg:hidden">
-          <Logo variant="lockup" size={36} />
+    <AuthCard
+      eyebrow={t("auth.recoveryEyebrow")}
+      title={t("auth.resetPasswordTitle")}
+      description={t("auth.resetPasswordSubtitle")}
+      footer={!sent ? (
+        <Link href={appendAuthRedirect("/auth/login", redirect)} className={authStyles.link}>
+          {t("auth.backToLogin")}
+        </Link>
+      ) : undefined}
+    >
+      {formErrorKey ? (
+        <AuthStatus ref={errorRef} kind="error">
+          {t(formErrorKey)}
+        </AuthStatus>
+      ) : null}
+
+      {sent ? (
+        <div className={authStyles.form}>
+          <AuthStatus kind="success">{t("auth.resetEmailSent")}</AuthStatus>
+          <ButtonLink
+            href={appendAuthRedirect("/auth/login", redirect)}
+            fullWidth
+            className={authStyles.primaryAction}
+          >
+            {t("auth.backToLogin")}
+          </ButtonLink>
         </div>
-        <p className="mb-5 text-center text-xs font-medium uppercase tracking-widest text-brand lg:hidden">
-          {t("landing.tagline")}
-        </p>
-        <h1 className="mb-2 text-center text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-          {t("auth.resetPasswordTitle")}
-        </h1>
-        <p className="mb-7 text-center text-sm text-foreground-secondary sm:text-base">
-          {t("auth.resetPasswordSubtitle")}
-        </p>
-
-        {sent ? (
-          <div className="space-y-4">
-            <div className="rounded-lg border border-success-border bg-success-bg p-4 text-sm text-success-text">
-              {t("auth.resetEmailSent")}
-            </div>
-            <ButtonLink href="/auth/login" fullWidth>
-              {t("auth.backToLogin")}
-            </ButtonLink>
+      ) : (
+        <form onSubmit={handleSubmit} className={authStyles.form}>
+          <div className={authStyles.field}>
+            <label htmlFor="email" className={authStyles.label}>
+              {t("auth.email")}
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              inputMode="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className={authStyles.input}
+              placeholder={t("auth.emailPlaceholder")}
+            />
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label
-                htmlFor="email"
-                className="mb-1.5 block text-sm font-medium text-foreground-secondary"
-              >
-                {t("auth.email")}
-              </label>
-              <input
-                id="email"
-                type="email"
-                autoComplete="email"
-                inputMode="email"
-                autoCapitalize="none"
-                spellCheck={false}
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input-field"
-                placeholder={t("auth.emailPlaceholder")}
-              />
-            </div>
 
-            <Button type="submit" disabled={loading} fullWidth>
-              {loading ? t("auth.sendingResetLink") : t("auth.sendResetLink")}
-            </Button>
-
-            <p className="text-center text-sm text-foreground-secondary">
-              <Link
-                href="/auth/login"
-                className="rounded-sm font-semibold text-brand underline-offset-4 transition-colors hover:text-brand-hover hover:underline focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
-              >
-                {t("auth.backToLogin")}
-              </Link>
-            </p>
-          </form>
-        )}
-      </div>
-    </div>
+          <Button
+            type="submit"
+            loading={loading}
+            disabled={loading}
+            fullWidth
+            className={authStyles.primaryAction}
+          >
+            {loading ? t("auth.sendingResetLink") : t("auth.sendResetLink")}
+          </Button>
+        </form>
+      )}
+    </AuthCard>
   );
 }

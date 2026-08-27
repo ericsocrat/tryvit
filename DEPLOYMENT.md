@@ -1,6 +1,6 @@
 # Deployment Guide
 
-> **Last updated:** 2026-08-26
+> **Last updated:** 2026-08-27
 
 ## Vercel Deployment
 
@@ -31,6 +31,7 @@ Set these in **Vercel > Project Settings > Environment Variables**:
 | `NEXT_PUBLIC_SUPABASE_URL`      | `https://your-project.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6...`  |
 | `TRYVIT_PRIVATE_BETA_INVITE_ONLY` | `true`                           |
+| `TRYVIT_SUPABASE_NATIVE_CAPTCHA_ENABLED` | `false`                     |
 | `NEXT_PUBLIC_APP_URL`           | `https://tryvit.app`                |
 
 ### Private-beta admission
@@ -52,14 +53,34 @@ Use the hosted dashboard or the Management API `PATCH
 project's normal secret-managed operator path.
 
 The source-retained self-service form sends its Turnstile token directly to
-Supabase Auth exactly once. It remains dormant during private beta. Before
-reopening public signup, enable Supabase native Turnstile protection and verify
-the production widget hostname allowlist plus first-use/replay behavior. Native
-Supabase Auth does not expose an application action assertion; `action=signup`
-remains client-side widget metadata rather than a TryVit server authorization
-check. Keep OAuth providers disabled until a separately reviewed admission
-boundary exists because OAuth registration does not carry this form token.
-Only then set the Vercel flag to `false` and re-enable hosted signup.
+Supabase Auth exactly once. It remains dormant during private beta, and
+`TRYVIT_SUPABASE_NATIVE_CAPTCHA_ENABLED` must remain `false`. Supabase's hosted
+CAPTCHA switch also enforces CAPTCHA on password login and password recovery;
+enabling it while only signup supplies a token would lock out existing users.
+Before reopening public signup, first add and verify CAPTCHA-token handling on
+every hosted Auth endpoint that the project chooses to protect, then enable the
+hosted switch, verify the production hostname allowlist and first-use/replay
+behavior, set the operator seal, set the invitation flag to `false`, and finally
+re-enable hosted signup. Hosted Auth does not expose CAPTCHA configuration
+through its public settings endpoint or expose an application action assertion;
+`action=signup` remains client-side widget metadata rather than a TryVit server
+authorization check.
+
+The login page resolves email, Google, and `disable_signup` directly from
+Supabase's public Auth settings. Malformed or unavailable state hides optional
+social providers and keeps signup closed without disabling the required
+email/password fallback. It never advertises a social provider that hosted Auth
+has not enabled.
+During private beta:
+
+- keep global signup disabled;
+- require invited users to accept and confirm their email before social login;
+- enable Google only after a same-verified-email canary preserves the existing
+  Supabase user ID and leaves the user count unchanged;
+- keep Apple disabled in Supabase and absent from the release UI;
+- do not replace this boundary with a Before User Created hook. That hook is
+  appropriate only for a later allowlisted self-service model with global signup
+  enabled.
 
 Rollback to the safer state is the reverse: disable hosted signup first, then
 restore or omit the Vercel flag so the invitation-only page is rendered.
@@ -82,6 +103,7 @@ These are public keys (embedded in the client bundle). The anon key only grants 
 3. Add **Redirect URLs** (at minimum):
    ```
    https://tryvit.app/auth/callback
+   https://tryvit.app/auth/recovery/callback
    ```
 4. Click **Save**
 

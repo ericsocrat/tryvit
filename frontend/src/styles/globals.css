@@ -813,12 +813,6 @@
     }
   }
 
-  /* ── Auth page illustration panel ──────────────────────────────────────────── */
-  .auth-illustration {
-    background: linear-gradient(135deg,
-        var(--color-brand-secondary) 0%,
-        var(--color-surface) 100%);
-  }
 }
 
 /* ── Global focus-visible indicator for all interactive elements ── */
