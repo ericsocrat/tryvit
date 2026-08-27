@@ -136,4 +136,19 @@ describe("ProductEvidencePanel", () => {
       },
     ]);
   });
+
+  it("does not present a future source date as current", () => {
+    const sources = toSourceFields(
+      provenance({
+        field_sources: {
+          salt_g: {
+            source: "Manual entry",
+            last_updated: "2999-01-01T00:00:00Z",
+            confidence: 0.7,
+          },
+        },
+      }),
+    );
+    expect(sources[0]?.daysSinceUpdate).toBeNull();
+  });
 });

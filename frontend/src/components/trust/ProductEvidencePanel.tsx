@@ -22,8 +22,8 @@ interface ProductEvidencePanelProps {
 
 function daysSince(value: string): number | null {
   const timestamp = new Date(value).getTime();
-  if (!Number.isFinite(timestamp)) return null;
-  return Math.max(0, Math.floor((Date.now() - timestamp) / 86_400_000));
+  if (!Number.isFinite(timestamp) || timestamp > Date.now()) return null;
+  return Math.floor((Date.now() - timestamp) / 86_400_000);
 }
 
 function fieldLabel(field: string): string {
