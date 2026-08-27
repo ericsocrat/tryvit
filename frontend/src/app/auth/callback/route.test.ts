@@ -44,8 +44,8 @@ describe("Auth callback GET route", () => {
   it("fails closed to the expired-session state when no code is present", async () => {
     const res = await GET(makeRequest("/auth/callback"));
 
-    expect(createServerSupabaseClient).not.toHaveBeenCalled();
-    expect(mockExchangeCode).not.toHaveBeenCalled();
+    expect(createServerSupabaseClient).toHaveBeenCalled();
+    expect(mockExchangeCode).toHaveBeenCalledWith("");
     expect(res.status).toBe(307);
     const destination = new URL(res.headers.get("location")!);
     expect(destination.pathname).toBe("/auth/login");

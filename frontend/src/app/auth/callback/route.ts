@@ -32,13 +32,11 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
 
-  if (!code) return redirectToExpiredLogin(request);
-
   try {
     const supabase = await createServerSupabaseClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) {
-      reportCallbackFailure(error);
+    const { error } = await supabase.auth.exchangeCodeForSession(code ?? "");
+    if (!code || error) {
+      reportCallbackFailure(error ?? new Error("Missing auth callback code"));
       return redirectToExpiredLogin(request);
     }
     logger.info("Auth callback success", { route: "/auth/callback", method: "GET" });

@@ -2,7 +2,7 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "ecf6e91aa542a90f38d45584a8b1ef3689234f54",
+    "baseSha": "ab2f5cfdf79422710a12679ba07d9d6f1adbe62c",
     "baseReference": "merge-base HEAD origin/main",
     "sourceFingerprint": "313df35a126d9b858c3583daf15c6b4ec4ea4dcd63c111671a56239edd7c3dcb"
   },
