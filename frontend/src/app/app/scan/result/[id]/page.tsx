@@ -124,17 +124,23 @@ export default function ScanResultPage() {
   const band = SCORE_BANDS[product.scores.score_band];
 
   const alternatives = alternativesData?.alternatives ?? [];
-  const hasAlternatives = alternatives.length > 0;
+  const sourceRecommendationAllowed = canRecommendFromProvenance(
+    provenanceQuery.data,
+  );
+  const eligibleAlternatives = sourceRecommendationAllowed
+    ? alternatives.filter((alternative) => {
+        const provenance = alternativeProvenance[alternative.product_id];
+        return (
+          !provenance?.isLoading &&
+          !provenance?.error &&
+          canRecommendFromProvenance(provenance?.data)
+        );
+      })
+    : [];
+  const hasAlternatives = eligibleAlternatives.length > 0;
   const recommendationsAllowed =
-    canRecommendFromProvenance(provenanceQuery.data) &&
-    alternatives.every((alternative) => {
-      const provenance = alternativeProvenance[alternative.product_id];
-      return (
-        !provenance?.isLoading &&
-        !provenance?.error &&
-        canRecommendFromProvenance(provenance?.data)
-      );
-    });
+    sourceRecommendationAllowed &&
+    (alternatives.length === 0 || eligibleAlternatives.length > 0);
 
   return (
     <div className="space-y-4">
@@ -265,7 +271,7 @@ export default function ScanResultPage() {
           {hasAlternatives && (
             <span className="rounded-full bg-success-bg px-2 py-0.5 text-xs font-medium text-success-text">
               {t("product.found", {
-                count: alternativesData?.alternatives_count ?? 0,
+                count: eligibleAlternatives.length,
               })}
             </span>
           )}
@@ -274,7 +280,7 @@ export default function ScanResultPage() {
         <AlternativesSection
           loading={alternativesLoading}
           error={alternativesError}
-          alternatives={alternatives}
+          alternatives={eligibleAlternatives}
           sourceScore={product.scores.unhealthiness_score}
           onRetry={() => {
             void refetchAlternatives();

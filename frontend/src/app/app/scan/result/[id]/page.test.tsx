@@ -34,6 +34,7 @@ vi.mock("next/link", () => ({
 const mockGetProductDetail = vi.fn();
 const mockGetBetterAlternatives = vi.fn();
 const mockUseProductProvenance = vi.fn();
+const mockUseProductProvenanceMap = vi.fn();
 
 vi.mock("@/lib/api", () => ({
   getProductDetail: (...args: unknown[]) => mockGetProductDetail(...args),
@@ -44,17 +45,7 @@ vi.mock("@/lib/api", () => ({
 vi.mock("@/hooks/use-product-provenance", () => ({
   useProductProvenance: () => mockUseProductProvenance(),
   useProductProvenanceMap: (ids: number[]) =>
-    Object.fromEntries(
-      ids.map((id) => [
-        id,
-        {
-          data: { field_sources: { unhealthiness_score: {} } },
-          isLoading: false,
-          error: null,
-          refetch: vi.fn(),
-        },
-      ]),
-    ),
+    mockUseProductProvenanceMap(ids),
   canRecommendFromProvenance: (value: unknown) => Boolean(value),
 }));
 
@@ -228,6 +219,19 @@ beforeEach(() => {
     error: null,
     refetch: vi.fn(),
   });
+  mockUseProductProvenanceMap.mockImplementation((ids: number[]) =>
+    Object.fromEntries(
+      ids.map((id) => [
+        id,
+        {
+          data: { field_sources: { unhealthiness_score: {} } },
+          isLoading: false,
+          error: null,
+          refetch: vi.fn(),
+        },
+      ]),
+    ),
+  );
 });
 
 describe("ScanResultPage", () => {
@@ -669,6 +673,36 @@ describe("ScanResultPage", () => {
         ),
       ).toBeInTheDocument();
       expect(screen.queryByText("Healthy Veggie Sticks")).not.toBeInTheDocument();
+    });
+
+    it("keeps evidenced alternatives when another candidate lacks provenance", async () => {
+      mockUseProductProvenanceMap.mockImplementation((ids: number[]) =>
+        Object.fromEntries(
+          ids.map((id) => [
+            id,
+            {
+              data:
+                id === 99
+                  ? { field_sources: { unhealthiness_score: {} } }
+                  : undefined,
+              isLoading: false,
+              error: null,
+              refetch: vi.fn(),
+            },
+          ]),
+        ),
+      );
+      mockGetProductDetail.mockResolvedValue({
+        ok: true,
+        data: makeProduct(),
+      });
+      mockGetBetterAlternatives.mockResolvedValue(makeAlternatives());
+
+      render(<ScanResultPage />, { wrapper: createWrapper() });
+
+      expect(await screen.findByText("Healthy Veggie Sticks")).toBeInTheDocument();
+      expect(screen.queryByText("Baked Lentil Crisps")).not.toBeInTheDocument();
+      expect(screen.getByText("1 found")).toBeInTheDocument();
     });
   });
 

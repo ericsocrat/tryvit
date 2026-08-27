@@ -207,16 +207,26 @@ export default function ProductDetailPage() {
   const provenanceDisposition = provenanceQuery.data
     ? getProvenanceDisposition(provenanceQuery.data)
     : null;
+  const scoreRankingAllowed = canRecommendFromProvenance(provenanceQuery.data);
+  const eligibleAlternatives = scoreRankingAllowed
+    ? profile.alternatives.filter((alternative) => {
+        const provenance = alternativeProvenance[alternative.product_id];
+        return (
+          !provenance?.isLoading &&
+          !provenance?.error &&
+          canRecommendFromProvenance(provenance?.data)
+        );
+      })
+    : [];
   const recommendationsAllowed =
-    canRecommendFromProvenance(provenanceQuery.data) &&
-    profile.alternatives.every((alternative) => {
-      const provenance = alternativeProvenance[alternative.product_id];
-      return (
-        !provenance?.isLoading &&
-        !provenance?.error &&
-        canRecommendFromProvenance(provenance?.data)
-      );
-    });
+    scoreRankingAllowed &&
+    (profile.alternatives.length === 0 || eligibleAlternatives.length > 0);
+  const recommendationProfile = {
+    ...profile,
+    alternatives: recommendationsAllowed
+      ? eligibleAlternatives
+      : profile.alternatives,
+  };
   const scoreProvisional = provenanceDisposition !== "confirmed";
 
   return (
@@ -316,10 +326,12 @@ export default function ProductDetailPage() {
                   group: profile.scores.nova_group,
                 })}
               </span>
-              <PercentileBadge
-                rank={profile.scores.category_context?.rank}
-                total={profile.scores.category_context?.total_in_category}
-              />
+              {scoreRankingAllowed && (
+                <PercentileBadge
+                  rank={profile.scores.category_context?.rank}
+                  total={profile.scores.category_context?.total_in_category}
+                />
+              )}
             </div>
 
             {/* Inline score hero + confidence badge */}
@@ -451,7 +463,7 @@ export default function ProductDetailPage() {
               <Suspense
                 fallback={
                   <QuickSummary
-                    profile={profile}
+                    profile={recommendationProfile}
                     onExpand={toggleFullAnalysis}
                     recommendationsAllowed={recommendationsAllowed}
                     scoreProvisional={scoreProvisional}
@@ -459,19 +471,20 @@ export default function ProductDetailPage() {
                 }
               >
                 <ProductFullAnalysis
-                  profile={profile}
+                  profile={recommendationProfile}
                   productId={productId}
                   activeTab={activeTab}
                   onActiveTabChange={setActiveTab}
                   onCollapse={toggleFullAnalysis}
                   recommendationsAllowed={recommendationsAllowed}
                   scoreProvisional={scoreProvisional}
+                  scoreRankingAllowed={scoreRankingAllowed}
                 />
               </Suspense>
             </ErrorBoundary>
           ) : (
             <QuickSummary
-              profile={profile}
+              profile={recommendationProfile}
               onExpand={toggleFullAnalysis}
               recommendationsAllowed={recommendationsAllowed}
               scoreProvisional={scoreProvisional}

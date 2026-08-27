@@ -42,6 +42,7 @@ interface ProductFullAnalysisProps {
   readonly onCollapse: () => void;
   readonly recommendationsAllowed: boolean;
   readonly scoreProvisional: boolean;
+  readonly scoreRankingAllowed: boolean;
 }
 
 export default function ProductFullAnalysis({
@@ -52,6 +53,7 @@ export default function ProductFullAnalysis({
   onCollapse,
   recommendationsAllowed,
   scoreProvisional,
+  scoreRankingAllowed,
 }: ProductFullAnalysisProps) {
   const { t } = useTranslation();
   const touchStartX = useRef(0);
@@ -167,7 +169,11 @@ export default function ProductFullAnalysis({
             )
           )}
           {activeTab === "scoring" && (
-            <ScoringTab profile={profile} scoreProvisional={scoreProvisional} />
+            <ScoringTab
+              profile={profile}
+              scoreProvisional={scoreProvisional}
+              scoreRankingAllowed={scoreRankingAllowed}
+            />
           )}
         </ErrorBoundary>
       </div>
@@ -569,7 +575,12 @@ function formatFactorName(name: string): string {
 function ScoringTab({
   profile,
   scoreProvisional,
-}: Readonly<{ profile: ProductProfile; scoreProvisional: boolean }>) {
+  scoreRankingAllowed,
+}: Readonly<{
+  profile: ProductProfile;
+  scoreProvisional: boolean;
+  scoreRankingAllowed: boolean;
+}>) {
   const { t } = useTranslation();
   const scores = profile.scores;
 
@@ -659,35 +670,39 @@ function ScoringTab({
       )}
 
       {/* Category context */}
-      <div className="card">
-        <h2 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
-          {t("product.categoryContext")}
-        </h2>
-        <div className="text-sm text-foreground-secondary">
-          <div className="flex items-center gap-2">
+      {scoreRankingAllowed && (
+        <div className="card">
+          <h2 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
+            {t("product.categoryContext")}
+          </h2>
+          <div className="text-sm text-foreground-secondary">
+            <div className="flex items-center gap-2">
+              <p>
+                {t("product.rank", {
+                  rank: scores.category_context.rank,
+                  total: scores.category_context.total_in_category,
+                })}
+              </p>
+              <PercentileBadge
+                rank={scores.category_context.rank}
+                total={scores.category_context.total_in_category}
+              />
+            </div>
             <p>
-              {t("product.rank", {
-                rank: scores.category_context.rank,
-                total: scores.category_context.total_in_category,
+              {t("product.categoryAvg", {
+                avg: Math.round(scores.category_context.category_avg_score),
               })}
             </p>
-            <PercentileBadge
-              rank={scores.category_context.rank}
-              total={scores.category_context.total_in_category}
-            />
+            <p>
+              {t("product.position", {
+                position: formatSnakeCase(
+                  scores.category_context.relative_position,
+                ),
+              })}
+            </p>
           </div>
-          <p>
-            {t("product.categoryAvg", {
-              avg: Math.round(scores.category_context.category_avg_score),
-            })}
-          </p>
-          <p>
-            {t("product.position", {
-              position: formatSnakeCase(scores.category_context.relative_position),
-            })}
-          </p>
         </div>
-      </div>
+      )}
 
       {/* Score history */}
       <ScoreHistoryPanel productId={profile.product.product_id} />
