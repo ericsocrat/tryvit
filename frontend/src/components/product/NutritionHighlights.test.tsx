@@ -111,4 +111,18 @@ describe("NutritionHighlights", () => {
     expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
     expect(screen.queryByText("0.0g")).not.toBeInTheDocument();
   });
+
+  it("keeps values visible but removes traffic-light colors when provenance is provisional", () => {
+    const { container } = render(
+      <NutritionHighlights nutrition={baseNutrition} provisional />,
+    );
+
+    expect(screen.getByText("10.0g")).toBeInTheDocument();
+    expect(
+      screen.getByText("trust.evidence.nutritionGuidanceWithheld"),
+    ).toBeInTheDocument();
+    expect(container.querySelector(".bg-nutrient-low")).not.toBeInTheDocument();
+    expect(container.querySelector(".bg-nutrient-medium")).not.toBeInTheDocument();
+    expect(container.querySelector(".bg-nutrient-high")).not.toBeInTheDocument();
+  });
 });

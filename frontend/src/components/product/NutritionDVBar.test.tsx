@@ -24,6 +24,26 @@ describe("NutritionDVBar", () => {
     level: "high",
   };
 
+  it("keeps the DV visible but neutral when evidence is provisional", () => {
+    render(
+      <table>
+        <tbody>
+          <NutritionDVBar
+            label="Total Fat"
+            rawValue="33 g"
+            dv={highDV}
+            trafficLight="red"
+            provisional
+          />
+        </tbody>
+      </table>,
+    );
+
+    expect(screen.getByText("33 g")).toBeInTheDocument();
+    expect(screen.getByText("47.1%")).toHaveClass("text-foreground-secondary");
+    expect(screen.queryByLabelText(/high/i)).not.toBeInTheDocument();
+  });
+
   it("renders label and raw value", () => {
     render(
       <table>

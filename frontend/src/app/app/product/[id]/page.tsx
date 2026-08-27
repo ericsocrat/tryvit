@@ -341,12 +341,13 @@ export default function ProductDetailPage() {
                 unhealthinessScore={profile.scores.unhealthiness_score}
                 headline={profile.scores.headline}
                 hasConflicts={profile.scores.has_signal_conflicts}
+                provisional={scoreProvisional}
               />
               {(() => {
                 const q = profile.quality as Record<string, unknown> | null;
                 const level = q ? (q.confidence_band as string | undefined) : undefined;
                 const pct = q ? (q.confidence_score as number | undefined) : undefined;
-                return level ? (
+                return level && !scoreProvisional ? (
                   <ConfidenceBadge
                     level={level}
                     percentage={pct ?? undefined}
@@ -364,9 +365,11 @@ export default function ProductDetailPage() {
                   </span>
                 );
               })()}
-              <p className="text-xs text-foreground-muted">
-                {t("product.scoreConfidenceHint")}
-              </p>
+              {!scoreProvisional && (
+                <p className="text-xs text-foreground-muted">
+                  {t("product.scoreConfidenceHint")}
+                </p>
+              )}
             </div>
 
             {/* Health flags (inline) */}
@@ -428,13 +431,19 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Nutrition Highlights — key nutrient bars */}
-          <NutritionHighlights nutrition={profile.nutrition.per_100g} />
+          <NutritionHighlights
+            nutrition={profile.nutrition.per_100g}
+            provisional={scoreProvisional}
+          />
 
           {/* Allergen Quick Badges */}
           <AllergenQuickBadges allergens={profile.allergens} />
 
           {/* Score interpretation — expandable "What does this score mean?" */}
-          <ScoreInterpretationCard score={toTryVitScore(profile.scores.unhealthiness_score)} />
+          <ScoreInterpretationCard
+            score={toTryVitScore(profile.scores.unhealthiness_score)}
+            provisional={scoreProvisional}
+          />
 
           {/* Personalized health warnings */}
           <ErrorBoundary
@@ -523,21 +532,32 @@ function QuickSummary({
   return (
     <div className="space-y-4" data-testid="quick-summary">
       {/* Score interpretation */}
-      <div className={`card ${interp.bg}`}>
+      <div
+        className={
+          scoreProvisional
+            ? "card border-warning-border bg-warning-bg"
+            : `card ${interp.bg}`
+        }
+      >
         <h2 className="mb-1 text-sm font-semibold text-foreground-secondary">
           {t("product.quickSummary")}
         </h2>
-        <p className={`text-sm ${interp.color}`}>{t(interp.key)}</p>
-        {scoreProvisional && (
+        {scoreProvisional ? (
           <p className="mt-2 text-xs font-medium text-warning-text">
-            {t("trust.evidence.scoreProvisional")}
+            {t("trust.evidence.scoreNoGuidance")}
           </p>
+        ) : (
+          <p className={`text-sm ${interp.color}`}>{t(interp.key)}</p>
         )}
       </div>
 
       {/* Traffic light strip */}
       <div className="card">
-        {hasTrafficLightEvidence ? (
+        {scoreProvisional ? (
+          <p className="text-sm text-warning-text">
+            {t("trust.evidence.nutritionGuidanceWithheld")}
+          </p>
+        ) : hasTrafficLightEvidence ? (
           <TrafficLightStrip nutrition={profile.nutrition.per_100g} />
         ) : (
           <p className="text-sm text-warning-text">
@@ -632,7 +652,10 @@ function FlagWithExplanation({
 
 // ─── Score Interpretation Card ──────────────────────────────────────────────
 
-function ScoreInterpretationCard({ score }: Readonly<{ score: number }>) {
+function ScoreInterpretationCard({
+  score,
+  provisional,
+}: Readonly<{ score: number; provisional: boolean }>) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const interp = getScoreInterpretation(score);
@@ -655,10 +678,14 @@ function ScoreInterpretationCard({ score }: Readonly<{ score: number }>) {
       </button>
       {open && (
         <div
-          className={`mt-2 rounded-lg px-3 py-2 text-sm ${interp.bg} ${interp.color}`}
+          className={`mt-2 rounded-lg px-3 py-2 text-sm ${
+            provisional
+              ? "border border-warning-border bg-warning-bg text-warning-text"
+              : `${interp.bg} ${interp.color}`
+          }`}
           data-testid="score-interpretation-content"
         >
-          {t(interp.key)}
+          {t(provisional ? "trust.evidence.scoreNoGuidance" : interp.key)}
         </div>
       )}
     </div>

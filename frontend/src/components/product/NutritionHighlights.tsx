@@ -11,6 +11,7 @@ interface NutritionHighlightsProps {
     readonly sugars_g: number | null;
     readonly salt_g: number | null;
   };
+  readonly provisional?: boolean;
 }
 
 const BAR_COLORS = {
@@ -34,7 +35,10 @@ const UNITS: Record<string, string> = {
   salt: "g",
 };
 
-export function NutritionHighlights({ nutrition }: NutritionHighlightsProps) {
+export function NutritionHighlights({
+  nutrition,
+  provisional = false,
+}: NutritionHighlightsProps) {
   const { t } = useTranslation();
 
   const nutrientValues: Record<string, number | null> = {
@@ -46,7 +50,8 @@ export function NutritionHighlights({ nutrition }: NutritionHighlightsProps) {
 
   const items = TRAFFIC_LIGHT_NUTRIENTS.map(({ nutrient, labelKey }) => {
     const value = nutrientValues[nutrient] ?? null;
-    const level = value == null ? null : getTrafficLight(nutrient, value);
+    const level =
+      value == null || provisional ? null : getTrafficLight(nutrient, value);
     const max = MAX_VALUES[nutrient] ?? 50;
     const pct = value == null ? null : Math.min(100, (value / max) * 100);
     return { nutrient, label: t(labelKey), value, level, pct, unit: UNITS[nutrient] ?? "g" };
@@ -96,6 +101,11 @@ export function NutritionHighlights({ nutrition }: NutritionHighlightsProps) {
       <p className="mt-2 text-xxs text-foreground-muted">
         {t("product.per100g")}
       </p>
+      {provisional && (
+        <p className="mt-2 text-xs text-warning-text">
+          {t("trust.evidence.nutritionGuidanceWithheld")}
+        </p>
+      )}
     </div>
   );
 }

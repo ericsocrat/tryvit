@@ -26,6 +26,8 @@ interface NutritionDVBarProps {
   readonly trafficLight?: TrafficLight | null;
   /** If true, inverts DV bar colors (high = green, low = red). For fibre, protein. */
   readonly beneficial?: boolean;
+  /** Keep raw values/DV visible but remove evaluative color guidance. */
+  readonly provisional?: boolean;
 }
 
 export function NutritionDVBar({
@@ -34,6 +36,7 @@ export function NutritionDVBar({
   dv,
   trafficLight,
   beneficial = false,
+  provisional = false,
 }: NutritionDVBarProps) {
   const { t } = useTranslation();
 
@@ -43,7 +46,7 @@ export function NutritionDVBar({
         <td className="py-2 text-foreground-secondary">
           <span className="flex items-center gap-1.5">
             {label}
-            {trafficLight && <TrafficLightChip level={trafficLight} />}
+            {!provisional && trafficLight && <TrafficLightChip level={trafficLight} />}
           </span>
         </td>
         <td className="py-2 text-right font-medium text-foreground">
@@ -55,7 +58,9 @@ export function NutritionDVBar({
   }
 
   const colorMap = beneficial ? BENEFICIAL_LEVEL_COLORS : LEVEL_COLORS;
-  const colors = colorMap[dv.level];
+  const colors = provisional
+    ? { bar: "bg-foreground-muted", text: "text-foreground-secondary" }
+    : colorMap[dv.level];
   const widthPct = Math.min(dv.pct, 100);
 
   return (
@@ -63,7 +68,7 @@ export function NutritionDVBar({
       <td className="py-2 text-foreground-secondary">
         <span className="flex items-center gap-1.5">
           {label}
-          {trafficLight && <TrafficLightChip level={trafficLight} />}
+          {!provisional && trafficLight && <TrafficLightChip level={trafficLight} />}
         </span>
       </td>
       <td className="py-2 text-right font-medium text-foreground">

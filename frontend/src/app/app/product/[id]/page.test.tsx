@@ -108,16 +108,19 @@ vi.mock("@/components/product/ProductScoreHero", () => ({
     unhealthinessScore,
     headline,
     variant,
+    provisional,
   }: {
     unhealthinessScore: number;
     headline: string;
     variant?: string;
+    provisional?: boolean;
   }) => (
     <div
       data-testid="product-score-hero"
       data-score={unhealthinessScore}
       data-headline={headline}
       data-variant={variant ?? "card"}
+      data-provisional={String(provisional ?? false)}
     />
   ),
 }));
@@ -129,7 +132,12 @@ vi.mock("@/components/common/ConfidenceBadge", () => ({
 }));
 
 vi.mock("@/components/product/NutritionHighlights", () => ({
-  NutritionHighlights: () => <div data-testid="nutrition-highlights" />,
+  NutritionHighlights: ({ provisional }: { provisional?: boolean }) => (
+    <div
+      data-testid="nutrition-highlights"
+      data-provisional={String(provisional ?? false)}
+    />
+  ),
 }));
 
 vi.mock("@/components/product/AllergenQuickBadges", () => ({
@@ -1975,7 +1983,7 @@ describe("ProductDetailPage", () => {
 
     expect(
       await screen.findByText(
-        "This score interpretation is provisional because its supporting evidence is incomplete or stale.",
+        "Score shown for reference only. Supporting provenance is unavailable, so TryVit is not providing health guidance.",
       ),
     ).toBeInTheDocument();
     expect(
@@ -1984,6 +1992,65 @@ describe("ProductDetailPage", () => {
       ),
     ).toBeInTheDocument();
     expect(screen.queryByText("Healthy Veggie Sticks")).not.toBeInTheDocument();
+  });
+
+  it("removes affirmative health guidance from a favorable score without provenance", async () => {
+    localStorage.setItem("tryvit:product-full-analysis", "false");
+    mockUseProductProvenance.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error("provenance unavailable"),
+      refetch: vi.fn(),
+    });
+    const profile = makeProfile();
+    mockGetProductProfile.mockResolvedValue({
+      ok: true,
+      data: {
+        ...profile,
+        scores: {
+          ...profile.scores,
+          unhealthiness_score: 10,
+          score_band: "low",
+          headline: "This product scores very well. Good for regular consumption.",
+        },
+      },
+    });
+
+    const user = userEvent.setup();
+    render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+    expect(
+      await screen.findByText(
+        "Score shown for reference only. Supporting provenance is unavailable, so TryVit is not providing health guidance.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("product-score-hero")).toHaveAttribute(
+      "data-provisional",
+      "true",
+    );
+    expect(
+      screen.queryByText(/favorable nutritional profile/i),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/good for regular consumption/i),
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId("nutrition-highlights")).toHaveAttribute(
+      "data-provisional",
+      "true",
+    );
+    expect(screen.queryByTestId("confidence-badge")).not.toBeInTheDocument();
+    expect(screen.getByTestId("score-confidence-unavailable")).toBeInTheDocument();
+
+    await user.click(screen.getByTestId("toggle-analysis"));
+    await user.click(await screen.findByRole("tab", { name: "Nutrition" }));
+    expect(
+      screen.getByText(
+        "Nutrition values remain visible, but their provenance is insufficient for traffic-light guidance.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("group", { name: "Nutrient traffic light summary" }),
+    ).not.toBeInTheDocument();
   });
 
   it("withholds category rank and percentile when score provenance is unusable", async () => {

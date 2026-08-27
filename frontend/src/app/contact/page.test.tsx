@@ -29,18 +29,19 @@ describe("ContactPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the email link", () => {
+  it("renders the monitored private-beta feedback link", () => {
     render(<ContactPage />);
-    const link = screen.getByText("hello@example.com");
+    const link = screen.getByText("Open feedback issue");
     expect(link.closest("a")).toHaveAttribute(
       "href",
-      "mailto:hello@example.com",
+      "https://github.com/ericsocrat/tryvit/issues/new",
     );
+    expect(screen.queryByText("hello@example.com")).not.toBeInTheDocument();
   });
 
-  it("mentions response time", () => {
+  it("describes the monitored feedback channel truthfully", () => {
     render(<ContactPage />);
-    expect(screen.getByText(/48 hours/)).toBeInTheDocument();
+    expect(screen.getByText(/monitored TryVit issue tracker/i)).toBeInTheDocument();
   });
 
   it("includes Header and Footer", () => {

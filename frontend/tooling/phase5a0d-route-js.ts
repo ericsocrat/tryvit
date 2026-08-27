@@ -654,8 +654,10 @@ export async function assertMeasuredRouteIdentity(
     }
   } else if (route.id === "contact") {
     await assertExactVisibleText(page, "main#main-content article h1", "Contact", route.id);
-    const emailLink = page.locator('main#main-content a[href="mailto:hello@example.com"]');
-    if ((await emailLink.count()) !== 1) fail(`route-identity-mismatch:${route.id}`);
+    const feedbackLink = page.locator(
+      'main#main-content a[href="https://github.com/ericsocrat/tryvit/issues/new"]',
+    );
+    if ((await feedbackLink.count()) !== 1) fail(`route-identity-mismatch:${route.id}`);
   } else if (route.id === "app-shell") {
     const welcome = page.locator('[data-testid="new-user-welcome"]');
     try {

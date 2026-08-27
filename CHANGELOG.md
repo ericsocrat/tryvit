@@ -95,6 +95,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Replace the placeholder contact address with the monitored TryVit issue tracker and
+  withhold affirmative score, confidence, and traffic-light guidance whenever required
+  product provenance is provisional or unavailable.
 - Wire existing field-level product provenance into product, scan, and comparison
   surfaces; preserve missing nutrition as unavailable evidence; withhold rankings when
   source/freshness evidence is invalid; and expose retryable personalized-allergen
