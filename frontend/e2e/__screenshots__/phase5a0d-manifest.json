@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a0d-visual-baselines",
-  "sourceCommit": "dde633f46d036fbd4ec3d65b6c075326ea53d3f1",
+  "sourceCommit": "b29a9a5c54781267d1d08790cfda4bd315f2067e",
   "rendererClass": "ci-linux-authoritative",
   "runner": {
     "imageOS": "ubuntu24",
-    "imageVersion": "20260816.277.1",
+    "imageVersion": "20260823.283.1",
     "arch": "x64"
   },
   "versions": {
@@ -74,8 +74,8 @@
       "height": 844,
       "fixtureState": "public-static",
       "relativeFile": "smoke-visual.spec.ts/p5a0d-login-390x844-light-reduced.png",
-      "sha256": "80862791f68577982143277ef2cf036e131f38c9c9ef2149882aeca87ab36ab9",
-      "bytes": 101143
+      "sha256": "dcb24f7d21fbfcd9c2068982c35ce7abc866139fb628eb77e26bae40de4714b9",
+      "bytes": 49800
     },
     {
       "id": "login-1440x900",
@@ -86,8 +86,8 @@
       "height": 900,
       "fixtureState": "public-static",
       "relativeFile": "smoke-visual.spec.ts/p5a0d-login-1440x900-light-reduced.png",
-      "sha256": "a0fc219340ef8d17fa89ee43154a31207f7061d2dcb4d297d73be243c608c2fd",
-      "bytes": 274628
+      "sha256": "f73f3d3dbb07b356938ec3222c03708e995b8121e665feb470682a0ee880ab66",
+      "bytes": 266772
     },
     {
       "id": "app-shell-new-user-390x844",
@@ -114,5 +114,5 @@
       "bytes": 61059
     }
   ],
-  "manifestChecksum": "5818f9eabb919cb498c776b2b98cef0e6be3fa4ea12d9e02f0ab09be405d79a8"
+  "manifestChecksum": "f9e8f3506cc96bab4ded172607bdd8bb7155254934513cb57340d3934a0b7f44"
 }

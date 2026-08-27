@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "attestationType": "phase5a0d-renderer-runtime-metadata-only",
-  "baseCommit": "bb4cd53fa37c9e5f6a59a0dbbd9752cbd2e3a03a",
+  "baseCommit": "b29a9a5c54781267d1d08790cfda4bd315f2067e",
   "candidate": {
-    "workflowRunId": 32653121285,
+    "workflowRunId": 33080678351,
     "workflowRunAttempt": 1,
-    "runCreatedAt": "2026-08-23T16:54:15Z",
-    "runCompletedAt": "2026-08-23T17:02:52Z",
-    "artifactId": 9496834874,
-    "artifactName": "phase5a0d-visual-baseline-candidates-bb4cd53fa37c9e5f6a59a0dbbd9752cbd2e3a03a",
-    "archiveDigest": "sha256:9c5078df27d9d31b2b2695361f0cd6fa3d43f086c8c0f68c3aae80908a637cf3",
-    "archiveBytes": 793034,
-    "sourceCommit": "bb4cd53fa37c9e5f6a59a0dbbd9752cbd2e3a03a"
+    "runCreatedAt": "2026-08-27T14:09:27Z",
+    "runCompletedAt": "2026-08-27T14:18:00Z",
+    "artifactId": 9650203838,
+    "artifactName": "phase5a0d-visual-baseline-candidates-b29a9a5c54781267d1d08790cfda4bd315f2067e",
+    "archiveDigest": "sha256:98a7672be65375a60aa23183b7a5701967af07a16d55da58107f56f41cd61d38",
+    "archiveBytes": 664369,
+    "sourceCommit": "b29a9a5c54781267d1d08790cfda4bd315f2067e"
   },
   "oldManifest": {
-    "manifestSha256": "1531d42b72b36bf961436702a22aa73e249743c14110cd3388d4f66841e24ebc",
-    "manifestChecksum": "3eeb57171206e56adba6f110b23d3ec2763a88923d6fb4081d448403eb87aaad",
-    "sourceCommit": "3acb3b1f28e645ea798cd43227030f5651586b03",
-    "runnerImageVersion": "20260810.271.1",
+    "manifestSha256": "4206f471b374593b514a30b25ae20b1cd6696606db1381f998e39a5ed5baae88",
+    "manifestChecksum": "8d623d6665257758559e1cb9f36b86d2ce9bc20ad98aee473908717398359aae",
+    "sourceCommit": "020a44da7ae3fc8c7878042da4fecaf7e70cf423",
+    "runnerImageVersion": "20260816.277.1",
     "versions": {
       "node": "v22.21.1",
       "npm": "10.9.4",
@@ -27,10 +27,10 @@
     }
   },
   "newManifest": {
-    "manifestSha256": "3bbeacfcd9dd64c8c4d6f852952910b2fb9f97e4166eb0e39bac3730b5c8234e",
-    "manifestChecksum": "3a12a3cb048e1e82fd2cc3493a3c48860a8f2f5268d792510eaa8b8c073423aa",
-    "sourceCommit": "bb4cd53fa37c9e5f6a59a0dbbd9752cbd2e3a03a",
-    "runnerImageVersion": "20260816.277.1",
+    "manifestSha256": "eff050892202b62f50afa232d017931264fe7ad3d30da82649de91c21122b7c9",
+    "manifestChecksum": "f9e8f3506cc96bab4ded172607bdd8bb7155254934513cb57340d3934a0b7f44",
+    "sourceCommit": "b29a9a5c54781267d1d08790cfda4bd315f2067e",
+    "runnerImageVersion": "20260823.283.1",
     "versions": {
       "node": "v22.21.1",
       "npm": "10.9.4",
@@ -55,18 +55,18 @@
       },
       {
         "file": "smoke-visual.spec.ts/p5a0d-landing-1440x900-light-reduced.png",
-        "bytes": 178825,
-        "sha256": "0688d51c24ead7a8642569a68dd1d52189b8f460b7215ca340ed142224609efc"
+        "bytes": 103619,
+        "sha256": "755eed6c523116bab8764c00b8486783c1361c0283929af589d5167b05e9d6de"
       },
       {
         "file": "smoke-visual.spec.ts/p5a0d-landing-390x844-light-reduced.png",
-        "bytes": 85157,
-        "sha256": "e5704802156929b1ae99ed1ea8c9570091c9f3afe685ba1c5de544c20cd73c3e"
+        "bytes": 68692,
+        "sha256": "110b1fc6f950911720cd3559fb5cf29dc1bbe561793caf699751d2c913d597e2"
       },
       {
         "file": "smoke-visual.spec.ts/p5a0d-landing-768x1024-light-reduced.png",
-        "bytes": 139834,
-        "sha256": "abd72cef9693d7d87a44a64d7967b4c363739cef59a541c71f76828bbbfff790"
+        "bytes": 105498,
+        "sha256": "424f4ba12c297cd837195a5fd2be00148b8486e5edec950d3c500240b77bebc9"
       },
       {
         "file": "smoke-visual.spec.ts/p5a0d-login-1440x900-light-reduced.png",
