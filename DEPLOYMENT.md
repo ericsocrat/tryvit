@@ -113,9 +113,10 @@ For Vercel preview deployments, add a wildcard redirect URL matching your previe
 
 ```
 https://*-<your-vercel-username>.vercel.app/auth/callback
+https://*-<your-vercel-username>.vercel.app/auth/recovery/callback
 ```
 
-Replace `<your-vercel-username>` with your actual Vercel account name (e.g., `https://*-janedoe.vercel.app/auth/callback`).
+Replace `<your-vercel-username>` with your actual Vercel account name and allowlist both callback paths.
 
 > **Note:** Supabase supports wildcard subdomains in redirect URLs. This allows all Vercel preview deployments to use auth callbacks.
 
@@ -129,9 +130,13 @@ User signs up → Supabase sends confirmation email
   → Redirect to /app/search
   → App layout checks onboarding_complete
   → If false → /onboarding/region → /onboarding/preferences → /app/search
+
+User requests password recovery → Supabase sends recovery email
+  → User clicks link → /auth/recovery/callback (exchanges code for session)
+  → Redirect to /auth/update-password
 ```
 
-The callback route (`/auth/callback`) is the only auth callback target. It exchanges the Supabase auth code for a session and redirects to `/app/search`.
+The normal OAuth/confirmation callback uses `/auth/callback`. Password recovery uses the fixed-purpose `/auth/recovery/callback` route so query input cannot select reset-password routing.
 
 Post-login redirect validation happens in the **login form** (`LoginForm.tsx`): the `redirect` query parameter is validated to prevent open-redirect attacks — only relative paths starting with `/` are accepted, and `//` prefixes are blocked.
 
@@ -225,7 +230,7 @@ See also: Issue #121 (Rollback Documentation) for detailed procedures.
 3. Configure DNS per Vercel's instructions (CNAME or A record)
 4. **Update Supabase Auth URLs** to match:
    - Site URL: `https://TryVit.example.com`
-   - Redirect URL: `https://TryVit.example.com/auth/callback`
+   - Redirect URLs: `https://TryVit.example.com/auth/callback` and `https://TryVit.example.com/auth/recovery/callback`
 5. Keep the Vercel `.vercel.app` domain in Supabase redirect URLs as a fallback
 
 ---
@@ -583,7 +588,8 @@ A bad frontend deployment was pushed — the site is broken, shows errors, or ha
    - Home page loads (`/`)
    - Search works (`/app/search`)
    - Product detail page renders data (`/app/product/[id]`)
-   - Auth callback works (`/auth/callback`)
+   - Normal auth callback works (`/auth/callback`)
+   - Password-recovery callback fails closed or reaches the reset flow (`/auth/recovery/callback`)
    - Health endpoint returns 200 (`/api/health`)
 6. If the rollback needs to stay in place, revert the bad commit on `main` to prevent the next push from re-deploying the broken code.
 
