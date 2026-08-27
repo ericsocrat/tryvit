@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   LiveHeaderAuthAction,
@@ -7,9 +7,10 @@ import {
 } from "./LivePublicAuthActions";
 import { PublicHeader } from "./PublicHeader";
 
-const { mockCreateClient, mockGetUser, mockUnsubscribe } = vi.hoisted(() => ({
+const { mockCreateClient, mockGetUser, mockOnAuthStateChange, mockUnsubscribe } = vi.hoisted(() => ({
   mockCreateClient: vi.fn(),
   mockGetUser: vi.fn(),
+  mockOnAuthStateChange: vi.fn(),
   mockUnsubscribe: vi.fn(),
 }));
 
@@ -34,7 +35,7 @@ beforeEach(() => {
   mockCreateClient.mockReturnValue({
     auth: {
       getUser: mockGetUser,
-      onAuthStateChange: vi.fn(() => ({
+      onAuthStateChange: mockOnAuthStateChange.mockImplementation(() => ({
         data: { subscription: { unsubscribe: mockUnsubscribe } },
       })),
     },
@@ -116,5 +117,52 @@ describe("live public auth actions", () => {
 
     expect(screen.getByText("Demo mode").closest("a")).toHaveAttribute("href", "#service-status");
     expect(mockCreateClient).not.toHaveBeenCalled();
+  });
+
+  it("degrades to signed-out actions when the auth probe rejects", async () => {
+    mockGetUser.mockRejectedValue(new Error("auth unavailable"));
+
+    render(
+      <LivePublicAuthProvider>
+        <LiveHeaderAuthAction signInLabel="Sign in" dashboardLabel="Dashboard" />
+      </LivePublicAuthProvider>,
+    );
+
+    await waitFor(() => expect(mockGetUser).toHaveBeenCalledTimes(1));
+    expect(screen.getByText("Sign in").closest("a")).toHaveAttribute("href", "/auth/login");
+  });
+
+  it("degrades to signed-out actions when the auth client cannot initialize", () => {
+    mockCreateClient.mockImplementation(() => {
+      throw new Error("missing live auth configuration");
+    });
+
+    render(
+      <LivePublicAuthProvider>
+        <LiveHeaderAuthAction signInLabel="Sign in" dashboardLabel="Dashboard" />
+      </LivePublicAuthProvider>,
+    );
+
+    expect(screen.getByText("Sign in").closest("a")).toHaveAttribute("href", "/auth/login");
+  });
+
+  it("tracks live auth changes and removes the shared listener on unmount", async () => {
+    mockGetUser.mockResolvedValue({ data: { user: null } });
+    const { unmount } = render(
+      <LivePublicAuthProvider>
+        <LiveHeaderAuthAction signInLabel="Sign in" dashboardLabel="Dashboard" />
+      </LivePublicAuthProvider>,
+    );
+
+    await waitFor(() => expect(mockOnAuthStateChange).toHaveBeenCalledTimes(1));
+    const handleAuthChange = mockOnAuthStateChange.mock.calls[0]?.[0] as (
+      event: string,
+      session: { user: { id: string } },
+    ) => void;
+    act(() => handleAuthChange("SIGNED_IN", { user: { id: "user-1" } }));
+    expect(screen.getByText("Dashboard").closest("a")).toHaveAttribute("href", "/app");
+
+    unmount();
+    expect(mockUnsubscribe).toHaveBeenCalledTimes(1);
   });
 });

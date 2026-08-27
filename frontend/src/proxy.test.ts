@@ -112,6 +112,103 @@ describe("proxy", () => {
     });
   });
 
+  describe("provider boundary", () => {
+    it.each([
+      ["root", createRequest("/")],
+      ["utm source", createRequest("/?utm_source=test")],
+      ["utm source and campaign", createRequest("/?utm_source=test&utm_campaign=x")],
+      ["newsletter referrer", createRequest("/?ref=newsletter")],
+      ["arbitrary harmless query", createRequest("/?foo=bar")],
+    ])("stamps the lean boundary on a %s landing document", async (_label, request) => {
+      const landing = await proxy(request);
+      expect(
+        landing.headers.get("x-middleware-request-x-tryvit-provider-boundary"),
+      ).toBe("landing-lean");
+    });
+
+    it("keeps a query-bearing non-root route on the application boundary", async () => {
+      const contact = await proxy(createRequest("/contact?utm_source=test"));
+      expect(
+        contact.headers.get("x-middleware-request-x-tryvit-provider-boundary"),
+      ).toBe("application");
+    });
+
+    it("overwrites a forged provider-boundary request header", async () => {
+      const request = new NextRequest(new URL("/contact", "http://localhost:3000"), {
+        headers: { "x-tryvit-provider-boundary": "landing-lean" },
+      });
+
+      const response = await proxy(request);
+      expect(
+        response.headers.get("x-middleware-request-x-tryvit-provider-boundary"),
+      ).toBe("application");
+    });
+
+    it.each([
+      [
+        "RSC navigation with a query",
+        new NextRequest(new URL("/?utm_source=test", "http://localhost:3000"), {
+          headers: { rsc: "1" },
+        }),
+      ],
+      [
+        "router-state request with a query",
+        new NextRequest(new URL("/?utm_source=test", "http://localhost:3000"), {
+          headers: { "next-router-state-tree": "[]" },
+        }),
+      ],
+      [
+        "router prefetch value 1 with a query",
+        new NextRequest(new URL("/?utm_source=test", "http://localhost:3000"), {
+          headers: { "next-router-prefetch": "1" },
+        }),
+      ],
+      [
+        "router prefetch value 2 with a query",
+        new NextRequest(new URL("/?utm_source=test", "http://localhost:3000"), {
+          headers: { "next-router-prefetch": "2" },
+        }),
+      ],
+      [
+        "segment prefetch with a query",
+        new NextRequest(new URL("/?utm_source=test", "http://localhost:3000"), {
+          headers: { "next-router-segment-prefetch": "/children" },
+        }),
+      ],
+      [
+        "middleware prefetch with a query",
+        new NextRequest(new URL("/?utm_source=test", "http://localhost:3000"), {
+          headers: { "x-middleware-prefetch": "1" },
+        }),
+      ],
+      [
+        "generic prefetch with a query",
+        new NextRequest(new URL("/?utm_source=test", "http://localhost:3000"), {
+          headers: { purpose: "prefetch" },
+        }),
+      ],
+      [
+        "structured prefetch with a query",
+        new NextRequest(new URL("/?utm_source=test", "http://localhost:3000"), {
+          headers: { "sec-purpose": "prefetch;prerender" },
+        }),
+      ],
+      [
+        "RSC cache discriminator without transport headers",
+        new NextRequest(new URL("/?utm_source=test&_rsc=unit", "http://localhost:3000")),
+      ],
+      [
+        "POST landing request",
+        new NextRequest(new URL("/", "http://localhost:3000"), { method: "POST" }),
+      ],
+    ])("keeps the application boundary for a %s request", async (_label, request) => {
+      const response = await proxy(request);
+      expect(
+        response.headers.get("x-middleware-request-x-tryvit-provider-boundary"),
+      ).toBe("application");
+    });
+  });
+
   describe("backend-independent policy routes", () => {
     const routes = [
       "/",
@@ -138,6 +235,10 @@ describe("proxy", () => {
       "/auth/callback",
       "/auth/forgot-password",
       "/auth/update-password",
+      "/?utm_source=test",
+      "/?utm_source=test&utm_campaign=x",
+      "/?ref=newsletter",
+      "/?foo=bar",
     ];
 
     it.each(routes)("passes %s without constructing a Supabase client", async (pathname) => {

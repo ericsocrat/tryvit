@@ -42,6 +42,7 @@ import {
   type RouteJsModeReport,
 } from "../tooling/phase5a0d-route-js";
 import {
+  compareRendererIdentity,
   listPhase5BaselinePngs,
   prepareVisualBaselineWriteTargets,
   rendererIdentityMismatchFields,
@@ -59,8 +60,8 @@ const routeJsCliSource = readFileSync(
   path.resolve(process.cwd(), "tooling", "phase5a0d-route-js-cli.mts"),
   "utf8",
 );
-const homePageSource = readFileSync(
-  path.resolve(process.cwd(), "src", "app", "HomePageContent.tsx"),
+const landingShellSource = readFileSync(
+  path.resolve(process.cwd(), "src", "app", "_landing-v2", "LandingPublicShell.tsx"),
   "utf8",
 );
 
@@ -215,7 +216,7 @@ describe("Phase 5A.0d measurement contract", () => {
       markerValue: "public-landing",
       boundarySelector: "main#main-content",
     });
-    expect(homePageSource).toContain('data-route-id="public-landing"');
+    expect(landingShellSource).toContain('data-route-id="public-landing"');
   });
 
   it("requires a deterministic positive fixture product ID", () => {
@@ -626,6 +627,41 @@ describe("visual baseline manifest contract", () => {
     expect(rendererIdentityMismatchFields(expected, actual)).toEqual([
       "runner.imageVersion",
       "versions.npm",
+    ]);
+  });
+
+  it("records hosted image rollout drift without weakening deterministic renderer blockers", () => {
+    const expected = visualManifest();
+    expected.runner.imageVersion = "20260720.247.2";
+    for (const imageVersion of ["20260816.277.1", "20260823.283.1"]) {
+      const actual = structuredClone(expected);
+      actual.runner.imageVersion = imageVersion;
+      expect(compareRendererIdentity(expected, actual)).toEqual({
+        blockingMismatches: [],
+        hostedImageVersionObservation: {
+          manifest: "20260720.247.2",
+          actual: imageVersion,
+        },
+      });
+    }
+
+    const actual = structuredClone(expected);
+
+    actual.runner.imageOS = "ubuntu26";
+    actual.runner.arch = "arm64";
+    actual.versions.node = "v99.0.0";
+    actual.versions.npm = "99.0.0";
+    actual.versions.next = "99.0.0";
+    actual.versions.playwright = "99.0.0";
+    actual.versions.chromium = "999.0.0.0";
+    expect(compareRendererIdentity(expected, actual).blockingMismatches).toEqual([
+      "runner.imageOS",
+      "runner.arch",
+      "versions.node",
+      "versions.npm",
+      "versions.next",
+      "versions.playwright",
+      "versions.chromium",
     ]);
   });
 

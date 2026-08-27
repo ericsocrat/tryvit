@@ -15,7 +15,7 @@ describe("PWA Manifest", () => {
   const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
 
   it("has required PWA fields", () => {
-    expect(manifest.name).toBe("TryVit \u2014 Know What You Eat");
+    expect(manifest.name).toBe("TryVit — Food intelligence you can inspect");
     expect(manifest.short_name).toBe("TryVit");
     expect(manifest.start_url).toBe("/app");
     expect(manifest.display).toBe("standalone");
@@ -35,6 +35,9 @@ describe("PWA Manifest", () => {
   it("has description for food products", () => {
     expect(manifest.description).toBeTruthy();
     expect(manifest.description.length).toBeGreaterThan(20);
+    expect(manifest.description).not.toMatch(
+      /instantly|health score|healthy|harmful|scan, score|multi-axis/iu,
+    );
   });
 
   it("has separate icon purposes (not combined 'any maskable')", () => {
@@ -225,6 +228,18 @@ describe("OpenGraph Images", () => {
     expect(src).toContain("ImageResponse");
     expect(src).toContain("1200");
     expect(src).toContain("630");
+    expect(src).toContain("LandingSocialCard");
+    expect(src).not.toContain("fonts.gstatic.com");
+  });
+
+  it("root Twitter image uses the same truthful landing card", () => {
+    const path = join(appDir, "twitter-image.tsx");
+    expect(existsSync(path)).toBe(true);
+    const src = readFileSync(path, "utf-8");
+    expect(src).toContain("LandingSocialCard");
+    expect(src).toContain("1200");
+    expect(src).toContain("600");
+    expect(src).not.toContain("fonts.gstatic.com");
   });
 
   it("product opengraph-image.tsx exists", () => {

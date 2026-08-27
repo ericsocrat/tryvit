@@ -156,7 +156,7 @@ supabase db reset                        # Full rebuild (migrations + seed)
 .\RUN_SEED.ps1                           # Seed reference data only
 
 # ── Testing ──
-.\RUN_QA.ps1                             # 776 blocking QA checks across 50 suites
+.\RUN_QA.ps1                             # 778 blocking QA checks across 50 suites
 .\RUN_NEGATIVE_TESTS.ps1                 # 20 constraint violation tests
 .\RUN_SANITY.ps1 -Env local              # Row-count + schema assertions
 python validate_eans.py                  # EAN checksum validation
@@ -187,7 +187,7 @@ echo "SELECT * FROM v_master LIMIT 5;" | docker exec -i supabase_db_tryvit psql 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────────────┐
 │  Open Food Facts │────▶│  Python Pipeline │────▶│  PostgreSQL (Supabase)  │
-│  API v2          │     │  sql_generator   │     │  233 migrations         │
+│  API v2          │     │  sql_generator   │     │  234 migrations         │
 │  (category tags, │     │  validator       │     │  58 pipeline folders    │
 │   countries=PL,DE│     │  off_client      │     │  products + nutrition   │
 └─────────────────┘     └──────────────────┘     │  + ingredients + scores │
@@ -319,7 +319,7 @@ tryvit/
 │   └── views/                       # Reference view definitions
 │
 ├── supabase/
-│   ├── migrations/                  # 233 append-only schema migrations
+│   ├── migrations/                  # 234 append-only schema migrations
 │   ├── seed/                        # Reference data seeds
 │   ├── tests/                       # pgTAP integration tests
 │   └── functions/                   # Edge Functions (API gateway, push notifications, CAPTCHA)
@@ -362,7 +362,7 @@ tryvit/
 
 ## 🧪 Testing
 
-Every change is validated against **784 automated checks** across 50 QA suites (776 blocking) plus 20 negative validation tests. No data enters the database without verification.
+Every change is validated against **786 automated checks** across 50 QA suites (778 blocking) plus 20 negative validation tests. No data enters the database without verification.
 
 <table>
   <tr>

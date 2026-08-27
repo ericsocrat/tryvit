@@ -1,0 +1,543 @@
+{
+  "schemaVersion": 2,
+  "kind": "phase5a3-landing-revision-cycle-2-performance",
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "productionSourceTree": "e82f1ce3b0f9fdfd8d41f02b04fb8d25a5b81da6",
+  "environmentClass": "pinned-playwright-linux-container",
+  "containerImage": "mcr.microsoft.com/playwright:v1.62.1-noble",
+  "containerDigest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac",
+  "cohortPolicy": {
+    "frozenCandidateCount": 2,
+    "maximumReplacementCandidates": 1,
+    "retainedAllValidSamples": true,
+    "removedOutliers": 0,
+    "reranUnchangedCohort": false,
+    "thresholdsUnchanged": true,
+    "stoppedAfterBoundedForensics": true
+  },
+  "profiles": {
+    "mobile": {
+      "metadata": {
+        "sourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+        "buildId": "RkiZx6Y57nyDf42ou3nTL",
+        "buildFingerprint": "e3084a81196f6766173f96ad292c84478081ede92194c23ed4959634ed27a0a9",
+        "node": "v24.18.1",
+        "lighthouse": "12.6.1",
+        "chromium": "151.0.7922.34",
+        "metadataChecksum": "1f4cb99f1481482da73dd93beb2df85c3ff2d9ca1ca8482653820b95753eb8f2"
+      },
+      "samples": [
+        {
+          "file": "127_0_0_1--2026_08_25_18_08_38.report.json",
+          "bytes": 601550,
+          "sha256": "c9a04cdc3a9aedd92f974018d4860983df0a605076e45ba19a09c5af520adfee",
+          "scores": {
+            "performance": 0.9,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 2821.2529,
+            "tbtMs": 262.0,
+            "cls": 0.0,
+            "ttfbMs": 37.857,
+            "coldTransferBytes": 260272.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 288.0,
+            "observedFcpMs": 288.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 179,
+              "bottom": 309,
+              "left": 29,
+              "right": 383,
+              "width": 354,
+              "height": 131
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 457.62645,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 2363.6264499999997
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        },
+        {
+          "file": "127_0_0_1--2026_08_25_18_08_50.report.json",
+          "bytes": 601187,
+          "sha256": "14015ad94eec4dceab4dfdc7aeb9d18b99ecab367297d0be1c72c70926ac3ab1",
+          "scores": {
+            "performance": 0.96,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 2630.7072,
+            "tbtMs": 115.0,
+            "cls": 0.0,
+            "ttfbMs": 44.099,
+            "coldTransferBytes": 260271.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 192.0,
+            "observedFcpMs": 192.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 179,
+              "bottom": 309,
+              "left": 29,
+              "right": 383,
+              "width": 354,
+              "height": 131
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 457.85360000000003,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 2172.8536
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        },
+        {
+          "file": "127_0_0_1--2026_08_25_18_09_02.report.json",
+          "bytes": 600793,
+          "sha256": "95ff0ce1b12067e4c7a7a7c7feea4c19c80b140ae94f2a924b56bfa747feaa6e",
+          "scores": {
+            "performance": 0.95,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 2672.3067,
+            "tbtMs": 141.0,
+            "cls": 0.0,
+            "ttfbMs": 25.97,
+            "coldTransferBytes": 260291.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 202.0,
+            "observedFcpMs": 202.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 179,
+              "bottom": 309,
+              "left": 29,
+              "right": 383,
+              "width": 354,
+              "height": 131
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 457.65335,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 2214.65335
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        },
+        {
+          "file": "127_0_0_1--2026_08_25_18_09_13.report.json",
+          "bytes": 600671,
+          "sha256": "78a39601ab5a8f4d7e7c1bf269d30f05709d1f1287b237ff5141af6b10dda696",
+          "scores": {
+            "performance": 0.96,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 2612.0706,
+            "tbtMs": 107.0,
+            "cls": 0.0,
+            "ttfbMs": 23.686,
+            "coldTransferBytes": 260271.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 164.0,
+            "observedFcpMs": 164.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 179,
+              "bottom": 309,
+              "left": 29,
+              "right": 383,
+              "width": 354,
+              "height": 131
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 455.5353,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 2156.5353
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        },
+        {
+          "file": "127_0_0_1--2026_08_25_18_09_24.report.json",
+          "bytes": 600591,
+          "sha256": "70a1f74669456c2bf9b41673157c26b65d35fd59e242fae579ac2ae05b0f52c3",
+          "scores": {
+            "performance": 0.96,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 2617.5804,
+            "tbtMs": 108.0,
+            "cls": 0.0,
+            "ttfbMs": 16.676,
+            "coldTransferBytes": 260291.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 154.0,
+            "observedFcpMs": 154.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 179,
+              "bottom": 309,
+              "left": 29,
+              "right": 383,
+              "width": 354,
+              "height": 131
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 455.7902,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 2161.7902
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        }
+      ],
+      "summary": {
+        "performanceMedian": 0.96,
+        "lcpMedianMs": 2630.7072,
+        "lcpMaximumMs": 2821.2529,
+        "tbtMedianMs": 115.0,
+        "tbtMaximumMs": 262.0,
+        "clsMedian": 0.0,
+        "clsMaximum": 0.0,
+        "ttfbMedianMs": 25.97,
+        "ttfbMaximumMs": 44.099,
+        "coldTransferMedianBytes": 260272.0,
+        "coldTransferMaximumBytes": 260291.0,
+        "fontTransferMaximumBytes": 0.0,
+        "consoleErrorMaximum": 0.0,
+        "unexpectedFirstParty4xxMaximum": 0.0
+      },
+      "acceptance": {
+        "performanceMedianAtLeastTarget": true,
+        "tbtMaximumAtMost200Ms": false,
+        "clsMaximumAtMost0_05": true,
+        "ttfbMaximumAtMost800Ms": true,
+        "coldTransferMaximumAtMost900KiB": true,
+        "fontTransferIsZero": true,
+        "consoleErrorsAreZero": true,
+        "unexpectedFirstParty4xxAreZero": true,
+        "mobileLcpMedianAtMost2400Ms": false,
+        "everyMobileLcpSampleAtMost2500Ms": false
+      }
+    },
+    "desktop": {
+      "metadata": {
+        "sourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+        "buildId": "RkiZx6Y57nyDf42ou3nTL",
+        "buildFingerprint": "e3084a81196f6766173f96ad292c84478081ede92194c23ed4959634ed27a0a9",
+        "node": "v24.18.1",
+        "lighthouse": "12.6.1",
+        "chromium": "151.0.7922.34",
+        "metadataChecksum": "0c42cd63b2adcd3acee7319b351b23c5afd278583e325cec3605aca579f47fda"
+      },
+      "samples": [
+        {
+          "file": "127_0_0_1--2026_08_25_18_11_42.report.json",
+          "bytes": 571423,
+          "sha256": "b2bcc88dc8fef70f007fb07f6943af5ea7c40f128364d3489d28bcbcf9f357f8",
+          "scores": {
+            "performance": 1.0,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 549.8174,
+            "tbtMs": 0.0,
+            "cls": 0.0,
+            "ttfbMs": 23.485,
+            "coldTransferBytes": 260272.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 178.0,
+            "observedFcpMs": 178.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 212,
+              "bottom": 530,
+              "left": 95,
+              "right": 696,
+              "width": 601,
+              "height": 318
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 124.9087,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 424.9087
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        },
+        {
+          "file": "127_0_0_1--2026_08_25_18_11_54.report.json",
+          "bytes": 572140,
+          "sha256": "dcc467b57068cad2111ff38ca1ac2476de334591458a0b6d55e75f97e6078306",
+          "scores": {
+            "performance": 1.0,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 589.6212,
+            "tbtMs": 0.0,
+            "cls": 0.0,
+            "ttfbMs": 13.076,
+            "coldTransferBytes": 260271.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 192.0,
+            "observedFcpMs": 192.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 212,
+              "bottom": 530,
+              "left": 95,
+              "right": 696,
+              "width": 601,
+              "height": 318
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 126.3106,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 463.3106
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        },
+        {
+          "file": "127_0_0_1--2026_08_25_18_12_06.report.json",
+          "bytes": 572217,
+          "sha256": "36919b64e37f44f44a45e7ddd16df3b9db2d8a01d05163c17f8b18813312cfef",
+          "scores": {
+            "performance": 1.0,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 582.1859999999999,
+            "tbtMs": 5.0,
+            "cls": 0.0,
+            "ttfbMs": 25.427999999999997,
+            "coldTransferBytes": 260290.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 209.0,
+            "observedFcpMs": 209.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 212,
+              "bottom": 530,
+              "left": 95,
+              "right": 696,
+              "width": 601,
+              "height": 318
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 126.093,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 456.0929999999999
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        },
+        {
+          "file": "127_0_0_1--2026_08_25_18_12_17.report.json",
+          "bytes": 571305,
+          "sha256": "6ec33f0bfecb6dae88ea1ca464bb29326d2bb5a60b6d7f143a5c655b259f738d",
+          "scores": {
+            "performance": 1.0,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 544.2455,
+            "tbtMs": 0.0,
+            "cls": 0.0,
+            "ttfbMs": 18.361,
+            "coldTransferBytes": 260271.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 170.0,
+            "observedFcpMs": 170.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 212,
+              "bottom": 530,
+              "left": 95,
+              "right": 696,
+              "width": 601,
+              "height": 318
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 125.12275,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 419.12275
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        },
+        {
+          "file": "127_0_0_1--2026_08_25_18_12_29.report.json",
+          "bytes": 571062,
+          "sha256": "0349ded5429067ad6ac93f455eaef8553dca9834d091115a5b3bd52b1b338ad5",
+          "scores": {
+            "performance": 1.0,
+            "accessibility": 1.0,
+            "bestPractices": 1.0,
+            "seo": 1.0
+          },
+          "metrics": {
+            "lcpMs": 565.3567,
+            "tbtMs": 0.0,
+            "cls": 0.0,
+            "ttfbMs": 18.695999999999998,
+            "coldTransferBytes": 260271.0,
+            "fontTransferBytes": 0,
+            "observedLcpMs": 141.0,
+            "observedFcpMs": 141.0
+          },
+          "lcpElement": {
+            "selector": "main#main-content > section.landing_hero__f19VW > div.landing_heroCopy__Be6fX > h1#landing-title",
+            "label": "Read the package. See the reasoning. Make your own call.",
+            "rect": {
+              "top": 212,
+              "bottom": 530,
+              "left": 95,
+              "right": 696,
+              "width": 601,
+              "height": 318
+            }
+          },
+          "simulatedLcpPhases": {
+            "timeToFirstByteMs": 125.17835,
+            "resourceLoadDelayMs": 0.0,
+            "resourceLoadDurationMs": 0.0,
+            "elementRenderDelayMs": 440.17835
+          },
+          "consoleErrorCount": 0,
+          "unexpectedFirstParty4xxCount": 0
+        }
+      ],
+      "summary": {
+        "performanceMedian": 1.0,
+        "lcpMedianMs": 565.3567,
+        "lcpMaximumMs": 589.6212,
+        "tbtMedianMs": 0.0,
+        "tbtMaximumMs": 5.0,
+        "clsMedian": 0.0,
+        "clsMaximum": 0.0,
+        "ttfbMedianMs": 18.695999999999998,
+        "ttfbMaximumMs": 25.427999999999997,
+        "coldTransferMedianBytes": 260271.0,
+        "coldTransferMaximumBytes": 260290.0,
+        "fontTransferMaximumBytes": 0.0,
+        "consoleErrorMaximum": 0.0,
+        "unexpectedFirstParty4xxMaximum": 0.0
+      },
+      "acceptance": {
+        "performanceMedianAtLeastTarget": true,
+        "tbtMaximumAtMost200Ms": true,
+        "clsMaximumAtMost0_05": true,
+        "ttfbMaximumAtMost800Ms": true,
+        "coldTransferMaximumAtMost900KiB": true,
+        "fontTransferIsZero": true,
+        "consoleErrorsAreZero": true,
+        "unexpectedFirstParty4xxAreZero": true
+      }
+    }
+  },
+  "history": [
+    {
+      "label": "candidate-1-local-windows",
+      "sourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+      "mobileLcpMs": [
+        2260.9048,
+        2259.4275,
+        2259.644,
+        2258.5521,
+        2257.9084
+      ],
+      "mobileMedianLcpMs": 2259.4275,
+      "performancePassed": true,
+      "disposition": "superseded-after-social-preview-truth-failure-and-non-authoritative-runtime"
+    },
+    {
+      "label": "candidate-1-remote-linux",
+      "sourceCommit": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
+      "productionEquivalentTo": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+      "mobileLcpMs": [
+        2162.6461,
+        2180.3058,
+        2624.9714,
+        2696.9879,
+        2711.0741
+      ],
+      "mobileMedianLcpMs": 2624.9714,
+      "performancePassed": false,
+      "disposition": "retained-aggregate-authoritative-runtime"
+    }
+  ],
+  "passed": false,
+  "disposition": "REVISE"
+}

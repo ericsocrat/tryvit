@@ -13,7 +13,7 @@
 
 import { getTurnstileSiteKey } from "@/lib/turnstile";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
-import { useCallback, useRef } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -34,61 +34,78 @@ export interface TurnstileWidgetProps {
   readonly className?: string;
 }
 
+export interface TurnstileWidgetHandle {
+  reset: () => void;
+}
+
 // ─── Component ──────────────────────────────────────────────────────────────
 
-export function TurnstileWidget({
-  onSuccess,
-  onError,
-  onExpire,
-  action,
-  appearance = "interaction-only",
-  theme = "auto",
-  className,
-}: TurnstileWidgetProps) {
-  const ref = useRef<TurnstileInstance | null>(null);
-  const siteKey = getTurnstileSiteKey();
-
-  const handleSuccess = useCallback(
-    (token: string) => {
-      onSuccess(token);
+export const TurnstileWidget = forwardRef<TurnstileWidgetHandle, TurnstileWidgetProps>(
+  function TurnstileWidget(
+    {
+      onSuccess,
+      onError,
+      onExpire,
+      action,
+      appearance = "interaction-only",
+      theme = "auto",
+      className,
     },
-    [onSuccess],
-  );
+    forwardedRef,
+  ) {
+    const ref = useRef<TurnstileInstance | null>(null);
+    const siteKey = getTurnstileSiteKey();
 
-  const handleError = useCallback(() => {
-    onError?.();
-  }, [onError]);
+    useImperativeHandle(
+      forwardedRef,
+      () => ({
+        reset: () => ref.current?.reset(),
+      }),
+      [],
+    );
 
-  const handleExpire = useCallback(() => {
-    onExpire?.();
-    // Auto-reset on expiry so user can re-verify
-    ref.current?.reset();
-  }, [onExpire]);
+    const handleSuccess = useCallback(
+      (token: string) => {
+        onSuccess(token);
+      },
+      [onSuccess],
+    );
 
-  const wrapperClassName = [
-    "flex w-full justify-center rounded-xl border border-default bg-surface/95 px-2 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color] motion-reduce:transition-none",
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
+    const handleError = useCallback(() => {
+      onError?.();
+    }, [onError]);
 
-  return (
-    <div className={wrapperClassName} data-testid="turnstile-widget">
-      <Turnstile
-        ref={ref}
-        siteKey={siteKey}
-        onSuccess={handleSuccess}
-        onError={handleError}
-        onExpire={handleExpire}
-        options={{
-          action,
-          appearance,
-          theme,
-        }}
-      />
-    </div>
-  );
-}
+    const handleExpire = useCallback(() => {
+      onExpire?.();
+      // Auto-reset on expiry so user can re-verify
+      ref.current?.reset();
+    }, [onExpire]);
+
+    const wrapperClassName = [
+      "flex w-full justify-center rounded-xl border border-default bg-surface/95 px-2 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color] motion-reduce:transition-none",
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    return (
+      <div className={wrapperClassName} data-testid="turnstile-widget">
+        <Turnstile
+          ref={ref}
+          siteKey={siteKey}
+          onSuccess={handleSuccess}
+          onError={handleError}
+          onExpire={handleExpire}
+          options={{
+            action,
+            appearance,
+            theme,
+          }}
+        />
+      </div>
+    );
+  },
+);
 
 // ─── Imperative Reset Helper ────────────────────────────────────────────────
 

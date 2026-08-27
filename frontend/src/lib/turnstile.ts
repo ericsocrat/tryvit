@@ -1,7 +1,8 @@
 // ─── Turnstile CAPTCHA Client Utilities ─────────────────────────────────────
 // Client-side helpers for Cloudflare Turnstile integration.
-// Uses @marsidev/react-turnstile for the widget and Supabase Edge Function
-// for server-side token verification.
+// Uses @marsidev/react-turnstile for the widget. Supabase Auth consumes signup
+// tokens directly; the standalone Edge verifier is retained only for an
+// explicitly separate non-Auth flow.
 //
 // Test keys (CI / local development):
 //   Site key:   1x00000000000000000000AA (always passes)
@@ -65,9 +66,13 @@ export function isTurnstileConfigured(): boolean {
 // ─── Server-Side Verification ───────────────────────────────────────────────
 
 /**
- * Verify a Turnstile token via the Edge Function.
+ * Verify a Turnstile token via the standalone Edge Function.
  * Verification fails closed when the function is unavailable, returns an
  * unexpected payload, or rejects the token.
+ *
+ * Do not call this before Supabase Auth `signUp`: Turnstile tokens are
+ * single-use and `signUp({ options: { captchaToken } })` is the sole signup
+ * verification authority.
  */
 export async function verifyTurnstileToken(
   supabase: SupabaseClient,

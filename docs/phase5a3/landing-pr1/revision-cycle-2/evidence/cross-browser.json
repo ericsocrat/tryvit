@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 2,
+  "kind": "phase5a3-landing-revision-cycle-2-cross-browser",
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "environment": {
+    "class": "pinned-playwright-linux-container",
+    "image": "mcr.microsoft.com/playwright:v1.62.1-noble",
+    "digest": "sha256:c091b21d9fae78c76e85cd4356431e9b018402f172a214fc7d7a5e9a7e29d8ac",
+    "playwright": "1.62.1"
+  },
+  "projects": [
+    {
+      "engine": "firefox",
+      "javaScript": true,
+      "testsPassed": 3
+    },
+    {
+      "engine": "webkit",
+      "javaScript": true,
+      "testsPassed": 3
+    },
+    {
+      "engine": "firefox",
+      "javaScript": false,
+      "testsPassed": 3
+    },
+    {
+      "engine": "webkit",
+      "javaScript": false,
+      "testsPassed": 3
+    }
+  ],
+  "behavior": {
+    "primaryDestinationsVisible": [
+      "Evidence",
+      "Method",
+      "Trust",
+      "Contact"
+    ],
+    "pointerOpenClose": true,
+    "keyboardEnterOpen": true,
+    "keyboardSpaceClose": true,
+    "openClosedLabelsTruthful": true,
+    "keyboardFocusVisible": true,
+    "normalReducedMotion": true,
+    "tabletStickyAnchorsClear": true,
+    "horizontalOverflow": false,
+    "nativeDetailsSummaryRetained": true
+  },
+  "testsPassed": 12,
+  "testsFailed": 0,
+  "limitations": [
+    "WebKit is not branded Safari approval.",
+    "No qualified screen-reader or voice-control approval is claimed.",
+    "No physical-device approval is claimed."
+  ],
+  "passed": true
+}

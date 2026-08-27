@@ -20,6 +20,14 @@ Adheres to [Semantic Versioning](https://semver.org/).
   outlier classification, unchanged Route-JS regression policy, and explicit
   separation from post-launch field Core Web Vitals; evaluate the retained Cycle 3
   cohort without rerunning it.
+- Seal the Phase 5A.3 landing Revision Cycle 2 replacement and preserve its rejected
+  first candidate separately; retain exact Linux visual, social-preview, motion,
+  cross-browser, Route-JS, CI/security, and five-run Lighthouse evidence with a
+  truthful `REVISE` disposition for strict mobile performance and 390 px geometry.
+- Add the Phase 5A.3 PR 1 source-bound landing evidence packet, including complete
+  light/dark, localization, reflow, no-JavaScript and motion media; retained Lighthouse
+  samples; rejected font trials; public trademark-similarity screening; and the
+  separately governed visual-baseline/route-JS acceptance boundary.
 - Document the bounded Phase 5A.3 landing-governance prerequisite, stable route identity,
   readiness-aware metadata/structured-data truth table, and the requirement that draft
   landing PR `#1301` remain untouched until the base-owned judge is merged and certified.
@@ -71,6 +79,16 @@ Adheres to [Semantic Versioning](https://semver.org/).
 - Add a versioned data-quality report and regression gate to deterministic DB
   QA, with JSON/Markdown artifacts and one source of truth for confidence
   thresholds.
+
+### Security
+
+- Restrict 84 privileged administration/operations routines and 21 operational
+  relations to `service_role`, with final-schema pgTAP and blocking QA checks
+  covering anonymous and ordinary authenticated callers.
+- Default `/auth/signup` to a localized invitation-only private-beta state,
+  fail auth callbacks closed to the existing recovery path, and retain one
+  dormant self-service signup contract that delegates a fresh Turnstile token
+  directly to Supabase Auth exactly once.
 
 ### Fixed
 

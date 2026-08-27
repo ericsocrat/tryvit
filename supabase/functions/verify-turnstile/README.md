@@ -6,7 +6,10 @@
 
 ## Purpose
 
-Server-side Cloudflare Turnstile CAPTCHA token verification. Called by the frontend before auth operations (signup, password reset) and conditionally before product submissions (low trust / high velocity users).
+Standalone Cloudflare Turnstile CAPTCHA token verification for an explicitly
+separate non-Auth flow. Supabase Auth is the sole signup verifier: the frontend
+passes `captchaToken` directly to `auth.signUp` and must not redeem the same
+single-use token through this function first.
 
 ## Request Shape
 

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-pr1-rejected-font-trials",
+  "candidate": "Manrope UI plus restrained Source Serif 4 editorial use",
+  "actualWoff2Bytes": 75004,
+  "lighthouseFontTransferBytes": 78310,
+  "preloadSwapFiveRun": {
+    "performance": [0.97, 0.89, 0.93, 0.96, 0.97],
+    "lcpMilliseconds": [2561.1, 3450.4, 3006.7, 2556.8, 2559.6],
+    "tbtMilliseconds": [64, 92, 62, 93, 77],
+    "median": { "performance": 0.96, "lcpMilliseconds": 2561.1, "tbtMilliseconds": 77, "cls": 0.00007, "ttfbMilliseconds": 15.4 },
+    "performanceRange": [0.89, 0.97]
+  },
+  "optionalFallbackObservation": { "lcpMilliseconds": 2556.4 },
+  "disposition": "REJECTED: both delivery strategies missed the blocking 2500 ms LCP target; all candidate production font files and route font code were removed."
+}

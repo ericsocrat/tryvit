@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-pr1-local-runtime",
+  "captureSourceCommit": "1f7ad2c0e52833f06a3d17e010ad653b366ee291",
+  "captureSourceTree": "c6b75ba217967b1dcdb6a4c0b09adbe07514765d",
+  "operatingSystem": "Microsoft Windows 11 Pro 10.0.26200 build 26200 AMD64",
+  "node": "24.11.1",
+  "npm": "11.6.2",
+  "next": "16.2.12",
+  "playwright": "1.62.1",
+  "chromiumRevision": "1234",
+  "packageLockSha256": "efd2a6e4c7906f3d6362336d9a841141008752e11cd34e10e55b0a00d4e863c5",
+  "playwrightConfigSha256": "a2fee35d4de77678142ad5e2d315eccf8a5bd2b42b9f228ed2604e4b3469b4bc",
+  "environmentClass": "local guarded production build",
+  "initialLinuxCandidateRun": 32803841385,
+  "initialLinuxCandidateDisposition": "FAILED: second seven-image set was not byte-identical; artifacts withheld",
+  "authoritativeLinuxCandidateRun": 32823920912,
+  "authoritativeLinuxCandidateSourceCommit": "f0674a59f4f0342c0d4f37e73c436ea8add526d5",
+  "authoritativeLinuxCandidateDisposition": "PASS: first and second seven-image sets byte-identical; candidate and determinism artifacts published"
+}

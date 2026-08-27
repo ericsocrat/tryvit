@@ -120,30 +120,30 @@ test.describe("Landing page features", () => {
   test("hero subtitle describes the paused demo truthfully", async ({ page }) => {
     await page.goto("/");
     await expect(
-      page.getByText("Live catalog, scanning, and account features are temporarily paused", {
+      page.getByText("The method remains available while live product data is paused", {
         exact: false,
       }),
     ).toBeVisible();
   });
 
-  test("renders Search feature card", async ({ page }) => {
+  test("renders the observed evidence layer", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("Find products by name, brand, or category")).toBeVisible();
+    await expect(page.getByText("Sugars 3.2 g and saturated fat 0.4 g per 100 ml")).toBeVisible();
   });
 
-  test("renders Scan feature card", async ({ page }) => {
+  test("renders the derived evidence layer", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("Scan barcodes for instant product info")).toBeVisible();
+    await expect(page.getByText("72 / 100 provisional method output")).toBeVisible();
   });
 
-  test("renders Compare feature card", async ({ page }) => {
+  test("renders explicit missingness", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("See health scores and find better alternatives")).toBeVisible();
+    await expect(page.getByText(/processing is not assessed/i)).toBeVisible();
   });
 
   test("demo CTA links to the service-status explanation", async ({ page }) => {
     await page.goto("/");
-    const cta = page.getByRole("link", { name: "View service status" }).first();
+    const cta = page.locator("header").getByRole("link", { name: "Demo mode" });
     await expect(cta).toBeVisible();
     await expect(cta).toHaveAttribute("href", "#service-status");
   });
@@ -177,20 +177,24 @@ test.describe("Login page details", () => {
 });
 
 test.describe("Signup page details", () => {
-  test("password field has correct placeholder", async ({ page }) => {
+  test("explains that private beta is invitation-only", async ({ page }) => {
     await page.goto("/auth/signup");
-    const passwordInput = page.getByLabel("Password", { exact: true });
-    await expect(passwordInput).toHaveAttribute("placeholder", "At least 6 characters");
+    await expect(
+      page.getByRole("heading", { name: /private beta access is invitation-only/i }),
+    ).toBeVisible();
   });
 
-  test("Sign Up button is present", async ({ page }) => {
+  test("self-service signup controls are absent", async ({ page }) => {
     await page.goto("/auth/signup");
-    await expect(page.getByRole("button", { name: /Sign Up/i })).toBeVisible();
+    await expect(page.getByLabel("Email")).toHaveCount(0);
+    await expect(page.getByLabel("Password", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Sign Up/i })).toHaveCount(0);
   });
 
-  test("has Sign in link for existing users", async ({ page }) => {
+  test("has Sign in and recovery links for invited users", async ({ page }) => {
     await page.goto("/auth/signup");
     await expect(page.getByRole("link", { name: /Sign in/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Forgot password/i })).toBeVisible();
   });
 });
 

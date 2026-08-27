@@ -5,25 +5,18 @@ import { lstatSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const MANIFEST_PATH =
-  "frontend/e2e/__screenshots__/phase5a0d-manifest.json";
+export const MANIFEST_PATH = "frontend/e2e/__screenshots__/phase5a0d-manifest.json";
 
-export const ATTESTATION_PATH =
-  "docs/evidence/phase5a0d-renderer-runtime-attestation.json";
+export const ATTESTATION_PATH = "docs/evidence/phase5a0d-renderer-runtime-attestation.json";
 
-export const REQUIRED_REFRESH_PATHS = Object.freeze([
-  ATTESTATION_PATH,
-  MANIFEST_PATH,
-]);
+export const REQUIRED_REFRESH_PATHS = Object.freeze([ATTESTATION_PATH, MANIFEST_PATH]);
 
-export const RENDERER_AUTHORIZATION_LABEL =
-  "phase5a0d-renderer-attestation-approved";
+export const RENDERER_AUTHORIZATION_LABEL = "phase5a0d-renderer-attestation-approved";
 
 export const SOURCE_EQUIVALENCE_APPROVAL_MARKER =
   "phase5a0d-renderer-source-equivalence-approval:v2";
 
-export const RENDERER_ATTESTATION_BRANCH =
-  "codex/phase-5a0d-renderer-runtime-attestation";
+export const RENDERER_ATTESTATION_BRANCH = "codex/phase-5a0d-renderer-runtime-attestation";
 
 const MANIFEST_FILE = "phase5a0d-manifest.json";
 const VISUAL_WORKFLOW_PATH = ".github/workflows/phase5a0d-visual-baselines.yml";
@@ -39,6 +32,11 @@ const COMMIT_PATTERN = /^[0-9a-f]{40}$/u;
 
 function sha256Bytes(value) {
   return createHash("sha256").update(value).digest("hex");
+}
+
+function assertByteIdentical(actual, expected, label) {
+  assert.equal(actual.byteLength, expected.byteLength, label);
+  assert.equal(sha256Bytes(actual), sha256Bytes(expected), label);
 }
 
 function stableCopy(value) {
@@ -84,11 +82,7 @@ function parseApprovalComment(body) {
   const match = body.match(new RegExp(`<!--\\s*${escaped}\\s*\\n([\\s\\S]*?)\\n\\s*-->`, "u"));
   assert.ok(match, "renderer-approval-marker-invalid");
   const approval = JSON.parse(match[1]);
-  exactKeys(
-    approval,
-    ["schemaVersion", "approvalType", "attestationPrHead"],
-    "renderer-approval",
-  );
+  exactKeys(approval, ["schemaVersion", "approvalType", "attestationPrHead"], "renderer-approval");
   assert.equal(approval.schemaVersion, 2, "renderer-approval-schema-invalid");
   assert.equal(
     approval.approvalType,
@@ -260,11 +254,7 @@ export function assertRendererSourceEquivalent(repositoryRoot, candidateSha, syn
   }
   const candidatePaths = runtimeLandingPaths(repositoryRoot, candidateSha);
   const synchronizedPaths = runtimeLandingPaths(repositoryRoot, synchronizedSha);
-  assert.deepEqual(
-    synchronizedPaths,
-    candidatePaths,
-    "renderer-landing-source-file-set-drift",
-  );
+  assert.deepEqual(synchronizedPaths, candidatePaths, "renderer-landing-source-file-set-drift");
   for (const path of candidatePaths) {
     assert.equal(
       git(repositoryRoot, ["rev-parse", `${candidateSha}:${path}`]).trim(),
@@ -290,7 +280,11 @@ function parseHashLedger(bytes, label) {
     .map((line) => {
       const match = line.match(/^([0-9a-f]{64})  \.\/(.+)$/u);
       assert.ok(match, `${label}-entry-invalid`);
-      assert.equal(match[2].startsWith("/") || match[2].includes(".."), false, `${label}-path-invalid`);
+      assert.equal(
+        match[2].startsWith("/") || match[2].includes(".."),
+        false,
+        `${label}-path-invalid`,
+      );
       return { sha256: match[1], file: match[2] };
     });
   assert.equal(new Set(records.map(({ file }) => file)).size, records.length, `${label}-duplicate`);
@@ -306,7 +300,11 @@ function assertDeterminismPacket({
   candidateSource,
   pngs,
 }) {
-  assert.deepEqual(listRegularFiles(determinismRoot), DETERMINISM_FILES, "determinism-file-set-invalid");
+  assert.deepEqual(
+    listRegularFiles(determinismRoot),
+    DETERMINISM_FILES,
+    "determinism-file-set-invalid",
+  );
   const firstManifest = readFileSync(resolve(determinismRoot, "first-manifest.json"));
   const secondManifest = readFileSync(resolve(determinismRoot, "second-manifest.json"));
   assert.deepEqual(firstManifest, candidateManifestBytes, "determinism-first-manifest-drift");
@@ -317,7 +315,11 @@ function assertDeterminismPacket({
   assert.deepEqual(secondLedgerBytes, firstLedgerBytes, "determinism-ledger-drift");
   const ledger = parseHashLedger(firstLedgerBytes, "determinism-ledger");
   const expectedFiles = [MANIFEST_FILE, ...pngs.map(({ file }) => file)].sort();
-  assert.deepEqual(ledger.map(({ file }) => file), expectedFiles, "determinism-ledger-file-set-invalid");
+  assert.deepEqual(
+    ledger.map(({ file }) => file),
+    expectedFiles,
+    "determinism-ledger-file-set-invalid",
+  );
   for (const record of ledger) {
     assert.equal(
       record.sha256,
@@ -345,7 +347,11 @@ function assertDeterminismPacket({
   assert.equal(provenance.sourceCommit, candidateSource.headSha, "determinism-source-invalid");
   assert.deepEqual(provenance.runner, candidateManifest.runner, "determinism-runner-invalid");
   assert.deepEqual(provenance.versions, candidateManifest.versions, "determinism-versions-invalid");
-  assert.match(provenance.generatorArchiveSha256 ?? "", /^[0-9a-f]{64}$/u, "determinism-generator-invalid");
+  assert.match(
+    provenance.generatorArchiveSha256 ?? "",
+    /^[0-9a-f]{64}$/u,
+    "determinism-generator-invalid",
+  );
   assert.equal(
     provenance.packageJsonSha256,
     sha256Bytes(gitBytes(repositoryRoot, candidateSource.headSha, "frontend/package.json")),
@@ -373,7 +379,11 @@ function assertV2ApprovalFile(approvalFile, headSha) {
     "phase5a0d-renderer-source-equivalence",
     "renderer-selected-approval-type-invalid",
   );
-  assert.equal(selected.approval.attestationPrHead, headSha, "renderer-selected-approval-head-invalid");
+  assert.equal(
+    selected.approval.attestationPrHead,
+    headSha,
+    "renderer-selected-approval-head-invalid",
+  );
   exactKeys(
     selected.external,
     [
@@ -387,12 +397,28 @@ function assertV2ApprovalFile(approvalFile, headSha) {
     ],
     "renderer-selected-approval-external",
   );
-  assert.equal(selected.external.headRef, RENDERER_ATTESTATION_BRANCH, "renderer-selected-approval-branch-invalid");
+  assert.equal(
+    selected.external.headRef,
+    RENDERER_ATTESTATION_BRANCH,
+    "renderer-selected-approval-branch-invalid",
+  );
   requiredPositiveInteger(selected.external.commentId, "renderer-selected-approval-comment-id");
-  requiredPositiveInteger(selected.external.labelEventId, "renderer-selected-approval-label-event-id");
-  requiredIsoTimestamp(selected.external.commentCreatedAt, "renderer-selected-approval-comment-created");
-  requiredIsoTimestamp(selected.external.commentUpdatedAt, "renderer-selected-approval-comment-updated");
-  requiredIsoTimestamp(selected.external.labelCreatedAt, "renderer-selected-approval-label-created");
+  requiredPositiveInteger(
+    selected.external.labelEventId,
+    "renderer-selected-approval-label-event-id",
+  );
+  requiredIsoTimestamp(
+    selected.external.commentCreatedAt,
+    "renderer-selected-approval-comment-created",
+  );
+  requiredIsoTimestamp(
+    selected.external.commentUpdatedAt,
+    "renderer-selected-approval-comment-updated",
+  );
+  requiredIsoTimestamp(
+    selected.external.labelCreatedAt,
+    "renderer-selected-approval-label-created",
+  );
   assert.equal(
     selected.external.labelCreatedAt >= selected.external.commentUpdatedAt,
     true,
@@ -429,7 +455,15 @@ export function assertManifestTransition(baseManifest, nextManifest) {
 function assertV1Evidence(evidence, expected) {
   exactKeys(
     evidence,
-    ["schemaVersion", "attestationType", "baseCommit", "candidate", "oldManifest", "newManifest", "review"],
+    [
+      "schemaVersion",
+      "attestationType",
+      "baseCommit",
+      "candidate",
+      "oldManifest",
+      "newManifest",
+      "review",
+    ],
     "attestation",
   );
   assert.equal(evidence.schemaVersion, 1, "attestation-schema-invalid");
@@ -442,17 +476,51 @@ function assertV1Evidence(evidence, expected) {
 
   exactKeys(
     evidence.candidate,
-    ["workflowRunId", "workflowRunAttempt", "runCreatedAt", "runCompletedAt", "artifactId", "artifactName", "archiveDigest", "archiveBytes", "sourceCommit"],
+    [
+      "workflowRunId",
+      "workflowRunAttempt",
+      "runCreatedAt",
+      "runCompletedAt",
+      "artifactId",
+      "artifactName",
+      "archiveDigest",
+      "archiveBytes",
+      "sourceCommit",
+    ],
     "attestation-candidate",
   );
   assert.equal(evidence.candidate.workflowRunId, expected.runId, "attestation-run-invalid");
-  assert.equal(evidence.candidate.workflowRunAttempt, expected.runAttempt, "attestation-attempt-invalid");
-  assert.equal(evidence.candidate.runCreatedAt, expected.runCreatedAt, "attestation-run-created-invalid");
-  assert.equal(evidence.candidate.runCompletedAt, expected.runCompletedAt, "attestation-run-completed-invalid");
+  assert.equal(
+    evidence.candidate.workflowRunAttempt,
+    expected.runAttempt,
+    "attestation-attempt-invalid",
+  );
+  assert.equal(
+    evidence.candidate.runCreatedAt,
+    expected.runCreatedAt,
+    "attestation-run-created-invalid",
+  );
+  assert.equal(
+    evidence.candidate.runCompletedAt,
+    expected.runCompletedAt,
+    "attestation-run-completed-invalid",
+  );
   assert.equal(evidence.candidate.artifactId, expected.artifactId, "attestation-artifact-invalid");
-  assert.equal(evidence.candidate.artifactName, expected.artifactName, "attestation-artifact-name-invalid");
-  assert.equal(normalizeDigest(evidence.candidate.archiveDigest), expected.archiveDigest, "attestation-digest-invalid");
-  assert.equal(evidence.candidate.archiveBytes, expected.archiveBytes, "attestation-archive-size-invalid");
+  assert.equal(
+    evidence.candidate.artifactName,
+    expected.artifactName,
+    "attestation-artifact-name-invalid",
+  );
+  assert.equal(
+    normalizeDigest(evidence.candidate.archiveDigest),
+    expected.archiveDigest,
+    "attestation-digest-invalid",
+  );
+  assert.equal(
+    evidence.candidate.archiveBytes,
+    expected.archiveBytes,
+    "attestation-archive-size-invalid",
+  );
   assert.equal(evidence.candidate.sourceCommit, expected.baseSha, "attestation-source-invalid");
 
   assert.deepEqual(evidence.oldManifest, expected.oldMetadata, "attestation-old-metadata-invalid");
@@ -487,7 +555,11 @@ function assertV2Evidence(evidence, expected) {
     "attestation-type-invalid",
   );
   assert.equal(evidence.baseCommit, expected.baseSha, "attestation-base-invalid");
-  assert.deepEqual(evidence.candidateSource, expected.candidateSource, "attestation-candidate-source-invalid");
+  assert.deepEqual(
+    evidence.candidateSource,
+    expected.candidateSource,
+    "attestation-candidate-source-invalid",
+  );
   assert.deepEqual(
     evidence.synchronizedImplementation,
     expected.synchronizedImplementation,
@@ -544,9 +616,17 @@ function assertV2RunAndArtifacts({ run, artifacts, evidence, approval }) {
   assert.equal(run.head_sha, evidence.candidateSource.headSha, "candidate-run-head-invalid");
   assert.equal(run.status, "completed", "candidate-run-status-invalid");
   assert.equal(run.conclusion, "success", "candidate-run-conclusion-invalid");
-  assert.equal(run.run_attempt, evidence.candidate.workflowRunAttempt, "candidate-run-attempt-invalid");
+  assert.equal(
+    run.run_attempt,
+    evidence.candidate.workflowRunAttempt,
+    "candidate-run-attempt-invalid",
+  );
   assert.equal(run.created_at, evidence.candidate.runCreatedAt, "candidate-run-created-invalid");
-  assert.equal(run.updated_at, evidence.candidate.runCompletedAt, "candidate-run-completed-invalid");
+  assert.equal(
+    run.updated_at,
+    evidence.candidate.runCompletedAt,
+    "candidate-run-completed-invalid",
+  );
   assert.equal(run.path, VISUAL_WORKFLOW_PATH, "candidate-run-workflow-invalid");
   assert.equal(
     evidence.candidate.runCompletedAt <= approval.external.commentUpdatedAt,
@@ -605,7 +685,11 @@ export function validateRendererAttestation(options) {
   const baseManifestBytes = gitBytes(repositoryRoot, options.baseSha, MANIFEST_PATH);
   const nextManifestBytes = gitBytes(repositoryRoot, options.headSha, MANIFEST_PATH);
   const candidateManifestBytes = readFileSync(resolve(candidateRoot, MANIFEST_FILE));
-  assert.deepEqual(candidateManifestBytes, nextManifestBytes, "candidate-manifest-not-committed-exactly");
+  assert.deepEqual(
+    candidateManifestBytes,
+    nextManifestBytes,
+    "candidate-manifest-not-committed-exactly",
+  );
 
   const baseManifest = JSON.parse(baseManifestBytes.toString("utf8"));
   const nextManifest = JSON.parse(nextManifestBytes.toString("utf8"));
@@ -629,15 +713,19 @@ export function validateRendererAttestation(options) {
   assert.equal(new Set(pngs.map(({ file }) => file)).size, 7, "attestation-case-file-duplicate");
 
   const expectedCandidateFiles = [MANIFEST_FILE, ...pngs.map(({ file }) => file)].sort();
-  assert.deepEqual(listRegularFiles(candidateRoot), expectedCandidateFiles, "candidate-file-set-invalid");
+  assert.deepEqual(
+    listRegularFiles(candidateRoot),
+    expectedCandidateFiles,
+    "candidate-file-set-invalid",
+  );
 
   for (const png of pngs) {
     const path = `frontend/e2e/__screenshots__/${png.file}`;
     const baseBytes = gitBytes(repositoryRoot, options.baseSha, path);
     const nextBytes = gitBytes(repositoryRoot, options.headSha, path);
     const candidateBytes = readFileSync(resolve(candidateRoot, png.file));
-    assert.deepEqual(nextBytes, baseBytes, `committed-png-changed:${png.file}`);
-    assert.deepEqual(candidateBytes, baseBytes, `candidate-png-changed:${png.file}`);
+    assertByteIdentical(nextBytes, baseBytes, `committed-png-changed:${png.file}`);
+    assertByteIdentical(candidateBytes, baseBytes, `candidate-png-changed:${png.file}`);
     assert.equal(candidateBytes.byteLength, png.bytes, `candidate-png-bytes-invalid:${png.file}`);
     assert.equal(sha256Bytes(candidateBytes), png.sha256, `candidate-png-sha-invalid:${png.file}`);
   }

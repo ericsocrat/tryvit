@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-revision-cycle-2-verification",
+  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+  "local": {
+    "focusedTruthMetadataNavigationDisclosure": {
+      "files": 6,
+      "testsPassed": 50,
+      "testsFailed": 0
+    },
+    "fullUnit": {
+      "filesPassed": 413,
+      "filesSkipped": 1,
+      "testsPassed": 6741,
+      "testsSkipped": 19,
+      "testsFailed": 0
+    },
+    "designSystem": {
+      "filesPassed": 30,
+      "testsPassed": 256,
+      "testsFailed": 0,
+      "tokenArtifactsCurrent": true
+    },
+    "landingReview": {
+      "testsPassed": 25,
+      "testsFailed": 0,
+      "stills": 13,
+      "videos": 2
+    },
+    "crossBrowser": {
+      "testsPassed": 8,
+      "testsFailed": 0,
+      "engines": [
+        "firefox",
+        "webkit"
+      ],
+      "javaScriptStates": [
+        "enabled",
+        "disabled"
+      ],
+      "motionStates": [
+        "normal",
+        "reduced"
+      ]
+    },
+    "responsiveSmoke": {
+      "testsPassed": 24,
+      "testsFailed": 0
+    },
+    "typeCheck": "pass",
+    "fullLint": "pass",
+    "productionBuild": "pass",
+    "axe": {
+      "standard": "WCAG 2.1 AA",
+      "violations": 0,
+      "exclusions": 0,
+      "disabledRules": 0
+    },
+    "reflow320Through1440": "pass",
+    "effective200Percent": "pass",
+    "textSpacing": "pass",
+    "forcedColors": "pass",
+    "noJavaScriptLightDark": "pass",
+    "normalReducedMotion": "pass"
+  },
+  "remoteCodeHead": {
+    "head": "ab0a43ecfcfbb064553a02a722263fda07b06ae8",
+    "prGate": "pass",
+    "qualityGate": "pass",
+    "lighthouse": "pass",
+    "routeJs": "pass",
+    "codeQl": "pass",
+    "dependencyAudit": "pass",
+    "license": "pass",
+    "hygiene": "pass",
+    "goldenReferenceAdmission": "pass",
+    "rendererAttestation": "pass",
+    "vercelPreview": "pass",
+    "immutableBaseline": "expected-failure"
+  },
+  "fixtureTeardown": "pass",
+  "noBackupLocalRuntimeCleanup": "pass",
+  "passed": true
+}

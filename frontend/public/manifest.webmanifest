@@ -1,8 +1,8 @@
 {
   "id": "/app",
-  "name": "TryVit — Know What You Eat",
+  "name": "TryVit — Food intelligence you can inspect",
   "short_name": "TryVit",
-  "description": "Scan food barcodes and see a health score from 1–100. Find healthier alternatives instantly.",
+  "description": "Inspect package facts, TryVit reasoning, confidence, and unknowns for food products.",
   "lang": "en",
   "dir": "ltr",
   "start_url": "/app",

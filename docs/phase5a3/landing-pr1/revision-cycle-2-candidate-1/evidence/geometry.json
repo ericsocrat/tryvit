@@ -1,0 +1,347 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-revision-cycle-2-geometry",
+  "productionSourceCommit": "14c8b19fc7aa59f58811ef96989291e2b3893bfe",
+  "captureBuildId": "uRqTECBMepcbLsYWcx8wZ",
+  "renderer": "Codex in-app Chromium",
+  "measurements": [
+    {
+      "descriptorCount": 1,
+      "documentWidth": 305,
+      "header": {
+        "bottom": 112.94,
+        "fullyContained": true,
+        "height": 112.94,
+        "left": 0,
+        "right": 305,
+        "top": 0,
+        "visibleHeight": 112.94,
+        "width": 305
+      },
+      "heading": {
+        "bottom": 370.52,
+        "fullyContained": true,
+        "height": 180.39,
+        "left": 22.39,
+        "right": 282.61,
+        "top": 190.13,
+        "visibleHeight": 180.39,
+        "width": 260.22
+      },
+      "horizontalOverflow": false,
+      "lockupCount": 1,
+      "packageSignature": {
+        "bottom": 856.23,
+        "fullyContained": true,
+        "height": 212.14,
+        "left": 22.39,
+        "right": 282.61,
+        "top": 644.09,
+        "visibleHeight": 212.14,
+        "width": 260.22
+      },
+      "primaryAction": {
+        "bottom": 557.3,
+        "fullyContained": true,
+        "height": 50.8,
+        "left": 22.39,
+        "right": 282.61,
+        "top": 506.5,
+        "visibleHeight": 50.8,
+        "width": 260.22
+      },
+      "primaryDestinationCount": 4,
+      "primaryNavigation": {
+        "bottom": 106.34,
+        "fullyContained": true,
+        "height": 45,
+        "left": 12,
+        "right": 293,
+        "top": 61.34,
+        "visibleHeight": 45,
+        "width": 281
+      },
+      "secondaryAction": {
+        "bottom": 620.09,
+        "fullyContained": true,
+        "height": 50.8,
+        "left": 22.39,
+        "right": 282.61,
+        "top": 569.3,
+        "visibleHeight": 50.8,
+        "width": 260.22
+      },
+      "utilityNavigation": {
+        "bottom": 54.27,
+        "fullyContained": true,
+        "height": 44,
+        "left": 170,
+        "right": 293,
+        "top": 10.27,
+        "visibleHeight": 44,
+        "width": 123
+      },
+      "viewport": {
+        "height": 900,
+        "width": 320
+      }
+    },
+    {
+      "descriptorCount": 1,
+      "documentWidth": 375,
+      "header": {
+        "bottom": 112.94,
+        "fullyContained": true,
+        "height": 112.94,
+        "left": 0,
+        "right": 375,
+        "top": 0,
+        "visibleHeight": 112.94,
+        "width": 375
+      },
+      "heading": {
+        "bottom": 336.28,
+        "fullyContained": true,
+        "height": 164.75,
+        "left": 27.3,
+        "right": 347.7,
+        "top": 171.53,
+        "visibleHeight": 164.75,
+        "width": 320.41
+      },
+      "horizontalOverflow": false,
+      "lockupCount": 1,
+      "packageSignature": {
+        "bottom": 751.44,
+        "fullyContained": true,
+        "height": 166.38,
+        "left": 27.3,
+        "right": 347.7,
+        "top": 585.06,
+        "visibleHeight": 166.38,
+        "width": 320.41
+      },
+      "primaryAction": {
+        "bottom": 498.27,
+        "fullyContained": true,
+        "height": 50.8,
+        "left": 27.3,
+        "right": 347.7,
+        "top": 447.47,
+        "visibleHeight": 50.8,
+        "width": 320.41
+      },
+      "primaryDestinationCount": 4,
+      "primaryNavigation": {
+        "bottom": 106.34,
+        "fullyContained": true,
+        "height": 45,
+        "left": 12,
+        "right": 363,
+        "top": 61.34,
+        "visibleHeight": 45,
+        "width": 351
+      },
+      "secondaryAction": {
+        "bottom": 561.06,
+        "fullyContained": true,
+        "height": 50.8,
+        "left": 27.3,
+        "right": 347.7,
+        "top": 510.27,
+        "visibleHeight": 50.8,
+        "width": 320.41
+      },
+      "utilityNavigation": {
+        "bottom": 54.27,
+        "fullyContained": true,
+        "height": 44,
+        "left": 240,
+        "right": 363,
+        "top": 10.27,
+        "visibleHeight": 44,
+        "width": 123
+      },
+      "viewport": {
+        "height": 844,
+        "width": 390
+      }
+    },
+    {
+      "descriptorCount": 1,
+      "documentWidth": 753,
+      "header": {
+        "bottom": 113.97,
+        "fullyContained": true,
+        "height": 113.97,
+        "left": 0,
+        "right": 753,
+        "top": 0,
+        "visibleHeight": 113.97,
+        "width": 753
+      },
+      "heading": {
+        "bottom": 333.78,
+        "fullyContained": true,
+        "height": 135.47,
+        "left": 53.75,
+        "right": 477.83,
+        "top": 198.31,
+        "visibleHeight": 135.47,
+        "width": 424.08
+      },
+      "horizontalOverflow": false,
+      "lockupCount": 1,
+      "packageSignature": {
+        "bottom": 746.19,
+        "fullyContained": true,
+        "height": 224.05,
+        "left": 53.75,
+        "right": 699.25,
+        "top": 522.14,
+        "visibleHeight": 224.05,
+        "width": 645.5
+      },
+      "primaryAction": {
+        "bottom": 483.75,
+        "fullyContained": true,
+        "height": 50.8,
+        "left": 53.75,
+        "right": 247.3,
+        "top": 432.95,
+        "visibleHeight": 50.8,
+        "width": 193.55
+      },
+      "primaryDestinationCount": 4,
+      "primaryNavigation": {
+        "bottom": 105.78,
+        "fullyContained": true,
+        "height": 45,
+        "left": 23.03,
+        "right": 729.97,
+        "top": 60.78,
+        "visibleHeight": 45,
+        "width": 706.94
+      },
+      "secondaryAction": {
+        "bottom": 483.75,
+        "fullyContained": true,
+        "height": 50.8,
+        "left": 259.3,
+        "right": 354.67,
+        "top": 432.95,
+        "visibleHeight": 50.8,
+        "width": 95.38
+      },
+      "utilityNavigation": {
+        "bottom": 55.19,
+        "fullyContained": true,
+        "height": 44,
+        "left": 588.41,
+        "right": 729.97,
+        "top": 11.19,
+        "visibleHeight": 44,
+        "width": 141.56
+      },
+      "viewport": {
+        "height": 1024,
+        "width": 768
+      }
+    },
+    {
+      "descriptorCount": 1,
+      "documentWidth": 1425,
+      "header": {
+        "bottom": 76,
+        "fullyContained": true,
+        "height": 76,
+        "left": 0,
+        "right": 1425,
+        "top": 0,
+        "visibleHeight": 76,
+        "width": 1425
+      },
+      "heading": {
+        "bottom": 532.27,
+        "fullyContained": true,
+        "height": 326.13,
+        "left": 100.8,
+        "right": 734.06,
+        "top": 206.14,
+        "visibleHeight": 326.13,
+        "width": 633.27
+      },
+      "horizontalOverflow": false,
+      "lockupCount": 1,
+      "packageSignature": {
+        "bottom": 547.52,
+        "fullyContained": true,
+        "height": 224.05,
+        "left": 806.06,
+        "right": 1324.2,
+        "top": 323.47,
+        "visibleHeight": 224.05,
+        "width": 518.14
+      },
+      "primaryAction": {
+        "bottom": 695.45,
+        "fullyContained": true,
+        "height": 50.8,
+        "left": 100.8,
+        "right": 294.34,
+        "top": 644.66,
+        "visibleHeight": 50.8,
+        "width": 193.55
+      },
+      "primaryDestinationCount": 4,
+      "primaryNavigation": {
+        "bottom": 59.5,
+        "fullyContained": true,
+        "height": 44,
+        "left": 453.05,
+        "right": 1228.25,
+        "top": 15.5,
+        "visibleHeight": 44,
+        "width": 775.2
+      },
+      "secondaryAction": {
+        "bottom": 695.45,
+        "fullyContained": true,
+        "height": 50.8,
+        "left": 306.34,
+        "right": 401.72,
+        "top": 644.66,
+        "visibleHeight": 50.8,
+        "width": 95.38
+      },
+      "utilityNavigation": {
+        "bottom": 59.5,
+        "fullyContained": true,
+        "height": 44,
+        "left": 1240.25,
+        "right": 1381.81,
+        "top": 15.5,
+        "visibleHeight": 44,
+        "width": 141.56
+      },
+      "viewport": {
+        "height": 900,
+        "width": 1440
+      }
+    }
+  ],
+  "contract": {
+    "horizontalOverflow": false,
+    "identityOwnerCount": 1,
+    "marketDescriptorCount": 1,
+    "mobileDestinationCount": 4,
+    "headingFullyContained": true,
+    "primaryActionFullyContained": true,
+    "packageMinimumVisiblePixelsAt390": 72,
+    "packageActualVisiblePixelsAt390": 166.38,
+    "packageFullyContainedAt768": true,
+    "packageFullyContainedAt1440": true,
+    "secondaryActionFullyContainedAt1440": true
+  },
+  "passed": true
+}

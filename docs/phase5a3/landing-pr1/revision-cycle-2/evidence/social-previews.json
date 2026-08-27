@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "kind": "phase5a3-landing-revision-cycle-2-social-previews",
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "assets": [
+    {
+      "path": "social/opengraph-image.png",
+      "url": "/opengraph-image",
+      "width": 1200,
+      "height": 630,
+      "bytes": 59126,
+      "sha256": "213526dc8a735c9eb1c1cf883ee39f3fc3c4d8014bd75b895457589856d24ee6"
+    },
+    {
+      "path": "social/twitter-image.png",
+      "url": "/twitter-image",
+      "width": 1200,
+      "height": 600,
+      "bytes": 56973,
+      "sha256": "030b3bab255eff82067e358daa532d46614093bbe48a23c05b81b6521779c704"
+    }
+  ],
+  "renderedText": [
+    "Food intelligence · Dane o żywności · Lebensmittelinformation",
+    "Evidence stays visible.",
+    "Źródła pozostają widoczne.",
+    "Evidenz bleibt sichtbar."
+  ],
+  "externalFontRequest": false,
+  "readinessTreatment": "capability-neutral",
+  "localizedTreatment": "one trilingual image for EN, PL, and DE",
+  "unsupportedClaims": [],
+  "passed": true
+}

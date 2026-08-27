@@ -1,13 +1,18 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import RootLayout, { generateMetadata } from "./layout";
 
-const { mockGetServerLocale } = vi.hoisted(() => ({
+const { mockGetServerLocale, mockHeaders } = vi.hoisted(() => ({
   mockGetServerLocale: vi.fn(),
+  mockHeaders: vi.fn(),
 }));
 
 vi.mock("@/lib/server-locale", () => ({
   getServerLocale: mockGetServerLocale,
 }));
+
+vi.mock("next/headers", () => ({ headers: mockHeaders }));
+
+beforeEach(() => mockHeaders.mockResolvedValue(new Headers()));
 
 describe("RootLayout document language", () => {
   it.each(["en", "pl", "de"] as const)(
@@ -19,6 +24,16 @@ describe("RootLayout document language", () => {
       expect(result.props["data-design-system"]).toBe("v1");
     },
   );
+
+  it("uses the lean provider boundary only for an exact landing request", async () => {
+    mockGetServerLocale.mockResolvedValueOnce("en");
+    mockHeaders.mockResolvedValueOnce(
+      new Headers({ "x-tryvit-provider-boundary": "landing-lean" }),
+    );
+
+    const result = await RootLayout({ children: <main>Content</main> });
+    expect(result.props.children[1].props["data-provider-boundary"]).toBe("landing");
+  });
 });
 
 describe("RootLayout metadata readiness", () => {

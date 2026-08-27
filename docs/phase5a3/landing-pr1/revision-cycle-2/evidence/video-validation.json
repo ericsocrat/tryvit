@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 2,
+  "kind": "phase5a3-landing-revision-cycle-2-video-validation",
+  "productionSourceCommit": "6f675ffe8c4091ed98db2f53298fe4acc19f6895",
+  "verificationRuntime": {
+    "ffprobe": "9.0-full_build-www.gyan.dev",
+    "ffmpeg": "9.0-full_build-www.gyan.dev",
+    "blackDetection": "blackdetect=d=0.1:pix_th=0.02"
+  },
+  "videos": [
+    {
+      "path": "motion/landing--normal--390x844--en.webm",
+      "bytes": 364628,
+      "sha256": "ff6e5f01249f2741f5d5a7716bae5f6acdc24fffb744c281f5863b56b91d1229",
+      "codec": "vp8",
+      "encodedWidth": 368,
+      "encodedHeight": 800,
+      "framesPerSecond": 25,
+      "decodedFrames": 158,
+      "durationSeconds": 6.32,
+      "blackSegmentDetected": false,
+      "initialUniformPrepaintFrames": 9,
+      "checkpointCount": 9,
+      "terminalCheckpointMs": 4465.4,
+      "terminalHoldMs": 1854.6,
+      "completeFooterVisible": true,
+      "terminalFocusVisible": true,
+      "truncated": false
+    },
+    {
+      "path": "motion/landing--reduced--390x844--en.webm",
+      "bytes": 203435,
+      "sha256": "27bc19e3a31eeddeafbada21b220eebfb30df9f407a650ea3ae238639feb88b4",
+      "codec": "vp8",
+      "encodedWidth": 368,
+      "encodedHeight": 800,
+      "framesPerSecond": 25,
+      "decodedFrames": 71,
+      "durationSeconds": 2.84,
+      "blackSegmentDetected": false,
+      "initialUniformPrepaintFrames": 0,
+      "checkpointCount": 9,
+      "terminalCheckpointMs": 1700.1,
+      "terminalHoldMs": 1139.9,
+      "completeFooterVisible": true,
+      "terminalFocusVisible": true,
+      "truncated": false
+    }
+  ],
+  "journey": [
+    "first-viewport",
+    "dark-theme",
+    "package-expanded",
+    "evidence",
+    "method",
+    "trust",
+    "final-action",
+    "footer",
+    "terminal-focus"
+  ],
+  "motionAcceptance": {
+    "normalCls": 0,
+    "reducedCls": 0,
+    "normalMotionAttributableLongTasksOver50Ms": 0,
+    "reducedMotionAttributableLongTasksOver50Ms": 0,
+    "normalMotionAttributableLayoutShifts": 0,
+    "reducedMotionAttributableLayoutShifts": 0
+  },
+  "limitations": [
+    "The normal recording begins with approximately 360 ms of uniform prepaint frames before the first rendered checkpoint. The complete journey and terminal hold remain intact."
+  ],
+  "passed": true
+}
