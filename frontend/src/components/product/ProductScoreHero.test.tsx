@@ -158,4 +158,25 @@ describe("ProductScoreHero", () => {
     );
     expect(screen.queryByTestId("score-hero-inline")).not.toBeInTheDocument();
   });
+
+  it("removes affirmative verdict and headline when score evidence is provisional", () => {
+    render(
+      <ProductScoreHero
+        variant="inline"
+        unhealthinessScore={10}
+        headline="Excellent for regular consumption"
+        provisional
+      />,
+    );
+
+    expect(screen.getByText("90")).toBeInTheDocument();
+    expect(
+      screen.getByText("trust.evidence.scoreProvisionalLabel"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("trust.evidence.scoreNoGuidance")).toBeInTheDocument();
+    expect(screen.queryByText("scoreBand.excellent")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Excellent for regular consumption"),
+    ).not.toBeInTheDocument();
+  });
 });

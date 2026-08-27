@@ -600,7 +600,11 @@ function ScoringTab({
         <h2 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
           {t("product.summary")}
         </h2>
-        <p className="text-sm text-foreground-secondary">{scores.headline}</p>
+        <p className="text-sm text-foreground-secondary">
+          {scoreProvisional
+            ? t("trust.evidence.scoreNoGuidance")
+            : scores.headline}
+        </p>
       </div>
 
       {/* Radar chart */}
