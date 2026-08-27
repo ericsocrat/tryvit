@@ -1,4 +1,4 @@
-import type { CompareProduct } from "@/lib/types";
+import type { CompareProduct, ProductProvenance } from "@/lib/types";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ComparisonGrid } from "./ComparisonGrid";
@@ -75,10 +75,31 @@ const productB = makeProduct({
   additives_count: 8,
   allergen_count: 0,
   allergen_tags: null,
-  confidence: "low",
+  confidence: "medium",
 });
 
 const products = [productA, productB];
+
+function scoreOnlyProvenance(productId: number): ProductProvenance {
+  return {
+    api_version: "2026-02-27",
+    product_id: productId,
+    product_name: `Product ${productId}`,
+    overall_trust_score: 0.9,
+    freshness_status: "fresh",
+    source_count: 1,
+    data_completeness_pct: 100,
+    field_sources: {
+      unhealthiness_score: {
+        source: "Label Scan",
+        last_updated: new Date().toISOString(),
+        confidence: 0.9,
+      },
+    },
+    trust_explanation: "Current score evidence",
+    weakest_area: { field: null, confidence: null },
+  };
+}
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
@@ -169,9 +190,8 @@ describe("ComparisonGrid", () => {
     // Product A has "gluten, milk"
     const tags = screen.getAllByText("gluten, milk");
     expect(tags.length).toBeGreaterThanOrEqual(1);
-    // Product B has no allergens
-    const noneText = screen.getAllByText(/None/);
-    expect(noneText.length).toBeGreaterThanOrEqual(1);
+    const unavailable = screen.getAllByText(/Evidence unavailable/);
+    expect(unavailable.length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders warnings row", () => {
@@ -203,9 +223,9 @@ describe("ComparisonGrid", () => {
   it("renders confidence badges for compared products", () => {
     render(<ComparisonGrid products={products} />);
     const verified = screen.getAllByText("Verified");
-    const low = screen.getAllByText("Low");
+    const estimated = screen.getAllByText("Estimated");
     expect(verified.length).toBeGreaterThanOrEqual(1);
-    expect(low.length).toBeGreaterThanOrEqual(1);
+    expect(estimated.length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders swipe hint on mobile view", () => {
@@ -263,6 +283,170 @@ describe("ComparisonGrid", () => {
     expect(announcement).toBeInTheDocument();
     // Product A (score 35) is healthier → winner
     expect(announcement).toHaveTextContent("Product A");
+  });
+
+  it("withholds winner and ranking when comparison evidence is invalid", () => {
+    const incomplete = makeProduct({
+      product_id: 2,
+      confidence: "low",
+      data_completeness_pct: 30,
+      calories: null,
+      allergen_tags: null,
+      ingredient_count: 0,
+    });
+    render(<ComparisonGrid products={[productA, incomplete]} />);
+
+    expect(screen.queryByTestId("winner-announcement")).not.toBeInTheDocument();
+    expect(screen.getByTestId("comparison-ranking-withheld")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("desktop-comparison-ranking-withheld"),
+    ).toBeInTheDocument();
+  });
+
+  it("withholds nutrient rankings and no-warning claims without field-specific provenance", () => {
+    const noFlagProducts = products.map((product) => ({
+      ...product,
+      high_salt: false,
+      high_sugar: false,
+      high_sat_fat: false,
+      high_additive_load: false,
+    }));
+    render(
+      <ComparisonGrid
+        products={noFlagProducts}
+        recommendationAllowed
+        provenanceByProductId={{
+          1: scoreOnlyProvenance(1),
+          2: scoreOnlyProvenance(2),
+        }}
+      />,
+    );
+
+    expect(screen.getByTestId("winner-announcement")).toBeInTheDocument();
+    expect(screen.queryByTestId("key-differences")).not.toBeInTheDocument();
+    expect(screen.queryByText("No warnings")).not.toBeInTheDocument();
+    expect(
+      screen.getAllByText(/Warning evidence is incomplete/).length,
+    ).toBeGreaterThanOrEqual(2);
+
+    const sugarsRow = screen.getAllByText("Sugars")[0].closest("tr");
+    const nutrientCells = sugarsRow?.querySelectorAll("td") ?? [];
+    expect(
+      [...nutrientCells].some(
+        (cell) =>
+          cell.className.includes("text-success-text") ||
+          cell.className.includes("text-error-text"),
+      ),
+    ).toBe(false);
+  });
+
+  it("withholds public no-warning claims when provenance is omitted", () => {
+    const noFlagProducts = products.map((product) => ({
+      ...product,
+      high_salt: false,
+      high_sugar: false,
+      high_sat_fat: false,
+      high_additive_load: false,
+    }));
+    render(
+      <ComparisonGrid
+        products={noFlagProducts}
+        recommendationAllowed={false}
+      />,
+    );
+
+    expect(screen.queryByText("No warnings")).not.toBeInTheDocument();
+    expect(
+      screen.getAllByText(/Warning evidence is incomplete/).length,
+    ).toBeGreaterThanOrEqual(2);
+  });
+
+  it("uses canonical NOVA provenance before ranking the NOVA row", () => {
+    const provenanceByProductId = Object.fromEntries(
+      products.map((product) => {
+        const provenance = scoreOnlyProvenance(product.product_id);
+        return [
+          product.product_id,
+          {
+            ...provenance,
+            field_sources: {
+              ...provenance.field_sources,
+              nova_classification: {
+                source: "Label Scan",
+                last_updated: new Date().toISOString(),
+                confidence: 0.9,
+              },
+            },
+          },
+        ];
+      }),
+    );
+    render(
+      <ComparisonGrid
+        products={products}
+        recommendationAllowed
+        provenanceByProductId={provenanceByProductId}
+      />,
+    );
+
+    const novaRow = screen.getAllByText("NOVA Group")[0].closest("tr");
+    const novaCells = novaRow?.querySelectorAll("td") ?? [];
+    expect(
+      [...novaCells].some(
+        (cell) =>
+          cell.className.includes("text-success-text") ||
+          cell.className.includes("text-error-text"),
+      ),
+    ).toBe(true);
+  });
+
+  it("ranks evidenced values without requiring provenance for a missing value", () => {
+    const productC = makeProduct({
+      product_id: 3,
+      product_name: "Product C",
+      calories: null,
+    });
+    const comparisonProducts = [productA, productB, productC];
+    const provenanceByProductId = Object.fromEntries(
+      comparisonProducts.map((product) => {
+        const provenance = scoreOnlyProvenance(product.product_id);
+        return [
+          product.product_id,
+          {
+            ...provenance,
+            field_sources: {
+              ...provenance.field_sources,
+              ...(product.calories == null
+                ? {}
+                : {
+                    calories_100g: {
+                      source: "Label Scan",
+                      last_updated: new Date().toISOString(),
+                      confidence: 0.9,
+                    },
+                  }),
+            },
+          },
+        ];
+      }),
+    );
+    render(
+      <ComparisonGrid
+        products={comparisonProducts}
+        recommendationAllowed
+        provenanceByProductId={provenanceByProductId}
+      />,
+    );
+
+    const caloriesRow = screen.getAllByText("Calories")[0].closest("tr");
+    const caloriesCells = caloriesRow?.querySelectorAll("td") ?? [];
+    expect(
+      [...caloriesCells].some(
+        (cell) =>
+          cell.className.includes("text-success-text") ||
+          cell.className.includes("text-error-text"),
+      ),
+    ).toBe(true);
   });
 
   it("shows score delta in winner announcement", () => {

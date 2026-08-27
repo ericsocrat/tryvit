@@ -43,10 +43,25 @@ vi.mock("next/link", () => ({
 }));
 
 const mockGetProductProfile = vi.fn();
+const mockUseProductProvenance = vi.fn();
+const mockUseProductProvenanceMap = vi.fn();
 
 vi.mock("@/lib/api", () => ({
   getProductProfile: (...args: unknown[]) => mockGetProductProfile(...args),
   recordProductView: vi.fn().mockResolvedValue({ ok: true }),
+}));
+
+vi.mock("@/hooks/use-product-provenance", () => ({
+  useProductProvenance: () => mockUseProductProvenance(),
+  useProductProvenanceMap: (ids: number[]) =>
+    mockUseProductProvenanceMap(ids),
+  canRecommendFromProvenance: (value: unknown) => Boolean(value),
+  getProvenanceDisposition: (value: unknown) =>
+    value ? "confirmed" : "not_collected",
+}));
+
+vi.mock("@/components/trust/ProductEvidencePanel", () => ({
+  ProductEvidencePanel: () => <div data-testid="product-evidence-panel" />,
 }));
 
 vi.mock("@/components/product/HealthWarningsCard", () => ({
@@ -305,6 +320,25 @@ function makeProfile(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockUseProductProvenance.mockReturnValue({
+    data: { field_sources: { unhealthiness_score: {} } },
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+  });
+  mockUseProductProvenanceMap.mockImplementation((ids: number[]) =>
+    Object.fromEntries(
+      ids.map((id) => [
+        id,
+        {
+          data: { field_sources: { unhealthiness_score: {} } },
+          isLoading: false,
+          error: null,
+          refetch: vi.fn(),
+        },
+      ]),
+    ),
+  );
   features.ECO_SCORE = false; // reset to default before each test
   // Set full analysis mode so all existing tab-based tests see expanded state
   localStorage.setItem("tryvit:product-full-analysis", "true");
@@ -1922,6 +1956,96 @@ describe("ProductDetailPage", () => {
       "Confidence evidence unavailable — treat this score as provisional.",
     );
     expect(screen.queryByTestId("confidence-badge")).not.toBeInTheDocument();
+  });
+
+  it("keeps score interpretation provisional and withholds alternatives without provenance", async () => {
+    localStorage.setItem("tryvit:product-full-analysis", "false");
+    mockUseProductProvenance.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error("provenance unavailable"),
+      refetch: vi.fn(),
+    });
+    mockGetProductProfile.mockResolvedValue({
+      ok: true,
+      data: makeProfile(),
+    });
+
+    render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+    expect(
+      await screen.findByText(
+        "This score interpretation is provisional because its supporting evidence is incomplete or stale.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Recommendations are withheld until valid product evidence is available.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Healthy Veggie Sticks")).not.toBeInTheDocument();
+  });
+
+  it("withholds category rank and percentile when score provenance is unusable", async () => {
+    mockUseProductProvenance.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error("provenance unavailable"),
+      refetch: vi.fn(),
+    });
+    mockGetProductProfile.mockResolvedValue({
+      ok: true,
+      data: makeProfile(),
+    });
+    const user = userEvent.setup();
+
+    render(<ProductDetailPage />, { wrapper: createWrapper() });
+    await user.click(await screen.findByRole("tab", { name: "Scoring" }));
+
+    expect(screen.queryByText("Rank: 18 of 42")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("Position: Worse Than Average"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps evidenced alternatives when another candidate lacks provenance", async () => {
+    localStorage.setItem("tryvit:product-full-analysis", "false");
+    const profile = makeProfile();
+    mockGetProductProfile.mockResolvedValue({
+      ok: true,
+      data: {
+        ...profile,
+        alternatives: [
+          ...profile.alternatives,
+          {
+            ...profile.alternatives[0],
+            product_id: 100,
+            product_name: "Unverified Crisps",
+          },
+        ],
+      },
+    });
+    mockUseProductProvenanceMap.mockImplementation((ids: number[]) =>
+      Object.fromEntries(
+        ids.map((id) => [
+          id,
+          {
+            data:
+              id === 99
+                ? { field_sources: { unhealthiness_score: {} } }
+                : undefined,
+            isLoading: false,
+            error: null,
+            refetch: vi.fn(),
+          },
+        ]),
+      ),
+    );
+
+    render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+    expect(await screen.findByText("Healthy Veggie Sticks")).toBeInTheDocument();
+    expect(screen.queryByText("Unverified Crisps")).not.toBeInTheDocument();
   });
 
   it("swipe left on last tab stays on last tab", async () => {

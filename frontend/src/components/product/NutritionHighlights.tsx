@@ -6,10 +6,10 @@ import { useTranslation } from "@/lib/i18n";
 
 interface NutritionHighlightsProps {
   readonly nutrition: {
-    readonly total_fat_g: number;
-    readonly saturated_fat_g: number;
-    readonly sugars_g: number;
-    readonly salt_g: number;
+    readonly total_fat_g: number | null;
+    readonly saturated_fat_g: number | null;
+    readonly sugars_g: number | null;
+    readonly salt_g: number | null;
   };
 }
 
@@ -37,7 +37,7 @@ const UNITS: Record<string, string> = {
 export function NutritionHighlights({ nutrition }: NutritionHighlightsProps) {
   const { t } = useTranslation();
 
-  const nutrientValues: Record<string, number> = {
+  const nutrientValues: Record<string, number | null> = {
     total_fat: nutrition.total_fat_g,
     saturated_fat: nutrition.saturated_fat_g,
     sugars: nutrition.sugars_g,
@@ -45,10 +45,10 @@ export function NutritionHighlights({ nutrition }: NutritionHighlightsProps) {
   };
 
   const items = TRAFFIC_LIGHT_NUTRIENTS.map(({ nutrient, labelKey }) => {
-    const value = nutrientValues[nutrient] ?? 0;
-    const level = getTrafficLight(nutrient, value);
+    const value = nutrientValues[nutrient] ?? null;
+    const level = value == null ? null : getTrafficLight(nutrient, value);
     const max = MAX_VALUES[nutrient] ?? 50;
-    const pct = Math.min(100, (value / max) * 100);
+    const pct = value == null ? null : Math.min(100, (value / max) * 100);
     return { nutrient, label: t(labelKey), value, level, pct, unit: UNITS[nutrient] ?? "g" };
   });
 
@@ -63,24 +63,33 @@ export function NutritionHighlights({ nutrition }: NutritionHighlightsProps) {
             <div className="mb-0.5 flex items-baseline justify-between text-xs">
               <span className="text-foreground-secondary">{item.label}</span>
               <span className="font-medium tabular-nums text-foreground">
-                {item.value.toFixed(1)}{item.unit}
+                {item.value == null
+                  ? t("trust.evidence.valueUnavailable")
+                  : `${item.value.toFixed(1)}${item.unit}`}
               </span>
             </div>
-            <div
-              className="h-2 overflow-hidden rounded-full bg-surface-muted"
-              role="progressbar"
-              aria-label={`${item.label}: ${item.value.toFixed(1)}${item.unit}`}
-              aria-valuenow={item.value}
-              aria-valuemin={0}
-              aria-valuemax={MAX_VALUES[item.nutrient] ?? 50}
-            >
+            {item.value == null || item.pct == null ? (
               <div
-                className={`h-full rounded-full transition-all ${
-                  item.level ? BAR_COLORS[item.level] : "bg-foreground-muted"
-                }`}
-                style={{ width: `${item.pct}%` }}
+                className="h-2 rounded-full bg-surface-muted"
+                aria-hidden="true"
               />
-            </div>
+            ) : (
+              <div
+                className="h-2 overflow-hidden rounded-full bg-surface-muted"
+                role="progressbar"
+                aria-label={`${item.label}: ${item.value.toFixed(1)}${item.unit}`}
+                aria-valuenow={item.value}
+                aria-valuemin={0}
+                aria-valuemax={MAX_VALUES[item.nutrient] ?? 50}
+              >
+                <div
+                  className={`h-full rounded-full transition-all ${
+                    item.level ? BAR_COLORS[item.level] : "bg-foreground-muted"
+                  }`}
+                  style={{ width: `${item.pct}%` }}
+                />
+              </div>
+            )}
           </div>
         ))}
       </div>

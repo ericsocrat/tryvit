@@ -2131,8 +2131,42 @@
       "fieldLabel": "{field}",
       "sourceLabel": "{source}",
       "updatedAgo": "Zaktualizowano {days} dni temu",
+      "updatedUnknown": "Data aktualizacji niedostępna",
       "noSourceData": "Dane o źródłach nie są jeszcze dostępne dla tego produktu.",
       "ariaLabel": "Informacje o źródłach danych"
+    },
+    "evidence": {
+      "loading": "Ładowanie danych dowodowych produktu…",
+      "unavailableTitle": "Dane dowodowe produktu są niedostępne",
+      "unavailableDescription": "Nie udało się załadować źródeł i aktualności danych. Traktuj wynik i rekomendacje jako wstępne.",
+      "confirmedTitle": "Dane dowodowe produktu potwierdzone",
+      "confirmedDescription": "Aktualne pochodzenie poszczególnych pól wspiera ten rekord produktu.",
+      "provisionalTitle": "Dane dowodowe produktu są wstępne",
+      "provisionalDescription": "Część danych jest niekompletna, starsza lub ma niższą wiarygodność. Sprawdź aktualne opakowanie przed decyzją.",
+      "notCollectedTitle": "Nie zebrano pochodzenia danych dla pól",
+      "notCollectedDescription": "Brak rekordu źródłowego dla poszczególnych pól. Nie potwierdza to wyświetlanych wartości.",
+      "expiredTitle": "Dane dowodowe produktu wygasły",
+      "expiredDescription": "Wymagane dane przekroczyły okres aktualności. Rekomendacje są wstrzymane do ponownej weryfikacji.",
+      "freshnessLabel": "Aktualność",
+      "completenessLabel": "Kompletność",
+      "sourcesLabel": "Źródła",
+      "notCollectedValue": "Nie zebrano",
+      "recommendationsWithheld": "Rekomendacje są wstrzymane do czasu uzyskania prawidłowych danych dowodowych produktu.",
+      "scoreProvisional": "Interpretacja wyniku jest wstępna, ponieważ dane wspierające są niekompletne lub nieaktualne.",
+      "nutritionUnavailable": "Dane żywieniowe są niedostępne",
+      "valueUnavailable": "Dane niedostępne",
+      "allergenCheckLoading": "Sprawdzanie spersonalizowanych danych o alergenach…",
+      "allergenCheckUnavailable": "Spersonalizowane dane o alergenach są niedostępne. Brak ostrzeżenia nie oznacza braku alergenu.",
+      "comparisonUnavailable": "Ranking porównania wstrzymany",
+      "comparisonUnavailableDescription": "Co najmniej jeden produkt nie ma prawidłowych danych o źródle lub aktualności. Wartości pozostają widoczne, ale TryVit nie wskaże zwycięzcy.",
+      "warningEvidenceUnavailable": "Dane ostrzegawcze są niekompletne; brak ostrzeżenia nie oznacza braku zagrożenia.",
+      "freshness": {
+        "fresh": "Aktualne",
+        "aging": "Starzejące się",
+        "stale": "Nieaktualne",
+        "expired": "Wygasłe",
+        "unavailable": "Nie oceniono"
+      }
     }
   },
   "contributor": {

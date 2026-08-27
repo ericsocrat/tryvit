@@ -59,4 +59,18 @@ describe("TrafficLightStrip", () => {
     // Component returns null — nothing in the DOM
     expect(container.firstChild).toBeNull();
   });
+
+  it("returns null when all nutrient evidence is missing", () => {
+    const { container } = render(
+      <TrafficLightStrip
+        nutrition={{
+          total_fat_g: null,
+          saturated_fat_g: null,
+          sugars_g: null,
+          salt_g: null,
+        }}
+      />,
+    );
+    expect(container.firstChild).toBeNull();
+  });
 });

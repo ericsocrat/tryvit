@@ -87,7 +87,7 @@ describe("useProductAllergenWarnings", () => {
       { wrapper: createWrapper() },
     );
 
-    await waitFor(() => expect(result.current).toEqual({
+    await waitFor(() => expect(result.current.warnings).toEqual({
       42: [milkWarning],
       99: [glutenWarning],
     }));
@@ -110,7 +110,8 @@ describe("useProductAllergenWarnings", () => {
     );
 
     // Query should be disabled (no allergen preferences)
-    expect(result.current).toEqual({});
+    expect(result.current.warnings).toEqual({});
+    expect(result.current.enabled).toBe(false);
     expect(mockGetProductAllergens).not.toHaveBeenCalled();
   });
 
@@ -122,7 +123,8 @@ describe("useProductAllergenWarnings", () => {
       { wrapper: createWrapper() },
     );
 
-    expect(result.current).toEqual({});
+    expect(result.current.warnings).toEqual({});
+    expect(result.current.enabled).toBe(false);
     expect(mockGetProductAllergens).not.toHaveBeenCalled();
   });
 
@@ -132,7 +134,8 @@ describe("useProductAllergenWarnings", () => {
       { wrapper: createWrapper() },
     );
 
-    expect(result.current).toEqual({});
+    expect(result.current.warnings).toEqual({});
+    expect(result.current.enabled).toBe(false);
     expect(mockGetProductAllergens).not.toHaveBeenCalled();
   });
 
@@ -151,12 +154,12 @@ describe("useProductAllergenWarnings", () => {
       { wrapper: createWrapper() },
     );
 
-    await waitFor(() => expect(result.current).toEqual({
+    await waitFor(() => expect(result.current.warnings).toEqual({
       42: [milkWarning],
     }));
 
     // Product 55 should NOT be in the result (empty warnings)
-    expect(result.current[55]).toBeUndefined();
+    expect(result.current.warnings[55]).toBeUndefined();
   });
 
   it("passes avoidAllergens and treatMayContainAsUnsafe to matcher", async () => {
@@ -185,7 +188,7 @@ describe("useProductAllergenWarnings", () => {
     );
   });
 
-  it("handles API error gracefully", async () => {
+  it("keeps API errors visible instead of collapsing to an empty warning map", async () => {
     mockGetProductAllergens.mockResolvedValue({
       ok: false,
       error: { code: "ERR", message: "server error" },
@@ -196,10 +199,9 @@ describe("useProductAllergenWarnings", () => {
       { wrapper: createWrapper() },
     );
 
-    // The hook returns {} as default, even when query errors
-    // (the useMemo returns {} when rawAllergenMap is undefined)
-    await waitFor(() => expect(mockGetProductAllergens).toHaveBeenCalled());
-    expect(result.current).toEqual({});
+    await waitFor(() => expect(result.current.error).toBeInstanceOf(Error));
+    expect(result.current.warnings).toEqual({});
+    expect(result.current.enabled).toBe(true);
   });
 
   it("returns warnings for multiple products", async () => {
@@ -219,10 +221,12 @@ describe("useProductAllergenWarnings", () => {
       { wrapper: createWrapper() },
     );
 
-    await waitFor(() => expect(Object.keys(result.current)).toHaveLength(3));
-    expect(result.current[1]).toEqual([milkWarning]);
-    expect(result.current[2]).toEqual([glutenWarning]);
-    expect(result.current[3]).toEqual([milkWarning, glutenWarning]);
+    await waitFor(() =>
+      expect(Object.keys(result.current.warnings)).toHaveLength(3),
+    );
+    expect(result.current.warnings[1]).toEqual([milkWarning]);
+    expect(result.current.warnings[2]).toEqual([glutenWarning]);
+    expect(result.current.warnings[3]).toEqual([milkWarning, glutenWarning]);
   });
 
   it("returns empty map when all products have no warnings", async () => {
@@ -238,6 +242,6 @@ describe("useProductAllergenWarnings", () => {
     );
 
     await waitFor(() => expect(mockMatchProductAllergens).toHaveBeenCalled());
-    expect(result.current).toEqual({});
+    expect(result.current.warnings).toEqual({});
   });
 });

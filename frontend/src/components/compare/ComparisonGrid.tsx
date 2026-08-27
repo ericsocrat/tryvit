@@ -7,11 +7,12 @@
 
 import { AvoidBadge } from "@/components/product/AvoidBadge";
 import { ConfidenceBadge } from "@/components/common/ConfidenceBadge";
+import { hasUsableProvenanceField } from "@/hooks/use-product-provenance";
 import { NUTRI_COLORS, SCORE_BANDS, scoreBandFromScore } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 import { nutriScoreLabel } from "@/lib/nutri-label";
 import { toTryVitScore } from "@/lib/score-utils";
-import type { CellValue, CompareProduct } from "@/lib/types";
+import type { CellValue, CompareProduct, ProductProvenance } from "@/lib/types";
 import { Check, ChevronDown, Scale, Trophy, X as XIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -21,6 +22,8 @@ import {
     getCellHighlightClass,
     getKeyDifferences,
     getWinnerIndex,
+    hasRecommendationEvidence,
+    hasWarningEvidence,
 } from "./comparison-helpers";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -29,6 +32,10 @@ interface ComparisonGridProps {
   products: CompareProduct[];
   /** Whether the viewer is authenticated (shows avoid badge if true) */
   showAvoidBadge?: boolean;
+  /** External provenance gate; false withholds ranking/recommendation UI. */
+  recommendationAllowed?: boolean;
+  /** Field-level provenance used to gate individual comparisons. */
+  provenanceByProductId?: Readonly<Record<number, ProductProvenance | undefined>>;
 }
 
 /** A single comparison row definition */
@@ -149,31 +156,111 @@ const COMPARE_ROWS: CompareRow[] = [
   {
     label: "Additives",
     key: "additives_count",
-    getValue: (p) => p.additives_count,
+    getValue: (p) =>
+      p.ingredient_count != null && p.ingredient_count > 0
+        ? p.additives_count
+        : null,
     format: (v) => fmtStr(v),
     betterDirection: "lower",
   },
   {
     label: "Allergens",
     key: "allergen_count",
-    getValue: (p) => p.allergen_count,
-    format: (v) => fmtStr(v, "0"),
+    getValue: (p) => (p.allergen_tags == null ? null : p.allergen_count),
+    format: (v) => fmtStr(v),
     betterDirection: "lower",
   },
 ];
+
+const ROW_PROVENANCE_REQUIREMENTS: Readonly<
+  Record<string, { field: string; maxAgeDays: number }>
+> = {
+  unhealthiness_score: { field: "unhealthiness_score", maxAgeDays: 30 },
+  nova_group: { field: "nova_classification", maxAgeDays: 365 },
+  calories: { field: "calories_100g", maxAgeDays: 120 },
+  total_fat_g: { field: "fat_100g", maxAgeDays: 120 },
+  saturated_fat_g: { field: "saturated_fat_100g", maxAgeDays: 120 },
+  sugars_g: { field: "sugars_100g", maxAgeDays: 120 },
+  salt_g: { field: "salt_100g", maxAgeDays: 120 },
+  fibre_g: { field: "fiber_100g", maxAgeDays: 120 },
+  protein_g: { field: "protein_100g", maxAgeDays: 120 },
+  carbs_g: { field: "carbs_100g", maxAgeDays: 120 },
+  additives_count: { field: "additive_count", maxAgeDays: 120 },
+  allergen_count: { field: "allergen_tags", maxAgeDays: 60 },
+};
+
+const WARNING_PROVENANCE_REQUIREMENTS = [
+  ROW_PROVENANCE_REQUIREMENTS.salt_g,
+  ROW_PROVENANCE_REQUIREMENTS.sugars_g,
+  ROW_PROVENANCE_REQUIREMENTS.saturated_fat_g,
+  ROW_PROVENANCE_REQUIREMENTS.additives_count,
+] as const;
+
+function hasRowRankingEvidence(
+  rowKey: string,
+  products: readonly CompareProduct[],
+  provenanceByProductId: ComparisonGridProps["provenanceByProductId"],
+): boolean {
+  if (!provenanceByProductId) return true;
+  const requirement = ROW_PROVENANCE_REQUIREMENTS[rowKey];
+  const row = COMPARE_ROWS.find((candidate) => candidate.key === rowKey);
+  if (!requirement || !row) return false;
+  const participatingProducts = products.filter(
+    (product) => typeof row.getValue(product) === "number",
+  );
+  if (participatingProducts.length < 2) return false;
+  return participatingProducts.every((product) =>
+    hasUsableProvenanceField(
+      provenanceByProductId[product.product_id],
+      requirement.field,
+      requirement.maxAgeDays,
+    ),
+  );
+}
+
+function hasUsableWarningProvenance(
+  product: CompareProduct,
+  provenanceByProductId: ComparisonGridProps["provenanceByProductId"],
+): boolean {
+  if (!provenanceByProductId) return false;
+  return WARNING_PROVENANCE_REQUIREMENTS.every((requirement) =>
+    hasUsableProvenanceField(
+      provenanceByProductId[product.product_id],
+      requirement.field,
+      requirement.maxAgeDays,
+    ),
+  );
+}
 
 // ─── Desktop Grid ───────────────────────────────────────────────────────────
 
 function DesktopGrid({
   products,
   showAvoidBadge,
+  recommendationAllowed,
+  provenanceByProductId,
 }: Readonly<ComparisonGridProps>) {
   const { t } = useTranslation();
-  const winnerIdx = getWinnerIndex(products);
+  const canRank =
+    recommendationAllowed ?? hasRecommendationEvidence(products);
+  const winnerIdx = canRank ? getWinnerIndex(products) : null;
   const colCount = products.length;
 
   return (
     <div className="hidden md:block overflow-x-auto">
+      {!canRank && (
+        <div
+          className="mb-3 rounded-xl border border-warning-border bg-warning-bg p-3"
+          data-testid="desktop-comparison-ranking-withheld"
+        >
+          <p className="text-sm font-semibold text-warning-text">
+            {t("trust.evidence.comparisonUnavailable")}
+          </p>
+          <p className="mt-1 text-xs text-warning-text">
+            {t("trust.evidence.comparisonUnavailableDescription")}
+          </p>
+        </div>
+      )}
       <table className="w-full border-collapse text-sm">
         {/* Header row: product names */}
         <thead>
@@ -252,7 +339,12 @@ function DesktopGrid({
               const v = row.getValue(p);
               return typeof v === "number" ? v : null;
             });
-            const ranking = getBestWorst(values, row.betterDirection);
+            const rowCanRank =
+              canRank &&
+              hasRowRankingEvidence(row.key, products, provenanceByProductId);
+            const ranking = rowCanRank
+              ? getBestWorst(values, row.betterDirection)
+              : null;
 
             return (
               <tr key={row.key} className="border-b border">
@@ -267,7 +359,7 @@ function DesktopGrid({
                   const cellClass = getCellHighlightClass(
                     i,
                     ranking,
-                    winnerIdx,
+                    rowCanRank ? winnerIdx : null,
                   );
 
                   return (
@@ -299,7 +391,7 @@ function DesktopGrid({
                       .split(", ")
                       .map((tag) => tag.replace(/^en:/, ""))
                       .join(", ")
-                  : t("compare.none")}
+                  : t("trust.evidence.valueUnavailable")}
               </td>
             ))}
           </tr>
@@ -347,9 +439,14 @@ function DesktopGrid({
                         </span>
                       ))}
                     </div>
-                  ) : (
+                  ) : hasWarningEvidence(p) &&
+                    hasUsableWarningProvenance(p, provenanceByProductId) ? (
                     <span className="text-success-text">
                       {t("compare.noWarnings")}
+                    </span>
+                  ) : (
+                    <span className="text-warning-text">
+                      {t("trust.evidence.warningEvidenceUnavailable")}
                     </span>
                   )}
                 </td>
@@ -399,19 +496,34 @@ function CollapsibleSection({
 function MobileSwipeView({
   products,
   showAvoidBadge,
+  recommendationAllowed,
+  provenanceByProductId,
 }: Readonly<ComparisonGridProps>) {
   const { t } = useTranslation();
   const [activeIdx, setActiveIdx] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);
-  const winnerIdx = getWinnerIndex(products);
-  const keyDiffs = getKeyDifferences(products);
-  const scoreDelta = Math.abs(
-    toTryVitScore(products[winnerIdx].unhealthiness_score) -
-      toTryVitScore(
-        products[winnerIdx === 0 ? 1 : 0].unhealthiness_score,
-      ),
-  );
+  const canRank =
+    recommendationAllowed ?? hasRecommendationEvidence(products);
+  const winnerIdx = canRank ? getWinnerIndex(products) : null;
+  const keyDiffs = canRank
+    ? getKeyDifferences(products).filter((difference) =>
+        hasRowRankingEvidence(
+          difference.key,
+          products,
+          provenanceByProductId,
+        ),
+      )
+    : [];
+  const scoreDelta =
+    winnerIdx == null
+      ? null
+      : Math.abs(
+          toTryVitScore(products[winnerIdx].unhealthiness_score) -
+            toTryVitScore(
+              products[winnerIdx === 0 ? 1 : 0].unhealthiness_score,
+            ),
+        );
 
   const swipeTo = useCallback(
     (idx: number) => {
@@ -485,15 +597,29 @@ function MobileSwipeView({
       </div>
 
       {/* ── Winner announcement ── */}
-      <div className="mx-4 mb-3 rounded-xl bg-success-bg p-3 text-center" data-testid="winner-announcement">
-        <Trophy size={20} aria-hidden="true" className="inline text-success-text" />
-        <p className="mt-1 text-sm font-bold text-success-text">
-          {products[winnerIdx].product_name}
-        </p>
-        <p className="text-xs text-success-text">
-          {t("compare.winnerVerdict", { points: scoreDelta })}
-        </p>
-      </div>
+      {winnerIdx == null || scoreDelta == null ? (
+        <div
+          className="mx-4 mb-3 rounded-xl border border-warning-border bg-warning-bg p-3 text-center"
+          data-testid="comparison-ranking-withheld"
+        >
+          <p className="text-sm font-semibold text-warning-text">
+            {t("trust.evidence.comparisonUnavailable")}
+          </p>
+          <p className="mt-1 text-xs text-warning-text">
+            {t("trust.evidence.comparisonUnavailableDescription")}
+          </p>
+        </div>
+      ) : (
+        <div className="mx-4 mb-3 rounded-xl bg-success-bg p-3 text-center" data-testid="winner-announcement">
+          <Trophy size={20} aria-hidden="true" className="inline text-success-text" />
+          <p className="mt-1 text-sm font-bold text-success-text">
+            {products[winnerIdx].product_name}
+          </p>
+          <p className="text-xs text-success-text">
+            {t("compare.winnerVerdict", { points: scoreDelta })}
+          </p>
+        </div>
+      )}
 
       {/* ── Key differences ── */}
       {keyDiffs.length > 0 && (
@@ -513,9 +639,10 @@ function MobileSwipeView({
                       key={products[i].product_id}
                       className={`text-xs font-medium ${i === diff.betterIdx ? "text-success-text" : "text-foreground-secondary"}`}
                     >
-                      {diff.values[i]}
-                      {diff.unit ? ` ${diff.unit}` : ""}
-                      {i === diff.betterIdx && (
+                      {diff.values[i] == null
+                        ? t("trust.evidence.valueUnavailable")
+                        : `${diff.values[i]}${diff.unit ? ` ${diff.unit}` : ""}`}
+                      {diff.values[i] != null && i === diff.betterIdx && (
                         <Check size={12} className="inline ml-0.5 text-success-text" aria-hidden="true" />
                       )}
                     </span>
@@ -542,7 +669,7 @@ function MobileSwipeView({
                   : "bg-surface-muted text-foreground-secondary"
               }`}
             >
-              {i === winnerIdx && (
+              {winnerIdx != null && i === winnerIdx && (
                 <>
                   <Trophy
                     size={12}
@@ -600,7 +727,7 @@ function MobileSwipeView({
                 <span className="rounded-full bg-surface-muted px-1.5 py-0.5 text-xs text-foreground-secondary">
                   {t("product.novaGroup", { group: product.nova_group ?? "?" })}
                 </span>
-                {activeIdx === winnerIdx && (
+                {winnerIdx != null && activeIdx === winnerIdx && (
                   <span className="rounded-full bg-success-bg px-1.5 py-0.5 text-xs font-bold text-success-text">
                     <Trophy size={12} aria-hidden="true" className="inline" />{" "}
                     {t("compare.best")}
@@ -625,7 +752,15 @@ function MobileSwipeView({
                   const v = row.getValue(p);
                   return typeof v === "number" ? v : null;
                 });
-                const ranking = getBestWorst(allValues, row.betterDirection);
+                const ranking =
+                  canRank &&
+                  hasRowRankingEvidence(
+                    row.key,
+                    products,
+                    provenanceByProductId,
+                  )
+                  ? getBestWorst(allValues, row.betterDirection)
+                  : null;
                 let indicator = "";
                 if (ranking) {
                   if (activeIdx === ranking.bestIdx)
@@ -673,7 +808,7 @@ function MobileSwipeView({
                     .split(", ")
                     .map((tag) => tag.replace(/^en:/, ""))
                     .join(", ")
-                : t("compare.noneDeclared")}
+                : t("trust.evidence.valueUnavailable")}
             </p>
           </CollapsibleSection>
 
@@ -703,9 +838,27 @@ function MobileSwipeView({
               {!product.high_salt &&
                 !product.high_sugar &&
                 !product.high_sat_fat &&
-                !product.high_additive_load && (
+                !product.high_additive_load &&
+                hasWarningEvidence(product) &&
+                hasUsableWarningProvenance(
+                  product,
+                  provenanceByProductId,
+                ) && (
                   <span className="text-sm text-success-text">
                     {t("compare.noWarnings")}
+                  </span>
+                )}
+              {!product.high_salt &&
+                !product.high_sugar &&
+                !product.high_sat_fat &&
+                !product.high_additive_load &&
+                (!hasWarningEvidence(product) ||
+                  !hasUsableWarningProvenance(
+                    product,
+                    provenanceByProductId,
+                  )) && (
+                  <span className="text-sm text-warning-text">
+                    {t("trust.evidence.warningEvidenceUnavailable")}
                   </span>
                 )}
             </div>
@@ -729,6 +882,8 @@ function MobileSwipeView({
 export function ComparisonGrid({
   products,
   showAvoidBadge = false,
+  recommendationAllowed,
+  provenanceByProductId,
 }: Readonly<ComparisonGridProps>) {
   const { t } = useTranslation();
 
@@ -751,8 +906,18 @@ export function ComparisonGrid({
 
   return (
     <>
-      <DesktopGrid products={products} showAvoidBadge={showAvoidBadge} />
-      <MobileSwipeView products={products} showAvoidBadge={showAvoidBadge} />
+      <DesktopGrid
+        products={products}
+        showAvoidBadge={showAvoidBadge}
+        recommendationAllowed={recommendationAllowed}
+        provenanceByProductId={provenanceByProductId}
+      />
+      <MobileSwipeView
+        products={products}
+        showAvoidBadge={showAvoidBadge}
+        recommendationAllowed={recommendationAllowed}
+        provenanceByProductId={provenanceByProductId}
+      />
     </>
   );
 }

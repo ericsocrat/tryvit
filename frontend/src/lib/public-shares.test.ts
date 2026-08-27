@@ -155,6 +155,41 @@ describe("public share reads", () => {
     });
   });
 
+  it("accepts a shared comparison with explicitly missing numeric evidence", async () => {
+    vi.stubEnv("TRYVIT_DATA_BACKEND_MODE", "live");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "http://127.0.0.1:55001");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "local-public-key");
+    const nullableProduct = {
+      ...validCompareProduct,
+      calories: null,
+      total_fat_g: null,
+      saturated_fat_g: null,
+      carbs_g: null,
+      sugars_g: null,
+      protein_g: null,
+      salt_g: null,
+      additives_count: null,
+      ingredient_count: null,
+      allergen_count: null,
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          Promise.resolve({
+            ...validComparisonPayload,
+            products: [nullableProduct],
+          }),
+      }),
+    );
+
+    await expect(readPublicSharedComparison("comparison-token")).resolves.toEqual({
+      status: "ok",
+      data: { ...validComparisonPayload, products: [nullableProduct] },
+    });
+  });
+
   it("does not classify a similarly worded service error as an invalid link", async () => {
     vi.stubEnv("TRYVIT_DATA_BACKEND_MODE", "live");
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "http://127.0.0.1:55001");

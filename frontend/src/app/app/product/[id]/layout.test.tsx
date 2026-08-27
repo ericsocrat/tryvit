@@ -126,13 +126,14 @@ describe("generateMetadata", () => {
     expect(metadata.title).toBe("Product");
   });
 
-  it("defaults score to 0 when scores object is missing", async () => {
+  it("keeps missing score evidence explicit instead of fabricating zero", async () => {
     mockRpc.mockResolvedValue({
       data: { product: { product_name: "Test" } },
     });
 
     const metadata = await generateMetadata(mockParams("1"));
-    expect(metadata.description).toContain("Health Score: 0/100");
+    expect(metadata.description).toContain("Health score evidence unavailable");
+    expect(metadata.description).not.toContain("Health Score: 0/100");
   });
 });
 

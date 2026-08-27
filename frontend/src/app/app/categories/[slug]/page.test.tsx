@@ -28,10 +28,26 @@ vi.mock("next/link", () => ({
 
 const mockGetCategoryListing = vi.fn();
 const mockGetCategoryOverview = vi.fn();
+const mockUseProductAllergenWarnings = vi.fn();
+const mockUseProductProvenance = vi.fn();
 vi.mock("@/lib/api", () => ({
   getCategoryListing: (...args: unknown[]) => mockGetCategoryListing(...args),
   getCategoryOverview: (...args: unknown[]) => mockGetCategoryOverview(...args),
 }));
+
+vi.mock("@/hooks/use-product-allergens", () => ({
+  useProductAllergenWarnings: () => mockUseProductAllergenWarnings(),
+}));
+
+vi.mock("@/hooks/use-product-provenance", async (importOriginal) => {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+  const actual = await importOriginal<typeof import("@/hooks/use-product-provenance")>();
+  return {
+    ...actual,
+    useProductProvenance: (...args: unknown[]) =>
+      mockUseProductProvenance(...args),
+  };
+});
 
 vi.mock("@/components/common/skeletons", () => ({
   CategoryListingSkeleton: () => (
@@ -135,6 +151,35 @@ beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
   mockSlug = "chips";
+  mockUseProductAllergenWarnings.mockReturnValue({
+    warnings: {},
+    enabled: false,
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+  });
+  mockUseProductProvenance.mockReturnValue({
+    data: {
+      api_version: "2026-02-27",
+      product_id: 1,
+      product_name: "Lay's Classic",
+      overall_trust_score: 0.9,
+      freshness_status: "fresh",
+      source_count: 2,
+      data_completeness_pct: 100,
+      field_sources: {
+        unhealthiness_score: {
+          source: "Label Scan",
+          last_updated: new Date().toISOString(),
+          confidence: 0.9,
+        },
+      },
+      trust_explanation: "Current evidence",
+      weakest_area: { field: null, confidence: null },
+    },
+    isLoading: false,
+    error: null,
+  });
   mockGetCategoryListing.mockResolvedValue({
     ok: true,
     data: {
@@ -477,5 +522,71 @@ describe("CategoryListingPage", () => {
     });
     // Toggle shows "Compact" option
     expect(screen.getByText("Compact")).toBeInTheDocument();
+  });
+
+  it("does not call a low-confidence product best in category", async () => {
+    mockGetCategoryListing.mockResolvedValue({
+      ok: true,
+      data: {
+        total_count: 1,
+        products: [
+          {
+            ...mockProducts[0],
+            confidence: "low",
+            data_completeness_pct: 30,
+          },
+        ],
+      },
+    });
+    render(<CategoryListingPage />, { wrapper: createWrapper() });
+    await screen.findByText("Lay's Classic");
+    expect(screen.queryByText(/Best in category/i)).not.toBeInTheDocument();
+  });
+
+  it("does not call the first score-sorted product best without usable score provenance", async () => {
+    mockUseProductProvenance.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: null,
+    });
+    render(<CategoryListingPage />, { wrapper: createWrapper() });
+
+    await screen.findByText("Lay's Classic");
+    expect(screen.queryByText(/Best in category/i)).not.toBeInTheDocument();
+  });
+
+  it("shows missing calorie evidence explicitly in detailed view", async () => {
+    const user = userEvent.setup();
+    mockGetCategoryListing.mockResolvedValue({
+      ok: true,
+      data: {
+        total_count: 1,
+        products: [{ ...mockProducts[0], calories: null }],
+      },
+    });
+    render(<CategoryListingPage />, { wrapper: createWrapper() });
+    await screen.findByText("Lay's Classic");
+    await user.click(screen.getByText("Detailed"));
+    expect(await screen.findByText(/Evidence unavailable/)).toBeInTheDocument();
+  });
+
+  it("fails personalized allergen evidence closed with retry", async () => {
+    const user = userEvent.setup();
+    const refetch = vi.fn();
+    mockUseProductAllergenWarnings.mockReturnValue({
+      warnings: {},
+      enabled: true,
+      isLoading: false,
+      error: new Error("allergen service unavailable"),
+      refetch,
+    });
+    render(<CategoryListingPage />, { wrapper: createWrapper() });
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(
+      "Personalized allergen evidence is unavailable",
+    );
+    await user.click(screen.getByRole("button", { name: "Retry" }));
+    expect(refetch).toHaveBeenCalledOnce();
   });
 });

@@ -2131,8 +2131,42 @@
       "fieldLabel": "{field}",
       "sourceLabel": "{source}",
       "updatedAgo": "Updated {days}d ago",
+      "updatedUnknown": "Update date unavailable",
       "noSourceData": "Source attribution data is not yet available for this product.",
       "ariaLabel": "Data source information"
+    },
+    "evidence": {
+      "loading": "Loading product evidence…",
+      "unavailableTitle": "Product evidence unavailable",
+      "unavailableDescription": "Source and freshness checks could not be loaded. Treat the score and recommendations as provisional.",
+      "confirmedTitle": "Product evidence confirmed",
+      "confirmedDescription": "Current field-level provenance supports this product record.",
+      "provisionalTitle": "Product evidence is provisional",
+      "provisionalDescription": "Some evidence is incomplete, older, or lower confidence. Verify the current package before deciding.",
+      "notCollectedTitle": "Field-level provenance not collected",
+      "notCollectedDescription": "No field-level source record is available. This does not confirm the displayed values.",
+      "expiredTitle": "Product evidence expired",
+      "expiredDescription": "Required evidence is beyond its freshness window. Recommendations are withheld until it is reverified.",
+      "freshnessLabel": "Freshness",
+      "completenessLabel": "Completeness",
+      "sourcesLabel": "Sources",
+      "notCollectedValue": "Not collected",
+      "recommendationsWithheld": "Recommendations are withheld until valid product evidence is available.",
+      "scoreProvisional": "This score interpretation is provisional because its supporting evidence is incomplete or stale.",
+      "nutritionUnavailable": "Nutrition evidence unavailable",
+      "valueUnavailable": "Evidence unavailable",
+      "allergenCheckLoading": "Checking personalized allergen evidence…",
+      "allergenCheckUnavailable": "Personalized allergen evidence is unavailable. No warning does not mean allergen-free.",
+      "comparisonUnavailable": "Comparison ranking withheld",
+      "comparisonUnavailableDescription": "At least one product lacks valid source or freshness evidence. Values remain visible, but TryVit will not name a winner.",
+      "warningEvidenceUnavailable": "Warning evidence is incomplete; no warning does not mean no concern.",
+      "freshness": {
+        "fresh": "Current",
+        "aging": "Aging",
+        "stale": "Stale",
+        "expired": "Expired",
+        "unavailable": "Not assessed"
+      }
     }
   },
   "contributor": {

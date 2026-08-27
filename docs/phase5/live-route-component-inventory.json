@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "16a93a33964957eebdfb563a85391b5c1c8724f5",
+    "baseSha": "4e8f08234b1b05715261d0dcb1ecba367e545315",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "a439b78dc0d49f1da77eb01a51dd5221d21af61cfbc4939891ddc03b99fce3eb"
+    "sourceFingerprint": "9f01b4f3983a011a9f0b1e8009749ce66ba2da7a82a41df90b15486974c0a449"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12,10 +12,10 @@
     "frontend/src/design-system"
   ],
   "moduleCounts": {
-    "total": 449,
+    "total": 450,
     "route-module": 94,
     "app-support-module": 87,
-    "shared-component-module": 198,
+    "shared-component-module": 199,
     "design-system-module": 70
   },
   "modules": [
@@ -592,6 +592,7 @@
         "frontend/src/components/category/CategoryScoreBar.tsx",
         "frontend/src/components/common/AllergenChips.tsx",
         "frontend/src/components/common/Button.tsx",
+        "frontend/src/components/common/ConfidenceBadge.tsx",
         "frontend/src/components/common/EmptyState.tsx",
         "frontend/src/components/common/NutriScoreBadge.tsx",
         "frontend/src/components/common/ProductThumbnail.tsx",
@@ -604,6 +605,7 @@
         "frontend/src/components/product/HealthWarningsCard.tsx",
         "frontend/src/hooks/use-analytics.ts",
         "frontend/src/hooks/use-product-allergens.ts",
+        "frontend/src/hooks/use-product-provenance.ts",
         "frontend/src/lib/allergen-matching.ts",
         "frontend/src/lib/api.ts",
         "frontend/src/lib/constants.ts",
@@ -775,8 +777,10 @@
         "frontend/src/components/compare/ShareComparison.tsx",
         "frontend/src/components/export/ExportButton.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
+        "frontend/src/components/trust/ProductEvidencePanel.tsx",
         "frontend/src/hooks/use-analytics.ts",
         "frontend/src/hooks/use-compare.ts",
+        "frontend/src/hooks/use-product-provenance.ts",
         "frontend/src/lib/events/index.ts",
         "frontend/src/lib/export.ts",
         "frontend/src/lib/i18n.ts",
@@ -1335,8 +1339,10 @@
         "frontend/src/components/product/TrafficLightStrip.tsx",
         "frontend/src/components/product/WatchButton.tsx",
         "frontend/src/components/pwa/CachedTimestamp.tsx",
+        "frontend/src/components/trust/ProductEvidencePanel.tsx",
         "frontend/src/hooks/use-analytics.ts",
         "frontend/src/hooks/use-online-status.ts",
+        "frontend/src/hooks/use-product-provenance.ts",
         "frontend/src/lib/api.ts",
         "frontend/src/lib/cache-manager.ts",
         "frontend/src/lib/constants.ts",
@@ -1675,6 +1681,8 @@
         "frontend/src/components/common/skeletons/index.ts",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/product/HealthWarningsCard.tsx",
+        "frontend/src/components/trust/ProductEvidencePanel.tsx",
+        "frontend/src/hooks/use-product-provenance.ts",
         "frontend/src/lib/api.ts",
         "frontend/src/lib/constants.ts",
         "frontend/src/lib/i18n.ts",
@@ -6935,6 +6943,7 @@
         "frontend/src/components/search/SaveSearchDialog.tsx",
         "frontend/src/components/settings/DeleteAccountDialog.tsx",
         "frontend/src/components/settings/HealthProfileSection.tsx",
+        "frontend/src/components/trust/ProductEvidencePanel.tsx",
         "frontend/src/design-system/compat-v1/ConfirmDialog.tsx"
       ],
       "transitiveRouteConsumers": [
@@ -7382,11 +7391,17 @@
         "frontend/src/components/common/InfoTooltip.tsx"
       ],
       "directConsumers": [
+        "frontend/src/app/app/categories/[slug]/page.tsx",
         "frontend/src/app/app/product/[id]/page.tsx",
         "frontend/src/components/common/index.ts",
         "frontend/src/components/compare/ComparisonGrid.tsx"
       ],
       "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/app/categories/[slug]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/categories/[slug]"
+        },
         {
           "modulePath": "frontend/src/app/app/compare/page.tsx",
           "routeModuleKind": "page",
@@ -12347,6 +12362,7 @@
         "frontend/src/components/common/ConfidenceBadge.tsx",
         "frontend/src/components/compare/comparison-helpers.ts",
         "frontend/src/components/product/AvoidBadge.tsx",
+        "frontend/src/hooks/use-product-provenance.ts",
         "frontend/src/lib/constants.ts",
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/nutri-label.ts",
@@ -17520,6 +17536,54 @@
       "classifiedLegacyDebt": []
     },
     {
+      "path": "frontend/src/components/trust/ProductEvidencePanel.tsx",
+      "classification": "shared-component-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/components/common/Button.tsx",
+        "frontend/src/components/trust/SourceAttribution.tsx",
+        "frontend/src/components/trust/TrustBadge.tsx",
+        "frontend/src/hooks/use-product-provenance.ts",
+        "frontend/src/lib/i18n.ts",
+        "frontend/src/lib/types.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/app/compare/page.tsx",
+        "frontend/src/app/app/product/[id]/page.tsx",
+        "frontend/src/app/app/scan/result/[id]/page.tsx",
+        "frontend/src/components/trust/index.ts"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/app/compare/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/compare"
+        },
+        {
+          "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/product/[id]"
+        },
+        {
+          "modulePath": "frontend/src/app/app/scan/result/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/scan/result/[id]"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5C.2",
+        "5E"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
       "path": "frontend/src/components/trust/ScoringVersionBadge.tsx",
       "classification": "shared-component-module",
       "routeModuleKind": null,
@@ -17576,11 +17640,29 @@
         "frontend/src/lib/i18n.ts"
       ],
       "directConsumers": [
+        "frontend/src/components/trust/ProductEvidencePanel.tsx",
         "frontend/src/components/trust/index.ts"
       ],
-      "transitiveRouteConsumers": [],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/app/compare/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/compare"
+        },
+        {
+          "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/product/[id]"
+        },
+        {
+          "modulePath": "frontend/src/app/app/scan/result/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/scan/result/[id]"
+        }
+      ],
       "targetRedesignPhases": [
-        "5F"
+        "5C.2",
+        "5E"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -17599,11 +17681,29 @@
         "frontend/src/lib/i18n.ts"
       ],
       "directConsumers": [
+        "frontend/src/components/trust/ProductEvidencePanel.tsx",
         "frontend/src/components/trust/index.ts"
       ],
-      "transitiveRouteConsumers": [],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/app/compare/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/compare"
+        },
+        {
+          "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/product/[id]"
+        },
+        {
+          "modulePath": "frontend/src/app/app/scan/result/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/scan/result/[id]"
+        }
+      ],
       "targetRedesignPhases": [
-        "5F"
+        "5C.2",
+        "5E"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -17620,6 +17720,7 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/components/trust/FreshnessIndicator.tsx",
+        "frontend/src/components/trust/ProductEvidencePanel.tsx",
         "frontend/src/components/trust/ScoringVersionBadge.tsx",
         "frontend/src/components/trust/SearchRelevanceHint.tsx",
         "frontend/src/components/trust/SourceAttribution.tsx",
@@ -21201,9 +21302,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 559,
+    "inspectedModuleCount": 561,
     "violations": [],
-    "sourceFingerprint": "55ca6ec50d356a4ec764c9c117b2727cb8e286f03423a54ff9ce51c98c2ca56a"
+    "sourceFingerprint": "2592818dc322f6e52ef4d9d3b3a43f178419e7c8bb90655a2f1c09dc24316738"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
@@ -21276,6 +21377,7 @@
           "frontend/src/components/search/SaveSearchDialog.tsx",
           "frontend/src/components/settings/DeleteAccountDialog.tsx",
           "frontend/src/components/settings/HealthProfileSection.tsx",
+          "frontend/src/components/trust/ProductEvidencePanel.tsx",
           "frontend/src/design-system/compat-v1/ConfirmDialog.tsx"
         ],
         "transitiveRouteConsumers": [
@@ -21825,6 +21927,6 @@
         ]
       }
     ],
-    "sourceFingerprint": "d3e6257ec2bed75001a404a641c2d8dc22cb099364e7ef79b1445d0f977fcdec"
+    "sourceFingerprint": "e7741865def717476d1bf173285accb3d25fa8e431bfa60e34e76b0d6f759988"
   }
 }

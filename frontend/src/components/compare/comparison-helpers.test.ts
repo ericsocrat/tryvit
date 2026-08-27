@@ -10,6 +10,8 @@ import {
     getKeyDifferences,
     getProductWarnings,
     getWinnerIndex,
+    hasRecommendationEvidence,
+    hasWarningEvidence,
 } from "./comparison-helpers";
 
 // ─── Stub factory ───────────────────────────────────────────────────────────
@@ -194,6 +196,34 @@ describe("getWinnerIndex", () => {
       makeProduct({ unhealthiness_score: 50 }),
     ];
     expect(getWinnerIndex(products)).toBe(0);
+  });
+});
+
+describe("comparison evidence", () => {
+  it("requires recognized non-low confidence before recommending a winner", () => {
+    expect(hasRecommendationEvidence([makeProduct(), makeProduct()])).toBe(
+      true,
+    );
+    expect(
+      hasRecommendationEvidence([
+        makeProduct(),
+        makeProduct({ confidence: "low" }),
+      ]),
+    ).toBe(false);
+    expect(
+      hasRecommendationEvidence([
+        makeProduct(),
+        makeProduct({ data_completeness_pct: 0 }),
+      ]),
+    ).toBe(false);
+  });
+
+  it("requires nutrition and ingredient evidence before claiming no warnings", () => {
+    expect(hasWarningEvidence(makeProduct())).toBe(true);
+    expect(hasWarningEvidence(makeProduct({ sugars_g: null }))).toBe(false);
+    expect(hasWarningEvidence(makeProduct({ ingredient_count: 0 }))).toBe(
+      false,
+    );
   });
 });
 
@@ -388,7 +418,7 @@ describe("getKeyDifferences", () => {
   });
 
   it("handles null values gracefully", () => {
-    const a = makeProduct({ fibre_g: null as unknown as number });
+    const a = makeProduct({ fibre_g: null });
     const b = makeProduct({ fibre_g: 5 });
     const diffs = getKeyDifferences([a, b]);
     // fibre should be skipped since one value is null/undefined
@@ -406,5 +436,15 @@ describe("getKeyDifferences", () => {
     // Max diff is 500-100=400, best is lowest
     expect(calDiff!.betterIdx).toBe(0);
     expect(calDiff!.values).toEqual([100, 300, 500]);
+  });
+
+  it("preserves missing values instead of substituting zero", () => {
+    const a = makeProduct({ calories: 100 });
+    const b = makeProduct({ calories: null });
+    const c = makeProduct({ calories: 500 });
+    const calories = getKeyDifferences([a, b, c]).find(
+      (difference) => difference.label === "Calories",
+    );
+    expect(calories?.values).toEqual([100, null, 500]);
   });
 });

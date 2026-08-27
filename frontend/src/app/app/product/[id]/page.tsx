@@ -27,8 +27,15 @@ import { ShareButton } from "@/components/product/ShareButton";
 import { TrafficLightStrip } from "@/components/product/TrafficLightStrip";
 import { WatchButton } from "@/components/product/WatchButton";
 import { CachedTimestamp } from "@/components/pwa/CachedTimestamp";
+import { ProductEvidencePanel } from "@/components/trust/ProductEvidencePanel";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useOnlineStatus } from "@/hooks/use-online-status";
+import {
+  canRecommendFromProvenance,
+  getProvenanceDisposition,
+  useProductProvenance,
+  useProductProvenanceMap,
+} from "@/hooks/use-product-provenance";
 import { getProductProfile, recordProductView } from "@/lib/api";
 import { cacheProduct, getCachedProduct } from "@/lib/cache-manager";
 import { getScoreInterpretation } from "@/lib/constants";
@@ -102,6 +109,14 @@ export default function ProductDetailPage() {
     enabled: !Number.isNaN(productId),
   });
 
+  const provenanceQuery = useProductProvenance(
+    productId,
+    !Number.isNaN(productId),
+  );
+  const alternativeProvenance = useProductProvenanceMap(
+    profile?.alternatives.map((alternative) => alternative.product_id) ?? [],
+  );
+
   useEffect(() => {
     if (profile) {
       track("product_viewed", {
@@ -111,7 +126,7 @@ export default function ProductDetailPage() {
       });
       void eventBus.emit({
         type: "product.viewed",
-        payload: { productId, score: profile.scores.unhealthiness_score ?? 0 },
+        payload: { productId, score: profile.scores.unhealthiness_score },
       });
       // Record view for dashboard recently-viewed section
       if (!IS_QA_MODE) {
@@ -188,6 +203,31 @@ export default function ProductDetailPage() {
       </div>
     );
   }
+
+  const provenanceDisposition = provenanceQuery.data
+    ? getProvenanceDisposition(provenanceQuery.data)
+    : null;
+  const scoreRankingAllowed = canRecommendFromProvenance(provenanceQuery.data);
+  const eligibleAlternatives = scoreRankingAllowed
+    ? profile.alternatives.filter((alternative) => {
+        const provenance = alternativeProvenance[alternative.product_id];
+        return (
+          !provenance?.isLoading &&
+          !provenance?.error &&
+          canRecommendFromProvenance(provenance?.data)
+        );
+      })
+    : [];
+  const recommendationsAllowed =
+    scoreRankingAllowed &&
+    (profile.alternatives.length === 0 || eligibleAlternatives.length > 0);
+  const recommendationProfile = {
+    ...profile,
+    alternatives: recommendationsAllowed
+      ? eligibleAlternatives
+      : profile.alternatives,
+  };
+  const scoreProvisional = provenanceDisposition !== "confirmed";
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
@@ -286,10 +326,12 @@ export default function ProductDetailPage() {
                   group: profile.scores.nova_group,
                 })}
               </span>
-              <PercentileBadge
-                rank={profile.scores.category_context?.rank}
-                total={profile.scores.category_context?.total_in_category}
-              />
+              {scoreRankingAllowed && (
+                <PercentileBadge
+                  rank={profile.scores.category_context?.rank}
+                  total={profile.scores.category_context?.total_in_category}
+                />
+              )}
             </div>
 
             {/* Inline score hero + confidence badge */}
@@ -405,6 +447,14 @@ export default function ProductDetailPage() {
 
         {/* Right column — scrollable content */}
         <div className="mt-4 space-y-4 lg:col-span-7 lg:mt-0 lg:space-y-6">
+          <ProductEvidencePanel
+            provenance={provenanceQuery.data}
+            isLoading={provenanceQuery.isLoading}
+            error={provenanceQuery.error}
+            onRetry={() => {
+              void provenanceQuery.refetch();
+            }}
+          />
           {showFullAnalysis ? (
             <ErrorBoundary
               level="section"
@@ -413,24 +463,31 @@ export default function ProductDetailPage() {
               <Suspense
                 fallback={
                   <QuickSummary
-                    profile={profile}
+                    profile={recommendationProfile}
                     onExpand={toggleFullAnalysis}
+                    recommendationsAllowed={recommendationsAllowed}
+                    scoreProvisional={scoreProvisional}
                   />
                 }
               >
                 <ProductFullAnalysis
-                  profile={profile}
+                  profile={recommendationProfile}
                   productId={productId}
                   activeTab={activeTab}
                   onActiveTabChange={setActiveTab}
                   onCollapse={toggleFullAnalysis}
+                  recommendationsAllowed={recommendationsAllowed}
+                  scoreProvisional={scoreProvisional}
+                  scoreRankingAllowed={scoreRankingAllowed}
                 />
               </Suspense>
             </ErrorBoundary>
           ) : (
             <QuickSummary
-              profile={profile}
+              profile={recommendationProfile}
               onExpand={toggleFullAnalysis}
+              recommendationsAllowed={recommendationsAllowed}
+              scoreProvisional={scoreProvisional}
             />
           )}
         </div>
@@ -445,13 +502,23 @@ export default function ProductDetailPage() {
 function QuickSummary({
   profile,
   onExpand,
+  recommendationsAllowed,
+  scoreProvisional,
 }: Readonly<{
   profile: ProductProfile;
   onExpand: () => void;
+  recommendationsAllowed: boolean;
+  scoreProvisional: boolean;
 }>) {
   const { t } = useTranslation();
   const interp = getScoreInterpretation(toTryVitScore(profile.scores.unhealthiness_score));
   const topAlts = profile.alternatives.slice(0, 2);
+  const hasTrafficLightEvidence = [
+    profile.nutrition.per_100g.total_fat_g,
+    profile.nutrition.per_100g.saturated_fat_g,
+    profile.nutrition.per_100g.sugars_g,
+    profile.nutrition.per_100g.salt_g,
+  ].some((value) => value != null);
 
   return (
     <div className="space-y-4" data-testid="quick-summary">
@@ -461,15 +528,26 @@ function QuickSummary({
           {t("product.quickSummary")}
         </h2>
         <p className={`text-sm ${interp.color}`}>{t(interp.key)}</p>
+        {scoreProvisional && (
+          <p className="mt-2 text-xs font-medium text-warning-text">
+            {t("trust.evidence.scoreProvisional")}
+          </p>
+        )}
       </div>
 
       {/* Traffic light strip */}
       <div className="card">
-        <TrafficLightStrip nutrition={profile.nutrition.per_100g} />
+        {hasTrafficLightEvidence ? (
+          <TrafficLightStrip nutrition={profile.nutrition.per_100g} />
+        ) : (
+          <p className="text-sm text-warning-text">
+            {t("trust.evidence.nutritionUnavailable")}
+          </p>
+        )}
       </div>
 
       {/* Top alternatives preview */}
-      {topAlts.length > 0 && (
+      {recommendationsAllowed && topAlts.length > 0 && (
         <div className="card" data-testid="quick-summary-alternatives">
           <h2 className="mb-2 text-sm font-semibold text-foreground-secondary">
             {t("product.topAlternatives")}
@@ -493,6 +571,12 @@ function QuickSummary({
               {profile.alternatives.length})
             </button>
           )}
+        </div>
+      )}
+
+      {!recommendationsAllowed && profile.alternatives.length > 0 && (
+        <div className="rounded-xl border border-warning-border bg-warning-bg p-3 text-sm text-warning-text">
+          {t("trust.evidence.recommendationsWithheld")}
         </div>
       )}
 

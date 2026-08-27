@@ -75,7 +75,11 @@ export default async function SharedComparisonPage({
                 </p>
               </div>
             </div>
-            <ComparisonGrid products={data.products} showAvoidBadge={false} />
+            <ComparisonGrid
+              products={data.products}
+              showAvoidBadge={false}
+              recommendationAllowed={false}
+            />
           </>
         )}
 

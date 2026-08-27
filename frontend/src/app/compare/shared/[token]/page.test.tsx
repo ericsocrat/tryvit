@@ -21,8 +21,19 @@ vi.mock("next/link", () => ({
 }));
 
 vi.mock("@/components/compare/ComparisonGrid", () => ({
-  ComparisonGrid: ({ products }: { products: unknown[] }) => (
-    <div data-testid="comparison-grid">{products.length} products</div>
+  ComparisonGrid: ({
+    products,
+    recommendationAllowed,
+  }: {
+    products: unknown[];
+    recommendationAllowed: boolean;
+  }) => (
+    <div
+      data-testid="comparison-grid"
+      data-recommendation-allowed={String(recommendationAllowed)}
+    >
+      {products.length} products
+    </div>
   ),
 }));
 
@@ -67,6 +78,10 @@ describe("SharedComparisonPage", () => {
     expect(screen.getByText("Chips vs Drinks")).toBeInTheDocument();
     expect(screen.getByText(/2 products compared/)).toBeInTheDocument();
     expect(screen.getByTestId("comparison-grid")).toHaveTextContent("2 products");
+    expect(screen.getByTestId("comparison-grid")).toHaveAttribute(
+      "data-recommendation-allowed",
+      "false",
+    );
   });
 
   it("uses the localized default title", async () => {

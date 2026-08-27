@@ -13,6 +13,12 @@ import {
 } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { HealthWarningsCard } from "@/components/product/HealthWarningsCard";
+import { ProductEvidencePanel } from "@/components/trust/ProductEvidencePanel";
+import {
+  canRecommendFromProvenance,
+  useProductProvenance,
+  useProductProvenanceMap,
+} from "@/hooks/use-product-provenance";
 import { getBetterAlternatives, getProductDetail } from "@/lib/api";
 import { SCORE_BANDS, scoreBandFromScore } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
@@ -51,6 +57,10 @@ export default function ScanResultPage() {
     enabled: !Number.isNaN(productId),
   });
 
+  const provenanceQuery = useProductProvenance(
+    productId,
+    !Number.isNaN(productId),
+  );
   const {
     data: alternativesData,
     error: alternativesError,
@@ -69,6 +79,11 @@ export default function ScanResultPage() {
     staleTime: staleTimes.alternatives,
     enabled: !Number.isNaN(productId),
   });
+  const alternativeProvenance = useProductProvenanceMap(
+    alternativesData?.alternatives.map(
+      (alternative) => alternative.product_id,
+    ) ?? [],
+  );
 
   // ─── Loading ────────────────────────────────────────────────────────────
 
@@ -109,7 +124,23 @@ export default function ScanResultPage() {
   const band = SCORE_BANDS[product.scores.score_band];
 
   const alternatives = alternativesData?.alternatives ?? [];
-  const hasAlternatives = alternatives.length > 0;
+  const sourceRecommendationAllowed = canRecommendFromProvenance(
+    provenanceQuery.data,
+  );
+  const eligibleAlternatives = sourceRecommendationAllowed
+    ? alternatives.filter((alternative) => {
+        const provenance = alternativeProvenance[alternative.product_id];
+        return (
+          !provenance?.isLoading &&
+          !provenance?.error &&
+          canRecommendFromProvenance(provenance?.data)
+        );
+      })
+    : [];
+  const hasAlternatives = eligibleAlternatives.length > 0;
+  const recommendationsAllowed =
+    sourceRecommendationAllowed &&
+    (alternatives.length === 0 || eligibleAlternatives.length > 0);
 
   return (
     <div className="space-y-4">
@@ -134,6 +165,16 @@ export default function ScanResultPage() {
           {t("scan.scanAnother")} →
         </Link>
       </div>
+
+      <ProductEvidencePanel
+        provenance={provenanceQuery.data}
+        isLoading={provenanceQuery.isLoading}
+        error={provenanceQuery.error}
+        onRetry={() => {
+          void provenanceQuery.refetch();
+        }}
+        compact
+      />
 
       {/* ── Scanned Product Card ─────────────────────────────────────────── */}
       <div className="card">
@@ -189,32 +230,32 @@ export default function ScanResultPage() {
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
           <NutrientPill
             label={t("product.caloriesLabel")}
-            value={`${product.nutrition_per_100g.calories}`}
+            value={product.nutrition_per_100g.calories}
             unit="kcal"
           />
           <NutrientPill
             label={t("product.sugars")}
-            value={`${product.nutrition_per_100g.sugars_g}`}
+            value={product.nutrition_per_100g.sugars_g}
             unit="g"
           />
           <NutrientPill
             label={t("product.salt")}
-            value={`${product.nutrition_per_100g.salt_g}`}
+            value={product.nutrition_per_100g.salt_g}
             unit="g"
           />
           <NutrientPill
             label={t("product.totalFat")}
-            value={`${product.nutrition_per_100g.total_fat_g}`}
+            value={product.nutrition_per_100g.total_fat_g}
             unit="g"
           />
           <NutrientPill
             label={t("product.saturatedFat")}
-            value={`${product.nutrition_per_100g.saturated_fat_g}`}
+            value={product.nutrition_per_100g.saturated_fat_g}
             unit="g"
           />
           <NutrientPill
             label={t("product.protein")}
-            value={`${product.nutrition_per_100g.protein_g}`}
+            value={product.nutrition_per_100g.protein_g}
             unit="g"
           />
         </div>
@@ -230,7 +271,7 @@ export default function ScanResultPage() {
           {hasAlternatives && (
             <span className="rounded-full bg-success-bg px-2 py-0.5 text-xs font-medium text-success-text">
               {t("product.found", {
-                count: alternativesData?.alternatives_count ?? 0,
+                count: eligibleAlternatives.length,
               })}
             </span>
           )}
@@ -239,11 +280,12 @@ export default function ScanResultPage() {
         <AlternativesSection
           loading={alternativesLoading}
           error={alternativesError}
-          alternatives={alternatives}
+          alternatives={eligibleAlternatives}
           sourceScore={product.scores.unhealthiness_score}
           onRetry={() => {
             void refetchAlternatives();
           }}
+          recommendationsAllowed={recommendationsAllowed}
         />
       </div>
 
@@ -277,12 +319,14 @@ function AlternativesSection({
   alternatives,
   sourceScore,
   onRetry,
+  recommendationsAllowed,
 }: Readonly<{
   loading: boolean;
   error: Error | null;
   alternatives: Alternative[];
   sourceScore: number;
   onRetry: () => void;
+  recommendationsAllowed: boolean;
 }>) {
   const { t } = useTranslation();
 
@@ -310,6 +354,14 @@ function AlternativesSection({
         >
           {t("common.retry")}
         </button>
+      </div>
+    );
+  }
+
+  if (!recommendationsAllowed) {
+    return (
+      <div className="rounded-xl border border-warning-border bg-warning-bg px-4 py-5 text-center text-sm text-warning-text">
+        {t("trust.evidence.recommendationsWithheld")}
       </div>
     );
   }
@@ -355,7 +407,11 @@ function HealthFlags({ product }: Readonly<{ product: ProductDetail }>) {
     product.flags.has_palm_oil && { emoji: "🌴", label: t("product.palmOil") },
   ].filter(Boolean) as { emoji: string; label: string }[];
 
-  if (activeFlags.length === 0) return null;
+  const evidenceIncomplete =
+    product.trust.nutrition_data_quality !== "clean" ||
+    product.trust.ingredient_data_quality !== "complete";
+
+  if (activeFlags.length === 0 && !evidenceIncomplete) return null;
 
   return (
     <div className="mt-3 flex flex-wrap gap-1">
@@ -367,6 +423,11 @@ function HealthFlags({ product }: Readonly<{ product: ProductDetail }>) {
           {flag.emoji} {flag.label}
         </span>
       ))}
+      {evidenceIncomplete && (
+        <span className="rounded-full bg-warning-bg px-2 py-0.5 text-xs font-medium text-warning-text">
+          {t("trust.evidence.warningEvidenceUnavailable")}
+        </span>
+      )}
     </div>
   );
 }
@@ -377,11 +438,18 @@ function NutrientPill({
   label,
   value,
   unit,
-}: Readonly<{ label: string; value: string; unit: string }>) {
+}: Readonly<{ label: string; value: number | null; unit: string }>) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-lg bg-surface-subtle px-2 py-2">
       <p className="font-medium text-foreground">
-        {value} <span className="text-foreground-muted">{unit}</span>
+        {value == null ? (
+          t("trust.evidence.valueUnavailable")
+        ) : (
+          <>
+            {value} <span className="text-foreground-muted">{unit}</span>
+          </>
+        )}
       </p>
       <p className="text-foreground-secondary">{label}</p>
     </div>

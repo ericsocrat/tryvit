@@ -92,4 +92,23 @@ describe("NutritionHighlights", () => {
     expect(screen.getByText("100.0g")).toBeInTheDocument();
     expect(screen.getByText("10.0g")).toBeInTheDocument();
   });
+
+  it("renders missing nutrients as unavailable without zero progress values", () => {
+    render(
+      <NutritionHighlights
+        nutrition={{
+          total_fat_g: null,
+          saturated_fat_g: null,
+          sugars_g: null,
+          salt_g: null,
+        }}
+      />,
+    );
+
+    expect(
+      screen.getAllByText("trust.evidence.valueUnavailable"),
+    ).toHaveLength(4);
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    expect(screen.queryByText("0.0g")).not.toBeInTheDocument();
+  });
 });

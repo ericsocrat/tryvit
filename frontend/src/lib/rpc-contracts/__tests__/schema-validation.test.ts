@@ -221,7 +221,7 @@ describe("Schema validation: valid data accepted", () => {
           nutri_score: "A",
           nova_group: "1",
           processing_risk: "low",
-          calories: 42,
+          calories: null,
           total_fat_g: 1.5,
           protein_g: 3.4,
           sugars_g: 4.8,
@@ -304,7 +304,7 @@ describe("Schema validation: valid data accepted", () => {
           nutri_score: "B",
           nova_group: "2",
           processing_risk: "low",
-          calories: 120,
+          calories: null,
           total_fat_g: 3.5,
           saturated_fat_g: 2.1,
           trans_fat_g: null,
@@ -317,10 +317,10 @@ describe("Schema validation: valid data accepted", () => {
           high_sugar: false,
           high_sat_fat: false,
           high_additive_load: false,
-          additives_count: 0,
-          ingredient_count: 5,
-          allergen_count: 1,
-          allergen_tags: "milk",
+          additives_count: null,
+          ingredient_count: null,
+          allergen_count: null,
+          allergen_tags: null,
           trace_tags: null,
           confidence: "high",
           data_completeness_pct: 95,
@@ -751,6 +751,22 @@ describe("Schema validation: nullable fields", () => {
   it("ProductDetail accepts null nutri-score", () => {
     const data = mockProductDetail();
     data.scores.nutri_score = null;
+    expect(ProductDetailContract.safeParse(data).success).toBe(true);
+  });
+
+  it("ProductDetail preserves missing nutrition as null", () => {
+    const data = mockProductDetail();
+    data.nutrition_per_100g = {
+      calories: null,
+      total_fat_g: null,
+      saturated_fat_g: null,
+      trans_fat_g: null,
+      carbs_g: null,
+      sugars_g: null,
+      fibre_g: null,
+      protein_g: null,
+      salt_g: null,
+    };
     expect(ProductDetailContract.safeParse(data).success).toBe(true);
   });
 

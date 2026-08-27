@@ -61,6 +61,32 @@ export function getWinnerIndex(products: CompareProduct[]): number {
   return bestIdx;
 }
 
+export function hasRecommendationEvidence(
+  products: CompareProduct[],
+): boolean {
+  if (products.length < 2) return false;
+  return products.every((product) => {
+    const confidence = product.confidence?.toLowerCase() ?? "";
+    return (
+      Number.isFinite(product.unhealthiness_score) &&
+      ["high", "medium", "verified", "estimated"].includes(confidence) &&
+      Number.isFinite(product.data_completeness_pct) &&
+      product.data_completeness_pct > 0
+    );
+  });
+}
+
+export function hasWarningEvidence(product: CompareProduct): boolean {
+  return (
+    product.total_fat_g != null &&
+    product.saturated_fat_g != null &&
+    product.sugars_g != null &&
+    product.salt_g != null &&
+    product.ingredient_count != null &&
+    product.ingredient_count > 0
+  );
+}
+
 /** Determine best/worst indices for a row of values. */
 export function getBestWorst(
   values: (number | null)[],
@@ -96,7 +122,7 @@ export function getProductWarnings(p: CompareProduct): string[] {
 export function getCellHighlightClass(
   idx: number,
   ranking: { bestIdx: number; worstIdx: number } | null,
-  winnerIdx: number,
+  winnerIdx: number | null,
 ): string {
   if (idx === ranking?.bestIdx)
     return "bg-success-bg text-success-text font-semibold";
@@ -108,12 +134,14 @@ export function getCellHighlightClass(
 // ─── Key differences ────────────────────────────────────────────────────────
 
 export interface KeyDifference {
+  /** Product field used for provenance validation. */
+  key: keyof CompareProduct;
   /** Row label (display name) */
   label: string;
   /** i18n key for the row label */
   labelKey: string;
   /** Raw values per product */
-  values: number[];
+  values: (number | null)[];
   /** Unit suffix (e.g. "g", "kcal") */
   unit?: string;
   /** Index of the product with the better value */
@@ -175,9 +203,10 @@ export function getKeyDifferences(
     if (absDiff === 0) continue;
 
     diffs.push({
+      key: row.key,
       label: row.label,
       labelKey: row.labelKey,
-      values: values.map((v) => v ?? 0),
+      values,
       unit: row.unit,
       betterIdx: best.idx,
       absoluteDiff: absDiff,

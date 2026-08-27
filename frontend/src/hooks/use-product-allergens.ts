@@ -16,6 +16,14 @@ import {
 /** Map of product_id → matched allergen warnings */
 export type AllergenWarningMap = Readonly<Record<number, AllergenWarning[]>>;
 
+export interface ProductAllergenWarningState {
+  readonly warnings: AllergenWarningMap;
+  readonly enabled: boolean;
+  readonly isLoading: boolean;
+  readonly error: Error | null;
+  readonly refetch: () => void;
+}
+
 /**
  * Batch-fetch allergen data for a page of products and match against user preferences.
  *
@@ -31,7 +39,7 @@ export type AllergenWarningMap = Readonly<Record<number, AllergenWarning[]>>;
  */
 export function useProductAllergenWarnings(
   productIds: number[],
-): AllergenWarningMap {
+): ProductAllergenWarningState {
   const supabase = createClient();
   const prefs = usePreferences();
 
@@ -43,7 +51,7 @@ export function useProductAllergenWarnings(
     prefs?.treat_may_contain_as_unsafe ?? false;
   const hasAllergenPrefs = avoidAllergens.length > 0;
 
-  const { data: rawAllergenMap } = useQuery({
+  const query = useQuery({
     queryKey: queryKeys.productAllergens(productIds),
     queryFn: async () => {
       const result = await getProductAllergens(supabase, productIds);
@@ -55,11 +63,11 @@ export function useProductAllergenWarnings(
   });
 
   // Memoize the matching computation (runs when raw data or preferences change)
-  return useMemo(() => {
-    if (!rawAllergenMap || !hasAllergenPrefs) return {};
+  const warnings = useMemo(() => {
+    if (!query.data || !hasAllergenPrefs) return {};
 
     const result: Record<number, AllergenWarning[]> = {};
-    for (const [idStr, allergens] of Object.entries(rawAllergenMap)) {
+    for (const [idStr, allergens] of Object.entries(query.data)) {
       const warnings = matchProductAllergens(
         allergens,
         avoidAllergens,
@@ -70,5 +78,15 @@ export function useProductAllergenWarnings(
       }
     }
     return result;
-  }, [rawAllergenMap, avoidAllergens, treatMayContainAsUnsafe, hasAllergenPrefs]);
+  }, [query.data, avoidAllergens, treatMayContainAsUnsafe, hasAllergenPrefs]);
+
+  return {
+    warnings,
+    enabled: productIds.length > 0 && hasAllergenPrefs,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: () => {
+      void query.refetch();
+    },
+  };
 }

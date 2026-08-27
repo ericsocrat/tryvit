@@ -46,6 +46,7 @@ import type {
     ProductListMembershipResponse,
     ProductProfile,
     ProductProfileNotFound,
+    ProductProvenance,
     PushSubscriptionDeleteResponse,
     PushSubscriptionResponse,
     PushSubscriptionsResponse,
@@ -372,6 +373,15 @@ export function getDataConfidence(
   productId: number,
 ): Promise<RpcResult<DataConfidence>> {
   return callRpc<DataConfidence>(supabase, "api_data_confidence", {
+    p_product_id: productId,
+  });
+}
+
+export function getProductProvenance(
+  supabase: SupabaseClient,
+  productId: number,
+): Promise<RpcResult<ProductProvenance>> {
+  return callRpc<ProductProvenance>(supabase, "api_product_provenance", {
     p_product_id: productId,
   });
 }

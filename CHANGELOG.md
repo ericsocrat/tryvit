@@ -95,6 +95,10 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Wire existing field-level product provenance into product, scan, and comparison
+  surfaces; preserve missing nutrition as unavailable evidence; withhold rankings when
+  source/freshness evidence is invalid; and expose retryable personalized-allergen
+  lookup failures instead of silently treating them as empty.
 - Fail product health and alternative-comparison surfaces closed when evidence is
   unavailable, keep missing confidence explicit, and treat application-level list,
   watchlist, and saved-search write failures as real failures with truthful rollback

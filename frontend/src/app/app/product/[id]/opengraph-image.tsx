@@ -134,10 +134,11 @@ export default async function OGImage({
     60,
   );
   const brand = truncate(profile.product?.brand ?? "", 40);
-  const score: number = profile.scores?.unhealthiness_score ?? 0;
-  const band: string = profile.scores?.score_band ?? "moderate";
-  const scoreColor = getScoreColor(score);
-  const bandLabel = getScoreBandLabel(band);
+  const rawScore = profile.scores?.unhealthiness_score;
+  const score: number | null = typeof rawScore === "number" ? rawScore : null;
+  const band: string | null = profile.scores?.score_band ?? null;
+  const scoreColor = score == null ? "#6b7280" : getScoreColor(score);
+  const bandLabel = band ? getScoreBandLabel(band) : "Evidence unavailable";
 
   const heroUrl: string | undefined = profile.images?.primary?.url;
   const categoryIcon: string = profile.product?.category_icon ?? "🍽️";
@@ -231,7 +232,7 @@ export default async function OGImage({
                 fontWeight: 700,
               }}
             >
-              {100 - score}
+              {score == null ? "?" : 100 - score}
             </div>
 
             <div style={{ display: "flex", flexDirection: "column" }}>

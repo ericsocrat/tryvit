@@ -5,6 +5,7 @@
 import { CategoryScoreBar } from "@/components/category/CategoryScoreBar";
 import { AllergenChips } from "@/components/common/AllergenChips";
 import { Button } from "@/components/common/Button";
+import { ConfidenceBadge } from "@/components/common/ConfidenceBadge";
 import { EmptyState } from "@/components/common/EmptyState";
 import { NutriScoreBadge } from "@/components/common/NutriScoreBadge";
 import { ProductThumbnail } from "@/components/common/ProductThumbnail";
@@ -17,6 +18,10 @@ import { AvoidBadge } from "@/components/product/AvoidBadge";
 import { HealthWarningBadge } from "@/components/product/HealthWarningsCard";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useProductAllergenWarnings } from "@/hooks/use-product-allergens";
+import {
+  canRecommendFromProvenance,
+  useProductProvenance,
+} from "@/hooks/use-product-provenance";
 import type { AllergenWarning } from "@/lib/allergen-matching";
 import { getCategoryListing, getCategoryOverview } from "@/lib/api";
 import { SCORE_BANDS } from "@/lib/constants";
@@ -110,8 +115,14 @@ export default function CategoryListingPage() {
   });
 
   // Batch-fetch allergen data for current page (#128)
-  const allergenMap = useProductAllergenWarnings(
+  const allergenState = useProductAllergenWarnings(
     data?.products.map((p) => p.product_id) ?? [],
+  );
+  const allergenMap = allergenState.warnings;
+  const topProductId = data?.products[0]?.product_id ?? 0;
+  const topProductProvenance = useProductProvenance(
+    topProductId,
+    offset === 0 && sortBy === "score" && sortDir === "asc",
   );
 
   // Reuse cached category overview for summary stats
@@ -256,6 +267,32 @@ export default function CategoryListingPage() {
         <EmptyState variant="no-data" titleKey="categories.noProducts" />
       )}
 
+      {allergenState.enabled && allergenState.isLoading && (
+        <output
+          className="block rounded-lg bg-surface-subtle px-3 py-2 text-xs text-foreground-secondary"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          {t("trust.evidence.allergenCheckLoading")}
+        </output>
+      )}
+
+      {allergenState.enabled && allergenState.error && (
+        <div
+          className="rounded-lg border border-warning-border bg-warning-bg px-3 py-2 text-xs text-warning-text"
+          role="alert"
+        >
+          {t("trust.evidence.allergenCheckUnavailable")} {" "}
+          <button
+            type="button"
+            className="font-semibold underline underline-offset-2"
+            onClick={allergenState.refetch}
+          >
+            {t("common.retry")}
+          </button>
+        </div>
+      )}
+
       {!isLoading && !error && data && data.products.length > 0 && (
         <ul className="space-y-2">
           {data.products.map((p) => (
@@ -269,7 +306,11 @@ export default function CategoryListingPage() {
                 offset === 0 &&
                 sortBy === "score" &&
                 sortDir === "asc" &&
-                p.product_id === data.products[0]?.product_id
+                p.product_id === data.products[0]?.product_id &&
+                hasCategoryRecommendationEvidence(p) &&
+                !topProductProvenance.isLoading &&
+                !topProductProvenance.error &&
+                canRecommendFromProvenance(topProductProvenance.data)
               }
             />
           ))}
@@ -349,6 +390,11 @@ function ProductRow({
             <p className="truncate text-sm text-foreground-secondary">
               {product.brand}
             </p>
+            <ConfidenceBadge
+              level={product.confidence}
+              percentage={product.data_completeness_pct}
+              showLabel={false}
+            />
             {isBest && (
               <span className="mt-0.5 inline-block rounded-full bg-score-green/15 px-2 py-0.5 text-xs font-medium text-score-green">
                 {t("categories.bestInCategory")}
@@ -394,8 +440,16 @@ function ProductRow({
             )}
           </p>
           <p className="text-sm text-foreground-secondary">
-            {product.brand} &middot; {product.calories} kcal
+            {product.brand} &middot;{" "}
+            {product.calories == null
+              ? t("trust.evidence.valueUnavailable")
+              : `${product.calories} kcal`}
           </p>
+          <ConfidenceBadge
+            level={product.confidence}
+            percentage={product.data_completeness_pct}
+            showLabel={false}
+          />
           <div className="mt-1 flex flex-wrap gap-1">
             {product.high_sugar_flag && (
               <span className="rounded bg-error-bg px-1.5 py-0.5 text-xs text-error-text">
@@ -431,6 +485,15 @@ function ProductRow({
 
       <NutriScoreBadge grade={product.nutri_score} size="sm" showTooltip />
     </li>
+  );
+}
+
+function hasCategoryRecommendationEvidence(product: CategoryProduct): boolean {
+  const confidence = product.confidence?.toLowerCase() ?? "";
+  return (
+    ["high", "medium", "verified", "estimated"].includes(confidence) &&
+    Number.isFinite(product.data_completeness_pct) &&
+    product.data_completeness_pct > 0
   );
 }
 

@@ -8,10 +8,10 @@ import { useTranslation } from "@/lib/i18n";
 import { getTrafficLight, type TrafficLight } from "./TrafficLightChip";
 
 interface NutritionValues {
-  readonly total_fat_g: number;
-  readonly saturated_fat_g: number;
-  readonly sugars_g: number;
-  readonly salt_g: number;
+  readonly total_fat_g: number | null;
+  readonly saturated_fat_g: number | null;
+  readonly sugars_g: number | null;
+  readonly salt_g: number | null;
 }
 
 const TL_DOT_STYLES: Record<TrafficLight, string> = {
@@ -27,7 +27,7 @@ interface TrafficLightStripProps {
 export function TrafficLightStrip({ nutrition }: TrafficLightStripProps) {
   const { t } = useTranslation();
 
-  const nutrientValues: Record<string, number> = {
+  const nutrientValues: Record<string, number | null> = {
     total_fat: nutrition.total_fat_g,
     saturated_fat: nutrition.saturated_fat_g,
     sugars: nutrition.sugars_g,
