@@ -335,9 +335,26 @@ ORDER BY matviewname;
 
 ---
 
+## 7.1 Private-Beta Hardening (2026-08-27)
+
+The initial audit above predates later analytics, governance, scoring, provenance,
+backfill, and submission-review migrations. The private-beta admission gate now
+enforces an explicit service-role-only matrix for:
+
+- 84 privileged administration and operations routine signatures; and
+- 21 operational views/materialized views.
+
+`anon` and ordinary `authenticated` roles have no `EXECUTE`/`SELECT` access to
+those surfaces. The browser admin UI is intentionally unavailable until a
+separately authorized server-side admin gateway exists. The final-schema
+contract is enforced by `admin_access_control.test.sql` and Security Posture
+checks 42–43.
+
+---
+
 ## 8. Integration Points
 
-- **QA__security_posture.sql** (22 checks) — automated verification of RLS and function restrictions
+- **QA__security_posture.sql** (43 checks) — automated verification of RLS and function restrictions
 - **QA__auth_onboarding.sql** (8 checks) — auth flow and user table access
 - **docs/SECURITY.md** — security policy and responsible disclosure
 - **docs/DOMAIN_BOUNDARIES.md** — domain ownership of tables and functions

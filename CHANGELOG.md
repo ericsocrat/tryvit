@@ -80,6 +80,12 @@ Adheres to [Semantic Versioning](https://semver.org/).
   QA, with JSON/Markdown artifacts and one source of truth for confidence
   thresholds.
 
+### Security
+
+- Restrict 84 privileged administration/operations routines and 21 operational
+  relations to `service_role`, with final-schema pgTAP and blocking QA checks
+  covering anonymous and ordinary authenticated callers.
+
 ### Fixed
 
 - Route protected HTML/RSC, same-origin APIs, and configured-Supabase GETs
