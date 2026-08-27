@@ -85,6 +85,10 @@ Adheres to [Semantic Versioning](https://semver.org/).
 - Restrict 84 privileged administration/operations routines and 21 operational
   relations to `service_role`, with final-schema pgTAP and blocking QA checks
   covering anonymous and ordinary authenticated callers.
+- Default `/auth/signup` to a localized invitation-only private-beta state,
+  fail auth callbacks closed to the existing recovery path, and retain one
+  dormant self-service signup contract that delegates a fresh Turnstile token
+  directly to Supabase Auth exactly once.
 
 ### Fixed
 

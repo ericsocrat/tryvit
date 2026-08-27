@@ -30,7 +30,39 @@ Set these in **Vercel > Project Settings > Environment Variables**:
 | ------------------------------- | ---------------------------------- |
 | `NEXT_PUBLIC_SUPABASE_URL`      | `https://your-project.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6...`  |
+| `TRYVIT_PRIVATE_BETA_INVITE_ONLY` | `true`                           |
 | `NEXT_PUBLIC_APP_URL`           | `https://tryvit.app`                |
+
+### Private-beta admission
+
+Private beta uses two independent, fail-closed controls:
+
+1. Keep `TRYVIT_PRIVATE_BETA_INVITE_ONLY=true` in Vercel Production so
+   `/auth/signup` renders only the invitation notice, Sign In, and recovery.
+   Omission also fails closed to invitation-only.
+2. In Supabase **Authentication → Sign In / Providers → User Signups**, turn
+   **Allow new users to sign up** off. Keep the email provider enabled so
+   existing and administratively provisioned users can sign in and recover
+   passwords.
+
+Do not use `supabase config push` to toggle the hosted setting: it pushes the
+complete local Auth configuration rather than only the admission boundary.
+Use the hosted dashboard or the Management API `PATCH
+/v1/projects/{ref}/config/auth` with `{ "disable_signup": true }` through the
+project's normal secret-managed operator path.
+
+The source-retained self-service form sends its Turnstile token directly to
+Supabase Auth exactly once. It remains dormant during private beta. Before
+reopening public signup, enable Supabase native Turnstile protection and verify
+the production widget hostname allowlist plus first-use/replay behavior. Native
+Supabase Auth does not expose an application action assertion; `action=signup`
+remains client-side widget metadata rather than a TryVit server authorization
+check. Keep OAuth providers disabled until a separately reviewed admission
+boundary exists because OAuth registration does not carry this form token.
+Only then set the Vercel flag to `false` and re-enable hosted signup.
+
+Rollback to the safer state is the reverse: disable hosted signup first, then
+restore or omit the Vercel flag so the invitation-only page is rendered.
 
 These are public keys (embedded in the client bundle). The anon key only grants access allowed by RLS policies.
 

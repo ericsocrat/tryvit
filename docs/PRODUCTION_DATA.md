@@ -390,8 +390,8 @@ RUN_LOCAL.ps1
 **Auth:**
 - Enabled, site URL `http://127.0.0.1:3000`
 - JWT expiry: 3600s (1 hour), refresh token rotation enabled
-- Signup enabled, anonymous sign-ins disabled
-- Email: signup enabled, double-confirm changes, no confirmation required
+- Global signup disabled for private beta; anonymous sign-ins disabled
+- Email provider enabled for existing/admin-provisioned users, double-confirm changes, no confirmation required
 - SMTP: commented out (local uses inbucket for email testing)
 - MFA: disabled (TOTP + phone + WebAuthn all off)
 - External OAuth: all disabled (Apple, etc.)

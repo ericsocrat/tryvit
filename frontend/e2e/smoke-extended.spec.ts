@@ -177,20 +177,24 @@ test.describe("Login page details", () => {
 });
 
 test.describe("Signup page details", () => {
-  test("password field has correct placeholder", async ({ page }) => {
+  test("explains that private beta is invitation-only", async ({ page }) => {
     await page.goto("/auth/signup");
-    const passwordInput = page.getByLabel("Password", { exact: true });
-    await expect(passwordInput).toHaveAttribute("placeholder", "At least 6 characters");
+    await expect(
+      page.getByRole("heading", { name: /private beta access is invitation-only/i }),
+    ).toBeVisible();
   });
 
-  test("Sign Up button is present", async ({ page }) => {
+  test("self-service signup controls are absent", async ({ page }) => {
     await page.goto("/auth/signup");
-    await expect(page.getByRole("button", { name: /Sign Up/i })).toBeVisible();
+    await expect(page.getByLabel("Email")).toHaveCount(0);
+    await expect(page.getByLabel("Password", { exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Sign Up/i })).toHaveCount(0);
   });
 
-  test("has Sign in link for existing users", async ({ page }) => {
+  test("has Sign in and recovery links for invited users", async ({ page }) => {
     await page.goto("/auth/signup");
     await expect(page.getByRole("link", { name: /Sign in/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /Forgot password/i })).toBeVisible();
   });
 });
 
