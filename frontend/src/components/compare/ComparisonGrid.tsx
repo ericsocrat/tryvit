@@ -203,8 +203,13 @@ function hasRowRankingEvidence(
 ): boolean {
   if (!provenanceByProductId) return true;
   const requirement = ROW_PROVENANCE_REQUIREMENTS[rowKey];
-  if (!requirement) return false;
-  return products.every((product) =>
+  const row = COMPARE_ROWS.find((candidate) => candidate.key === rowKey);
+  if (!requirement || !row) return false;
+  const participatingProducts = products.filter(
+    (product) => typeof row.getValue(product) === "number",
+  );
+  if (participatingProducts.length < 2) return false;
+  return participatingProducts.every((product) =>
     hasUsableProvenanceField(
       provenanceByProductId[product.product_id],
       requirement.field,

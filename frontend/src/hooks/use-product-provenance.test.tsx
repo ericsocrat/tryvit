@@ -68,6 +68,19 @@ describe("product provenance disposition", () => {
     ).toBe("not_collected");
     expect(
       getProvenanceDisposition(
+        provenance({
+          field_sources: {
+            brand: {
+              source: "Open Food Facts",
+              last_updated: new Date().toISOString(),
+              confidence: 0.9,
+            },
+          },
+        }),
+      ),
+    ).toBe("provisional");
+    expect(
+      getProvenanceDisposition(
         provenance({ freshness_status: "expired" }),
       ),
     ).toBe("expired");

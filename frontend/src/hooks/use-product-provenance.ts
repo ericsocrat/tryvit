@@ -47,12 +47,14 @@ export function getProvenanceDisposition(
     return "not_collected";
   }
   if (provenance.freshness_status === "expired") return "expired";
-  const hasExpiredScoreEvidence =
-    provenance.field_sources?.unhealthiness_score != null &&
-    !hasUsableProvenanceField(provenance, "unhealthiness_score", 30);
+  const hasUsableScoreEvidence = hasUsableProvenanceField(
+    provenance,
+    "unhealthiness_score",
+    30,
+  );
   if (
     hasInvalidFieldSourceDate(provenance) ||
-    hasExpiredScoreEvidence ||
+    !hasUsableScoreEvidence ||
     provenance.freshness_status !== "fresh" ||
     provenance.overall_trust_score < 0.8 ||
     provenance.data_completeness_pct == null ||

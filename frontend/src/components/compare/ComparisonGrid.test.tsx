@@ -400,6 +400,55 @@ describe("ComparisonGrid", () => {
     ).toBe(true);
   });
 
+  it("ranks evidenced values without requiring provenance for a missing value", () => {
+    const productC = makeProduct({
+      product_id: 3,
+      product_name: "Product C",
+      calories: null,
+    });
+    const comparisonProducts = [productA, productB, productC];
+    const provenanceByProductId = Object.fromEntries(
+      comparisonProducts.map((product) => {
+        const provenance = scoreOnlyProvenance(product.product_id);
+        return [
+          product.product_id,
+          {
+            ...provenance,
+            field_sources: {
+              ...provenance.field_sources,
+              ...(product.calories == null
+                ? {}
+                : {
+                    calories_100g: {
+                      source: "Label Scan",
+                      last_updated: new Date().toISOString(),
+                      confidence: 0.9,
+                    },
+                  }),
+            },
+          },
+        ];
+      }),
+    );
+    render(
+      <ComparisonGrid
+        products={comparisonProducts}
+        recommendationAllowed
+        provenanceByProductId={provenanceByProductId}
+      />,
+    );
+
+    const caloriesRow = screen.getAllByText("Calories")[0].closest("tr");
+    const caloriesCells = caloriesRow?.querySelectorAll("td") ?? [];
+    expect(
+      [...caloriesCells].some(
+        (cell) =>
+          cell.className.includes("text-success-text") ||
+          cell.className.includes("text-error-text"),
+      ),
+    ).toBe(true);
+  });
+
   it("shows score delta in winner announcement", () => {
     render(<ComparisonGrid products={products} />);
     const announcement = screen.getByTestId("winner-announcement");
