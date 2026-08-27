@@ -29,6 +29,8 @@ export interface ScoreBreakdownPanelProps {
   readonly score: number;
   /** Current score band label (e.g., "Elevated Risk"). */
   readonly scoreBand: string;
+  /** Show the score as reference-only and suppress verdict/ranking guidance. */
+  readonly provisional?: boolean;
   /** Start expanded. @default false */
   readonly defaultOpen?: boolean;
 }
@@ -49,6 +51,7 @@ export function ScoreBreakdownPanel({
   productId,
   score,
   scoreBand,
+  provisional = false,
   defaultOpen = false,
 }: Readonly<ScoreBreakdownPanelProps>) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -89,7 +92,7 @@ export function ScoreBreakdownPanel({
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-foreground-secondary">
-            {score}/100 — {scoreBand}
+            {score}/100 — {provisional ? t("trust.evidence.scoreProvisionalLabel") : scoreBand}
           </span>
           <svg
             className={`h-4 w-4 text-foreground-muted transition-transform duration-normal ${
@@ -116,7 +119,9 @@ export function ScoreBreakdownPanel({
               {t("tooltip.scoreBreakdown.error")}
             </p>
           )}
-          {explanation && <BreakdownContent explanation={explanation} />}
+          {explanation && (
+            <BreakdownContent explanation={explanation} provisional={provisional} />
+          )}
         </div>
       )}
     </div>
@@ -127,7 +132,8 @@ export function ScoreBreakdownPanel({
 
 function BreakdownContent({
   explanation,
-}: Readonly<{ explanation: ScoreExplanation }>) {
+  provisional,
+}: Readonly<{ explanation: ScoreExplanation; provisional: boolean }>) {
   const { t } = useTranslation();
   const factors = explanation.top_factors ?? [];
   const bonus = explanation.nutrient_bonus;
@@ -136,7 +142,9 @@ function BreakdownContent({
     <div className="space-y-3">
       {/* Summary headline */}
       <p className="text-xs text-foreground-secondary">
-        {explanation.summary?.headline}
+        {provisional
+          ? t("trust.evidence.scoreNoGuidance")
+          : explanation.summary?.headline}
       </p>
 
       {/* Penalty factor bars */}
@@ -161,7 +169,9 @@ function BreakdownContent({
                 aria-hidden="true"
               >
                 <div
-                  className={`h-1.5 rounded-full transition-all duration-slow ${getFactorColor(f.raw)}`}
+                  className={`h-1.5 rounded-full transition-all duration-slow ${
+                    provisional ? "bg-foreground-muted" : getFactorColor(f.raw)
+                  }`}
                   style={{ width: `${Math.min(f.raw, 100)}%` }}
                 />
               </div>
@@ -205,7 +215,7 @@ function BreakdownContent({
       )}
 
       {/* Category context */}
-      {explanation.category_context && (
+      {!provisional && explanation.category_context && (
         <div className="rounded-md bg-surface-muted px-3 py-2 text-xs text-foreground-secondary">
           <p>
             {t("tooltip.scoreBreakdown.rank", {

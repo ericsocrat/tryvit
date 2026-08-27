@@ -155,7 +155,9 @@ export default function ProductFullAnalysis({
           context={{ section: "tab-content", productId, tab: activeTab }}
         >
           {activeTab === "overview" && <OverviewTab profile={profile} />}
-          {activeTab === "nutrition" && <NutritionTab profile={profile} />}
+          {activeTab === "nutrition" && (
+            <NutritionTab profile={profile} provisional={scoreProvisional} />
+          )}
           {activeTab === "alternatives" && (
             recommendationsAllowed ? (
               <AlternativesSection
@@ -232,7 +234,10 @@ function OverviewTab({ profile }: Readonly<{ profile: ProductProfile }>) {
 
 type NutritionView = "per100g" | "perServing";
 
-function NutritionTab({ profile }: Readonly<{ profile: ProductProfile }>) {
+function NutritionTab({
+  profile,
+  provisional,
+}: Readonly<{ profile: ProductProfile; provisional: boolean }>) {
   const { t } = useTranslation();
   const hasServing = profile.nutrition.per_serving !== null;
   const [view, setView] = useState<NutritionView>("per100g");
@@ -269,7 +274,7 @@ function NutritionTab({ profile }: Readonly<{ profile: ProductProfile }>) {
       value: nutritionValue(n.total_fat_g, "g"),
       dv: dvData?.total_fat ?? null,
       tl:
-        n.total_fat_g == null
+        n.total_fat_g == null || provisional
           ? null
           : getTrafficLight("total_fat", n.total_fat_g),
     },
@@ -278,7 +283,7 @@ function NutritionTab({ profile }: Readonly<{ profile: ProductProfile }>) {
       value: nutritionValue(n.saturated_fat_g, "g"),
       dv: dvData?.saturated_fat ?? null,
       tl:
-        n.saturated_fat_g == null
+        n.saturated_fat_g == null || provisional
           ? null
           : getTrafficLight("saturated_fat", n.saturated_fat_g),
     },
@@ -298,13 +303,19 @@ function NutritionTab({ profile }: Readonly<{ profile: ProductProfile }>) {
       label: t("product.sugars"),
       value: nutritionValue(n.sugars_g, "g"),
       dv: dvData?.sugars ?? null,
-      tl: n.sugars_g == null ? null : getTrafficLight("sugars", n.sugars_g),
+      tl:
+        n.sugars_g == null || provisional
+          ? null
+          : getTrafficLight("sugars", n.sugars_g),
     },
     {
       label: t("product.fibre"),
       value: n.fibre_g === null ? "—" : `${n.fibre_g} g`,
       dv: dvData?.fiber ?? null,
-      tl: n.fibre_g == null ? null : getTrafficLight("fibre", n.fibre_g),
+      tl:
+        n.fibre_g == null || provisional
+          ? null
+          : getTrafficLight("fibre", n.fibre_g),
       beneficial: true,
     },
     {
@@ -312,14 +323,19 @@ function NutritionTab({ profile }: Readonly<{ profile: ProductProfile }>) {
       value: nutritionValue(n.protein_g, "g"),
       dv: dvData?.protein ?? null,
       tl:
-        n.protein_g == null ? null : getTrafficLight("protein", n.protein_g),
+        n.protein_g == null || provisional
+          ? null
+          : getTrafficLight("protein", n.protein_g),
       beneficial: true,
     },
     {
       label: t("product.salt"),
       value: nutritionValue(n.salt_g, "g"),
       dv: dvData?.salt ?? null,
-      tl: n.salt_g == null ? null : getTrafficLight("salt", n.salt_g),
+      tl:
+        n.salt_g == null || provisional
+          ? null
+          : getTrafficLight("salt", n.salt_g),
     },
   ];
 
@@ -382,10 +398,16 @@ function NutritionTab({ profile }: Readonly<{ profile: ProductProfile }>) {
         </div>
       </div>
 
-      {/* Traffic light summary strip */}
-      <div className="mb-3">
-        <TrafficLightStrip nutrition={n} />
-      </div>
+      {/* Traffic-light guidance requires usable product evidence. */}
+      {provisional ? (
+        <p className="mb-3 rounded-lg border border-warning-border bg-warning-bg px-3 py-2 text-xs text-warning-text">
+          {t("trust.evidence.nutritionGuidanceWithheld")}
+        </p>
+      ) : (
+        <div className="mb-3">
+          <TrafficLightStrip nutrition={n} />
+        </div>
+      )}
 
       <table className="w-full text-sm">
         <thead className="hidden text-xs text-foreground-muted lg:table-header-group">
@@ -406,6 +428,7 @@ function NutritionTab({ profile }: Readonly<{ profile: ProductProfile }>) {
               dv={row.dv}
               trafficLight={row.tl}
               beneficial={row.beneficial}
+              provisional={provisional}
             />
           ))}
         </tbody>
@@ -621,6 +644,7 @@ function ScoringTab({
       <ScoreBreakdownPanel
         productId={profile.product.product_id}
         score={toTryVitScore(scores.unhealthiness_score)}
+        provisional={scoreProvisional}
         scoreBand={
           SCORE_BANDS[scores.score_band]
             ? t(SCORE_BANDS[scores.score_band].labelKey)

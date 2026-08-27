@@ -126,6 +126,36 @@ describe("ScoreBreakdownPanel", () => {
     expect(screen.getByText("65/100 — Elevated Risk")).toBeInTheDocument();
   });
 
+  it("withholds verdict, affirmative headline, and category ranking when provisional", async () => {
+    mockGetScoreExplanation.mockResolvedValue({
+      ok: true,
+      data: MOCK_EXPLANATION,
+    });
+
+    render(
+      <ScoreBreakdownPanel
+        productId={42}
+        score={90}
+        scoreBand="Excellent"
+        provisional
+        defaultOpen
+      />,
+      { wrapper: createWrapper() },
+    );
+
+    expect(
+      screen.getByText("90/100 — trust.evidence.scoreProvisionalLabel"),
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("trust.evidence.scoreNoGuidance")).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/Excellent/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("This product has elevated sugar levels."),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/rank=15/)).not.toBeInTheDocument();
+  });
+
   it("expands on click and shows loading state", async () => {
     mockGetScoreExplanation.mockReturnValue(new Promise(() => {})); // never resolves
     render(

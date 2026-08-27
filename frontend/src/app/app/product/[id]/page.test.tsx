@@ -2016,6 +2016,7 @@ describe("ProductDetailPage", () => {
       },
     });
 
+    const user = userEvent.setup();
     render(<ProductDetailPage />, { wrapper: createWrapper() });
 
     expect(
@@ -2039,6 +2040,17 @@ describe("ProductDetailPage", () => {
     );
     expect(screen.queryByTestId("confidence-badge")).not.toBeInTheDocument();
     expect(screen.getByTestId("score-confidence-unavailable")).toBeInTheDocument();
+
+    await user.click(screen.getByTestId("toggle-analysis"));
+    await user.click(await screen.findByRole("tab", { name: "Nutrition" }));
+    expect(
+      screen.getByText(
+        "Nutrition values remain visible, but their provenance is insufficient for traffic-light guidance.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("group", { name: "Nutrient traffic light summary" }),
+    ).not.toBeInTheDocument();
   });
 
   it("withholds category rank and percentile when score provenance is unusable", async () => {
