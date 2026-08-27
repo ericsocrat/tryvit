@@ -50,6 +50,11 @@ export default function ListDetailPage() {
 
   const list = listsData?.lists?.find((l) => l.id === listId);
   const items: ListItem[] = itemsData?.items ?? [];
+  const mutationError =
+    removeMutation.error ??
+    updateMutation.error ??
+    toggleShareMutation.error ??
+    revokeShareMutation.error;
 
   const exportableProducts: ExportableProduct[] = useMemo(
     () =>
@@ -130,6 +135,12 @@ export default function ListDetailPage() {
           { label: list?.name ?? "…" },
         ]}
       />
+
+      {mutationError && (
+        <p role="alert" className="rounded-lg bg-error-bg px-3 py-2 text-sm text-error-text">
+          {t("lists.mutationFailed")}
+        </p>
+      )}
 
       {/* Header */}
       {list && (

@@ -966,7 +966,9 @@ describe("ProductDetailPage", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("No healthier alternatives found in this category."),
+        screen.getByText(
+          "No eligible healthier alternatives were found with the available category evidence.",
+        ),
       ).toBeInTheDocument();
     });
   });
@@ -1903,6 +1905,23 @@ describe("ProductDetailPage", () => {
       "aria-selected",
       "true",
     );
+  });
+
+  it("keeps missing confidence evidence visible", async () => {
+    mockGetProductProfile.mockResolvedValue({
+      ok: true,
+      data: makeProfile({ quality: null }),
+    });
+    render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+    const confidence = await screen.findByTestId(
+      "score-confidence-unavailable",
+    );
+    expect(confidence).toHaveAttribute("role", "status");
+    expect(confidence).toHaveTextContent(
+      "Confidence evidence unavailable — treat this score as provisional.",
+    );
+    expect(screen.queryByTestId("confidence-badge")).not.toBeInTheDocument();
   });
 
   it("swipe left on last tab stays on last tab", async () => {

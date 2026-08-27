@@ -464,6 +464,7 @@
     "revokeWarning": "Stare linki przestaną działać.",
     "loadFailed": "Nie udało się załadować list.",
     "loadListFailed": "Nie udało się załadować listy.",
+    "mutationFailed": "Nie udało się zaktualizować listy. Poprzedni stan został zachowany. Spróbuj ponownie.",
     "avgScore": "Śr. {score}"
   },
   "product": {
@@ -518,6 +519,7 @@
     "dataQuality": "Jakość danych",
     "productPhotos": "Zdjęcia produktu",
     "confidence": "Pewność: {value}",
+    "confidenceUnavailable": "Dane o pewności są niedostępne — traktuj ten wynik jako wstępny.",
     "scoreConfidenceHint": "Użyj TryVit Score do szybkiego rankingu zdrowotności, a przed decyzją sprawdź Pewność i NOVA.",
     "completeness": "Kompletność: {pct}%",
     "source": "Źródło: {type}",
@@ -555,8 +557,10 @@
     "share": "Udostępnij",
     "shareProduct": "Udostępnij ten produkt",
     "shareCopied": "Link skopiowany!",
-    "noAlternatives": "Nie znaleziono zdrowszych zamienników w tej kategorii.",
+    "noAlternatives": "Na podstawie dostępnych danych kategorii nie znaleziono odpowiednich zdrowszych zamienników.",
     "bestOption": "To już jeden z najlepszych wyborów w swojej kategorii!",
+    "alternativesUnavailable": "Porównanie zamienników jest niedostępne",
+    "alternativesUnavailableDescription": "TryVit nie może uszeregować ani polecić zamienników, dopóki dane porównawcze są niedostępne.",
     "healthierOptions": "{count} {count|zdrowszy zamiennik znaleziony|zdrowsze zamienniki znalezione|zdrowszych zamienników znalezionych}",
     "pointsBetter": "−{points} pkt lepiej",
     "scoreBreakdownUnavailable": "Rozkład punktacji niedostępny.",
@@ -804,7 +808,10 @@
     "noWarningsFor": "Brak ostrzeżeń dla profilu „{name}”",
     "warningCount": "{count} {count|ostrzeżenie zdrowotne|ostrzeżenia zdrowotne|ostrzeżeń zdrowotnych}",
     "profile": "Profil: {name}",
-    "noWarnings": "Brak ostrzeżeń zdrowotnych"
+    "noWarnings": "Brak ostrzeżeń zdrowotnych",
+    "loading": "Sprawdzanie spersonalizowanych ostrzeżeń zdrowotnych…",
+    "unavailableTitle": "Dane ostrzeżeń zdrowotnych są niedostępne",
+    "unavailableDescription": "TryVit nie mógł ocenić produktu względem Twojego profilu zdrowotnego. Nie oznacza to, że produkt mieści się w Twoich limitach."
   },
   "productActions": {
     "removeFromFavorites": "Usuń z ulubionych",
@@ -815,7 +822,8 @@
     "remove": "Usuń",
     "onAvoidList": "Na liście unikanych",
     "avoid": "Unikaj",
-    "moreActions": "Więcej akcji"
+    "moreActions": "Więcej akcji",
+    "updateFailed": "Nie udało się zaktualizować listy. Poprzedni stan został zachowany. Spróbuj ponownie."
   },
   "savedSearches": {
     "title": "Zapisane wyszukiwania",
@@ -830,6 +838,7 @@
     "apply": "Zastosuj",
     "deleteConfirm": "Usunąć zapisane wyszukiwanie?",
     "cannotUndo": "Tej operacji nie można cofnąć.",
+    "deleteFailed": "Nie udało się usunąć zapisanego wyszukiwania. Zostało zachowane; spróbuj ponownie.",
     "categories": "{count} {count|kategoria|kategorie|kategorii}",
     "nutriFilter": "Nutri: {values}",
     "excludeAllergenEvidenceFilter": "Wyklucz produkty z potwierdzoną obecnością: {values}",
@@ -1698,6 +1707,9 @@
     "watchButton": "Obserwuj",
     "unwatchButton": "Nie obserwuj",
     "loading": "Ładowanie…",
+    "statusUnavailable": "Status obserwowania jest niedostępny",
+    "statusUnavailableDescription": "TryVit nie mógł potwierdzić, czy ten produkt jest obserwowany.",
+    "updateFailed": "Nie udało się zaktualizować obserwowanych. Poprzedni stan został przywrócony. Spróbuj ponownie.",
     "scoreHistory": "Historia wyników",
     "historyError": "Nie udało się załadować historii wyników.",
     "noHistory": "Brak danych historycznych",

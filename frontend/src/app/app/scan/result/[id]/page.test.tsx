@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ScanResultPage from "./page";
@@ -505,7 +506,7 @@ describe("ScanResultPage", () => {
       expect(link).toHaveAttribute("href", "/app/product/99");
     });
 
-    it("shows best-in-category message when no alternatives exist", async () => {
+    it("reports no eligible alternatives without declaring the product best", async () => {
       mockGetProductDetail.mockResolvedValue({
         ok: true,
         data: makeProduct(),
@@ -517,10 +518,46 @@ describe("ScanResultPage", () => {
       await waitFor(() => {
         expect(
           screen.getByText(
-            "This is already one of the best options in its category!",
+            "No eligible healthier alternatives were found with the available category evidence.",
           ),
         ).toBeInTheDocument();
       });
+      expect(
+        screen.queryByText(
+          "This is already one of the best options in its category!",
+        ),
+      ).not.toBeInTheDocument();
+    });
+
+    it("distinguishes unavailable comparison evidence and supports retry", async () => {
+      const user = userEvent.setup();
+      mockGetProductDetail.mockResolvedValue({
+        ok: true,
+        data: makeProduct(),
+      });
+      mockGetBetterAlternatives.mockResolvedValue({
+        ok: false,
+        error: { code: "UNAVAILABLE", message: "comparison unavailable" },
+      });
+
+      render(<ScanResultPage />, { wrapper: createWrapper() });
+
+      const alert = await screen.findByTestId("alternatives-unavailable");
+      expect(alert).toHaveAttribute("role", "alert");
+      expect(alert).toHaveTextContent("Alternative comparison unavailable");
+      expect(alert).toHaveTextContent(
+        "TryVit cannot rank or recommend alternatives until comparison evidence is available.",
+      );
+      expect(
+        screen.queryByText(
+          "No eligible healthier alternatives were found with the available category evidence.",
+        ),
+      ).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Retry" }));
+      await waitFor(() =>
+        expect(mockGetBetterAlternatives).toHaveBeenCalledTimes(2),
+      );
     });
 
     it("does not show count badge when no alternatives", async () => {

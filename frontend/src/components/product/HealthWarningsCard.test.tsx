@@ -5,6 +5,7 @@ import type {
 } from "@/lib/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HealthWarningBadge, HealthWarningsCard } from "./HealthWarningsCard";
 
@@ -28,6 +29,10 @@ vi.mock("@/lib/api", () => ({
 
 function ok<T>(data: T): RpcResult<T> {
   return { ok: true, data };
+}
+
+function err<T>(message: string): RpcResult<T> {
+  return { ok: false, error: { code: "UNAVAILABLE", message } };
 }
 
 function createWrapper() {
@@ -124,6 +129,59 @@ describe("HealthWarningsCard", () => {
     });
     expect(screen.getByText(/health profile/)).toBeInTheDocument();
     expect(screen.getByRole("link")).toHaveAttribute("href", "/app/settings");
+  });
+
+  it("announces loading without implying a safe result", () => {
+    mockGetActiveHealthProfile.mockReturnValue(new Promise(() => {}));
+
+    render(<HealthWarningsCard productId={42} />, {
+      wrapper: createWrapper(),
+    });
+
+    const status = screen.getByRole("status");
+    expect(status).toHaveAttribute("aria-busy", "true");
+    expect(status).toHaveAccessibleName(
+      "Checking personalized health warnings…",
+    );
+    expect(screen.queryByText("Within your limits")).not.toBeInTheDocument();
+  });
+
+  it("fails closed when the active profile is unavailable and supports retry", async () => {
+    const user = userEvent.setup();
+    mockGetActiveHealthProfile.mockResolvedValue(
+      err<HealthProfileActiveResponse>("profile unavailable"),
+    );
+
+    render(<HealthWarningsCard productId={42} />, {
+      wrapper: createWrapper(),
+    });
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Health warning evidence unavailable");
+    expect(alert).toHaveTextContent(
+      "This does not mean the product is within your limits.",
+    );
+    expect(screen.queryByText("Within your limits")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Retry" }));
+    await waitFor(() => expect(mockGetActiveHealthProfile).toHaveBeenCalledTimes(2));
+  });
+
+  it("fails closed when warning evidence is unavailable", async () => {
+    mockGetActiveHealthProfile.mockResolvedValue(ok(activeProfile));
+    mockGetProductHealthWarnings.mockResolvedValue(
+      err<HealthWarningsResponse>("warnings unavailable"),
+    );
+
+    render(<HealthWarningsCard productId={42} />, {
+      wrapper: createWrapper(),
+    });
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Health warning evidence unavailable",
+    );
+    expect(screen.queryByText("Within your limits")).not.toBeInTheDocument();
   });
 
   it("shows 'within your limits' when no warnings", async () => {
@@ -224,6 +282,23 @@ describe("HealthWarningBadge", () => {
       expect(container.querySelector("svg")).toBeTruthy();
     });
     expect(screen.getByTitle("No health warnings")).toBeInTheDocument();
+  });
+
+  it("renders an unavailable badge instead of a green check on failure", async () => {
+    mockGetActiveHealthProfile.mockResolvedValue(ok(activeProfile));
+    mockGetProductHealthWarnings.mockResolvedValue(
+      err<HealthWarningsResponse>("warnings unavailable"),
+    );
+
+    render(<HealthWarningBadge productId={42} />, {
+      wrapper: createWrapper(),
+    });
+
+    const badge = await screen.findByTestId(
+      "health-warnings-unavailable-badge",
+    );
+    expect(badge).toHaveAccessibleName("Health warning evidence unavailable");
+    expect(screen.queryByTitle("No health warnings")).not.toBeInTheDocument();
   });
 
   it("renders warning count badge when warnings exist", async () => {

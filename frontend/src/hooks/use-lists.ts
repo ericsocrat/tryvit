@@ -1,6 +1,6 @@
 // ─── TanStack Query hooks for Product Lists ─────────────────────────────────
 // Encapsulates all list-related queries and mutations with proper cache
-// invalidation patterns. Uses avoid + favorites stores for optimistic updates.
+// invalidation patterns. Syncs avoid + favorites stores after confirmed writes.
 
 "use client";
 
@@ -24,10 +24,17 @@ import {
   updateList,
 } from "@/lib/api";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
+import type { RpcResult } from "@/lib/types";
 import { useAvoidStore } from "@/stores/avoid-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useEffect } from "react";
+
+async function requireMutationSuccess<T>(request: Promise<RpcResult<T>>): Promise<T> {
+  const result = await request;
+  if (!result.ok) throw new Error(result.error.message);
+  return result.data;
+}
 
 // ─── Queries ────────────────────────────────────────────────────────────────
 
@@ -180,7 +187,10 @@ export function useCreateList() {
       name: string;
       description?: string;
       listType?: string;
-    }) => createList(supabase, params.name, params.description, params.listType),
+    }) =>
+      requireMutationSuccess(
+        createList(supabase, params.name, params.description, params.listType),
+      ),
     onSuccess: (_data, variables) => {
       track("list_created", { name: variables.name, list_type: variables.listType });
       void eventBus.emit({ type: "list.created", payload: {} });
@@ -199,7 +209,10 @@ export function useUpdateList() {
       listId: string;
       name?: string;
       description?: string;
-    }) => updateList(supabase, params.listId, params.name, params.description),
+    }) =>
+      requireMutationSuccess(
+        updateList(supabase, params.listId, params.name, params.description),
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.lists });
     },
@@ -212,14 +225,15 @@ export function useDeleteList() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (listId: string) => deleteList(supabase, listId),
+    mutationFn: (listId: string) =>
+      requireMutationSuccess(deleteList(supabase, listId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.lists });
     },
   });
 }
 
-/** Add a product to a list (with optimistic avoid store update) */
+/** Add a product to a list and sync local stores after confirmed success. */
 export function useAddToList() {
   const supabase = createClient();
   const queryClient = useQueryClient();
@@ -233,7 +247,10 @@ export function useAddToList() {
       productId: number;
       notes?: string;
       listType?: string;
-    }) => addToList(supabase, params.listId, params.productId, params.notes),
+    }) =>
+      requireMutationSuccess(
+        addToList(supabase, params.listId, params.productId, params.notes),
+      ),
     onSuccess: (result, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.listItems(variables.listId),
@@ -248,17 +265,16 @@ export function useAddToList() {
         payload: { productId: variables.productId, listId: variables.listId },
       });
 
-      const listType =
-        variables.listType ?? (result.ok ? result.data.list_type : undefined);
+      const listType = variables.listType ?? result.list_type;
 
-      // Optimistic avoid store update
+      // Sync the avoid store only after the backend confirms success.
       if (listType === "avoid") {
         addAvoided(variables.productId);
         queryClient.invalidateQueries({
           queryKey: queryKeys.avoidProductIds,
         });
       }
-      // Optimistic favorites store update
+      // Sync the favorites store only after the backend confirms success.
       if (listType === "favorites") {
         addFavorite(variables.productId);
         queryClient.invalidateQueries({
@@ -269,7 +285,7 @@ export function useAddToList() {
   });
 }
 
-/** Remove a product from a list (with optimistic avoid store update) */
+/** Remove a product from a list and sync local stores after confirmed success. */
 export function useRemoveFromList() {
   const supabase = createClient();
   const queryClient = useQueryClient();
@@ -281,7 +297,10 @@ export function useRemoveFromList() {
       listId: string;
       productId: number;
       listType?: string;
-    }) => removeFromList(supabase, params.listId, params.productId),
+    }) =>
+      requireMutationSuccess(
+        removeFromList(supabase, params.listId, params.productId),
+      ),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.listItems(variables.listId),
@@ -291,14 +310,14 @@ export function useRemoveFromList() {
         queryKey: queryKeys.productListMembership(variables.productId),
       });
 
-      // Optimistic avoid store update
+      // Sync the avoid store only after the backend confirms success.
       if (variables.listType === "avoid") {
         removeAvoided(variables.productId);
         queryClient.invalidateQueries({
           queryKey: queryKeys.avoidProductIds,
         });
       }
-      // Optimistic favorites store update
+      // Sync the favorites store only after the backend confirms success.
       if (variables.listType === "favorites") {
         removeFavorite(variables.productId);
         queryClient.invalidateQueries({
@@ -316,7 +335,7 @@ export function useReorderList() {
 
   return useMutation({
     mutationFn: (params: { listId: string; productIds: number[] }) =>
-      reorderList(supabase, params.listId, params.productIds),
+      requireMutationSuccess(reorderList(supabase, params.listId, params.productIds)),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
         queryKey: queryKeys.listItems(variables.listId),
@@ -332,7 +351,7 @@ export function useToggleShare() {
 
   return useMutation({
     mutationFn: (params: { listId: string; enabled: boolean }) =>
-      toggleShare(supabase, params.listId, params.enabled),
+      requireMutationSuccess(toggleShare(supabase, params.listId, params.enabled)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.lists });
     },
@@ -345,7 +364,8 @@ export function useRevokeShare() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (listId: string) => revokeShare(supabase, listId),
+    mutationFn: (listId: string) =>
+      requireMutationSuccess(revokeShare(supabase, listId)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.lists });
     },

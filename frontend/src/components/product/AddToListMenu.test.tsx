@@ -8,6 +8,8 @@ import { AddToListMenu } from "./AddToListMenu";
 
 const mockAddMutate = vi.fn();
 const mockRemoveMutate = vi.fn();
+let mockAddError: Error | null = null;
+let mockRemoveError: Error | null = null;
 const mockMembership =
   vi.fn<() => { data: { list_ids: number[] } | undefined }>();
 const mockListsData = vi.fn<
@@ -20,8 +22,16 @@ const mockListsData = vi.fn<
 
 vi.mock("@/hooks/use-lists", () => ({
   useLists: () => mockListsData(),
-  useAddToList: () => ({ mutate: mockAddMutate, isPending: false }),
-  useRemoveFromList: () => ({ mutate: mockRemoveMutate, isPending: false }),
+  useAddToList: () => ({
+    mutate: mockAddMutate,
+    isPending: false,
+    error: mockAddError,
+  }),
+  useRemoveFromList: () => ({
+    mutate: mockRemoveMutate,
+    isPending: false,
+    error: mockRemoveError,
+  }),
   useProductListMembership: () => mockMembership(),
 }));
 
@@ -53,6 +63,9 @@ function createWrapper() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockIsFavorite.mockReturnValue(false);
+  mockAddError = null;
+  mockRemoveError = null;
   mockListsData.mockReturnValue({ data: { lists: LISTS } });
   mockMembership.mockReturnValue({ data: { list_ids: [] } });
 });
@@ -107,6 +120,23 @@ describe("AddToListMenu — compact mode", () => {
       listType: "favorites",
     });
   });
+
+  it("announces a failed compact mutation and keeps the control retryable", () => {
+    mockAddError = new Error("add denied");
+    render(<AddToListMenu productId={42} compact />, {
+      wrapper: createWrapper(),
+    });
+
+    const button = screen.getByRole("button", { name: "Add to Favorites" });
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute(
+      "aria-describedby",
+      "list-membership-error-42",
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Could not update this list. Your previous state was kept. Try again.",
+    );
+  });
 });
 
 // ─── Full dropdown mode ─────────────────────────────────────────────────────
@@ -130,6 +160,24 @@ describe("AddToListMenu — dropdown mode", () => {
     expect(screen.getByText("Favorites")).toBeInTheDocument();
     expect(screen.getByText("Avoid")).toBeInTheDocument();
     expect(screen.getByText("Groceries")).toBeInTheDocument();
+  });
+
+  it("keeps a failed list mutation visible while the menu remains retryable", () => {
+    mockRemoveError = new Error("remove denied");
+    render(<AddToListMenu productId={42} />, {
+      wrapper: createWrapper(),
+    });
+    const button = screen.getByRole("button", { name: "Add to list" });
+    fireEvent.click(button);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Could not update this list. Your previous state was kept. Try again.",
+    );
+    expect(button).toHaveAttribute(
+      "aria-describedby",
+      "list-membership-error-42",
+    );
+    expect(screen.getByText("Groceries").closest("button")).not.toBeDisabled();
   });
 
   it("toggles dropdown closed on second click", () => {
