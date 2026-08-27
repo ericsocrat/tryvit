@@ -176,7 +176,7 @@ const ROW_PROVENANCE_REQUIREMENTS: Readonly<
   Record<string, { field: string; maxAgeDays: number }>
 > = {
   unhealthiness_score: { field: "unhealthiness_score", maxAgeDays: 30 },
-  nova_group: { field: "nova_group", maxAgeDays: 365 },
+  nova_group: { field: "nova_classification", maxAgeDays: 365 },
   calories: { field: "calories_100g", maxAgeDays: 120 },
   total_fat_g: { field: "fat_100g", maxAgeDays: 120 },
   saturated_fat_g: { field: "saturated_fat_100g", maxAgeDays: 120 },

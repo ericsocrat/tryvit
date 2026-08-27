@@ -340,6 +340,45 @@ describe("ComparisonGrid", () => {
     ).toBe(false);
   });
 
+  it("uses canonical NOVA provenance before ranking the NOVA row", () => {
+    const provenanceByProductId = Object.fromEntries(
+      products.map((product) => {
+        const provenance = scoreOnlyProvenance(product.product_id);
+        return [
+          product.product_id,
+          {
+            ...provenance,
+            field_sources: {
+              ...provenance.field_sources,
+              nova_classification: {
+                source: "Label Scan",
+                last_updated: new Date().toISOString(),
+                confidence: 0.9,
+              },
+            },
+          },
+        ];
+      }),
+    );
+    render(
+      <ComparisonGrid
+        products={products}
+        recommendationAllowed
+        provenanceByProductId={provenanceByProductId}
+      />,
+    );
+
+    const novaRow = screen.getAllByText("NOVA Group")[0].closest("tr");
+    const novaCells = novaRow?.querySelectorAll("td") ?? [];
+    expect(
+      [...novaCells].some(
+        (cell) =>
+          cell.className.includes("text-success-text") ||
+          cell.className.includes("text-error-text"),
+      ),
+    ).toBe(true);
+  });
+
   it("shows score delta in winner announcement", () => {
     render(<ComparisonGrid products={products} />);
     const announcement = screen.getByTestId("winner-announcement");

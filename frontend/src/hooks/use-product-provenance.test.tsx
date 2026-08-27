@@ -71,6 +71,32 @@ describe("product provenance disposition", () => {
         provenance({ freshness_status: "expired" }),
       ),
     ).toBe("expired");
+    expect(
+      getProvenanceDisposition(
+        provenance({
+          field_sources: {
+            unhealthiness_score: {
+              source: "Open Food Facts",
+              last_updated: "2999-01-01T00:00:00Z",
+              confidence: 0.9,
+            },
+          },
+        }),
+      ),
+    ).toBe("provisional");
+    expect(
+      getProvenanceDisposition(
+        provenance({
+          field_sources: {
+            unhealthiness_score: {
+              source: "Open Food Facts",
+              last_updated: "not-a-date",
+              confidence: 0.9,
+            },
+          },
+        }),
+      ),
+    ).toBe("provisional");
   });
 
   it("withholds recommendations for absent, uncollected, expired, or low-trust provenance", () => {

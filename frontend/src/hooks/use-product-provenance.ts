@@ -18,6 +18,13 @@ function hasFieldSources(provenance: ProductProvenance): boolean {
   return Object.keys(provenance.field_sources ?? {}).length > 0;
 }
 
+function hasInvalidFieldSourceDate(provenance: ProductProvenance): boolean {
+  return Object.values(provenance.field_sources ?? {}).some((source) => {
+    const timestamp = Date.parse(source.last_updated);
+    return !Number.isFinite(timestamp) || timestamp > Date.now();
+  });
+}
+
 export function hasUsableProvenanceField(
   provenance: ProductProvenance | undefined,
   fieldName: string,
@@ -41,6 +48,7 @@ export function getProvenanceDisposition(
   }
   if (provenance.freshness_status === "expired") return "expired";
   if (
+    hasInvalidFieldSourceDate(provenance) ||
     provenance.freshness_status !== "fresh" ||
     provenance.overall_trust_score < 0.8 ||
     provenance.data_completeness_pct == null ||
