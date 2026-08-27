@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "ba36127cc4c1b93dbd3020ceb68baee02519abe1",
+    "baseSha": "16a93a33964957eebdfb563a85391b5c1c8724f5",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "6da3aea77181369665702d04624949d03ffd3dd3958bc1952b9654b5311d0cf5"
+    "sourceFingerprint": "a439b78dc0d49f1da77eb01a51dd5221d21af61cfbc4939891ddc03b99fce3eb"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -15353,6 +15353,7 @@
       "directModuleImports": [
         "frontend/src/hooks/use-lists.ts",
         "frontend/src/lib/i18n.ts",
+        "frontend/src/lib/toast.ts",
         "frontend/src/lib/types.ts",
         "frontend/src/stores/favorites-store.ts"
       ],
@@ -21202,7 +21203,7 @@
     ],
     "inspectedModuleCount": 559,
     "violations": [],
-    "sourceFingerprint": "ae9d4d9eb55dbcfe41d2166ff74cc84a2ca6d3e4df832acb4de620fac84b6638"
+    "sourceFingerprint": "55ca6ec50d356a4ec764c9c117b2727cb8e286f03423a54ff9ce51c98c2ca56a"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

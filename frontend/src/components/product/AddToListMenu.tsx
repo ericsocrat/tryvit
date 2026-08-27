@@ -15,6 +15,7 @@ import {
     useRemoveFromList,
 } from "@/hooks/use-lists";
 import { useTranslation } from "@/lib/i18n";
+import { showToast } from "@/lib/toast";
 import type { ProductList } from "@/lib/types";
 import { useFavoritesStore } from "@/stores/favorites-store";
 import {
@@ -123,50 +124,80 @@ export function AddToListMenu({ productId, compact }: AddToListMenuProps) {
   );
 
   const isBusy = addMutation.isPending || removeMutation.isPending;
+  const mutationError = addMutation.error ?? removeMutation.error;
+  const mutationErrorId = `list-membership-error-${productId}`;
 
   // Compact mode: just the heart icon for favorites
   if (compact && favoritesList) {
     return (
-      <button
-        type="button"
-        disabled={isBusy}
-        title={
-          isFavorite
-            ? t("productActions.removeFromFavorites")
-            : t("productActions.addToFavorites")
-        }
-        aria-label={
-          isFavorite
-            ? t("productActions.removeFromFavorites")
-            : t("productActions.addToFavorites")
-        }
-        className="touch-target shrink-0 text-xl transition-transform hover:scale-110 disabled:opacity-50"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          if (isFavorite) {
-            removeMutation.mutate({
-              listId: favoritesList.id,
-              productId,
-              listType: "favorites",
-            });
-          } else {
-            addMutation.mutate({
-              listId: favoritesList.id,
-              productId,
-              listType: "favorites",
-            });
+      <span className="relative shrink-0">
+        <button
+          type="button"
+          disabled={isBusy}
+          title={
+            isFavorite
+              ? t("productActions.removeFromFavorites")
+              : t("productActions.addToFavorites")
           }
-        }}
-      >
-        <Heart
-          size={20}
-          aria-hidden="true"
-          className={
-            isFavorite ? "fill-red-500 text-red-500" : "text-foreground-muted"
+          aria-label={
+            isFavorite
+              ? t("productActions.removeFromFavorites")
+              : t("productActions.addToFavorites")
           }
-        />
-      </button>
+          aria-describedby={mutationError ? mutationErrorId : undefined}
+          className="touch-target text-xl transition-transform hover:scale-110 disabled:opacity-50"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isFavorite) {
+              removeMutation.mutate(
+                {
+                  listId: favoritesList.id,
+                  productId,
+                  listType: "favorites",
+                },
+                {
+                  onError: () => {
+                    showToast({
+                      type: "error",
+                      messageKey: "productActions.updateFailed",
+                    });
+                  },
+                },
+              );
+            } else {
+              addMutation.mutate(
+                {
+                  listId: favoritesList.id,
+                  productId,
+                  listType: "favorites",
+                },
+                {
+                  onError: () => {
+                    showToast({
+                      type: "error",
+                      messageKey: "productActions.updateFailed",
+                    });
+                  },
+                },
+              );
+            }
+          }}
+        >
+          <Heart
+            size={20}
+            aria-hidden="true"
+            className={
+              isFavorite ? "fill-red-500 text-red-500" : "text-foreground-muted"
+            }
+          />
+        </button>
+        {mutationError && (
+          <span id={mutationErrorId} className="sr-only">
+            {t("productActions.updateFailed")}
+          </span>
+        )}
+      </span>
     );
   }
 
@@ -179,6 +210,7 @@ export function AddToListMenu({ productId, compact }: AddToListMenuProps) {
         aria-label={t("productActions.addToList")}
         aria-expanded={open}
         aria-haspopup="true"
+        aria-describedby={mutationError ? mutationErrorId : undefined}
         className="touch-target flex h-11 w-11 items-center justify-center rounded-full text-sm transition-colors hover:bg-surface-subtle"
         onClick={(e) => {
           e.preventDefault();
@@ -189,6 +221,12 @@ export function AddToListMenu({ productId, compact }: AddToListMenuProps) {
         <ClipboardList size={20} aria-hidden="true" />
       </button>
 
+      {mutationError && (
+        <span id={mutationErrorId} role="alert" className="sr-only">
+          {t("productActions.updateFailed")}
+        </span>
+      )}
+
       {open && (
         <div
           className="absolute right-0 top-full z-50 mt-1 w-56 rounded-xl border border-border bg-surface py-1 shadow-lg"
@@ -197,6 +235,14 @@ export function AddToListMenu({ productId, compact }: AddToListMenuProps) {
           <p className="px-3 py-1.5 text-xs font-medium text-foreground-muted">
             {t("productActions.yourLists")}
           </p>
+
+          {mutationError && (
+            <p
+              className="mx-2 mb-1 rounded-md bg-error-bg px-2 py-1.5 text-xs text-error-text"
+            >
+              {t("productActions.updateFailed")}
+            </p>
+          )}
 
           {lists.length === 0 && (
             <p className="px-3 py-2 text-sm text-foreground-muted">

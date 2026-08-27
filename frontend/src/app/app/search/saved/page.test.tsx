@@ -262,4 +262,23 @@ describe("SavedSearchesPage", () => {
     await user.click(screen.getByText("Cancel Dialog"));
     expect(screen.queryByTestId("confirm-dialog")).not.toBeInTheDocument();
   });
+
+  it("keeps the saved search and reports an application-level delete failure", async () => {
+    const user = userEvent.setup();
+    mockDeleteSavedSearch.mockResolvedValue({
+      ok: false,
+      error: { code: "FAILED", message: "delete denied" },
+    });
+
+    render(<SavedSearchesPage />, { wrapper: createWrapper() });
+    await screen.findByText("Healthy drinks");
+
+    await user.click(screen.getAllByLabelText("Delete")[0]);
+    await user.click(screen.getByText("Confirm"));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Could not delete the saved search. It was kept; try again.",
+    );
+    expect(screen.getByText("Healthy drinks")).toBeInTheDocument();
+  });
 });

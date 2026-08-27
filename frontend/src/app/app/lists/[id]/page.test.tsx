@@ -29,6 +29,10 @@ const mockRemoveMutate = vi.fn();
 const mockUpdateMutate = vi.fn();
 const mockToggleShareMutate = vi.fn();
 const mockRevokeMutate = vi.fn();
+const mockRemoveReset = vi.fn();
+const mockUpdateReset = vi.fn();
+const mockToggleShareReset = vi.fn();
+const mockRevokeReset = vi.fn();
 
 const mockUseLists = vi.fn();
 const mockUseListItems = vi.fn();
@@ -39,18 +43,22 @@ vi.mock("@/hooks/use-lists", () => ({
   useRemoveFromList: () => ({
     mutate: mockRemoveMutate,
     isPending: false,
+    reset: mockRemoveReset,
   }),
   useUpdateList: () => ({
     mutate: mockUpdateMutate,
     isPending: false,
+    reset: mockUpdateReset,
   }),
   useToggleShare: () => ({
     mutate: mockToggleShareMutate,
     isPending: false,
+    reset: mockToggleShareReset,
   }),
   useRevokeShare: () => ({
     mutate: mockRevokeMutate,
     isPending: false,
+    reset: mockRevokeReset,
   }),
 }));
 
@@ -322,6 +330,13 @@ describe("ListDetailPage", () => {
       listId: "list-abc-123",
       enabled: true,
     });
+    expect(mockRemoveReset).toHaveBeenCalledOnce();
+    expect(mockUpdateReset).toHaveBeenCalledOnce();
+    expect(mockToggleShareReset).toHaveBeenCalledOnce();
+    expect(mockRevokeReset).toHaveBeenCalledOnce();
+    expect(mockToggleShareReset.mock.invocationCallOrder[0]).toBeLessThan(
+      mockToggleShareMutate.mock.invocationCallOrder[0],
+    );
   });
 
   it("shows copy link and revoke when sharing enabled", async () => {

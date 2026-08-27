@@ -102,6 +102,29 @@ describe("WatchButton", () => {
     });
   });
 
+  describe("unavailable status", () => {
+    it("fails closed and offers retry instead of assuming unwatched", async () => {
+      const user = userEvent.setup();
+      mockIsWatchingProduct.mockResolvedValue({
+        ok: false,
+        error: { code: "UNAVAILABLE", message: "status unavailable" },
+      });
+
+      render(<WatchButton productId={1} />, { wrapper: createWrapper() });
+
+      const button = await screen.findByTestId("watch-button-error");
+      expect(button).toBeDisabled();
+      expect(button).toHaveAccessibleName("watchlist.statusUnavailable");
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "watchlist.statusUnavailableDescription",
+      );
+      expect(screen.queryByTestId("watch-button")).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "common.retry" }));
+      await waitFor(() => expect(mockIsWatchingProduct).toHaveBeenCalledTimes(2));
+    });
+  });
+
   // ─── Not Watching State ─────────────────────────────────────────────
 
   describe("not watching state", () => {
@@ -213,6 +236,42 @@ describe("WatchButton", () => {
         ).toBeInTheDocument();
       });
     });
+
+    it("rolls back and reports an application-level failure", async () => {
+      const user = userEvent.setup();
+      mockWatchProduct.mockResolvedValue({
+        ok: false,
+        error: { code: "FAILED", message: "watch failed" },
+      });
+
+      render(<WatchButton productId={42} />, { wrapper: createWrapper() });
+      const button = await screen.findByTestId("watch-button");
+      expect(button).toHaveAttribute("aria-pressed", "false");
+
+      await user.click(button);
+
+      await waitFor(() => {
+        expect(screen.getByRole("alert")).toHaveTextContent(
+          "watchlist.updateFailed",
+        );
+      });
+      expect(button).toHaveAttribute("aria-pressed", "false");
+      expect(button).not.toBeDisabled();
+      expect(screen.queryByTestId("notification-prompt")).not.toBeInTheDocument();
+    });
+
+    it("rolls back after a transport failure", async () => {
+      const user = userEvent.setup();
+      mockWatchProduct.mockRejectedValue(new Error("network down"));
+
+      render(<WatchButton productId={42} />, { wrapper: createWrapper() });
+      const button = await screen.findByTestId("watch-button");
+      await user.click(button);
+
+      await screen.findByRole("alert");
+      expect(button).toHaveAttribute("aria-pressed", "false");
+      expect(screen.queryByTestId("notification-prompt")).not.toBeInTheDocument();
+    });
   });
 
   // ─── Unwatch Mutation ───────────────────────────────────────────────
@@ -251,6 +310,24 @@ describe("WatchButton", () => {
       expect(
         screen.queryByTestId("notification-prompt"),
       ).not.toBeInTheDocument();
+    });
+
+    it("restores the watched state when the backend returns ok false", async () => {
+      const user = userEvent.setup();
+      mockUnwatchProduct.mockResolvedValue({
+        ok: false,
+        error: { code: "FAILED", message: "unwatch failed" },
+      });
+
+      render(<WatchButton productId={42} />, { wrapper: createWrapper() });
+      const button = await screen.findByTestId("watch-button");
+      expect(button).toHaveAttribute("aria-pressed", "true");
+
+      await user.click(button);
+
+      await screen.findByRole("alert");
+      expect(button).toHaveAttribute("aria-pressed", "true");
+      expect(button).not.toBeDisabled();
     });
   });
 

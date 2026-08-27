@@ -95,6 +95,10 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Fail product health and alternative-comparison surfaces closed when evidence is
+  unavailable, keep missing confidence explicit, and treat application-level list,
+  watchlist, and saved-search write failures as real failures with truthful rollback
+  feedback and retryable state.
 - Route protected HTML/RSC, same-origin APIs, and configured-Supabase GETs
   through a first-match NetworkOnly service-worker policy; replace broad cache
   deletion with targeted private-cache migration and precache the offline page.

@@ -464,6 +464,7 @@
     "revokeWarning": "Old links will stop working.",
     "loadFailed": "Failed to load lists.",
     "loadListFailed": "Failed to load list.",
+    "mutationFailed": "Could not update this list. Your previous state was kept. Try again.",
     "avgScore": "Avg {score}"
   },
   "product": {
@@ -518,6 +519,7 @@
     "dataQuality": "Data Quality",
     "productPhotos": "Product Photos",
     "confidence": "Confidence: {value}",
+    "confidenceUnavailable": "Confidence evidence unavailable — treat this score as provisional.",
     "scoreConfidenceHint": "Use TryVit Score for quick health ranking, then check Confidence and NOVA before deciding.",
     "completeness": "Completeness: {pct}%",
     "source": "Source: {type}",
@@ -555,8 +557,10 @@
     "share": "Share",
     "shareProduct": "Share this product",
     "shareCopied": "Link copied!",
-    "noAlternatives": "No healthier alternatives found in this category.",
+    "noAlternatives": "No eligible healthier alternatives were found with the available category evidence.",
     "bestOption": "This is already one of the best options in its category!",
+    "alternativesUnavailable": "Alternative comparison unavailable",
+    "alternativesUnavailableDescription": "TryVit cannot rank or recommend alternatives until comparison evidence is available.",
     "healthierOptions": "{count} healthier {count|option|options} found",
     "pointsBetter": "−{points} points better",
     "scoreBreakdownUnavailable": "Score breakdown unavailable.",
@@ -804,7 +808,10 @@
     "noWarningsFor": "No warnings for your profile \"{name}\"",
     "warningCount": "{count} health {count|warning|warnings}",
     "profile": "Profile: {name}",
-    "noWarnings": "No health warnings"
+    "noWarnings": "No health warnings",
+    "loading": "Checking personalized health warnings…",
+    "unavailableTitle": "Health warning evidence unavailable",
+    "unavailableDescription": "TryVit could not evaluate this product against your health profile. This does not mean the product is within your limits."
   },
   "productActions": {
     "removeFromFavorites": "Remove from Favorites",
@@ -815,7 +822,8 @@
     "remove": "remove",
     "onAvoidList": "On your Avoid list",
     "avoid": "Avoid",
-    "moreActions": "More actions"
+    "moreActions": "More actions",
+    "updateFailed": "Could not update this list. Your previous state was kept. Try again."
   },
   "savedSearches": {
     "title": "Saved Searches",
@@ -830,6 +838,7 @@
     "apply": "Apply",
     "deleteConfirm": "Delete saved search?",
     "cannotUndo": "This action cannot be undone.",
+    "deleteFailed": "Could not delete the saved search. It was kept; try again.",
     "categories": "{count} {count|category|categories}",
     "nutriFilter": "Nutri: {values}",
     "excludeAllergenEvidenceFilter": "Exclude products with contains evidence: {values}",
@@ -1698,6 +1707,9 @@
     "watchButton": "Watch",
     "unwatchButton": "Unwatch",
     "loading": "Loading…",
+    "statusUnavailable": "Watch status unavailable",
+    "statusUnavailableDescription": "TryVit could not confirm whether this product is watched.",
+    "updateFailed": "Could not update your watchlist. Your previous state was restored. Try again.",
     "scoreHistory": "Score History",
     "historyError": "Could not load score history.",
     "noHistory": "No history data",

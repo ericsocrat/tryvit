@@ -35,7 +35,12 @@ export function WatchButton({
   );
   const [showNotifPrompt, setShowNotifPrompt] = useState(false);
 
-  const { data: watchStatus, isLoading } = useQuery({
+  const {
+    data: watchStatus,
+    error: watchStatusError,
+    isLoading,
+    refetch: refetchWatchStatus,
+  } = useQuery({
     queryKey: queryKeys.isWatching(productId),
     queryFn: async () => {
       const result = await isWatchingProduct(supabase, productId);
@@ -48,7 +53,11 @@ export function WatchButton({
   const watching = optimisticWatching ?? watchStatus?.watching ?? false;
 
   const watchMutation = useMutation({
-    mutationFn: () => watchProduct(supabase, productId),
+    mutationFn: async () => {
+      const result = await watchProduct(supabase, productId);
+      if (!result.ok) throw new Error(result.error.message);
+      return result.data;
+    },
     onMutate: () => setOptimisticWatching(true),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -62,7 +71,11 @@ export function WatchButton({
   });
 
   const unwatchMutation = useMutation({
-    mutationFn: () => unwatchProduct(supabase, productId),
+    mutationFn: async () => {
+      const result = await unwatchProduct(supabase, productId);
+      if (!result.ok) throw new Error(result.error.message);
+      return result.data;
+    },
     onMutate: () => setOptimisticWatching(false),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -74,6 +87,8 @@ export function WatchButton({
   });
 
   const isMutating = watchMutation.isPending || unwatchMutation.isPending;
+  const mutationError = watchMutation.error ?? unwatchMutation.error;
+  const mutationErrorId = `watch-button-error-${productId}`;
 
   function handleToggle() {
     if (isMutating) return;
@@ -101,6 +116,36 @@ export function WatchButton({
     );
   }
 
+  if (watchStatusError) {
+    return (
+      <div className={className}>
+        <button
+          type="button"
+          disabled
+          aria-label={t("watchlist.statusUnavailable")}
+          aria-describedby={mutationErrorId}
+          className="touch-target inline-flex items-center gap-1.5 rounded-lg border border-warning-border px-3 py-2 text-sm text-warning-text opacity-80"
+          data-testid="watch-button-error"
+        >
+          <Icon icon={EyeOff} size="sm" />
+          {!compact && <span>{t("watchlist.statusUnavailable")}</span>}
+        </button>
+        <p id={mutationErrorId} role="alert" className="mt-1 text-xs text-warning-text">
+          {t("watchlist.statusUnavailableDescription")} {" "}
+          <button
+            type="button"
+            onClick={() => {
+              void refetchWatchStatus();
+            }}
+            className="font-semibold underline underline-offset-2"
+          >
+            {t("common.retry")}
+          </button>
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <button
@@ -108,6 +153,7 @@ export function WatchButton({
         disabled={isMutating}
         aria-pressed={watching}
         aria-label={label}
+        aria-describedby={mutationError ? mutationErrorId : undefined}
         className={`touch-target inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
           watching
             ? "border-brand bg-brand-subtle text-brand"
@@ -122,6 +168,15 @@ export function WatchButton({
         {!isMutating && !watching && <Icon icon={EyeOff} size="sm" />}
         {!compact && <span>{label}</span>}
       </button>
+      {mutationError && (
+        <p
+          id={mutationErrorId}
+          role="alert"
+          className="mt-1 max-w-64 text-xs text-error-text"
+        >
+          {t("watchlist.updateFailed")}
+        </p>
+      )}
       {showNotifPrompt && (
         <NotificationPrompt onDismiss={() => setShowNotifPrompt(false)} />
       )}

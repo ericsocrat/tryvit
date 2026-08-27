@@ -8,6 +8,9 @@ import { AddToListMenu } from "./AddToListMenu";
 
 const mockAddMutate = vi.fn();
 const mockRemoveMutate = vi.fn();
+const mockShowToast = vi.fn();
+let mockAddError: Error | null = null;
+let mockRemoveError: Error | null = null;
 const mockMembership =
   vi.fn<() => { data: { list_ids: number[] } | undefined }>();
 const mockListsData = vi.fn<
@@ -20,9 +23,21 @@ const mockListsData = vi.fn<
 
 vi.mock("@/hooks/use-lists", () => ({
   useLists: () => mockListsData(),
-  useAddToList: () => ({ mutate: mockAddMutate, isPending: false }),
-  useRemoveFromList: () => ({ mutate: mockRemoveMutate, isPending: false }),
+  useAddToList: () => ({
+    mutate: mockAddMutate,
+    isPending: false,
+    error: mockAddError,
+  }),
+  useRemoveFromList: () => ({
+    mutate: mockRemoveMutate,
+    isPending: false,
+    error: mockRemoveError,
+  }),
   useProductListMembership: () => mockMembership(),
+}));
+
+vi.mock("@/lib/toast", () => ({
+  showToast: (...args: unknown[]) => mockShowToast(...args),
 }));
 
 const mockIsFavorite = vi.fn<(id: number) => boolean>().mockReturnValue(false);
@@ -53,6 +68,9 @@ function createWrapper() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockIsFavorite.mockReturnValue(false);
+  mockAddError = null;
+  mockRemoveError = null;
   mockListsData.mockReturnValue({ data: { lists: LISTS } });
   mockMembership.mockReturnValue({ data: { list_ids: [] } });
 });
@@ -86,11 +104,14 @@ describe("AddToListMenu — compact mode", () => {
       wrapper: createWrapper(),
     });
     fireEvent.click(screen.getByRole("button", { name: "Add to Favorites" }));
-    expect(mockAddMutate).toHaveBeenCalledWith({
-      listId: 1,
-      productId: 42,
-      listType: "favorites",
-    });
+    expect(mockAddMutate).toHaveBeenCalledWith(
+      {
+        listId: 1,
+        productId: 42,
+        listType: "favorites",
+      },
+      expect.objectContaining({ onError: expect.any(Function) }),
+    );
   });
 
   it("calls removeMutate when toggling off", () => {
@@ -101,10 +122,48 @@ describe("AddToListMenu — compact mode", () => {
     fireEvent.click(
       screen.getByRole("button", { name: "Remove from Favorites" }),
     );
-    expect(mockRemoveMutate).toHaveBeenCalledWith({
-      listId: 1,
-      productId: 42,
-      listType: "favorites",
+    expect(mockRemoveMutate).toHaveBeenCalledWith(
+      {
+        listId: 1,
+        productId: 42,
+        listType: "favorites",
+      },
+      expect.objectContaining({ onError: expect.any(Function) }),
+    );
+  });
+
+  it("describes a failed compact mutation and keeps the control retryable", () => {
+    mockAddError = new Error("add denied");
+    render(<AddToListMenu productId={42} compact />, {
+      wrapper: createWrapper(),
+    });
+
+    const button = screen.getByRole("button", { name: "Add to Favorites" });
+    expect(button).not.toBeDisabled();
+    expect(button).toHaveAttribute(
+      "aria-describedby",
+      "list-membership-error-42",
+    );
+    expect(button).toHaveAccessibleDescription(
+      "Could not update this list. Your previous state was kept. Try again.",
+    );
+  });
+
+  it("shows a visible toast when a compact mutation fails", () => {
+    mockAddMutate.mockImplementationOnce(
+      (_variables: unknown, options?: { onError?: () => void }) => {
+        options?.onError?.();
+      },
+    );
+    render(<AddToListMenu productId={42} compact />, {
+      wrapper: createWrapper(),
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Add to Favorites" }));
+
+    expect(mockShowToast).toHaveBeenCalledWith({
+      type: "error",
+      messageKey: "productActions.updateFailed",
     });
   });
 });
@@ -130,6 +189,24 @@ describe("AddToListMenu — dropdown mode", () => {
     expect(screen.getByText("Favorites")).toBeInTheDocument();
     expect(screen.getByText("Avoid")).toBeInTheDocument();
     expect(screen.getByText("Groceries")).toBeInTheDocument();
+  });
+
+  it("keeps a failed list mutation visible while the menu remains retryable", () => {
+    mockRemoveError = new Error("remove denied");
+    render(<AddToListMenu productId={42} />, {
+      wrapper: createWrapper(),
+    });
+    const button = screen.getByRole("button", { name: "Add to list" });
+    fireEvent.click(button);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Could not update this list. Your previous state was kept. Try again.",
+    );
+    expect(button).toHaveAttribute(
+      "aria-describedby",
+      "list-membership-error-42",
+    );
+    expect(screen.getByText("Groceries").closest("button")).not.toBeDisabled();
   });
 
   it("toggles dropdown closed on second click", () => {

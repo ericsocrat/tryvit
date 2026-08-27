@@ -26,7 +26,6 @@ import {
     Camera,
     ClipboardList,
     Salad,
-    Trophy,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -52,7 +51,12 @@ export default function ScanResultPage() {
     enabled: !Number.isNaN(productId),
   });
 
-  const { data: alternativesData, isLoading: alternativesLoading } = useQuery({
+  const {
+    data: alternativesData,
+    error: alternativesError,
+    isLoading: alternativesLoading,
+    refetch: refetchAlternatives,
+  } = useQuery({
     queryKey: queryKeys.alternatives(productId),
     queryFn: async () => {
       const result = await getBetterAlternatives(supabase, productId, {
@@ -234,8 +238,12 @@ export default function ScanResultPage() {
 
         <AlternativesSection
           loading={alternativesLoading}
+          error={alternativesError}
           alternatives={alternatives}
           sourceScore={product.scores.unhealthiness_score}
+          onRetry={() => {
+            void refetchAlternatives();
+          }}
         />
       </div>
 
@@ -265,12 +273,16 @@ export default function ScanResultPage() {
 
 function AlternativesSection({
   loading,
+  error,
   alternatives,
   sourceScore,
+  onRetry,
 }: Readonly<{
   loading: boolean;
+  error: Error | null;
   alternatives: Alternative[];
   sourceScore: number;
+  onRetry: () => void;
 }>) {
   const { t } = useTranslation();
 
@@ -278,12 +290,35 @@ function AlternativesSection({
     return <ProductCardSkeleton count={3} />;
   }
 
+  if (error) {
+    return (
+      <div
+        className="rounded-xl border border-warning-border bg-warning-bg px-4 py-5 text-center"
+        data-testid="alternatives-unavailable"
+        role="alert"
+      >
+        <p className="text-sm font-semibold text-warning-text">
+          {t("product.alternativesUnavailable")}
+        </p>
+        <p className="mt-1 text-xs text-warning-text">
+          {t("product.alternativesUnavailableDescription")}
+        </p>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-2 text-xs font-semibold text-warning-text underline underline-offset-2"
+        >
+          {t("common.retry")}
+        </button>
+      </div>
+    );
+  }
+
   if (alternatives.length === 0) {
     return (
       <div className="card bg-surface-subtle py-6 text-center">
         <p className="text-sm text-foreground-secondary">
-          <Trophy size={16} aria-hidden="true" className="inline" />{" "}
-          {t("product.bestOption")}
+          {t("product.noAlternatives")}
         </p>
       </div>
     );

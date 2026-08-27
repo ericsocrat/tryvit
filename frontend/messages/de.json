@@ -464,6 +464,7 @@
     "revokeWarning": "Alte Links funktionieren dann nicht mehr.",
     "loadFailed": "Listen konnten nicht geladen werden.",
     "loadListFailed": "Liste konnte nicht geladen werden.",
+    "mutationFailed": "Die Liste konnte nicht aktualisiert werden. Der vorherige Zustand wurde beibehalten. Bitte versuchen Sie es erneut.",
     "avgScore": "Durchschn. {score}"
   },
   "product": {
@@ -518,6 +519,7 @@
     "dataQuality": "Datenqualität",
     "productPhotos": "Produktfotos",
     "confidence": "Vertrauensstufe: {value}",
+    "confidenceUnavailable": "Vertrauensnachweise sind nicht verfügbar — behandeln Sie diese Bewertung als vorläufig.",
     "scoreConfidenceHint": "Nutzen Sie den TryVit Score für ein schnelles Gesundheitsranking und prüfen Sie vor der Entscheidung Vertrauen und NOVA.",
     "completeness": "Vollständigkeit: {pct} %",
     "source": "Quelle: {type}",
@@ -555,8 +557,10 @@
     "share": "Teilen",
     "shareProduct": "Dieses Produkt teilen",
     "shareCopied": "Link kopiert!",
-    "noAlternatives": "Keine gesünderen Alternativen in dieser Kategorie gefunden.",
+    "noAlternatives": "Mit den verfügbaren Kategoriedaten wurden keine geeigneten gesünderen Alternativen gefunden.",
     "bestOption": "Dies ist bereits eine der besten Optionen in seiner Kategorie!",
+    "alternativesUnavailable": "Alternativenvergleich nicht verfügbar",
+    "alternativesUnavailableDescription": "TryVit kann Alternativen erst einordnen oder empfehlen, wenn Vergleichsnachweise verfügbar sind.",
     "healthierOptions": "{count} gesündere {count|Option|Optionen} gefunden",
     "pointsBetter": "−{points} Punkte besser",
     "verdictMuchHealthier": "Viel gesünder",
@@ -804,7 +808,10 @@
     "noWarningsFor": "Keine Warnungen für Ihr Profil '{name}'",
     "warningCount": "{count} Gesundheits-{count|Warnung|Warnungen}",
     "profile": "Profil: {name}",
-    "noWarnings": "Keine Gesundheitswarnungen"
+    "noWarnings": "Keine Gesundheitswarnungen",
+    "loading": "Personalisierte Gesundheitswarnungen werden geprüft…",
+    "unavailableTitle": "Nachweise für Gesundheitswarnungen nicht verfügbar",
+    "unavailableDescription": "TryVit konnte dieses Produkt nicht mit Ihrem Gesundheitsprofil abgleichen. Das bedeutet nicht, dass es innerhalb Ihrer Grenzwerte liegt."
   },
   "productActions": {
     "removeFromFavorites": "Aus Favoriten entfernen",
@@ -815,7 +822,8 @@
     "remove": "Entfernen",
     "onAvoidList": "Auf Ihrer Vermeidungsliste",
     "avoid": "Vermeiden",
-    "moreActions": "Weitere Aktionen"
+    "moreActions": "Weitere Aktionen",
+    "updateFailed": "Die Liste konnte nicht aktualisiert werden. Der vorherige Zustand wurde beibehalten. Bitte versuchen Sie es erneut."
   },
   "savedSearches": {
     "title": "Gespeicherte Suchen",
@@ -830,6 +838,7 @@
     "apply": "Anwenden",
     "deleteConfirm": "Gespeicherte Suche löschen?",
     "cannotUndo": "Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleteFailed": "Die gespeicherte Suche konnte nicht gelöscht werden. Sie wurde beibehalten; bitte versuchen Sie es erneut.",
     "categories": "{count} {count|Kategorie|Kategorien}",
     "nutriFilter": "Nutri: {values}",
     "excludeAllergenEvidenceFilter": "Produkte mit Enthalten-Hinweisen ausschließen: {values}",
@@ -1698,6 +1707,9 @@
     "watchButton": "Beobachten",
     "unwatchButton": "Nicht mehr beobachten",
     "loading": "Laden…",
+    "statusUnavailable": "Beobachtungsstatus nicht verfügbar",
+    "statusUnavailableDescription": "TryVit konnte nicht bestätigen, ob dieses Produkt beobachtet wird.",
+    "updateFailed": "Die Beobachtungsliste konnte nicht aktualisiert werden. Der vorherige Zustand wurde wiederhergestellt. Bitte versuchen Sie es erneut.",
     "scoreHistory": "Bewertungsverlauf",
     "historyError": "Bewertungsverlauf konnte nicht geladen werden.",
     "noHistory": "Keine Verlaufsdaten",

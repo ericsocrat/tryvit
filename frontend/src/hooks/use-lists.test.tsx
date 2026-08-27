@@ -376,6 +376,23 @@ describe("useCreateList", () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error?.message).toBe("network error");
   });
+
+  it("treats an ok false response as failure without success side effects", async () => {
+    mockCreateList.mockResolvedValue({
+      ok: false,
+      error: { code: "FAILED", message: "create denied" },
+    });
+
+    const { result } = renderHook(() => useCreateList(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate({ name: "Not created" });
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("create denied");
+    expect(mockTrack).not.toHaveBeenCalled();
+    expect(mockEventBusEmit).not.toHaveBeenCalled();
+  });
 });
 
 describe("useUpdateList", () => {
@@ -409,6 +426,19 @@ describe("useUpdateList", () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error?.message).toBe("update failed");
   });
+
+  it("treats an ok false response as failure", async () => {
+    mockUpdateList.mockResolvedValue({
+      ok: false,
+      error: { code: "FAILED", message: "update denied" },
+    });
+    const { result } = renderHook(() => useUpdateList(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate({ listId: "l1", name: "Not renamed" });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("update denied");
+  });
 });
 
 describe("useDeleteList", () => {
@@ -441,6 +471,19 @@ describe("useDeleteList", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error?.message).toBe("delete failed");
+  });
+
+  it("treats an ok false response as failure", async () => {
+    mockDeleteList.mockResolvedValue({
+      ok: false,
+      error: { code: "FAILED", message: "delete denied" },
+    });
+    const { result } = renderHook(() => useDeleteList(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate("l1");
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("delete denied");
   });
 });
 
@@ -535,6 +578,27 @@ describe("useAddToList", () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error?.message).toBe("add failed");
   });
+
+  it("does not update stores, analytics, or events for ok false", async () => {
+    mockAddToList.mockResolvedValue({
+      ok: false,
+      error: { code: "FAILED", message: "add denied" },
+    });
+    const { result } = renderHook(() => useAddToList(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate({
+      listId: "l1",
+      productId: 42,
+      listType: "favorites",
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("add denied");
+    expect(mockAddFavorite).not.toHaveBeenCalled();
+    expect(mockAddAvoided).not.toHaveBeenCalled();
+    expect(mockTrack).not.toHaveBeenCalled();
+    expect(mockEventBusEmit).not.toHaveBeenCalled();
+  });
 });
 
 describe("useRemoveFromList", () => {
@@ -607,6 +671,25 @@ describe("useRemoveFromList", () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error?.message).toBe("remove failed");
   });
+
+  it("does not update local stores for ok false", async () => {
+    mockRemoveFromList.mockResolvedValue({
+      ok: false,
+      error: { code: "FAILED", message: "remove denied" },
+    });
+    const { result } = renderHook(() => useRemoveFromList(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate({
+      listId: "l1",
+      productId: 42,
+      listType: "avoid",
+    });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("remove denied");
+    expect(mockRemoveAvoided).not.toHaveBeenCalled();
+    expect(mockRemoveFavorite).not.toHaveBeenCalled();
+  });
 });
 
 describe("useReorderList", () => {
@@ -639,6 +722,19 @@ describe("useReorderList", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error?.message).toBe("reorder failed");
+  });
+
+  it("treats an ok false response as failure", async () => {
+    mockReorderList.mockResolvedValue({
+      ok: false,
+      error: { code: "FAILED", message: "reorder denied" },
+    });
+    const { result } = renderHook(() => useReorderList(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate({ listId: "l1", productIds: [1, 2] });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("reorder denied");
   });
 });
 
@@ -673,6 +769,19 @@ describe("useToggleShare", () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error?.message).toBe("share failed");
   });
+
+  it("treats an ok false response as failure", async () => {
+    mockToggleShare.mockResolvedValue({
+      ok: false,
+      error: { code: "FAILED", message: "share denied" },
+    });
+    const { result } = renderHook(() => useToggleShare(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate({ listId: "l1", enabled: true });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("share denied");
+  });
 });
 
 describe("useRevokeShare", () => {
@@ -705,5 +814,18 @@ describe("useRevokeShare", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error?.message).toBe("revoke failed");
+  });
+
+  it("treats an ok false response as failure", async () => {
+    mockRevokeShare.mockResolvedValue({
+      ok: false,
+      error: { code: "FAILED", message: "revoke denied" },
+    });
+    const { result } = renderHook(() => useRevokeShare(), {
+      wrapper: createWrapper(),
+    });
+    result.current.mutate("l1");
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(result.current.error?.message).toBe("revoke denied");
   });
 });

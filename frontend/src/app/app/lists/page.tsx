@@ -48,6 +48,7 @@ export default function ListsPage() {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const lists: ProductList[] = data?.lists ?? [];
+  const mutationError = createList.error ?? deleteList.error;
 
   const handleRefresh = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeys.lists });
@@ -97,6 +98,12 @@ export default function ListsPage() {
           {showForm ? t("common.cancel") : t("lists.newList")}
         </Button>
       </div>
+
+      {mutationError && (
+        <p role="alert" className="rounded-lg bg-error-bg px-3 py-2 text-sm text-error-text">
+          {t("lists.mutationFailed")}
+        </p>
+      )}
 
       {/* Create form */}
       {showForm && (

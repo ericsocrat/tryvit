@@ -312,7 +312,15 @@ export default function ProductDetailPage() {
                     showLabel={false}
                     showTooltip
                   />
-                ) : null;
+                ) : (
+                  <span
+                    className="inline-flex w-fit rounded-full bg-warning-bg px-2 py-0.5 text-xs font-semibold text-warning-text"
+                    data-testid="score-confidence-unavailable"
+                    role="status"
+                  >
+                    {t("product.confidenceUnavailable")}
+                  </span>
+                );
               })()}
               <p className="text-xs text-foreground-muted">
                 {t("product.scoreConfidenceHint")}

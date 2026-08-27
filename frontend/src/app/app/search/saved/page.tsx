@@ -95,6 +95,12 @@ export default function SavedSearchesPage() {
         />
       )}
 
+      {deleteMutation.error && (
+        <p role="alert" className="rounded-lg bg-error-bg px-3 py-2 text-sm text-error-text">
+          {t("savedSearches.deleteFailed")}
+        </p>
+      )}
+
       {/* Empty state */}
       {data?.searches.length === 0 && (
         <EmptyStateIllustration

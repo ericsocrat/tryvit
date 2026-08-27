@@ -53,7 +53,12 @@ export function HealthWarningsCard({
   const { t } = useTranslation();
 
   // Check if user has an active health profile
-  const { data: profileData, isLoading: profileLoading } = useQuery({
+  const {
+    data: profileData,
+    error: profileError,
+    isLoading: profileLoading,
+    refetch: refetchProfile,
+  } = useQuery({
     queryKey: queryKeys.activeHealthProfile,
     queryFn: async () => {
       const result = await getActiveHealthProfile(supabase);
@@ -67,7 +72,12 @@ export function HealthWarningsCard({
   const hasProfile =
     profileData?.profile !== null && profileData?.profile !== undefined;
 
-  const { data: warningsData, isLoading: warningsLoading } = useQuery({
+  const {
+    data: warningsData,
+    error: warningsError,
+    isLoading: warningsLoading,
+    refetch: refetchWarnings,
+  } = useQuery({
     queryKey: queryKeys.healthWarnings(productId),
     queryFn: async () => {
       const result = await getProductHealthWarnings(supabase, productId);
@@ -81,12 +91,28 @@ export function HealthWarningsCard({
   // Loading profile — show skeleton to avoid layout jump
   if (profileLoading) {
     return (
-      <div className="card" data-testid="health-warnings-card">
+      <div
+        className="card"
+        data-testid="health-warnings-card"
+        role="status"
+        aria-busy="true"
+        aria-label={t("healthWarnings.loading")}
+      >
         <div className="flex items-center gap-2">
           <div className="skeleton h-5 w-5 rounded-full" />
           <div className="skeleton h-4 w-48 rounded" />
         </div>
       </div>
+    );
+  }
+
+  if (profileError || !profileData) {
+    return (
+      <HealthWarningsUnavailable
+        onRetry={() => {
+          void refetchProfile();
+        }}
+      />
     );
   }
 
@@ -130,15 +156,31 @@ export function HealthWarningsCard({
   // Loading warnings
   if (warningsLoading) {
     return (
-      <div className="card" data-testid="health-warnings-card">
+      <div
+        className="card"
+        data-testid="health-warnings-card"
+        role="status"
+        aria-busy="true"
+        aria-label={t("healthWarnings.loading")}
+      >
         <div className="skeleton h-4 w-40 rounded" />
         <div className="skeleton mt-2 h-3 w-64 rounded" />
       </div>
     );
   }
 
-  // No warnings — product is safe for this profile
-  if (!warningsData || warningsData.warning_count === 0) {
+  if (warningsError || !warningsData) {
+    return (
+      <HealthWarningsUnavailable
+        onRetry={() => {
+          void refetchWarnings();
+        }}
+      />
+    );
+  }
+
+  // No warnings returned for this explicit, successfully evaluated profile.
+  if (warningsData.warning_count === 0) {
     return (
       <div
         className="card border-success-border bg-success-bg"
@@ -210,6 +252,41 @@ export function HealthWarningsCard({
   );
 }
 
+function HealthWarningsUnavailable({ onRetry }: Readonly<{ onRetry: () => void }>) {
+  const { t } = useTranslation();
+
+  return (
+    <div
+      className="rounded-xl border border-warning-border bg-warning-bg p-4"
+      data-testid="health-warnings-card"
+      role="alert"
+    >
+      <div className="flex items-start gap-2">
+        <AlertTriangle
+          size={20}
+          className="mt-0.5 shrink-0 text-warning-text"
+          aria-hidden="true"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-warning-text">
+            {t("healthWarnings.unavailableTitle")}
+          </p>
+          <p className="mt-0.5 text-xs text-warning-text">
+            {t("healthWarnings.unavailableDescription")}
+          </p>
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-2 text-xs font-semibold text-warning-text underline underline-offset-2"
+          >
+            {t("common.retry")}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Warning Row ────────────────────────────────────────────────────────────
 
 function WarningRow({ warning }: Readonly<{ warning: HealthWarning }>) {
@@ -244,7 +321,7 @@ export function HealthWarningBadge({
   const { t } = useTranslation();
 
   // Only fetch if user has an active profile
-  const { data: profileData } = useQuery({
+  const { data: profileData, error: profileError } = useQuery({
     queryKey: queryKeys.activeHealthProfile,
     queryFn: async () => {
       const result = await getActiveHealthProfile(supabase);
@@ -257,7 +334,7 @@ export function HealthWarningBadge({
   const hasProfile =
     profileData?.profile !== null && profileData?.profile !== undefined;
 
-  const { data: warningsData } = useQuery({
+  const { data: warningsData, error: warningsError } = useQuery({
     queryKey: queryKeys.healthWarnings(productId),
     queryFn: async () => {
       const result = await getProductHealthWarnings(supabase, productId);
@@ -267,6 +344,19 @@ export function HealthWarningBadge({
     staleTime: staleTimes.healthWarnings,
     enabled: hasProfile,
   });
+
+  if (profileError || warningsError) {
+    return (
+      <span
+        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-warning-bg text-warning-text"
+        title={t("healthWarnings.unavailableTitle")}
+        aria-label={t("healthWarnings.unavailableTitle")}
+        data-testid="health-warnings-unavailable-badge"
+      >
+        <AlertTriangle size={12} aria-hidden="true" />
+      </span>
+    );
+  }
 
   // Don't show anything if no profile or no warnings
   if (!hasProfile || !warningsData || warningsData.warning_count === 0) {
