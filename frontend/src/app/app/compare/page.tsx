@@ -60,6 +60,12 @@ export default function ComparePage() {
         canRecommendFromProvenance(provenance?.data)
       );
     }) ?? false;
+  const productProvenance = Object.fromEntries(
+    data?.products.map((product) => [
+      product.product_id,
+      provenanceById[product.product_id]?.data,
+    ]) ?? [],
+  );
 
   const exportableProducts: ExportableProduct[] = useMemo(() => {
     if (!data?.products) return [];
@@ -202,6 +208,7 @@ export default function ComparePage() {
               products={data.products}
               showAvoidBadge
               recommendationAllowed={recommendationAllowed}
+              provenanceByProductId={productProvenance}
             />
           </ErrorBoundary>
         </>

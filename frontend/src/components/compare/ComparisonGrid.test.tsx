@@ -1,4 +1,4 @@
-import type { CompareProduct } from "@/lib/types";
+import type { CompareProduct, ProductProvenance } from "@/lib/types";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ComparisonGrid } from "./ComparisonGrid";
@@ -79,6 +79,27 @@ const productB = makeProduct({
 });
 
 const products = [productA, productB];
+
+function scoreOnlyProvenance(productId: number): ProductProvenance {
+  return {
+    api_version: "2026-02-27",
+    product_id: productId,
+    product_name: `Product ${productId}`,
+    overall_trust_score: 0.9,
+    freshness_status: "fresh",
+    source_count: 1,
+    data_completeness_pct: 100,
+    field_sources: {
+      unhealthiness_score: {
+        source: "Label Scan",
+        last_updated: new Date().toISOString(),
+        confidence: 0.9,
+      },
+    },
+    trust_explanation: "Current score evidence",
+    weakest_area: { field: null, confidence: null },
+  };
+}
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
@@ -280,6 +301,43 @@ describe("ComparisonGrid", () => {
     expect(
       screen.getByTestId("desktop-comparison-ranking-withheld"),
     ).toBeInTheDocument();
+  });
+
+  it("withholds nutrient rankings and no-warning claims without field-specific provenance", () => {
+    const noFlagProducts = products.map((product) => ({
+      ...product,
+      high_salt: false,
+      high_sugar: false,
+      high_sat_fat: false,
+      high_additive_load: false,
+    }));
+    render(
+      <ComparisonGrid
+        products={noFlagProducts}
+        recommendationAllowed
+        provenanceByProductId={{
+          1: scoreOnlyProvenance(1),
+          2: scoreOnlyProvenance(2),
+        }}
+      />,
+    );
+
+    expect(screen.getByTestId("winner-announcement")).toBeInTheDocument();
+    expect(screen.queryByTestId("key-differences")).not.toBeInTheDocument();
+    expect(screen.queryByText("No warnings")).not.toBeInTheDocument();
+    expect(
+      screen.getAllByText(/Warning evidence is incomplete/).length,
+    ).toBeGreaterThanOrEqual(2);
+
+    const sugarsRow = screen.getAllByText("Sugars")[0].closest("tr");
+    const nutrientCells = sugarsRow?.querySelectorAll("td") ?? [];
+    expect(
+      [...nutrientCells].some(
+        (cell) =>
+          cell.className.includes("text-success-text") ||
+          cell.className.includes("text-error-text"),
+      ),
+    ).toBe(false);
   });
 
   it("shows score delta in winner announcement", () => {

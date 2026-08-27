@@ -134,6 +134,8 @@ export function getCellHighlightClass(
 // ─── Key differences ────────────────────────────────────────────────────────
 
 export interface KeyDifference {
+  /** Product field used for provenance validation. */
+  key: keyof CompareProduct;
   /** Row label (display name) */
   label: string;
   /** i18n key for the row label */
@@ -201,6 +203,7 @@ export function getKeyDifferences(
     if (absDiff === 0) continue;
 
     diffs.push({
+      key: row.key,
       label: row.label,
       labelKey: row.labelKey,
       values,

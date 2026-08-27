@@ -7,11 +7,12 @@
 
 import { AvoidBadge } from "@/components/product/AvoidBadge";
 import { ConfidenceBadge } from "@/components/common/ConfidenceBadge";
+import { hasUsableProvenanceField } from "@/hooks/use-product-provenance";
 import { NUTRI_COLORS, SCORE_BANDS, scoreBandFromScore } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 import { nutriScoreLabel } from "@/lib/nutri-label";
 import { toTryVitScore } from "@/lib/score-utils";
-import type { CellValue, CompareProduct } from "@/lib/types";
+import type { CellValue, CompareProduct, ProductProvenance } from "@/lib/types";
 import { Check, ChevronDown, Scale, Trophy, X as XIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -33,6 +34,8 @@ interface ComparisonGridProps {
   showAvoidBadge?: boolean;
   /** External provenance gate; false withholds ranking/recommendation UI. */
   recommendationAllowed?: boolean;
+  /** Field-level provenance used to gate individual comparisons. */
+  provenanceByProductId?: Readonly<Record<number, ProductProvenance | undefined>>;
 }
 
 /** A single comparison row definition */
@@ -169,12 +172,68 @@ const COMPARE_ROWS: CompareRow[] = [
   },
 ];
 
+const ROW_PROVENANCE_REQUIREMENTS: Readonly<
+  Record<string, { field: string; maxAgeDays: number }>
+> = {
+  unhealthiness_score: { field: "unhealthiness_score", maxAgeDays: 30 },
+  nova_group: { field: "nova_group", maxAgeDays: 365 },
+  calories: { field: "calories_100g", maxAgeDays: 120 },
+  total_fat_g: { field: "fat_100g", maxAgeDays: 120 },
+  saturated_fat_g: { field: "saturated_fat_100g", maxAgeDays: 120 },
+  sugars_g: { field: "sugars_100g", maxAgeDays: 120 },
+  salt_g: { field: "salt_100g", maxAgeDays: 120 },
+  fibre_g: { field: "fiber_100g", maxAgeDays: 120 },
+  protein_g: { field: "protein_100g", maxAgeDays: 120 },
+  carbs_g: { field: "carbs_100g", maxAgeDays: 120 },
+  additives_count: { field: "additive_count", maxAgeDays: 120 },
+  allergen_count: { field: "allergen_tags", maxAgeDays: 60 },
+};
+
+const WARNING_PROVENANCE_REQUIREMENTS = [
+  ROW_PROVENANCE_REQUIREMENTS.salt_g,
+  ROW_PROVENANCE_REQUIREMENTS.sugars_g,
+  ROW_PROVENANCE_REQUIREMENTS.saturated_fat_g,
+  ROW_PROVENANCE_REQUIREMENTS.additives_count,
+] as const;
+
+function hasRowRankingEvidence(
+  rowKey: string,
+  products: readonly CompareProduct[],
+  provenanceByProductId: ComparisonGridProps["provenanceByProductId"],
+): boolean {
+  if (!provenanceByProductId) return true;
+  const requirement = ROW_PROVENANCE_REQUIREMENTS[rowKey];
+  if (!requirement) return false;
+  return products.every((product) =>
+    hasUsableProvenanceField(
+      provenanceByProductId[product.product_id],
+      requirement.field,
+      requirement.maxAgeDays,
+    ),
+  );
+}
+
+function hasUsableWarningProvenance(
+  product: CompareProduct,
+  provenanceByProductId: ComparisonGridProps["provenanceByProductId"],
+): boolean {
+  if (!provenanceByProductId) return true;
+  return WARNING_PROVENANCE_REQUIREMENTS.every((requirement) =>
+    hasUsableProvenanceField(
+      provenanceByProductId[product.product_id],
+      requirement.field,
+      requirement.maxAgeDays,
+    ),
+  );
+}
+
 // ─── Desktop Grid ───────────────────────────────────────────────────────────
 
 function DesktopGrid({
   products,
   showAvoidBadge,
   recommendationAllowed,
+  provenanceByProductId,
 }: Readonly<ComparisonGridProps>) {
   const { t } = useTranslation();
   const canRank =
@@ -275,7 +334,10 @@ function DesktopGrid({
               const v = row.getValue(p);
               return typeof v === "number" ? v : null;
             });
-            const ranking = canRank
+            const rowCanRank =
+              canRank &&
+              hasRowRankingEvidence(row.key, products, provenanceByProductId);
+            const ranking = rowCanRank
               ? getBestWorst(values, row.betterDirection)
               : null;
 
@@ -292,7 +354,7 @@ function DesktopGrid({
                   const cellClass = getCellHighlightClass(
                     i,
                     ranking,
-                    winnerIdx,
+                    rowCanRank ? winnerIdx : null,
                   );
 
                   return (
@@ -372,7 +434,8 @@ function DesktopGrid({
                         </span>
                       ))}
                     </div>
-                  ) : hasWarningEvidence(p) ? (
+                  ) : hasWarningEvidence(p) &&
+                    hasUsableWarningProvenance(p, provenanceByProductId) ? (
                     <span className="text-success-text">
                       {t("compare.noWarnings")}
                     </span>
@@ -429,6 +492,7 @@ function MobileSwipeView({
   products,
   showAvoidBadge,
   recommendationAllowed,
+  provenanceByProductId,
 }: Readonly<ComparisonGridProps>) {
   const { t } = useTranslation();
   const [activeIdx, setActiveIdx] = useState(0);
@@ -437,7 +501,15 @@ function MobileSwipeView({
   const canRank =
     recommendationAllowed ?? hasRecommendationEvidence(products);
   const winnerIdx = canRank ? getWinnerIndex(products) : null;
-  const keyDiffs = canRank ? getKeyDifferences(products) : [];
+  const keyDiffs = canRank
+    ? getKeyDifferences(products).filter((difference) =>
+        hasRowRankingEvidence(
+          difference.key,
+          products,
+          provenanceByProductId,
+        ),
+      )
+    : [];
   const scoreDelta =
     winnerIdx == null
       ? null
@@ -675,7 +747,13 @@ function MobileSwipeView({
                   const v = row.getValue(p);
                   return typeof v === "number" ? v : null;
                 });
-                const ranking = canRank
+                const ranking =
+                  canRank &&
+                  hasRowRankingEvidence(
+                    row.key,
+                    products,
+                    provenanceByProductId,
+                  )
                   ? getBestWorst(allValues, row.betterDirection)
                   : null;
                 let indicator = "";
@@ -756,7 +834,11 @@ function MobileSwipeView({
                 !product.high_sugar &&
                 !product.high_sat_fat &&
                 !product.high_additive_load &&
-                hasWarningEvidence(product) && (
+                hasWarningEvidence(product) &&
+                hasUsableWarningProvenance(
+                  product,
+                  provenanceByProductId,
+                ) && (
                   <span className="text-sm text-success-text">
                     {t("compare.noWarnings")}
                   </span>
@@ -765,7 +847,11 @@ function MobileSwipeView({
                 !product.high_sugar &&
                 !product.high_sat_fat &&
                 !product.high_additive_load &&
-                !hasWarningEvidence(product) && (
+                (!hasWarningEvidence(product) ||
+                  !hasUsableWarningProvenance(
+                    product,
+                    provenanceByProductId,
+                  )) && (
                   <span className="text-sm text-warning-text">
                     {t("trust.evidence.warningEvidenceUnavailable")}
                   </span>
@@ -792,6 +878,7 @@ export function ComparisonGrid({
   products,
   showAvoidBadge = false,
   recommendationAllowed,
+  provenanceByProductId,
 }: Readonly<ComparisonGridProps>) {
   const { t } = useTranslation();
 
@@ -818,11 +905,13 @@ export function ComparisonGrid({
         products={products}
         showAvoidBadge={showAvoidBadge}
         recommendationAllowed={recommendationAllowed}
+        provenanceByProductId={provenanceByProductId}
       />
       <MobileSwipeView
         products={products}
         showAvoidBadge={showAvoidBadge}
         recommendationAllowed={recommendationAllowed}
+        provenanceByProductId={provenanceByProductId}
       />
     </>
   );

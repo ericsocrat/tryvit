@@ -18,6 +18,10 @@ import { AvoidBadge } from "@/components/product/AvoidBadge";
 import { HealthWarningBadge } from "@/components/product/HealthWarningsCard";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useProductAllergenWarnings } from "@/hooks/use-product-allergens";
+import {
+  canRecommendFromProvenance,
+  useProductProvenance,
+} from "@/hooks/use-product-provenance";
 import type { AllergenWarning } from "@/lib/allergen-matching";
 import { getCategoryListing, getCategoryOverview } from "@/lib/api";
 import { SCORE_BANDS } from "@/lib/constants";
@@ -115,6 +119,11 @@ export default function CategoryListingPage() {
     data?.products.map((p) => p.product_id) ?? [],
   );
   const allergenMap = allergenState.warnings;
+  const topProductId = data?.products[0]?.product_id ?? 0;
+  const topProductProvenance = useProductProvenance(
+    topProductId,
+    offset === 0 && sortBy === "score" && sortDir === "asc",
+  );
 
   // Reuse cached category overview for summary stats
   const { data: overviewData } = useQuery({
@@ -298,7 +307,10 @@ export default function CategoryListingPage() {
                 sortBy === "score" &&
                 sortDir === "asc" &&
                 p.product_id === data.products[0]?.product_id &&
-                hasCategoryRecommendationEvidence(p)
+                hasCategoryRecommendationEvidence(p) &&
+                !topProductProvenance.isLoading &&
+                !topProductProvenance.error &&
+                canRecommendFromProvenance(topProductProvenance.data)
               }
             />
           ))}
