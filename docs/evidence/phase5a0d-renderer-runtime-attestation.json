@@ -1,30 +1,17 @@
 {
-  "schemaVersion": 2,
-  "attestationType": "phase5a0d-renderer-runtime-source-equivalence",
-  "baseCommit": "9c1bab1b4eac28d2cfe24a7cea1f0759fac1eafd",
-  "candidateSource": {
-    "headSha": "30713793b5cdbbc7fbd30d82ad501baeb3ee376d",
-    "tree": "d849c526f77d1647367afee3ffbe33602b26b0e6"
-  },
-  "synchronizedImplementation": {
-    "prNumber": 1301,
-    "headSha": "bdf8fe43f265538a5c893cf2ebab4251c1f50374",
-    "tree": "82b173904de37d87eae3714f903bc06e2b3be537"
-  },
+  "schemaVersion": 1,
+  "attestationType": "phase5a0d-renderer-runtime-metadata-only",
+  "baseCommit": "b29a9a5c54781267d1d08790cfda4bd315f2067e",
   "candidate": {
-    "workflowRunId": 32960692850,
+    "workflowRunId": 33080678351,
     "workflowRunAttempt": 1,
-    "runCreatedAt": "2026-08-26T10:55:26Z",
-    "runCompletedAt": "2026-08-26T11:02:19Z",
-    "artifactId": 9603940210,
-    "artifactName": "phase5a0d-visual-baseline-candidates-30713793b5cdbbc7fbd30d82ad501baeb3ee376d",
-    "archiveDigest": "sha256:215ac8a485d4688cb862064d3bc79632c3ec714ba107e72e1d72fecc903b1600",
-    "archiveBytes": 664371,
-    "determinismArtifactId": 9603940897,
-    "determinismArtifactName": "phase5a0d-visual-determinism-evidence-30713793b5cdbbc7fbd30d82ad501baeb3ee376d",
-    "determinismArchiveDigest": "sha256:27187a9b93d5799666c373b0cbfb71ff5ca724d477ca166568f8920f6b3e06a1",
-    "determinismArchiveBytes": 4273,
-    "sourceCommit": "30713793b5cdbbc7fbd30d82ad501baeb3ee376d"
+    "runCreatedAt": "2026-08-27T14:09:27Z",
+    "runCompletedAt": "2026-08-27T14:18:00Z",
+    "artifactId": 9650203838,
+    "artifactName": "phase5a0d-visual-baseline-candidates-b29a9a5c54781267d1d08790cfda4bd315f2067e",
+    "archiveDigest": "sha256:98a7672be65375a60aa23183b7a5701967af07a16d55da58107f56f41cd61d38",
+    "archiveBytes": 664369,
+    "sourceCommit": "b29a9a5c54781267d1d08790cfda4bd315f2067e"
   },
   "oldManifest": {
     "manifestSha256": "4206f471b374593b514a30b25ae20b1cd6696606db1381f998e39a5ed5baae88",
@@ -40,9 +27,9 @@
     }
   },
   "newManifest": {
-    "manifestSha256": "30cb813d8910085f746bf347153e44a208ff2c3a285e2f7dc7d99ed558241de1",
-    "manifestChecksum": "4277d9073c7dbf7ad7bd3e47ef70110d9a6b7bc9df3c87408528c7ddcd445d1f",
-    "sourceCommit": "30713793b5cdbbc7fbd30d82ad501baeb3ee376d",
+    "manifestSha256": "eff050892202b62f50afa232d017931264fe7ad3d30da82649de91c21122b7c9",
+    "manifestChecksum": "f9e8f3506cc96bab4ded172607bdd8bb7155254934513cb57340d3934a0b7f44",
+    "sourceCommit": "b29a9a5c54781267d1d08790cfda4bd315f2067e",
     "runnerImageVersion": "20260823.283.1",
     "versions": {
       "node": "v22.21.1",

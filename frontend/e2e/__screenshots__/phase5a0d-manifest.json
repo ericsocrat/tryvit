@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a0d-visual-baselines",
-  "sourceCommit": "30713793b5cdbbc7fbd30d82ad501baeb3ee376d",
+  "sourceCommit": "b29a9a5c54781267d1d08790cfda4bd315f2067e",
   "rendererClass": "ci-linux-authoritative",
   "runner": {
     "imageOS": "ubuntu24",
@@ -114,5 +114,5 @@
       "bytes": 61059
     }
   ],
-  "manifestChecksum": "4277d9073c7dbf7ad7bd3e47ef70110d9a6b7bc9df3c87408528c7ddcd445d1f"
+  "manifestChecksum": "f9e8f3506cc96bab4ded172607bdd8bb7155254934513cb57340d3934a0b7f44"
 }
