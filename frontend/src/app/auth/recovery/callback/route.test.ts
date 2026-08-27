@@ -37,6 +37,10 @@ describe("Auth recovery callback", () => {
   });
 
   it("exchanges an empty value and fails closed when code is missing", async () => {
+    mockExchangeCode.mockResolvedValue({
+      data: { session: null },
+      error: new Error("missing code"),
+    });
     const response = await GET(makeRequest("/auth/recovery/callback"));
     const destination = new URL(response.headers.get("location")!);
 

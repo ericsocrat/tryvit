@@ -32,8 +32,8 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code ?? "");
-    if (!code || error) {
-      reportRecoveryFailure(error ?? new Error("Missing recovery callback code"));
+    if (error) {
+      reportRecoveryFailure(error);
       return redirectToExpiredLogin(request, redirect);
     }
   } catch (error) {

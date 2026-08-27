@@ -48,6 +48,10 @@ describe("Auth callback GET route", () => {
   });
 
   it("fails closed to the expired-session state when no code is present", async () => {
+    mockExchangeCode.mockResolvedValue({
+      data: { session: null },
+      error: new Error("missing code"),
+    });
     const res = await GET(makeRequest("/auth/callback"));
 
     expect(createServerSupabaseClient).toHaveBeenCalled();

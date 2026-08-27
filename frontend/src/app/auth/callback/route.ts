@@ -58,8 +58,8 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code ?? "");
-    if (!code || error) {
-      reportCallbackFailure(error ?? new Error("Missing auth callback code"));
+    if (error) {
+      reportCallbackFailure(error);
       return redirectToLogin(request, "expired", redirect);
     }
     logger.info("Auth callback success", { route: "/auth/callback", method: "GET" });
