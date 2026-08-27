@@ -73,7 +73,7 @@ describe("product provenance disposition", () => {
     ).toBe("expired");
   });
 
-  it("withholds recommendations only when provenance is absent, uncollected, or expired", () => {
+  it("withholds recommendations for absent, uncollected, expired, or low-trust provenance", () => {
     expect(canRecommendFromProvenance(provenance())).toBe(true);
     expect(
       canRecommendFromProvenance(provenance({ freshness_status: "stale" })),
@@ -81,6 +81,11 @@ describe("product provenance disposition", () => {
     expect(canRecommendFromProvenance(provenance({ field_sources: {} }))).toBe(
       false,
     );
+    expect(
+      canRecommendFromProvenance(
+        provenance({ overall_trust_score: 0.3 }),
+      ),
+    ).toBe(false);
     expect(
       canRecommendFromProvenance(
         provenance({ freshness_status: "expired" }),

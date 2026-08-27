@@ -39,7 +39,12 @@ export function canRecommendFromProvenance(
 ): boolean {
   if (!provenance) return false;
   const disposition = getProvenanceDisposition(provenance);
-  return disposition === "confirmed" || disposition === "provisional";
+  return (
+    disposition === "confirmed" ||
+    (disposition === "provisional" &&
+      provenance.overall_trust_score != null &&
+      provenance.overall_trust_score >= 0.5)
+  );
 }
 
 async function fetchProductProvenance(productId: number) {
