@@ -443,7 +443,7 @@ describe("cold-browser route JavaScript evidence", () => {
       "route-ready-marker-duplicate",
       "route-identity-boundary-mismatch",
       "Welcome back",
-      "mailto:hello@example.com",
+      "https://github.com/ericsocrat/tryvit/issues/new",
       "new-user-welcome",
       "QA Dairy Milk Gouda 45%",
       "QA Test Brand",
