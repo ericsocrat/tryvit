@@ -57,6 +57,9 @@ function isCompareProduct(value: unknown): value is CompareProduct {
   const numericFields = [
     "product_id",
     "unhealthiness_score",
+    "data_completeness_pct",
+  ] as const;
+  const nullableNumericFields = [
     "calories",
     "total_fat_g",
     "saturated_fat_g",
@@ -67,7 +70,6 @@ function isCompareProduct(value: unknown): value is CompareProduct {
     "additives_count",
     "ingredient_count",
     "allergen_count",
-    "data_completeness_pct",
   ] as const;
   const stringFields = [
     "product_name",
@@ -83,6 +85,9 @@ function isCompareProduct(value: unknown): value is CompareProduct {
 
   return (
     numericFields.every((field) => isFiniteNumber(value[field])) &&
+    nullableNumericFields.every(
+      (field) => value[field] === null || isFiniteNumber(value[field]),
+    ) &&
     stringFields.every((field) => typeof value[field] === "string") &&
     booleanFields.every((field) => typeof value[field] === "boolean") &&
     isNullableString(value.ean) &&

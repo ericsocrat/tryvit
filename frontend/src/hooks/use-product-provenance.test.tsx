@@ -97,6 +97,21 @@ describe("product provenance disposition", () => {
         }),
       ),
     ).toBe("provisional");
+    expect(
+      getProvenanceDisposition(
+        provenance({
+          field_sources: {
+            unhealthiness_score: {
+              source: "Open Food Facts",
+              last_updated: new Date(
+                Date.now() - 31 * 24 * 60 * 60 * 1000,
+              ).toISOString(),
+              confidence: 0.9,
+            },
+          },
+        }),
+      ),
+    ).toBe("provisional");
   });
 
   it("withholds recommendations for absent, uncollected, expired, or low-trust provenance", () => {
