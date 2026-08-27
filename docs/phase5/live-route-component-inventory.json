@@ -4,7 +4,7 @@
   "provenance": {
     "baseSha": "b29a9a5c54781267d1d08790cfda4bd315f2067e",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "1a7a3eea5f6c4f247e6e3efd55773c234a56a7ab1e592319bed551d9cf3f9ddc"
+    "sourceFingerprint": "6da3aea77181369665702d04624949d03ffd3dd3958bc1952b9654b5311d0cf5"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12,10 +12,10 @@
     "frontend/src/design-system"
   ],
   "moduleCounts": {
-    "total": 448,
+    "total": 449,
     "route-module": 94,
     "app-support-module": 87,
-    "shared-component-module": 197,
+    "shared-component-module": 198,
     "design-system-module": 70
   },
   "modules": [
@@ -2408,7 +2408,7 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/common/Logo.tsx",
+        "frontend/src/components/auth/AuthCurrentLogo.tsx",
         "frontend/src/lib/i18n.ts"
       ],
       "directConsumers": [],
@@ -6553,6 +6553,33 @@
       "classifiedLegacyDebt": []
     },
     {
+      "path": "frontend/src/components/auth/AuthCurrentLogo.tsx",
+      "classification": "shared-component-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "client-reachable",
+      "directModuleImports": [],
+      "directConsumers": [
+        "frontend/src/app/auth/layout.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/auth/layout.tsx",
+          "routeModuleKind": "layout",
+          "routePath": "/auth"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
       "path": "frontend/src/components/auth/SocialLoginButtons.tsx",
       "classification": "shared-component-module",
       "routeModuleKind": null,
@@ -8378,7 +8405,6 @@
       "directModuleImports": [],
       "directConsumers": [
         "frontend/src/app/app/layout.tsx",
-        "frontend/src/app/auth/layout.tsx",
         "frontend/src/app/compare/shared/[token]/page.tsx",
         "frontend/src/app/lists/shared/[token]/page.tsx",
         "frontend/src/app/onboarding/layout.tsx",
@@ -8391,11 +8417,6 @@
           "modulePath": "frontend/src/app/app/layout.tsx",
           "routeModuleKind": "layout",
           "routePath": "/app"
-        },
-        {
-          "modulePath": "frontend/src/app/auth/layout.tsx",
-          "routeModuleKind": "layout",
-          "routePath": "/auth"
         },
         {
           "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
@@ -21179,9 +21200,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 558,
+    "inspectedModuleCount": 559,
     "violations": [],
-    "sourceFingerprint": "c6b03a7b4829aba461eb2de44a40dc0824d76dec1b010b9ae56513e06080fd2f"
+    "sourceFingerprint": "ae9d4d9eb55dbcfe41d2166ff74cc84a2ca6d3e4df832acb4de620fac84b6638"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

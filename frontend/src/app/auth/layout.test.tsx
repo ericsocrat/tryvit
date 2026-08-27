@@ -54,7 +54,7 @@ describe("AuthLayout", () => {
       </AuthLayout>,
     );
     expect(screen.getAllByRole("img", { name: "TryVit" })).toHaveLength(2);
-    expect(document.querySelectorAll('[data-landing-lockup="horizontal"]')).toHaveLength(2);
+    expect(document.querySelectorAll('[data-auth-current-lockup="horizontal"]')).toHaveLength(2);
     expect(screen.getAllByText("Private beta").length).toBeGreaterThanOrEqual(1);
   });
 });

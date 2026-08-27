@@ -48,14 +48,13 @@
   transform: rotate(-12deg);
 }
 
-.authLockup,
-.authLockup > [data-landing-lockup] {
+.authLockup {
   display: inline-flex;
   align-items: center;
   gap: 0.7rem;
 }
 
-.authLockup [data-landing-lockup="horizontal"] > svg:first-child {
+.authLockup > svg:first-child {
   flex: 0 0 auto;
 }
 
@@ -70,7 +69,7 @@
   color: #fffaf0;
 }
 
-.brandLockup [data-landing-lockup="horizontal"] > svg:first-child {
+.brandLockup > svg:first-child {
   width: 40px;
   height: 40px;
 }
@@ -81,7 +80,7 @@
   color: #123d2c;
 }
 
-.mobileLockup [data-landing-lockup="horizontal"] > svg:first-child {
+.mobileLockup > svg:first-child {
   width: 32px;
   height: 32px;
 }
