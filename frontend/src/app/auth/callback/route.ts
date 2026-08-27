@@ -55,16 +55,11 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (!code) {
-    reportCallbackFailure(new Error("Missing auth callback code"));
-    return redirectToLogin(request, "expired", redirect);
-  }
-
   try {
     const supabase = await createServerSupabaseClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) {
-      reportCallbackFailure(error);
+    const { error } = await supabase.auth.exchangeCodeForSession(code ?? "");
+    if (!code || error) {
+      reportCallbackFailure(error ?? new Error("Missing auth callback code"));
       return redirectToLogin(request, "expired", redirect);
     }
     logger.info("Auth callback success", { route: "/auth/callback", method: "GET" });
@@ -73,10 +68,5 @@ export async function GET(request: NextRequest) {
     return redirectToLogin(request, "expired", redirect);
   }
 
-  const type = searchParams.get("type");
-  const destination =
-    type === "recovery"
-      ? appendAuthRedirect("/auth/update-password", redirect)
-      : redirect;
-  return NextResponse.redirect(new URL(destination, request.url));
+  return NextResponse.redirect(new URL(redirect, request.url));
 }

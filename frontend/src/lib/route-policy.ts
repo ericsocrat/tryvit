@@ -205,6 +205,16 @@ export const ROUTE_POLICY_RULES: readonly RoutePolicyRule[] = [
     requiresGracefulBackendUnavailable: true,
     auditPaths: ["/auth/callback"],
   },
+  {
+    id: "auth-recovery-callback",
+    routeClass: ROUTE_CLASS.authCallback,
+    matcher: { kind: "exact", path: "/auth/recovery/callback" },
+    authenticationLookup: "never",
+    allowsSignedInRedirect: false,
+    requiresAnonymousAccess: true,
+    requiresGracefulBackendUnavailable: true,
+    auditPaths: ["/auth/recovery/callback"],
+  },
   publicSystem(
     "pwa-manifest",
     { kind: "exact", path: "/manifest.webmanifest" },

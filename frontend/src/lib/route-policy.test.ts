@@ -54,6 +54,9 @@ describe("route policy", () => {
 
   it("normalizes a trailing slash without treating a query string as a pathname", () => {
     expect(getRoutePolicy("/auth/login/").id).toBe("auth-login");
+    expect(getRoutePolicy("/auth/recovery/callback/").id).toBe(
+      "auth-recovery-callback",
+    );
     expect(getRoutePolicy("/learn/allergens?source=policy").id).toBe("learn");
   });
 

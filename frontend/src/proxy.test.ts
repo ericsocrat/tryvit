@@ -233,6 +233,7 @@ describe("proxy", () => {
       "/favicon.ico",
       "/icons/icon-192.png",
       "/auth/callback",
+      "/auth/recovery/callback",
       "/auth/forgot-password",
       "/auth/update-password",
       "/?utm_source=test",

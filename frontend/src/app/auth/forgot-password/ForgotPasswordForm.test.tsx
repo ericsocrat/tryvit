@@ -94,7 +94,7 @@ describe("ForgotPasswordForm", () => {
     await waitFor(() => {
       expect(mockResetPassword).toHaveBeenCalledWith("test@example.com", {
         redirectTo: expect.stringMatching(
-          /\/auth\/callback\?type=recovery&redirect=%2Fapp%2Fproduct%2F42/u,
+          /\/auth\/recovery\/callback\?redirect=%2Fapp%2Fproduct%2F42/u,
         ),
       });
     });

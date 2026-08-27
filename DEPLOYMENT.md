@@ -103,6 +103,7 @@ These are public keys (embedded in the client bundle). The anon key only grants 
 3. Add **Redirect URLs** (at minimum):
    ```
    https://tryvit.app/auth/callback
+   https://tryvit.app/auth/recovery/callback
    ```
 4. Click **Save**
 

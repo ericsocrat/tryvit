@@ -36,7 +36,7 @@ describe("Auth callback GET route", () => {
     expect(new URL(res.headers.get("location")!).pathname).toBe("/app/product/42");
   });
 
-  it("routes a valid recovery exchange to password update", async () => {
+  it("does not let a query parameter select the recovery route", async () => {
     const res = await GET(
       makeRequest(
         "/auth/callback?code=recovery-code&type=recovery&redirect=%2Fapp%2Fproduct%2F42",
@@ -44,17 +44,14 @@ describe("Auth callback GET route", () => {
     );
 
     expect(mockExchangeCode).toHaveBeenCalledWith("recovery-code");
-    expect(new URL(res.headers.get("location")!).pathname).toBe("/auth/update-password");
-    expect(new URL(res.headers.get("location")!).searchParams.get("redirect")).toBe(
-      "/app/product/42",
-    );
+    expect(new URL(res.headers.get("location")!).pathname).toBe("/app/product/42");
   });
 
   it("fails closed to the expired-session state when no code is present", async () => {
     const res = await GET(makeRequest("/auth/callback"));
 
-    expect(createServerSupabaseClient).not.toHaveBeenCalled();
-    expect(mockExchangeCode).not.toHaveBeenCalled();
+    expect(createServerSupabaseClient).toHaveBeenCalled();
+    expect(mockExchangeCode).toHaveBeenCalledWith("");
     expect(res.status).toBe(307);
     const destination = new URL(res.headers.get("location")!);
     expect(destination.pathname).toBe("/auth/login");

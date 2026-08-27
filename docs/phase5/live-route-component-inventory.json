@@ -4,7 +4,7 @@
   "provenance": {
     "baseSha": "b29a9a5c54781267d1d08790cfda4bd315f2067e",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "716209804711e9c598e235ad628e550b251dfa484cf4b30155cb70f1c8f24f34"
+    "sourceFingerprint": "1a7a3eea5f6c4f247e6e3efd55773c234a56a7ab1e592319bed551d9cf3f9ddc"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12,8 +12,8 @@
     "frontend/src/design-system"
   ],
   "moduleCounts": {
-    "total": 447,
-    "route-module": 93,
+    "total": 448,
+    "route-module": 94,
     "app-support-module": 87,
     "shared-component-module": 197,
     "design-system-module": 70
@@ -2519,6 +2519,35 @@
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/auth/recovery/callback/route.ts",
+      "classification": "route-module",
+      "routeModuleKind": "route",
+      "routePath": "/auth/recovery/callback",
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/lib/logger.ts",
+        "frontend/src/lib/supabase/server.ts",
+        "frontend/src/lib/validation.ts"
+      ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/auth/recovery/callback/route.ts",
+          "routeModuleKind": "route",
+          "routePath": "/auth/recovery/callback"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "retain-behavior",
+      "migrationGate": "behavior-regression-verification",
+      "removalGate": "explicit-retirement-approval-and-behavior-consumers-migrated",
       "designSystemStatus": "v1",
       "classifiedLegacyDebt": []
     },
@@ -21150,9 +21179,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 557,
+    "inspectedModuleCount": 558,
     "violations": [],
-    "sourceFingerprint": "d8f6fb7e23de408006ec4b95e80e145feec8f84a110ba221072915e8a46c149f"
+    "sourceFingerprint": "c6b03a7b4829aba461eb2de44a40dc0824d76dec1b010b9ae56513e06080fd2f"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
