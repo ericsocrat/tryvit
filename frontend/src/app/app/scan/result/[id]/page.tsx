@@ -402,7 +402,7 @@ function HealthFlags({ product }: Readonly<{ product: ProductDetail }>) {
   ].filter(Boolean) as { emoji: string; label: string }[];
 
   const evidenceIncomplete =
-    product.trust.nutrition_data_quality !== "complete" ||
+    product.trust.nutrition_data_quality !== "clean" ||
     product.trust.ingredient_data_quality !== "complete";
 
   if (activeFlags.length === 0 && !evidenceIncomplete) return null;

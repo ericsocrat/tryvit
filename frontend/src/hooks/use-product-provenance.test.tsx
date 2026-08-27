@@ -45,7 +45,7 @@ function provenance(
     field_sources: {
       unhealthiness_score: {
         source: "Open Food Facts",
-        last_updated: "2026-08-20T00:00:00Z",
+        last_updated: new Date().toISOString(),
         confidence: 0.9,
       },
     },
@@ -93,6 +93,45 @@ describe("product provenance disposition", () => {
             brand: {
               source: "Open Food Facts",
               last_updated: "2026-08-20T00:00:00Z",
+              confidence: 0.9,
+            },
+          },
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      canRecommendFromProvenance(
+        provenance({
+          field_sources: {
+            unhealthiness_score: {
+              source: "Open Food Facts",
+              last_updated: new Date().toISOString(),
+              confidence: 0.3,
+            },
+          },
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      canRecommendFromProvenance(
+        provenance({
+          field_sources: {
+            unhealthiness_score: {
+              source: "Open Food Facts",
+              last_updated: "2025-01-01T00:00:00Z",
+              confidence: 0.9,
+            },
+          },
+        }),
+      ),
+    ).toBe(false);
+    expect(
+      canRecommendFromProvenance(
+        provenance({
+          field_sources: {
+            unhealthiness_score: {
+              source: "Open Food Facts",
+              last_updated: "not-a-date",
               confidence: 0.9,
             },
           },

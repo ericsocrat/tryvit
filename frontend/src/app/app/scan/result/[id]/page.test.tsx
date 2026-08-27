@@ -402,6 +402,31 @@ describe("ScanResultPage", () => {
         expect(screen.getByTestId("health-warnings-card")).toBeInTheDocument();
       });
     });
+
+    it("does not claim warning evidence is unavailable when nutrition is clean and ingredients are complete", async () => {
+      const product = makeProduct();
+      mockGetProductDetail.mockResolvedValue({
+        ok: true,
+        data: {
+          ...product,
+          trust: {
+            ...product.trust,
+            nutrition_data_quality: "clean",
+            ingredient_data_quality: "complete",
+          },
+        },
+      });
+      mockGetBetterAlternatives.mockResolvedValue(makeAlternatives());
+
+      render(<ScanResultPage />, { wrapper: createWrapper() });
+
+      await waitFor(() => {
+        expect(screen.getByText("Nutrition per 100 g")).toBeInTheDocument();
+      });
+      expect(
+        screen.queryByText("Warning evidence is unavailable"),
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe("nutrition summary", () => {

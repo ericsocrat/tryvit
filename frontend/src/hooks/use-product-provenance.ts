@@ -12,12 +12,21 @@ export type ProvenanceDisposition =
   | "not_collected"
   | "expired";
 
+const SCORE_PROVENANCE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
 function hasFieldSources(provenance: ProductProvenance): boolean {
   return Object.keys(provenance.field_sources ?? {}).length > 0;
 }
 
-function hasScoreProvenance(provenance: ProductProvenance): boolean {
-  return provenance.field_sources?.unhealthiness_score != null;
+function hasUsableScoreProvenance(provenance: ProductProvenance): boolean {
+  const scoreSource = provenance.field_sources?.unhealthiness_score;
+  if (!scoreSource || scoreSource.confidence < 0.5) return false;
+
+  const updatedAt = Date.parse(scoreSource.last_updated);
+  if (!Number.isFinite(updatedAt)) return false;
+
+  const ageMs = Date.now() - updatedAt;
+  return ageMs >= 0 && ageMs <= SCORE_PROVENANCE_MAX_AGE_MS;
 }
 
 export function getProvenanceDisposition(
@@ -44,7 +53,7 @@ export function canRecommendFromProvenance(
   if (!provenance) return false;
   const disposition = getProvenanceDisposition(provenance);
   return (
-    hasScoreProvenance(provenance) &&
+    hasUsableScoreProvenance(provenance) &&
     (disposition === "confirmed" ||
       (disposition === "provisional" &&
         provenance.overall_trust_score != null &&
