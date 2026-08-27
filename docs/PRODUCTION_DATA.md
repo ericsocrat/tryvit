@@ -45,7 +45,7 @@
 
 ### 1.2 Migration Inventory
 
-**Location:** `supabase/migrations/` — **233 migration files**, append-only.
+**Location:** `supabase/migrations/` — **234 migration files**, append-only.
 
 **Naming convention:** `YYYYMMDDHHMMSS_description.sql` (Supabase CLI timestamps). Files are applied in lexicographic sort order.
 
@@ -329,7 +329,7 @@ There is no standalone `init_db_structure.py` script. Database initialization fo
 
 ```
 supabase db reset
-  → Applies all 233 migrations in order (supabase/migrations/*.sql)
+  → Applies all 234 migrations in order (supabase/migrations/*.sql)
   → Runs seed.sql (empty — no-op)
   → Schema is ready
 
@@ -465,7 +465,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 
 - **EAN coverage:** 997/1,025 (97.3%)
 - **Scoring version:** v3.2 — 9-factor weighted formula
-- **QA checks:** 784 checks across 50 suites (776 blocking) — all passing
+- **QA checks:** 786 checks across 50 suites (778 blocking) — all passing
 - **Negative tests:** 20 injection tests — all caught
 - **Confidence threshold (CI):** ≤5% low-confidence products allowed
 - **CHECK constraints:** 24 domain constraints enforced at DB level
@@ -511,7 +511,7 @@ Backup = supabase/migrations/*.sql + db/pipelines/*.sql
 ```
 
 Since the database can be fully reconstructed from:
-1. 233 migration files (schema + functions + views)
+1. 234 migration files (schema + functions + views)
 2. 25 × 4 pipeline SQL files (all product data)
 3. `ci_post_pipeline.sql` (data fixups)
 

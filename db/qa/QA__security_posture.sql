@@ -253,13 +253,14 @@ FROM pg_proc p
 JOIN pg_namespace n ON p.pronamespace = n.oid
 WHERE n.nspname = 'public'
   AND p.proname LIKE 'api_%'
+  AND p.proname NOT LIKE 'api_admin_%'
   AND p.proname NOT IN (
     'api_refresh_mvs',                  -- MV refresh (service_role cron)
     'api_health_check',                 -- monitoring (service_role only)
     'api_get_pending_notifications',    -- push queue (service_role only)
     'api_mark_notifications_sent',      -- push queue (service_role only)
     'api_cleanup_push_subscriptions',   -- push cleanup (service_role only)
-    'api_admin_get_submissions'         -- admin submissions review (service_role only)
+    'api_get_event_schemas'             -- event-schema governance (service_role only)
   )
   AND NOT has_function_privilege('authenticated', p.oid, 'EXECUTE');
 
@@ -491,3 +492,113 @@ SELECT '41. check_share_limit is SECURITY DEFINER' AS check_name,
            WHERE proname = 'check_share_limit'
              AND prosecdef = true
        ) THEN 0 ELSE 1 END AS violations;
+
+-- 42. Every privileged administration/operations routine is service-role-only
+SELECT '42. privileged routines are service-role-only' AS check_name,
+       COUNT(*) AS violations
+FROM pg_proc p
+JOIN pg_namespace n ON p.pronamespace = n.oid
+WHERE n.nspname = 'public'
+  AND (
+    p.proname LIKE 'api_admin_%'
+    OR p.proname LIKE 'admin_%'
+    OR p.proname = ANY (ARRAY[
+      '_compute_from_config',
+      '_explain_from_config',
+      '_score_submission_quality',
+      'aggregate_daily_metrics',
+      'api_get_event_schemas',
+      'audit_band_consistency',
+      'audit_category_consistency',
+      'audit_duplicate_eans',
+      'audit_impossible_values',
+      'audit_missing_required_fields',
+      'audit_mv_staleness',
+      'audit_orphan_records',
+      'audit_score_band_contradictions',
+      'auto_link_cross_country_products',
+      'capture_score_distribution',
+      'check_api_rate_limit',
+      'check_flag_readiness',
+      'check_formula_drift',
+      'check_function_source_drift',
+      'check_scan_rate_limit',
+      'check_share_limit',
+      'check_submission_rate_limit',
+      'check_table_ceilings',
+      'complete_backfill',
+      'compute_provenance_confidence',
+      'compute_score',
+      'detect_conflict',
+      'detect_score_drift',
+      'detect_stale_products',
+      'execute_retention_cleanup',
+      'expire_stale_flags',
+      'fail_backfill',
+      'flag_health_report',
+      'governance_drift_check',
+      'log_drift_check',
+      'metric_allergen_distribution',
+      'metric_category_popularity',
+      'metric_dau',
+      'metric_failed_searches',
+      'metric_feature_usage',
+      'metric_onboarding_funnel',
+      'metric_scan_vs_search',
+      'metric_searches_per_day',
+      'metric_top_products',
+      'metric_top_queries',
+      'mv_last_refresh',
+      'mv_staleness_check',
+      'record_bulk_provenance',
+      'record_field_provenance',
+      'refresh_all_materialized_views',
+      'register_backfill',
+      'rescore_batch',
+      'resolve_conflicts_auto',
+      'run_full_data_audit',
+      'score_submission_quality',
+      'search_quality_report',
+      'snapshot_query_performance',
+      'start_backfill',
+      'update_backfill_progress',
+      'validate_country_profile',
+      'validate_product_for_country'
+    ])
+  )
+  AND (
+    has_function_privilege('anon', p.oid, 'EXECUTE')
+    OR has_function_privilege('authenticated', p.oid, 'EXECUTE')
+    OR NOT has_function_privilege('service_role', p.oid, 'EXECUTE')
+  );
+
+-- 43. Administration/operations reporting relations are service-role-only
+SELECT '43. operational relations are service-role-only' AS check_name,
+       COUNT(*) AS violations
+FROM unnest(ARRAY[
+  'public.localization_metrics',
+  'public.v_backfill_status',
+  'public.v_completeness_by_country',
+  'public.v_confidence_distribution',
+  'public.v_cross_country_ean_candidates',
+  'public.v_cross_country_scan_analytics',
+  'public.v_data_coverage_summary',
+  'public.v_data_freshness_sla',
+  'public.v_data_freshness_summary',
+  'public.v_data_gap_summary',
+  'public.v_event_analytics_summary',
+  'public.v_formula_registry',
+  'public.v_index_bloat_estimate',
+  'public.v_migration_audit',
+  'public.v_missing_indexes',
+  'public.v_provenance_health',
+  'public.v_query_regressions',
+  'public.v_scoring_drift',
+  'public.v_search_quality',
+  'public.v_submission_country_analytics',
+  'public.v_unused_indexes'
+]) AS relation(relation_name)
+WHERE to_regclass(relation_name) IS NULL
+   OR has_table_privilege('anon', to_regclass(relation_name), 'SELECT')
+   OR has_table_privilege('authenticated', to_regclass(relation_name), 'SELECT')
+   OR NOT has_table_privilege('service_role', to_regclass(relation_name), 'SELECT');
