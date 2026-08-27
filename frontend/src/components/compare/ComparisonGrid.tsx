@@ -21,6 +21,8 @@ import {
     getCellHighlightClass,
     getKeyDifferences,
     getWinnerIndex,
+    hasRecommendationEvidence,
+    hasWarningEvidence,
 } from "./comparison-helpers";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -29,6 +31,8 @@ interface ComparisonGridProps {
   products: CompareProduct[];
   /** Whether the viewer is authenticated (shows avoid badge if true) */
   showAvoidBadge?: boolean;
+  /** External provenance gate; false withholds ranking/recommendation UI. */
+  recommendationAllowed?: boolean;
 }
 
 /** A single comparison row definition */
@@ -149,15 +153,18 @@ const COMPARE_ROWS: CompareRow[] = [
   {
     label: "Additives",
     key: "additives_count",
-    getValue: (p) => p.additives_count,
+    getValue: (p) =>
+      p.ingredient_count != null && p.ingredient_count > 0
+        ? p.additives_count
+        : null,
     format: (v) => fmtStr(v),
     betterDirection: "lower",
   },
   {
     label: "Allergens",
     key: "allergen_count",
-    getValue: (p) => p.allergen_count,
-    format: (v) => fmtStr(v, "0"),
+    getValue: (p) => (p.allergen_tags == null ? null : p.allergen_count),
+    format: (v) => fmtStr(v),
     betterDirection: "lower",
   },
 ];
@@ -167,13 +174,29 @@ const COMPARE_ROWS: CompareRow[] = [
 function DesktopGrid({
   products,
   showAvoidBadge,
+  recommendationAllowed,
 }: Readonly<ComparisonGridProps>) {
   const { t } = useTranslation();
-  const winnerIdx = getWinnerIndex(products);
+  const canRank =
+    recommendationAllowed ?? hasRecommendationEvidence(products);
+  const winnerIdx = canRank ? getWinnerIndex(products) : null;
   const colCount = products.length;
 
   return (
     <div className="hidden md:block overflow-x-auto">
+      {!canRank && (
+        <div
+          className="mb-3 rounded-xl border border-warning-border bg-warning-bg p-3"
+          data-testid="desktop-comparison-ranking-withheld"
+        >
+          <p className="text-sm font-semibold text-warning-text">
+            {t("trust.evidence.comparisonUnavailable")}
+          </p>
+          <p className="mt-1 text-xs text-warning-text">
+            {t("trust.evidence.comparisonUnavailableDescription")}
+          </p>
+        </div>
+      )}
       <table className="w-full border-collapse text-sm">
         {/* Header row: product names */}
         <thead>
@@ -252,7 +275,9 @@ function DesktopGrid({
               const v = row.getValue(p);
               return typeof v === "number" ? v : null;
             });
-            const ranking = getBestWorst(values, row.betterDirection);
+            const ranking = canRank
+              ? getBestWorst(values, row.betterDirection)
+              : null;
 
             return (
               <tr key={row.key} className="border-b border">
@@ -299,7 +324,7 @@ function DesktopGrid({
                       .split(", ")
                       .map((tag) => tag.replace(/^en:/, ""))
                       .join(", ")
-                  : t("compare.none")}
+                  : t("trust.evidence.valueUnavailable")}
               </td>
             ))}
           </tr>
@@ -347,9 +372,13 @@ function DesktopGrid({
                         </span>
                       ))}
                     </div>
-                  ) : (
+                  ) : hasWarningEvidence(p) ? (
                     <span className="text-success-text">
                       {t("compare.noWarnings")}
+                    </span>
+                  ) : (
+                    <span className="text-warning-text">
+                      {t("trust.evidence.warningEvidenceUnavailable")}
                     </span>
                   )}
                 </td>
@@ -399,19 +428,25 @@ function CollapsibleSection({
 function MobileSwipeView({
   products,
   showAvoidBadge,
+  recommendationAllowed,
 }: Readonly<ComparisonGridProps>) {
   const { t } = useTranslation();
   const [activeIdx, setActiveIdx] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);
-  const winnerIdx = getWinnerIndex(products);
-  const keyDiffs = getKeyDifferences(products);
-  const scoreDelta = Math.abs(
-    toTryVitScore(products[winnerIdx].unhealthiness_score) -
-      toTryVitScore(
-        products[winnerIdx === 0 ? 1 : 0].unhealthiness_score,
-      ),
-  );
+  const canRank =
+    recommendationAllowed ?? hasRecommendationEvidence(products);
+  const winnerIdx = canRank ? getWinnerIndex(products) : null;
+  const keyDiffs = canRank ? getKeyDifferences(products) : [];
+  const scoreDelta =
+    winnerIdx == null
+      ? null
+      : Math.abs(
+          toTryVitScore(products[winnerIdx].unhealthiness_score) -
+            toTryVitScore(
+              products[winnerIdx === 0 ? 1 : 0].unhealthiness_score,
+            ),
+        );
 
   const swipeTo = useCallback(
     (idx: number) => {
@@ -485,15 +520,29 @@ function MobileSwipeView({
       </div>
 
       {/* ── Winner announcement ── */}
-      <div className="mx-4 mb-3 rounded-xl bg-success-bg p-3 text-center" data-testid="winner-announcement">
-        <Trophy size={20} aria-hidden="true" className="inline text-success-text" />
-        <p className="mt-1 text-sm font-bold text-success-text">
-          {products[winnerIdx].product_name}
-        </p>
-        <p className="text-xs text-success-text">
-          {t("compare.winnerVerdict", { points: scoreDelta })}
-        </p>
-      </div>
+      {winnerIdx == null || scoreDelta == null ? (
+        <div
+          className="mx-4 mb-3 rounded-xl border border-warning-border bg-warning-bg p-3 text-center"
+          data-testid="comparison-ranking-withheld"
+        >
+          <p className="text-sm font-semibold text-warning-text">
+            {t("trust.evidence.comparisonUnavailable")}
+          </p>
+          <p className="mt-1 text-xs text-warning-text">
+            {t("trust.evidence.comparisonUnavailableDescription")}
+          </p>
+        </div>
+      ) : (
+        <div className="mx-4 mb-3 rounded-xl bg-success-bg p-3 text-center" data-testid="winner-announcement">
+          <Trophy size={20} aria-hidden="true" className="inline text-success-text" />
+          <p className="mt-1 text-sm font-bold text-success-text">
+            {products[winnerIdx].product_name}
+          </p>
+          <p className="text-xs text-success-text">
+            {t("compare.winnerVerdict", { points: scoreDelta })}
+          </p>
+        </div>
+      )}
 
       {/* ── Key differences ── */}
       {keyDiffs.length > 0 && (
@@ -513,9 +562,10 @@ function MobileSwipeView({
                       key={products[i].product_id}
                       className={`text-xs font-medium ${i === diff.betterIdx ? "text-success-text" : "text-foreground-secondary"}`}
                     >
-                      {diff.values[i]}
-                      {diff.unit ? ` ${diff.unit}` : ""}
-                      {i === diff.betterIdx && (
+                      {diff.values[i] == null
+                        ? t("trust.evidence.valueUnavailable")
+                        : `${diff.values[i]}${diff.unit ? ` ${diff.unit}` : ""}`}
+                      {diff.values[i] != null && i === diff.betterIdx && (
                         <Check size={12} className="inline ml-0.5 text-success-text" aria-hidden="true" />
                       )}
                     </span>
@@ -542,7 +592,7 @@ function MobileSwipeView({
                   : "bg-surface-muted text-foreground-secondary"
               }`}
             >
-              {i === winnerIdx && (
+              {winnerIdx != null && i === winnerIdx && (
                 <>
                   <Trophy
                     size={12}
@@ -600,7 +650,7 @@ function MobileSwipeView({
                 <span className="rounded-full bg-surface-muted px-1.5 py-0.5 text-xs text-foreground-secondary">
                   {t("product.novaGroup", { group: product.nova_group ?? "?" })}
                 </span>
-                {activeIdx === winnerIdx && (
+                {winnerIdx != null && activeIdx === winnerIdx && (
                   <span className="rounded-full bg-success-bg px-1.5 py-0.5 text-xs font-bold text-success-text">
                     <Trophy size={12} aria-hidden="true" className="inline" />{" "}
                     {t("compare.best")}
@@ -625,7 +675,9 @@ function MobileSwipeView({
                   const v = row.getValue(p);
                   return typeof v === "number" ? v : null;
                 });
-                const ranking = getBestWorst(allValues, row.betterDirection);
+                const ranking = canRank
+                  ? getBestWorst(allValues, row.betterDirection)
+                  : null;
                 let indicator = "";
                 if (ranking) {
                   if (activeIdx === ranking.bestIdx)
@@ -673,7 +725,7 @@ function MobileSwipeView({
                     .split(", ")
                     .map((tag) => tag.replace(/^en:/, ""))
                     .join(", ")
-                : t("compare.noneDeclared")}
+                : t("trust.evidence.valueUnavailable")}
             </p>
           </CollapsibleSection>
 
@@ -703,9 +755,19 @@ function MobileSwipeView({
               {!product.high_salt &&
                 !product.high_sugar &&
                 !product.high_sat_fat &&
-                !product.high_additive_load && (
+                !product.high_additive_load &&
+                hasWarningEvidence(product) && (
                   <span className="text-sm text-success-text">
                     {t("compare.noWarnings")}
+                  </span>
+                )}
+              {!product.high_salt &&
+                !product.high_sugar &&
+                !product.high_sat_fat &&
+                !product.high_additive_load &&
+                !hasWarningEvidence(product) && (
+                  <span className="text-sm text-warning-text">
+                    {t("trust.evidence.warningEvidenceUnavailable")}
                   </span>
                 )}
             </div>
@@ -729,6 +791,7 @@ function MobileSwipeView({
 export function ComparisonGrid({
   products,
   showAvoidBadge = false,
+  recommendationAllowed,
 }: Readonly<ComparisonGridProps>) {
   const { t } = useTranslation();
 
@@ -751,8 +814,16 @@ export function ComparisonGrid({
 
   return (
     <>
-      <DesktopGrid products={products} showAvoidBadge={showAvoidBadge} />
-      <MobileSwipeView products={products} showAvoidBadge={showAvoidBadge} />
+      <DesktopGrid
+        products={products}
+        showAvoidBadge={showAvoidBadge}
+        recommendationAllowed={recommendationAllowed}
+      />
+      <MobileSwipeView
+        products={products}
+        showAvoidBadge={showAvoidBadge}
+        recommendationAllowed={recommendationAllowed}
+      />
     </>
   );
 }

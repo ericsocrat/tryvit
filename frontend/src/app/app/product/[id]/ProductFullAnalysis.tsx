@@ -40,6 +40,8 @@ interface ProductFullAnalysisProps {
   readonly activeTab: ProductAnalysisTab;
   readonly onActiveTabChange: Dispatch<SetStateAction<ProductAnalysisTab>>;
   readonly onCollapse: () => void;
+  readonly recommendationsAllowed: boolean;
+  readonly scoreProvisional: boolean;
 }
 
 export default function ProductFullAnalysis({
@@ -48,6 +50,8 @@ export default function ProductFullAnalysis({
   activeTab,
   onActiveTabChange,
   onCollapse,
+  recommendationsAllowed,
+  scoreProvisional,
 }: ProductFullAnalysisProps) {
   const { t } = useTranslation();
   const touchStartX = useRef(0);
@@ -151,12 +155,20 @@ export default function ProductFullAnalysis({
           {activeTab === "overview" && <OverviewTab profile={profile} />}
           {activeTab === "nutrition" && <NutritionTab profile={profile} />}
           {activeTab === "alternatives" && (
-            <AlternativesSection
-              alternatives={profile.alternatives}
-              currentScore={profile.scores.unhealthiness_score}
-            />
+            recommendationsAllowed ? (
+              <AlternativesSection
+                alternatives={profile.alternatives}
+                currentScore={profile.scores.unhealthiness_score}
+              />
+            ) : (
+              <div className="rounded-xl border border-warning-border bg-warning-bg p-4 text-sm text-warning-text">
+                {t("trust.evidence.recommendationsWithheld")}
+              </div>
+            )
           )}
-          {activeTab === "scoring" && <ScoringTab profile={profile} />}
+          {activeTab === "scoring" && (
+            <ScoringTab profile={profile} scoreProvisional={scoreProvisional} />
+          )}
         </ErrorBoundary>
       </div>
     </>
@@ -226,27 +238,43 @@ function NutritionTab({ profile }: Readonly<{ profile: ProductProfile }>) {
   const dv = profile.nutrition.daily_values;
   const dvData = view === "perServing" ? (dv?.per_serving ?? null) : (dv?.per_100g ?? null);
 
-  const energyKj = Math.round(n.calories_kcal * 4.184);
-  const sodiumMg = Math.round(n.salt_g * 400);
+  const energyKj =
+    n.calories_kcal == null ? null : Math.round(n.calories_kcal * 4.184);
+  const sodiumMg = n.salt_g == null ? null : Math.round(n.salt_g * 400);
+
+  function nutritionValue(value: number | null, unit: string): string {
+    return value == null
+      ? t("trust.evidence.valueUnavailable")
+      : `${value} ${unit}`;
+  }
 
   const rows = [
     {
       label: t("product.caloriesLabel"),
-      value: `${n.calories_kcal} kcal / ${energyKj} kJ`,
+      value:
+        n.calories_kcal == null || energyKj == null
+          ? t("trust.evidence.valueUnavailable")
+          : `${n.calories_kcal} kcal / ${energyKj} kJ`,
       dv: dvData?.calories ?? null,
       tl: null as ReturnType<typeof getTrafficLight>,
     },
     {
       label: t("product.totalFat"),
-      value: `${n.total_fat_g} g`,
+      value: nutritionValue(n.total_fat_g, "g"),
       dv: dvData?.total_fat ?? null,
-      tl: getTrafficLight("total_fat", n.total_fat_g),
+      tl:
+        n.total_fat_g == null
+          ? null
+          : getTrafficLight("total_fat", n.total_fat_g),
     },
     {
       label: t("product.saturatedFat"),
-      value: `${n.saturated_fat_g} g`,
+      value: nutritionValue(n.saturated_fat_g, "g"),
       dv: dvData?.saturated_fat ?? null,
-      tl: getTrafficLight("saturated_fat", n.saturated_fat_g),
+      tl:
+        n.saturated_fat_g == null
+          ? null
+          : getTrafficLight("saturated_fat", n.saturated_fat_g),
     },
     {
       label: t("product.transFat"),
@@ -256,35 +284,36 @@ function NutritionTab({ profile }: Readonly<{ profile: ProductProfile }>) {
     },
     {
       label: t("product.carbs"),
-      value: `${n.carbs_g} g`,
+      value: nutritionValue(n.carbs_g, "g"),
       dv: dvData?.carbs ?? null,
       tl: null as ReturnType<typeof getTrafficLight>,
     },
     {
       label: t("product.sugars"),
-      value: `${n.sugars_g} g`,
+      value: nutritionValue(n.sugars_g, "g"),
       dv: dvData?.sugars ?? null,
-      tl: getTrafficLight("sugars", n.sugars_g),
+      tl: n.sugars_g == null ? null : getTrafficLight("sugars", n.sugars_g),
     },
     {
       label: t("product.fibre"),
       value: n.fibre_g === null ? "—" : `${n.fibre_g} g`,
       dv: dvData?.fiber ?? null,
-      tl: getTrafficLight("fibre", n.fibre_g),
+      tl: n.fibre_g == null ? null : getTrafficLight("fibre", n.fibre_g),
       beneficial: true,
     },
     {
       label: t("product.protein"),
-      value: `${n.protein_g} g`,
+      value: nutritionValue(n.protein_g, "g"),
       dv: dvData?.protein ?? null,
-      tl: getTrafficLight("protein", n.protein_g),
+      tl:
+        n.protein_g == null ? null : getTrafficLight("protein", n.protein_g),
       beneficial: true,
     },
     {
       label: t("product.salt"),
-      value: `${n.salt_g} g`,
+      value: nutritionValue(n.salt_g, "g"),
       dv: dvData?.salt ?? null,
-      tl: getTrafficLight("salt", n.salt_g),
+      tl: n.salt_g == null ? null : getTrafficLight("salt", n.salt_g),
     },
   ];
 
@@ -378,10 +407,16 @@ function NutritionTab({ profile }: Readonly<{ profile: ProductProfile }>) {
       {dv && dv.reference_type !== "none" && <DVLegend />}
 
       {/* Sodium / Salt context note */}
-      <div className="mt-3 rounded-lg bg-info-bg px-3 py-2 text-xs text-info-text">
-        <span className="font-medium">{t("product.sodiumNote")}</span>{" "}
-        {t("product.sodiumValue", { mg: sodiumMg })}
-      </div>
+      {sodiumMg == null ? (
+        <p className="mt-3 rounded-lg bg-warning-bg px-3 py-2 text-xs text-warning-text">
+          {t("trust.evidence.nutritionUnavailable")}
+        </p>
+      ) : (
+        <div className="mt-3 rounded-lg bg-info-bg px-3 py-2 text-xs text-info-text">
+          <span className="font-medium">{t("product.sodiumNote")}</span>{" "}
+          {t("product.sodiumValue", { mg: sodiumMg })}
+        </div>
+      )}
 
       {/* Glycemic Index indicator */}
       {profile.nutrition.gi_estimate != null && (
@@ -454,7 +489,8 @@ function DataQualityCard({ quality }: Readonly<{ quality: DataConfidence }>) {
   const { t } = useTranslation();
   const q = quality as Record<string, unknown>;
   const band = (q.confidence_band as string) ?? "unknown";
-  const score = (q.confidence_score as number) ?? 0;
+  const score =
+    typeof q.confidence_score === "number" ? q.confidence_score : null;
 
   const bandConfig: Record<string, { bg: string; fill: string; label: string }> = {
     high: { bg: "bg-success-bg", fill: "bg-success", label: "✓" },
@@ -481,14 +517,22 @@ function DataQualityCard({ quality }: Readonly<{ quality: DataConfidence }>) {
             <span className="font-medium capitalize text-foreground">
               {t("product.confidence", { value: band })}
             </span>
-            <span className="text-xs text-foreground-muted">{score}%</span>
+            <span className="text-xs text-foreground-muted">
+              {score == null ? t("common.unknown") : `${score}%`}
+            </span>
           </div>
-          <div className={`mt-1 h-2 w-full overflow-hidden rounded-full ${cfg.bg}`}>
-            <div
-              className={`h-full rounded-full transition-all ${cfg.fill}`}
-              style={{ width: `${Math.min(score, 100)}%` }}
-            />
-          </div>
+          {score == null ? (
+            <p className="mt-1 text-xs text-warning-text">
+              {t("product.confidenceUnavailable")}
+            </p>
+          ) : (
+            <div className={`mt-1 h-2 w-full overflow-hidden rounded-full ${cfg.bg}`}>
+              <div
+                className={`h-full rounded-full transition-all ${cfg.fill}`}
+                style={{ width: `${Math.min(score, 100)}%` }}
+              />
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -522,7 +566,10 @@ function formatFactorName(name: string): string {
   return FACTOR_LABELS[name] ?? formatSnakeCase(name);
 }
 
-function ScoringTab({ profile }: Readonly<{ profile: ProductProfile }>) {
+function ScoringTab({
+  profile,
+  scoreProvisional,
+}: Readonly<{ profile: ProductProfile; scoreProvisional: boolean }>) {
   const { t } = useTranslation();
   const scores = profile.scores;
 
@@ -532,6 +579,11 @@ function ScoringTab({ profile }: Readonly<{ profile: ProductProfile }>) {
 
   return (
     <div className="space-y-4 lg:space-y-6">
+      {scoreProvisional && (
+        <p className="rounded-xl border border-warning-border bg-warning-bg p-3 text-sm text-warning-text">
+          {t("trust.evidence.scoreProvisional")}
+        </p>
+      )}
       {/* Summary */}
       <div className="card">
         <h2 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">

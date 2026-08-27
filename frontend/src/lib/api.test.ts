@@ -37,6 +37,7 @@ import {
     getProductListMembership,
     getProductProfile,
     getProductProfileByEan,
+    getProductProvenance,
     getProductsForCompare,
     getPushSubscriptions,
     getRecentlyViewed,
@@ -448,6 +449,16 @@ describe("Product Detail API functions", () => {
     expect(mockCallRpc).toHaveBeenCalledWith(fakeSupabase, "api_data_confidence", {
       p_product_id: 42,
     });
+  });
+
+  it("getProductProvenance passes product_id", async () => {
+    mockCallRpc.mockResolvedValue({ ok: true, data: {} });
+    await getProductProvenance(fakeSupabase, 42);
+    expect(mockCallRpc).toHaveBeenCalledWith(
+      fakeSupabase,
+      "api_product_provenance",
+      { p_product_id: 42 },
+    );
   });
 
   it("getCrossCountryLinks passes product_id", async () => {

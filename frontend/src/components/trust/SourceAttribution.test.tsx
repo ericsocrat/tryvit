@@ -9,6 +9,7 @@ const tMap: Record<string, string> = {
   "trust.sourceAttribution.ariaLabel": "Source attribution",
   "trust.sourceAttribution.noSourceData": "No source data available",
   "trust.sourceAttribution.updatedAgo": "Updated {days} days ago",
+  "trust.sourceAttribution.updatedUnknown": "Update date unavailable",
 };
 
 vi.mock("@/lib/i18n", () => ({
@@ -118,6 +119,22 @@ describe("SourceAttribution", () => {
       fireEvent.click(screen.getByText("Data Sources"));
       const items = screen.getAllByRole("listitem");
       expect(items).toHaveLength(3);
+    });
+
+    it("does not fabricate an age when the update date is unavailable", () => {
+      render(
+        <SourceAttribution
+          sources={[
+            {
+              field: "Nutrition",
+              source: "Manual entry",
+              daysSinceUpdate: null,
+            },
+          ]}
+        />,
+      );
+      fireEvent.click(screen.getByText("Data Sources"));
+      expect(screen.getByText("Update date unavailable")).toBeInTheDocument();
     });
   });
 

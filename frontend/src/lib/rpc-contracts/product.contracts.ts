@@ -35,15 +35,15 @@ const ProductFlagsSchema = z
 
 const NutritionPer100gSchema = z
   .object({
-    calories: z.number(),
-    total_fat_g: z.number(),
-    saturated_fat_g: z.number(),
+    calories: z.number().nullable(),
+    total_fat_g: z.number().nullable(),
+    saturated_fat_g: z.number().nullable(),
     trans_fat_g: z.number().nullable(),
-    carbs_g: z.number(),
-    sugars_g: z.number(),
+    carbs_g: z.number().nullable(),
+    sugars_g: z.number().nullable(),
     fibre_g: z.number().nullable(),
-    protein_g: z.number(),
-    salt_g: z.number(),
+    protein_g: z.number().nullable(),
+    salt_g: z.number().nullable(),
   })
   .passthrough();
 

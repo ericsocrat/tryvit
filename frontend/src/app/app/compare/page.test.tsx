@@ -27,6 +27,15 @@ vi.mock("@/hooks/use-compare", () => ({
   useCompareProducts: (...args: unknown[]) => mockUseCompareProducts(...args),
 }));
 
+vi.mock("@/hooks/use-product-provenance", () => ({
+  useProductProvenanceMap: () => ({}),
+  canRecommendFromProvenance: () => false,
+}));
+
+vi.mock("@/components/trust/ProductEvidencePanel", () => ({
+  ProductEvidencePanel: () => <div data-testid="product-evidence-panel" />,
+}));
+
 const mockClear = vi.fn();
 vi.mock("@/stores/compare-store", () => ({
   useCompareStore: (selector: (s: { clear: () => void }) => unknown) =>

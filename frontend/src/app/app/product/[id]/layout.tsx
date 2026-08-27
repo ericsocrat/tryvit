@@ -63,22 +63,29 @@ export async function generateMetadata({
     (profile.product?.product_name as string) ??
     "Product";
   const brand = (profile.product?.brand as string) ?? "";
-  const score = (profile.scores?.unhealthiness_score as number) ?? 0;
+  const rawScore = profile.scores?.unhealthiness_score;
+  const score = typeof rawScore === "number" ? rawScore : null;
 
   const brandSuffix = brand ? ` by ${brand}` : "";
-  const description = `${name}${brandSuffix} — Health Score: ${score}/100. View detailed nutrition analysis on TryVit.`;
+  const scoreDescription =
+    score == null
+      ? "Health score evidence unavailable"
+      : `Health Score: ${score}/100`;
+  const description = `${name}${brandSuffix} — ${scoreDescription}. View detailed nutrition analysis and evidence on TryVit.`;
+  const title =
+    score == null ? name : `${name} — Health Score: ${score}/100`;
 
   return {
     title: name,
     description,
     openGraph: {
-      title: `${name} — Health Score: ${score}/100`,
+      title,
       description,
       type: "article",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${name} — Health Score: ${score}/100`,
+      title,
       description,
     },
   };

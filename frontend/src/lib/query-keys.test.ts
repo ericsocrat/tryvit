@@ -77,6 +77,13 @@ describe("queryKeys", () => {
     expect(queryKeys.dataConfidence(5)).toEqual(["data-confidence", 5]);
   });
 
+  it("productProvenance key for a product", () => {
+    expect(queryKeys.productProvenance(5)).toEqual([
+      "product-provenance",
+      5,
+    ]);
+  });
+
   it("lists is a static tuple", () => {
     expect(queryKeys.lists).toEqual(["lists"]);
   });
@@ -167,6 +174,10 @@ describe("staleTimes", () => {
 
   it("product is 10 minutes", () => {
     expect(staleTimes.product).toBe(10 * 60 * 1000);
+  });
+
+  it("product provenance is 10 minutes", () => {
+    expect(staleTimes.productProvenance).toBe(10 * 60 * 1000);
   });
 
   it("all values are positive numbers", () => {

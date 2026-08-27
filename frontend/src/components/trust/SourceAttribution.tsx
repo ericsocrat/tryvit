@@ -32,7 +32,7 @@ export interface SourceField {
   /** Source display name (e.g., "Open Food Facts", "Manual entry"). */
   source: string;
   /** Days since last update. */
-  daysSinceUpdate: number;
+  daysSinceUpdate: number | null;
   /** Optional URL to the source (e.g., OFF product page). */
   url?: string;
 }
@@ -125,9 +125,11 @@ export function SourceAttribution({ sources }: SourceAttributionProps) {
                         </span>
                       )}
                       <span>&middot;</span>
-                      {t("trust.sourceAttribution.updatedAgo", {
-                        days: sf.daysSinceUpdate,
-                      })}
+                      {sf.daysSinceUpdate == null
+                        ? t("trust.sourceAttribution.updatedUnknown")
+                        : t("trust.sourceAttribution.updatedAgo", {
+                            days: sf.daysSinceUpdate,
+                          })}
                     </span>
                   </li>
                 );

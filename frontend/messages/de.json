@@ -2131,8 +2131,42 @@
       "fieldLabel": "{field}",
       "sourceLabel": "{source}",
       "updatedAgo": "Aktualisiert vor {days} T.",
+      "updatedUnknown": "Aktualisierungsdatum nicht verfügbar",
       "noSourceData": "Quellenangaben sind für dieses Produkt noch nicht verfügbar.",
       "ariaLabel": "Informationen zur Datenquelle"
+    },
+    "evidence": {
+      "loading": "Produktnachweise werden geladen…",
+      "unavailableTitle": "Produktnachweise nicht verfügbar",
+      "unavailableDescription": "Quellen- und Aktualitätsprüfungen konnten nicht geladen werden. Bewertung und Empfehlungen sind vorläufig.",
+      "confirmedTitle": "Produktnachweise bestätigt",
+      "confirmedDescription": "Aktuelle feldbezogene Provenienz stützt diesen Produktdatensatz.",
+      "provisionalTitle": "Produktnachweise sind vorläufig",
+      "provisionalDescription": "Einige Nachweise sind unvollständig, älter oder weniger verlässlich. Prüfen Sie vor der Entscheidung die aktuelle Verpackung.",
+      "notCollectedTitle": "Feldbezogene Provenienz nicht erfasst",
+      "notCollectedDescription": "Für einzelne Felder liegt kein Quellenbeleg vor. Die angezeigten Werte sind dadurch nicht bestätigt.",
+      "expiredTitle": "Produktnachweise abgelaufen",
+      "expiredDescription": "Erforderliche Nachweise liegen außerhalb ihres Aktualitätsfensters. Empfehlungen bleiben bis zur erneuten Prüfung zurückgehalten.",
+      "freshnessLabel": "Aktualität",
+      "completenessLabel": "Vollständigkeit",
+      "sourcesLabel": "Quellen",
+      "notCollectedValue": "Nicht erfasst",
+      "recommendationsWithheld": "Empfehlungen bleiben zurückgehalten, bis gültige Produktnachweise verfügbar sind.",
+      "scoreProvisional": "Diese Bewertungsinterpretation ist vorläufig, da die zugrunde liegenden Nachweise unvollständig oder veraltet sind.",
+      "nutritionUnavailable": "Nährwertnachweise nicht verfügbar",
+      "valueUnavailable": "Nachweise nicht verfügbar",
+      "allergenCheckLoading": "Personalisierte Allergennachweise werden geprüft…",
+      "allergenCheckUnavailable": "Personalisierte Allergennachweise sind nicht verfügbar. Keine Warnung bedeutet nicht allergenfrei.",
+      "comparisonUnavailable": "Vergleichsrangfolge zurückgehalten",
+      "comparisonUnavailableDescription": "Mindestens einem Produkt fehlen gültige Quellen- oder Aktualitätsnachweise. Werte bleiben sichtbar, TryVit nennt jedoch keinen Sieger.",
+      "warningEvidenceUnavailable": "Warnnachweise sind unvollständig; keine Warnung bedeutet nicht, dass keine Bedenken bestehen.",
+      "freshness": {
+        "fresh": "Aktuell",
+        "aging": "Alternd",
+        "stale": "Veraltet",
+        "expired": "Abgelaufen",
+        "unavailable": "Nicht bewertet"
+      }
     }
   },
   "contributor": {

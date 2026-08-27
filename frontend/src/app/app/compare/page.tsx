@@ -14,8 +14,13 @@ import { ComparisonGrid } from "@/components/compare/ComparisonGrid";
 import { ShareComparison } from "@/components/compare/ShareComparison";
 import { ExportButton } from "@/components/export/ExportButton";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { ProductEvidencePanel } from "@/components/trust/ProductEvidencePanel";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useCompareProducts } from "@/hooks/use-compare";
+import {
+  canRecommendFromProvenance,
+  useProductProvenanceMap,
+} from "@/hooks/use-product-provenance";
 import { eventBus } from "@/lib/events";
 import type { ExportableProduct } from "@/lib/export";
 import { useTranslation } from "@/lib/i18n";
@@ -41,7 +46,20 @@ export default function ComparePage() {
   }, [idsParam]);
 
   const { data, isLoading, error } = useCompareProducts(productIds);
+  const provenanceById = useProductProvenanceMap(
+    data?.products.map((product) => product.product_id) ?? [],
+  );
   const { track } = useAnalytics();
+
+  const recommendationAllowed =
+    data?.products.every((product) => {
+      const provenance = provenanceById[product.product_id];
+      return (
+        !provenance?.isLoading &&
+        !provenance?.error &&
+        canRecommendFromProvenance(provenance?.data)
+      );
+    }) ?? false;
 
   const exportableProducts: ExportableProduct[] = useMemo(() => {
     if (!data?.products) return [];
@@ -53,12 +71,12 @@ export default function ComparePage() {
       unhealthiness_score: p.unhealthiness_score,
       nutri_score_label: p.nutri_score ?? "–",
       nova_group: p.nova_group ?? "–",
-      calories_kcal: p.calories,
-      total_fat_g: p.total_fat_g,
-      saturated_fat_g: p.saturated_fat_g,
-      sugars_g: p.sugars_g,
-      salt_g: p.salt_g,
-      protein_g: p.protein_g,
+      calories_kcal: p.calories ?? undefined,
+      total_fat_g: p.total_fat_g ?? undefined,
+      saturated_fat_g: p.saturated_fat_g ?? undefined,
+      sugars_g: p.sugars_g ?? undefined,
+      salt_g: p.salt_g ?? undefined,
+      protein_g: p.protein_g ?? undefined,
       fiber_g: p.fibre_g ?? undefined,
       allergen_tags: p.allergen_tags
         ? p.allergen_tags.split(",").map((s) => s.trim())
@@ -158,11 +176,33 @@ export default function ComparePage() {
             </div>
           </div>
 
+          <div className="grid gap-3 md:grid-cols-2">
+            {data.products.map((product) => {
+              const provenance = provenanceById[product.product_id];
+              return (
+                <ProductEvidencePanel
+                  key={product.product_id}
+                  provenance={provenance?.data}
+                  isLoading={provenance?.isLoading ?? true}
+                  error={provenance?.error ?? null}
+                  onRetry={() => {
+                    void provenance?.refetch();
+                  }}
+                  compact
+                />
+              );
+            })}
+          </div>
+
           <ErrorBoundary
             level="section"
             context={{ section: "comparison-grid" }}
           >
-            <ComparisonGrid products={data.products} showAvoidBadge />
+            <ComparisonGrid
+              products={data.products}
+              showAvoidBadge
+              recommendationAllowed={recommendationAllowed}
+            />
           </ErrorBoundary>
         </>
       )}

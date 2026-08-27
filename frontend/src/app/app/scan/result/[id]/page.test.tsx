@@ -33,11 +33,33 @@ vi.mock("next/link", () => ({
 
 const mockGetProductDetail = vi.fn();
 const mockGetBetterAlternatives = vi.fn();
+const mockUseProductProvenance = vi.fn();
 
 vi.mock("@/lib/api", () => ({
   getProductDetail: (...args: unknown[]) => mockGetProductDetail(...args),
   getBetterAlternatives: (...args: unknown[]) =>
     mockGetBetterAlternatives(...args),
+}));
+
+vi.mock("@/hooks/use-product-provenance", () => ({
+  useProductProvenance: () => mockUseProductProvenance(),
+  useProductProvenanceMap: (ids: number[]) =>
+    Object.fromEntries(
+      ids.map((id) => [
+        id,
+        {
+          data: { field_sources: { calories: {} } },
+          isLoading: false,
+          error: null,
+          refetch: vi.fn(),
+        },
+      ]),
+    ),
+  canRecommendFromProvenance: (value: unknown) => Boolean(value),
+}));
+
+vi.mock("@/components/trust/ProductEvidencePanel", () => ({
+  ProductEvidencePanel: () => <div data-testid="product-evidence-panel" />,
 }));
 
 vi.mock("@/components/product/HealthWarningsCard", () => ({
@@ -200,6 +222,12 @@ function makeAlternatives(
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockUseProductProvenance.mockReturnValue({
+    data: { field_sources: { calories: {} } },
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+  });
 });
 
 describe("ScanResultPage", () => {
@@ -594,6 +622,54 @@ describe("ScanResultPage", () => {
       // but the alternatives section shows its own spinner
       expect(container).toBeTruthy();
     });
+
+    it("withholds recommendations when product provenance is unavailable", async () => {
+      mockUseProductProvenance.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        error: new Error("provenance unavailable"),
+        refetch: vi.fn(),
+      });
+      mockGetProductDetail.mockResolvedValue({
+        ok: true,
+        data: makeProduct(),
+      });
+      mockGetBetterAlternatives.mockResolvedValue(makeAlternatives());
+
+      render(<ScanResultPage />, { wrapper: createWrapper() });
+
+      expect(
+        await screen.findByText(
+          "Recommendations are withheld until valid product evidence is available.",
+        ),
+      ).toBeInTheDocument();
+      expect(screen.queryByText("Healthy Veggie Sticks")).not.toBeInTheDocument();
+    });
+  });
+
+  it("renders missing nutrition as unavailable instead of null or zero", async () => {
+    mockGetProductDetail.mockResolvedValue({
+      ok: true,
+      data: makeProduct({
+        nutrition_per_100g: {
+          calories: null,
+          total_fat_g: null,
+          saturated_fat_g: null,
+          trans_fat_g: null,
+          carbs_g: null,
+          sugars_g: null,
+          fibre_g: null,
+          protein_g: null,
+          salt_g: null,
+        },
+      }),
+    });
+    mockGetBetterAlternatives.mockResolvedValue(makeAlternatives([]));
+
+    render(<ScanResultPage />, { wrapper: createWrapper() });
+
+    expect(await screen.findAllByText("Evidence unavailable")).toHaveLength(6);
+    expect(screen.queryByText("null")).not.toBeInTheDocument();
   });
 
   describe("action buttons", () => {

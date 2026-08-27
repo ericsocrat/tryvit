@@ -75,7 +75,7 @@ const productB = makeProduct({
   additives_count: 8,
   allergen_count: 0,
   allergen_tags: null,
-  confidence: "low",
+  confidence: "medium",
 });
 
 const products = [productA, productB];
@@ -169,9 +169,8 @@ describe("ComparisonGrid", () => {
     // Product A has "gluten, milk"
     const tags = screen.getAllByText("gluten, milk");
     expect(tags.length).toBeGreaterThanOrEqual(1);
-    // Product B has no allergens
-    const noneText = screen.getAllByText(/None/);
-    expect(noneText.length).toBeGreaterThanOrEqual(1);
+    const unavailable = screen.getAllByText(/Evidence unavailable/);
+    expect(unavailable.length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders warnings row", () => {
@@ -203,9 +202,9 @@ describe("ComparisonGrid", () => {
   it("renders confidence badges for compared products", () => {
     render(<ComparisonGrid products={products} />);
     const verified = screen.getAllByText("Verified");
-    const low = screen.getAllByText("Low");
+    const estimated = screen.getAllByText("Estimated");
     expect(verified.length).toBeGreaterThanOrEqual(1);
-    expect(low.length).toBeGreaterThanOrEqual(1);
+    expect(estimated.length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders swipe hint on mobile view", () => {
@@ -263,6 +262,24 @@ describe("ComparisonGrid", () => {
     expect(announcement).toBeInTheDocument();
     // Product A (score 35) is healthier → winner
     expect(announcement).toHaveTextContent("Product A");
+  });
+
+  it("withholds winner and ranking when comparison evidence is invalid", () => {
+    const incomplete = makeProduct({
+      product_id: 2,
+      confidence: "low",
+      data_completeness_pct: 30,
+      calories: null,
+      allergen_tags: null,
+      ingredient_count: 0,
+    });
+    render(<ComparisonGrid products={[productA, incomplete]} />);
+
+    expect(screen.queryByTestId("winner-announcement")).not.toBeInTheDocument();
+    expect(screen.getByTestId("comparison-ranking-withheld")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("desktop-comparison-ranking-withheld"),
+    ).toBeInTheDocument();
   });
 
   it("shows score delta in winner announcement", () => {

@@ -28,8 +28,13 @@ vi.mock("next/link", () => ({
 }));
 
 const mockSearchProducts = vi.fn();
+const mockUseProductAllergenWarnings = vi.fn();
 vi.mock("@/lib/api", () => ({
   searchProducts: (...args: unknown[]) => mockSearchProducts(...args),
+}));
+
+vi.mock("@/hooks/use-product-allergens", () => ({
+  useProductAllergenWarnings: () => mockUseProductAllergenWarnings(),
 }));
 
 vi.mock("@/components/search/SearchAutocomplete", () => ({
@@ -203,6 +208,13 @@ function makeSearchResponse(overrides: Record<string, unknown> = {}) {
 beforeEach(() => {
   vi.clearAllMocks();
   localStorage.clear();
+  mockUseProductAllergenWarnings.mockReturnValue({
+    warnings: {},
+    enabled: false,
+    isLoading: false,
+    error: null,
+    refetch: vi.fn(),
+  });
 });
 
 describe("SearchPage", () => {
@@ -697,7 +709,7 @@ describe("SearchPage", () => {
     });
   });
 
-  it("renders product with null calories without crashing", async () => {
+  it("keeps missing calorie evidence visible", async () => {
     mockSearchProducts.mockResolvedValue({
       ok: true,
       data: {
@@ -721,6 +733,31 @@ describe("SearchPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Test Chips")).toBeInTheDocument();
     });
+    expect(screen.getAllByText("Nutrition evidence unavailable").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("fails personalized allergen evidence closed and supports retry", async () => {
+    const refetch = vi.fn();
+    mockUseProductAllergenWarnings.mockReturnValue({
+      warnings: {},
+      enabled: true,
+      isLoading: false,
+      error: new Error("allergen service unavailable"),
+      refetch,
+    });
+    mockSearchProducts.mockResolvedValue(makeSearchResponse());
+    const user = userEvent.setup();
+
+    render(<SearchPage />, { wrapper: createWrapper() });
+    await user.type(screen.getByPlaceholderText("Search products…"), "chips");
+    await user.click(screen.getByRole("button", { name: "Search" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(
+      "Personalized allergen evidence is unavailable",
+    );
+    await user.click(screen.getByRole("button", { name: "Retry" }));
+    expect(refetch).toHaveBeenCalledOnce();
   });
 
   it("shows save search button when search is active", async () => {

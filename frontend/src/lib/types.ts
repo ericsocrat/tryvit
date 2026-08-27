@@ -302,11 +302,11 @@ export interface CategoryProduct {
   nutri_score: NutriGrade;
   nova_group: string;
   processing_risk: string;
-  calories: number;
-  total_fat_g: number;
-  protein_g: number;
-  sugars_g: number;
-  salt_g: number;
+  calories: number | null;
+  total_fat_g: number | null;
+  protein_g: number | null;
+  sugars_g: number | null;
+  salt_g: number | null;
   high_salt_flag: boolean;
   high_sugar_flag: boolean;
   high_sat_fat_flag: boolean;
@@ -381,15 +381,15 @@ export interface ProductDetail {
     has_palm_oil: boolean;
   };
   nutrition_per_100g: {
-    calories: number;
-    total_fat_g: number;
-    saturated_fat_g: number;
+    calories: number | null;
+    total_fat_g: number | null;
+    saturated_fat_g: number | null;
     trans_fat_g: number | null;
-    carbs_g: number;
-    sugars_g: number;
+    carbs_g: number | null;
+    sugars_g: number | null;
     fibre_g: number | null;
-    protein_g: number;
-    salt_g: number;
+    protein_g: number | null;
+    salt_g: number | null;
   };
   ingredients: {
     count: number;
@@ -608,15 +608,15 @@ export interface ProductProfileProduct {
 }
 
 export interface NutritionPer100g {
-  calories_kcal: number;
-  total_fat_g: number;
-  saturated_fat_g: number;
+  calories_kcal: number | null;
+  total_fat_g: number | null;
+  saturated_fat_g: number | null;
   trans_fat_g: number | null;
-  carbs_g: number;
-  sugars_g: number;
+  carbs_g: number | null;
+  sugars_g: number | null;
   fibre_g: number | null;
-  protein_g: number;
-  salt_g: number;
+  protein_g: number | null;
+  salt_g: number | null;
 }
 
 export interface NutritionPerServing extends NutritionPer100g {
@@ -1032,22 +1032,22 @@ export interface CompareProduct {
   nutri_score: NutriGrade;
   nova_group: string;
   processing_risk: string;
-  calories: number;
-  total_fat_g: number;
-  saturated_fat_g: number;
+  calories: number | null;
+  total_fat_g: number | null;
+  saturated_fat_g: number | null;
   trans_fat_g: number | null;
-  carbs_g: number;
-  sugars_g: number;
+  carbs_g: number | null;
+  sugars_g: number | null;
   fibre_g: number | null;
-  protein_g: number;
-  salt_g: number;
+  protein_g: number | null;
+  salt_g: number | null;
   high_salt: boolean;
   high_sugar: boolean;
   high_sat_fat: boolean;
   high_additive_load: boolean;
-  additives_count: number;
-  ingredient_count: number;
-  allergen_count: number;
+  additives_count: number | null;
+  ingredient_count: number | null;
+  allergen_count: number | null;
   allergen_tags: string | null;
   trace_tags: string | null;
   confidence: string;

@@ -54,6 +54,10 @@ export const queryKeys = {
   dataConfidence: (productId: number) =>
     ["data-confidence", productId] as const,
 
+  /** Field-level product provenance and authoritative freshness. */
+  productProvenance: (productId: number) =>
+    ["product-provenance", productId] as const,
+
   /** Cross-country product links */
   crossCountryLinks: (productId: number) =>
     ["cross-country-links", productId] as const,
@@ -214,6 +218,9 @@ export const staleTimes = {
 
   /** Cross-country links — 10 min (structural data, changes rarely) */
   crossCountryLinks: 10 * 60 * 1000,
+
+  /** Product provenance — 10 min (changes with source verification). */
+  productProvenance: 10 * 60 * 1000,
 
   /** Product profile (composite) — 10 min (same as product detail) */
   productProfile: 10 * 60 * 1000,

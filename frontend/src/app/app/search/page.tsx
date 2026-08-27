@@ -170,9 +170,10 @@ export default function SearchPage() {
   });
 
   // Batch-fetch allergen data for current page of results (#128)
-  const allergenMap = useProductAllergenWarnings(
+  const allergenState = useProductAllergenWarnings(
     data?.results.map((p) => p.product_id) ?? [],
   );
+  const allergenMap = allergenState.warnings;
 
   const { track } = useAnalytics();
 
@@ -576,6 +577,32 @@ export default function SearchPage() {
                 )}
               </div>
 
+              {allergenState.enabled && allergenState.isLoading && (
+                <output
+                  className="block rounded-lg bg-surface-subtle px-3 py-2 text-xs text-foreground-secondary"
+                  aria-live="polite"
+                  aria-busy="true"
+                >
+                  {t("trust.evidence.allergenCheckLoading")}
+                </output>
+              )}
+
+              {allergenState.enabled && allergenState.error && (
+                <div
+                  className="rounded-lg border border-warning-border bg-warning-bg px-3 py-2 text-xs text-warning-text"
+                  role="alert"
+                >
+                  {t("trust.evidence.allergenCheckUnavailable")} {" "}
+                  <button
+                    type="button"
+                    className="font-semibold underline underline-offset-2"
+                    onClick={allergenState.refetch}
+                  >
+                    {t("common.retry")}
+                  </button>
+                </div>
+              )}
+
               {data.results.length === 0 ? (
                 <div className="space-y-4" data-testid="zero-results">
                   <EmptyStateIllustration
@@ -792,6 +819,7 @@ function ProductRow({
   viewMode?: ViewMode;
   allergenWarnings?: AllergenWarning[];
 }>) {
+  const { t } = useTranslation();
   const band = SCORE_BANDS[product.score_band];
 
   // ── Grid card ────────────────────────────────────────────────────────────
@@ -840,11 +868,11 @@ function ProductRow({
             {product.category_display ?? product.category}
           </p>
           {/* Calories */}
-          {product.calories !== null && (
-            <p className="text-xs text-foreground-muted">
-              {Math.round(product.calories)} kcal
-            </p>
-          )}
+          <p className="text-xs text-foreground-muted">
+            {product.calories === null
+              ? t("trust.evidence.nutritionUnavailable")
+              : `${Math.round(product.calories)} kcal`}
+          </p>
           {/* Allergen warnings */}
           <AllergenChips warnings={allergenWarnings} />
         </Link>
@@ -902,11 +930,11 @@ function ProductRow({
           <p className="truncate text-sm text-foreground-secondary">
             {product.brand} · {product.category_icon}{" "}
             {product.category_display ?? product.category}
-            {product.calories !== null && (
-              <span className="ml-1 text-xs text-foreground-muted">
-                · {Math.round(product.calories)} kcal
-              </span>
-            )}
+            <span className="ml-1 text-xs text-foreground-muted">
+              · {product.calories === null
+                ? t("trust.evidence.valueUnavailable")
+                : `${Math.round(product.calories)} kcal`}
+            </span>
           </p>
           {/* Allergen warnings */}
           <AllergenChips warnings={allergenWarnings} />
