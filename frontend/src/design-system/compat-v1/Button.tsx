@@ -156,6 +156,8 @@ export interface ButtonLinkProps
   extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> {
   /** Destination URL (required). */
   readonly href: string;
+  /** Forwarded to Next.js Link to control speculative route loading. */
+  readonly prefetch?: boolean;
   /** Visual style variant. @default "primary" */
   readonly variant?: ButtonVariant;
   /** Size preset. @default "md" */
@@ -174,6 +176,7 @@ export const ButtonLink = forwardRef<HTMLAnchorElement, ButtonLinkProps>(
   function ButtonLink(
     {
       href,
+      prefetch,
       variant = "primary",
       size = "md",
       icon,
@@ -189,6 +192,7 @@ export const ButtonLink = forwardRef<HTMLAnchorElement, ButtonLinkProps>(
       <Link
         ref={ref}
         href={href}
+        prefetch={prefetch}
         className={buttonClasses(variant, size, { fullWidth, className })}
         style={{ touchAction: "manipulation" }}
         {...rest}

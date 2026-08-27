@@ -19,8 +19,17 @@ vi.mock("@/lib/supabase/client", () => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
-    <a href={href} {...rest}>
+  default: ({
+    href,
+    children,
+    prefetch,
+    ...rest
+  }: {
+    href: string;
+    children: React.ReactNode;
+    prefetch?: boolean;
+  }) => (
+    <a href={href} data-prefetch={prefetch === false ? "false" : undefined} {...rest}>
       {children}
     </a>
   ),
@@ -55,6 +64,10 @@ describe("live public auth actions", () => {
     await waitFor(() => {
       expect(screen.getByText("Dashboard").closest("a")).toHaveAttribute("href", "/app");
     });
+    expect(screen.getByText("Dashboard").closest("a")).toHaveAttribute(
+      "data-prefetch",
+      "false",
+    );
   });
 
   it("preserves the live signed-out signup and login actions", async () => {

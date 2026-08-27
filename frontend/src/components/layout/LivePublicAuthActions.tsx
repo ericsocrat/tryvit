@@ -59,7 +59,7 @@ export function LiveHeaderAuthAction({
   const isAuthenticated = useLivePublicAuth();
 
   return (
-    <ButtonLink href={isAuthenticated ? "/app" : "/auth/login"}>
+    <ButtonLink href={isAuthenticated ? "/app" : "/auth/login"} prefetch={false}>
       {isAuthenticated ? dashboardLabel : signInLabel}
     </ButtonLink>
   );
