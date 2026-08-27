@@ -48,12 +48,48 @@
   transform: rotate(-12deg);
 }
 
-.brandLogo :global(.logo-light) {
-  display: none;
+.authLockup,
+.authLockup > [data-landing-lockup] {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
 }
 
-.brandLogo :global(.logo-dark) {
-  display: block;
+.authLockup [data-landing-lockup="horizontal"] > svg:first-child {
+  flex: 0 0 auto;
+}
+
+.authLockup svg[role="img"] {
+  width: 96px;
+  height: 24px;
+}
+
+.brandLockup {
+  --landing-mark-front: #f7efdf;
+  --landing-mark-fold: #ef9d75;
+  color: #fffaf0;
+}
+
+.brandLockup [data-landing-lockup="horizontal"] > svg:first-child {
+  width: 40px;
+  height: 40px;
+}
+
+.mobileLockup {
+  --landing-mark-front: #123d2c;
+  --landing-mark-fold: #a64b2a;
+  color: #123d2c;
+}
+
+.mobileLockup [data-landing-lockup="horizontal"] > svg:first-child {
+  width: 32px;
+  height: 32px;
+}
+
+:global([data-theme="dark"]) .mobileLockup {
+  --landing-mark-front: #f7efdf;
+  --landing-mark-fold: #ef9d75;
+  color: #f7efdf;
 }
 
 .brandContent {

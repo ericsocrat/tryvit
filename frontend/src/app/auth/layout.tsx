@@ -1,6 +1,6 @@
 "use client";
 
-import { Logo } from "@/components/common/Logo";
+import { LandingLockup } from "@/app/_landing-v2/LandingIdentity";
 import { useTranslation } from "@/lib/i18n";
 import styles from "@/components/auth/AuthExperience.module.css";
 
@@ -14,7 +14,9 @@ export default function AuthLayout({
   return (
     <div className={styles.shell}>
       <aside className={styles.brandPanel} aria-label={t("auth.brandPanelLabel")}>
-        <Logo variant="lockup" size={40} priority className={styles.brandLogo} />
+        <span className={`${styles.authLockup} ${styles.brandLockup}`}>
+          <LandingLockup />
+        </span>
         <div className={styles.brandContent}>
           <p className={styles.brandEyebrow}>{t("auth.brandEyebrow")}</p>
           <h2 className={styles.brandTitle}>{t("auth.brandTitle")}</h2>
@@ -31,7 +33,9 @@ export default function AuthLayout({
       <section className={styles.contentPanel} aria-label={t("auth.accountAccessLabel")}>
         <div className={styles.contentInner}>
           <div className={styles.mobileBrand}>
-            <Logo variant="lockup" size={32} priority />
+            <span className={`${styles.authLockup} ${styles.mobileLockup}`}>
+              <LandingLockup />
+            </span>
             <span className={styles.privateBetaLabel}>{t("auth.privateBetaShort")}</span>
           </div>
           {children}

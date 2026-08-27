@@ -53,7 +53,8 @@ describe("AuthLayout", () => {
         <div>Form</div>
       </AuthLayout>,
     );
-    expect(screen.getAllByAltText("TryVit").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByRole("img", { name: "TryVit" })).toHaveLength(2);
+    expect(document.querySelectorAll('[data-landing-lockup="horizontal"]')).toHaveLength(2);
     expect(screen.getAllByText("Private beta").length).toBeGreaterThanOrEqual(1);
   });
 });
