@@ -1,46 +1,55 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { createRef, forwardRef, useImperativeHandle } from "react";
 import { TurnstileWidget } from "./TurnstileWidget";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
 // Mock the Turnstile widget from @marsidev/react-turnstile
+const mockReset = vi.fn();
+
 vi.mock("@marsidev/react-turnstile", () => ({
-  Turnstile: vi.fn(
-    ({
-      siteKey,
-      onSuccess,
-      onError,
-      onExpire,
-      options,
-    }: {
-      siteKey: string;
-      onSuccess?: (token: string) => void;
-      onError?: () => void;
-      onExpire?: () => void;
-      options?: Record<string, unknown>;
-    }) => (
-      <div
-        data-testid="mock-turnstile"
-        data-site-key={siteKey}
-        data-action={options?.action as string}
-        data-theme={options?.theme as string}
-        data-appearance={options?.appearance as string}
-      >
-        <button
-          data-testid="trigger-success"
-          onClick={() => onSuccess?.("mock-token-abc")}
+  Turnstile: forwardRef(
+    function MockTurnstile(
+      {
+        siteKey,
+        onSuccess,
+        onError,
+        onExpire,
+        options,
+      }: {
+        siteKey: string;
+        onSuccess?: (token: string) => void;
+        onError?: () => void;
+        onExpire?: () => void;
+        options?: Record<string, unknown>;
+      },
+      ref,
+    ) {
+      useImperativeHandle(ref, () => ({ reset: mockReset }));
+      return (
+        <div
+          data-testid="mock-turnstile"
+          data-site-key={siteKey}
+          data-action={options?.action as string}
+          data-theme={options?.theme as string}
+          data-appearance={options?.appearance as string}
         >
-          Success
-        </button>
-        <button data-testid="trigger-error" onClick={() => onError?.()}>
-          Error
-        </button>
-        <button data-testid="trigger-expire" onClick={() => onExpire?.()}>
-          Expire
-        </button>
-      </div>
-    ),
+          <button
+            data-testid="trigger-success"
+            onClick={() => onSuccess?.("mock-token-abc")}
+          >
+            Success
+          </button>
+          <button data-testid="trigger-error" onClick={() => onError?.()}>
+            Error
+          </button>
+          <button data-testid="trigger-expire" onClick={() => onExpire?.()}>
+            Expire
+          </button>
+        </div>
+      );
+    },
   ),
 }));
 
@@ -133,5 +142,14 @@ describe("TurnstileWidget", () => {
   it("should not throw when onExpire is undefined", () => {
     render(<TurnstileWidget onSuccess={vi.fn()} />);
     expect(() => screen.getByTestId("trigger-expire").click()).not.toThrow();
+  });
+
+  it("exposes a reset handle for single-use token retries", () => {
+    const ref = createRef<{ reset: () => void }>();
+    render(<TurnstileWidget ref={ref} onSuccess={vi.fn()} />);
+
+    ref.current?.reset();
+
+    expect(mockReset).toHaveBeenCalledOnce();
   });
 });

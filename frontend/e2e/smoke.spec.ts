@@ -74,10 +74,13 @@ test.describe("Public pages", () => {
     await expect(page.locator('input[type="password"]')).toBeVisible();
   });
 
-  test("signup page renders form", async ({ page }) => {
+  test("signup page renders invitation-only access", async ({ page }) => {
     await page.goto("/auth/signup");
-    await expect(page.locator("text=Create your account")).toBeVisible();
-    await expect(page.locator('input[type="email"]')).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: /private beta access is invitation-only/i }),
+    ).toBeVisible();
+    await expect(page.locator('input[type="email"]')).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /sign in/i })).toBeVisible();
   });
 
   test("contact page renders", async ({ page }) => {
@@ -258,12 +261,30 @@ test.describe("Login form validation", () => {
   });
 });
 
-test.describe("Signup form validation", () => {
-  test("email input accepts text", async ({ page }) => {
+test.describe("Private-beta signup boundary", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("routes invited users to login without signup transport", async ({ page }) => {
+    const disallowedRequests: string[] = [];
+    page.on("request", (request) => {
+      if (
+        request.url().includes("challenges.cloudflare.com") ||
+        request.url().includes("/auth/v1/signup") ||
+        request.url().includes("/functions/v1/verify-turnstile")
+      ) {
+        disallowedRequests.push(request.url());
+      }
+    });
+
     await page.goto("/auth/signup");
-    const emailInput = page.locator('input[type="email"]');
-    await emailInput.fill("newuser@example.com");
-    await expect(emailInput).toHaveValue("newuser@example.com");
+    await expect(page.locator('input[type="email"]')).toHaveCount(0);
+    await expect(page.locator('input[type="password"]')).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /sign up/i })).toHaveCount(0);
+    expect(disallowedRequests).toEqual([]);
+
+    await page.getByRole("link", { name: /sign in/i }).click();
+    await expect(page).toHaveURL(/\/auth\/login/);
+    await expect(page.getByRole("heading", { name: /welcome back/i })).toBeVisible();
   });
 });
 

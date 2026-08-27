@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { forwardRef, useEffect, useImperativeHandle } from "react";
 import { SignupForm } from "./SignupForm";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
@@ -39,24 +40,31 @@ vi.mock("@/lib/toast", () => ({
   showToast: vi.fn(),
 }));
 
-vi.mock("@/components/auth/SocialLoginButtons", () => ({
-  SocialLoginButtons: () => <div data-testid="social-login-buttons" />,
-}));
-
 // Mock TurnstileWidget to expose a trigger for simulating token receipt
 let capturedOnSuccess: ((token: string) => void) | undefined;
 let capturedOnError: (() => void) | undefined;
+const mockTurnstileReset = vi.fn();
 
 vi.mock("@/components/common/TurnstileWidget", () => ({
-  TurnstileWidget: ({
-    onSuccess,
-    onError,
-  }: {
-    onSuccess: (token: string) => void;
-    onError?: () => void;
-  }) => {
-    capturedOnSuccess = onSuccess;
-    capturedOnError = onError;
+  TurnstileWidget: forwardRef(function MockTurnstileWidget(
+    {
+      onSuccess,
+      onError,
+    }: {
+      onSuccess: (token: string) => void;
+      onError?: () => void;
+    },
+    ref,
+  ) {
+    useImperativeHandle(ref, () => ({ reset: mockTurnstileReset }));
+    useEffect(() => {
+      capturedOnSuccess = onSuccess;
+      capturedOnError = onError;
+      return () => {
+        capturedOnSuccess = undefined;
+        capturedOnError = undefined;
+      };
+    }, [onError, onSuccess]);
     return (
       <div data-testid="turnstile-widget">
         <button
@@ -67,60 +75,84 @@ vi.mock("@/components/common/TurnstileWidget", () => ({
         </button>
       </div>
     );
-  },
-}));
-
-const mockVerify = vi.fn();
-vi.mock("@/lib/turnstile", () => ({
-  verifyTurnstileToken: (...args: unknown[]) => mockVerify(...args),
+  }),
 }));
 
 beforeEach(() => {
   vi.clearAllMocks();
   capturedOnSuccess = undefined;
   capturedOnError = undefined;
-  // Default: Turnstile verification passes
-  mockVerify.mockResolvedValue({ valid: true });
 });
 
+function renderSelfServiceSignup() {
+  return render(<SignupForm inviteOnly={false} />);
+}
+
 describe("SignupForm", () => {
-  it("renders social login buttons", () => {
-    render(<SignupForm />);
-    expect(screen.getByTestId("social-login-buttons")).toBeInTheDocument();
+  it("renders a truthful invitation-only state without signup controls", () => {
+    render(<SignupForm inviteOnly />);
+
+    expect(
+      screen.getByRole("heading", { name: "Private beta access is invitation-only" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/small group of invited testers/i)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /continue with/i })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("turnstile-widget")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Email")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Password")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Sign Up" })).not.toBeInTheDocument();
+  });
+
+  it("links invited or existing users to sign in and password recovery", () => {
+    render(<SignupForm inviteOnly />);
+
+    expect(screen.getByRole("link", { name: "Sign In" })).toHaveAttribute(
+      "href",
+      "/auth/login",
+    );
+    expect(screen.getByRole("link", { name: "Forgot password?" })).toHaveAttribute(
+      "href",
+      "/auth/forgot-password",
+    );
+  });
+
+  it("does not offer social registration on the self-service form", () => {
+    renderSelfServiceSignup();
+    expect(screen.queryByRole("button", { name: /continue with/i })).not.toBeInTheDocument();
   });
 
   it("renders email and password fields", () => {
-    render(<SignupForm />);
+    renderSelfServiceSignup();
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
   });
 
   it("renders password helper text", () => {
-    render(<SignupForm />);
+    renderSelfServiceSignup();
     expect(
       screen.getByText("Use at least 6 characters. A longer password is stronger."),
     ).toBeInTheDocument();
   });
 
   it("renders sign up button", () => {
-    render(<SignupForm />);
+    renderSelfServiceSignup();
     expect(screen.getByRole("button", { name: "Sign Up" })).toBeInTheDocument();
   });
 
   it("renders the Turnstile widget", () => {
-    render(<SignupForm />);
+    renderSelfServiceSignup();
     expect(screen.getByTestId("turnstile-widget")).toBeInTheDocument();
   });
 
   it("disables submit button until Turnstile token is received", () => {
-    render(<SignupForm />);
+    renderSelfServiceSignup();
     const button = screen.getByRole("button", { name: "Sign Up" });
     expect(button).toBeDisabled();
   });
 
   it("enables submit button after Turnstile token is received", async () => {
     const user = userEvent.setup();
-    render(<SignupForm />);
+    renderSelfServiceSignup();
 
     await user.click(screen.getByTestId("turnstile-trigger"));
 
@@ -130,7 +162,7 @@ describe("SignupForm", () => {
 
   it("toggles password visibility", async () => {
     const user = userEvent.setup();
-    render(<SignupForm />);
+    renderSelfServiceSignup();
 
     const passwordInput = screen.getByLabelText("Password");
     expect(passwordInput).toHaveAttribute("type", "password");
@@ -144,7 +176,7 @@ describe("SignupForm", () => {
 
   it("shows captcha helper state before and after verification", async () => {
     const user = userEvent.setup();
-    render(<SignupForm />);
+    renderSelfServiceSignup();
 
     expect(
       screen.getByText("Complete the security check to enable sign up."),
@@ -158,7 +190,7 @@ describe("SignupForm", () => {
   });
 
   it("renders sign in link", () => {
-    render(<SignupForm />);
+    renderSelfServiceSignup();
     expect(screen.getByText("Sign In").closest("a")).toHaveAttribute(
       "href",
       "/auth/login",
@@ -166,23 +198,23 @@ describe("SignupForm", () => {
   });
 
   it("requires minimum 6 character password", () => {
-    render(<SignupForm />);
+    renderSelfServiceSignup();
     const passwordInput = screen.getByLabelText("Password");
     expect(passwordInput).toHaveAttribute("minLength", "6");
   });
 
-  it("calls signUp on submit after Turnstile verification", async () => {
+  it("calls Supabase Auth exactly once after Turnstile verification", async () => {
     mockSignUp.mockResolvedValue({ error: null });
     const user = userEvent.setup();
 
-    render(<SignupForm />);
+    renderSelfServiceSignup();
     await user.type(screen.getByLabelText("Email"), "new@user.com");
     await user.type(screen.getByLabelText("Password"), "secret123");
     await user.click(screen.getByTestId("turnstile-trigger"));
     await user.click(screen.getByRole("button", { name: "Sign Up" }));
 
     await waitFor(() => {
-      expect(mockVerify).toHaveBeenCalled();
+      expect(mockSignUp).toHaveBeenCalledOnce();
       expect(mockSignUp).toHaveBeenCalledWith(
         expect.objectContaining({
           email: "new@user.com",
@@ -196,7 +228,7 @@ describe("SignupForm", () => {
     mockSignUp.mockResolvedValue({ error: null });
     const user = userEvent.setup();
 
-    render(<SignupForm />);
+    renderSelfServiceSignup();
     await user.type(screen.getByLabelText("Email"), "new@user.com");
     await user.type(screen.getByLabelText("Password"), "secret123");
     await user.click(screen.getByTestId("turnstile-trigger"));
@@ -213,37 +245,12 @@ describe("SignupForm", () => {
     });
   });
 
-  it("shows error toast when Turnstile verification fails", async () => {
-    const { showToast } = await import("@/lib/toast");
-    mockVerify.mockResolvedValue({
-      valid: false,
-      error: "Token expired",
-    });
-    const user = userEvent.setup();
-
-    render(<SignupForm />);
-    await user.type(screen.getByLabelText("Email"), "new@user.com");
-    await user.type(screen.getByLabelText("Password"), "secret123");
-    await user.click(screen.getByTestId("turnstile-trigger"));
-    await user.click(screen.getByRole("button", { name: "Sign Up" }));
-
-    await waitFor(() => {
-      expect(showToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: "error",
-          messageKey: "auth.captchaFailed",
-        }),
-      );
-    });
-    expect(mockSignUp).not.toHaveBeenCalled();
-  });
-
   it("shows success toast and redirects on success", async () => {
     const { showToast } = await import("@/lib/toast");
     mockSignUp.mockResolvedValue({ error: null });
     const user = userEvent.setup();
 
-    render(<SignupForm />);
+    renderSelfServiceSignup();
     await user.type(screen.getByLabelText("Email"), "new@user.com");
     await user.type(screen.getByLabelText("Password"), "secret123");
     await user.click(screen.getByTestId("turnstile-trigger"));
@@ -267,7 +274,7 @@ describe("SignupForm", () => {
     });
     const user = userEvent.setup();
 
-    render(<SignupForm />);
+    renderSelfServiceSignup();
     await user.type(screen.getByLabelText("Email"), "dup@user.com");
     await user.type(screen.getByLabelText("Password"), "secret123");
     await user.click(screen.getByTestId("turnstile-trigger"));
@@ -282,13 +289,15 @@ describe("SignupForm", () => {
       );
     });
     expect(mockPush).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Sign Up" })).toBeDisabled();
+    expect(mockTurnstileReset).toHaveBeenCalledOnce();
   });
 
   it("shows 'Creating account…' while loading", async () => {
     mockSignUp.mockReturnValue(new Promise(() => {}));
     const user = userEvent.setup();
 
-    render(<SignupForm />);
+    renderSelfServiceSignup();
     await user.type(screen.getByLabelText("Email"), "a@b.com");
     await user.type(screen.getByLabelText("Password"), "secret123");
     await user.click(screen.getByTestId("turnstile-trigger"));
@@ -300,7 +309,7 @@ describe("SignupForm", () => {
   });
 
   it("disables Turnstile token on error callback", async () => {
-    render(<SignupForm />);
+    renderSelfServiceSignup();
     // Simulate getting a token first, then an error
     await waitFor(() => {
       capturedOnSuccess?.("some-token");

@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "bea3014124ba8b9446c4790f475e930880613fa8",
+    "baseSha": "ecf6e91aa542a90f38d45584a8b1ef3689234f54",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "ca54025a935e55f18333a1395c3dfd7babcea53f49b9a054b53d0364a6bf283a"
+    "sourceFingerprint": "313df35a126d9b858c3583daf15c6b4ec4ea4dcd63c111671a56239edd7c3dcb"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -2561,14 +2561,12 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/auth/SocialLoginButtons.tsx",
         "frontend/src/components/common/Button.tsx",
         "frontend/src/components/common/Logo.tsx",
         "frontend/src/components/common/TurnstileWidget.tsx",
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/supabase/client.ts",
         "frontend/src/lib/toast.ts",
-        "frontend/src/lib/turnstile.ts",
         "frontend/src/lib/types.ts"
       ],
       "directConsumers": [
@@ -2626,7 +2624,8 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/app/auth/signup/SignupForm.tsx",
-        "frontend/src/components/common/LoadingSpinner.tsx"
+        "frontend/src/components/common/LoadingSpinner.tsx",
+        "frontend/src/lib/private-beta-admission.ts"
       ],
       "directConsumers": [],
       "transitiveRouteConsumers": [
@@ -6566,19 +6565,13 @@
         "frontend/src/lib/toast.ts"
       ],
       "directConsumers": [
-        "frontend/src/app/auth/login/LoginForm.tsx",
-        "frontend/src/app/auth/signup/SignupForm.tsx"
+        "frontend/src/app/auth/login/LoginForm.tsx"
       ],
       "transitiveRouteConsumers": [
         {
           "modulePath": "frontend/src/app/auth/login/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/auth/login"
-        },
-        {
-          "modulePath": "frontend/src/app/auth/signup/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/auth/signup"
         }
       ],
       "targetRedesignPhases": [
@@ -21302,9 +21295,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 552,
+    "inspectedModuleCount": 553,
     "violations": [],
-    "sourceFingerprint": "9c91efa6e8f8f17c0dce077b379a451b150e22f98740049defd0dfbe6d20327c"
+    "sourceFingerprint": "2148581693f7f499829455d360bb1cad0f7aa81db77f89fee320e996232f056f"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

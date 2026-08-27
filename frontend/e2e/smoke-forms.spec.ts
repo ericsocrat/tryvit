@@ -67,7 +67,7 @@ test.describe("Login form validation UX", () => {
   });
 });
 
-test.describe("Signup form validation UX", () => {
+test.describe("Private-beta signup UX", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/auth/signup");
   });
@@ -82,41 +82,12 @@ test.describe("Signup form validation UX", () => {
     expect(csp).toContain("https://challenges.cloudflare.com");
   });
 
-  test("has properly labeled email and password fields", async ({ page }) => {
-    const emailLabel = page.locator('label[for="email"]');
-    const passwordLabel = page.locator('label[for="password"]');
-
-    await expect(emailLabel).toBeVisible();
-    await expect(passwordLabel).toBeVisible();
-  });
-
-  test("email and password fields are required", async ({ page }) => {
-    await expect(page.locator("#email")).toHaveAttribute("required", "");
-    await expect(page.locator("#password")).toHaveAttribute("required", "");
-  });
-
-  test("password has minLength constraint", async ({ page }) => {
-    const passwordInput = page.locator("#password");
-    await expect(passwordInput).toHaveAttribute("minlength", "6");
-  });
-
-  test("password shows placeholder with length hint", async ({ page }) => {
-    const passwordInput = page.locator("#password");
-    const placeholder = await passwordInput.getAttribute("placeholder");
-    expect(placeholder).toBeTruthy();
-    // Placeholder hints at minimum length requirement
-    expect(placeholder?.toLowerCase()).toContain("6");
-  });
-
-  test("empty form submission is blocked", async ({ page }) => {
-    const submit = page.locator('button[type="submit"]');
-
-    // Signup button is disabled until Turnstile CAPTCHA token is obtained,
-    // so empty form submission is blocked by the disabled state.
-    await expect(submit).toBeDisabled();
-
-    // Page should NOT navigate
-    await expect(page).toHaveURL(/\/auth\/signup/);
+  test("has no email, password, social, or Turnstile signup controls", async ({ page }) => {
+    await expect(page.locator("#email")).toHaveCount(0);
+    await expect(page.locator("#password")).toHaveCount(0);
+    await expect(page.getByTestId("turnstile-widget")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /continue with/i })).toHaveCount(0);
+    await expect(page.locator('button[type="submit"]')).toHaveCount(0);
   });
 
   test("form has accessible structure with heading", async ({ page }) => {
@@ -124,5 +95,16 @@ test.describe("Signup form validation UX", () => {
     await expect(heading).toBeVisible();
     const text = await heading.textContent();
     expect(text?.length).toBeGreaterThan(0);
+  });
+
+  test("offers login and password recovery", async ({ page }) => {
+    await expect(page.getByRole("link", { name: /sign in/i })).toHaveAttribute(
+      "href",
+      "/auth/login",
+    );
+    await expect(page.getByRole("link", { name: /forgot password/i })).toHaveAttribute(
+      "href",
+      "/auth/forgot-password",
+    );
   });
 });

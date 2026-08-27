@@ -1,26 +1,77 @@
 "use client";
 
-import { SocialLoginButtons } from "@/components/auth/SocialLoginButtons";
-import { Button } from "@/components/common/Button";
+import { Button, ButtonLink } from "@/components/common/Button";
 import { Logo } from "@/components/common/Logo";
-import { TurnstileWidget } from "@/components/common/TurnstileWidget";
+import {
+  TurnstileWidget,
+  type TurnstileWidgetHandle,
+} from "@/components/common/TurnstileWidget";
 import { useTranslation } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
-import { verifyTurnstileToken } from "@/lib/turnstile";
 import type { FormSubmitEvent } from "@/lib/types";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
-export function SignupForm() {
+interface SignupFormProps {
+  readonly inviteOnly: boolean;
+}
+
+const SIGNUP_CARD_CLASS_NAME =
+  "overflow-hidden rounded-3xl border border-border/70 bg-surface/95 p-6 shadow-[0_24px_72px_rgba(15,23,42,0.14)] backdrop-blur-sm sm:p-8 dark:border-white/10 dark:shadow-[0_28px_76px_rgba(0,0,0,0.38)]";
+
+export function SignupForm({ inviteOnly }: SignupFormProps) {
+  return inviteOnly ? <InviteOnlySignup /> : <SelfServiceSignupForm />;
+}
+
+function InviteOnlySignup() {
+  const { t } = useTranslation();
+
+  return (
+    <div id="main-content" className="w-full max-w-md">
+      <div className={SIGNUP_CARD_CLASS_NAME}>
+        <div className="mb-2 flex justify-center lg:hidden">
+          <Logo variant="lockup" size={36} />
+        </div>
+
+        <p className="mb-5 text-center text-xs font-medium uppercase tracking-widest text-brand lg:hidden">
+          {t("landing.tagline")}
+        </p>
+
+        <h1 className="mb-3 text-center text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          {t("auth.privateBetaTitle")}
+        </h1>
+        <p className="text-center text-sm text-foreground-secondary sm:text-base">
+          {t("auth.privateBetaDescription")}
+        </p>
+
+        <div className="mt-7 space-y-3">
+          <ButtonLink href="/auth/login" fullWidth>
+            {t("auth.signIn")}
+          </ButtonLink>
+          <ButtonLink href="/auth/forgot-password" variant="secondary" fullWidth>
+            {t("auth.forgotPassword")}
+          </ButtonLink>
+        </div>
+
+        <p className="mt-6 text-center text-xs text-foreground-muted">
+          {t("auth.privateBetaAccessNote")}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SelfServiceSignupForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileWidgetHandle | null>(null);
   const { t } = useTranslation();
 
   const handleTurnstileSuccess = useCallback((token: string) => {
@@ -47,13 +98,6 @@ export function SignupForm() {
 
     try {
       const supabase = createClient();
-      const verification = await verifyTurnstileToken(supabase, turnstileToken);
-      if (!verification.valid) {
-        setTurnstileToken(null);
-        showToast({ type: "error", messageKey: "auth.captchaFailed" });
-        return;
-      }
-
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -73,13 +117,15 @@ export function SignupForm() {
     } catch {
       showToast({ type: "error", messageKey: "auth.serviceUnavailable" });
     } finally {
+      setTurnstileToken(null);
+      turnstileRef.current?.reset();
       setLoading(false);
     }
   }
 
   return (
     <div id="main-content" className="w-full max-w-md">
-      <div className="overflow-hidden rounded-3xl border border-border/70 bg-surface/95 p-6 shadow-[0_24px_72px_rgba(15,23,42,0.14)] backdrop-blur-sm sm:p-8 dark:border-white/10 dark:shadow-[0_28px_76px_rgba(0,0,0,0.38)]">
+      <div className={SIGNUP_CARD_CLASS_NAME}>
         <div className="mb-2 flex justify-center lg:hidden">
           <Logo variant="lockup" size={36} />
         </div>
@@ -94,8 +140,6 @@ export function SignupForm() {
         <p className="mb-7 text-center text-sm text-foreground-secondary sm:text-base">
           {t("auth.signUpSubtitle")}
         </p>
-
-        <SocialLoginButtons />
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
@@ -156,6 +200,7 @@ export function SignupForm() {
 
           <div className="rounded-xl border border-brand/25 bg-brand-subtle/40 p-3 shadow-[0_10px_28px_rgba(14,165,164,0.12)]">
             <TurnstileWidget
+              ref={turnstileRef}
               onSuccess={handleTurnstileSuccess}
               onError={handleTurnstileError}
               onExpire={handleTurnstileExpire}

@@ -1,7 +1,8 @@
 // ─── Supabase Edge Function: verify-turnstile ───────────────────────────────
 // Server-side Cloudflare Turnstile token verification endpoint.
-// Called by the frontend before auth operations (signup, password reset)
-// and conditionally before product submissions (low trust / high velocity).
+// Retained for an explicitly separate non-Auth verification flow. Signup
+// tokens are passed directly to Supabase Auth and must never be redeemed here
+// first because Turnstile tokens are single-use.
 //
 // Cloudflare Turnstile test keys (for CI/development):
 //   Site key:   1x00000000000000000000AA (always passes)
