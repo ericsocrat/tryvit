@@ -43,7 +43,7 @@ function provenance(
     source_count: 2,
     data_completeness_pct: 100,
     field_sources: {
-      calories: {
+      unhealthiness_score: {
         source: "Open Food Facts",
         last_updated: "2026-08-20T00:00:00Z",
         confidence: 0.9,
@@ -84,6 +84,19 @@ describe("product provenance disposition", () => {
     expect(
       canRecommendFromProvenance(
         provenance({ overall_trust_score: 0.3 }),
+      ),
+    ).toBe(false);
+    expect(
+      canRecommendFromProvenance(
+        provenance({
+          field_sources: {
+            brand: {
+              source: "Open Food Facts",
+              last_updated: "2026-08-20T00:00:00Z",
+              confidence: 0.9,
+            },
+          },
+        }),
       ),
     ).toBe(false);
     expect(

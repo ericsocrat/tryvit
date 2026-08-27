@@ -48,7 +48,7 @@ vi.mock("@/hooks/use-product-provenance", () => ({
       ids.map((id) => [
         id,
         {
-          data: { field_sources: { calories: {} } },
+          data: { field_sources: { unhealthiness_score: {} } },
           isLoading: false,
           error: null,
           refetch: vi.fn(),
@@ -223,7 +223,7 @@ function makeAlternatives(
 beforeEach(() => {
   vi.clearAllMocks();
   mockUseProductProvenance.mockReturnValue({
-    data: { field_sources: { calories: {} } },
+    data: { field_sources: { unhealthiness_score: {} } },
     isLoading: false,
     error: null,
     refetch: vi.fn(),

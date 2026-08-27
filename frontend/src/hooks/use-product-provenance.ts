@@ -16,6 +16,10 @@ function hasFieldSources(provenance: ProductProvenance): boolean {
   return Object.keys(provenance.field_sources ?? {}).length > 0;
 }
 
+function hasScoreProvenance(provenance: ProductProvenance): boolean {
+  return provenance.field_sources?.unhealthiness_score != null;
+}
+
 export function getProvenanceDisposition(
   provenance: ProductProvenance,
 ): ProvenanceDisposition {
@@ -40,10 +44,11 @@ export function canRecommendFromProvenance(
   if (!provenance) return false;
   const disposition = getProvenanceDisposition(provenance);
   return (
-    disposition === "confirmed" ||
-    (disposition === "provisional" &&
-      provenance.overall_trust_score != null &&
-      provenance.overall_trust_score >= 0.5)
+    hasScoreProvenance(provenance) &&
+    (disposition === "confirmed" ||
+      (disposition === "provisional" &&
+        provenance.overall_trust_score != null &&
+        provenance.overall_trust_score >= 0.5))
   );
 }
 
