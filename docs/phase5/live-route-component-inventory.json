@@ -4,7 +4,7 @@
   "provenance": {
     "baseSha": "4e8f08234b1b05715261d0dcb1ecba367e545315",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "0ac26f39a7291b1b9e8d99ef1d2ded32f0161de80fb8a11689247a482842ec1b"
+    "sourceFingerprint": "9f01b4f3983a011a9f0b1e8009749ce66ba2da7a82a41df90b15486974c0a449"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -605,6 +605,7 @@
         "frontend/src/components/product/HealthWarningsCard.tsx",
         "frontend/src/hooks/use-analytics.ts",
         "frontend/src/hooks/use-product-allergens.ts",
+        "frontend/src/hooks/use-product-provenance.ts",
         "frontend/src/lib/allergen-matching.ts",
         "frontend/src/lib/api.ts",
         "frontend/src/lib/constants.ts",
@@ -12361,6 +12362,7 @@
         "frontend/src/components/common/ConfidenceBadge.tsx",
         "frontend/src/components/compare/comparison-helpers.ts",
         "frontend/src/components/product/AvoidBadge.tsx",
+        "frontend/src/hooks/use-product-provenance.ts",
         "frontend/src/lib/constants.ts",
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/nutri-label.ts",
@@ -21302,7 +21304,7 @@
     ],
     "inspectedModuleCount": 561,
     "violations": [],
-    "sourceFingerprint": "099f844fb1758a7fbdbec05e3092c6d179cca8b89e54c395fbc37b30c56664a0"
+    "sourceFingerprint": "2592818dc322f6e52ef4d9d3b3a43f178419e7c8bb90655a2f1c09dc24316738"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
