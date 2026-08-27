@@ -90,8 +90,11 @@ In the Staging Supabase Dashboard → **Authentication → URL Configuration**:
 1. **Site URL:** `https://<your-staging-domain>.vercel.app` (or a Vercel preview URL)
 2. **Redirect URLs:**
    - `https://<your-staging-domain>.vercel.app/auth/callback`
+   - `https://<your-staging-domain>.vercel.app/auth/recovery/callback`
    - `https://*-ericsocrat.vercel.app/auth/callback` (wildcard for PR previews)
+   - `https://*-ericsocrat.vercel.app/auth/recovery/callback` (wildcard for PR previews)
    - `http://localhost:3000/auth/callback` (for local development pointing at staging)
+   - `http://localhost:3000/auth/recovery/callback` (for local development pointing at staging)
 
 ---
 

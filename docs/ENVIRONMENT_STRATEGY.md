@@ -271,8 +271,8 @@ In both Staging and Production Supabase projects, configure:
 
 - **Site URL:** The corresponding Vercel domain
 - **Redirect URLs:**
-  - Production: `https://<production-domain>/auth/callback`
-  - Staging: `https://<staging-domain>/auth/callback` + wildcard for Vercel previews (`https://*-ericsocrat.vercel.app/auth/callback`)
+  - Production: `https://<production-domain>/auth/callback` and `https://<production-domain>/auth/recovery/callback`
+  - Staging: both callback paths on `https://<staging-domain>` plus both Vercel preview wildcards (`https://*-ericsocrat.vercel.app/auth/callback` and `https://*-ericsocrat.vercel.app/auth/recovery/callback`)
 
 ---
 
