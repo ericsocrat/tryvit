@@ -16,15 +16,17 @@ import type { CellValue, CompareProduct, ProductProvenance } from "@/lib/types";
 import { Check, ChevronDown, Scale, Trophy, X as XIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-    fmtStr,
-    fmtUnit,
-    getBestWorst,
-    getCellHighlightClass,
-    getKeyDifferences,
-    getWinnerIndex,
-    hasRecommendationEvidence,
-    hasWarningEvidence,
+  fmtStr,
+  fmtUnit,
+  getBestWorst,
+  getCellHighlightClass,
+  getKeyDifferences,
+  getWinnerIndex,
+  hasRecommendationEvidence,
+  hasWarningEvidence,
 } from "./comparison-helpers";
+
+import styles from "./ComparisonGrid.module.css";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -157,9 +159,7 @@ const COMPARE_ROWS: CompareRow[] = [
     label: "Additives",
     key: "additives_count",
     getValue: (p) =>
-      p.ingredient_count != null && p.ingredient_count > 0
-        ? p.additives_count
-        : null,
+      p.ingredient_count != null && p.ingredient_count > 0 ? p.additives_count : null,
     format: (v) => fmtStr(v),
     betterDirection: "lower",
   },
@@ -172,22 +172,21 @@ const COMPARE_ROWS: CompareRow[] = [
   },
 ];
 
-const ROW_PROVENANCE_REQUIREMENTS: Readonly<
-  Record<string, { field: string; maxAgeDays: number }>
-> = {
-  unhealthiness_score: { field: "unhealthiness_score", maxAgeDays: 30 },
-  nova_group: { field: "nova_classification", maxAgeDays: 365 },
-  calories: { field: "calories_100g", maxAgeDays: 120 },
-  total_fat_g: { field: "fat_100g", maxAgeDays: 120 },
-  saturated_fat_g: { field: "saturated_fat_100g", maxAgeDays: 120 },
-  sugars_g: { field: "sugars_100g", maxAgeDays: 120 },
-  salt_g: { field: "salt_100g", maxAgeDays: 120 },
-  fibre_g: { field: "fiber_100g", maxAgeDays: 120 },
-  protein_g: { field: "protein_100g", maxAgeDays: 120 },
-  carbs_g: { field: "carbs_100g", maxAgeDays: 120 },
-  additives_count: { field: "additive_count", maxAgeDays: 120 },
-  allergen_count: { field: "allergen_tags", maxAgeDays: 60 },
-};
+const ROW_PROVENANCE_REQUIREMENTS: Readonly<Record<string, { field: string; maxAgeDays: number }>> =
+  {
+    unhealthiness_score: { field: "unhealthiness_score", maxAgeDays: 30 },
+    nova_group: { field: "nova_classification", maxAgeDays: 365 },
+    calories: { field: "calories_100g", maxAgeDays: 120 },
+    total_fat_g: { field: "fat_100g", maxAgeDays: 120 },
+    saturated_fat_g: { field: "saturated_fat_100g", maxAgeDays: 120 },
+    sugars_g: { field: "sugars_100g", maxAgeDays: 120 },
+    salt_g: { field: "salt_100g", maxAgeDays: 120 },
+    fibre_g: { field: "fiber_100g", maxAgeDays: 120 },
+    protein_g: { field: "protein_100g", maxAgeDays: 120 },
+    carbs_g: { field: "carbs_100g", maxAgeDays: 120 },
+    additives_count: { field: "additive_count", maxAgeDays: 120 },
+    allergen_count: { field: "allergen_tags", maxAgeDays: 60 },
+  };
 
 const WARNING_PROVENANCE_REQUIREMENTS = [
   ROW_PROVENANCE_REQUIREMENTS.salt_g,
@@ -241,8 +240,7 @@ function DesktopGrid({
   provenanceByProductId,
 }: Readonly<ComparisonGridProps>) {
   const { t } = useTranslation();
-  const canRank =
-    recommendationAllowed ?? hasRecommendationEvidence(products);
+  const canRank = recommendationAllowed ?? hasRecommendationEvidence(products);
   const winnerIdx = canRank ? getWinnerIndex(products) : null;
   const colCount = products.length;
 
@@ -269,8 +267,7 @@ function DesktopGrid({
               {t("compare.metric")}
             </th>
             {products.map((p, i) => {
-              const band =
-                SCORE_BANDS[scoreBandFromScore(p.unhealthiness_score)];
+              const band = canRank ? SCORE_BANDS[scoreBandFromScore(p.unhealthiness_score)] : null;
               const nutriClass = p.nutri_score
                 ? NUTRI_COLORS[p.nutri_score]
                 : "bg-surface-muted text-foreground-secondary";
@@ -278,41 +275,41 @@ function DesktopGrid({
               return (
                 <th
                   key={p.product_id}
-                  className={`px-3 py-3 text-center ${
-                    i === winnerIdx ? "bg-success-bg" : ""
-                  }`}
+                  className={`px-3 py-3 text-center ${i === winnerIdx ? "bg-success-bg" : ""}`}
                   style={{
                     width: `${(100 - 20) / colCount}%`,
                   }}
                 >
                   <div className="space-y-1">
-                    {i === winnerIdx && (
+                    {i === winnerIdx ? (
                       <span className="inline-block rounded-full bg-success-bg px-2 py-0.5 text-xs font-bold text-success-text">
-                        <Trophy
-                          size={12}
-                          aria-hidden="true"
-                          className="inline"
-                        />{" "}
+                        <Trophy size={12} aria-hidden="true" className="inline" />{" "}
                         {t("compare.healthiest")}
                       </span>
-                    )}
+                    ) : null}
                     <div
-                      className={`mx-auto flex h-12 w-12 items-center justify-center rounded-lg text-lg font-bold ${band.bg} ${band.color}`}
+                      className={`mx-auto flex h-12 w-12 items-center justify-center rounded-lg text-lg font-bold ${
+                        band ? `${band.bg} ${band.color}` : "bg-surface-muted text-foreground"
+                      }`}
                     >
                       {toTryVitScore(p.unhealthiness_score)}
-                      <span className="sr-only">{t(band.labelKey)}</span>
+                      {band ? <span className="sr-only">{t(band.labelKey)}</span> : null}
                     </div>
                     <p className="text-sm font-semibold text-foreground line-clamp-2">
                       {p.product_name}
                     </p>
-                    <p className="text-xs text-foreground-secondary">
-                      {p.brand}
-                    </p>
+                    <p className="text-xs text-foreground-secondary">{p.brand}</p>
                     <div className="flex items-center justify-center gap-1">
-                      <ConfidenceBadge
-                        level={p.confidence}
-                        percentage={p.data_completeness_pct}
-                      />
+                      {canRank ? (
+                        <ConfidenceBadge
+                          level={p.confidence}
+                          percentage={p.data_completeness_pct}
+                        />
+                      ) : (
+                        <span className="text-xs text-warning-text">
+                          {t("trust.evidence.scoreProvisionalLabel")}
+                        </span>
+                      )}
                       <span
                         className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${nutriClass}`}
                       >
@@ -321,9 +318,7 @@ function DesktopGrid({
                       <span className="rounded-full bg-surface-muted px-1.5 py-0.5 text-xs text-foreground-secondary">
                         N{p.nova_group ?? "?"}
                       </span>
-                      {showAvoidBadge && (
-                        <AvoidBadge productId={p.product_id} />
-                      )}
+                      {showAvoidBadge ? <AvoidBadge productId={p.product_id} /> : null}
                     </div>
                   </div>
                 </th>
@@ -340,11 +335,8 @@ function DesktopGrid({
               return typeof v === "number" ? v : null;
             });
             const rowCanRank =
-              canRank &&
-              hasRowRankingEvidence(row.key, products, provenanceByProductId);
-            const ranking = rowCanRank
-              ? getBestWorst(values, row.betterDirection)
-              : null;
+              canRank && hasRowRankingEvidence(row.key, products, provenanceByProductId);
+            const ranking = rowCanRank ? getBestWorst(values, row.betterDirection) : null;
 
             return (
               <tr key={row.key} className="border-b border">
@@ -353,9 +345,7 @@ function DesktopGrid({
                 </td>
                 {products.map((p, i) => {
                   const rawValue = row.getValue(p);
-                  const formatted = row.format
-                    ? row.format(rawValue)
-                    : fmtStr(rawValue);
+                  const formatted = row.format ? row.format(rawValue) : fmtStr(rawValue);
                   const cellClass = getCellHighlightClass(
                     i,
                     ranking,
@@ -363,10 +353,7 @@ function DesktopGrid({
                   );
 
                   return (
-                    <td
-                      key={p.product_id}
-                      className={`px-3 py-2 text-center ${cellClass}`}
-                    >
+                    <td key={p.product_id} className={`px-3 py-2 text-center ${cellClass}`}>
                       {formatted}
                     </td>
                   );
@@ -406,28 +393,25 @@ function DesktopGrid({
               if (p.high_salt)
                 flags.push({
                   key: "salt",
-                  label: `🧂 ${t("product.highSalt")}`,
+                  label: t("product.highSalt"),
                 });
               if (p.high_sugar)
                 flags.push({
                   key: "sugar",
-                  label: `🍬 ${t("product.highSugar")}`,
+                  label: t("product.highSugar"),
                 });
               if (p.high_sat_fat)
                 flags.push({
                   key: "satfat",
-                  label: `🧈 ${t("product.highSatFat")}`,
+                  label: t("product.highSatFat"),
                 });
               if (p.high_additive_load)
                 flags.push({
                   key: "additives",
-                  label: `⚗️ ${t("product.manyAdditives")}`,
+                  label: t("product.manyAdditives"),
                 });
               return (
-                <td
-                  key={p.product_id}
-                  className="px-3 py-2 text-center text-xs"
-                >
+                <td key={p.product_id} className="px-3 py-2 text-center text-xs">
                   {flags.length > 0 ? (
                     <div className="flex flex-wrap justify-center gap-1">
                       {flags.map((f) => (
@@ -441,9 +425,7 @@ function DesktopGrid({
                     </div>
                   ) : hasWarningEvidence(p) &&
                     hasUsableWarningProvenance(p, provenanceByProductId) ? (
-                    <span className="text-success-text">
-                      {t("compare.noWarnings")}
-                    </span>
+                    <span className="text-success-text">{t("compare.noWarnings")}</span>
                   ) : (
                     <span className="text-warning-text">
                       {t("trust.evidence.warningEvidenceUnavailable")}
@@ -503,16 +485,11 @@ function MobileSwipeView({
   const [activeIdx, setActiveIdx] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartX = useRef(0);
-  const canRank =
-    recommendationAllowed ?? hasRecommendationEvidence(products);
+  const canRank = recommendationAllowed ?? hasRecommendationEvidence(products);
   const winnerIdx = canRank ? getWinnerIndex(products) : null;
   const keyDiffs = canRank
     ? getKeyDifferences(products).filter((difference) =>
-        hasRowRankingEvidence(
-          difference.key,
-          products,
-          provenanceByProductId,
-        ),
+        hasRowRankingEvidence(difference.key, products, provenanceByProductId),
       )
     : [];
   const scoreDelta =
@@ -520,9 +497,7 @@ function MobileSwipeView({
       ? null
       : Math.abs(
           toTryVitScore(products[winnerIdx].unhealthiness_score) -
-            toTryVitScore(
-              products[winnerIdx === 0 ? 1 : 0].unhealthiness_score,
-            ),
+            toTryVitScore(products[winnerIdx === 0 ? 1 : 0].unhealthiness_score),
         );
 
   const swipeTo = useCallback(
@@ -567,29 +542,29 @@ function MobileSwipeView({
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-stretch justify-center gap-3">
           {products.map((p, i) => {
-            const band = SCORE_BANDS[scoreBandFromScore(p.unhealthiness_score)];
+            const band = canRank ? SCORE_BANDS[scoreBandFromScore(p.unhealthiness_score)] : null;
             return (
               <div
                 key={p.product_id}
                 className={`flex-1 text-center rounded-xl p-3 ${i === winnerIdx ? "ring-2 ring-success-text bg-success-bg/30" : "bg-surface-alt"}`}
               >
                 <div
-                  className={`mx-auto flex h-12 w-12 items-center justify-center rounded-lg text-lg font-bold ${band.bg} ${band.color}`}
+                  className={`mx-auto flex h-12 w-12 items-center justify-center rounded-lg text-lg font-bold ${
+                    band ? `${band.bg} ${band.color}` : "bg-surface-muted text-foreground"
+                  }`}
                 >
                   {toTryVitScore(p.unhealthiness_score)}
-                  <span className="sr-only">{t(band.labelKey)}</span>
+                  {band ? <span className="sr-only">{t(band.labelKey)}</span> : null}
                 </div>
                 <p className="mt-1 text-xs font-semibold text-foreground line-clamp-2">
                   {p.product_name}
                 </p>
-                <p className="text-xs text-foreground-secondary line-clamp-1">
-                  {p.brand}
-                </p>
-                {showAvoidBadge && (
+                <p className="text-xs text-foreground-secondary line-clamp-1">{p.brand}</p>
+                {showAvoidBadge ? (
                   <div className="mt-1">
                     <AvoidBadge productId={p.product_id} />
                   </div>
-                )}
+                ) : null}
               </div>
             );
           })}
@@ -610,7 +585,10 @@ function MobileSwipeView({
           </p>
         </div>
       ) : (
-        <div className="mx-4 mb-3 rounded-xl bg-success-bg p-3 text-center" data-testid="winner-announcement">
+        <div
+          className="mx-4 mb-3 rounded-xl bg-success-bg p-3 text-center"
+          data-testid="winner-announcement"
+        >
           <Trophy size={20} aria-hidden="true" className="inline text-success-text" />
           <p className="mt-1 text-sm font-bold text-success-text">
             {products[winnerIdx].product_name}
@@ -630,9 +608,7 @@ function MobileSwipeView({
           <div className="space-y-2">
             {keyDiffs.map((diff) => (
               <div key={diff.labelKey} className="flex items-center justify-between text-sm">
-                <span className="text-foreground-secondary">
-                  {t(diff.labelKey) ?? diff.label}
-                </span>
+                <span className="text-foreground-secondary">{t(diff.labelKey) ?? diff.label}</span>
                 <div className="flex items-center gap-2">
                   {products.map((_, i) => (
                     <span
@@ -643,7 +619,11 @@ function MobileSwipeView({
                         ? t("trust.evidence.valueUnavailable")
                         : `${diff.values[i]}${diff.unit ? ` ${diff.unit}` : ""}`}
                       {diff.values[i] != null && i === diff.betterIdx && (
-                        <Check size={12} className="inline ml-0.5 text-success-text" aria-hidden="true" />
+                        <Check
+                          size={12}
+                          className="inline ml-0.5 text-success-text"
+                          aria-hidden="true"
+                        />
                       )}
                     </span>
                   ))}
@@ -671,16 +651,10 @@ function MobileSwipeView({
             >
               {winnerIdx != null && i === winnerIdx && (
                 <>
-                  <Trophy
-                    size={12}
-                    aria-hidden="true"
-                    className="inline"
-                  />{" "}
+                  <Trophy size={12} aria-hidden="true" className="inline" />{" "}
                 </>
               )}
-              {p.product_name.length > 12
-                ? p.product_name.slice(0, 12) + "…"
-                : p.product_name}
+              {p.product_name.length > 12 ? p.product_name.slice(0, 12) + "…" : p.product_name}
             </button>
           ))}
         </div>
@@ -708,20 +682,20 @@ function MobileSwipeView({
           {/* Product header */}
           <div className="flex items-start gap-3 p-4">
             <div className="min-w-0 flex-1">
-              <p className="font-bold text-foreground">
-                {product.product_name}
-              </p>
-              <p className="text-sm text-foreground-secondary">
-                {product.brand}
-              </p>
+              <p className="font-bold text-foreground">{product.product_name}</p>
+              <p className="text-sm text-foreground-secondary">{product.brand}</p>
               <div className="mt-1 flex items-center gap-1.5">
-                <ConfidenceBadge
-                  level={product.confidence}
-                  percentage={product.data_completeness_pct}
-                />
-                <span
-                  className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${nutriClass}`}
-                >
+                {canRank ? (
+                  <ConfidenceBadge
+                    level={product.confidence}
+                    percentage={product.data_completeness_pct}
+                  />
+                ) : (
+                  <span className="text-xs text-warning-text">
+                    {t("trust.evidence.scoreProvisionalLabel")}
+                  </span>
+                )}
+                <span className={`rounded-full px-1.5 py-0.5 text-xs font-bold ${nutriClass}`}>
                   {product.nutri_score ?? "?"}
                 </span>
                 <span className="rounded-full bg-surface-muted px-1.5 py-0.5 text-xs text-foreground-secondary">
@@ -729,8 +703,7 @@ function MobileSwipeView({
                 </span>
                 {winnerIdx != null && activeIdx === winnerIdx && (
                   <span className="rounded-full bg-success-bg px-1.5 py-0.5 text-xs font-bold text-success-text">
-                    <Trophy size={12} aria-hidden="true" className="inline" />{" "}
-                    {t("compare.best")}
+                    <Trophy size={12} aria-hidden="true" className="inline" /> {t("compare.best")}
                   </span>
                 )}
               </div>
@@ -740,63 +713,52 @@ function MobileSwipeView({
           {/* Nutrition data — collapsible */}
           <CollapsibleSection title={t("compare.fullNutrition")} defaultOpen>
             <div className="divide-y divide-gray-100">
-              {COMPARE_ROWS.filter(
-                (r) => r.key !== "nutri_score" && r.key !== "nova_group",
-              ).map((row) => {
-                const rawValue = row.getValue(product);
-                const formatted = row.format
-                  ? row.format(rawValue)
-                  : fmtStr(rawValue);
+              {COMPARE_ROWS.filter((r) => r.key !== "nutri_score" && r.key !== "nova_group").map(
+                (row) => {
+                  const rawValue = row.getValue(product);
+                  const formatted = row.format ? row.format(rawValue) : fmtStr(rawValue);
 
-                const allValues = products.map((p) => {
-                  const v = row.getValue(p);
-                  return typeof v === "number" ? v : null;
-                });
-                const ranking =
-                  canRank &&
-                  hasRowRankingEvidence(
-                    row.key,
-                    products,
-                    provenanceByProductId,
-                  )
-                  ? getBestWorst(allValues, row.betterDirection)
-                  : null;
-                let indicator = "";
-                if (ranking) {
-                  if (activeIdx === ranking.bestIdx)
-                    indicator = "text-success-text font-semibold";
-                  else if (activeIdx === ranking.worstIdx)
-                    indicator = "text-error-text";
-                }
+                  const allValues = products.map((p) => {
+                    const v = row.getValue(p);
+                    return typeof v === "number" ? v : null;
+                  });
+                  const ranking =
+                    canRank && hasRowRankingEvidence(row.key, products, provenanceByProductId)
+                      ? getBestWorst(allValues, row.betterDirection)
+                      : null;
+                  let indicator = "";
+                  if (ranking) {
+                    if (activeIdx === ranking.bestIdx)
+                      indicator = "text-success-text font-semibold";
+                    else if (activeIdx === ranking.worstIdx) indicator = "text-error-text";
+                  }
 
-                return (
-                  <div
-                    key={row.key}
-                    className="flex items-center justify-between py-2"
-                  >
-                    <span className="text-sm text-foreground-secondary">
-                      {t(ROW_LABEL_KEYS[row.key]) ?? row.label}
-                    </span>
-                    <span className={`text-sm ${indicator || "text-foreground"}`}>
-                      {formatted}
-                      {ranking?.bestIdx === activeIdx && (
-                        <Check
-                          size={14}
-                          className="inline ml-1 text-success-text"
-                          aria-hidden="true"
-                        />
-                      )}
-                      {ranking?.worstIdx === activeIdx && (
-                        <XIcon
-                          size={14}
-                          className="inline ml-1 text-error-text"
-                          aria-hidden="true"
-                        />
-                      )}
-                    </span>
-                  </div>
-                );
-              })}
+                  return (
+                    <div key={row.key} className="flex items-center justify-between py-2">
+                      <span className="text-sm text-foreground-secondary">
+                        {t(ROW_LABEL_KEYS[row.key]) ?? row.label}
+                      </span>
+                      <span className={`text-sm ${indicator || "text-foreground"}`}>
+                        {formatted}
+                        {ranking?.bestIdx === activeIdx && (
+                          <Check
+                            size={14}
+                            className="inline ml-1 text-success-text"
+                            aria-hidden="true"
+                          />
+                        )}
+                        {ranking?.worstIdx === activeIdx && (
+                          <XIcon
+                            size={14}
+                            className="inline ml-1 text-error-text"
+                            aria-hidden="true"
+                          />
+                        )}
+                      </span>
+                    </div>
+                  );
+                },
+              )}
             </div>
           </CollapsibleSection>
 
@@ -817,22 +779,22 @@ function MobileSwipeView({
             <div className="flex flex-wrap gap-1">
               {product.high_salt && (
                 <span className="rounded bg-warning-bg px-2 py-0.5 text-xs text-warning-text">
-                  🧂 {t("product.highSalt")}
+                  {t("product.highSalt")}
                 </span>
               )}
               {product.high_sugar && (
                 <span className="rounded bg-warning-bg px-2 py-0.5 text-xs text-warning-text">
-                  🍬 {t("product.highSugar")}
+                  {t("product.highSugar")}
                 </span>
               )}
               {product.high_sat_fat && (
                 <span className="rounded bg-warning-bg px-2 py-0.5 text-xs text-warning-text">
-                  🧈 {t("product.highSatFat")}
+                  {t("product.highSatFat")}
                 </span>
               )}
               {product.high_additive_load && (
                 <span className="rounded bg-warning-bg px-2 py-0.5 text-xs text-warning-text">
-                  ⚗️ {t("product.manyAdditives")}
+                  {t("product.manyAdditives")}
                 </span>
               )}
               {!product.high_salt &&
@@ -840,23 +802,15 @@ function MobileSwipeView({
                 !product.high_sat_fat &&
                 !product.high_additive_load &&
                 hasWarningEvidence(product) &&
-                hasUsableWarningProvenance(
-                  product,
-                  provenanceByProductId,
-                ) && (
-                  <span className="text-sm text-success-text">
-                    {t("compare.noWarnings")}
-                  </span>
+                hasUsableWarningProvenance(product, provenanceByProductId) && (
+                  <span className="text-sm text-success-text">{t("compare.noWarnings")}</span>
                 )}
               {!product.high_salt &&
                 !product.high_sugar &&
                 !product.high_sat_fat &&
                 !product.high_additive_load &&
                 (!hasWarningEvidence(product) ||
-                  !hasUsableWarningProvenance(
-                    product,
-                    provenanceByProductId,
-                  )) && (
+                  !hasUsableWarningProvenance(product, provenanceByProductId)) && (
                   <span className="text-sm text-warning-text">
                     {t("trust.evidence.warningEvidenceUnavailable")}
                   </span>
@@ -891,21 +845,15 @@ export function ComparisonGrid({
     return (
       <div className="py-12 text-center">
         <div className="mb-2 flex justify-center">
-          <Scale
-            size={40}
-            className="text-foreground-muted"
-            aria-hidden="true"
-          />
+          <Scale size={40} className="text-foreground-muted" aria-hidden="true" />
         </div>
-        <p className="text-sm text-foreground-secondary">
-          {t("compare.selectAtLeast2")}
-        </p>
+        <p className="text-sm text-foreground-secondary">{t("compare.selectAtLeast2")}</p>
       </div>
     );
   }
 
   return (
-    <>
+    <div className={styles.comparison} data-testid="comparison-register">
       <DesktopGrid
         products={products}
         showAvoidBadge={showAvoidBadge}
@@ -918,6 +866,6 @@ export function ComparisonGrid({
         recommendationAllowed={recommendationAllowed}
         provenanceByProductId={provenanceByProductId}
       />
-    </>
+    </div>
   );
 }

@@ -43,10 +43,44 @@ export interface ProductRegisterCardProps {
 
 type CardDisposition = ProvenanceDisposition | "unavailable" | "loading";
 
+const EVIDENCE_KEY: Readonly<Record<CardDisposition, string>> = {
+  confirmed: "trust.evidence.confirmedTitle",
+  provisional: "trust.evidence.provisionalTitle",
+  not_collected: "trust.evidence.notCollectedTitle",
+  expired: "trust.evidence.expiredTitle",
+  unavailable: "trust.evidence.unavailableTitle",
+  loading: "trust.evidence.loading",
+};
+
 function evidenceDisposition(evidence: EvidenceState | undefined): CardDisposition {
   if (evidence?.isLoading) return "loading";
   if (evidence?.error || !evidence?.data) return "unavailable";
   return getProvenanceDisposition(evidence.data);
+}
+
+function resolveScoreState({
+  productId,
+  score,
+  scoreBand,
+  evidence,
+}: Pick<ProductRegisterCardProps, "productId" | "score" | "scoreBand" | "evidence">) {
+  const reportedDisposition = evidenceDisposition(evidence);
+  const validScore =
+    score !== null && score !== undefined && Number.isFinite(score) && score >= 0 && score <= 100;
+  const matchingEvidence = evidence?.data?.product_id === productId;
+  const matchingBand =
+    validScore && scoreBand !== undefined && scoreBandFromScore(score) === scoreBand;
+  const confirmed = reportedDisposition === "confirmed" && matchingEvidence && matchingBand;
+
+  return {
+    band: scoreBand ? SCORE_BANDS[scoreBand] : undefined,
+    confirmed,
+    disposition:
+      reportedDisposition === "confirmed" && !confirmed
+        ? ("provisional" as const)
+        : reportedDisposition,
+    numericScore: validScore ? toTryVitScore(score) : null,
+  };
 }
 
 export function ProductRegisterCard({
@@ -70,42 +104,21 @@ export function ProductRegisterCard({
   highlight,
 }: ProductRegisterCardProps) {
   const { t } = useTranslation();
-  const reportedDisposition = evidenceDisposition(evidence);
-  const validScore =
-    score !== null &&
-    score !== undefined &&
-    Number.isFinite(score) &&
-    score >= 1 &&
-    score <= 100;
-  const evidenceMatchesProduct = evidence?.data?.product_id === productId;
-  const scoreBandMatches =
-    validScore && scoreBand !== undefined && scoreBandFromScore(score) === scoreBand;
-  const confirmed =
-    reportedDisposition === "confirmed" &&
-    evidenceMatchesProduct &&
-    scoreBandMatches;
-  const disposition: CardDisposition =
-    reportedDisposition === "confirmed" && !confirmed
-      ? "provisional"
-      : reportedDisposition;
-  const band = scoreBand ? SCORE_BANDS[scoreBand] : undefined;
-  const numericScore = validScore ? toTryVitScore(score) : null;
-  const evidenceKey: Record<CardDisposition, string> = {
-    confirmed: "trust.evidence.confirmedTitle",
-    provisional: "trust.evidence.provisionalTitle",
-    not_collected: "trust.evidence.notCollectedTitle",
-    expired: "trust.evidence.expiredTitle",
-    unavailable: "trust.evidence.unavailableTitle",
-    loading: "trust.evidence.loading",
-  };
+  const { band, confirmed, disposition, numericScore } = resolveScoreState({
+    productId,
+    score,
+    scoreBand,
+    evidence,
+  });
+  const scoreLabel = `${t("filters.healthScore")} — ${
+    confirmed && band ? t(band.labelKey) : t("trust.evidence.scoreProvisionalLabel")
+  }`;
 
   return (
     <li
-      className={[
-        styles.registerCard,
-        styles[variant],
-        muted ? styles.muted : "",
-      ].filter(Boolean).join(" ")}
+      className={[styles.registerCard, styles[variant], muted ? styles.muted : ""]
+        .filter(Boolean)
+        .join(" ")}
       data-evidence-disposition={disposition}
       data-testid="product-register-card"
     >
@@ -124,18 +137,26 @@ export function ProductRegisterCard({
               confirmed && band ? styles.scoreConfirmed : "",
               confirmed && band ? band.bg : "",
               confirmed && band ? band.color : "",
-            ].filter(Boolean).join(" ")}
-            role={numericScore === null ? "status" : "meter"}
-            aria-label={`${t("filters.healthScore")} — ${
-              confirmed && band
-                ? t(band.labelKey)
-                : t("trust.evidence.scoreProvisionalLabel")
-            }`}
-            aria-valuemin={numericScore === null ? undefined : 0}
-            aria-valuemax={numericScore === null ? undefined : 100}
-            aria-valuenow={numericScore ?? undefined}
+            ]
+              .filter(Boolean)
+              .join(" ")}
           >
-            {numericScore ?? "—"}
+            {numericScore === null ? (
+              <output aria-label={scoreLabel}>—</output>
+            ) : (
+              <>
+                <meter
+                  className={styles.semanticMeter}
+                  min={0}
+                  max={100}
+                  value={numericScore}
+                  aria-label={scoreLabel}
+                >
+                  {numericScore}
+                </meter>
+                <span aria-hidden="true">{numericScore}</span>
+              </>
+            )}
           </div>
         </div>
         <div className={styles.identity}>
@@ -144,12 +165,12 @@ export function ProductRegisterCard({
           {brand ? <p className={styles.brand}>{brand}</p> : null}
           {detail ? <p className={styles.detail}>{detail}</p> : null}
           <span className={[styles.evidence, styles[disposition]].join(" ")}>
-            {t(evidenceKey[disposition])}
+            {t(EVIDENCE_KEY[disposition])}
           </span>
           {highlight ? <span className={styles.highlight}>{highlight}</span> : null}
         </div>
       </Link>
-      {meta || badges ? (
+      {(meta !== null && meta !== undefined) || (badges !== null && badges !== undefined) ? (
         <div className={styles.support}>
           {meta ? <div className={styles.meta}>{meta}</div> : null}
           {badges ? <div className={styles.badges}>{badges}</div> : null}

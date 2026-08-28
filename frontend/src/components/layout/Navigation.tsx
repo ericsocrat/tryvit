@@ -51,9 +51,6 @@ export function Navigation() {
                 href={item.href}
                 prefetch={false}
                 aria-current={isActive ? "page" : undefined}
-                aria-label={
-                  badge > 0 ? `${listBadgeText} ${t(item.labelKey)}` : undefined
-                }
                 className={`${styles.bottomNavItem} ${
                   isActive ? styles.bottomNavItemActive : ""
                 } ${item.prominent ? styles.bottomNavProminent : ""}`}
@@ -62,7 +59,11 @@ export function Navigation() {
                 <span className="relative">
                   <Icon icon={item.icon} size="md" />
                   {badge > 0 ? (
-                    <span className={styles.badge} data-testid="nav-badge-lists">
+                    <span
+                      className={styles.badge}
+                      data-testid="nav-badge-lists"
+                      aria-hidden="true"
+                    >
                       {listBadgeText}
                     </span>
                   ) : null}
@@ -77,9 +78,6 @@ export function Navigation() {
             onClick={openMore}
             aria-expanded={moreOpen}
             aria-haspopup="dialog"
-            aria-label={
-              compareCount > 0 ? `${compareBadgeText} ${t("nav.more")}` : undefined
-            }
             className={`${styles.bottomNavItem} ${
               isMoreActive ? styles.bottomNavItemActive : ""
             }`}
@@ -88,7 +86,11 @@ export function Navigation() {
             <span className="relative">
               <Icon icon={MoreHorizontal} size="md" />
               {compareCount > 0 ? (
-                <span className={styles.badge} data-testid="nav-badge-compare">
+                <span
+                  className={styles.badge}
+                  data-testid="nav-badge-compare"
+                  aria-hidden="true"
+                >
                   {compareBadgeText}
                 </span>
               ) : null}

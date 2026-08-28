@@ -13,13 +13,9 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: ({
-    href,
-    children,
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => <a href={href}>{children}</a>,
+  default: ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
 const mockUseCompareProducts = vi.fn();
@@ -63,9 +59,7 @@ vi.mock("@/components/compare/ShareComparison", () => ({
 }));
 
 vi.mock("@/components/common/skeletons", () => ({
-  ComparisonGridSkeleton: () => (
-    <div data-testid="skeleton" role="status" aria-busy="true" />
-  ),
+  ComparisonGridSkeleton: () => <div data-testid="skeleton" role="status" aria-busy="true" />,
 }));
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -100,17 +94,13 @@ describe("ComparePage", () => {
   describe("empty state (no/insufficient IDs)", () => {
     it("shows empty state when no ids param", () => {
       render(<ComparePage />, { wrapper: createWrapper() });
-      expect(
-        screen.getByText("Start by choosing 2–4 products to compare"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Start by choosing 2–4 products to compare")).toBeInTheDocument();
     });
 
     it("shows empty state when only one id", () => {
       mockGet.mockReturnValue("5");
       render(<ComparePage />, { wrapper: createWrapper() });
-      expect(
-        screen.getByText("Start by choosing 2–4 products to compare"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Start by choosing 2–4 products to compare")).toBeInTheDocument();
     });
 
     it("links to search page from empty state", () => {
@@ -148,13 +138,8 @@ describe("ComparePage", () => {
         error: new Error("Network error"),
       });
       render(<ComparePage />, { wrapper: createWrapper() });
-      expect(
-        screen.getByText("Failed to load comparison data."),
-      ).toBeInTheDocument();
-      expect(screen.getByTestId("empty-state")).toHaveAttribute(
-        "data-variant",
-        "error",
-      );
+      expect(screen.getByText("Failed to load comparison data.")).toBeInTheDocument();
+      expect(screen.getByTestId("empty-state")).toHaveAttribute("data-variant", "error");
     });
 
     it("renders ComparisonGrid when data loaded", () => {
@@ -196,9 +181,7 @@ describe("ComparePage", () => {
         error: null,
       });
       render(<ComparePage />, { wrapper: createWrapper() });
-      expect(
-        screen.queryByText(/products? not found/),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText(/products? not found/)).not.toBeInTheDocument();
     });
 
     it("clear button calls store clear", async () => {

@@ -10,29 +10,21 @@ import ListsPage from "./page";
 const mockUseLists = vi.fn();
 const mockCreateMutate = vi.fn();
 const mockDeleteMutate = vi.fn();
-const mockUseListPreview = vi.fn();
 
 vi.mock("@/hooks/use-lists", () => ({
   useLists: () => mockUseLists(),
   useCreateList: () => ({ mutate: mockCreateMutate, isPending: false }),
   useDeleteList: () => ({ mutate: mockDeleteMutate }),
-  useListPreview: (...args: unknown[]) => mockUseListPreview(...args),
 }));
 
 vi.mock("next/link", () => ({
-  default: ({
-    href,
-    children,
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => <a href={href}>{children}</a>,
+  default: ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
 vi.mock("@/components/common/skeletons", () => ({
-  ListViewSkeleton: () => (
-    <div data-testid="skeleton" role="status" aria-busy="true" />
-  ),
+  ListViewSkeleton: () => <div data-testid="skeleton" role="status" aria-busy="true" />,
 }));
 
 // Stub ConfirmDialog to make testing easy
@@ -112,68 +104,12 @@ const mockLists = [
   },
 ];
 
-const mockPreviewItems = [
-  {
-    item_id: "item-1",
-    product_id: 101,
-    position: 1,
-    notes: null,
-    added_at: "2025-01-01T00:00:00Z",
-    product_name: "Lay's Classic",
-    brand: "Lay's",
-    category: "chips",
-    unhealthiness_score: 65,
-    nutri_score_label: "D",
-    nova_classification: "4",
-    calories: 536,
-  },
-  {
-    item_id: "item-2",
-    product_id: 102,
-    position: 2,
-    notes: null,
-    added_at: "2025-01-01T00:00:00Z",
-    product_name: "Oat Bar",
-    brand: "Nature Valley",
-    category: "cereals",
-    unhealthiness_score: 25,
-    nutri_score_label: "B",
-    nova_classification: "3",
-    calories: 200,
-  },
-  {
-    item_id: "item-3",
-    product_id: 103,
-    position: 3,
-    notes: null,
-    added_at: "2025-01-01T00:00:00Z",
-    product_name: "Cola Zero",
-    brand: "Coca-Cola",
-    category: "drinks",
-    unhealthiness_score: 30,
-    nutri_score_label: "C",
-    nova_classification: "4",
-    calories: 0,
-  },
-];
-
 beforeEach(() => {
   vi.clearAllMocks();
   mockUseLists.mockReturnValue({
     data: { lists: mockLists },
     isLoading: false,
     error: null,
-  });
-  // Default: return preview items for fav-1 (5 items), empty for others
-  mockUseListPreview.mockImplementation((listId: string, itemCount: number) => {
-    if (listId === "fav-1" && itemCount > 0) {
-      return {
-        data: { items: mockPreviewItems },
-        isLoading: false,
-        error: null,
-      };
-    }
-    return { data: undefined, isLoading: false, error: null };
   });
 });
 
@@ -282,9 +218,7 @@ describe("ListsPage", () => {
 
     await user.click(screen.getByText("+ New List"));
     expect(screen.getByPlaceholderText("List name")).toBeInTheDocument();
-    expect(
-      screen.getByPlaceholderText("Description (optional)"),
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Description (optional)")).toBeInTheDocument();
 
     // Toggle back — the header button now says "Cancel" too
     const cancelButtons = screen.getAllByText("Cancel");
@@ -314,91 +248,27 @@ describe("ListsPage", () => {
     expect(screen.getByText(/My healthy picks/)).toBeInTheDocument();
   });
 
-  it("renders responsive grid layout for list cards", () => {
+  it("renders a semantic list of list records", () => {
     render(<ListsPage />, { wrapper: createWrapper() });
 
-    const grid = screen.getByText("Favorites").closest("a")!.parentElement!;
-    expect(grid.className).toContain("grid");
-    expect(grid.className).toContain("md:grid-cols-2");
-    expect(grid.className).toContain("xl:grid-cols-3");
+    const list = screen.getByText("Favorites").closest("ul");
+    expect(list).toBeInTheDocument();
+    expect(list?.querySelectorAll(":scope > li")).toHaveLength(3);
   });
 
-  it("list cards have transition classes for hover states", () => {
+  it("keeps the destructive action outside the list link", () => {
     render(<ListsPage />, { wrapper: createWrapper() });
 
-    const card = screen.getByText("Favorites").closest(".card")!;
-    expect(card.className).toContain("transition-all");
-    expect(card.className).toContain("duration-fast");
+    const link = screen.getByText("Healthy Snacks").closest("a");
+    expect(link).not.toContainElement(
+      screen.getByRole("button", { name: "Delete Healthy Snacks" }),
+    );
   });
 
-  // ── Preview thumbnails & health summary (§3.3) ───────────────────────────
-
-  it("renders preview thumbnails with score badges", () => {
+  it("does not fabricate preview scores or an average from partial list data", () => {
     render(<ListsPage />, { wrapper: createWrapper() });
-    const previews = screen.getAllByTestId("list-preview");
-    expect(previews.length).toBeGreaterThanOrEqual(1);
 
-    const thumbs = screen.getAllByTestId("preview-thumbnails");
-    expect(thumbs.length).toBeGreaterThanOrEqual(1);
-
-    // Check the first preview has 3 score badges (matching mock data)
-    const favPreview = previews[0];
-    expect(favPreview).toHaveTextContent("35");
-    expect(favPreview).toHaveTextContent("75");
-    expect(favPreview).toHaveTextContent("70");
-  });
-
-  it("shows overflow count when list has more items than previewed", () => {
-    render(<ListsPage />, { wrapper: createWrapper() });
-    // fav-1 has item_count=5, preview has 3 items → "+2"
-    const overflow = screen.getByTestId("preview-overflow");
-    expect(overflow).toHaveTextContent("+2");
-  });
-
-  it("shows average score badge for lists with preview items", () => {
-    render(<ListsPage />, { wrapper: createWrapper() });
-    // Avg of 65 + 25 + 30 = 120 / 3 = 40, displayed as toTryVitScore(40) = 60
-    const avgBadge = screen.getByTestId("list-avg-score");
-    expect(avgBadge).toHaveTextContent("Avg 60");
-  });
-
-  it("does not show preview for empty lists", () => {
-    mockUseLists.mockReturnValue({
-      data: {
-        lists: [
-          {
-            ...mockLists[0],
-            id: "empty-list",
-            item_count: 0,
-          },
-        ],
-      },
-      isLoading: false,
-      error: null,
-    });
-    mockUseListPreview.mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      error: null,
-    });
-    render(<ListsPage />, { wrapper: createWrapper() });
     expect(screen.queryByTestId("list-preview")).not.toBeInTheDocument();
-  });
-
-  it("does not show preview when preview data is loading", () => {
-    mockUseListPreview.mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      error: null,
-    });
-    render(<ListsPage />, { wrapper: createWrapper() });
-    expect(screen.queryByTestId("list-preview")).not.toBeInTheDocument();
-  });
-
-  it("preview score badges have correct title attributes", () => {
-    render(<ListsPage />, { wrapper: createWrapper() });
-    expect(screen.getByTitle("Lay's Classic")).toBeInTheDocument();
-    expect(screen.getByTitle("Oat Bar")).toBeInTheDocument();
-    expect(screen.getByTitle("Cola Zero")).toBeInTheDocument();
+    expect(screen.queryByTestId("list-avg-score")).not.toBeInTheDocument();
   });
 });

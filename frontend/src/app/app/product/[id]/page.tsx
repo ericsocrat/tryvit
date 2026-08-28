@@ -13,6 +13,7 @@ import { PrintButton } from "@/components/common/PrintButton";
 import { PullToRefresh } from "@/components/common/PullToRefresh";
 import { ProductProfileSkeleton } from "@/components/common/skeletons";
 import { CompareCheckbox } from "@/components/compare/CompareCheckbox";
+import { AppPage } from "@/components/layout/AppPage";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ActionOverflowMenu } from "@/components/product/ActionOverflowMenu";
 import { AddToListMenu } from "@/components/product/AddToListMenu";
@@ -22,6 +23,7 @@ import { HealthWarningsCard } from "@/components/product/HealthWarningsCard";
 import { NutritionHighlights } from "@/components/product/NutritionHighlights";
 import { PercentileBadge } from "@/components/product/PercentileBadge";
 import { ProductHeroImage } from "@/components/product/ProductHeroImage";
+import type { ProductRegisterEvidenceState } from "@/components/product/ProductRegisterCard";
 import { ProductScoreHero } from "@/components/product/ProductScoreHero";
 import { ShareButton } from "@/components/product/ShareButton";
 import { TrafficLightStrip } from "@/components/product/TrafficLightStrip";
@@ -47,10 +49,12 @@ import { toTryVitScore } from "@/lib/score-utils";
 import { createClient } from "@/lib/supabase/client";
 import type { ProductProfile } from "@/lib/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Info } from "lucide-react";
 import { useParams } from "next/navigation";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import type { ProductAnalysisTab } from "./ProductFullAnalysis";
+
+import styles from "./product-detail.module.css";
 
 const ProductFullAnalysis = lazy(() => import("./ProductFullAnalysis"));
 
@@ -109,10 +113,7 @@ export default function ProductDetailPage() {
     enabled: !Number.isNaN(productId),
   });
 
-  const provenanceQuery = useProductProvenance(
-    productId,
-    !Number.isNaN(productId),
-  );
+  const provenanceQuery = useProductProvenance(productId, !Number.isNaN(productId));
   const alternativeProvenance = useProductProvenanceMap(
     profile?.alternatives.map((alternative) => alternative.product_id) ?? [],
   );
@@ -141,10 +142,7 @@ export default function ProductDetailPage() {
     if (error && !isOnline && !profile) {
       getCachedProduct<ProductProfile>(productId).then((cached) => {
         if (cached) {
-          queryClient.setQueryData(
-            queryKeys.productProfile(productId),
-            cached.data,
-          );
+          queryClient.setQueryData(queryKeys.productProfile(productId), cached.data);
           setCachedAt(cached.cachedAt);
         }
       });
@@ -161,15 +159,15 @@ export default function ProductDetailPage() {
 
   if (error) {
     return (
-      <div className="space-y-4">
+      <AppPage className={`${styles.page} ${styles.state}`}>
         <Breadcrumbs
           items={[
             { labelKey: "nav.home", href: "/app" },
             { labelKey: "nav.search", href: "/app/search" },
           ]}
         />
-        <div className="card border-error-border bg-error-bg py-8 text-center">
-          <p className="mb-3 text-sm text-error-text">{t("product.loadFailed")}</p>
+        <div className={styles.errorPanel}>
+          <p>{t("product.loadFailed")}</p>
           <Button
             onClick={() =>
               queryClient.invalidateQueries({
@@ -180,13 +178,13 @@ export default function ProductDetailPage() {
             {t("common.retry")}
           </Button>
         </div>
-      </div>
+      </AppPage>
     );
   }
 
   if (!profile) {
     return (
-      <div className="space-y-4">
+      <AppPage className={`${styles.page} ${styles.state}`}>
         <Breadcrumbs
           items={[
             { labelKey: "nav.home", href: "/app" },
@@ -200,7 +198,7 @@ export default function ProductDetailPage() {
           action={{ labelKey: "error.browseCategories", href: "/app/categories" }}
           secondaryAction={{ labelKey: "error.searchProducts", href: "/app/search" }}
         />
-      </div>
+      </AppPage>
     );
   }
 
@@ -219,289 +217,274 @@ export default function ProductDetailPage() {
       })
     : [];
   const recommendationsAllowed =
-    scoreRankingAllowed &&
-    (profile.alternatives.length === 0 || eligibleAlternatives.length > 0);
+    scoreRankingAllowed && (profile.alternatives.length === 0 || eligibleAlternatives.length > 0);
   const recommendationProfile = {
     ...profile,
-    alternatives: recommendationsAllowed
-      ? eligibleAlternatives
-      : profile.alternatives,
+    alternatives: recommendationsAllowed ? eligibleAlternatives : profile.alternatives,
   };
+  const alternativeEvidenceByProductId = Object.fromEntries(
+    profile.alternatives.map((alternative) => {
+      const provenance = alternativeProvenance[alternative.product_id];
+      return [
+        alternative.product_id,
+        {
+          data: provenance?.data,
+          isLoading: provenance?.isLoading,
+          error: provenance?.error ?? null,
+        } satisfies ProductRegisterEvidenceState,
+      ];
+    }),
+  );
   const scoreProvisional = provenanceDisposition !== "confirmed";
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-    <div className="space-y-4 lg:space-y-6">
-      <Breadcrumbs
-        items={[
-          { labelKey: "nav.home", href: "/app" },
-          { labelKey: "nav.search", href: "/app/search" },
-          {
-            label:
-              profile.product.product_name_display ??
-              profile.product.product_name,
-          },
-        ]}
-      />
+      <AppPage className={styles.page}>
+        <Breadcrumbs
+          items={[
+            { labelKey: "nav.home", href: "/app" },
+            { labelKey: "nav.search", href: "/app/search" },
+            {
+              label: profile.product.product_name_display ?? profile.product.product_name,
+            },
+          ]}
+        />
 
-      {/* Desktop: 2-column grid; Mobile: single column */}
-      <div className="lg:grid lg:grid-cols-12 lg:gap-6">
-        {/* Left column — sticky on desktop */}
-        <div className="space-y-4 lg:col-span-5 lg:space-y-6 lg:self-start lg:sticky lg:top-20">
-          {/* Product Identity Card */}
-          <div className="card">
-            {/* Product Hero Image */}
-            <div className="mb-1 sm:mb-4">
-              <ProductHeroImage
-                images={profile.images}
-                productName={
-                  profile.product.product_name_display ??
-                  profile.product.product_name
-                }
-                categoryIcon={profile.product.category_icon}
-                ean={profile.product.ean}
-              />
-            </div>
+        {/* Desktop: 2-column grid; Mobile: single column */}
+        <div className={styles.contentGrid} data-testid="product-layout">
+          {/* Left column — sticky on desktop */}
+          <div className={styles.identityColumn} data-testid="product-identity-column">
+            {/* Product Identity Card */}
+            <section className={styles.identityPanel} data-testid="product-identity-panel">
+              {/* Product Hero Image */}
+              <div className={styles.heroMedia}>
+                <ProductHeroImage
+                  images={profile.images}
+                  productName={profile.product.product_name_display ?? profile.product.product_name}
+                  categoryIcon={profile.product.category_icon}
+                  ean={profile.product.ean}
+                />
+              </div>
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h1 className="text-lg font-bold text-foreground lg:text-xl">
-                  {profile.product.product_name_display ??
-                    profile.product.product_name}
-                </h1>
-                {profile.product.product_name_en &&
-                  profile.product.product_name_display !==
-                    profile.product.product_name && (
-                    <p className="text-xs text-foreground-muted">
-                      {t("product.originalName")}:{" "}
-                      {profile.product.product_name}
+              <div className={styles.identityHeader}>
+                <div className={styles.identityCopy}>
+                  <p className={styles.eyebrow}>{profile.product.category_display}</p>
+                  <h1 className={styles.productName}>
+                    {profile.product.product_name_display ?? profile.product.product_name}
+                  </h1>
+                  {profile.product.product_name_en &&
+                  profile.product.product_name_display !== profile.product.product_name ? (
+                    <p className={styles.originalName}>
+                      {t("product.originalName")}: {profile.product.product_name}
                     </p>
-                  )}
-                <p className="text-sm text-foreground-secondary lg:text-base">
-                  {profile.product.brand}
-                </p>
-                {cachedAt && <CachedTimestamp cachedAt={cachedAt} />}
-              </div>
-              <div className="no-print flex flex-wrap items-center gap-2">
-                <ShareButton
-                  productName={
-                    profile.product.product_name_display ??
-                    profile.product.product_name
-                  }
-                  score={profile.scores.unhealthiness_score}
-                  productId={productId}
-                />
-                <AvoidBadge productId={productId} />
-                <AddToListMenu productId={productId} />
-                <CompareCheckbox
-                  productId={productId}
-                  productName={
-                    profile.product.product_name_display ??
-                    profile.product.product_name
-                  }
-                />
-                <span className="hidden sm:contents">
-                  <WatchButton productId={productId} />
-                  <PrintButton />
-                </span>
-                <ActionOverflowMenu className="sm:hidden">
-                  <WatchButton productId={productId} />
-                  <PrintButton />
-                </ActionOverflowMenu>
-              </div>
-            </div>
-
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1 rounded-full bg-surface-muted px-2 py-0.5 text-xs font-bold">
-                <NutriScoreBadge
-                  grade={profile.scores.nutri_score_label}
-                  size="sm"
-                />
-                <span className="text-foreground-secondary">
-                  {t("product.nutriScoreLabel")}
-                </span>
-              </span>
-              <span className="rounded-full bg-surface-muted px-2 py-0.5 text-xs text-foreground-secondary">
-                {t("product.novaGroup", {
-                  group: profile.scores.nova_group,
-                })}
-              </span>
-              {scoreRankingAllowed && (
-                <PercentileBadge
-                  rank={profile.scores.category_context?.rank}
-                  total={profile.scores.category_context?.total_in_category}
-                />
-              )}
-            </div>
-
-            {/* Inline score hero + confidence badge */}
-            <div className="mt-1 space-y-1">
-              <ProductScoreHero
-                variant="inline"
-                unhealthinessScore={profile.scores.unhealthiness_score}
-                headline={profile.scores.headline}
-                hasConflicts={profile.scores.has_signal_conflicts}
-                provisional={scoreProvisional}
-              />
-              {(() => {
-                const q = profile.quality as Record<string, unknown> | null;
-                const level = q ? (q.confidence_band as string | undefined) : undefined;
-                const pct = q ? (q.confidence_score as number | undefined) : undefined;
-                return level && !scoreProvisional ? (
-                  <ConfidenceBadge
-                    level={level}
-                    percentage={pct ?? undefined}
-                    size="sm"
-                    showLabel={false}
-                    showTooltip
+                  ) : null}
+                  <p className={styles.brand}>{profile.product.brand}</p>
+                  {cachedAt ? <CachedTimestamp cachedAt={cachedAt} /> : null}
+                </div>
+                <div className={`no-print ${styles.actions}`}>
+                  <ShareButton
+                    productName={
+                      profile.product.product_name_display ?? profile.product.product_name
+                    }
+                    score={profile.scores.unhealthiness_score}
+                    productId={productId}
                   />
-                ) : (
-                  <span
-                    className="inline-flex w-fit rounded-full bg-warning-bg px-2 py-0.5 text-xs font-semibold text-warning-text"
-                    data-testid="score-confidence-unavailable"
-                    role="status"
-                  >
-                    {t("product.confidenceUnavailable")}
+                  <AvoidBadge productId={productId} />
+                  <AddToListMenu productId={productId} />
+                  <CompareCheckbox
+                    productId={productId}
+                    productName={
+                      profile.product.product_name_display ?? profile.product.product_name
+                    }
+                  />
+                  <span className="hidden sm:contents">
+                    <WatchButton productId={productId} />
+                    <PrintButton />
                   </span>
-                );
-              })()}
-              {!scoreProvisional && (
-                <p className="text-xs text-foreground-muted">
-                  {t("product.scoreConfidenceHint")}
-                </p>
-              )}
-            </div>
+                  <ActionOverflowMenu className="sm:hidden">
+                    <WatchButton productId={productId} />
+                    <PrintButton />
+                  </ActionOverflowMenu>
+                </div>
+              </div>
 
-            {/* Health flags (inline) */}
-            {(profile.flags.high_sugar ||
+              <div className={styles.classification}>
+                <span className={styles.chip}>
+                  <NutriScoreBadge grade={profile.scores.nutri_score_label} size="sm" />
+                  <span>{t("product.nutriScoreLabel")}</span>
+                </span>
+                <span className={styles.chip}>
+                  {t("product.novaGroup", {
+                    group: profile.scores.nova_group,
+                  })}
+                </span>
+                {scoreRankingAllowed ? (
+                  <PercentileBadge
+                    rank={profile.scores.category_context?.rank}
+                    total={profile.scores.category_context?.total_in_category}
+                  />
+                ) : null}
+              </div>
+
+              {/* Inline score hero + confidence badge */}
+              <div className={styles.scoreBlock}>
+                <ProductScoreHero
+                  variant="inline"
+                  unhealthinessScore={profile.scores.unhealthiness_score}
+                  headline={profile.scores.headline}
+                  hasConflicts={profile.scores.has_signal_conflicts}
+                  provisional={scoreProvisional}
+                />
+                {(() => {
+                  const q = profile.quality as Record<string, unknown> | null;
+                  const level = q ? (q.confidence_band as string | undefined) : undefined;
+                  const pct = q ? (q.confidence_score as number | undefined) : undefined;
+                  return level && !scoreProvisional ? (
+                    <ConfidenceBadge
+                      level={level}
+                      percentage={pct ?? undefined}
+                      size="sm"
+                      showLabel={false}
+                      showTooltip
+                    />
+                  ) : (
+                    <output
+                      className={styles.confidenceUnavailable}
+                      data-testid="score-confidence-unavailable"
+                    >
+                      {t("product.confidenceUnavailable")}
+                    </output>
+                  );
+                })()}
+                {!scoreProvisional ? (
+                  <p className={styles.confidenceHint}>{t("product.scoreConfidenceHint")}</p>
+                ) : null}
+              </div>
+
+              {/* Health flags (inline) */}
+              {profile.flags.high_sugar ||
               profile.flags.high_salt ||
               profile.flags.high_sat_fat ||
               profile.flags.high_additive_load ||
-              profile.flags.has_palm_oil) && (
-              <div className="mt-2 space-y-1">
-                <p className="text-xs font-medium text-foreground-muted">
-                  {t("product.healthFlags")}
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  {profile.flags.high_sugar && (
-                    <FlagWithExplanation
-                      label={t("product.highSugar")}
-                      explanation={t("product.highSugarExplanation")}
-                    />
-                  )}
-                  {profile.flags.high_salt && (
-                    <FlagWithExplanation
-                      label={t("product.highSalt")}
-                      explanation={t("product.highSaltExplanation")}
-                    />
-                  )}
-                  {profile.flags.high_sat_fat && (
-                    <FlagWithExplanation
-                      label={t("product.highSatFat")}
-                      explanation={t("product.highSatFatExplanation")}
-                    />
-                  )}
-                  {profile.flags.high_additive_load && (
-                    <FlagWithExplanation
-                      label={t("product.manyAdditives")}
-                      explanation={t("product.manyAdditivesExplanation")}
-                    />
-                  )}
-                  {profile.flags.has_palm_oil && (
-                    <FlagWithExplanation
-                      label={t("product.palmOil")}
-                      explanation={t("product.palmOilExplanation")}
-                    />
-                  )}
+              profile.flags.has_palm_oil ? (
+                <div className={styles.flags}>
+                  <p className={styles.registerLabel}>{t("product.healthFlags")}</p>
+                  <div className={styles.flagList}>
+                    {profile.flags.high_sugar ? (
+                      <FlagWithExplanation
+                        label={t("product.highSugar")}
+                        explanation={t("product.highSugarExplanation")}
+                      />
+                    ) : null}
+                    {profile.flags.high_salt ? (
+                      <FlagWithExplanation
+                        label={t("product.highSalt")}
+                        explanation={t("product.highSaltExplanation")}
+                      />
+                    ) : null}
+                    {profile.flags.high_sat_fat ? (
+                      <FlagWithExplanation
+                        label={t("product.highSatFat")}
+                        explanation={t("product.highSatFatExplanation")}
+                      />
+                    ) : null}
+                    {profile.flags.high_additive_load ? (
+                      <FlagWithExplanation
+                        label={t("product.manyAdditives")}
+                        explanation={t("product.manyAdditivesExplanation")}
+                      />
+                    ) : null}
+                    {profile.flags.has_palm_oil ? (
+                      <FlagWithExplanation
+                        label={t("product.palmOil")}
+                        explanation={t("product.palmOilExplanation")}
+                      />
+                    ) : null}
+                  </div>
                 </div>
-              </div>
-            )}
+              ) : null}
 
-            {/* Category & EAN */}
-            <div className="mt-3 flex flex-wrap gap-2 text-xs text-foreground-secondary">
-              <span>
-                {profile.product.category_icon}{" "}
-                {profile.product.category_display}
-              </span>
-              {profile.product.ean && <span>EAN: {profile.product.ean}</span>}
-              {profile.product.store_availability && (
-                <span>Store: {profile.product.store_availability}</span>
-              )}
-            </div>
+              {/* Category & EAN */}
+              <div className={styles.identifiers}>
+                <span className={styles.identifier}>{profile.product.category_display}</span>
+                {profile.product.ean ? (
+                  <span className={styles.identifier}>EAN {profile.product.ean}</span>
+                ) : null}
+                {profile.product.store_availability ? (
+                  <span className={styles.identifier}>{profile.product.store_availability}</span>
+                ) : null}
+              </div>
+            </section>
+
+            {/* Nutrition Highlights — key nutrient bars */}
+            <NutritionHighlights
+              nutrition={profile.nutrition.per_100g}
+              provisional={scoreProvisional}
+            />
+
+            {/* Allergen Quick Badges */}
+            <AllergenQuickBadges allergens={profile.allergens} />
+
+            {/* Score interpretation — expandable "What does this score mean?" */}
+            <ScoreInterpretationCard
+              score={toTryVitScore(profile.scores.unhealthiness_score)}
+              provisional={scoreProvisional}
+            />
+
+            {/* Personalized health warnings */}
+            <ErrorBoundary level="section" context={{ section: "health-warnings", productId }}>
+              <HealthWarningsCard productId={productId} />
+            </ErrorBoundary>
           </div>
 
-          {/* Nutrition Highlights — key nutrient bars */}
-          <NutritionHighlights
-            nutrition={profile.nutrition.per_100g}
-            provisional={scoreProvisional}
-          />
-
-          {/* Allergen Quick Badges */}
-          <AllergenQuickBadges allergens={profile.allergens} />
-
-          {/* Score interpretation — expandable "What does this score mean?" */}
-          <ScoreInterpretationCard
-            score={toTryVitScore(profile.scores.unhealthiness_score)}
-            provisional={scoreProvisional}
-          />
-
-          {/* Personalized health warnings */}
-          <ErrorBoundary
-            level="section"
-            context={{ section: "health-warnings", productId }}
-          >
-            <HealthWarningsCard productId={productId} />
-          </ErrorBoundary>
-        </div>
-
-        {/* Right column — scrollable content */}
-        <div className="mt-4 space-y-4 lg:col-span-7 lg:mt-0 lg:space-y-6">
-          <ProductEvidencePanel
-            provenance={provenanceQuery.data}
-            isLoading={provenanceQuery.isLoading}
-            error={provenanceQuery.error}
-            onRetry={() => {
-              void provenanceQuery.refetch();
-            }}
-          />
-          {showFullAnalysis ? (
-            <ErrorBoundary
-              level="section"
-              context={{ section: "full-analysis", productId }}
-            >
-              <Suspense
-                fallback={
-                  <QuickSummary
+          {/* Right column — scrollable content */}
+          <div className={styles.analysisColumn} data-testid="product-analysis-column">
+            <ProductEvidencePanel
+              provenance={provenanceQuery.data}
+              isLoading={provenanceQuery.isLoading}
+              error={provenanceQuery.error}
+              onRetry={() => {
+                void provenanceQuery.refetch();
+              }}
+            />
+            {showFullAnalysis ? (
+              <ErrorBoundary level="section" context={{ section: "full-analysis", productId }}>
+                <Suspense
+                  fallback={
+                    <QuickSummary
+                      profile={recommendationProfile}
+                      onExpand={toggleFullAnalysis}
+                      recommendationsAllowed={recommendationsAllowed}
+                      scoreProvisional={scoreProvisional}
+                      alternativeEvidenceByProductId={alternativeEvidenceByProductId}
+                    />
+                  }
+                >
+                  <ProductFullAnalysis
                     profile={recommendationProfile}
-                    onExpand={toggleFullAnalysis}
+                    productId={productId}
+                    activeTab={activeTab}
+                    onActiveTabChange={setActiveTab}
+                    onCollapse={toggleFullAnalysis}
                     recommendationsAllowed={recommendationsAllowed}
                     scoreProvisional={scoreProvisional}
+                    scoreRankingAllowed={scoreRankingAllowed}
+                    alternativeEvidenceByProductId={alternativeEvidenceByProductId}
                   />
-                }
-              >
-                <ProductFullAnalysis
-                  profile={recommendationProfile}
-                  productId={productId}
-                  activeTab={activeTab}
-                  onActiveTabChange={setActiveTab}
-                  onCollapse={toggleFullAnalysis}
-                  recommendationsAllowed={recommendationsAllowed}
-                  scoreProvisional={scoreProvisional}
-                  scoreRankingAllowed={scoreRankingAllowed}
-                />
-              </Suspense>
-            </ErrorBoundary>
-          ) : (
-            <QuickSummary
-              profile={recommendationProfile}
-              onExpand={toggleFullAnalysis}
-              recommendationsAllowed={recommendationsAllowed}
-              scoreProvisional={scoreProvisional}
-            />
-          )}
+                </Suspense>
+              </ErrorBoundary>
+            ) : (
+              <QuickSummary
+                profile={recommendationProfile}
+                onExpand={toggleFullAnalysis}
+                recommendationsAllowed={recommendationsAllowed}
+                scoreProvisional={scoreProvisional}
+                alternativeEvidenceByProductId={alternativeEvidenceByProductId}
+              />
+            )}
+          </div>
         </div>
-      </div>
-    </div>
+      </AppPage>
     </PullToRefresh>
   );
 }
@@ -513,11 +496,15 @@ function QuickSummary({
   onExpand,
   recommendationsAllowed,
   scoreProvisional,
+  alternativeEvidenceByProductId,
 }: Readonly<{
   profile: ProductProfile;
   onExpand: () => void;
   recommendationsAllowed: boolean;
   scoreProvisional: boolean;
+  alternativeEvidenceByProductId: Readonly<
+    Record<number, ProductRegisterEvidenceState | undefined>
+  >;
 }>) {
   const { t } = useTranslation();
   const interp = getScoreInterpretation(toTryVitScore(profile.scores.unhealthiness_score));
@@ -530,82 +517,58 @@ function QuickSummary({
   ].some((value) => value != null);
 
   return (
-    <div className="space-y-4" data-testid="quick-summary">
+    <div className={styles.summary} data-testid="quick-summary">
       {/* Score interpretation */}
-      <div
-        className={
-          scoreProvisional
-            ? "card border-warning-border bg-warning-bg"
-            : `card ${interp.bg}`
-        }
-      >
-        <h2 className="mb-1 text-sm font-semibold text-foreground-secondary">
-          {t("product.quickSummary")}
-        </h2>
+      <div className={styles.summaryLead}>
+        <h2>{t("product.quickSummary")}</h2>
         {scoreProvisional ? (
-          <p className="mt-2 text-xs font-medium text-warning-text">
-            {t("trust.evidence.scoreNoGuidance")}
-          </p>
+          <p className="text-warning-text">{t("trust.evidence.scoreNoGuidance")}</p>
         ) : (
-          <p className={`text-sm ${interp.color}`}>{t(interp.key)}</p>
+          <p className={interp.color}>{t(interp.key)}</p>
         )}
       </div>
 
       {/* Traffic light strip */}
-      <div className="card">
+      <section className={styles.registerPanel}>
+        <h2 className={styles.panelTitle}>{t("product.nutrition")}</h2>
         {scoreProvisional ? (
-          <p className="text-sm text-warning-text">
-            {t("trust.evidence.nutritionGuidanceWithheld")}
-          </p>
+          <p className="text-warning-text">{t("trust.evidence.nutritionGuidanceWithheld")}</p>
         ) : hasTrafficLightEvidence ? (
           <TrafficLightStrip nutrition={profile.nutrition.per_100g} />
         ) : (
-          <p className="text-sm text-warning-text">
-            {t("trust.evidence.nutritionUnavailable")}
-          </p>
+          <p className="text-warning-text">{t("trust.evidence.nutritionUnavailable")}</p>
         )}
-      </div>
+      </section>
 
       {/* Top alternatives preview */}
-      {recommendationsAllowed && topAlts.length > 0 && (
-        <div className="card" data-testid="quick-summary-alternatives">
-          <h2 className="mb-2 text-sm font-semibold text-foreground-secondary">
-            {t("product.topAlternatives")}
-          </h2>
-          <div className="space-y-3">
+      {recommendationsAllowed && topAlts.length > 0 ? (
+        <section className={styles.registerPanel} data-testid="quick-summary-alternatives">
+          <h2 className={styles.panelTitle}>{t("product.topAlternatives")}</h2>
+          <ul className={styles.alternatives}>
             {topAlts.map((alt) => (
               <AlternativeProductCard
                 key={alt.product_id}
                 alt={alt}
                 currentScore={profile.scores.unhealthiness_score}
+                evidence={alternativeEvidenceByProductId[alt.product_id]}
+                comparisonAllowed
               />
             ))}
-          </div>
-          {profile.alternatives.length > 2 && (
-            <button
-              type="button"
-              onClick={onExpand}
-              className="mt-2 text-sm font-medium text-brand hover:underline"
-            >
-              {t("product.viewAllAlternatives")} (
-              {profile.alternatives.length})
+          </ul>
+          {profile.alternatives.length > 2 ? (
+            <button type="button" onClick={onExpand} className={styles.moreAlternatives}>
+              {t("product.viewAllAlternatives")} ({profile.alternatives.length})
             </button>
-          )}
-        </div>
-      )}
+          ) : null}
+        </section>
+      ) : null}
 
-      {!recommendationsAllowed && profile.alternatives.length > 0 && (
-        <div className="rounded-xl border border-warning-border bg-warning-bg p-3 text-sm text-warning-text">
-          {t("trust.evidence.recommendationsWithheld")}
-        </div>
-      )}
+      {!recommendationsAllowed && profile.alternatives.length > 0 ? (
+        <div className={styles.withheld}>{t("trust.evidence.recommendationsWithheld")}</div>
+      ) : null}
 
       {/* Expand to full analysis */}
-      <Button
-        fullWidth
-        onClick={onExpand}
-        data-testid="toggle-analysis"
-      >
+      <Button fullWidth onClick={onExpand} data-testid="toggle-analysis">
         <ChevronDown className="h-4 w-4" />
         {t("product.showFullAnalysis")}
       </Button>
@@ -622,30 +585,21 @@ function FlagWithExplanation({
   const [open, setOpen] = useState(false);
 
   return (
-    <span className="group relative inline-block">
+    <span className={styles.flag}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1 rounded bg-error-bg px-2 py-0.5 text-xs font-medium text-error-text transition-colors hover:bg-error-bg"
+        className={styles.flagButton}
+        aria-expanded={open}
       >
         {label}
-        <svg
-          className="h-3 w-3 opacity-50"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            fillRule="evenodd"
-            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-            clipRule="evenodd"
-          />
-        </svg>
+        <Info size={13} aria-hidden="true" />
       </button>
-      {open && (
-        <span className="absolute bottom-full left-0 z-10 mb-1 w-56 rounded-lg border border-border bg-surface p-2 text-xs text-foreground-secondary shadow-lg">
+      {open ? (
+        <span className={styles.flagNote} role="note">
           {explanation}
         </span>
-      )}
+      ) : null}
     </span>
   );
 }
@@ -661,33 +615,26 @@ function ScoreInterpretationCard({
   const interp = getScoreInterpretation(score);
 
   return (
-    <div className="card" data-testid="score-interpretation">
+    <section className={styles.interpretation} data-testid="score-interpretation">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between text-sm font-semibold text-foreground-secondary lg:text-base"
+        className={styles.interpretationToggle}
         aria-expanded={open}
       >
         {t("scoreInterpretation.title")}
-        <span
-          className={`text-xs transition-transform ${open ? "rotate-180" : ""}`}
-          aria-hidden="true"
-        >
-          ▾
-        </span>
+        <ChevronDown size={16} className={open ? styles.rotate : ""} aria-hidden="true" />
       </button>
-      {open && (
+      {open ? (
         <div
-          className={`mt-2 rounded-lg px-3 py-2 text-sm ${
-            provisional
-              ? "border border-warning-border bg-warning-bg text-warning-text"
-              : `${interp.bg} ${interp.color}`
+          className={`${styles.interpretationContent} ${
+            provisional ? "text-warning-text" : interp.color
           }`}
           data-testid="score-interpretation-content"
         >
           {t(provisional ? "trust.evidence.scoreNoGuidance" : interp.key)}
         </div>
-      )}
-    </div>
+      ) : null}
+    </section>
   );
 }

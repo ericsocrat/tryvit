@@ -1,12 +1,20 @@
 .registerCard {
-  --record-rule: color-mix(in srgb, var(--app-rule, var(--shell-rule, var(--color-border-strong))) 72%, transparent);
+  --record-rule: color-mix(
+    in srgb,
+    var(--app-rule, var(--shell-rule, var(--color-border-strong))) 72%,
+    transparent
+  );
   position: relative;
   display: grid;
   min-inline-size: 0;
   overflow: hidden;
   border: 1px solid var(--record-rule);
   border-radius: 1.05rem 0.3rem 1.05rem 1.05rem;
-  background: color-mix(in srgb, var(--app-paper, var(--color-surface)) 97%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--app-paper, var(--color-surface)) 97%,
+    transparent
+  );
   box-shadow: 0 10px 26px rgb(23 39 31 / 0.055);
   transition:
     border-color 160ms ease,
@@ -20,14 +28,23 @@
   inset: 0 0 auto auto;
   inline-size: 1.35rem;
   aspect-ratio: 1;
-  background: linear-gradient(225deg, var(--shell-fold, var(--app-rust, #a64b2a)) 0 48%, var(--record-rule) 49% 52%, transparent 53%);
+  background: linear-gradient(
+    225deg,
+    var(--shell-fold, var(--app-rust, #a64b2a)) 0 48%,
+    var(--record-rule) 49% 52%,
+    transparent 53%
+  );
   content: "";
   pointer-events: none;
 }
 
 .muted {
   border-style: dashed;
-  background: color-mix(in srgb, var(--color-surface-muted) 42%, var(--app-paper, var(--color-surface)));
+  background: color-mix(
+    in srgb,
+    var(--color-surface-muted) 42%,
+    var(--app-paper, var(--color-surface))
+  );
 }
 
 .muted .media {
@@ -53,6 +70,8 @@
 
 .list .link {
   display: grid;
+  grid-column: 1;
+  grid-row: 1;
   grid-template-columns: auto minmax(0, 1fr) auto;
   grid-template-areas: "media identity badges";
   gap: 0.85rem;
@@ -62,11 +81,6 @@
 
 .list {
   grid-template-columns: minmax(0, 1fr) auto;
-}
-
-.list .link {
-  grid-column: 1;
-  grid-row: 1;
 }
 
 .media {
@@ -138,6 +152,15 @@
 
 .scoreConfirmed {
   border-color: currentColor;
+}
+
+.semanticMeter {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .evidence {
@@ -214,7 +237,11 @@
   min-block-size: 2.85rem;
   padding: 0.45rem 0.75rem;
   border-block-start: 1px solid var(--record-rule);
-  background: color-mix(in srgb, var(--app-canvas, var(--color-surface-subtle)) 72%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--app-canvas, var(--color-surface-subtle)) 72%,
+    transparent
+  );
 }
 
 .grid .actions {
@@ -243,7 +270,10 @@
 
 @media (hover: hover) {
   .registerCard:hover {
-    border-color: var(--app-rule, var(--shell-rule, var(--color-border-strong)));
+    border-color: var(
+      --app-rule,
+      var(--shell-rule, var(--color-border-strong))
+    );
     box-shadow: 0 16px 34px rgb(23 39 31 / 0.09);
     transform: translateY(-2px);
   }

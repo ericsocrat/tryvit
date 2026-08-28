@@ -9,11 +9,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./AppShell.module.css";
 import { ThemeToggle } from "./ThemeToggle";
-import {
-  ADMIN_ENTRY_ITEM,
-  DRAWER_SECTIONS,
-  type AppNavItem,
-} from "./app-navigation";
+import { ADMIN_ENTRY_ITEM, DRAWER_SECTIONS, type AppNavItem } from "./app-navigation";
 
 interface MoreDrawerProps {
   readonly open: boolean;
@@ -21,8 +17,7 @@ interface MoreDrawerProps {
 }
 
 const SWIPE_DISMISS_THRESHOLD = 80;
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const FOCUSABLE_SELECTOR = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export function MoreDrawer({ open, onClose }: Readonly<MoreDrawerProps>) {
   const activeRoute = useActiveRoute();
@@ -58,9 +53,7 @@ export function MoreDrawer({ open, onClose }: Readonly<MoreDrawerProps>) {
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key !== "Tab") return;
-      const focusable = Array.from(
-        activeDialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
-      );
+      const focusable = Array.from(activeDialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
       if (focusable.length === 0) return;
 
       const first = focusable[0];
@@ -106,13 +99,19 @@ export function MoreDrawer({ open, onClose }: Readonly<MoreDrawerProps>) {
     if (drawerRef.current) drawerRef.current.style.transform = "";
   }, [onClose]);
 
+  const handleDialogKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDialogElement>) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      onClose();
+    },
+    [onClose],
+  );
+
   if (!open) return null;
 
   const visibleSections = isAdmin
-    ? [
-        ...DRAWER_SECTIONS,
-        { labelKey: "nav.admin", items: [ADMIN_ENTRY_ITEM] },
-      ]
+    ? [...DRAWER_SECTIONS, { labelKey: "nav.admin", items: [ADMIN_ENTRY_ITEM] }]
     : DRAWER_SECTIONS;
 
   return (
@@ -128,6 +127,7 @@ export function MoreDrawer({ open, onClose }: Readonly<MoreDrawerProps>) {
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
+      onKeyDown={handleDialogKeyDown}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -193,9 +193,7 @@ function DrawerLink({
         href={item.href}
         onClick={onClose}
         aria-current={active ? "page" : undefined}
-        className={`${styles.drawerLink} ${
-          active ? styles.drawerLinkActive : ""
-        }`}
+        className={`${styles.drawerLink} ${active ? styles.drawerLinkActive : ""}`}
         data-touch-target="true"
       >
         <Icon icon={item.icon} size="md" />

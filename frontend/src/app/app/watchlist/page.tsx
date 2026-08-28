@@ -8,8 +8,12 @@
 
 import { EmptyStateIllustration } from "@/components/common/EmptyStateIllustration";
 import { Icon } from "@/components/common/Icon";
+import { NovaBadge } from "@/components/common/NovaBadge";
+import { NutriScoreBadge } from "@/components/common/NutriScoreBadge";
 import { WatchlistSkeleton } from "@/components/common/skeletons";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { ProductRegisterCard } from "@/components/product/ProductRegisterCard";
 import { ReformulationBadge } from "@/components/product/ReformulationBadge";
 import { ScoreChangeIndicator } from "@/components/product/ScoreChangeIndicator";
 import { ScoreTrendChart } from "@/components/product/ScoreTrendChart";
@@ -19,67 +23,39 @@ import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { createClient } from "@/lib/supabase/client";
 import type { WatchlistItem } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Eye } from "lucide-react";
-import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
-const SCORE_BAND_COLORS: Record<string, string> = {
-  low: "text-success",
-  moderate: "text-warning",
-  high: "text-score-orange-text",
-  very_high: "text-error",
-};
+import styles from "./watchlist.module.css";
 
 function WatchlistCard({ item }: Readonly<{ item: WatchlistItem }>) {
-  const bandColor = SCORE_BAND_COLORS[item.score_band] ?? "text-foreground";
-
   return (
-    <Link
+    <ProductRegisterCard
+      productId={item.product_id}
       href={`/app/product/${item.product_id}`}
-      className="group flex items-center gap-4 rounded-xl border border-border bg-surface p-4 transition-colors hover:border-brand/30 hover:bg-surface-muted"
-      data-testid="watchlist-card"
-    >
-      {/* Score */}
-      <div className="flex flex-col items-center gap-0.5">
-        <span
-          className={`text-2xl font-bold tabular-nums ${bandColor}`}
-          data-testid="watchlist-score"
-        >
-          {item.current_score ?? "–"}
-        </span>
-        <ScoreChangeIndicator delta={item.last_delta} />
-      </div>
-
-      {/* Product info */}
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-foreground">
-          {item.product_name}
-        </p>
-        {item.brand && (
-          <p className="truncate text-xs text-foreground-secondary">
-            {item.brand}
-          </p>
-        )}
-        <div className="mt-1 flex flex-wrap items-center gap-2">
-          {item.category && (
-            <span className="text-xs text-foreground-secondary">
-              {item.category}
-            </span>
-          )}
+      name={item.product_name}
+      brand={item.brand}
+      category={item.category}
+      score={item.current_score}
+      scoreBand={item.score_band}
+      variant="list"
+      muted
+      badges={
+        <>
+          <NutriScoreBadge grade={item.nutri_score} size="sm" />
+          {item.nova_group ? <NovaBadge group={Number(item.nova_group)} size="sm" /> : null}
+        </>
+      }
+      meta={
+        <div className={styles.trend}>
+          <ScoreChangeIndicator delta={item.last_delta} />
           <ReformulationBadge detected={item.reformulation_detected} />
+          <span className={styles.chart}>
+            <ScoreTrendChart history={item.sparkline} trend={item.trend} width={100} height={32} />
+          </span>
         </div>
-      </div>
-
-      {/* Sparkline */}
-      <div className="hidden sm:block">
-        <ScoreTrendChart
-          history={item.sparkline}
-          trend={item.trend}
-          width={100}
-          height={32}
-        />
-      </div>
-    </Link>
+      }
+    />
   );
 }
 
@@ -88,7 +64,7 @@ export default function WatchlistPage() {
   const supabase = createClient();
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.watchlist(page),
     queryFn: async () => {
       const result = await getWatchlist(supabase, page, 20);
@@ -102,70 +78,61 @@ export default function WatchlistPage() {
   const totalPages = data?.total_pages ?? 1;
 
   return (
-    <div className="space-y-6">
+    <AppPage className={styles.page}>
       <Breadcrumbs
-        items={[
-          { labelKey: "nav.home", href: "/app" },
-          { labelKey: "watchlist.title" },
-        ]}
+        items={[{ labelKey: "nav.home", href: "/app" }, { labelKey: "watchlist.title" }]}
       />
 
-      <div className="flex items-center gap-3">
-        <Icon icon={Eye} size="lg" className="text-brand" />
-        <div>
-          <h1 className="text-xl font-bold text-foreground lg:text-2xl">
-            {t("watchlist.title")}
-          </h1>
-          <p className="text-sm text-foreground-secondary">
-            {t("watchlist.subtitle")}
-          </p>
-        </div>
-      </div>
+      <AppPageHeader
+        eyebrow={t("nav.watchlist")}
+        title={t("watchlist.title")}
+        description={t("watchlist.subtitle")}
+      />
 
-      {isLoading && (
+      {isLoading ? (
         <div data-testid="watchlist-loading">
           <WatchlistSkeleton />
         </div>
-      )}
+      ) : null}
 
-      {error && (
-        <div
-          className="rounded-xl border border-error/30 bg-error/5 p-4 text-sm text-error"
-          data-testid="watchlist-error"
-        >
+      {error ? (
+        <div className={styles.error} role="alert" data-testid="watchlist-error">
           {t("watchlist.loadError")}
+          <button type="button" className={styles.retry} onClick={() => void refetch()}>
+            {t("common.retry")}
+          </button>
         </div>
-      )}
+      ) : null}
 
-      {!isLoading && !error && items.length === 0 && (
+      {!isLoading && !error && items.length === 0 ? (
         <EmptyStateIllustration
           type="no-favorites"
           titleKey="watchlist.emptyTitle"
           descriptionKey="watchlist.emptyDescription"
           action={{ labelKey: "watchlist.browseProducts", href: "/app/search" }}
         />
-      )}
+      ) : null}
 
-      {items.length > 0 && (
-        <div className="space-y-3">
+      {items.length > 0 ? (
+        <ul className={styles.items}>
           {items.map((item) => (
             <WatchlistCard key={item.watch_id} item={item} />
           ))}
-        </div>
-      )}
+        </ul>
+      ) : null}
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-6 flex items-center justify-center gap-4">
+      {totalPages > 1 ? (
+        <div className={styles.pagination}>
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page <= 1}
-            className="touch-target rounded-lg border border-border px-3 py-1.5 text-sm text-foreground-secondary transition-colors hover:bg-surface-muted disabled:opacity-50"
+            className={styles.pageButton}
             aria-label={t("watchlist.prevPage")}
           >
             <Icon icon={ChevronLeft} size="sm" />
           </button>
-          <span className="text-sm text-foreground-secondary">
+          <span className={styles.pageIndicator}>
             {t("watchlist.pageIndicator", {
               page: String(page),
               total: String(totalPages),
@@ -174,13 +141,13 @@ export default function WatchlistPage() {
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page >= totalPages}
-            className="touch-target rounded-lg border border-border px-3 py-1.5 text-sm text-foreground-secondary transition-colors hover:bg-surface-muted disabled:opacity-50"
+            className={styles.pageButton}
             aria-label={t("watchlist.nextPage")}
           >
             <Icon icon={ChevronRight} size="sm" />
           </button>
         </div>
-      )}
-    </div>
+      ) : null}
+    </AppPage>
   );
 }

@@ -380,8 +380,9 @@ describe("SearchPage", () => {
       expect(screen.getByText("Test Chips")).toBeInTheDocument();
     });
 
-    // Score badge
-    expect(screen.getByText("35")).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("meter", { name: /TryVit Score.*Provisional/i })[0],
+    ).toHaveValue(35);
     // Brand and category info
     expect(screen.getByText(/TestBrand/)).toBeInTheDocument();
   });

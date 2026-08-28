@@ -13,6 +13,7 @@ import { ComparisonGridSkeleton } from "@/components/common/skeletons";
 import { ComparisonGrid } from "@/components/compare/ComparisonGrid";
 import { ShareComparison } from "@/components/compare/ShareComparison";
 import { ExportButton } from "@/components/export/ExportButton";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ProductEvidencePanel } from "@/components/trust/ProductEvidencePanel";
 import { useAnalytics } from "@/hooks/use-analytics";
@@ -25,10 +26,12 @@ import { eventBus } from "@/lib/events";
 import type { ExportableProduct } from "@/lib/export";
 import { useTranslation } from "@/lib/i18n";
 import { useCompareStore } from "@/stores/compare-store";
-import { AlertTriangle, FolderOpen, Scale } from "lucide-react";
+import { AlertTriangle, FolderOpen } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo } from "react";
+
+import styles from "./compare.module.css";
 
 export default function ComparePage() {
   const searchParams = useSearchParams();
@@ -45,7 +48,7 @@ export default function ComparePage() {
       .slice(0, 4);
   }, [idsParam]);
 
-  const { data, isLoading, error } = useCompareProducts(productIds);
+  const { data, isLoading, error, refetch } = useCompareProducts(productIds);
   const provenanceById = useProductProvenanceMap(
     data?.products.map((product) => product.product_id) ?? [],
   );
@@ -55,9 +58,7 @@ export default function ComparePage() {
     data?.products.every((product) => {
       const provenance = provenanceById[product.product_id];
       return (
-        !provenance?.isLoading &&
-        !provenance?.error &&
-        canRecommendFromProvenance(provenance?.data)
+        !provenance?.isLoading && !provenance?.error && canRecommendFromProvenance(provenance?.data)
       );
     }) ?? false;
   const productProvenance = Object.fromEntries(
@@ -84,9 +85,7 @@ export default function ComparePage() {
       salt_g: p.salt_g ?? undefined,
       protein_g: p.protein_g ?? undefined,
       fiber_g: p.fibre_g ?? undefined,
-      allergen_tags: p.allergen_tags
-        ? p.allergen_tags.split(",").map((s) => s.trim())
-        : undefined,
+      allergen_tags: p.allergen_tags ? p.allergen_tags.split(",").map((s) => s.trim()) : undefined,
       confidence_band: p.confidence,
     }));
   }, [data?.products]);
@@ -108,10 +107,12 @@ export default function ComparePage() {
   // Empty state — no IDs provided
   if (productIds.length < 2) {
     return (
-      <div className="space-y-6">
-        <h1 className="flex items-center gap-2 text-xl font-bold text-foreground lg:text-2xl">
-          <Scale size={22} aria-hidden="true" /> {t("compare.title")}
-        </h1>
+      <AppPage className={styles.page}>
+        <AppPageHeader
+          eyebrow={t("nav.compare")}
+          title={t("compare.title")}
+          description={t("compare.useCheckbox")}
+        />
         <EmptyStateIllustration
           type="no-comparisons"
           titleKey="compare.selectPrompt"
@@ -122,67 +123,55 @@ export default function ComparePage() {
             href: "/app/compare/saved",
           }}
         />
-      </div>
+      </AppPage>
     );
   }
 
   return (
-    <div className="compare-print-container space-y-6">
-      <Breadcrumbs
-        items={[
-          { labelKey: "nav.home", href: "/app" },
-          { labelKey: "nav.compare" },
-        ]}
+    <AppPage className={`compare-print-container ${styles.page}`}>
+      <Breadcrumbs items={[{ labelKey: "nav.home", href: "/app" }, { labelKey: "nav.compare" }]} />
+      <AppPageHeader
+        eyebrow={t("nav.compare")}
+        title={t("compare.title")}
+        description={t("compare.comparing", { count: productIds.length })}
+        actions={
+          <div className={`no-print ${styles.actions}`}>
+            <Link href="/app/compare/saved" className={styles.textAction}>
+              <FolderOpen size={16} className="inline-block" aria-hidden="true" />{" "}
+              {t("compare.savedComparisons")}
+            </Link>
+            <button type="button" onClick={clear} className={styles.textAction}>
+              {t("compare.clearSelection")}
+            </button>
+            <PrintButton />
+          </div>
+        }
       />
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="flex items-center gap-2 text-xl font-bold text-foreground lg:text-2xl">
-          <Scale size={22} aria-hidden="true" /> {t("compare.title")}
-        </h1>
-        <div className="no-print flex items-center gap-2">
-          <Link
-            href="/app/compare/saved"
-            className="text-sm text-brand hover:text-brand-hover"
-          >
-            <FolderOpen size={16} className="inline-block" aria-hidden="true" />{" "}
-            {t("compare.savedComparisons")}
-          </Link>
-          <button
-            type="button"
-            onClick={clear}
-            className="text-sm text-foreground-secondary hover:text-foreground"
-          >
-            {t("compare.clearSelection")}
-          </button>
-          <PrintButton />
-        </div>
-      </div>
 
       {/* Loading */}
-      {isLoading && <ComparisonGridSkeleton />}
+      {isLoading ? <ComparisonGridSkeleton /> : null}
 
       {/* Error */}
-      {error && <EmptyState variant="error" titleKey="compare.loadFailed" />}
+      {error ? (
+        <EmptyState
+          variant="error"
+          titleKey="compare.loadFailed"
+          action={{ labelKey: "common.retry", onClick: () => void refetch() }}
+        />
+      ) : null}
 
       {/* Comparison grid */}
-      {data && data.products.length >= 2 && (
+      {data && data.products.length >= 2 ? (
         <>
           {/* Share / Save toolbar */}
-          <div className="card no-print flex items-center justify-between">
-            <p className="text-sm text-foreground-secondary">
-              {t("compare.comparing", { count: data.product_count })}
-            </p>
-            <div className="flex items-center gap-2">
-              <ExportButton
-                products={exportableProducts}
-                filename="comparison"
-                comparison
-              />
+          <div className={`no-print ${styles.toolbar}`}>
+            <div className={styles.toolbarActions}>
+              <ExportButton products={exportableProducts} filename="comparison" comparison />
               <ShareComparison productIds={productIds} />
             </div>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className={styles.evidenceGrid}>
             {data.products.map((product) => {
               const provenance = provenanceById[product.product_id];
               return (
@@ -200,10 +189,7 @@ export default function ComparePage() {
             })}
           </div>
 
-          <ErrorBoundary
-            level="section"
-            context={{ section: "comparison-grid" }}
-          >
+          <ErrorBoundary level="section" context={{ section: "comparison-grid" }}>
             <ComparisonGrid
               products={data.products}
               showAvoidBadge
@@ -212,12 +198,12 @@ export default function ComparePage() {
             />
           </ErrorBoundary>
         </>
-      )}
+      ) : null}
 
       {/* Partial results — some products not found */}
-      {data && data.products.length < productIds.length && (
-        <div className="card border-warning-border bg-warning-bg">
-          <p className="flex items-center gap-1 text-sm text-warning-text">
+      {data && data.products.length < productIds.length ? (
+        <div className={styles.partial}>
+          <p>
             <AlertTriangle size={16} aria-hidden="true" />{" "}
             {t("compare.productsNotFound", {
               count: productIds.length - data.products.length,
@@ -225,7 +211,7 @@ export default function ComparePage() {
             {t("compare.onlyShowingAvailable")}
           </p>
         </div>
-      )}
-    </div>
+      ) : null}
+    </AppPage>
   );
 }

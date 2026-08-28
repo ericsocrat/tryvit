@@ -10,6 +10,7 @@ import { NovaIndicator } from "@/components/product/NovaIndicator";
 import { NutritionDVBar } from "@/components/product/NutritionDVBar";
 import { PercentileBadge } from "@/components/product/PercentileBadge";
 import { ProductImageTabs } from "@/components/product/ProductImageTabs";
+import type { ProductRegisterEvidenceState } from "@/components/product/ProductRegisterCard";
 import { ScoreBreakdownPanel } from "@/components/product/ScoreBreakdownPanel";
 import { ScoreHistoryPanel } from "@/components/product/ScoreHistoryPanel";
 import { ScoreRadarChart } from "@/components/product/ScoreRadarChart";
@@ -29,6 +30,8 @@ import {
   useState,
 } from "react";
 
+import styles from "./ProductFullAnalysis.module.css";
+
 export type ProductAnalysisTab = "overview" | "nutrition" | "alternatives" | "scoring";
 
 const TAB_ORDER: ProductAnalysisTab[] = ["overview", "nutrition", "alternatives", "scoring"];
@@ -43,6 +46,9 @@ interface ProductFullAnalysisProps {
   readonly recommendationsAllowed: boolean;
   readonly scoreProvisional: boolean;
   readonly scoreRankingAllowed: boolean;
+  readonly alternativeEvidenceByProductId: Readonly<
+    Record<number, ProductRegisterEvidenceState | undefined>
+  >;
 }
 
 export default function ProductFullAnalysis({
@@ -54,6 +60,7 @@ export default function ProductFullAnalysis({
   recommendationsAllowed,
   scoreProvisional,
   scoreRankingAllowed,
+  alternativeEvidenceByProductId,
 }: ProductFullAnalysisProps) {
   const { t } = useTranslation();
   const touchStartX = useRef(0);
@@ -104,24 +111,20 @@ export default function ProductFullAnalysis({
   );
 
   return (
-    <>
+    <div className={styles.analysis}>
       {/* Collapse to summary */}
       <button
         type="button"
         onClick={onCollapse}
         data-testid="toggle-analysis"
-        className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground-secondary transition-colors hover:bg-surface-muted"
+        className={styles.collapse}
       >
         <ChevronUp className="h-4 w-4" />
         {t("product.showSummary")}
       </button>
 
       {/* Tab bar */}
-      <div
-        className="flex gap-1 rounded-lg bg-surface-muted p-1"
-        role="tablist"
-        data-testid="tab-bar"
-      >
+      <div className={styles.tabs} role="tablist" data-testid="tab-bar">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -130,11 +133,7 @@ export default function ProductFullAnalysis({
             role="tab"
             aria-selected={activeTab === tab.key}
             aria-label={tab.label}
-            className={`flex-1 cursor-pointer rounded-md px-2 py-2.5 text-sm font-medium transition-colors sm:px-3 ${
-              activeTab === tab.key
-                ? "bg-surface text-brand shadow-sm"
-                : "text-foreground-secondary hover:text-foreground"
-            }`}
+            className={`${styles.tab} ${activeTab === tab.key ? styles.tabActive : ""}`}
           >
             <span className="sm:hidden">{tab.shortLabel}</span>
             <span className="hidden sm:inline">{tab.label}</span>
@@ -146,6 +145,7 @@ export default function ProductFullAnalysis({
       <div
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
+        className={styles.tabContent}
         data-testid="tab-content"
         role="tabpanel"
         aria-labelledby={`tab-${activeTab}`}
@@ -154,22 +154,21 @@ export default function ProductFullAnalysis({
           level="section"
           context={{ section: "tab-content", productId, tab: activeTab }}
         >
-          {activeTab === "overview" && <OverviewTab profile={profile} />}
+          {activeTab === "overview" ? <OverviewTab profile={profile} /> : null}
           {activeTab === "nutrition" && (
             <NutritionTab profile={profile} provisional={scoreProvisional} />
           )}
-          {activeTab === "alternatives" && (
-            recommendationsAllowed ? (
+          {activeTab === "alternatives" &&
+            (recommendationsAllowed ? (
               <AlternativesSection
                 alternatives={profile.alternatives}
                 currentScore={profile.scores.unhealthiness_score}
+                evidenceByProductId={alternativeEvidenceByProductId}
+                comparisonAllowed
               />
             ) : (
-              <div className="rounded-xl border border-warning-border bg-warning-bg p-4 text-sm text-warning-text">
-                {t("trust.evidence.recommendationsWithheld")}
-              </div>
-            )
-          )}
+              <div className={styles.withheld}>{t("trust.evidence.recommendationsWithheld")}</div>
+            ))}
           {activeTab === "scoring" && (
             <ScoringTab
               profile={profile}
@@ -179,7 +178,7 @@ export default function ProductFullAnalysis({
           )}
         </ErrorBoundary>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -249,14 +248,11 @@ function NutritionTab({
   const dv = profile.nutrition.daily_values;
   const dvData = view === "perServing" ? (dv?.per_serving ?? null) : (dv?.per_100g ?? null);
 
-  const energyKj =
-    n.calories_kcal == null ? null : Math.round(n.calories_kcal * 4.184);
+  const energyKj = n.calories_kcal == null ? null : Math.round(n.calories_kcal * 4.184);
   const sodiumMg = n.salt_g == null ? null : Math.round(n.salt_g * 400);
 
   function nutritionValue(value: number | null, unit: string): string {
-    return value == null
-      ? t("trust.evidence.valueUnavailable")
-      : `${value} ${unit}`;
+    return value == null ? t("trust.evidence.valueUnavailable") : `${value} ${unit}`;
   }
 
   const rows = [
@@ -273,10 +269,7 @@ function NutritionTab({
       label: t("product.totalFat"),
       value: nutritionValue(n.total_fat_g, "g"),
       dv: dvData?.total_fat ?? null,
-      tl:
-        n.total_fat_g == null || provisional
-          ? null
-          : getTrafficLight("total_fat", n.total_fat_g),
+      tl: n.total_fat_g == null || provisional ? null : getTrafficLight("total_fat", n.total_fat_g),
     },
     {
       label: t("product.saturatedFat"),
@@ -289,7 +282,7 @@ function NutritionTab({
     },
     {
       label: t("product.transFat"),
-      value: n.trans_fat_g === null ? "—" : `${n.trans_fat_g} g`,
+      value: nutritionValue(n.trans_fat_g, "g"),
       dv: dvData?.trans_fat ?? null,
       tl: null as ReturnType<typeof getTrafficLight>,
     },
@@ -303,39 +296,27 @@ function NutritionTab({
       label: t("product.sugars"),
       value: nutritionValue(n.sugars_g, "g"),
       dv: dvData?.sugars ?? null,
-      tl:
-        n.sugars_g == null || provisional
-          ? null
-          : getTrafficLight("sugars", n.sugars_g),
+      tl: n.sugars_g == null || provisional ? null : getTrafficLight("sugars", n.sugars_g),
     },
     {
       label: t("product.fibre"),
-      value: n.fibre_g === null ? "—" : `${n.fibre_g} g`,
+      value: nutritionValue(n.fibre_g, "g"),
       dv: dvData?.fiber ?? null,
-      tl:
-        n.fibre_g == null || provisional
-          ? null
-          : getTrafficLight("fibre", n.fibre_g),
+      tl: n.fibre_g == null || provisional ? null : getTrafficLight("fibre", n.fibre_g),
       beneficial: true,
     },
     {
       label: t("product.protein"),
       value: nutritionValue(n.protein_g, "g"),
       dv: dvData?.protein ?? null,
-      tl:
-        n.protein_g == null || provisional
-          ? null
-          : getTrafficLight("protein", n.protein_g),
+      tl: n.protein_g == null || provisional ? null : getTrafficLight("protein", n.protein_g),
       beneficial: true,
     },
     {
       label: t("product.salt"),
       value: nutritionValue(n.salt_g, "g"),
       dv: dvData?.salt ?? null,
-      tl:
-        n.salt_g == null || provisional
-          ? null
-          : getTrafficLight("salt", n.salt_g),
+      tl: n.salt_g == null || provisional ? null : getTrafficLight("salt", n.salt_g),
     },
   ];
 
@@ -448,9 +429,9 @@ function NutritionTab({
       )}
 
       {/* Glycemic Index indicator */}
-      {profile.nutrition.gi_estimate != null && (
-        <GlycemicIndexIndicator gi={profile.nutrition.gi_estimate} />
-      )}
+      {profile.nutrition.gi_estimate != null ? (
+        <GlycemicIndexIndicator gi={profile.nutrition.gi_estimate} provisional={provisional} />
+      ) : null}
     </div>
   );
 }
@@ -463,7 +444,10 @@ function giBand(score: number): "low" | "medium" | "high" {
   return "high";
 }
 
-function GlycemicIndexIndicator({ gi }: Readonly<{ gi: number }>) {
+function GlycemicIndexIndicator({
+  gi,
+  provisional,
+}: Readonly<{ gi: number; provisional: boolean }>) {
   const { t } = useTranslation();
 
   const band = giBand(gi);
@@ -492,7 +476,15 @@ function GlycemicIndexIndicator({ gi }: Readonly<{ gi: number }>) {
     },
   };
 
-  const c = config[band];
+  const c = provisional
+    ? {
+        bg: "bg-surface-muted",
+        border: "border-border",
+        text: "text-foreground-secondary",
+        badge: "bg-surface-muted text-foreground-secondary",
+        label: t("trust.evidence.scoreProvisionalLabel"),
+      }
+    : config[band];
 
   return (
     <div
@@ -514,12 +506,11 @@ function GlycemicIndexIndicator({ gi }: Readonly<{ gi: number }>) {
 
 // ─── Data Quality Card ──────────────────────────────────────────────────────
 
-function DataQualityCard({ quality }: Readonly<{ quality: DataConfidence }>) {
+function DataQualityCard({ quality }: Readonly<{ quality: DataConfidence | null }>) {
   const { t } = useTranslation();
-  const q = quality as Record<string, unknown>;
-  const band = (q.confidence_band as string) ?? "unknown";
-  const score =
-    typeof q.confidence_score === "number" ? q.confidence_score : null;
+  const q = quality ? (quality as Record<string, unknown>) : null;
+  const band = (q?.confidence_band as string | undefined) ?? "unknown";
+  const score = typeof q?.confidence_score === "number" ? q.confidence_score : null;
 
   const bandConfig: Record<string, { bg: string; fill: string; label: string }> = {
     high: { bg: "bg-success-bg", fill: "bg-success", label: "✓" },
@@ -531,40 +522,28 @@ function DataQualityCard({ quality }: Readonly<{ quality: DataConfidence }>) {
   const cfg = bandConfig[band] ?? bandConfig.unknown;
 
   return (
-    <div className="card">
-      <h2 className="mb-2 text-sm font-semibold text-foreground-secondary lg:text-base">
-        {t("product.dataQuality")}
-      </h2>
-      <div className="flex items-center gap-3">
-        <span
-          className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${cfg.bg}`}
-        >
-          {cfg.label}
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between text-sm">
-            <span className="font-medium capitalize text-foreground">
-              {t("product.confidence", { value: band })}
-            </span>
-            <span className="text-xs text-foreground-muted">
-              {score == null ? t("common.unknown") : `${score}%`}
-            </span>
+    <section className={styles.quality}>
+      <h2 className={styles.qualityHeader}>{t("product.dataQuality")}</h2>
+      <div className={styles.qualityRow}>
+        <span className={`${styles.qualityMark} ${cfg.bg}`}>{cfg.label}</span>
+        <div className={styles.qualityCopy}>
+          <div className={styles.qualitySummary}>
+            <span>{t("product.confidence", { value: band })}</span>
+            <span>{score == null ? t("common.unknown") : `${score}%`}</span>
           </div>
           {score == null ? (
-            <p className="mt-1 text-xs text-warning-text">
-              {t("product.confidenceUnavailable")}
-            </p>
+            <p className={styles.qualityUnknown}>{t("product.confidenceUnavailable")}</p>
           ) : (
-            <div className={`mt-1 h-2 w-full overflow-hidden rounded-full ${cfg.bg}`}>
+            <div className={styles.qualityTrack}>
               <div
-                className={`h-full rounded-full transition-all ${cfg.fill}`}
+                className={`${styles.qualityFill} ${cfg.fill}`}
                 style={{ width: `${Math.min(score, 100)}%` }}
               />
             </div>
           )}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -624,9 +603,7 @@ function ScoringTab({
           {t("product.summary")}
         </h2>
         <p className="text-sm text-foreground-secondary">
-          {scoreProvisional
-            ? t("trust.evidence.scoreNoGuidance")
-            : scores.headline}
+          {scoreProvisional ? t("trust.evidence.scoreNoGuidance") : scores.headline}
         </p>
       </div>
 
@@ -723,9 +700,7 @@ function ScoringTab({
             </p>
             <p>
               {t("product.position", {
-                position: formatSnakeCase(
-                  scores.category_context.relative_position,
-                ),
+                position: formatSnakeCase(scores.category_context.relative_position),
               })}
             </p>
           </div>

@@ -1,0 +1,94 @@
+.page {
+  --app-canvas: color-mix(
+    in srgb,
+    var(--color-brand-subtle) 18%,
+    var(--color-surface-subtle)
+  );
+  --app-paper: var(--color-surface);
+  --app-rule: var(--color-border-strong);
+  --app-rust: #965032;
+}
+
+.items {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+}
+
+.chart {
+  min-inline-size: 6.25rem;
+}
+
+.error {
+  border: 1px solid var(--color-error-border);
+  border-radius: 0.85rem 0.2rem 0.85rem 0.85rem;
+  padding: 0.8rem 1rem;
+  color: var(--color-error-text);
+  background: var(--color-error-bg);
+  font-size: 0.8rem;
+}
+
+.retry {
+  min-block-size: 2.75rem;
+  margin-inline-start: 0.5rem;
+  padding-inline: 0.5rem;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.pagination {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  justify-content: center;
+  padding-block-start: 0.75rem;
+  border-block-start: 1px solid
+    color-mix(in srgb, var(--app-rule) 65%, transparent);
+}
+
+.pageButton {
+  display: grid;
+  inline-size: 2.75rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid var(--app-rule);
+  border-radius: 0.75rem 0.2rem 0.75rem 0.75rem;
+  color: var(--color-foreground-secondary);
+  background: var(--color-surface);
+}
+
+.pageButton:disabled {
+  color: var(--color-foreground-muted);
+  background: var(--color-surface-subtle);
+  opacity: 0.6;
+}
+
+.pageIndicator {
+  color: var(--color-foreground-secondary);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+@media (max-width: 639px) {
+  .chart {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .error,
+  .pageButton {
+    border-color: CanvasText;
+  }
+}

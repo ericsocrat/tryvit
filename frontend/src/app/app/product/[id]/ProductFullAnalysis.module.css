@@ -1,0 +1,175 @@
+.analysis {
+  --analysis-rule: color-mix(
+    in srgb,
+    var(--app-rule, var(--shell-rule, var(--color-border-strong))) 72%,
+    transparent
+  );
+  display: grid;
+  gap: 0.85rem;
+  min-inline-size: 0;
+}
+
+.collapse {
+  display: flex;
+  min-block-size: 2.75rem;
+  width: 100%;
+  gap: 0.45rem;
+  align-items: center;
+  justify-content: center;
+  border-block: 1px solid var(--analysis-rule);
+  color: var(--color-foreground-secondary);
+  background: color-mix(in srgb, var(--color-surface-subtle) 70%, transparent);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--analysis-rule);
+  border-radius: 0.85rem 0.2rem 0.85rem 0.85rem;
+  background: var(--analysis-rule);
+}
+
+.tab {
+  min-block-size: 2.9rem;
+  padding: 0.6rem 0.45rem;
+  color: var(--color-foreground-secondary);
+  background: var(--color-surface);
+  font-size: 0.76rem;
+  font-weight: 720;
+}
+
+.tabActive {
+  color: var(--color-brand);
+  background: var(--color-brand-subtle);
+  box-shadow: inset 0 -3px 0 var(--shell-fold, #965032);
+}
+
+.tabContent {
+  min-inline-size: 0;
+  content-visibility: auto;
+  contain-intrinsic-size: 40rem;
+}
+
+.analysis table {
+  border-collapse: collapse;
+}
+
+.analysis th,
+.analysis td {
+  border-block-end: 1px solid
+    color-mix(in srgb, var(--analysis-rule) 60%, transparent);
+}
+
+.quality {
+  position: relative;
+  border: 1px solid var(--analysis-rule);
+  border-radius: 1rem 0.25rem 1rem 1rem;
+  padding: 1rem;
+  background: var(--color-surface);
+}
+
+.qualityHeader {
+  margin: 0 0 0.75rem;
+  padding-block-end: 0.6rem;
+  border-block-end: 1px solid var(--analysis-rule);
+  color: var(--color-foreground);
+  font-size: 0.9rem;
+  font-weight: 780;
+}
+
+.qualityRow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.qualityMark {
+  display: grid;
+  inline-size: 2.4rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 0.25rem 0.7rem 0.7rem 0.7rem;
+  font-weight: 850;
+}
+
+.qualityCopy {
+  min-inline-size: 0;
+}
+
+.qualitySummary {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--color-foreground-secondary);
+  font-size: 0.8rem;
+}
+
+.qualityUnknown {
+  margin: 0.35rem 0 0;
+  color: var(--color-warning-text);
+  font-size: 0.72rem;
+}
+
+.qualityTrack {
+  block-size: 0.45rem;
+  margin-block-start: 0.45rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-surface-muted);
+}
+
+.qualityFill {
+  block-size: 100%;
+  border-radius: inherit;
+}
+
+.withheld {
+  border: 1px solid var(--color-warning-border);
+  border-radius: 0.85rem 0.2rem 0.85rem 0.85rem;
+  padding: 0.85rem 1rem;
+  color: var(--color-warning-text);
+  background: var(--color-warning-bg);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 639px) {
+  .tabs {
+    position: sticky;
+    top: 3.75rem;
+    z-index: 25;
+  }
+
+  .tab {
+    min-block-size: 3.1rem;
+    font-size: 0.7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analysis *,
+  .analysis *::before,
+  .analysis *::after {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .collapse,
+  .tabs,
+  .quality,
+  .withheld {
+    border-color: CanvasText;
+  }
+
+  .tabActive {
+    box-shadow: inset 0 -3px 0 Highlight;
+  }
+}

@@ -1,0 +1,232 @@
+.page {
+  --app-canvas: color-mix(
+    in srgb,
+    var(--color-brand-subtle) 18%,
+    var(--color-surface-subtle)
+  );
+  --app-paper: var(--color-surface);
+  --app-rule: var(--color-border-strong);
+  --app-rust: #965032;
+}
+
+.form,
+.listRecord,
+.detailHeader,
+.sharePanel,
+.mutationError {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--app-rule) 72%, transparent);
+  border-radius: 1rem 0.25rem 1rem 1rem;
+  background: color-mix(in srgb, var(--app-paper) 97%, transparent);
+}
+
+.form,
+.detailHeader {
+  padding: 1rem;
+}
+
+.form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.formActions,
+.headerActions,
+.shareActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.listRecord {
+  display: grid;
+  min-block-size: 7rem;
+  color: inherit;
+}
+
+.listRecord::before,
+.detailHeader::before {
+  position: absolute;
+  inset: 0 0 auto auto;
+  inline-size: 1.15rem;
+  aspect-ratio: 1;
+  background: linear-gradient(
+    225deg,
+    var(--app-rust) 0 48%,
+    var(--app-rule) 49% 52%,
+    transparent 53%
+  );
+  content: "";
+  pointer-events: none;
+}
+
+.listLink {
+  display: flex;
+  min-inline-size: 0;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.9rem 1rem;
+}
+
+.listIcon {
+  display: grid;
+  inline-size: 2.5rem;
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--app-rule) 70%, transparent);
+  border-radius: 0.25rem 0.75rem 0.75rem 0.75rem;
+  color: var(--color-brand);
+  background: var(--color-brand-subtle);
+}
+
+.listCopy {
+  min-inline-size: 0;
+  flex: 1;
+}
+
+.listName,
+.detailTitle {
+  margin: 0;
+  color: var(--color-foreground);
+  font-weight: 780;
+  letter-spacing: -0.02em;
+}
+
+.listName {
+  font-size: 0.95rem;
+}
+
+.listMeta,
+.detailDescription,
+.detailMeta {
+  margin: 0.3rem 0 0;
+  color: var(--color-foreground-secondary);
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+.shared {
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+  margin-block-start: 0.5rem;
+  color: var(--color-brand);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.62rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.deleteAction,
+.iconAction,
+.removeAction {
+  display: grid;
+  inline-size: 2.75rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 0.75rem 0.2rem 0.75rem 0.75rem;
+  color: var(--color-foreground-muted);
+}
+
+.deleteAction {
+  position: absolute;
+  inset: auto 0.45rem 0.45rem auto;
+}
+
+.deleteAction:hover,
+.removeAction:hover {
+  border-color: var(--color-error-border);
+  color: var(--color-error-text);
+  background: var(--color-error-bg);
+}
+
+.detailHeader {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1rem;
+  align-items: start;
+  justify-content: space-between;
+}
+
+.detailTitle {
+  font-size: clamp(1.3rem, 2.8vw, 2rem);
+}
+
+.sharePanel {
+  margin-block-start: 0.85rem;
+  padding: 0.8rem;
+  background: var(--color-surface-subtle);
+}
+
+.shareTitle {
+  margin: 0 0 0.6rem;
+  color: var(--color-foreground-secondary);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.items {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mutationError {
+  padding: 0.7rem 0.9rem;
+  border-color: var(--color-error-border);
+  color: var(--color-error-text);
+  background: var(--color-error-bg);
+  font-size: 0.78rem;
+}
+
+.provisionalNote {
+  margin: 0;
+  padding: 0.55rem 0.8rem;
+  border-inline-start: 3px solid var(--app-rust);
+  color: var(--color-foreground-secondary);
+  background: var(--color-surface-subtle);
+  font-size: 0.72rem;
+}
+
+@media (max-width: 1023px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 639px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (forced-colors: active) {
+  .form,
+  .listRecord,
+  .detailHeader,
+  .sharePanel,
+  .mutationError,
+  .listIcon,
+  .deleteAction,
+  .iconAction,
+  .removeAction {
+    border-color: CanvasText;
+  }
+
+  .listRecord::before,
+  .detailHeader::before {
+    background: Highlight;
+  }
+}

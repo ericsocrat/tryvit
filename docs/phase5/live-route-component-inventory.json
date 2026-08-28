@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "fde1e27723409f1eb49207f50e758795b54748bf",
+    "baseSha": "1763c1ebd6a8b7644b890e068bc927d7332e7d28",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "d6016214663e063669ba3719bf5edb226dce97d4535e26b385fc6d9f2e3bfb87"
+    "sourceFingerprint": "ae74c99b8c0a0138750fe2a4eff7c8b5dc1a6144e826dfa96befab659f028aa4"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -745,6 +745,7 @@
         "frontend/src/components/compare/ComparisonGrid.tsx",
         "frontend/src/components/compare/ShareComparison.tsx",
         "frontend/src/components/export/ExportButton.tsx",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/trust/ProductEvidencePanel.tsx",
         "frontend/src/hooks/use-analytics.ts",
@@ -770,17 +771,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 2
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/app/compare/saved/page.tsx",
@@ -793,6 +784,7 @@
         "frontend/src/components/common/EmptyState.tsx",
         "frontend/src/components/common/EmptyStateIllustration.tsx",
         "frontend/src/components/common/skeletons/index.ts",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/hooks/use-compare.ts",
         "frontend/src/lib/i18n.ts",
@@ -813,17 +805,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/app/error.tsx",
@@ -987,14 +969,16 @@
         "frontend/src/components/common/ConfirmDialog.tsx",
         "frontend/src/components/common/EmptyState.tsx",
         "frontend/src/components/common/EmptyStateIllustration.tsx",
+        "frontend/src/components/common/NutriScoreBadge.tsx",
         "frontend/src/components/common/skeletons/index.ts",
         "frontend/src/components/export/ExportButton.tsx",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
+        "frontend/src/components/product/ProductRegisterCard.tsx",
         "frontend/src/hooks/use-lists.ts",
         "frontend/src/lib/constants.ts",
         "frontend/src/lib/export.ts",
         "frontend/src/lib/i18n.ts",
-        "frontend/src/lib/score-utils.ts",
         "frontend/src/lib/types.ts"
       ],
       "directConsumers": [],
@@ -1013,15 +997,6 @@
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
       "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 2
-            }
-          ]
-        },
         {
           "category": "legacy-input-field",
           "occurrences": [
@@ -1072,12 +1047,11 @@
         "frontend/src/components/common/EmptyStateIllustration.tsx",
         "frontend/src/components/common/PullToRefresh.tsx",
         "frontend/src/components/common/skeletons/index.ts",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/hooks/use-lists.ts",
-        "frontend/src/lib/constants.ts",
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/query-keys.ts",
-        "frontend/src/lib/score-utils.ts",
         "frontend/src/lib/types.ts"
       ],
       "directConsumers": [],
@@ -1097,29 +1071,11 @@
       "designSystemStatus": "v1",
       "classifiedLegacyDebt": [
         {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 2
-            }
-          ]
-        },
-        {
           "category": "legacy-input-field",
           "occurrences": [
             {
               "value": ".input-field",
               "count": 2
-            }
-          ]
-        },
-        {
-          "category": "transition-all",
-          "occurrences": [
-            {
-              "value": "transition-all",
-              "count": 1
             }
           ]
         }
@@ -1204,6 +1160,7 @@
         "frontend/src/components/product/NutritionDVBar.tsx",
         "frontend/src/components/product/PercentileBadge.tsx",
         "frontend/src/components/product/ProductImageTabs.tsx",
+        "frontend/src/components/product/ProductRegisterCard.tsx",
         "frontend/src/components/product/ScoreBreakdownPanel.tsx",
         "frontend/src/components/product/ScoreHistoryPanel.tsx",
         "frontend/src/components/product/ScoreRadarChart.tsx",
@@ -1237,16 +1194,7 @@
           "occurrences": [
             {
               "value": ".card",
-              "count": 11
-            }
-          ]
-        },
-        {
-          "category": "transition-all",
-          "occurrences": [
-            {
-              "value": "transition-all",
-              "count": 1
+              "count": 10
             }
           ]
         }
@@ -1321,6 +1269,7 @@
         "frontend/src/components/common/PullToRefresh.tsx",
         "frontend/src/components/common/skeletons/index.ts",
         "frontend/src/components/compare/CompareCheckbox.tsx",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/product/ActionOverflowMenu.tsx",
         "frontend/src/components/product/AddToListMenu.tsx",
@@ -1330,6 +1279,7 @@
         "frontend/src/components/product/NutritionHighlights.tsx",
         "frontend/src/components/product/PercentileBadge.tsx",
         "frontend/src/components/product/ProductHeroImage.tsx",
+        "frontend/src/components/product/ProductRegisterCard.tsx",
         "frontend/src/components/product/ProductScoreHero.tsx",
         "frontend/src/components/product/ShareButton.tsx",
         "frontend/src/components/product/TrafficLightStrip.tsx",
@@ -1365,17 +1315,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 5
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/app/recipes/[slug]/layout.tsx",
@@ -2273,8 +2213,12 @@
       "directModuleImports": [
         "frontend/src/components/common/EmptyStateIllustration.tsx",
         "frontend/src/components/common/Icon.tsx",
+        "frontend/src/components/common/NovaBadge.tsx",
+        "frontend/src/components/common/NutriScoreBadge.tsx",
         "frontend/src/components/common/skeletons/index.ts",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
+        "frontend/src/components/product/ProductRegisterCard.tsx",
         "frontend/src/components/product/ReformulationBadge.tsx",
         "frontend/src/components/product/ScoreChangeIndicator.tsx",
         "frontend/src/components/product/ScoreTrendChart.tsx",
@@ -6382,9 +6326,9 @@
       "directModuleImports": [
         "frontend/src/components/alternatives/ScoreComparisonBar.tsx",
         "frontend/src/components/common/NutriScoreBadge.tsx",
+        "frontend/src/components/product/ProductRegisterCard.tsx",
         "frontend/src/lib/constants.ts",
         "frontend/src/lib/i18n.ts",
-        "frontend/src/lib/score-utils.ts",
         "frontend/src/lib/types.ts"
       ],
       "directConsumers": [
@@ -6405,17 +6349,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/alternatives/AlternativesSection.tsx",
@@ -6426,6 +6360,7 @@
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
         "frontend/src/components/alternatives/AlternativeProductCard.tsx",
+        "frontend/src/components/product/ProductRegisterCard.tsx",
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/types.ts"
       ],
@@ -7220,6 +7155,11 @@
           "routePath": "/app/categories"
         },
         {
+          "modulePath": "frontend/src/app/app/lists/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/lists/[id]"
+        },
+        {
           "modulePath": "frontend/src/app/app/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app"
@@ -7233,6 +7173,11 @@
           "modulePath": "frontend/src/app/app/search/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/search"
+        },
+        {
+          "modulePath": "frontend/src/app/app/watchlist/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/watchlist"
         },
         {
           "modulePath": "frontend/src/app/onboarding/page.tsx",
@@ -8184,6 +8129,11 @@
           "routePath": "/app/ingredient/[id]"
         },
         {
+          "modulePath": "frontend/src/app/app/lists/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/lists/[id]"
+        },
+        {
           "modulePath": "frontend/src/app/app/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app"
@@ -8212,6 +8162,11 @@
           "modulePath": "frontend/src/app/app/search/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/search"
+        },
+        {
+          "modulePath": "frontend/src/app/app/watchlist/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/watchlist"
         },
         {
           "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
@@ -8527,6 +8482,7 @@
       "directConsumers": [
         "frontend/src/app/app/categories/[slug]/page.tsx",
         "frontend/src/app/app/search/page.tsx",
+        "frontend/src/app/app/watchlist/page.tsx",
         "frontend/src/components/common/index.ts"
       ],
       "transitiveRouteConsumers": [
@@ -8549,6 +8505,11 @@
           "modulePath": "frontend/src/app/app/search/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/search"
+        },
+        {
+          "modulePath": "frontend/src/app/app/watchlist/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/watchlist"
         }
       ],
       "targetRedesignPhases": [
@@ -8582,9 +8543,11 @@
       ],
       "directConsumers": [
         "frontend/src/app/app/categories/[slug]/page.tsx",
+        "frontend/src/app/app/lists/[id]/page.tsx",
         "frontend/src/app/app/product/[id]/page.tsx",
         "frontend/src/app/app/scan/result/[id]/page.tsx",
         "frontend/src/app/app/search/page.tsx",
+        "frontend/src/app/app/watchlist/page.tsx",
         "frontend/src/components/alternatives/AlternativeProductCard.tsx",
         "frontend/src/components/common/index.ts",
         "frontend/src/components/dashboard/RecentlyViewed.tsx"
@@ -8594,6 +8557,11 @@
           "modulePath": "frontend/src/app/app/categories/[slug]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/categories/[slug]"
+        },
+        {
+          "modulePath": "frontend/src/app/app/lists/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/lists/[id]"
         },
         {
           "modulePath": "frontend/src/app/app/page.tsx",
@@ -8624,6 +8592,11 @@
           "modulePath": "frontend/src/app/app/search/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/search"
+        },
+        {
+          "modulePath": "frontend/src/app/app/watchlist/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/watchlist"
         }
       ],
       "targetRedesignPhases": [
@@ -8800,9 +8773,24 @@
           "routePath": "/app/categories/[slug]"
         },
         {
+          "modulePath": "frontend/src/app/app/lists/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/lists/[id]"
+        },
+        {
+          "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/product/[id]"
+        },
+        {
           "modulePath": "frontend/src/app/app/search/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/search"
+        },
+        {
+          "modulePath": "frontend/src/app/app/watchlist/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/watchlist"
         }
       ],
       "targetRedesignPhases": [
@@ -13731,7 +13719,13 @@
       "directConsumers": [
         "frontend/src/app/app/categories/[slug]/page.tsx",
         "frontend/src/app/app/categories/page.tsx",
-        "frontend/src/app/app/search/page.tsx"
+        "frontend/src/app/app/compare/page.tsx",
+        "frontend/src/app/app/compare/saved/page.tsx",
+        "frontend/src/app/app/lists/[id]/page.tsx",
+        "frontend/src/app/app/lists/page.tsx",
+        "frontend/src/app/app/product/[id]/page.tsx",
+        "frontend/src/app/app/search/page.tsx",
+        "frontend/src/app/app/watchlist/page.tsx"
       ],
       "transitiveRouteConsumers": [
         {
@@ -13745,13 +13739,45 @@
           "routePath": "/app/categories"
         },
         {
+          "modulePath": "frontend/src/app/app/compare/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/compare"
+        },
+        {
+          "modulePath": "frontend/src/app/app/compare/saved/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/compare/saved"
+        },
+        {
+          "modulePath": "frontend/src/app/app/lists/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/lists/[id]"
+        },
+        {
+          "modulePath": "frontend/src/app/app/lists/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/lists"
+        },
+        {
+          "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/product/[id]"
+        },
+        {
           "modulePath": "frontend/src/app/app/search/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/search"
+        },
+        {
+          "modulePath": "frontend/src/app/app/watchlist/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/watchlist"
         }
       ],
       "targetRedesignPhases": [
-        "5C.1"
+        "5C.1",
+        "5C.2",
+        "5D"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -16170,7 +16196,13 @@
       ],
       "directConsumers": [
         "frontend/src/app/app/categories/[slug]/page.tsx",
-        "frontend/src/app/app/search/page.tsx"
+        "frontend/src/app/app/lists/[id]/page.tsx",
+        "frontend/src/app/app/product/[id]/ProductFullAnalysis.tsx",
+        "frontend/src/app/app/product/[id]/page.tsx",
+        "frontend/src/app/app/search/page.tsx",
+        "frontend/src/app/app/watchlist/page.tsx",
+        "frontend/src/components/alternatives/AlternativeProductCard.tsx",
+        "frontend/src/components/alternatives/AlternativesSection.tsx"
       ],
       "transitiveRouteConsumers": [
         {
@@ -16179,13 +16211,30 @@
           "routePath": "/app/categories/[slug]"
         },
         {
+          "modulePath": "frontend/src/app/app/lists/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/lists/[id]"
+        },
+        {
+          "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/product/[id]"
+        },
+        {
           "modulePath": "frontend/src/app/app/search/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/search"
+        },
+        {
+          "modulePath": "frontend/src/app/app/watchlist/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/watchlist"
         }
       ],
       "targetRedesignPhases": [
-        "5C.1"
+        "5C.1",
+        "5C.2",
+        "5D"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -18593,6 +18642,11 @@
           "routePath": "/app/ingredient/[id]"
         },
         {
+          "modulePath": "frontend/src/app/app/lists/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/lists/[id]"
+        },
+        {
           "modulePath": "frontend/src/app/app/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app"
@@ -18621,6 +18675,11 @@
           "modulePath": "frontend/src/app/app/search/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/search"
+        },
+        {
+          "modulePath": "frontend/src/app/app/watchlist/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/watchlist"
         },
         {
           "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
@@ -20456,39 +20515,14 @@
       "category": "legacy-card",
       "occurrences": [
         {
-          "path": "frontend/src/app/app/compare/page.tsx",
-          "value": ".card",
-          "count": 2
-        },
-        {
-          "path": "frontend/src/app/app/compare/saved/page.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
           "path": "frontend/src/app/app/ingredient/[id]/page.tsx",
           "value": ".card",
           "count": 3
         },
         {
-          "path": "frontend/src/app/app/lists/[id]/page.tsx",
-          "value": ".card",
-          "count": 2
-        },
-        {
-          "path": "frontend/src/app/app/lists/page.tsx",
-          "value": ".card",
-          "count": 2
-        },
-        {
           "path": "frontend/src/app/app/product/[id]/ProductFullAnalysis.tsx",
           "value": ".card",
-          "count": 11
-        },
-        {
-          "path": "frontend/src/app/app/product/[id]/page.tsx",
-          "value": ".card",
-          "count": 5
+          "count": 10
         },
         {
           "path": "frontend/src/app/app/scan/history/page.tsx",
@@ -20554,11 +20588,6 @@
           "path": "frontend/src/app/lists/shared/[token]/page.tsx",
           "value": ".card",
           "count": 2
-        },
-        {
-          "path": "frontend/src/components/alternatives/AlternativeProductCard.tsx",
-          "value": ".card",
-          "count": 1
         },
         {
           "path": "frontend/src/components/common/skeletons/AdminDashboardSkeleton.tsx",
@@ -21215,16 +21244,6 @@
       "category": "transition-all",
       "occurrences": [
         {
-          "path": "frontend/src/app/app/lists/page.tsx",
-          "value": "transition-all",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/app/product/[id]/ProductFullAnalysis.tsx",
-          "value": "transition-all",
-          "count": 1
-        },
-        {
           "path": "frontend/src/app/app/scan/page.tsx",
           "value": "transition-all",
           "count": 1
@@ -21350,7 +21369,7 @@
     ],
     "inspectedModuleCount": 566,
     "violations": [],
-    "sourceFingerprint": "740413d23faa2384e3f911a99ce0c7943840c553873b42fab543d088da1e2dcd"
+    "sourceFingerprint": "1dac8896c513723255be91d66b8589b5d7127d6f8aa0af72fdcfc3d29b2d62dd"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
@@ -21868,6 +21887,11 @@
             "routePath": "/app/ingredient/[id]"
           },
           {
+            "modulePath": "frontend/src/app/app/lists/[id]/page.tsx",
+            "routeModuleKind": "page",
+            "routePath": "/app/lists/[id]"
+          },
+          {
             "modulePath": "frontend/src/app/app/page.tsx",
             "routeModuleKind": "page",
             "routePath": "/app"
@@ -21896,6 +21920,11 @@
             "modulePath": "frontend/src/app/app/search/page.tsx",
             "routeModuleKind": "page",
             "routePath": "/app/search"
+          },
+          {
+            "modulePath": "frontend/src/app/app/watchlist/page.tsx",
+            "routeModuleKind": "page",
+            "routePath": "/app/watchlist"
           },
           {
             "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
@@ -21973,6 +22002,6 @@
         ]
       }
     ],
-    "sourceFingerprint": "1f5cef9c01e1af9232088bed939a541a70b91a9bbecf8a918c3a83f6bd045180"
+    "sourceFingerprint": "33fd7a52cdbcc8f9a21f25c4de70540f0cf504864f78f0810d1761b15c8dd936"
   }
 }

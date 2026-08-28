@@ -120,6 +120,10 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Extend the approved folded-register product language across product detail, evidence,
+  nutrition and alternatives, compare and saved comparisons, watchlist, lists, and list
+  detail; preserve unavailable/provisional states, mutation rollback, and evidence-gated
+  recommendations while removing partial list-preview health averages.
 - Roll the approved folded-register visual system through the authenticated app shell,
   navigation, onboarding, Search, Categories, and shared product records while keeping
   product evidence provisional whenever source confidence is unavailable.

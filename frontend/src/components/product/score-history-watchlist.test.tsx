@@ -664,11 +664,13 @@ describe("WatchlistPage", () => {
     render(<WatchlistPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByTestId("watchlist-card")).toBeInTheDocument();
+      expect(screen.getByTestId("product-register-card")).toBeInTheDocument();
       expect(screen.getByText("Test Product")).toBeInTheDocument();
       expect(screen.getByText("Test Brand")).toBeInTheDocument();
       expect(screen.getByText("Snacks")).toBeInTheDocument();
-      expect(screen.getByTestId("watchlist-score").textContent).toBe("35");
+      expect(
+        screen.getByRole("meter", { name: /filters\.healthScore.*provisional/i }),
+      ).toHaveValue(65);
     });
   });
 
@@ -706,14 +708,15 @@ describe("WatchlistPage", () => {
     render(<WatchlistPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      // Null score shows dash
-      expect(screen.getByTestId("watchlist-score").textContent).toBe("–");
+      expect(
+        screen.getByRole("status", { name: /filters\.healthScore.*provisional/i }),
+      ).toHaveTextContent("—");
       // Reformulation badge shown
       expect(screen.getByTestId("reformulation-badge")).toBeInTheDocument();
     });
   });
 
-  it("renders score band color classes correctly", async () => {
+  it("keeps watchlist score bands provisional without provenance", async () => {
     const items = [
       { watch_id: 1, product_id: 1, alert_threshold: 5, watched_since: "2025-01-01", product_name: "Low", brand: null, category: null, current_score: 20, score_band: "low", nutri_score: null, nova_group: null, last_delta: null, trend: "stable" as const, reformulation_detected: false, sparkline: [] },
       { watch_id: 2, product_id: 2, alert_threshold: 5, watched_since: "2025-01-01", product_name: "High", brand: null, category: null, current_score: 70, score_band: "high", nutri_score: null, nova_group: null, last_delta: null, trend: "stable" as const, reformulation_detected: false, sparkline: [] },
@@ -727,9 +730,15 @@ describe("WatchlistPage", () => {
     render(<WatchlistPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      const scores = screen.getAllByTestId("watchlist-score");
-      expect(scores[0].className).toContain("text-success");
-      expect(scores[1].className).toContain("text-score-orange-text");
+      const cards = screen.getAllByTestId("product-register-card");
+      expect(cards).toHaveLength(2);
+      expect(cards[0]).toHaveAttribute("data-evidence-disposition", "unavailable");
+      expect(cards[1]).toHaveAttribute("data-evidence-disposition", "unavailable");
+      const scores = screen.getAllByRole("meter", {
+        name: /filters\.healthScore.*provisional/i,
+      });
+      expect(scores[0]).toHaveValue(80);
+      expect(scores[1]).toHaveValue(30);
     });
   });
 
