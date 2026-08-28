@@ -228,6 +228,32 @@ The following were documented in `SECURITY.md` against Next.js 14.x. The project
 | GHSA-5j98-mcp5-4vw2   | `glob` 10.3.10        | High     | Accepted risk (dev-only)       |
 | Transitive via `glob` | `@next/eslint-plugin` | High     | Accepted risk (dev-only)       |
 
+### 2026-08-28 Development-tooling follow-up
+
+The full frontend audit reported seven high-severity vulnerability nodes from three
+GitHub advisory records. The count is a dependency-graph expansion, not seven distinct
+advisories.
+
+- Dependabot alerts `#92` and `#93` covered two `js-yaml` installations. The lockfile
+  now resolves the compatible 3.x and 4.x branches to patched releases `3.15.2` and
+  `4.3.2`; no declared dependency or production package changed.
+- Dependabot alert `#94` covers `extract-zip@2.0.1`. No patched `extract-zip` release is
+  available, so the alert remains open and is not dismissed.
+- The only installed path is development tooling:
+  `@lhci/cli -> lighthouse -> puppeteer-core -> @puppeteer/browsers -> extract-zip`.
+  TryVit source, tooling, and workflows do not import either `extract-zip` or
+  `@puppeteer/browsers` directly.
+- The guarded Lighthouse workflow installs lockfile-pinned Playwright Chromium and the
+  visual-safety launcher passes that exact executable through `CHROME_PATH`. It does not
+  invoke Puppeteer's browser-download/archive-extraction facility, and no application or
+  CI input accepts an archive for extraction through this package.
+
+After the patched `js-yaml` refresh, `npm audit` reports six high-severity graph nodes,
+all inherited from the single no-patch `extract-zip` advisory. This is a bounded
+reachability disposition, not a claim that the advisory is fixed. Reassess when LHCI
+adopts a Lighthouse/Puppeteer chain that removes `extract-zip` or an upstream patched
+release becomes available.
+
 ### Automated Monitoring
 
 | Check                       | Status | Configuration                                            |
