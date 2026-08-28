@@ -18,6 +18,7 @@ export function LegalPageShell(props: Readonly<LegalPageShellProps>) {
       title={title}
       description={intro}
       register={<span>{updatedText}</span>}
+      heroAsArticle
     >
       {children}
     </PublicUtilityShell>
