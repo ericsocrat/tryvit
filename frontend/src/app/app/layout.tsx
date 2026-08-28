@@ -64,12 +64,12 @@ export default async function AppLayout({
         <p className="mb-6 text-sm text-foreground-secondary">
           {translate(locale, "layout.errorMessage")}
         </p>
-        <Link
+        <a
           href="/app/search"
           className={buttonClasses("primary", "md", { className: "inline-block" })}
         >
           {translate(locale, "common.tryAgain")}
-        </Link>
+        </a>
       </div>
     );
   }
