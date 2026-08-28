@@ -160,20 +160,10 @@ test.describe("Batch 3 remaining customer surfaces", () => {
     await page.emulateMedia({ forcedColors: "none", reducedMotion: "reduce" });
 
     await saveLocalePreference(page, "Polska", "Polski", "pl");
-    await page.setExtraHTTPHeaders({
-      "Accept-Language": "pl-PL,pl;q=0.9,en;q=0.8",
-    });
-    await page.goto("/learn");
-    await expect(page.locator("html")).toHaveAttribute("lang", "pl");
     await page.setViewportSize({ width: 390, height: 844 });
     await expectNoHorizontalOverflow(page);
 
     await saveLocalePreference(page, "Deutschland", "Deutsch", "de");
-    await page.setExtraHTTPHeaders({
-      "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
-    });
-    await page.goto("/terms");
-    await expect(page.locator("html")).toHaveAttribute("lang", "de");
     await page.setViewportSize({ width: 1440, height: 900 });
     await applyTheme(page, "dark");
     await expectNoHorizontalOverflow(page);
@@ -181,5 +171,40 @@ test.describe("Batch 3 remaining customer surfaces", () => {
     await page.keyboard.press("Tab");
     const focusedTag = await page.evaluate(() => document.activeElement?.tagName ?? null);
     expect(focusedTag).not.toBe("BODY");
+  });
+});
+
+test.describe("Batch 3 Polish public locale", () => {
+  test.use({ locale: "pl-PL", viewport: { width: 390, height: 844 } });
+
+  test("renders localized Learn without overflow", async ({ page }, testInfo) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/learn");
+    await expect(page.locator("html")).toHaveAttribute("lang", "pl");
+    await expect(page.getByRole("heading", { level: 1, name: "Wiedza" })).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({
+      path: testInfo.outputPath("batch3-learn-390-light-pl.png"),
+      animations: "disabled",
+    });
+  });
+});
+
+test.describe("Batch 3 German public locale", () => {
+  test.use({ locale: "de-DE", viewport: { width: 1440, height: 900 } });
+
+  test("renders localized terms without overflow", async ({ page }, testInfo) => {
+    await page.addInitScript(() => localStorage.setItem("theme", "dark"));
+    await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+    await page.goto("/terms");
+    await expect(page.locator("html")).toHaveAttribute("lang", "de");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Nutzungsbedingungen" }),
+    ).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({
+      path: testInfo.outputPath("batch3-terms-1440-dark-de.png"),
+      animations: "disabled",
+    });
   });
 });
