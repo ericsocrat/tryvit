@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a0d-visual-baselines",
-  "sourceCommit": "4ad4e0c4b50116f7d7d0ca9846b5293ef4e3acaa",
+  "sourceCommit": "69c22d43d40b61827019514ac28d62e0d69d41eb",
   "rendererClass": "ci-linux-authoritative",
   "runner": {
     "imageOS": "ubuntu24",
@@ -98,8 +98,8 @@
       "height": 844,
       "fixtureState": "local-authenticated-new-user",
       "relativeFile": "authenticated-visual.spec.ts/p5a0d-app-shell-new-user-390x844-light-reduced.png",
-      "sha256": "19925c064157c05291ffe4a02b10b66f705268dec916dd26230972b667ad2fa5",
-      "bytes": 47056
+      "sha256": "ee638001d3f542ea1659e553f46360bca783bb708aac6454ed4e21204425e2a3",
+      "bytes": 51820
     },
     {
       "id": "app-shell-new-user-1440x900",
@@ -110,9 +110,9 @@
       "height": 900,
       "fixtureState": "local-authenticated-new-user",
       "relativeFile": "authenticated-visual.spec.ts/p5a0d-app-shell-new-user-1440x900-light-reduced.png",
-      "sha256": "c1e40efd43128e66c4bb1f87921ffd554c7d2b94b156919f727946f226b8dc2b",
-      "bytes": 61059
+      "sha256": "736da29674196790d045e3f8daecea4e0311fe96a940bcc2e932116174e9f0f8",
+      "bytes": 84255
     }
   ],
-  "manifestChecksum": "22d362e7711bc4e93541c05e01e1055113d922ce09bbeb8d36d123c15e323f74"
+  "manifestChecksum": "9a05843d1b708fa25f17d48ea574a02ef1cbb532b218a27f990c41ccabdc702d"
 }
