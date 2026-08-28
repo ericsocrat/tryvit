@@ -178,7 +178,7 @@ function buildSourceEquivalentFixture(mutate = {}) {
 
   const nextManifest = structuredClone(baseManifest);
   nextManifest.sourceCommit = candidateSourceSha;
-  nextManifest.runner.imageVersion = "20260823.283.1";
+  nextManifest.runner.imageVersion = `${baseManifest.runner.imageVersion}-fixture-next`;
   mutate.nextManifest?.(nextManifest);
   const { manifestChecksum: _discarded, ...payload } = nextManifest;
   nextManifest.manifestChecksum = sha256(stableJson(payload));

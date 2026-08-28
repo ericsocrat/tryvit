@@ -134,7 +134,7 @@ describe("browser workflow visual-safety contract", () => {
         { cwd: repoRoot, stdio: "pipe" },
       ),
     ).not.toThrow();
-  });
+  }, 60_000);
 
   it("keeps unit-test enforcement inside a larger job-level cleanup budget", () => {
     expect(prGateUnitJob).toMatch(/^    timeout-minutes: 8$/mu);

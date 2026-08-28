@@ -63,6 +63,10 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### CI
 
+- Keep renderer source-equivalence mutation fixtures distinct from the moving
+  authoritative runner baseline, allow a bounded heterogeneous-host wrapper
+  budget, and verify Batch 3 public Polish/German routes in locale-specific
+  guarded browser contexts.
 - Replace copy-based landing identity in the base-owned Route-JS harness with exact
   pathname plus a unique nonvisual marker on the owned main boundary, retaining the
   +10 KiB-or-5% thresholds and all safety/cleanup semantics.
