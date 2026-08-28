@@ -86,6 +86,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- Resolve both vulnerable development-only `js-yaml` lockfile branches with compatible
+  patched releases, and record the still-open no-patch `extract-zip` alert as an
+  unreachable browser-download path under TryVit's pinned Playwright/LHCI launcher.
 - Restrict 84 privileged administration/operations routines and 21 operational
   relations to `service_role`, with final-schema pgTAP and blocking QA checks
   covering anonymous and ordinary authenticated callers.
