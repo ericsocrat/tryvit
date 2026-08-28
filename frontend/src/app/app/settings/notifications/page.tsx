@@ -5,6 +5,8 @@
 import { Button } from "@/components/common/Button";
 import { SettingsSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { useAnalytics } from "@/hooks/use-analytics";
 import {
     deletePushSubscription,
@@ -180,7 +182,7 @@ export default function NotificationSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <AppPage className={surface.appPage}>
       <Breadcrumbs
         items={[
           { labelKey: "nav.home", href: "/app" },
@@ -188,13 +190,11 @@ export default function NotificationSettingsPage() {
           { labelKey: "settings.tabNotifications" },
         ]}
       />
-      <h1 className="text-xl font-bold text-foreground lg:text-2xl">
-        {t("settings.tabNotifications")}
-      </h1>
+      <AppPageHeader eyebrow={t("nav.settings")} title={t("settings.tabNotifications")} />
 
       {/* ─── Push Notifications ──────────────────────────────────────────── */}
       {pushSupported && (
-        <section className="card" data-testid="push-notifications-section">
+        <section className={surface.panel} data-testid="push-notifications-section">
           <h2 className="mb-3 text-sm font-semibold text-foreground-secondary lg:text-base">
             {t("notifications.title")}
           </h2>
@@ -234,7 +234,7 @@ export default function NotificationSettingsPage() {
       )}
 
       {/* ─── Score Change Alerts ──────────────────────────────────────────── */}
-      <section className="card" data-testid="score-changes-section">
+      <section className={surface.panel} data-testid="score-changes-section">
         <div className="flex items-start gap-3">
           <BellRing
             size={20}
@@ -267,7 +267,7 @@ export default function NotificationSettingsPage() {
       </section>
 
       {/* ─── Notification Frequency ──────────────────────────────────────── */}
-      <section className="card" data-testid="frequency-section">
+      <section className={surface.panel} data-testid="frequency-section">
         <div className="flex items-center gap-2 mb-3">
           <Clock
             size={20}
@@ -329,7 +329,7 @@ export default function NotificationSettingsPage() {
 
       {/* ─── Save button — sticky bar at bottom when dirty ─────────────── */}
       {dirty && (
-        <div className="sticky bottom-0 z-30 -mx-4 flex animate-slide-in-up justify-end border-t border-border bg-surface/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6">
+        <div className={surface.stickyActions}>
           <Button
             variant="primary"
             onClick={handleSavePreferences}
@@ -341,6 +341,6 @@ export default function NotificationSettingsPage() {
           </Button>
         </div>
       )}
-    </div>
+    </AppPage>
   );
 }

@@ -3,6 +3,8 @@
 // ─── Settings — Privacy & Data (Offline Cache, GDPR Export) ─────────────────
 
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { ExportDataSection } from "@/components/settings/ExportDataSection";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { clearAllCaches, getCachedProductCount } from "@/lib/cache-manager";
@@ -40,7 +42,7 @@ export default function PrivacySettingsPage() {
   }, [track]);
 
   return (
-    <div className="space-y-6">
+    <AppPage className={surface.appPage}>
       <Breadcrumbs
         items={[
           { labelKey: "nav.home", href: "/app" },
@@ -48,12 +50,10 @@ export default function PrivacySettingsPage() {
           { labelKey: "settings.tabPrivacy" },
         ]}
       />
-      <h1 className="text-xl font-bold text-foreground lg:text-2xl">
-        {t("settings.tabPrivacy")}
-      </h1>
+      <AppPageHeader eyebrow={t("nav.settings")} title={t("settings.tabPrivacy")} />
 
       {/* Offline Cache */}
-      <section className="card">
+      <section className={surface.panel}>
         <h2 className="mb-3 text-sm font-semibold text-foreground-secondary lg:text-base">
           {t("settings.offlineCache")}
         </h2>
@@ -73,6 +73,6 @@ export default function PrivacySettingsPage() {
 
       {/* Export Data (GDPR Art. 20) */}
       <ExportDataSection />
-    </div>
+    </AppPage>
   );
 }

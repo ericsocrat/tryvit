@@ -10,6 +10,8 @@
 
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { ImageCapture, OCRResults, PrivacyNotice } from "@/components/ocr";
 import { useTranslation } from "@/lib/i18n";
 import {
@@ -113,7 +115,7 @@ export default function ImageSearchPage() {
   }, []);
 
   return (
-    <div>
+    <AppPage className={surface.appPage}>
       <Breadcrumbs
         items={[
           { labelKey: "nav.home", href: "/app" },
@@ -121,19 +123,12 @@ export default function ImageSearchPage() {
         ]}
       />
 
-      {/* Header */}
-      <div className="mb-6 flex items-center gap-3">
-        <h1 className="text-xl font-bold text-foreground lg:text-2xl">
-          {t("imageSearch.title")}
-        </h1>
-        <span className="rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-semibold text-brand" data-testid="beta-badge">
-          {t("imageSearch.beta")}
-        </span>
-      </div>
-
-      <p className="mb-6 text-sm text-foreground-secondary">
-        {t("imageSearch.description")}
-      </p>
+      <AppPageHeader
+        eyebrow={t("nav.imageSearch")}
+        title={t("imageSearch.title")}
+        description={t("imageSearch.description")}
+        register={<span data-testid="beta-badge">{t("imageSearch.beta")}</span>}
+      />
 
       {/* Privacy consent dialog */}
       <PrivacyNotice open={showPrivacy} onAccept={handleAcceptPrivacy} />
@@ -141,7 +136,7 @@ export default function ImageSearchPage() {
       {/* Error banner */}
       {error && (
         <div
-          className="mb-4 rounded-lg border border-error/20 bg-error/5 px-4 py-3 text-sm text-error"
+          className={[surface.state, surface.errorState].join(" ")}
           role="alert"
           data-testid="ocr-error"
         >
@@ -160,10 +155,7 @@ export default function ImageSearchPage() {
 
       {/* Step: Processing */}
       {step === "processing" && (
-        <div
-          className="flex flex-col items-center gap-4 py-12"
-          data-testid="ocr-processing"
-        >
+        <div className={surface.state} data-testid="ocr-processing">
           <LoadingSpinner size="lg" />
           <p className="text-sm text-foreground-secondary">
             {t("imageSearch.processing")}
@@ -187,10 +179,10 @@ export default function ImageSearchPage() {
       {step === "results" &&
         ocrResult &&
         ocrResult.confidence < CONFIDENCE.UNUSABLE && (
-          <div className="mt-4 rounded-lg border border-warning/20 bg-warning/5 px-4 py-3 text-sm text-warning">
+          <div className={surface.state}>
             {t("imageSearch.unusableTip")}
           </div>
         )}
-    </div>
+    </AppPage>
   );
 }

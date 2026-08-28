@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "1763c1ebd6a8b7644b890e068bc927d7332e7d28",
+    "baseSha": "c7a143394f3c0d74a472ddf212f2519962bab85b",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "ae74c99b8c0a0138750fe2a4eff7c8b5dc1a6144e826dfa96befab659f028aa4"
+    "sourceFingerprint": "78a9e45f71fc4c73ee3524bc43183fd79bba38d7d0a353a8cc05762703ccdd0d"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12,10 +12,10 @@
     "frontend/src/design-system"
   ],
   "moduleCounts": {
-    "total": 455,
+    "total": 457,
     "route-module": 95,
     "app-support-module": 87,
-    "shared-component-module": 203,
+    "shared-component-module": 205,
     "design-system-module": 70
   },
   "modules": [
@@ -406,6 +406,7 @@
         "frontend/src/components/common/ProgressBar.tsx",
         "frontend/src/components/common/PullToRefresh.tsx",
         "frontend/src/components/common/Skeleton.tsx",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/hooks/use-achievements.ts",
         "frontend/src/lib/i18n.ts",
@@ -845,6 +846,7 @@
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
         "frontend/src/components/common/LoadingSpinner.tsx",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/ocr/index.ts",
         "frontend/src/lib/i18n.ts",
@@ -880,6 +882,7 @@
         "frontend/src/components/ingredient/IngredientUsageStats.tsx",
         "frontend/src/components/ingredient/ProductsContainingList.tsx",
         "frontend/src/components/ingredient/RelatedIngredientsList.tsx",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/lib/api.ts",
         "frontend/src/lib/i18n.ts",
@@ -901,17 +904,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 3
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/app/layout.tsx",
@@ -1354,6 +1347,7 @@
         "frontend/src/components/common/Icon.tsx",
         "frontend/src/components/common/index.ts",
         "frontend/src/components/common/skeletons/index.ts",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/recipes/index.ts",
         "frontend/src/lib/api.ts",
@@ -1416,6 +1410,7 @@
         "frontend/src/components/common/EmptyStateIllustration.tsx",
         "frontend/src/components/common/PullToRefresh.tsx",
         "frontend/src/components/common/skeletons/index.ts",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/recipes/index.ts",
         "frontend/src/lib/api.ts",
@@ -1454,6 +1449,7 @@
         "frontend/src/components/common/EmptyStateIllustration.tsx",
         "frontend/src/components/common/PullToRefresh.tsx",
         "frontend/src/components/common/skeletons/index.ts",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/lib/api.ts",
         "frontend/src/lib/constants.ts",
@@ -1479,26 +1475,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 2
-            }
-          ]
-        },
-        {
-          "category": "arbitrary-animation",
-          "occurrences": [
-            {
-              "value": "animate-[fadeInUp_0.3s_ease-out_both]",
-              "count": 2
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/app/scan/layout.tsx",
@@ -1536,6 +1513,7 @@
         "frontend/src/components/common/Button.tsx",
         "frontend/src/components/common/PullToRefresh.tsx",
         "frontend/src/components/common/RouteGuard.tsx",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/scan/ScanResultView.tsx",
         "frontend/src/components/scan/ScannerErrorState.tsx",
@@ -1566,15 +1544,6 @@
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
       "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        },
         {
           "category": "legacy-input-field",
           "occurrences": [
@@ -1615,6 +1584,7 @@
         "frontend/src/components/common/Button.tsx",
         "frontend/src/components/common/NutriScoreBadge.tsx",
         "frontend/src/components/common/skeletons/index.ts",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/product/HealthWarningsCard.tsx",
         "frontend/src/components/trust/ProductEvidencePanel.tsx",
@@ -1642,17 +1612,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 5
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/app/scan/submissions/page.tsx",
@@ -1665,6 +1625,7 @@
         "frontend/src/components/common/Button.tsx",
         "frontend/src/components/common/EmptyStateIllustration.tsx",
         "frontend/src/components/common/skeletons/index.ts",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/scan/ContributorBadge.tsx",
         "frontend/src/lib/api.ts",
@@ -1688,26 +1649,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 2
-            }
-          ]
-        },
-        {
-          "category": "arbitrary-animation",
-          "occurrences": [
-            {
-              "value": "animate-[fadeInUp_0.3s_ease-out_both]",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/app/scan/submit/page.tsx",
@@ -1720,6 +1662,7 @@
         "frontend/src/components/common/Button.tsx",
         "frontend/src/components/common/LoadingSpinner.tsx",
         "frontend/src/components/common/RouteGuard.tsx",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/scan/CategoryPicker.tsx",
         "frontend/src/lib/api.ts",
@@ -1748,15 +1691,6 @@
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
       "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        },
         {
           "category": "legacy-input-field",
           "occurrences": [
@@ -1916,6 +1850,7 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/settings/DeleteAccountDialog.tsx",
         "frontend/src/components/settings/InstallAppSection.tsx",
@@ -1941,17 +1876,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/app/settings/layout.tsx",
@@ -1990,6 +1915,7 @@
       "directModuleImports": [
         "frontend/src/components/common/Button.tsx",
         "frontend/src/components/common/skeletons/index.ts",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/hooks/use-analytics.ts",
         "frontend/src/lib/api.ts",
@@ -2018,15 +1944,6 @@
       "designSystemStatus": "v1",
       "classifiedLegacyDebt": [
         {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 3
-            }
-          ]
-        },
-        {
           "category": "transition-all",
           "occurrences": [
             {
@@ -2047,6 +1964,7 @@
       "directModuleImports": [
         "frontend/src/components/common/Button.tsx",
         "frontend/src/components/common/skeletons/index.ts",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/settings/HealthProfileSection.tsx",
         "frontend/src/hooks/use-analytics.ts",
@@ -2073,17 +1991,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 2
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/app/settings/page.tsx",
@@ -2097,6 +2005,7 @@
         "frontend/src/components/common/ConfirmDialog.tsx",
         "frontend/src/components/common/skeletons/index.ts",
         "frontend/src/components/i18n/ClientMessagesProvider.tsx",
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/settings/ThemeToggle.tsx",
         "frontend/src/hooks/use-analytics.ts",
@@ -2124,17 +2033,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 3
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/app/settings/privacy/page.tsx",
@@ -2144,6 +2043,7 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
+        "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/settings/ExportDataSection.tsx",
         "frontend/src/hooks/use-analytics.ts",
@@ -2166,17 +2066,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/app/watchlist/layout.tsx",
@@ -2680,8 +2570,8 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/components/common/Button.tsx",
-        "frontend/src/components/common/Logo.tsx",
         "frontend/src/components/compare/ComparisonGrid.tsx",
+        "frontend/src/components/layout/PublicUtilityShell.tsx",
         "frontend/src/lib/i18n-core.ts",
         "frontend/src/lib/public-shares.ts",
         "frontend/src/lib/server-locale.ts"
@@ -2701,17 +2591,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/contact/page.tsx",
@@ -4563,6 +4443,7 @@
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
         "frontend/src/components/common/Button.tsx",
+        "frontend/src/components/layout/PublicUtilityShell.tsx",
         "frontend/src/lib/i18n.ts"
       ],
       "directConsumers": [],
@@ -4680,12 +4561,10 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/layout/Footer.tsx",
-        "frontend/src/components/layout/Header.tsx",
         "frontend/src/components/learn/Disclaimer.tsx",
         "frontend/src/components/learn/LearnArticleShell.tsx",
+        "frontend/src/components/learn/LearnRouteShell.tsx",
         "frontend/src/components/learn/LearnSectionCard.tsx",
-        "frontend/src/components/learn/LearnSidebar.tsx",
         "frontend/src/components/learn/LearnTopicNav.tsx",
         "frontend/src/components/learn/SourceCitation.tsx",
         "frontend/src/lib/i18n.ts"
@@ -4740,12 +4619,10 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/layout/Footer.tsx",
-        "frontend/src/components/layout/Header.tsx",
         "frontend/src/components/learn/Disclaimer.tsx",
         "frontend/src/components/learn/LearnArticleShell.tsx",
+        "frontend/src/components/learn/LearnRouteShell.tsx",
         "frontend/src/components/learn/LearnSectionCard.tsx",
-        "frontend/src/components/learn/LearnSidebar.tsx",
         "frontend/src/components/learn/LearnTopicNav.tsx",
         "frontend/src/components/learn/SourceCitation.tsx",
         "frontend/src/lib/i18n.ts"
@@ -4800,12 +4677,10 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/layout/Footer.tsx",
-        "frontend/src/components/layout/Header.tsx",
         "frontend/src/components/learn/Disclaimer.tsx",
         "frontend/src/components/learn/LearnArticleShell.tsx",
+        "frontend/src/components/learn/LearnRouteShell.tsx",
         "frontend/src/components/learn/LearnSectionCard.tsx",
-        "frontend/src/components/learn/LearnSidebar.tsx",
         "frontend/src/components/learn/LearnTopicNav.tsx",
         "frontend/src/components/learn/SourceCitation.tsx",
         "frontend/src/lib/i18n.ts"
@@ -4835,12 +4710,10 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/layout/Footer.tsx",
-        "frontend/src/components/layout/Header.tsx",
         "frontend/src/components/learn/Disclaimer.tsx",
         "frontend/src/components/learn/LearnArticleShell.tsx",
+        "frontend/src/components/learn/LearnRouteShell.tsx",
         "frontend/src/components/learn/LearnSectionCard.tsx",
-        "frontend/src/components/learn/LearnSidebar.tsx",
         "frontend/src/components/learn/LearnTopicNav.tsx",
         "frontend/src/components/learn/SourceCitation.tsx",
         "frontend/src/lib/i18n.ts"
@@ -4920,12 +4793,10 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/layout/Footer.tsx",
-        "frontend/src/components/layout/Header.tsx",
         "frontend/src/components/learn/Disclaimer.tsx",
         "frontend/src/components/learn/LearnArticleShell.tsx",
+        "frontend/src/components/learn/LearnRouteShell.tsx",
         "frontend/src/components/learn/LearnSectionCard.tsx",
-        "frontend/src/components/learn/LearnSidebar.tsx",
         "frontend/src/components/learn/LearnTopicNav.tsx",
         "frontend/src/components/learn/SourceCitation.tsx",
         "frontend/src/lib/i18n.ts"
@@ -4980,12 +4851,10 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/layout/Footer.tsx",
-        "frontend/src/components/layout/Header.tsx",
         "frontend/src/components/learn/Disclaimer.tsx",
         "frontend/src/components/learn/LearnArticleShell.tsx",
+        "frontend/src/components/learn/LearnRouteShell.tsx",
         "frontend/src/components/learn/LearnSectionCard.tsx",
-        "frontend/src/components/learn/LearnSidebar.tsx",
         "frontend/src/components/learn/LearnTopicNav.tsx",
         "frontend/src/components/learn/SourceCitation.tsx",
         "frontend/src/lib/i18n.ts"
@@ -5015,8 +4884,7 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/layout/Footer.tsx",
-        "frontend/src/components/layout/Header.tsx",
+        "frontend/src/components/layout/PublicUtilityShell.tsx",
         "frontend/src/components/learn/Disclaimer.tsx",
         "frontend/src/components/learn/LearnCard.tsx",
         "frontend/src/lib/events/index.ts",
@@ -5037,30 +4905,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "arbitrary-shadow",
-          "occurrences": [
-            {
-              "value": "shadow-[0_30px_80px_rgba(0,0,0,0.28)]",
-              "count": 1
-            },
-            {
-              "value": "shadow-[0_30px_80px_rgba(15,23,42,0.08)]",
-              "count": 1
-            }
-          ]
-        },
-        {
-          "category": "arbitrary-tracking",
-          "occurrences": [
-            {
-              "value": "tracking-[0.16em]",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/learn/reading-labels/layout.tsx",
@@ -5095,12 +4940,10 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/layout/Footer.tsx",
-        "frontend/src/components/layout/Header.tsx",
         "frontend/src/components/learn/Disclaimer.tsx",
         "frontend/src/components/learn/LearnArticleShell.tsx",
+        "frontend/src/components/learn/LearnRouteShell.tsx",
         "frontend/src/components/learn/LearnSectionCard.tsx",
-        "frontend/src/components/learn/LearnSidebar.tsx",
         "frontend/src/components/learn/LearnTopicNav.tsx",
         "frontend/src/components/learn/SourceCitation.tsx",
         "frontend/src/lib/i18n.ts"
@@ -5155,12 +4998,10 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/layout/Footer.tsx",
-        "frontend/src/components/layout/Header.tsx",
         "frontend/src/components/learn/Disclaimer.tsx",
         "frontend/src/components/learn/LearnArticleShell.tsx",
+        "frontend/src/components/learn/LearnRouteShell.tsx",
         "frontend/src/components/learn/LearnSectionCard.tsx",
-        "frontend/src/components/learn/LearnSidebar.tsx",
         "frontend/src/components/learn/LearnTopicNav.tsx",
         "frontend/src/components/learn/SourceCitation.tsx",
         "frontend/src/lib/i18n.ts"
@@ -5240,11 +5081,12 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/components/common/Button.tsx",
-        "frontend/src/components/common/Logo.tsx",
+        "frontend/src/components/common/NutriScoreBadge.tsx",
+        "frontend/src/components/layout/PublicUtilityShell.tsx",
+        "frontend/src/components/product/ProductRegisterCard.tsx",
         "frontend/src/lib/constants.ts",
         "frontend/src/lib/i18n-core.ts",
         "frontend/src/lib/public-shares.ts",
-        "frontend/src/lib/score-utils.ts",
         "frontend/src/lib/server-locale.ts"
       ],
       "directConsumers": [],
@@ -5262,17 +5104,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 2
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/app/not-found.tsx",
@@ -5313,6 +5145,7 @@
       "directModuleImports": [
         "frontend/src/components/common/Button.tsx",
         "frontend/src/components/common/ErrorIllustration.tsx",
+        "frontend/src/components/layout/PublicUtilityShell.tsx",
         "frontend/src/lib/i18n.ts"
       ],
       "directConsumers": [],
@@ -7180,6 +7013,11 @@
           "routePath": "/app/watchlist"
         },
         {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
+        },
+        {
           "modulePath": "frontend/src/app/onboarding/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/onboarding"
@@ -8172,6 +8010,11 @@
           "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/compare/shared/[token]"
+        },
+        {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
@@ -8369,8 +8212,6 @@
       "runtimeBoundary": "client-reachable",
       "directModuleImports": [],
       "directConsumers": [
-        "frontend/src/app/compare/shared/[token]/page.tsx",
-        "frontend/src/app/lists/shared/[token]/page.tsx",
         "frontend/src/components/layout/PublicFooter.tsx",
         "frontend/src/components/layout/PublicHeader.tsx"
       ],
@@ -8384,6 +8225,11 @@
           "modulePath": "frontend/src/app/contact/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/contact"
+        },
+        {
+          "modulePath": "frontend/src/app/forbidden/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/forbidden"
         },
         {
           "modulePath": "frontend/src/app/learn/additives/page.tsx",
@@ -8434,6 +8280,11 @@
           "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/lists/shared/[token]"
+        },
+        {
+          "modulePath": "frontend/src/app/offline/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/offline"
         },
         {
           "modulePath": "frontend/src/app/privacy/page.tsx",
@@ -8548,6 +8399,7 @@
         "frontend/src/app/app/scan/result/[id]/page.tsx",
         "frontend/src/app/app/search/page.tsx",
         "frontend/src/app/app/watchlist/page.tsx",
+        "frontend/src/app/lists/shared/[token]/page.tsx",
         "frontend/src/components/alternatives/AlternativeProductCard.tsx",
         "frontend/src/components/common/index.ts",
         "frontend/src/components/dashboard/RecentlyViewed.tsx"
@@ -8597,6 +8449,11 @@
           "modulePath": "frontend/src/app/app/watchlist/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/watchlist"
+        },
+        {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
@@ -8791,6 +8648,11 @@
           "modulePath": "frontend/src/app/app/watchlist/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/watchlist"
+        },
+        {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
@@ -13420,6 +13282,11 @@
           "routePath": "/learn/tryvit-score"
         },
         {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
+        },
+        {
           "modulePath": "frontend/src/app/not-found.tsx",
           "routeModuleKind": "not-found",
           "routePath": "/"
@@ -13585,17 +13452,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/ingredient/ProductsContainingList.tsx",
@@ -13626,17 +13483,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/ingredient/RelatedIngredientsList.tsx",
@@ -13667,17 +13514,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/layout/AdminHydrator.tsx",
@@ -13717,17 +13554,37 @@
       "runtimeBoundary": "client-reachable",
       "directModuleImports": [],
       "directConsumers": [
+        "frontend/src/app/app/achievements/page.tsx",
         "frontend/src/app/app/categories/[slug]/page.tsx",
         "frontend/src/app/app/categories/page.tsx",
         "frontend/src/app/app/compare/page.tsx",
         "frontend/src/app/app/compare/saved/page.tsx",
+        "frontend/src/app/app/image-search/page.tsx",
+        "frontend/src/app/app/ingredient/[id]/page.tsx",
         "frontend/src/app/app/lists/[id]/page.tsx",
         "frontend/src/app/app/lists/page.tsx",
         "frontend/src/app/app/product/[id]/page.tsx",
+        "frontend/src/app/app/recipes/[slug]/page.tsx",
+        "frontend/src/app/app/recipes/page.tsx",
+        "frontend/src/app/app/scan/history/page.tsx",
+        "frontend/src/app/app/scan/page.tsx",
+        "frontend/src/app/app/scan/result/[id]/page.tsx",
+        "frontend/src/app/app/scan/submissions/page.tsx",
+        "frontend/src/app/app/scan/submit/page.tsx",
         "frontend/src/app/app/search/page.tsx",
+        "frontend/src/app/app/settings/account/page.tsx",
+        "frontend/src/app/app/settings/notifications/page.tsx",
+        "frontend/src/app/app/settings/nutrition/page.tsx",
+        "frontend/src/app/app/settings/page.tsx",
+        "frontend/src/app/app/settings/privacy/page.tsx",
         "frontend/src/app/app/watchlist/page.tsx"
       ],
       "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/app/achievements/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/achievements"
+        },
         {
           "modulePath": "frontend/src/app/app/categories/[slug]/page.tsx",
           "routeModuleKind": "page",
@@ -13749,6 +13606,16 @@
           "routePath": "/app/compare/saved"
         },
         {
+          "modulePath": "frontend/src/app/app/image-search/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/image-search"
+        },
+        {
+          "modulePath": "frontend/src/app/app/ingredient/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/ingredient/[id]"
+        },
+        {
           "modulePath": "frontend/src/app/app/lists/[id]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/lists/[id]"
@@ -13764,9 +13631,69 @@
           "routePath": "/app/product/[id]"
         },
         {
+          "modulePath": "frontend/src/app/app/recipes/[slug]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/recipes/[slug]"
+        },
+        {
+          "modulePath": "frontend/src/app/app/recipes/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/recipes"
+        },
+        {
+          "modulePath": "frontend/src/app/app/scan/history/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/scan/history"
+        },
+        {
+          "modulePath": "frontend/src/app/app/scan/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/scan"
+        },
+        {
+          "modulePath": "frontend/src/app/app/scan/result/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/scan/result/[id]"
+        },
+        {
+          "modulePath": "frontend/src/app/app/scan/submissions/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/scan/submissions"
+        },
+        {
+          "modulePath": "frontend/src/app/app/scan/submit/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/scan/submit"
+        },
+        {
           "modulePath": "frontend/src/app/app/search/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/search"
+        },
+        {
+          "modulePath": "frontend/src/app/app/settings/account/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/settings/account"
+        },
+        {
+          "modulePath": "frontend/src/app/app/settings/notifications/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/settings/notifications"
+        },
+        {
+          "modulePath": "frontend/src/app/app/settings/nutrition/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/settings/nutrition"
+        },
+        {
+          "modulePath": "frontend/src/app/app/settings/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/settings"
+        },
+        {
+          "modulePath": "frontend/src/app/app/settings/privacy/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/settings/privacy"
         },
         {
           "modulePath": "frontend/src/app/app/watchlist/page.tsx",
@@ -13777,7 +13704,8 @@
       "targetRedesignPhases": [
         "5C.1",
         "5C.2",
-        "5D"
+        "5D",
+        "5E"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -14062,22 +13990,24 @@
         "frontend/src/lib/i18n.ts"
       ],
       "directConsumers": [
-        "frontend/src/app/learn/additives/page.tsx",
-        "frontend/src/app/learn/allergens/page.tsx",
-        "frontend/src/app/learn/confidence/page.tsx",
-        "frontend/src/app/learn/healthy-choices/page.tsx",
-        "frontend/src/app/learn/nova-groups/page.tsx",
-        "frontend/src/app/learn/nutri-score/page.tsx",
-        "frontend/src/app/learn/page.tsx",
-        "frontend/src/app/learn/reading-labels/page.tsx",
-        "frontend/src/app/learn/tryvit-score/page.tsx",
-        "frontend/src/components/layout/LegalPageShell.tsx"
+        "frontend/src/components/layout/PublicUtilityShell.tsx",
+        "frontend/src/components/learn/LearnRouteShell.tsx"
       ],
       "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/compare/shared/[token]"
+        },
         {
           "modulePath": "frontend/src/app/contact/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/contact"
+        },
+        {
+          "modulePath": "frontend/src/app/forbidden/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/forbidden"
         },
         {
           "modulePath": "frontend/src/app/learn/additives/page.tsx",
@@ -14123,6 +14053,16 @@
           "modulePath": "frontend/src/app/learn/tryvit-score/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/learn/tryvit-score"
+        },
+        {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
+        },
+        {
+          "modulePath": "frontend/src/app/offline/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/offline"
         },
         {
           "modulePath": "frontend/src/app/privacy/page.tsx",
@@ -14186,22 +14126,24 @@
         "frontend/src/lib/i18n.ts"
       ],
       "directConsumers": [
-        "frontend/src/app/learn/additives/page.tsx",
-        "frontend/src/app/learn/allergens/page.tsx",
-        "frontend/src/app/learn/confidence/page.tsx",
-        "frontend/src/app/learn/healthy-choices/page.tsx",
-        "frontend/src/app/learn/nova-groups/page.tsx",
-        "frontend/src/app/learn/nutri-score/page.tsx",
-        "frontend/src/app/learn/page.tsx",
-        "frontend/src/app/learn/reading-labels/page.tsx",
-        "frontend/src/app/learn/tryvit-score/page.tsx",
-        "frontend/src/components/layout/LegalPageShell.tsx"
+        "frontend/src/components/layout/PublicUtilityShell.tsx",
+        "frontend/src/components/learn/LearnRouteShell.tsx"
       ],
       "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/compare/shared/[token]"
+        },
         {
           "modulePath": "frontend/src/app/contact/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/contact"
+        },
+        {
+          "modulePath": "frontend/src/app/forbidden/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/forbidden"
         },
         {
           "modulePath": "frontend/src/app/learn/additives/page.tsx",
@@ -14249,6 +14191,16 @@
           "routePath": "/learn/tryvit-score"
         },
         {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
+        },
+        {
+          "modulePath": "frontend/src/app/offline/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/offline"
+        },
+        {
           "modulePath": "frontend/src/app/privacy/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/privacy"
@@ -14276,8 +14228,7 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/layout/Footer.tsx",
-        "frontend/src/components/layout/Header.tsx"
+        "frontend/src/components/layout/PublicUtilityShell.tsx"
       ],
       "directConsumers": [
         "frontend/src/app/contact/page.tsx",
@@ -14308,30 +14259,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "arbitrary-shadow",
-          "occurrences": [
-            {
-              "value": "shadow-[0_24px_72px_rgba(0,0,0,0.35)]",
-              "count": 1
-            },
-            {
-              "value": "shadow-[0_24px_72px_rgba(15,23,42,0.12)]",
-              "count": 1
-            }
-          ]
-        },
-        {
-          "category": "arbitrary-tracking",
-          "occurrences": [
-            {
-              "value": "tracking-[0.24em]",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/layout/LivePublicAuthActions.tsx",
@@ -14351,9 +14279,19 @@
       ],
       "transitiveRouteConsumers": [
         {
+          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/compare/shared/[token]"
+        },
+        {
           "modulePath": "frontend/src/app/contact/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/contact"
+        },
+        {
+          "modulePath": "frontend/src/app/forbidden/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/forbidden"
         },
         {
           "modulePath": "frontend/src/app/learn/additives/page.tsx",
@@ -14399,6 +14337,16 @@
           "modulePath": "frontend/src/app/learn/tryvit-score/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/learn/tryvit-score"
+        },
+        {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
+        },
+        {
+          "modulePath": "frontend/src/app/offline/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/offline"
         },
         {
           "modulePath": "frontend/src/app/page.tsx",
@@ -14510,9 +14458,19 @@
       ],
       "transitiveRouteConsumers": [
         {
+          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/compare/shared/[token]"
+        },
+        {
           "modulePath": "frontend/src/app/contact/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/contact"
+        },
+        {
+          "modulePath": "frontend/src/app/forbidden/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/forbidden"
         },
         {
           "modulePath": "frontend/src/app/learn/additives/page.tsx",
@@ -14558,6 +14516,16 @@
           "modulePath": "frontend/src/app/learn/tryvit-score/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/learn/tryvit-score"
+        },
+        {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
+        },
+        {
+          "modulePath": "frontend/src/app/offline/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/offline"
         },
         {
           "modulePath": "frontend/src/app/privacy/page.tsx",
@@ -14597,9 +14565,19 @@
       ],
       "transitiveRouteConsumers": [
         {
+          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/compare/shared/[token]"
+        },
+        {
           "modulePath": "frontend/src/app/contact/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/contact"
+        },
+        {
+          "modulePath": "frontend/src/app/forbidden/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/forbidden"
         },
         {
           "modulePath": "frontend/src/app/learn/additives/page.tsx",
@@ -14645,6 +14623,16 @@
           "modulePath": "frontend/src/app/learn/tryvit-score/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/learn/tryvit-score"
+        },
+        {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
+        },
+        {
+          "modulePath": "frontend/src/app/offline/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/offline"
         },
         {
           "modulePath": "frontend/src/app/privacy/page.tsx",
@@ -14681,6 +14669,76 @@
       ]
     },
     {
+      "path": "frontend/src/components/layout/PublicUtilityShell.tsx",
+      "classification": "shared-component-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "client-reachable",
+      "directModuleImports": [
+        "frontend/src/components/layout/Footer.tsx",
+        "frontend/src/components/layout/Header.tsx"
+      ],
+      "directConsumers": [
+        "frontend/src/app/compare/shared/[token]/page.tsx",
+        "frontend/src/app/forbidden/page.tsx",
+        "frontend/src/app/learn/page.tsx",
+        "frontend/src/app/lists/shared/[token]/page.tsx",
+        "frontend/src/app/offline/page.tsx",
+        "frontend/src/components/layout/LegalPageShell.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/compare/shared/[token]"
+        },
+        {
+          "modulePath": "frontend/src/app/contact/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/contact"
+        },
+        {
+          "modulePath": "frontend/src/app/forbidden/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/forbidden"
+        },
+        {
+          "modulePath": "frontend/src/app/learn/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/learn"
+        },
+        {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
+        },
+        {
+          "modulePath": "frontend/src/app/offline/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/offline"
+        },
+        {
+          "modulePath": "frontend/src/app/privacy/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/privacy"
+        },
+        {
+          "modulePath": "frontend/src/app/terms/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/terms"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
       "path": "frontend/src/components/layout/ThemeToggle.tsx",
       "classification": "shared-component-module",
       "routeModuleKind": null,
@@ -14703,9 +14761,19 @@
           "routePath": "/app"
         },
         {
+          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/compare/shared/[token]"
+        },
+        {
           "modulePath": "frontend/src/app/contact/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/contact"
+        },
+        {
+          "modulePath": "frontend/src/app/forbidden/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/forbidden"
         },
         {
           "modulePath": "frontend/src/app/learn/additives/page.tsx",
@@ -14751,6 +14819,16 @@
           "modulePath": "frontend/src/app/learn/tryvit-score/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/learn/tryvit-score"
+        },
+        {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
+        },
+        {
+          "modulePath": "frontend/src/app/offline/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/offline"
         },
         {
           "modulePath": "frontend/src/app/privacy/page.tsx",
@@ -14949,30 +15027,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "arbitrary-shadow",
-          "occurrences": [
-            {
-              "value": "shadow-[0_32px_90px_rgba(0,0,0,0.28)]",
-              "count": 1
-            },
-            {
-              "value": "shadow-[0_32px_90px_rgba(15,23,42,0.08)]",
-              "count": 1
-            }
-          ]
-        },
-        {
-          "category": "arbitrary-tracking",
-          "occurrences": [
-            {
-              "value": "tracking-[0.18em]",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/learn/LearnCard.tsx",
@@ -14990,6 +15045,80 @@
           "modulePath": "frontend/src/app/learn/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/learn"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/components/learn/LearnRouteShell.tsx",
+      "classification": "shared-component-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/components/layout/Footer.tsx",
+        "frontend/src/components/layout/Header.tsx",
+        "frontend/src/components/learn/LearnSidebar.tsx",
+        "frontend/src/lib/i18n.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/learn/additives/page.tsx",
+        "frontend/src/app/learn/allergens/page.tsx",
+        "frontend/src/app/learn/confidence/page.tsx",
+        "frontend/src/app/learn/healthy-choices/page.tsx",
+        "frontend/src/app/learn/nova-groups/page.tsx",
+        "frontend/src/app/learn/nutri-score/page.tsx",
+        "frontend/src/app/learn/reading-labels/page.tsx",
+        "frontend/src/app/learn/tryvit-score/page.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/learn/additives/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/learn/additives"
+        },
+        {
+          "modulePath": "frontend/src/app/learn/allergens/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/learn/allergens"
+        },
+        {
+          "modulePath": "frontend/src/app/learn/confidence/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/learn/confidence"
+        },
+        {
+          "modulePath": "frontend/src/app/learn/healthy-choices/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/learn/healthy-choices"
+        },
+        {
+          "modulePath": "frontend/src/app/learn/nova-groups/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/learn/nova-groups"
+        },
+        {
+          "modulePath": "frontend/src/app/learn/nutri-score/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/learn/nutri-score"
+        },
+        {
+          "modulePath": "frontend/src/app/learn/reading-labels/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/learn/reading-labels"
+        },
+        {
+          "modulePath": "frontend/src/app/learn/tryvit-score/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/learn/tryvit-score"
         }
       ],
       "targetRedesignPhases": [
@@ -15081,14 +15210,7 @@
         "frontend/src/lib/i18n.ts"
       ],
       "directConsumers": [
-        "frontend/src/app/learn/additives/page.tsx",
-        "frontend/src/app/learn/allergens/page.tsx",
-        "frontend/src/app/learn/confidence/page.tsx",
-        "frontend/src/app/learn/healthy-choices/page.tsx",
-        "frontend/src/app/learn/nova-groups/page.tsx",
-        "frontend/src/app/learn/nutri-score/page.tsx",
-        "frontend/src/app/learn/reading-labels/page.tsx",
-        "frontend/src/app/learn/tryvit-score/page.tsx",
+        "frontend/src/components/learn/LearnRouteShell.tsx",
         "frontend/src/components/learn/LearnTopicNav.tsx"
       ],
       "transitiveRouteConsumers": [
@@ -16201,6 +16323,7 @@
         "frontend/src/app/app/product/[id]/page.tsx",
         "frontend/src/app/app/search/page.tsx",
         "frontend/src/app/app/watchlist/page.tsx",
+        "frontend/src/app/lists/shared/[token]/page.tsx",
         "frontend/src/components/alternatives/AlternativeProductCard.tsx",
         "frontend/src/components/alternatives/AlternativesSection.tsx"
       ],
@@ -16229,9 +16352,15 @@
           "modulePath": "frontend/src/app/app/watchlist/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/watchlist"
+        },
+        {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
+        "5A.3",
         "5C.1",
         "5C.2",
         "5D"
@@ -17096,17 +17225,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/scan/ScanResultView.tsx",
@@ -17145,15 +17264,6 @@
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
       "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 3
-            }
-          ]
-        },
         {
           "category": "arbitrary-animation",
           "occurrences": [
@@ -17203,17 +17313,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/search/ActiveFilterChips.tsx",
@@ -17494,17 +17594,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/settings/HealthProfileSection.tsx",
@@ -17540,17 +17630,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 2
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/settings/InstallAppSection.tsx",
@@ -17581,17 +17661,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/settings/SettingsNav.tsx",
@@ -17970,9 +18040,19 @@
           "routePath": "/app/settings"
         },
         {
+          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/compare/shared/[token]"
+        },
+        {
           "modulePath": "frontend/src/app/contact/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/contact"
+        },
+        {
+          "modulePath": "frontend/src/app/forbidden/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/forbidden"
         },
         {
           "modulePath": "frontend/src/app/layout.tsx",
@@ -18023,6 +18103,16 @@
           "modulePath": "frontend/src/app/learn/tryvit-score/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/learn/tryvit-score"
+        },
+        {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
+        },
+        {
+          "modulePath": "frontend/src/app/offline/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/offline"
         },
         {
           "modulePath": "frontend/src/app/page.tsx",
@@ -18685,6 +18775,11 @@
           "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/compare/shared/[token]"
+        },
+        {
+          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/lists/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
@@ -20515,79 +20610,14 @@
       "category": "legacy-card",
       "occurrences": [
         {
-          "path": "frontend/src/app/app/ingredient/[id]/page.tsx",
-          "value": ".card",
-          "count": 3
-        },
-        {
           "path": "frontend/src/app/app/product/[id]/ProductFullAnalysis.tsx",
           "value": ".card",
           "count": 10
         },
         {
-          "path": "frontend/src/app/app/scan/history/page.tsx",
-          "value": ".card",
-          "count": 2
-        },
-        {
-          "path": "frontend/src/app/app/scan/page.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/app/scan/result/[id]/page.tsx",
-          "value": ".card",
-          "count": 5
-        },
-        {
-          "path": "frontend/src/app/app/scan/submissions/page.tsx",
-          "value": ".card",
-          "count": 2
-        },
-        {
-          "path": "frontend/src/app/app/scan/submit/page.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
           "path": "frontend/src/app/app/search/saved/page.tsx",
           "value": ".card",
           "count": 1
-        },
-        {
-          "path": "frontend/src/app/app/settings/account/page.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/app/settings/notifications/page.tsx",
-          "value": ".card",
-          "count": 3
-        },
-        {
-          "path": "frontend/src/app/app/settings/nutrition/page.tsx",
-          "value": ".card",
-          "count": 2
-        },
-        {
-          "path": "frontend/src/app/app/settings/page.tsx",
-          "value": ".card",
-          "count": 3
-        },
-        {
-          "path": "frontend/src/app/app/settings/privacy/page.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/compare/shared/[token]/page.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/lists/shared/[token]/page.tsx",
-          "value": ".card",
-          "count": 2
         },
         {
           "path": "frontend/src/components/common/skeletons/AdminDashboardSkeleton.tsx",
@@ -20705,21 +20735,6 @@
           "count": 1
         },
         {
-          "path": "frontend/src/components/ingredient/IngredientUsageStats.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/components/ingredient/ProductsContainingList.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/components/ingredient/RelatedIngredientsList.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
           "path": "frontend/src/components/product/AllergenQuickBadges.tsx",
           "value": ".card",
           "count": 2
@@ -20741,36 +20756,6 @@
         },
         {
           "path": "frontend/src/components/product/ScoreBreakdownPanel.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/components/scan/ScanMissSubmitCTA.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/components/scan/ScanResultView.tsx",
-          "value": ".card",
-          "count": 3
-        },
-        {
-          "path": "frontend/src/components/scan/ScannerErrorState.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/components/settings/ExportDataSection.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/components/settings/HealthProfileSection.tsx",
-          "value": ".card",
-          "count": 2
-        },
-        {
-          "path": "frontend/src/components/settings/InstallAppSection.tsx",
           "value": ".card",
           "count": 1
         },
@@ -20827,16 +20812,6 @@
         {
           "path": "frontend/src/app/app/scan/page.tsx",
           "value": "shadow-[0_0_12px_rgba(234,179,8,0.5)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/learn/page.tsx",
-          "value": "shadow-[0_30px_80px_rgba(0,0,0,0.28)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/app/learn/page.tsx",
-          "value": "shadow-[0_30px_80px_rgba(15,23,42,0.08)]",
           "count": 1
         },
         {
@@ -21060,16 +21035,6 @@
           "count": 1
         },
         {
-          "path": "frontend/src/components/layout/LegalPageShell.tsx",
-          "value": "shadow-[0_24px_72px_rgba(0,0,0,0.35)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/components/layout/LegalPageShell.tsx",
-          "value": "shadow-[0_24px_72px_rgba(15,23,42,0.12)]",
-          "count": 1
-        },
-        {
           "path": "frontend/src/components/layout/PublicHeader.tsx",
           "value": "shadow-[0_6px_20px_rgba(15,23,42,0.06)]",
           "count": 1
@@ -21077,16 +21042,6 @@
         {
           "path": "frontend/src/components/layout/PublicHeader.tsx",
           "value": "shadow-[0_6px_24px_rgba(0,0,0,0.3)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/components/learn/LearnArticleShell.tsx",
-          "value": "shadow-[0_32px_90px_rgba(0,0,0,0.28)]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/components/learn/LearnArticleShell.tsx",
-          "value": "shadow-[0_32px_90px_rgba(15,23,42,0.08)]",
           "count": 1
         },
         {
@@ -21164,16 +21119,6 @@
       "category": "arbitrary-animation",
       "occurrences": [
         {
-          "path": "frontend/src/app/app/scan/history/page.tsx",
-          "value": "animate-[fadeInUp_0.3s_ease-out_both]",
-          "count": 2
-        },
-        {
-          "path": "frontend/src/app/app/scan/submissions/page.tsx",
-          "value": "animate-[fadeInUp_0.3s_ease-out_both]",
-          "count": 1
-        },
-        {
           "path": "frontend/src/components/pwa/InstallPrompt.tsx",
           "value": "animate-[slideUp_0.3s_ease-out]",
           "count": 1
@@ -21219,24 +21164,9 @@
           "count": 1
         },
         {
-          "path": "frontend/src/app/learn/page.tsx",
-          "value": "tracking-[0.16em]",
-          "count": 1
-        },
-        {
           "path": "frontend/src/app/privacy/page.tsx",
           "value": "tracking-[0.2em]",
           "count": 5
-        },
-        {
-          "path": "frontend/src/components/layout/LegalPageShell.tsx",
-          "value": "tracking-[0.24em]",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/components/learn/LearnArticleShell.tsx",
-          "value": "tracking-[0.18em]",
-          "count": 1
         }
       ]
     },
@@ -21367,9 +21297,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 566,
+    "inspectedModuleCount": 568,
     "violations": [],
-    "sourceFingerprint": "1dac8896c513723255be91d66b8589b5d7127d6f8aa0af72fdcfc3d29b2d62dd"
+    "sourceFingerprint": "8a0eafb81eb3704cb29916d4a5e37fd6fb787c61278993c76d5142a58fc87b3e"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
@@ -21689,7 +21619,6 @@
           "Card"
         ],
         "directConsumers": [
-          "frontend/src/app/app/recipes/[slug]/page.tsx",
           "frontend/src/components/achievements/AchievementCard.tsx",
           "frontend/src/components/recipes/RecipeCard.tsx"
         ],
@@ -21930,6 +21859,11 @@
             "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
             "routeModuleKind": "page",
             "routePath": "/compare/shared/[token]"
+          },
+          {
+            "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
+            "routeModuleKind": "page",
+            "routePath": "/lists/shared/[token]"
           }
         ]
       },
@@ -22002,6 +21936,6 @@
         ]
       }
     ],
-    "sourceFingerprint": "33fd7a52cdbcc8f9a21f25c4de70540f0cf504864f78f0810d1761b15c8dd936"
+    "sourceFingerprint": "2d666498429d615898ce3d5d7e9695a4c0d73610c925ee72321f497334a19d60"
   }
 }

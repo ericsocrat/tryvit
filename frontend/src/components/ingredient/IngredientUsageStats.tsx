@@ -1,5 +1,6 @@
 "use client";
 
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { useTranslation } from "@/lib/i18n";
 import type { IngredientUsage } from "@/lib/types";
 
@@ -16,7 +17,7 @@ export function IngredientUsageStats({ usage }: IngredientUsageStatsProps) {
   const maxCount = Math.max(...usage.category_breakdown.map((c) => c.count), 1);
 
   return (
-    <div className="card">
+    <div className={surface.panel}>
       <h2 className="mb-2 text-sm font-semibold text-foreground-secondary">
         {t("ingredient.usage")}
       </h2>

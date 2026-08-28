@@ -44,7 +44,7 @@ describe("LearnSidebar", () => {
     mockPathname = "/learn";
     render(<LearnSidebar />);
     const hubLink = screen.getByRole("link", { name: /learn\.hubTitle/ });
-    expect(hubLink.className).toContain("bg-brand-subtle");
+    expect(hubLink.className).toContain("sidebarLinkActive");
   });
 
   it("highlights active topic link", () => {
@@ -52,7 +52,7 @@ describe("LearnSidebar", () => {
     render(<LearnSidebar />);
     const link = screen.getByRole("link", { name: /learn\.additives\.title/ });
     expect(link).toHaveAttribute("aria-current", "page");
-    expect(link.className).toContain("bg-brand-subtle");
+    expect(link.className).toContain("sidebarLinkActive");
   });
 
   it("does not highlight non-active topic links", () => {

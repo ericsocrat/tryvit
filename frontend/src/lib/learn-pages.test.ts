@@ -75,6 +75,10 @@ describe("Learn components", () => {
   it("LearnSidebar component exists", () => {
     expect(existsSync(join(componentsDir, "LearnSidebar.tsx"))).toBe(true);
   });
+
+  it("LearnRouteShell component exists", () => {
+    expect(existsSync(join(componentsDir, "LearnRouteShell.tsx"))).toBe(true);
+  });
 });
 
 /* ────────────────────── Component patterns ────────────────────── */
@@ -123,8 +127,11 @@ describe("LearnCard component", () => {
     expect(card).toContain("<Link");
   });
 
-  it("uses motion utilities for hover effect", () => {
-    expect(card).toContain("hover-lift");
+  it("uses the shared reduced-motion-aware topic treatment", () => {
+    const styles = readFileSync(join(componentsDir, "LearnExperience.module.css"), "utf-8");
+    expect(card).toContain("styles.topicCard");
+    expect(styles).toContain(".topicCard:hover");
+    expect(styles).toContain("prefers-reduced-motion");
   });
 });
 
@@ -149,11 +156,13 @@ describe("LearnSidebar component", () => {
 /* ────────────────────── Topic pages use shared components ────────────────────── */
 
 describe("Topic pages use shared components", () => {
+  const routeShell = readFileSync(join(componentsDir, "LearnRouteShell.tsx"), "utf-8");
+
   for (const topic of TOPICS) {
     const page = readFileSync(join(appDir, topic, "page.tsx"), "utf-8");
 
-    it(`${topic} uses LearnSidebar`, () => {
-      expect(page).toContain("LearnSidebar");
+    it(`${topic} uses LearnRouteShell`, () => {
+      expect(page).toContain("LearnRouteShell");
     });
 
     it(`${topic} uses LearnArticleShell`, () => {
@@ -168,13 +177,14 @@ describe("Topic pages use shared components", () => {
       expect(page).toContain("Disclaimer");
     });
 
-    it(`${topic} uses Header and Footer`, () => {
-      expect(page).toContain("Header");
-      expect(page).toContain("Footer");
+    it(`${topic} inherits Header, Footer, and sidebar from the route shell`, () => {
+      expect(routeShell).toContain("Header");
+      expect(routeShell).toContain("Footer");
+      expect(routeShell).toContain("LearnSidebar");
     });
 
-    it(`${topic} has back-to-hub link on mobile`, () => {
-      expect(page).toContain('href="/learn"');
+    it(`${topic} inherits the back-to-hub link`, () => {
+      expect(routeShell).toContain('href="/learn"');
     });
 
     it(`${topic} uses shared article shell`, () => {
@@ -187,6 +197,10 @@ describe("Topic pages use shared components", () => {
 
 describe("Hub page", () => {
   const hub = readFileSync(join(appDir, "page.tsx"), "utf-8");
+  const publicShell = readFileSync(
+    join(frontendDir, "src/components/layout/PublicUtilityShell.tsx"),
+    "utf-8",
+  );
 
   it("links to all 7 topics", () => {
     for (const topic of TOPICS) {
@@ -202,9 +216,10 @@ describe("Hub page", () => {
     expect(hub).toContain("Disclaimer");
   });
 
-  it("uses Header and Footer (public page pattern)", () => {
-    expect(hub).toContain("Header");
-    expect(hub).toContain("Footer");
+  it("inherits Header and Footer from the public shell", () => {
+    expect(hub).toContain("PublicUtilityShell");
+    expect(publicShell).toContain("Header");
+    expect(publicShell).toContain("Footer");
   });
 });
 

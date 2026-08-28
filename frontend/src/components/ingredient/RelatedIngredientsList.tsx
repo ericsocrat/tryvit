@@ -1,5 +1,6 @@
 "use client";
 
+import surface from "@/components/layout/CustomerSurface.module.css";
 import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 import { ConcernBadge } from "./ConcernBadge";
@@ -35,7 +36,7 @@ export function RelatedIngredientsList({
   };
 
   return (
-    <div className="card">
+    <div className={surface.panel}>
       <h2 className="mb-2 text-sm font-semibold text-foreground-secondary">
         {t("ingredient.relatedIngredients")}
       </h2>

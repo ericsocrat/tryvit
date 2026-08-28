@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { TOPICS } from "./LearnSidebar";
+import styles from "./LearnExperience.module.css";
 
 // ─── Previous / Next topic navigation ──────────────────────────────
 
@@ -26,12 +27,12 @@ export function LearnTopicNav() {
   return (
     <nav
       aria-label={t("learn.topicNavLabel")}
-      className="mt-10 flex items-stretch gap-3 rounded-2xl border border-border/70 bg-surface/80 p-3 shadow-sm"
+      className={styles.topicNav}
     >
       {prev ? (
         <Link
           href={`/learn/${prev.slug}`}
-          className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-border/70 bg-surface px-4 py-3 text-sm text-foreground-secondary transition-colors hover:bg-surface-subtle hover:text-foreground"
+          className={styles.topicNavLink}
         >
           <ChevronLeft size={16} className="shrink-0" aria-hidden="true" />
           <span className="truncate">{t(prev.labelKey)}</span>
@@ -43,7 +44,7 @@ export function LearnTopicNav() {
       {next ? (
         <Link
           href={`/learn/${next.slug}`}
-          className="flex min-w-0 flex-1 items-center justify-end gap-2 rounded-xl border border-border/70 bg-surface px-4 py-3 text-sm text-foreground-secondary transition-colors hover:bg-surface-subtle hover:text-foreground"
+          className={[styles.topicNavLink, styles.nextLink].join(" ")}
         >
           <span className="truncate">{t(next.labelKey)}</span>
           <ChevronRight size={16} className="shrink-0" aria-hidden="true" />

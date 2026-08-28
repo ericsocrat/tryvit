@@ -5,6 +5,8 @@
 import { Button } from "@/components/common/Button";
 import { SettingsSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { HealthProfileSection } from "@/components/settings/HealthProfileSection";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { getUserPreferences, setUserPreferences } from "@/lib/api";
@@ -128,7 +130,7 @@ export default function NutritionSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <AppPage className={surface.appPage}>
       <Breadcrumbs
         items={[
           { labelKey: "nav.home", href: "/app" },
@@ -136,16 +138,14 @@ export default function NutritionSettingsPage() {
           { labelKey: "settings.tabNutrition" },
         ]}
       />
-      <h1 className="text-xl font-bold text-foreground lg:text-2xl">
-        {t("settings.tabNutrition")}
-      </h1>
+      <AppPageHeader eyebrow={t("nav.settings")} title={t("settings.tabNutrition")} />
 
       {/* Diet */}
-      <section className="card">
+      <section className={surface.panel}>
         <h2 className="mb-3 text-sm font-semibold text-foreground-secondary lg:text-base">
           {t("settings.dietPreference")}
         </h2>
-        <div className="grid grid-cols-3 gap-2">
+        <div className={surface.choiceGrid}>
           {DIET_OPTIONS.map((opt) => (
             <button
               key={opt.value}
@@ -182,7 +182,7 @@ export default function NutritionSettingsPage() {
       </section>
 
       {/* Allergens */}
-      <section className="card">
+      <section className={surface.panel}>
         <h2 className="mb-3 text-sm font-semibold text-foreground-secondary lg:text-base">
           {t("settings.allergensToAvoid")}
         </h2>
@@ -266,7 +266,7 @@ export default function NutritionSettingsPage() {
 
       {/* Save button — sticky bar at bottom when dirty */}
       {dirty && (
-        <div className="sticky bottom-0 z-30 -mx-4 animate-slide-in-up border-t border-border bg-surface/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6">
+        <div className={surface.stickyActions}>
           <Button
             onClick={handleSave}
             disabled={saving}
@@ -276,6 +276,6 @@ export default function NutritionSettingsPage() {
           </Button>
         </div>
       )}
-    </div>
+    </AppPage>
   );
 }

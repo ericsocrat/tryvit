@@ -6,6 +6,8 @@ import { Button } from "@/components/common/Button";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { usePreferences } from "@/components/common/RouteGuard";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { CategoryPicker } from "@/components/scan/CategoryPicker";
 import { submitProduct } from "@/lib/api";
 import { getCountryFlag, getCountryName } from "@/lib/constants";
@@ -17,7 +19,7 @@ import { showToast } from "@/lib/toast";
 import type { FormSubmitEvent } from "@/lib/types";
 import { isValidEan, isValidEanChecksum } from "@/lib/validation";
 import { useMutation } from "@tanstack/react-query";
-import { ArrowLeft, Camera, CheckCircle, FileText, Lock, X } from "lucide-react";
+import { ArrowLeft, Camera, CheckCircle, Lock, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -137,7 +139,7 @@ export default function SubmitProductPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <AppPage className={surface.appPage}>
       <div className="hidden md:block">
         <Breadcrumbs
           items={[
@@ -147,31 +149,29 @@ export default function SubmitProductPage() {
           ]}
         />
       </div>
-      {/* Header */}
-      <div>
-        <h1 className="text-lg font-semibold text-foreground flex items-center gap-1.5">
+      <AppPageHeader
+        eyebrow={t("nav.scan")}
+        title={t("submit.title")}
+        description={t("submit.subtitle")}
+        actions={
           <button
             onClick={() => router.back()}
-            className="md:hidden rounded-lg p-1 text-foreground-secondary hover:bg-surface-muted"
+            className={[surface.textAction, "md:hidden"].join(" ")}
             aria-label={t("common.back")}
           >
             <ArrowLeft size={18} />
           </button>
-          <FileText size={18} aria-hidden="true" /> {t("submit.title")}
-        </h1>
-        <p className="text-sm text-foreground-secondary">
-          {t("submit.subtitle")}
-        </p>
-      </div>
+        }
+      />
 
       {/* R6: Progress indicator */}
-      <div className="flex items-center gap-2" aria-label={t("submit.progressLabel")}>
+      <div className={surface.toolbar} aria-label={t("submit.progressLabel")}>
         <div className="h-1 flex-1 rounded-full bg-brand" />
         <div className={`h-1 flex-1 rounded-full ${productName.length >= 2 ? "bg-brand" : "bg-border"}`} />
         <p className="text-xs text-foreground-muted">{t("submit.stepIndicator")}</p>
       </div>
 
-      <div className="card">
+      <div className={surface.panel}>
         <form id="submit-product-form" onSubmit={handleSubmit} className="space-y-5">
           {/* ─── Section: Required ──────────────────────────── */}
           <fieldset className="space-y-4">
@@ -376,7 +376,7 @@ export default function SubmitProductPage() {
       </p>
 
       {/* R1: Sticky submit bar with glassmorphism */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/50 bg-background/80 px-4 pb-[env(safe-area-inset-bottom,8px)] pt-3 backdrop-blur-lg md:sticky md:bottom-auto md:border-t-0 md:bg-transparent md:px-0 md:pb-0 md:pt-0 md:backdrop-blur-none">
+      <div className={surface.stickyActions}>
         {showSuccess ? (
           <div className="flex flex-col items-center justify-center gap-1 py-3 animate-fade-in-up">
             <CheckCircle size={28} className="animate-scale-in text-score-green-text" />
@@ -410,6 +410,6 @@ export default function SubmitProductPage() {
           </>
         )}
       </div>
-    </div>
+    </AppPage>
   );
 }

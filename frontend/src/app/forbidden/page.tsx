@@ -7,31 +7,21 @@
 "use client";
 
 import { ButtonLink } from "@/components/common/Button";
+import { PublicUtilityShell } from "@/components/layout/PublicUtilityShell";
 import { useTranslation } from "@/lib/i18n";
 import { LayoutGrid, Search, ShieldOff } from "lucide-react";
 
 export default function ForbiddenPage() {
   const { t } = useTranslation();
   return (
-    <div
-      id="main-content"
-      className="flex min-h-screen flex-col items-center justify-center px-4"
+    <PublicUtilityShell
+      eyebrow={t("error.forbiddenCode")}
+      title={t("error.forbiddenTitle")}
+      description={t("error.forbiddenMessage")}
     >
-      <ShieldOff
-        size={48}
-        className="mb-4 text-foreground-muted"
-        aria-hidden="true"
-      />
-      <h1 className="mb-2 text-6xl font-bold text-foreground">
-        {t("error.forbiddenCode")}
-      </h1>
-      <p className="mb-1 text-xl font-semibold text-foreground-secondary">
-        {t("error.forbiddenTitle")}
-      </p>
-      <p className="mb-6 text-lg text-foreground-secondary">
-        {t("error.forbiddenMessage")}
-      </p>
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <section className="text-center">
+        <ShieldOff size={48} className="mx-auto mb-4 text-foreground-muted" aria-hidden="true" />
+        <div className="flex flex-col justify-center gap-3 sm:flex-row">
         <ButtonLink href="/app" size="lg">
           {t("error.goToDashboard")}
         </ButtonLink>
@@ -51,7 +41,8 @@ export default function ForbiddenPage() {
         >
           {t("error.searchProducts")}
         </ButtonLink>
-      </div>
-    </div>
+        </div>
+      </section>
+    </PublicUtilityShell>
   );
 }

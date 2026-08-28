@@ -1,5 +1,6 @@
 "use client";
 
+import surface from "@/components/layout/CustomerSurface.module.css";
 import Link from "next/link";
 import { useTranslation } from "@/lib/i18n";
 import { CONCERN_TIER_STYLES } from "@/lib/constants";
@@ -19,7 +20,7 @@ export function ProductsContainingList({
   const { t } = useTranslation();
 
   return (
-    <div className="card">
+    <div className={surface.panel}>
       <h2 className="mb-2 text-sm font-semibold text-foreground-secondary">
         {t("ingredient.topProducts")}
       </h2>

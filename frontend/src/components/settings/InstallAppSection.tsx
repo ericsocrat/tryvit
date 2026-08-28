@@ -2,6 +2,7 @@
 
 // ─── Install App section — PWA install prompt ──────────────────────────────
 
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useInstallPrompt } from "@/hooks/use-install-prompt";
 import { useTranslation } from "@/lib/i18n";
@@ -27,7 +28,7 @@ export function InstallAppSection() {
   };
 
   return (
-    <section className="card" data-testid="install-app-section">
+    <section className={surface.panel} data-testid="install-app-section">
       <h2 className="mb-3 text-sm font-semibold text-foreground-secondary lg:text-base">
         {t("pwa.installTitle")}
       </h2>

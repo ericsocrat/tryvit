@@ -3,6 +3,8 @@
 // ─── Settings — Account (Email, Install App, Sign Out, Delete) ─────────────
 
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { DeleteAccountDialog } from "@/components/settings/DeleteAccountDialog";
 import { InstallAppSection } from "@/components/settings/InstallAppSection";
 import { useAnalytics } from "@/hooks/use-analytics";
@@ -89,7 +91,7 @@ export default function AccountSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <AppPage className={surface.appPage}>
       <Breadcrumbs
         items={[
           { labelKey: "nav.home", href: "/app" },
@@ -97,12 +99,10 @@ export default function AccountSettingsPage() {
           { labelKey: "settings.tabAccount" },
         ]}
       />
-      <h1 className="text-xl font-bold text-foreground lg:text-2xl">
-        {t("settings.tabAccount")}
-      </h1>
+      <AppPageHeader eyebrow={t("nav.settings")} title={t("settings.tabAccount")} />
 
       {/* Account section */}
-      <section className="card border-error-border">
+      <section className={[surface.panel, surface.dangerPanel].join(" ")}>
         <h2 className="mb-3 text-sm font-semibold text-foreground-secondary lg:text-base">
           {t("settings.account")}
         </h2>
@@ -181,6 +181,6 @@ export default function AccountSettingsPage() {
 
       {/* Install App */}
       <InstallAppSection />
-    </div>
+    </AppPage>
   );
 }

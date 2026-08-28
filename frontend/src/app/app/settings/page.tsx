@@ -6,6 +6,8 @@ import { Button } from "@/components/common/Button";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { SettingsSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { ThemeToggle } from "@/components/settings/ThemeToggle";
 import { useClientMessages } from "@/components/i18n/ClientMessagesProvider";
 import { useAnalytics } from "@/hooks/use-analytics";
@@ -135,7 +137,7 @@ export default function ProfileSettingsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <AppPage className={surface.appPage}>
       <Breadcrumbs
         items={[
           { labelKey: "nav.home", href: "/app" },
@@ -143,14 +145,14 @@ export default function ProfileSettingsPage() {
           { labelKey: "settings.tabProfile" },
         ]}
       />
-      <h1 className="text-xl font-bold text-foreground lg:text-2xl">{t("settings.tabProfile")}</h1>
+      <AppPageHeader eyebrow={t("nav.settings")} title={t("settings.tabProfile")} />
 
       {/* Country */}
-      <section className="card">
+      <section className={surface.panel}>
         <h2 className="mb-3 text-sm font-semibold text-foreground-secondary lg:text-base">
           {t("settings.country")}
         </h2>
-        <div className="grid grid-cols-2 gap-2">
+        <div className={surface.choiceGrid}>
           {COUNTRIES.map((c) => (
             <button
               key={c.code}
@@ -161,11 +163,9 @@ export default function ProfileSettingsPage() {
                 setLanguage(newDefault);
                 markDirty();
               }}
-              className={`rounded-lg border-2 px-3 py-3 text-center transition-colors ${
-                country === c.code
-                  ? "border-brand bg-brand-subtle text-brand"
-                  : "border text-foreground-secondary hover:border-strong"
-              }`}
+              className={[surface.choice, country === c.code ? surface.choiceActive : ""]
+                .filter(Boolean)
+                .join(" ")}
             >
               <span className="text-2xl">{c.flag}</span>
               <p className="mt-1 text-sm font-medium">{c.native}</p>
@@ -175,11 +175,11 @@ export default function ProfileSettingsPage() {
       </section>
 
       {/* Language — filtered by selected country (native + English) */}
-      <section className="card">
+      <section className={surface.panel}>
         <h2 className="mb-3 text-sm font-semibold text-foreground-secondary lg:text-base">
           {t("settings.language")}
         </h2>
-        <div className="grid grid-cols-2 gap-2">
+        <div className={surface.choiceGrid}>
           {getLanguagesForCountry(country).map((lang) => (
             <button
               key={lang.code}
@@ -187,11 +187,9 @@ export default function ProfileSettingsPage() {
                 setLanguage(lang.code as SupportedLanguage);
                 markDirty();
               }}
-              className={`rounded-lg border-2 px-3 py-3 text-center transition-colors ${
-                language === lang.code
-                  ? "border-brand bg-brand-subtle text-brand"
-                  : "border text-foreground-secondary hover:border-strong"
-              }`}
+              className={[surface.choice, language === lang.code ? surface.choiceActive : ""]
+                .filter(Boolean)
+                .join(" ")}
             >
               <p className="text-sm font-medium">{lang.native}</p>
             </button>
@@ -200,7 +198,7 @@ export default function ProfileSettingsPage() {
       </section>
 
       {/* Theme */}
-      <section className="card">
+      <section className={surface.panel}>
         <h2 className="mb-3 text-sm font-semibold text-foreground-secondary lg:text-base">
           {t("settings.theme")}
         </h2>
@@ -209,7 +207,7 @@ export default function ProfileSettingsPage() {
 
       {/* Save button — sticky bar at bottom when dirty */}
       {dirty && (
-        <div className="sticky bottom-0 z-30 -mx-4 animate-slide-in-up border-t border-border bg-surface/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6">
+        <div className={surface.stickyActions}>
           <p className="mb-2 text-center text-xs font-medium text-warning">
             {t("settings.unsavedIndicator")}
           </p>
@@ -229,6 +227,6 @@ export default function ProfileSettingsPage() {
         onConfirm={confirmNavigation}
         onCancel={cancelNavigation}
       />
-    </div>
+    </AppPage>
   );
 }

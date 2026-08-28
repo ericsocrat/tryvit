@@ -6,6 +6,8 @@ import { Button } from "@/components/common/Button";
 import { EmptyStateIllustration } from "@/components/common/EmptyStateIllustration";
 import { SubmissionsSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { getMySubmissions } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
@@ -17,7 +19,6 @@ import {
     ArrowLeft,
     CheckCircle,
     Clock,
-    FileText,
     Link2,
     RefreshCw,
     XCircle,
@@ -80,7 +81,7 @@ export default function MySubmissionsPage() {
   }, [queryClient, page]);
 
   return (
-    <div className="space-y-4">
+    <AppPage className={surface.appPage}>
       <div className="hidden md:block">
         <Breadcrumbs
           items={[
@@ -90,35 +91,30 @@ export default function MySubmissionsPage() {
           ]}
         />
       </div>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2">
+      <AppPageHeader
+        eyebrow={t("nav.scan")}
+        title={t("scan.mySubmissions")}
+        description={t("scan.submissionsSubtitle")}
+        actions={
+          <div className={surface.headerActions}>
             <button
               onClick={() => router.back()}
-              className="inline-flex items-center justify-center rounded-lg p-1.5 text-foreground-secondary hover:bg-surface-muted md:hidden"
+              className={[surface.textAction, "md:hidden"].join(" ")}
               aria-label={t("common.back")}
             >
               <ArrowLeft size={20} />
             </button>
-            <h1 className="text-lg font-semibold text-foreground flex items-center gap-1.5">
-              <FileText size={18} aria-hidden="true" />
-              {t("scan.mySubmissions")}
-            </h1>
+            <ContributorBadge />
           </div>
-          <p className="text-sm text-foreground-secondary">
-            {t("scan.submissionsSubtitle")}
-          </p>
-          <ContributorBadge />
-        </div>
-      </div>
+        }
+      />
 
       {/* Loading */}
       {isLoading && <SubmissionsSkeleton />}
 
       {/* Error */}
       {error && (
-        <div className="card border-error-border bg-error-bg text-center">
+        <div className={[surface.state, surface.errorState, "text-center"].join(" ")}>
           <p className="mb-2 text-sm text-error-text">
             {t("scan.submissionsLoadFailed")}
           </p>
@@ -144,7 +140,7 @@ export default function MySubmissionsPage() {
 
       {/* Submission list */}
       {data && data.submissions.length > 0 && (
-        <ul className="space-y-2">
+        <ul className={surface.records}>
           {data.submissions.map((sub, idx) => (
             <SubmissionRow
               key={sub.id}
@@ -180,7 +176,7 @@ export default function MySubmissionsPage() {
           </Button>
         </div>
       )}
-    </div>
+    </AppPage>
   );
 }
 
@@ -199,7 +195,7 @@ function SubmissionRow({
 
   return (
     <li
-      className="card animate-[fadeInUp_0.3s_ease-out_both]"
+      className={surface.record}
       style={{ animationDelay: `${index * 60}ms` }}
     >
       <div className="flex items-start gap-3">

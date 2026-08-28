@@ -1,6 +1,7 @@
 "use client";
 
 import { ButtonLink } from "@/components/common/Button";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { useTranslation } from "@/lib/i18n";
 import { Clock, FileText } from "lucide-react";
 
@@ -20,7 +21,7 @@ export function ScanMissSubmitCTA({
 
   if (hasPendingSubmission) {
     return (
-      <div className="card border-warning-border bg-warning-bg">
+      <div className={surface.state}>
         <p className="text-sm text-warning-text">
           <span className="inline-flex items-center gap-1">
             <Clock size={16} aria-hidden="true" />{" "}

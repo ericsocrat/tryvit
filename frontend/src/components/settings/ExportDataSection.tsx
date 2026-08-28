@@ -2,6 +2,7 @@
 
 // ─── Export Data section — GDPR Art. 20 data portability ───────────────────
 
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { exportUserData } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
@@ -61,7 +62,7 @@ export function ExportDataSection() {
   }, [supabase, track, t]);
 
   return (
-    <section className="card" data-testid="export-data-section">
+    <section className={surface.panel} data-testid="export-data-section">
       <h2 className="mb-3 text-sm font-semibold text-foreground-secondary lg:text-base">
         {t("settings.exportData")}
       </h2>
