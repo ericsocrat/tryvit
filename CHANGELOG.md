@@ -120,6 +120,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Roll the approved folded-register visual system through the authenticated app shell,
+  navigation, onboarding, Search, Categories, and shared product records while keeping
+  product evidence provisional whenever source confidence is unavailable.
 - Replace the generic auth card/illustration treatment with one responsive
   Source Fold account-access system across login, invitation entry, password
   recovery, and reset; retain light/dark, reduced-motion, forced-color,

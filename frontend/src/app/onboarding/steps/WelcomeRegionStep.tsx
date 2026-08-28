@@ -1,21 +1,21 @@
 "use client";
 
-// ─── Step 1: Welcome + Region ───────────────────────────────────────────────
-// Combines greeting with country/language selection in a single step.
-// Issue #701: streamline onboarding from 7 steps to 4.
-
 import type { StepProps } from "@/app/onboarding/types";
+import styles from "@/app/onboarding/OnboardingExperience.module.css";
 import { Button } from "@/components/common/Button";
+import { FoldedTryVitIdentity } from "@/components/common/FoldedTryVitIdentity";
 import { COUNTRIES, getLanguagesForCountry } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 import { Check } from "lucide-react";
 
 interface WelcomeRegionStepProps extends StepProps {
+  readonly loading?: boolean;
   readonly onSkipAll: () => void;
 }
 
 export function WelcomeRegionStep({
   data,
+  loading = false,
   onChange,
   onNext,
   onSkipAll,
@@ -26,91 +26,87 @@ export function WelcomeRegionStep({
     : [];
 
   function handleCountrySelect(code: string) {
-    const langs = getLanguagesForCountry(code);
-    const defaultLang = langs[0]?.code ?? "en";
-    onChange({ country: code, language: defaultLang });
+    const languages = getLanguagesForCountry(code);
+    onChange({ country: code, language: languages[0]?.code ?? "en" });
   }
 
   return (
-    <div className="space-y-6 sm:space-y-7">
-      <div className="mb-1 text-center text-5xl">🍎</div>
+    <div className={styles.step}>
+      <div className={`${styles.stepIntro} ${styles.welcomeIntro}`}>
+        <span className={styles.heroMark}>
+          <FoldedTryVitIdentity compact size={32} />
+        </span>
+        <div>
+          <h1 className={styles.title}>{t("onboarding.welcomeTitle")}</h1>
+          <p className={styles.description}>{t("onboarding.welcomeSubtitle")}</p>
+        </div>
+      </div>
 
-      <h1 className="text-center text-2xl font-bold text-foreground sm:text-3xl">
-        {t("onboarding.welcomeTitle")}
-      </h1>
-      <p className="mx-auto max-w-md text-center text-sm text-foreground-secondary sm:text-base">
-        {t("onboarding.welcomeSubtitle")}
-      </p>
-
-      {/* Region title */}
-      <section className="rounded-2xl border border-border/70 bg-surface-subtle/70 p-4 shadow-sm sm:p-5">
-        <h2 className="mb-4 text-base font-semibold text-foreground sm:text-lg">
-          {t("onboarding.regionTitle")}
-        </h2>
-
-        <div className="space-y-3">
-          {COUNTRIES.map((country) => (
-            <button
-              type="button"
-              key={country.code}
-              onClick={() => handleCountrySelect(country.code)}
-              aria-pressed={data.country === country.code}
-              className={`flex w-full items-center gap-4 rounded-xl border-2 p-4 text-left transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45 ${
-                data.country === country.code
-                  ? "border-brand bg-brand-subtle"
-                  : "border bg-surface hover:border-strong"
-              }`}
-              data-testid={`country-${country.code}`}
-            >
-              <span className="text-3xl">{country.flag}</span>
-              <div>
-                <p className="font-semibold text-foreground">{country.name}</p>
-                <p className="text-sm text-foreground-secondary">
-                  {country.native}
-                </p>
-              </div>
-              {data.country === country.code && (
-                <span className="ml-auto text-brand">
-                  <Check size={20} />
+      <section className={styles.registerSection}>
+        <p className={styles.registerCaption} aria-hidden="true">01 / 02</p>
+        <h2 className={styles.sectionTitle}>{t("onboarding.regionTitle")}</h2>
+        <div className={styles.choiceList}>
+          {COUNTRIES.map((country) => {
+            const selected = data.country === country.code;
+            return (
+              <button
+                type="button"
+                key={country.code}
+                onClick={() => handleCountrySelect(country.code)}
+                aria-pressed={selected}
+                disabled={loading}
+                className={`${styles.choiceRow} ${
+                  selected ? styles.choiceSelected : ""
+                }`}
+                data-testid={`country-${country.code}`}
+              >
+                <span className="text-2xl" aria-hidden="true">
+                  {country.flag}
                 </span>
-              )}
-            </button>
-          ))}
+                <span className={styles.choiceCopy}>
+                  <span className={styles.choiceTitle}>{country.name}</span>
+                  <span className={styles.choiceMeta}>{country.native}</span>
+                </span>
+                {selected ? <Check size={20} aria-hidden="true" /> : null}
+              </button>
+            );
+          })}
         </div>
       </section>
 
-      {/* Language selector */}
-      {data.country && availableLanguages.length > 0 && (
-        <section className="rounded-2xl border border-border/70 bg-surface-subtle/70 p-4 shadow-sm sm:p-5">
-          <h2 className="mb-3 text-sm font-semibold text-foreground-secondary">
-            {t("onboarding.languageLabel")}
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {availableLanguages.map((lang) => (
-              <button
-                type="button"
-                key={lang.code}
-                onClick={() => onChange({ language: lang.code })}
-                aria-pressed={data.language === lang.code}
-                className={`flex items-center gap-2 rounded-lg border-2 px-4 py-2 text-sm transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45 ${
-                  data.language === lang.code
-                    ? "border-brand bg-brand-subtle font-medium text-brand"
-                    : "border text-foreground-secondary hover:border-strong"
-                }`}
-              >
-                <span>{lang.native}</span>
-              </button>
-            ))}
+      {data.country && availableLanguages.length > 0 ? (
+        <section className={styles.registerSection}>
+          <p className={styles.registerCaption} aria-hidden="true">02 / 02</p>
+          <h2 className={styles.sectionTitle}>{t("onboarding.languageLabel")}</h2>
+          <div className={styles.languageGrid}>
+            {availableLanguages.map((language) => {
+              const selected = data.language === language.code;
+              return (
+                <button
+                  type="button"
+                  key={language.code}
+                  onClick={() => onChange({ language: language.code })}
+                  aria-pressed={selected}
+                  disabled={loading}
+                  className={`${styles.choiceTile} ${
+                    selected ? styles.choiceTileSelected : ""
+                  }`}
+                >
+                  {language.native}
+                </button>
+              );
+            })}
           </div>
         </section>
-      )}
+      ) : null}
 
-      <div className="mt-1 flex gap-3">
+      <div className={styles.actions}>
         <Button
           type="button"
           variant="secondary"
           onClick={onSkipAll}
-          className="flex-1"
+          disabled={loading}
+          fullWidth
           data-testid="onboarding-skip-all"
         >
           {t("onboarding.skipAll")}
@@ -118,8 +114,8 @@ export function WelcomeRegionStep({
         <Button
           type="button"
           onClick={onNext}
-          disabled={!data.country}
-          className="flex-1"
+          disabled={!data.country || loading}
+          fullWidth
           data-testid="onboarding-get-started"
         >
           {t("onboarding.next")}

@@ -31,9 +31,11 @@ describe("WelcomeRegionStep", () => {
 
   // ─── Welcome section ──────────────────────────────────────────────────────
 
-  it("renders the apple emoji", () => {
-    renderStep();
-    expect(screen.getByText("🍎")).toBeInTheDocument();
+  it("renders the approved folded TryVit mark", () => {
+    const { container } = renderStep();
+    expect(
+      container.querySelector('[data-tryvit-folded-lockup="compact"]'),
+    ).toBeInTheDocument();
   });
 
   it("renders the welcome title", () => {
@@ -107,8 +109,7 @@ describe("WelcomeRegionStep", () => {
 
   it("shows checkmark for selected country", () => {
     renderStep({ country: "PL", language: "en" });
-    const checkSpan = document.querySelector(".text-brand svg");
-    expect(checkSpan).toBeTruthy();
+    expect(screen.getByTestId("country-PL").querySelector("svg")).toBeTruthy();
   });
 
   it("shows language selector after country selection", () => {

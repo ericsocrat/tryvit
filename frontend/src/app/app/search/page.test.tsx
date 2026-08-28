@@ -222,11 +222,13 @@ describe("SearchPage", () => {
     render(<SearchPage />, { wrapper: createWrapper() });
     expect(screen.getByPlaceholderText("Search products…")).toBeInTheDocument();
   });
-  it("renders an sr-only h1 heading for accessibility", () => {
+  it("renders a visible h1 heading for accessibility", () => {
     render(<SearchPage />, { wrapper: createWrapper() });
     const heading = screen.getByRole("heading", { level: 1 });
     expect(heading).toBeInTheDocument();
-    expect(heading).toHaveClass("sr-only");
+    expect(heading).toHaveTextContent(
+      "Search by name, brand, or browse with filters",
+    );
   });
   it("renders search button", () => {
     render(<SearchPage />, { wrapper: createWrapper() });
@@ -300,7 +302,9 @@ describe("SearchPage", () => {
       expect(screen.getByText("Test Chips")).toBeInTheDocument();
     });
     expect(screen.getByText("Healthy Water")).toBeInTheDocument();
-    expect(screen.getByText(/2 results/, { selector: "p" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: /2 results/ }),
+    ).toBeInTheDocument();
   });
 
   it("shows error state when search fails", async () => {
@@ -541,7 +545,7 @@ describe("SearchPage", () => {
     });
 
     const li = screen.getByText("Test Chips").closest("li");
-    expect(li?.className).toContain("opacity-50");
+    expect(li?.className).toMatch(/muted/);
   });
 
   it("saves recent search to localStorage on successful search", async () => {
@@ -576,7 +580,9 @@ describe("SearchPage", () => {
     await user.click(screen.getByRole("button", { name: "Search" }));
 
     await waitFor(() => {
-      expect(screen.getByText(/1 result/, { selector: "p" })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { level: 2, name: /1 result/ }),
+      ).toBeInTheDocument();
     });
   });
 
@@ -591,6 +597,37 @@ describe("SearchPage", () => {
     await waitFor(() => {
       expect(screen.getByText(/530 kcal/)).toBeInTheDocument();
     });
+  });
+
+  it("discloses a broader relevance match without exposing the raw rank", async () => {
+    mockSearchProducts.mockResolvedValue(
+      makeSearchResponse({
+        query: "wedel",
+        total: 1,
+        results: [
+          makeSearchResult({
+            product_name: "Tofu Wędzone",
+            product_name_display: "Tofu Wędzone",
+            brand: "Example",
+            category: "tofu",
+            category_display: "Tofu",
+            relevance: 0.2841,
+          }),
+        ],
+      }),
+    );
+    const user = userEvent.setup();
+
+    render(<SearchPage />, { wrapper: createWrapper() });
+    await user.type(screen.getByPlaceholderText("Search products…"), "wedel");
+    await user.click(screen.getByRole("button", { name: "Search" }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("broader-relevance-match")).toHaveTextContent(
+        "Related text match — check name and brand",
+      );
+    });
+    expect(screen.queryByText("0.2841")).not.toBeInTheDocument();
   });
 
   it("renders page number buttons for many pages", async () => {
@@ -838,14 +875,13 @@ describe("SearchPage", () => {
       expect(screen.getByText("Test Chips")).toBeInTheDocument();
     });
 
-    // In list mode, score tooltip triggers should be rendered
-    const triggers = screen.getAllByTestId("score-tooltip-trigger");
-    expect(triggers.length).toBeGreaterThanOrEqual(1);
+    const productLink = screen.getByText("Test Chips").closest("a");
+    expect(productLink).not.toContainElement(
+      screen.getAllByTestId("compare-checkbox")[0],
+    );
   });
 
-  // ─── Score tooltips ───────────────────────────────────────────────────
-
-  it("renders score tooltip trigger on list product rows", async () => {
+  it("keeps list scores explicitly unconfirmed", async () => {
     mockSearchProducts.mockResolvedValue(makeSearchResponse());
     const user = userEvent.setup();
     render(<SearchPage />, { wrapper: createWrapper() });
@@ -860,11 +896,11 @@ describe("SearchPage", () => {
       expect(screen.getByText("Test Chips")).toBeInTheDocument();
     });
 
-    const triggers = screen.getAllByTestId("score-tooltip-trigger");
-    expect(triggers.length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Product evidence unavailable").length).toBeGreaterThan(0);
+    expect(screen.queryByTestId("score-tooltip-trigger")).not.toBeInTheDocument();
   });
 
-  it("shows tooltip content with health flags when trigger is clicked", async () => {
+  it("shows positive warning flags without adding an interactive score verdict", async () => {
     // "Test Chips" has high_salt: true
     mockSearchProducts.mockResolvedValue(makeSearchResponse());
     const user = userEvent.setup();
@@ -880,18 +916,11 @@ describe("SearchPage", () => {
       expect(screen.getByText("Test Chips")).toBeInTheDocument();
     });
 
-    const triggers = screen.getAllByTestId("score-tooltip-trigger");
-    await user.click(triggers[0]);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("score-tooltip-content")).toBeInTheDocument();
-    });
-
-    // Should show "High salt" since the first product has high_salt: true
-    expect(screen.getByText("High salt")).toBeInTheDocument();
+    expect(screen.getAllByText("High salt").length).toBeGreaterThan(0);
+    expect(screen.queryByTestId("score-tooltip-content")).not.toBeInTheDocument();
   });
 
-  it("shows 'no major flags' when product has no health flags", async () => {
+  it("does not infer no major flags when warning evidence is absent", async () => {
     mockSearchProducts.mockResolvedValue(
       makeSearchResponse({
         results: [
@@ -919,14 +948,10 @@ describe("SearchPage", () => {
       expect(screen.getByText("Test Chips")).toBeInTheDocument();
     });
 
-    const trigger = screen.getByTestId("score-tooltip-trigger");
-    await user.click(trigger);
-
-    await waitFor(() => {
-      expect(
-        screen.getByText("No major health flags detected."),
-      ).toBeInTheDocument();
-    });
+    expect(
+      screen.queryByText("No major health flags detected."),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("Product evidence unavailable")).toBeInTheDocument();
   });
 
   // ── Desktop grid layout ───────────────────────────────────────────────

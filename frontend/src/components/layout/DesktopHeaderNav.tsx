@@ -1,218 +1,135 @@
 "use client";
 
-// ─── DesktopHeaderNav — horizontal nav links for lg–xl viewports ─────────────
-// Renders inline primary nav links + a "More" dropdown for secondary items.
-// Hidden below lg (1024px) and at xl+ (1280px) where sidebar takes over.
-//
-// Issue #72  — Desktop Navigation Architecture
-// Issue #575 — Align navigation items across desktop breakpoints
-
 import { Icon } from "@/components/common/Icon";
-import { useActiveRoute, type PrimaryRouteKey } from "@/hooks/use-active-route";
+import { useActiveRoute } from "@/hooks/use-active-route";
 import { useTranslation } from "@/lib/i18n";
-import {
-    BookOpen,
-    ChevronDown,
-    ScanText,
-    Settings,
-    ShieldCheck,
-    Trophy,
-    UtensilsCrossed,
-    type LucideIcon,
-} from "lucide-react";
+import { useAdminStore } from "@/stores/admin-store";
+import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-
-/* ── Types ────────────────────────────────────────────────────────────────── */
-
-interface HeaderNavItem {
-  readonly href: string;
-  readonly labelKey: string;
-  readonly routeKey: PrimaryRouteKey;
-}
-
-interface DropdownNavItem {
-  readonly href: string;
-  readonly labelKey: string;
-  readonly icon: LucideIcon;
-  readonly routeKey: PrimaryRouteKey;
-}
-
-/* ── Route definitions ────────────────────────────────────────────────────── */
-
-/** Primary items — always visible as inline text links. */
-const PRIMARY_ITEMS: readonly HeaderNavItem[] = [
-  { href: "/app", labelKey: "nav.home", routeKey: "home" },
-  { href: "/app/search", labelKey: "nav.search", routeKey: "search" },
-  { href: "/app/scan", labelKey: "nav.scan", routeKey: "scan" },
-  { href: "/app/lists", labelKey: "nav.lists", routeKey: "lists" },
-  { href: "/app/watchlist", labelKey: "nav.watchlist", routeKey: "watchlist" },
-  { href: "/app/compare", labelKey: "nav.compare", routeKey: "compare" },
-  {
-    href: "/app/categories",
-    labelKey: "nav.categories",
-    routeKey: "categories",
-  },
-] as const;
-
-/** Secondary items — grouped under the "More" dropdown. */
-const DROPDOWN_ITEMS: readonly DropdownNavItem[] = [
-  {
-    href: "/app/achievements",
-    labelKey: "nav.achievements",
-    icon: Trophy,
-    routeKey: "achievements",
-  },
-  {
-    href: "/app/recipes",
-    labelKey: "nav.recipes",
-    icon: UtensilsCrossed,
-    routeKey: "recipes",
-  },
-  {
-    href: "/app/image-search",
-    labelKey: "nav.imageSearch",
-    icon: ScanText,
-    routeKey: "image-search",
-  },
-  {
-    href: "/learn",
-    labelKey: "nav.learn",
-    icon: BookOpen,
-    routeKey: null,
-  },
-  {
-    href: "/app/settings",
-    labelKey: "nav.settings",
-    icon: Settings,
-    routeKey: "settings",
-  },
-  {
-    href: "/app/admin/submissions",
-    labelKey: "nav.admin",
-    icon: ShieldCheck,
-    routeKey: "admin",
-  },
-] as const;
-
-/* ── Component ────────────────────────────────────────────────────────────── */
+import styles from "./AppShell.module.css";
+import { ThemeToggle } from "./ThemeToggle";
+import {
+  ADMIN_ENTRY_ITEM,
+  HEADER_MORE_ITEMS,
+  HEADER_PRIMARY_ITEMS,
+} from "./app-navigation";
 
 export function DesktopHeaderNav() {
   const activeRoute = useActiveRoute();
   const { t } = useTranslation();
+  const isAdmin = useAdminStore((state) => state.isAdmin);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const closeDropdown = useCallback(() => setDropdownOpen(false), []);
 
-  // Close on outside click
   useEffect(() => {
     if (!dropdownOpen) return;
-    function handleClick(e: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
+
+    function handlePointerDown(event: MouseEvent) {
+      if (!dropdownRef.current?.contains(event.target as Node)) {
         closeDropdown();
       }
     }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, [dropdownOpen, closeDropdown]);
 
-  // Close on Escape
-  useEffect(() => {
-    if (!dropdownOpen) return;
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") closeDropdown();
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") closeDropdown();
     }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [dropdownOpen, closeDropdown]);
 
-  const isDropdownItemActive = DROPDOWN_ITEMS.some(
-    (item) => item.routeKey && activeRoute === item.routeKey,
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [closeDropdown, dropdownOpen]);
+
+  const menuItems = isAdmin
+    ? [...HEADER_MORE_ITEMS, ADMIN_ENTRY_ITEM]
+    : HEADER_MORE_ITEMS;
+  const isDropdownItemActive = menuItems.some(
+    (item) => item.routeKey !== null && activeRoute === item.routeKey,
   );
 
   return (
     <nav
-      className="hidden items-center gap-1 rounded-xl border border-border/60 bg-surface/80 px-1.5 py-1 shadow-sm backdrop-blur-sm lg:flex xl:hidden"
+      className={styles.headerNav}
       aria-label={t("a11y.headerNavigation")}
+      data-testid="desktop-header-navigation"
     >
-      {/* Primary inline links */}
-      {PRIMARY_ITEMS.map((item) => {
+      {HEADER_PRIMARY_ITEMS.map((item) => {
         const isActive = activeRoute === item.routeKey;
-        const label = t(item.labelKey);
         return (
           <Link
             key={item.href}
             href={item.href}
             aria-current={isActive ? "page" : undefined}
-            className={`relative rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors ${
-              isActive
-                ? "bg-brand-subtle/80 text-brand"
-                : "text-foreground-secondary hover:bg-surface-muted hover:text-foreground"
+            className={`${styles.headerLink} ${
+              isActive ? styles.headerLinkActive : ""
             }`}
+            data-prominent={item.prominent ? "true" : undefined}
           >
-            {label}
-            {isActive && (
-              <span className="absolute bottom-0 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-brand" />
-            )}
+            {t(item.labelKey)}
           </Link>
         );
       })}
 
-      {/* "More" dropdown for secondary items */}
       <div ref={dropdownRef} className="relative">
         <button
           type="button"
-          onClick={() => setDropdownOpen((prev) => !prev)}
+          onClick={() => setDropdownOpen((current) => !current)}
           aria-expanded={dropdownOpen}
-          aria-haspopup="true"
-          className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors ${
-            isDropdownItemActive
-              ? "bg-brand-subtle/80 text-brand"
-              : "text-foreground-secondary hover:bg-surface-muted hover:text-foreground"
+          aria-controls="desktop-more-navigation"
+          className={`${styles.headerMoreButton} ${
+            isDropdownItemActive ? styles.headerMoreActive : ""
           }`}
+          data-active={isDropdownItemActive ? "true" : "false"}
         >
           {t("nav.more")}
           <Icon
             icon={ChevronDown}
             size="sm"
-            className={`transition-transform ${dropdownOpen ? "rotate-180" : ""}`}
+            className={`transition-transform motion-reduce:transition-none ${
+              dropdownOpen ? "rotate-180" : ""
+            }`}
           />
         </button>
 
-        {dropdownOpen && (
+        {dropdownOpen ? (
           <div
-            className="absolute right-0 top-full z-50 mt-1.5 w-56 rounded-xl border border-border/70 bg-surface/95 py-1.5 shadow-[0_16px_40px_rgba(15,23,42,0.16)] backdrop-blur-sm"
-            role="menu"
+            className={styles.headerMenu}
+            id="desktop-more-navigation"
+            data-testid="desktop-more-panel"
           >
-            {DROPDOWN_ITEMS.map((item) => {
-              const isActive = item.routeKey
-                ? activeRoute === item.routeKey
-                : false;
-              const label = t(item.labelKey);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  role="menuitem"
-                  aria-current={isActive ? "page" : undefined}
-                  onClick={closeDropdown}
-                  className={`mx-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-brand-subtle text-brand"
-                      : "text-foreground-secondary hover:bg-surface-muted hover:text-foreground"
-                  }`}
-                >
-                  <Icon icon={item.icon} size="md" />
-                  <span>{label}</span>
-                </Link>
-              );
-            })}
+            <div>
+              {menuItems.map((item) => {
+                const isActive = activeRoute === item.routeKey;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    onClick={closeDropdown}
+                    className={`${styles.headerMenuLink} ${
+                      isActive ? styles.headerMenuLinkActive : ""
+                    }`}
+                  >
+                    <Icon icon={item.icon} size="md" />
+                    <span>{t(item.labelKey)}</span>
+                  </Link>
+                );
+              })}
+            </div>
+            <div className={styles.drawerUtility}>
+              <ThemeToggle
+                label={t("theme.label")}
+                lightLabel={t("theme.light")}
+                darkLabel={t("theme.dark")}
+              />
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
     </nav>
   );

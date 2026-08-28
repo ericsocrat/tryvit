@@ -83,6 +83,18 @@ describe("ProductThumbnail", () => {
     expect(screen.getByTestId("category-icon").textContent).toBe("dairy");
   });
 
+  it("normalizes display-style category names before resolving an icon", () => {
+    render(
+      <ProductThumbnail
+        imageUrl={null}
+        productName="Milk"
+        categorySlug=" Dairy "
+      />,
+    );
+
+    expect(screen.getByTestId("category-icon")).toHaveTextContent("dairy");
+  });
+
   it("prefers CategoryIcon over emoji when both provided", () => {
     render(
       <ProductThumbnail

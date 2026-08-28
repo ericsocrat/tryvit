@@ -167,8 +167,11 @@ describe("SearchAutocomplete", () => {
 
     await waitFor(
       () => {
-        const options = screen.getAllByRole("option");
-        expect(options.length).toBeGreaterThanOrEqual(1);
+        expect(
+          screen
+            .getAllByRole("option")
+            .some((option) => option.textContent?.includes("Lay's Classic")),
+        ).toBe(true);
       },
       { timeout: 1000 },
     );
@@ -195,15 +198,16 @@ describe("SearchAutocomplete", () => {
     );
   });
 
-  it("renders nutri-score badges", async () => {
+  it("keeps autocomplete scores neutral and explicitly provisional", async () => {
     render(<SearchAutocomplete {...defaultProps} />, {
       wrapper: createWrapper(),
     });
 
     await waitFor(
       () => {
-        expect(screen.getByText("C")).toBeInTheDocument();
-        expect(screen.getByText("D")).toBeInTheDocument();
+        expect(screen.getAllByText("Provisional score")).toHaveLength(2);
+        expect(screen.queryByText("C")).not.toBeInTheDocument();
+        expect(screen.queryByText("D")).not.toBeInTheDocument();
       },
       { timeout: 1000 },
     );
@@ -333,7 +337,7 @@ describe("SearchAutocomplete", () => {
     ).toBeTruthy();
   });
 
-  it("returns null when query has no matching suggestions (empty result)", async () => {
+  it("keeps a full-search action when autocomplete has no matching suggestions", async () => {
     mockSearchAutocomplete.mockResolvedValue({
       ok: true,
       data: { suggestions: [] },
@@ -345,9 +349,9 @@ describe("SearchAutocomplete", () => {
     // Wait for debounce + fetch cycle
     await waitFor(
       () => {
-        expect(
-          container.querySelector("#search-autocomplete-listbox"),
-        ).toBeNull();
+        expect(container.querySelector("#search-autocomplete-listbox")).toBeTruthy();
+        expect(screen.getByText("No products match your search")).toBeInTheDocument();
+        expect(screen.getByText(/Search for/)).toBeInTheDocument();
       },
       { timeout: 1000 },
     );
@@ -434,6 +438,22 @@ describe("SearchAutocomplete", () => {
     );
     // Component renders without crashing during loading state
     expect(container).toBeTruthy();
+  });
+
+  it("shows a retryable unavailable state when suggestions fail", async () => {
+    mockSearchAutocomplete.mockRejectedValue(new Error("offline"));
+    render(<SearchAutocomplete {...defaultProps} query="milk" />, {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("alert")).toHaveTextContent(
+        "Search failed. Please try again.",
+      );
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(mockSearchAutocomplete.mock.calls.length).toBeGreaterThan(1);
   });
 
   // ─── Keyboard navigation tests ──────────────────────────────────────────
@@ -575,7 +595,11 @@ describe("SearchAutocomplete", () => {
     // Wait for suggestions to load
     await waitFor(
       () => {
-        expect(screen.getAllByRole("option").length).toBeGreaterThanOrEqual(1);
+        expect(
+          screen
+            .getAllByRole("option")
+            .some((option) => option.textContent?.includes("Lay's Classic")),
+        ).toBe(true);
       },
       { timeout: 1000 },
     );

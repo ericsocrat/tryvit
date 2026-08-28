@@ -9,7 +9,7 @@ describe("OnboardingLayout", () => {
         <p>child</p>
       </OnboardingLayout>,
     );
-    expect(screen.getByAltText("TryVit")).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "TryVit" })).toBeInTheDocument();
   });
 
   it("renders children in main area", () => {
@@ -21,13 +21,12 @@ describe("OnboardingLayout", () => {
     expect(screen.getByText("Step 1 content")).toBeInTheDocument();
   });
 
-  it("renders header with border styling", () => {
-    render(
+  it("opts the standalone onboarding surface into the V2 design system", () => {
+    const { container } = render(
       <OnboardingLayout>
         <span />
       </OnboardingLayout>,
     );
-    const header = screen.getByAltText("TryVit").closest("header");
-    expect(header?.className).toContain("border-b");
+    expect(container.firstElementChild).toHaveAttribute("data-design-system", "v2");
   });
 });

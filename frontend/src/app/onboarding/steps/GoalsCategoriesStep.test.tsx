@@ -143,4 +143,19 @@ describe("GoalsCategoriesStep", () => {
     await user.click(screen.getByTestId("onboarding-complete"));
     expect(onNext).toHaveBeenCalledOnce();
   });
+
+  it("disables competing actions while preferences are saving", () => {
+    render(
+      <GoalsCategoriesStep
+        data={INITIAL_ONBOARDING_DATA}
+        onChange={onChange}
+        onNext={onNext}
+        onBack={onBack}
+        loading
+      />,
+    );
+
+    expect(screen.getByTestId("onboarding-complete")).toBeDisabled();
+    expect(screen.getByText("Back").closest("button")).toBeDisabled();
+  });
 });

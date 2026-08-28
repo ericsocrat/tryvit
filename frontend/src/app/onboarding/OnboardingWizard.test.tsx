@@ -106,7 +106,7 @@ describe("OnboardingWizard", () => {
     await waitFor(() => {
       expect(mockSkipOnboarding).toHaveBeenCalled();
     });
-    expect(mockPush).toHaveBeenCalledWith("/app/categories");
+    expect(mockPush).toHaveBeenCalledWith("/app/search");
   });
 
   it("shows error toast when skip fails", async () => {
@@ -172,7 +172,7 @@ describe("OnboardingWizard", () => {
         }),
       );
     });
-    expect(mockPush).toHaveBeenCalledWith("/app/categories");
+    expect(mockPush).toHaveBeenCalledWith("/app/search");
   });
 
   it("shows error on completion failure", async () => {

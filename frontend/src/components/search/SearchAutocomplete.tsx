@@ -3,9 +3,8 @@
 // ─── SearchAutocomplete — debounced prefix search + recent/popular ──────────
 
 import { searchAutocomplete } from "@/lib/api";
-import { NUTRI_COLORS, SCORE_BANDS } from "@/lib/constants";
+import { CategoryIcon } from "@/components/common/CategoryIcon";
 import { useTranslation } from "@/lib/i18n";
-import { nutriScoreLabel } from "@/lib/nutri-label";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
 import {
     clearRecentSearches,
@@ -16,7 +15,7 @@ import { toTryVitScore } from "@/lib/score-utils";
 import { createClient } from "@/lib/supabase/client";
 import type { AutocompleteSuggestion } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
-import { Flame } from "lucide-react";
+import { Clock3, Flame } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -148,7 +147,7 @@ export function SearchAutocomplete({
     if (show) setRecentSearches(getRecentSearches());
   }
 
-  const { data, isFetching } = useQuery({
+  const { data, error, isFetching, refetch } = useQuery({
     queryKey: queryKeys.autocomplete(debouncedQuery),
     queryFn: async () => {
       const result = await searchAutocomplete(supabase, debouncedQuery, 8);
@@ -291,7 +290,6 @@ export function SearchAutocomplete({
 
   // Nothing to show
   if (!show) return null;
-  if (isQueryMode && suggestions.length === 0 && !isFetching) return null;
   if (!isQueryMode && !showRecent && !showPopular) return null;
 
   const dropdownLabelKey = showRecent
@@ -305,7 +303,7 @@ export function SearchAutocomplete({
     <>
       {/* Backdrop overlay — dims content behind the dropdown */}
       <div
-        className="fixed inset-0 z-40 bg-black/20 animate-[backdropIn_150ms_var(--ease-standard)]"
+        className="fixed inset-0 z-40 bg-black/20 animate-[backdropIn_150ms_var(--ease-standard)] motion-reduce:animate-none"
         onClick={onClose}
         aria-hidden="true"
         data-testid="autocomplete-backdrop"
@@ -357,7 +355,9 @@ export function SearchAutocomplete({
                     onClose();
                   }}
                 >
-                  <span className="text-foreground-muted">🕐</span>
+                  <span className="text-foreground-muted">
+                    <Clock3 size={14} aria-hidden="true" />
+                  </span>
                   <span className="min-w-0 flex-1 truncate text-left text-sm text-foreground">
                     {q}
                   </span>
@@ -441,18 +441,37 @@ export function SearchAutocomplete({
       {/* ── Query-mode suggestions ────────────────────────────────── */}
       {isQueryMode && (
         <>
-          {isFetching && suggestions.length === 0 && (
-            <div className="px-4 py-3 text-center text-sm text-foreground-muted">
+          {isFetching && suggestions.length === 0 ? (
+            <div
+              className="px-4 py-3 text-center text-sm text-foreground-muted"
+              role="status"
+              aria-live="polite"
+            >
               {t("search.searching")}
             </div>
-          )}
+          ) : null}
+          {error && !isFetching ? (
+            <div
+              className="flex items-center justify-between gap-3 border-b border-warning-border bg-warning-bg px-4 py-3 text-sm text-warning-text"
+              role="alert"
+            >
+              <span>{t("search.searchFailed")}</span>
+              <button
+                type="button"
+                className="shrink-0 font-semibold underline underline-offset-2"
+                onClick={() => void refetch()}
+              >
+                {t("common.retry")}
+              </button>
+            </div>
+          ) : null}
+          {!error && !isFetching && suggestions.length === 0 ? (
+            <div className="px-4 py-3 text-sm text-foreground-secondary" role="status">
+              {t("search.noMatchSearch")}
+            </div>
+          ) : null}
           <ul>
             {suggestions.map((s, i) => {
-              const band = SCORE_BANDS[s.score_band];
-              const nutriClass = s.nutri_score
-                ? NUTRI_COLORS[s.nutri_score]
-                : "bg-surface-muted text-foreground-secondary";
-
               return (
                 <li
                   key={s.product_id}
@@ -475,12 +494,14 @@ export function SearchAutocomplete({
                       onClose();
                     }}
                   >
-                    {/* Score badge */}
+                    {/* Numeric score remains neutral until product evidence is inspected. */}
                     <div
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${band.bg} ${band.color}`}
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border-strong bg-surface-subtle text-sm font-bold text-foreground"
                     >
                       {toTryVitScore(s.unhealthiness_score)}
-                      <span className="sr-only">{t(band.labelKey)}</span>
+                      <span className="sr-only">
+                        {t("trust.evidence.scoreProvisionalLabel")}
+                      </span>
                     </div>
 
                     {/* Product info */}
@@ -496,12 +517,7 @@ export function SearchAutocomplete({
                       </p>
                     </div>
 
-                    {/* Nutri badge */}
-                    <span
-                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${nutriClass}`}
-                    >
-                      {nutriScoreLabel(s.nutri_score, "?")}
-                    </span>
+                    <CategoryIcon slug={s.category} size="sm" />
                   </button>
                 </li>
               );
@@ -510,7 +526,10 @@ export function SearchAutocomplete({
 
           {/* "Search for…" footer */}
           <button
+            id={getOptionId(suggestions.length)}
             type="button"
+            role="option"
+            aria-selected={activeIndex === suggestions.length}
             className={`flex w-full items-center gap-2 border-t px-4 py-2.5 text-sm transition-colors ${
               activeIndex === suggestions.length
                 ? "bg-brand-subtle text-foreground"

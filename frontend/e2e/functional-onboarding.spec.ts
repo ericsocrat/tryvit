@@ -70,7 +70,7 @@ async function signInOnboardingUser(page: Page) {
     .getByLabel("Password", { exact: true })
     .fill(ONBOARDING_PASSWORD);
   await page.getByRole("button", { name: "Sign In" }).click();
-  await page.waitForURL(/\/(onboarding|app|auth\/login)/, {
+  await page.waitForURL(/\/onboarding$/, {
     timeout: 20_000,
   });
 }
@@ -112,15 +112,15 @@ async function deleteOnboardingUser() {
 // Standard test user (already onboarded) should be redirected to /app/search
 
 test.describe("Onboarding: redirect guard", () => {
-  test("already-onboarded user is redirected from /onboarding to /app", async ({
+  test("already-onboarded user is redirected from /onboarding to Search", async ({
     page,
   }) => {
     // Navigate to onboarding as the onboarded test user
     await page.goto("/onboarding");
 
     // Should redirect to /app/search (onboarding already done)
-    await page.waitForURL(/\/app/, { timeout: 15_000 });
-    expect(page.url()).toMatch(/\/app/);
+    await page.waitForURL(/\/app\/search$/, { timeout: 15_000 });
+    expect(page.url()).toMatch(/\/app\/search$/);
   });
 });
 
@@ -141,105 +141,80 @@ test.describe("Onboarding: wizard flow", () => {
     await deleteOnboardingUser();
   });
 
-  test("Welcome step renders with Get Started and Skip buttons", async ({
+  test("combined welcome and region step exposes country, Continue, and Skip", async ({
     page,
-  }) => {
+  }, testInfo) => {
     await signInOnboardingUser(page);
 
-    // Should land on onboarding (no preferences set)
-    await page.waitForURL(/\/(onboarding|app)/, { timeout: 20_000 });
+    await expect(page.getByTestId("country-PL")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId("country-DE")).toBeVisible();
+    await expect(page.getByTestId("onboarding-get-started")).toBeDisabled();
+    await expect(page.getByTestId("onboarding-skip-all")).toBeVisible();
 
-    if (page.url().includes("/onboarding")) {
-      // Welcome step should render
-      await expect(
-        page.getByTestId("onboarding-get-started"),
-      ).toBeVisible({ timeout: 10_000 });
-      await expect(
-        page.getByTestId("onboarding-skip-all"),
-      ).toBeVisible();
-    }
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.screenshot({
+      path: testInfo.outputPath("batch1-onboarding-390-light.png"),
+      animations: "disabled",
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.evaluate(() => {
+      localStorage.setItem("theme", "dark");
+      document.documentElement.setAttribute("data-theme", "dark");
+    });
+    await page.screenshot({
+      path: testInfo.outputPath("batch1-onboarding-1440-dark.png"),
+      animations: "disabled",
+    });
   });
 
-  test("Skip All from welcome goes to /app/search", async ({ page }) => {
+  test("Skip from the first step goes directly to Search", async ({ page }) => {
     await signInOnboardingUser(page);
 
-    await page.waitForURL(/\/(onboarding|app)/, { timeout: 20_000 });
-
-    if (page.url().includes("/onboarding")) {
-      await page.getByTestId("onboarding-skip-all").click();
-      await page.waitForURL(/\/app/, { timeout: 15_000 });
-      expect(page.url()).toMatch(/\/app/);
-    }
+    await page.getByTestId("onboarding-skip-all").click();
+    await page.waitForURL(/\/app\/search$/, { timeout: 15_000 });
   });
 
-  test("Get Started advances to Region step", async ({ page }) => {
-    // Need a fresh user (the previous test may have skipped)
-    await createOnboardingUser();
-
-    await signInOnboardingUser(page);
-
-    await page.waitForURL(/\/(onboarding|app)/, { timeout: 20_000 });
-
-    if (page.url().includes("/onboarding")) {
-      await page.getByTestId("onboarding-get-started").click();
-
-      // Region step should show country options
-      await expect(
-        page
-          .getByTestId("country-PL")
-          .or(page.getByText(/Poland|Polska/i).first()),
-      ).toBeVisible({ timeout: 10_000 });
-    }
-  });
-
-  test("Region step allows country selection and advancement", async ({
+  test("country selection advances directly to Diet and Allergens", async ({
     page,
   }) => {
     await createOnboardingUser();
-
     await signInOnboardingUser(page);
 
-    await page.waitForURL(/\/(onboarding|app)/, { timeout: 20_000 });
+    await page.getByTestId("country-PL").click();
+    await expect(page.getByTestId("onboarding-get-started")).toBeEnabled();
+    await page.getByTestId("onboarding-get-started").click();
 
-    if (page.url().includes("/onboarding")) {
-      // Advance to Region step
-      await page.getByTestId("onboarding-get-started").click();
-
-      // Select Poland
-      const plBtn = page.getByTestId("country-PL");
-      await expect(plBtn).toBeVisible({ timeout: 10_000 });
-      await plBtn.click();
-
-      // Click Next
-      const nextBtn = page.getByRole("button", { name: /next|dalej/i });
-      if (await nextBtn.isVisible({ timeout: 5_000 }).catch(() => false)) {
-        await nextBtn.click();
-
-        // Should advance to the Diet step
-        await expect(
-          page.getByText(/diet|dieta/i).first(),
-        ).toBeVisible({ timeout: 10_000 });
-      }
-    }
+    await expect(page.getByTestId("diet-none")).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId("allergen-gluten")).toBeVisible();
   });
 
-  test("Skip All from a mid-step goes to /app/search", async ({ page }) => {
+  test("three-step completion saves and enters Search", async ({ page }) => {
     await createOnboardingUser();
-
     await signInOnboardingUser(page);
 
-    await page.waitForURL(/\/(onboarding|app)/, { timeout: 20_000 });
+    await page.getByTestId("country-PL").click();
+    await page.getByTestId("onboarding-get-started").click();
+    await page.getByTestId("diet-vegetarian").click();
+    await page.getByRole("button", { name: /next|dalej/i }).click();
+    await expect(page.getByTestId("goal-diabetes")).toBeVisible({ timeout: 10_000 });
+    await page.getByTestId("goal-diabetes").click();
+    await page.getByTestId("category-bread").click();
+    await page.getByTestId("onboarding-complete").click();
 
-    if (page.url().includes("/onboarding")) {
-      // Advance past welcome
-      await page.getByTestId("onboarding-get-started").click();
-      await expect(
-        page.getByTestId("country-PL").or(page.getByText("Polska")),
-      ).toBeVisible({ timeout: 10_000 });
+    await page.waitForURL(/\/app\/search$/, { timeout: 20_000 });
+  });
 
-      // Click Skip All from Region step
-      await page.getByTestId("onboarding-skip-all").click();
-      await page.waitForURL(/\/app/, { timeout: 15_000 });
-    }
+  test("Skip from an inner step goes directly to Search", async ({ page }) => {
+    await createOnboardingUser();
+    await signInOnboardingUser(page);
+
+    await page.getByTestId("country-DE").click();
+    await page.getByTestId("onboarding-get-started").click();
+    await expect(page.getByTestId("onboarding-skip-all")).toBeVisible({
+      timeout: 10_000,
+    });
+    await page.getByTestId("onboarding-skip-all").click();
+    await page.waitForURL(/\/app\/search$/, { timeout: 15_000 });
   });
 });

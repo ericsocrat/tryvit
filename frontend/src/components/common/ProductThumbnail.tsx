@@ -48,6 +48,11 @@ export function ProductThumbnail({
 }: ProductThumbnailProps) {
   const [error, setError] = useState(false);
   const preset = SIZE_PRESETS[size];
+  const normalizedCategorySlug = categorySlug
+    ?.trim()
+    .toLocaleLowerCase()
+    .replaceAll(/[^a-z0-9]+/g, "-")
+    .replaceAll(/^-|-$/g, "");
 
   const showImage = imageUrl && !error;
 
@@ -71,8 +76,11 @@ export function ProductThumbnail({
           className="flex h-full w-full items-center justify-center text-foreground-muted"
           aria-label={`${productName} — no image available`}
         >
-          {categorySlug && hasCategoryIcon(categorySlug) ? (
-            <CategoryIcon slug={categorySlug} size={size === "sm" ? "md" : "lg"} />
+          {normalizedCategorySlug && hasCategoryIcon(normalizedCategorySlug) ? (
+            <CategoryIcon
+              slug={normalizedCategorySlug}
+              size={size === "sm" ? "md" : "lg"}
+            />
           ) : (
             <span className="select-none text-lg" aria-hidden="true">
               {categoryIcon ?? "📦"}

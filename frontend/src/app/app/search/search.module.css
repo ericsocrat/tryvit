@@ -1,0 +1,125 @@
+.page {
+  --app-canvas: color-mix(in srgb, var(--color-brand-subtle) 22%, var(--color-surface-subtle));
+  --app-paper: var(--color-surface);
+  --app-rule: var(--color-border-strong);
+  --app-rust: #965032;
+}
+
+.workspace {
+  display: flex;
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  align-items: start;
+  min-inline-size: 0;
+}
+
+.content {
+  display: grid;
+  min-inline-size: 0;
+  flex: 1 1 auto;
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.searchForm {
+  position: relative;
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem;
+  border: 1px solid color-mix(in srgb, var(--app-rule) 74%, transparent);
+  border-radius: 1rem 0.25rem 1rem 1rem;
+  background: color-mix(in srgb, var(--app-paper) 97%, transparent);
+  box-shadow: 0 12px 30px rgb(23 39 31 / 0.05);
+}
+
+.searchForm::before {
+  position: absolute;
+  inset: 0 0 auto auto;
+  inline-size: 1.2rem;
+  aspect-ratio: 1;
+  background: linear-gradient(225deg, var(--app-rust) 0 48%, var(--app-rule) 49% 52%, transparent 53%);
+  content: "";
+  pointer-events: none;
+}
+
+.results {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.gridResults {
+  gap: 0.85rem;
+}
+
+.listResults {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.sortIndicator {
+  width: fit-content;
+  margin: -0.65rem 0 0;
+  padding: 0.35rem 0.6rem;
+  border-inline-start: 3px solid var(--app-rust);
+  color: var(--color-foreground-secondary);
+  background: var(--color-surface-subtle);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.035em;
+}
+
+.recordDetail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.65rem;
+  align-items: center;
+}
+
+.relatedMatch {
+  color: var(--color-warning-text);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.67rem;
+  font-weight: 750;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.warning {
+  display: inline-flex;
+  padding: 0.2rem 0.42rem;
+  border: 1px solid var(--color-error-border);
+  border-radius: 999px;
+  color: var(--color-error-text);
+  background: var(--color-error-bg);
+  font-size: 0.67rem;
+  font-weight: 700;
+}
+
+@media (max-width: 1023px) {
+  .workspace {
+    display: block;
+  }
+}
+
+@media (max-width: 639px) {
+  .searchForm {
+    padding: 0.8rem;
+  }
+
+  .gridResults {
+    gap: 0.7rem;
+  }
+}
+
+@media (forced-colors: active) {
+  .searchForm,
+  .warning {
+    border-color: CanvasText;
+  }
+
+  .searchForm::before,
+  .sortIndicator {
+    border-color: Highlight;
+  }
+}

@@ -15,10 +15,12 @@ vi.mock("next/link", () => ({
   default: ({
     href,
     children,
+    ...rest
   }: {
     href: string;
     children: React.ReactNode;
-  }) => <a href={href}>{children}</a>,
+    className?: string;
+  }) => <a href={href} {...rest}>{children}</a>,
 }));
 
 const mockGetCategoryOverview = vi.fn();
@@ -30,10 +32,6 @@ vi.mock("@/components/common/skeletons", () => ({
   CategoryGridSkeleton: () => (
     <div data-testid="skeleton" role="status" aria-busy="true" />
   ),
-}));
-
-vi.mock("@/components/category/CategoryScoreBar", () => ({
-  CategoryScoreBar: () => <div data-testid="score-bar" />,
 }));
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -146,16 +144,15 @@ describe("CategoriesPage", () => {
     expect(screen.getByText("45")).toBeInTheDocument();
   });
 
-  it("renders score distribution bars", async () => {
+  it("keeps aggregate category scores neutral and provisional", async () => {
     render(<CategoriesPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
       expect(screen.getAllByText("Chips").length).toBeGreaterThan(0);
     });
 
-    // Each category card should render a CategoryScoreBar
-    const bars = screen.getAllByTestId("score-bar");
-    expect(bars).toHaveLength(3);
+    expect(screen.queryByTestId("score-bar")).not.toBeInTheDocument();
+    expect(screen.getAllByText("Provisional score").length).toBeGreaterThanOrEqual(3);
   });
 
   it("links each card to the category detail page", async () => {
@@ -194,6 +191,17 @@ describe("CategoriesPage", () => {
 
     const link = screen.getByRole("link", { name: /Seafood & Fish/ });
     expect(link).toHaveAttribute("href", "/app/categories/seafood-fish");
+  });
+
+  it("shows a truthful empty state when the overview contains no categories", async () => {
+    mockGetCategoryOverview.mockResolvedValue({ ok: true, data: [] });
+
+    render(<CategoriesPage />, { wrapper: createWrapper() });
+
+    await waitFor(() => {
+      expect(screen.getByText("No results found")).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("link", { name: /Chips/ })).not.toBeInTheDocument();
   });
 
   it("shows error state on API failure", async () => {
@@ -310,10 +318,8 @@ describe("Categories desktop grid layout", () => {
       expect(screen.getAllByText("Chips").length).toBeGreaterThan(0);
     });
 
-    const grid = screen.getByRole("link", { name: /Chips/ })!.parentElement!;
-    expect(grid.className).toContain("grid");
-    expect(grid.className).toContain("sm:grid-cols-3");
-    expect(grid.className).toContain("xl:grid-cols-4");
+    const grid = screen.getByRole("link", { name: /Chips/ }).parentElement!;
+    expect(grid.className).toMatch(/categoryGrid/);
   });
 
   it("category cards have transition classes for hover states", async () => {
@@ -323,9 +329,8 @@ describe("Categories desktop grid layout", () => {
       expect(screen.getAllByText("Chips").length).toBeGreaterThan(0);
     });
 
-    const card = screen.getAllByText("Chips")[0].closest(".card")!;
-    expect(card.className).toContain("transition-all");
-    expect(card.className).toContain("duration-fast");
+    const card = screen.getByRole("link", { name: /Chips/ });
+    expect(card.className).toMatch(/categoryCard/);
   });
 
   it("renders cards with horizontal layout", async () => {
@@ -335,14 +340,13 @@ describe("Categories desktop grid layout", () => {
       expect(screen.getAllByText("Chips").length).toBeGreaterThan(0);
     });
 
-    const card = screen.getAllByText("Chips")[0].closest(".card")!;
-    expect(card.className).toContain("flex");
-    expect(card.className).toContain("flex-col");
+    const card = screen.getByRole("link", { name: /Chips/ });
+    expect(card.className).toMatch(/categoryCard/);
   });
 });
 
 describe("Category name display", () => {
-  it("uses line-clamp-2 instead of truncate for category names", async () => {
+  it("uses the scoped two-line category-name treatment", async () => {
     render(<CategoriesPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
@@ -351,9 +355,8 @@ describe("Category name display", () => {
 
     const nameEl = screen
       .getAllByText("Chips")
-      .find((el) => el.tagName === "P")!;
+      .find((el) => el.tagName === "STRONG")!;
     expect(nameEl).toBeDefined();
-    expect(nameEl.className).toContain("line-clamp-2");
-    expect(nameEl.className).not.toContain("truncate");
+    expect(nameEl.className).toMatch(/categoryName/);
   });
 });

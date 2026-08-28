@@ -1,145 +1,100 @@
 "use client";
 
-// ─── MoreDrawer — slide-up sheet for secondary mobile nav items ──────────────
-// Opened from the "More" button in the mobile bottom Navigation bar.
-// Groups items into semantic sections with visual dividers.
-//
-// Issue #67 — Navigation & IA Polish
-// Issue #692 — Group items, drag handle, swipe-to-dismiss
-
 import { Icon } from "@/components/common/Icon";
-import { useActiveRoute, type PrimaryRouteKey } from "@/hooks/use-active-route";
+import { useActiveRoute } from "@/hooks/use-active-route";
 import { useTranslation } from "@/lib/i18n";
 import { useAdminStore } from "@/stores/admin-store";
-import {
-    BookOpen,
-    Eye,
-    FolderOpen,
-    Scale,
-    ScanText,
-    Settings,
-    ShieldCheck,
-    Trophy,
-    UtensilsCrossed,
-    X,
-    type LucideIcon,
-} from "lucide-react";
+import { X } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-
-/* ── Types ────────────────────────────────────────────────────────────────── */
-
-interface DrawerNavItem {
-  readonly href: string;
-  readonly labelKey: string;
-  readonly icon: LucideIcon;
-  readonly routeKey: PrimaryRouteKey;
-}
-
-interface DrawerSection {
-  readonly labelKey: string;
-  readonly items: readonly DrawerNavItem[];
-}
-
-/* ── Section definitions ──────────────────────────────────────────────────── */
-
-const DRAWER_SECTIONS: readonly DrawerSection[] = [
-  {
-    labelKey: "nav.sectionBrowse",
-    items: [
-      { href: "/app/categories", labelKey: "nav.categories", icon: FolderOpen, routeKey: "categories" },
-      { href: "/app/recipes", labelKey: "nav.recipes", icon: UtensilsCrossed, routeKey: "recipes" },
-      { href: "/app/image-search", labelKey: "nav.imageSearch", icon: ScanText, routeKey: "image-search" },
-    ],
-  },
-  {
-    labelKey: "nav.sectionYourStuff",
-    items: [
-      { href: "/app/compare", labelKey: "nav.compare", icon: Scale, routeKey: "compare" },
-      { href: "/app/watchlist", labelKey: "nav.watchlist", icon: Eye, routeKey: "watchlist" },
-      { href: "/app/achievements", labelKey: "nav.achievements", icon: Trophy, routeKey: "achievements" },
-    ],
-  },
-  {
-    labelKey: "nav.sectionApp",
-    items: [
-      { href: "/learn", labelKey: "nav.learn", icon: BookOpen, routeKey: null },
-      { href: "/app/settings", labelKey: "nav.settings", icon: Settings, routeKey: "settings" },
-    ],
-  },
-  {
-    labelKey: "nav.admin",
-    items: [
-      { href: "/app/admin/submissions", labelKey: "nav.admin", icon: ShieldCheck, routeKey: null },
-    ],
-  },
-];
-
-const SWIPE_DISMISS_THRESHOLD = 80;
-
-/* ── Props ────────────────────────────────────────────────────────────────── */
+import styles from "./AppShell.module.css";
+import { ThemeToggle } from "./ThemeToggle";
+import {
+  ADMIN_ENTRY_ITEM,
+  DRAWER_SECTIONS,
+  type AppNavItem,
+} from "./app-navigation";
 
 interface MoreDrawerProps {
-  open: boolean;
-  onClose: () => void;
+  readonly open: boolean;
+  readonly onClose: () => void;
 }
 
-/* ── Component ────────────────────────────────────────────────────────────── */
+const SWIPE_DISMISS_THRESHOLD = 80;
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 export function MoreDrawer({ open, onClose }: Readonly<MoreDrawerProps>) {
   const activeRoute = useActiveRoute();
   const { t } = useTranslation();
-  const isAdmin = useAdminStore((s) => s.isAdmin);
+  const isAdmin = useAdminStore((state) => state.isAdmin);
   const drawerRef = useRef<HTMLDialogElement>(null);
-  const [animating, setAnimating] = useState(false);
-  const [prevOpen, setPrevOpen] = useState(open);
+  const previouslyFocusedRef = useRef<HTMLElement | null>(null);
   const touchStartY = useRef(0);
   const touchDeltaY = useRef(0);
+  const [animating, setAnimating] = useState(false);
 
-  // Reset animation immediately when the drawer closes — done during render
-  // (https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)
-  // rather than in an effect to satisfy react-hooks/set-state-in-effect.
-  if (open !== prevOpen) {
-    setPrevOpen(open);
-    if (!open) setAnimating(false);
-  }
-
-  // Defer enabling the animation class to the next frame so CSS transitions
-  // run from the closed state. setState inside requestAnimationFrame is
-  // asynchronous, so it does not violate set-state-in-effect.
   useEffect(() => {
     if (!open) return;
-    const id = requestAnimationFrame(() => setAnimating(true));
-    return () => cancelAnimationFrame(id);
-  }, [open]);
 
-  // Close on Escape
-  useEffect(() => {
-    if (!open) return;
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+    const dialog = drawerRef.current;
+    if (!dialog) return;
+    const activeDialog: HTMLDialogElement = dialog;
+
+    previouslyFocusedRef.current = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    if (typeof dialog.showModal === "function") {
+      if (!dialog.open) dialog.showModal();
+    } else {
+      // JSDOM and older embedded webviews do not implement showModal().
+      dialog.setAttribute("open", "");
     }
+
+    const frame = requestAnimationFrame(() => {
+      setAnimating(true);
+      activeDialog.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)?.focus();
+    });
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(
+        activeDialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [open, onClose]);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      if (typeof dialog.close === "function" && dialog.open) {
+        dialog.close();
+      } else {
+        dialog.removeAttribute("open");
+      }
+      previouslyFocusedRef.current?.focus();
+    };
+  }, [onClose, open]);
 
-  // Trap focus inside drawer when open
-  useEffect(() => {
-    if (!open || !drawerRef.current) return;
-    const firstFocusable = drawerRef.current.querySelector<HTMLElement>(
-      'a, button, [tabindex]:not([tabindex="-1"])',
-    );
-    firstFocusable?.focus();
-  }, [open]);
-
-  // Swipe-to-dismiss handlers
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY;
+  const handleTouchStart = useCallback((event: React.TouchEvent) => {
+    touchStartY.current = event.touches[0].clientY;
     touchDeltaY.current = 0;
   }, []);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    const delta = e.touches[0].clientY - touchStartY.current;
+  const handleTouchMove = useCallback((event: React.TouchEvent) => {
+    const delta = event.touches[0].clientY - touchStartY.current;
     touchDeltaY.current = delta;
     if (delta > 0 && drawerRef.current) {
       drawerRef.current.style.transform = `translateY(${delta}px)`;
@@ -147,105 +102,105 @@ export function MoreDrawer({ open, onClose }: Readonly<MoreDrawerProps>) {
   }, []);
 
   const handleTouchEnd = useCallback(() => {
-    if (touchDeltaY.current > SWIPE_DISMISS_THRESHOLD) {
-      onClose();
-    }
-    if (drawerRef.current) {
-      drawerRef.current.style.transform = "";
-    }
+    if (touchDeltaY.current > SWIPE_DISMISS_THRESHOLD) onClose();
+    if (drawerRef.current) drawerRef.current.style.transform = "";
   }, [onClose]);
 
   if (!open) return null;
 
+  const visibleSections = isAdmin
+    ? [
+        ...DRAWER_SECTIONS,
+        { labelKey: "nav.admin", items: [ADMIN_ENTRY_ITEM] },
+      ]
+    : DRAWER_SECTIONS;
+
   return (
-    /* Backdrop */
-    <div
-      className={`fixed inset-0 z-50 transition-colors duration-200 ${
-        animating ? "bg-black/45" : "bg-transparent"
-      }`}
+    <dialog
+      ref={drawerRef}
+      aria-label={t("a11y.moreNavigation")}
+      className={`${styles.drawer} ${animating ? styles.drawerOpen : ""}`}
+      data-state={animating ? "open" : "opening"}
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
-      <button
-        type="button"
-        className="absolute inset-0 h-full w-full"
+      <div className={styles.drawerHandle} data-testid="drawer-handle" />
+      <div className={styles.drawerHeader}>
+        <span className={styles.registerLabel}>{t("nav.more")}</span>
+        <button
+          type="button"
+          onClick={onClose}
+          className="touch-target rounded-md p-2 text-foreground-secondary transition-colors hover:bg-surface-muted hover:text-foreground motion-reduce:transition-none"
+          aria-label={t("common.close")}
+        >
+          <Icon icon={X} size="md" />
+        </button>
+      </div>
+
+      <nav aria-label={t("a11y.moreNavigation")}>
+        <div className={styles.drawerSections}>
+          {visibleSections.map((section) => (
+            <section key={section.labelKey} className={styles.drawerSection}>
+              <h2 className={styles.registerLabel}>{t(section.labelKey)}</h2>
+              <ul>
+                {section.items.map((item) => (
+                  <DrawerLink
+                    key={item.href}
+                    item={item}
+                    active={activeRoute === item.routeKey}
+                    onClose={onClose}
+                  />
+                ))}
+              </ul>
+            </section>
+          ))}
+        </div>
+      </nav>
+
+      <div className={styles.drawerUtility}>
+        <ThemeToggle
+          label={t("theme.label")}
+          lightLabel={t("theme.light")}
+          darkLabel={t("theme.dark")}
+        />
+      </div>
+    </dialog>
+  );
+}
+
+function DrawerLink({
+  item,
+  active,
+  onClose,
+}: Readonly<{
+  item: AppNavItem;
+  active: boolean;
+  onClose: () => void;
+}>) {
+  const { t } = useTranslation();
+
+  return (
+    <li>
+      <Link
+        href={item.href}
         onClick={onClose}
-        aria-label={t("shortcuts.closeOverlay")}
-      />
-
-      {/* Drawer panel */}
-      <dialog
-        ref={drawerRef}
-        open
-        aria-label={t("a11y.moreNavigation")}
-        className={`fixed bottom-0 left-0 right-0 z-50 m-0 w-full max-w-full transform rounded-t-3xl border-t border-border/70 bg-surface/95 p-0 pb-[env(safe-area-inset-bottom)] shadow-2xl backdrop-blur-sm transition-transform duration-200 ease-out ${
-          animating ? "translate-y-0" : "translate-y-full"
+        aria-current={active ? "page" : undefined}
+        className={`${styles.drawerLink} ${
+          active ? styles.drawerLinkActive : ""
         }`}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        data-touch-target="true"
       >
-        {/* Drag handle */}
-        <div className="flex justify-center pt-2 pb-1">
-          <div className="h-1 w-10 rounded-full bg-border" />
-        </div>
-
-        {/* Header + close */}
-        <div className="flex items-center justify-between border-b border-border/70 px-4 py-2.5">
-          <span className="text-sm font-semibold tracking-wide text-foreground">
-            {t("nav.more")}
-          </span>
-          <button
-            type="button"
-            onClick={onClose}
-            className="touch-target rounded-full p-1.5 text-foreground-secondary transition-colors hover:bg-surface-muted hover:text-foreground"
-            aria-label={t("common.close")}
-          >
-            <Icon icon={X} size="md" />
-          </button>
-        </div>
-
-        {/* Grouped nav items */}
-        <nav aria-label={t("a11y.moreNavigation")}>
-          <div className="space-y-2 px-2 pb-4 pt-2">
-            {DRAWER_SECTIONS.filter(
-              (s) => s.labelKey !== "nav.admin" || isAdmin,
-            ).map((section, sectionIdx) => (
-              <div key={section.labelKey} className="rounded-2xl border border-border/60 bg-surface-subtle/50 px-1.5 py-1">
-                {/* Section divider (not before first section) */}
-                {sectionIdx > 0 && (
-                  <div className="mx-2 mb-2 border-t border-border/60" />
-                )}
-                {/* Section label */}
-                <p className="px-2.5 pt-1 pb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-foreground-muted">
-                  {t(section.labelKey)}
-                </p>
-                <ul>
-                  {section.items.map((item) => {
-                    const isActive = activeRoute === item.routeKey;
-                    const label = t(item.labelKey);
-                    return (
-                      <li key={item.href}>
-                        <Link
-                          href={item.href}
-                          onClick={onClose}
-                          aria-current={isActive ? "page" : undefined}
-                          className={`flex min-h-12 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
-                            isActive
-                              ? "border-l-3 border-brand bg-brand-subtle text-brand font-semibold shadow-sm"
-                              : "text-foreground-secondary hover:bg-surface-muted hover:text-foreground"
-                          }`}
-                        >
-                          <Icon icon={item.icon} size="md" />
-                          <span>{label}</span>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </nav>
-      </dialog>
-    </div>
+        <Icon icon={item.icon} size="md" />
+        <span>{t(item.labelKey)}</span>
+      </Link>
+    </li>
   );
 }
