@@ -4,6 +4,8 @@
 // Accessible step progress bar for the onboarding wizard.
 
 import { useTranslation } from "@/lib/i18n";
+import type { CSSProperties } from "react";
+import styles from "./OnboardingExperience.module.css";
 
 interface OnboardingProgressProps {
   readonly currentStep: number;
@@ -15,36 +17,39 @@ export function OnboardingProgress({
   totalSteps,
 }: OnboardingProgressProps) {
   const { t } = useTranslation();
+  const stepLabel = t("onboarding.stepOf", {
+    current: String(currentStep),
+    total: String(totalSteps),
+  });
+  const progressStyle = {
+    "--onboarding-step-count": totalSteps,
+  } as CSSProperties;
 
   return (
-    <div className="mb-7 rounded-2xl border border-border/60 bg-surface-subtle/55 px-3 py-3 sm:px-4">
-      {/* Native progress for screen readers */}
+    <div className={styles.progress}>
       <progress
         className="sr-only"
         value={currentStep}
         max={totalSteps}
-        aria-label={t("onboarding.stepOf", {
-          current: String(currentStep),
-          total: String(totalSteps),
-        })}
+        aria-label={stepLabel}
       />
-      {/* Visual segmented bar */}
-      <div className="mb-2 flex gap-1.5" aria-hidden="true">
+      <div className={styles.progressMeta} aria-hidden="true">
+        <span className={styles.registerCaption}>{stepLabel}</span>
+        <span className={styles.progressCount}>
+          {String(currentStep).padStart(2, "0")} / {String(totalSteps).padStart(2, "0")}
+        </span>
+      </div>
+      <div className={styles.progressBars} style={progressStyle} aria-hidden="true">
         {Array.from({ length: totalSteps }, (_, i) => (
           <div
             key={i}
-            className={`h-2 flex-1 rounded-full transition-colors ${
-              i < currentStep ? "bg-brand" : "bg-surface-muted/90"
+            className={`${styles.progressSegment} ${
+              i < currentStep ? styles.progressSegmentComplete : ""
             }`}
+            data-testid="onboarding-progress-segment"
           />
         ))}
       </div>
-      <p className="text-center text-xs font-medium tracking-wide text-foreground-secondary">
-        {t("onboarding.stepOf", {
-          current: String(currentStep),
-          total: String(totalSteps),
-        })}
-      </p>
     </div>
   );
 }

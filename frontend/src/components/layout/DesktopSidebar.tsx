@@ -1,245 +1,111 @@
 "use client";
 
-// ─── DesktopSidebar — persistent left sidebar for xl+ viewports ──────────────
-// Renders a fixed sidebar with primary and secondary nav sections.
-// Hidden below xl breakpoint (1280px). CSS-only show/hide, no JS.
-//
-// Issue #72 — Desktop Navigation Architecture
-
+import { CountryChip } from "@/components/common/CountryChip";
+import { FoldedTryVitIdentity } from "@/components/common/FoldedTryVitIdentity";
 import { Icon } from "@/components/common/Icon";
-import { Logo } from "@/components/common/Logo";
-import { useActiveRoute, type PrimaryRouteKey } from "@/hooks/use-active-route";
+import { useActiveRoute } from "@/hooks/use-active-route";
 import { useTranslation } from "@/lib/i18n";
 import { useAdminStore } from "@/stores/admin-store";
-import {
-    Activity,
-    BookOpen,
-    Camera,
-    ClipboardList,
-    Eye,
-    FileText,
-    FolderOpen,
-    Gauge,
-    Home,
-    Scale,
-    ScanText,
-    Search,
-    Settings,
-    ShieldCheck,
-    Trophy,
-    UtensilsCrossed,
-    type LucideIcon,
-} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import styles from "./AppShell.module.css";
+import { ThemeToggle } from "./ThemeToggle";
+import {
+  ADMIN_ITEMS,
+  SIDEBAR_SECTIONS,
+  type AppNavItem,
+} from "./app-navigation";
 
-/* ── Nav item type ────────────────────────────────────────────────────────── */
-
-interface SidebarNavItem {
-  readonly href: string;
-  readonly labelKey: string;
-  readonly icon: LucideIcon;
-  readonly routeKey: PrimaryRouteKey;
+interface DesktopSidebarProps {
+  readonly country?: string | null;
 }
 
-/* ── Route definitions ────────────────────────────────────────────────────── */
-
-const PRIMARY_ITEMS: readonly SidebarNavItem[] = [
-  { href: "/app", labelKey: "nav.home", icon: Home, routeKey: "home" },
-  {
-    href: "/app/search",
-    labelKey: "nav.search",
-    icon: Search,
-    routeKey: "search",
-  },
-  { href: "/app/scan", labelKey: "nav.scan", icon: Camera, routeKey: "scan" },
-  {
-    href: "/app/lists",
-    labelKey: "nav.lists",
-    icon: ClipboardList,
-    routeKey: "lists",
-  },
-  {
-    href: "/app/watchlist",
-    labelKey: "nav.watchlist",
-    icon: Eye,
-    routeKey: "watchlist",
-  },
-  {
-    href: "/app/compare",
-    labelKey: "nav.compare",
-    icon: Scale,
-    routeKey: "compare",
-  },
-  {
-    href: "/app/categories",
-    labelKey: "nav.categories",
-    icon: FolderOpen,
-    routeKey: "categories",
-  },
-  {
-    href: "/app/achievements",
-    labelKey: "nav.achievements",
-    icon: Trophy,
-    routeKey: "achievements",
-  },
-  {
-    href: "/app/recipes",
-    labelKey: "nav.recipes",
-    icon: UtensilsCrossed,
-    routeKey: "recipes",
-  },
-  {
-    href: "/app/image-search",
-    labelKey: "nav.imageSearch",
-    icon: ScanText,
-    routeKey: "image-search",
-  },
-] as const;
-
-const SECONDARY_ITEMS: readonly SidebarNavItem[] = [
-  {
-    href: "/learn",
-    labelKey: "nav.learn",
-    icon: BookOpen,
-    routeKey: null,
-  },
-  {
-    href: "/app/settings",
-    labelKey: "nav.settings",
-    icon: Settings,
-    routeKey: "settings",
-  },
-] as const;
-
-/* ── Admin items (middleware-gated, shown only to admins via Zustand hydration) */
-
-interface AdminNavItem {
-  readonly href: string;
-  readonly labelKey: string;
-  readonly icon: LucideIcon;
-}
-
-const ADMIN_ITEMS: readonly AdminNavItem[] = [
-  {
-    href: "/app/admin/submissions",
-    labelKey: "nav.adminSubmissions",
-    icon: FileText,
-  },
-  {
-    href: "/app/admin/metrics",
-    labelKey: "nav.adminMetrics",
-    icon: Gauge,
-  },
-  {
-    href: "/app/admin/monitoring",
-    labelKey: "nav.adminMonitoring",
-    icon: Activity,
-  },
-] as const;
-
-/* ── Component ────────────────────────────────────────────────────────────── */
-
-export function DesktopSidebar() {
+export function DesktopSidebar({ country = null }: Readonly<DesktopSidebarProps>) {
   const activeRoute = useActiveRoute();
   const pathname = usePathname();
   const { t } = useTranslation();
-  const isAdmin = useAdminStore((s) => s.isAdmin);
+  const isAdmin = useAdminStore((state) => state.isAdmin);
 
   return (
     <nav
-      className="fixed inset-y-0 left-0 z-30 hidden w-56 flex-col border-r border-border/70 bg-surface/95 backdrop-blur-sm xl:flex"
+      className={styles.sidebar}
       aria-label={t("a11y.sidebarNavigation")}
+      data-testid="desktop-sidebar"
     >
-      {/* Logo */}
-      <div className="flex h-14 items-center px-5">
-        <Link href="/app" aria-label="TryVit">
-          <Logo variant="lockup" size={24} />
-        </Link>
-      </div>
+      <Link href="/app" className={styles.sidebarBrand} aria-label="TryVit">
+        <FoldedTryVitIdentity size={32} />
+      </Link>
 
-      {/* Primary nav */}
-      <div className="flex-1 space-y-0.5 px-3 py-2">
-        {PRIMARY_ITEMS.map((item) => (
-          <SidebarLink
-            key={item.href}
-            item={item}
-            isActive={activeRoute === item.routeKey}
-          />
+      <div className={styles.sidebarBody}>
+        {SIDEBAR_SECTIONS.map((section) => (
+          <section key={section.labelKey} className={styles.navSection}>
+            <h2 className={styles.registerLabel}>{t(section.labelKey)}</h2>
+            {section.items.map((item) => (
+              <SidebarLink
+                key={item.href}
+                item={item}
+                isActive={activeRoute === item.routeKey}
+              />
+            ))}
+          </section>
         ))}
+
+        {isAdmin ? (
+          <section className={styles.navSection} data-testid="sidebar-admin-section">
+            <h2 className={styles.registerLabel}>{t("nav.admin")}</h2>
+            {ADMIN_ITEMS.map((item) => {
+              const isActive =
+                activeRoute === "admin" && pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`${styles.sidebarLink} ${
+                    isActive ? styles.sidebarLinkActive : ""
+                  }`}
+                >
+                  <Icon icon={item.icon} size="md" />
+                  <span>{t(item.labelKey)}</span>
+                </Link>
+              );
+            })}
+          </section>
+        ) : null}
       </div>
 
-      {/* Divider + secondary nav */}
-      <div className="border-t border-border px-3 py-2">
-        {SECONDARY_ITEMS.map((item) => (
-          <SidebarLink
-            key={item.href}
-            item={item}
-            isActive={activeRoute === item.routeKey}
-          />
-        ))}
+      <div className={styles.sidebarUtility}>
+        <CountryChip country={country} size="sm" showLabel />
+        <ThemeToggle
+          label={t("theme.label")}
+          lightLabel={t("theme.light")}
+          darkLabel={t("theme.dark")}
+        />
       </div>
-
-      {/* Divider + admin nav (access gated by middleware, visibility by admin store) */}
-      {isAdmin && <div className="border-t border-border px-3 py-2">
-        <div className="mb-1 rounded-lg bg-surface-subtle/70 px-2 py-1.5">
-          <div className="flex items-center gap-2 px-1">
-          <Icon icon={ShieldCheck} size="sm" className="text-foreground-tertiary" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-foreground-tertiary">
-            {t("nav.admin")}
-          </span>
-          </div>
-        </div>
-        {ADMIN_ITEMS.map((item) => {
-          const label = t(item.labelKey);
-          const isActive =
-            activeRoute === "admin" &&
-            pathname.startsWith(item.href);
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={isActive ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                isActive
-                  ? "border-l-3 border-brand bg-brand-subtle font-semibold text-brand"
-                  : "text-foreground-secondary hover:bg-surface-muted hover:text-foreground"
-              }`}
-            >
-              <Icon icon={item.icon} size="md" />
-              <span>{label}</span>
-            </Link>
-          );
-        })}
-      </div>}
     </nav>
   );
 }
-
-/* ── Sidebar link ─────────────────────────────────────────────────────────── */
 
 function SidebarLink({
   item,
   isActive,
 }: Readonly<{
-  item: SidebarNavItem;
+  item: AppNavItem;
   isActive: boolean;
 }>) {
   const { t } = useTranslation();
-  const label = t(item.labelKey);
 
   return (
     <Link
       href={item.href}
       aria-current={isActive ? "page" : undefined}
-      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-        isActive
-          ? "border-l-3 border-brand bg-brand-subtle font-semibold text-brand"
-          : "text-foreground-secondary hover:bg-surface-muted hover:text-foreground"
-      }`}
+      className={`${styles.sidebarLink} ${
+        isActive ? styles.sidebarLinkActive : ""
+      } ${item.prominent ? styles.sidebarLinkProminent : ""}`}
+      data-prominent={item.prominent ? "true" : undefined}
     >
       <Icon icon={item.icon} size="md" />
-      <span>{label}</span>
+      <span>{t(item.labelKey)}</span>
     </Link>
   );
 }

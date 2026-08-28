@@ -111,8 +111,8 @@ describe("DesktopSidebar", () => {
 
   it("renders the app logo link", () => {
     render(<DesktopSidebar />);
-    const logoImg = screen.getByAltText("TryVit");
-    expect(logoImg.closest("a")).toHaveAttribute("href", "/app");
+    const wordmark = screen.getByRole("img", { name: "TryVit" });
+    expect(wordmark.closest("a")).toHaveAttribute("href", "/app");
   });
 
   it("marks Dashboard as active on /app", () => {
@@ -163,12 +163,23 @@ describe("DesktopSidebar", () => {
     }
   });
 
-  it("sidebar has xl:flex class for responsive visibility", () => {
+  it("uses the dedicated desktop rail", () => {
     render(<DesktopSidebar />);
     const nav = screen.getByRole("navigation", {
       name: "Sidebar navigation",
     });
-    expect(nav.className).toContain("hidden");
-    expect(nav.className).toContain("xl:flex");
+    expect(nav).toHaveAttribute("data-testid", "desktop-sidebar");
+  });
+
+  it("marks Search and Scan as prominent application actions", () => {
+    render(<DesktopSidebar />);
+    expect(screen.getByText("Search").closest("a")).toHaveAttribute(
+      "data-prominent",
+      "true",
+    );
+    expect(screen.getByText("Scan").closest("a")).toHaveAttribute(
+      "data-prominent",
+      "true",
+    );
   });
 });

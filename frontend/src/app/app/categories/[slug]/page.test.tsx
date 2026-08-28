@@ -29,7 +29,6 @@ vi.mock("next/link", () => ({
 const mockGetCategoryListing = vi.fn();
 const mockGetCategoryOverview = vi.fn();
 const mockUseProductAllergenWarnings = vi.fn();
-const mockUseProductProvenance = vi.fn();
 vi.mock("@/lib/api", () => ({
   getCategoryListing: (...args: unknown[]) => mockGetCategoryListing(...args),
   getCategoryOverview: (...args: unknown[]) => mockGetCategoryOverview(...args),
@@ -39,18 +38,8 @@ vi.mock("@/hooks/use-product-allergens", () => ({
   useProductAllergenWarnings: () => mockUseProductAllergenWarnings(),
 }));
 
-vi.mock("@/hooks/use-product-provenance", async (importOriginal) => {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
-  const actual = await importOriginal<typeof import("@/hooks/use-product-provenance")>();
-  return {
-    ...actual,
-    useProductProvenance: (...args: unknown[]) =>
-      mockUseProductProvenance(...args),
-  };
-});
-
 vi.mock("@/components/common/skeletons", () => ({
-  CategoryListingSkeleton: () => (
+  ProductCardSkeleton: () => (
     <div data-testid="skeleton" role="status" aria-busy="true" />
   ),
 }));
@@ -157,28 +146,6 @@ beforeEach(() => {
     isLoading: false,
     error: null,
     refetch: vi.fn(),
-  });
-  mockUseProductProvenance.mockReturnValue({
-    data: {
-      api_version: "2026-02-27",
-      product_id: 1,
-      product_name: "Lay's Classic",
-      overall_trust_score: 0.9,
-      freshness_status: "fresh",
-      source_count: 2,
-      data_completeness_pct: 100,
-      field_sources: {
-        unhealthiness_score: {
-          source: "Label Scan",
-          last_updated: new Date().toISOString(),
-          confidence: 0.9,
-        },
-      },
-      trust_explanation: "Current evidence",
-      weakest_area: { field: null, confidence: null },
-    },
-    isLoading: false,
-    error: null,
   });
   mockGetCategoryListing.mockResolvedValue({
     ok: true,
@@ -293,7 +260,7 @@ describe("CategoryListingPage", () => {
     });
   });
 
-  it("renders category stats with score bar on the consumer-facing TryVit scale", async () => {
+  it("renders neutral aggregate stats with a provisional evidence disclosure", async () => {
     render(<CategoryListingPage />, { wrapper: createWrapper() });
 
     // Stats card range text uses TryVit (100 - raw): max_score 80 → 20, min_score 10 → 90.
@@ -301,9 +268,14 @@ describe("CategoryListingPage", () => {
       expect(screen.getByText("20–90")).toBeInTheDocument();
     });
 
-    // Score bar aria-label uses the same TryVit scale (ascending), not raw 10/80.
-    const bar = screen.getByRole("img", { name: "Score range 20 to 90" });
-    expect(bar).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Score shown for reference only. Supporting provenance is unavailable, so TryVit is not providing health guidance.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("img", { name: "Score range 20 to 90" }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows a not-found state for an unknown/stale category slug", async () => {
@@ -366,7 +338,7 @@ describe("CategoryListingPage", () => {
     render(<CategoryListingPage />, { wrapper: createWrapper() });
     const select = screen.getByRole("combobox");
     expect(select).toBeInTheDocument();
-    // Default sort
+    expect(select).toHaveValue("name");
     expect(screen.getByText("↑ Asc")).toBeInTheDocument();
   });
 
@@ -525,6 +497,7 @@ describe("CategoryListingPage", () => {
   });
 
   it("does not call a low-confidence product best in category", async () => {
+    const user = userEvent.setup();
     mockGetCategoryListing.mockResolvedValue({
       ok: true,
       data: {
@@ -540,19 +513,19 @@ describe("CategoryListingPage", () => {
     });
     render(<CategoryListingPage />, { wrapper: createWrapper() });
     await screen.findByText("Lay's Classic");
+    await user.selectOptions(screen.getByRole("combobox"), "score");
     expect(screen.queryByText(/Best in category/i)).not.toBeInTheDocument();
+    expect(screen.getByText("Comparison ranking withheld")).toBeInTheDocument();
   });
 
-  it("does not call the first score-sorted product best without usable score provenance", async () => {
-    mockUseProductProvenance.mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      error: null,
-    });
+  it("withholds a recommendation because the score-sorted set lacks comparable provenance", async () => {
+    const user = userEvent.setup();
     render(<CategoryListingPage />, { wrapper: createWrapper() });
 
     await screen.findByText("Lay's Classic");
+    await user.selectOptions(screen.getByRole("combobox"), "score");
     expect(screen.queryByText(/Best in category/i)).not.toBeInTheDocument();
+    expect(screen.getByText("Comparison ranking withheld")).toBeInTheDocument();
   });
 
   it("shows missing calorie evidence explicitly in detailed view", async () => {

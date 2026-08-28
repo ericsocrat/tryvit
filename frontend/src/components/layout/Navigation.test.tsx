@@ -135,10 +135,10 @@ describe("Navigation", () => {
     expect(screen.getByRole("navigation", { name: "Main navigation" })).toBeInTheDocument();
   });
 
-  it("is hidden on desktop (lg+ breakpoint)", () => {
+  it("uses the app-shell mobile navigation surface", () => {
     render(<Navigation />);
     const nav = screen.getByRole("navigation", { name: "Main navigation" });
-    expect(nav.className).toContain("lg:hidden");
+    expect(nav).toHaveAttribute("data-testid", "main-navigation");
   });
 
   // ── Badge counts (§4.6) ──────────────────────────────────────────────
@@ -210,7 +210,19 @@ describe("Navigation", () => {
     mockPathname.mockReturnValue("/app/compare");
     render(<Navigation />);
     const moreBtn = screen.getByText("More").closest("button");
-    expect(moreBtn?.className).toContain("text-brand");
+    expect(moreBtn).toHaveAttribute("data-active", "true");
+  });
+
+  it("marks Search and Scan as prominent one-hand actions", () => {
+    render(<Navigation />);
+    expect(screen.getByText("Search").closest("a")).toHaveAttribute(
+      "data-prominent",
+      "true",
+    );
+    expect(screen.getByText("Scan").closest("a")).toHaveAttribute(
+      "data-prominent",
+      "true",
+    );
   });
 
   // ── Compare badge on More button ──────────────────────────────────────

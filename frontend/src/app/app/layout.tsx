@@ -7,7 +7,7 @@
 import { buttonClasses } from "@/components/common/Button";
 import { AuthenticatedProviders } from "@/components/AuthenticatedProviders";
 import { CountryChip } from "@/components/common/CountryChip";
-import { Logo } from "@/components/common/Logo";
+import { FoldedTryVitIdentity } from "@/components/common/FoldedTryVitIdentity";
 import { CompareFloatingButton } from "@/components/compare/CompareFloatingButton";
 import { ComparisonTray } from "@/components/desktop/ComparisonTray";
 import { LanguageHydrator } from "@/components/i18n/LanguageHydrator";
@@ -25,6 +25,8 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { AlertTriangle } from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import styles from "@/components/layout/AppShell.module.css";
 
 export default async function AppLayout({
   children,
@@ -51,7 +53,10 @@ export default async function AppLayout({
     const locale = resolveLocaleFromAcceptLanguage(accept);
 
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
+      <div
+        className={`${styles.frame} flex min-h-screen flex-col items-center justify-center px-4 text-center`}
+        data-design-system="v2"
+      >
         <AlertTriangle size={40} aria-hidden="true" className="mb-2 text-warning" />
         <h1 className="mb-1 text-lg font-bold text-foreground">
           {translate(locale, "layout.errorTitle")}
@@ -59,12 +64,12 @@ export default async function AppLayout({
         <p className="mb-6 text-sm text-foreground-secondary">
           {translate(locale, "layout.errorMessage")}
         </p>
-        <a
+        <Link
           href="/app/search"
           className={buttonClasses("primary", "md", { className: "inline-block" })}
         >
           {translate(locale, "common.tryAgain")}
-        </a>
+        </Link>
       </div>
     );
   }
@@ -87,29 +92,33 @@ export default async function AppLayout({
 
   return (
     <AuthenticatedProviders>
-      <div className="flex min-h-screen flex-col xl:flex-row">
+      <div className={styles.frame} data-design-system="v2">
         <div className="no-print">
           <OfflineIndicator />
         </div>
 
         {/* Sidebar — xl+ only (hidden below xl via CSS) */}
-        <DesktopSidebar />
+        <DesktopSidebar country={prefs.country} />
 
         {/* Main column — offset by sidebar width on xl+ */}
-        <div className="flex min-h-screen max-w-full flex-1 flex-col pb-16 lg:pb-0 xl:pl-56">
+        <div className={styles.mainColumn}>
           {/* Header — visible below xl. Hidden at xl+ where sidebar takes over. */}
-          <header className="sticky top-0 z-40 border-b border-border bg-surface/80 pt-[env(safe-area-inset-top)] backdrop-blur-sm xl:hidden">
-            <div className="mx-auto flex h-12 md:h-14 max-w-5xl items-center justify-between px-4">
-              <Logo variant="lockup" size={24} />
+          <header className={styles.appHeader}>
+            <div className={styles.headerInner}>
+              <Link href="/app" aria-label="TryVit" className={styles.headerIdentity}>
+                <FoldedTryVitIdentity size={28} />
+              </Link>
               {/* Desktop header nav — lg to xl only */}
               <DesktopHeaderNav />
-              <CountryChip country={prefs.country} />
+              <div className={styles.headerUtilities}>
+                <CountryChip country={prefs.country} size="sm" />
+              </div>
             </div>
           </header>
 
           <main
             id="main-content"
-            className="mx-auto w-full max-w-5xl flex-1 px-4 py-4 md:py-6 lg:py-8"
+            className={styles.mainContent}
           >
             <ListsHydrator />
             <LanguageHydrator

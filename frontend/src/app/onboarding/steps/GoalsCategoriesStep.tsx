@@ -1,112 +1,117 @@
 "use client";
 
-// ─── Step 3: Health Goals + Categories ──────────────────────────────────────
-// Combines health goals selection with favorite category selection.
-// Issue #701: streamline onboarding from 7 steps to 4.
-
+import styles from "@/app/onboarding/OnboardingExperience.module.css";
 import type { StepProps } from "@/app/onboarding/types";
 import { Button } from "@/components/common/Button";
 import { CategoryIcon } from "@/components/common/CategoryIcon";
 import { FOOD_CATEGORIES, HEALTH_GOALS } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 
+interface GoalsCategoriesStepProps extends StepProps {
+  readonly loading?: boolean;
+}
+
 export function GoalsCategoriesStep({
   data,
+  loading = false,
   onChange,
   onNext,
   onBack,
-}: Readonly<StepProps>) {
+}: Readonly<GoalsCategoriesStepProps>) {
   const { t } = useTranslation();
 
   function toggleGoal(value: string) {
-    const updated = data.healthGoals.includes(value)
-      ? data.healthGoals.filter((g) => g !== value)
+    const healthGoals = data.healthGoals.includes(value)
+      ? data.healthGoals.filter((goal) => goal !== value)
       : [...data.healthGoals, value];
-    onChange({ healthGoals: updated });
+    onChange({ healthGoals });
   }
 
   function toggleCategory(slug: string) {
-    const updated = data.favoriteCategories.includes(slug)
-      ? data.favoriteCategories.filter((c) => c !== slug)
+    const favoriteCategories = data.favoriteCategories.includes(slug)
+      ? data.favoriteCategories.filter((category) => category !== slug)
       : [...data.favoriteCategories, slug];
-    onChange({ favoriteCategories: updated });
+    onChange({ favoriteCategories });
   }
 
   return (
-    <div className="space-y-6 sm:space-y-7">
-      {/* ── Health Goals section ── */}
-      <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-        {t("onboarding.healthGoalsTitle")}
-      </h1>
-      <p className="max-w-md text-sm text-foreground-secondary sm:text-base">
-        {t("onboarding.healthGoalsSubtitle")}
-      </p>
+    <div className={styles.step}>
+      <div className={styles.stepIntro}>
+        <p className={styles.registerCaption} aria-hidden="true">03 / 03</p>
+        <h1 className={styles.title}>{t("onboarding.healthGoalsTitle")}</h1>
+        <p className={styles.description}>{t("onboarding.healthGoalsSubtitle")}</p>
+      </div>
 
-      <section className="space-y-3 rounded-2xl border border-border/70 bg-surface-subtle/70 p-4 shadow-sm sm:p-5">
-        {HEALTH_GOALS.map((goal) => (
-          <button
-            type="button"
-            key={goal.value}
-            onClick={() => toggleGoal(goal.value)}
-            aria-pressed={data.healthGoals.includes(goal.value)}
-            className={`flex w-full flex-col rounded-xl border-2 p-4 text-left transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45 ${
-              data.healthGoals.includes(goal.value)
-                ? "border-brand bg-brand-subtle"
-                : "border bg-surface hover:border-strong"
-            }`}
-            data-testid={`goal-${goal.value}`}
-          >
-            <span className="font-semibold text-foreground">
-              {t(goal.labelKey)}
-            </span>
-            <span className="mt-1 text-sm text-foreground-secondary">
-              {t(goal.descKey)}
-            </span>
-          </button>
-        ))}
-      </section>
-
-      {/* ── Categories section ── */}
-      <section className="rounded-2xl border border-border/70 bg-surface-subtle/70 p-4 shadow-sm sm:p-5">
-        <h2 className="mb-2 text-base font-semibold text-foreground sm:text-lg">
-          {t("onboarding.categoriesTitle")}
-        </h2>
-        <p className="mb-4 text-sm text-foreground-secondary">
-          {t("onboarding.categoriesSubtitle")}
-        </p>
-
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-          {FOOD_CATEGORIES.map((cat) => (
-            <button
-              type="button"
-              key={cat.slug}
-              onClick={() => toggleCategory(cat.slug)}
-              aria-pressed={data.favoriteCategories.includes(cat.slug)}
-              className={`flex items-center gap-2 rounded-lg border-2 px-3 py-2.5 text-sm transition-colors ${
-                data.favoriteCategories.includes(cat.slug)
-                  ? "border-brand bg-brand-subtle font-medium text-brand"
-                  : "border text-foreground-secondary hover:border-strong"
-              }`}
-              data-testid={`category-${cat.slug}`}
-            >
-              <CategoryIcon slug={cat.slug} size="md" />
-              <span>{t(cat.labelKey)}</span>
-            </button>
-          ))}
+      <section className={styles.registerSection}>
+        <div className={styles.goalList}>
+          {HEALTH_GOALS.map((goal) => {
+            const selected = data.healthGoals.includes(goal.value);
+            return (
+              <button
+                type="button"
+                key={goal.value}
+                onClick={() => toggleGoal(goal.value)}
+                aria-pressed={selected}
+                disabled={loading}
+                className={`${styles.goalRow} ${
+                  selected ? styles.goalSelected : ""
+                }`}
+                data-testid={`goal-${goal.value}`}
+              >
+                <span className={styles.choiceTitle}>{t(goal.labelKey)}</span>
+                <span className={styles.choiceMeta}>{t(goal.descKey)}</span>
+              </button>
+            );
+          })}
         </div>
       </section>
 
-      <div className="mt-1 flex gap-3">
-        <Button type="button" variant="secondary" onClick={onBack} className="flex-1">
+      <section className={styles.registerSection}>
+        <p className={styles.registerCaption} aria-hidden="true">02 / 02</p>
+        <h2 className={styles.sectionTitle}>{t("onboarding.categoriesTitle")}</h2>
+        <p className={styles.sectionDescription}>{t("onboarding.categoriesSubtitle")}</p>
+
+        <div className={styles.categoryGrid}>
+          {FOOD_CATEGORIES.map((category) => {
+            const selected = data.favoriteCategories.includes(category.slug);
+            return (
+              <button
+                type="button"
+                key={category.slug}
+                onClick={() => toggleCategory(category.slug)}
+                aria-pressed={selected}
+                disabled={loading}
+                className={`${styles.categoryChoice} ${
+                  selected ? styles.categorySelected : ""
+                }`}
+                data-testid={`category-${category.slug}`}
+              >
+                <CategoryIcon slug={category.slug} size="md" />
+                <span>{t(category.labelKey)}</span>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <div className={styles.actions}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={onBack}
+          disabled={loading}
+          fullWidth
+        >
           {t("onboarding.back")}
         </Button>
         <Button
           type="button"
           onClick={onNext}
-          className="flex-1"
+          loading={loading}
+          fullWidth
           data-testid="onboarding-complete"
         >
-          {t("onboarding.finish")}
+          {loading ? t("onboarding.saving") : t("onboarding.finish")}
         </Button>
       </div>
     </div>

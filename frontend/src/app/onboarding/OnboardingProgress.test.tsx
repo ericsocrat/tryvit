@@ -21,11 +21,8 @@ describe("OnboardingProgress", () => {
   });
 
   it("renders correct number of step bars", () => {
-    const { container } = render(
-      <OnboardingProgress currentStep={2} totalSteps={5} />,
-    );
-    const bars = container.querySelectorAll('[class*="rounded-full"]');
-    expect(bars).toHaveLength(5);
+    render(<OnboardingProgress currentStep={2} totalSteps={5} />);
+    expect(screen.getAllByTestId("onboarding-progress-segment")).toHaveLength(5);
   });
 
   it("renders step text", () => {

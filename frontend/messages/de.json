@@ -255,6 +255,7 @@
     "clearAllFilters": "Alle Filter zurücksetzen",
     "searching": "Suche läuft…",
     "searchFor": "Suche nach '{query}'",
+    "relatedTextMatch": "Verwandter Texttreffer — Name und Marke prüfen",
     "clearRecent": "Leeren",
     "removeRecent": "{query} aus letzten Suchen entfernen",
     "popularSearches": "Beliebte Suchen",

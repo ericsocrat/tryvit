@@ -255,6 +255,7 @@
     "clearAllFilters": "Wyczyść wszystkie filtry",
     "searching": "Wyszukiwanie…",
     "searchFor": "Szukaj \"{query}\"",
+    "relatedTextMatch": "Powiązane dopasowanie tekstowe — sprawdź nazwę i markę",
     "clearRecent": "Wyczyść",
     "removeRecent": "Usuń {query} z ostatnich wyszukiwań",
     "popularSearches": "Popularne wyszukiwania",

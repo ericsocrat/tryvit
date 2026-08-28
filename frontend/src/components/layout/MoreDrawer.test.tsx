@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MoreDrawer } from "./MoreDrawer";
 
@@ -116,9 +116,7 @@ describe("MoreDrawer", () => {
 
   it("renders a drag handle indicator", () => {
     render(<MoreDrawer open={true} onClose={onClose} />);
-    const dialog = screen.getByRole("dialog");
-    const handle = dialog.querySelector(".rounded-full.bg-border");
-    expect(handle).toBeInTheDocument();
+    expect(screen.getByTestId("drawer-handle")).toBeInTheDocument();
   });
 
   // ─── A11y landmark ────────────────────────────────────────────────────
@@ -141,14 +139,16 @@ describe("MoreDrawer", () => {
 
   it("calls onClose when backdrop is clicked", () => {
     render(<MoreDrawer open={true} onClose={onClose} />);
-    const backdrop = screen.getByLabelText("Close modal / overlay");
-    fireEvent.click(backdrop);
+    fireEvent.click(screen.getByRole("dialog"));
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
   it("calls onClose on Escape key", () => {
     render(<MoreDrawer open={true} onClose={onClose} />);
-    fireEvent.keyDown(document, { key: "Escape" });
+    fireEvent(
+      screen.getByRole("dialog"),
+      new Event("cancel", { bubbles: false, cancelable: true }),
+    );
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
@@ -183,15 +183,29 @@ describe("MoreDrawer", () => {
 
   // ─── Touch targets ─────────────────────────────────────────────────
 
-  it("nav items have min-h-12 for touch targets", () => {
+  it("marks nav items as full touch targets", () => {
     render(<MoreDrawer open={true} onClose={onClose} />);
     const categoriesLink = screen.getByText("Categories").closest("a");
-    expect(categoriesLink?.className).toContain("min-h-12");
+    expect(categoriesLink).toHaveAttribute("data-touch-target", "true");
   });
 
   it("applies touch-target class to close button", () => {
     render(<MoreDrawer open={true} onClose={onClose} />);
     const closeBtn = screen.getByLabelText("Close");
     expect(closeBtn.className).toContain("touch-target");
+  });
+
+  it("returns focus to the invoking control when the drawer closes", async () => {
+    const trigger = document.createElement("button");
+    trigger.textContent = "Open navigation";
+    document.body.appendChild(trigger);
+    trigger.focus();
+
+    const { rerender } = render(<MoreDrawer open={true} onClose={onClose} />);
+    await waitFor(() => expect(screen.getByLabelText("Close")).toHaveFocus());
+
+    rerender(<MoreDrawer open={false} onClose={onClose} />);
+    expect(trigger).toHaveFocus();
+    trigger.remove();
   });
 });

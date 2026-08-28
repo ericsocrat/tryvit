@@ -13,7 +13,7 @@ export async function generateMetadata({
 
   return {
     title: name,
-    description: `Browse ${name.toLowerCase()} products and compare health scores. Find the healthiest options in this category.`,
+    description: `Browse ${name.toLowerCase()} products and inspect their available nutrition and evidence context.`,
   };
 }
 

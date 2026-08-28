@@ -10,14 +10,19 @@ import { LiveRegion } from "@/components/common/LiveRegion";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { NovaBadge } from "@/components/common/NovaBadge";
 import { NutriScoreBadge } from "@/components/common/NutriScoreBadge";
-import { ProductThumbnail } from "@/components/common/ProductThumbnail";
 import { PullToRefresh } from "@/components/common/PullToRefresh";
 import { SearchResultsSkeleton } from "@/components/common/skeletons";
 import { CompareCheckbox } from "@/components/compare/CompareCheckbox";
+import {
+  AppPage,
+  AppPageHeader,
+  AppSectionHeader,
+} from "@/components/layout/AppPage";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { AddToListMenu } from "@/components/product/AddToListMenu";
 import { AvoidBadge } from "@/components/product/AvoidBadge";
 import { HealthWarningBadge } from "@/components/product/HealthWarningsCard";
+import { ProductRegisterCard } from "@/components/product/ProductRegisterCard";
 import { ActiveFilterChips } from "@/components/search/ActiveFilterChips";
 import { DidYouMean } from "@/components/search/DidYouMean";
 import { FilterPanel } from "@/components/search/FilterPanel";
@@ -27,18 +32,15 @@ import { useAnalytics } from "@/hooks/use-analytics";
 import { useProductAllergenWarnings } from "@/hooks/use-product-allergens";
 import type { AllergenWarning } from "@/lib/allergen-matching";
 import { searchProducts } from "@/lib/api";
-import { SCORE_BANDS, getScoreInterpretation } from "@/lib/constants";
 import { eventBus } from "@/lib/events";
 import { useTranslation } from "@/lib/i18n";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { addRecentSearch, getRecentSearches } from "@/lib/recent-searches";
-import { toTryVitScore } from "@/lib/score-utils";
 import { createClient } from "@/lib/supabase/client";
 import type { FormSubmitEvent, SearchFilters, SearchResult } from "@/lib/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
     ClipboardList,
-    HelpCircle,
     LayoutGrid,
     LayoutList,
     Save,
@@ -46,6 +48,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import styles from "./search.module.css";
 
 /* ── Debounce hook for instant search ─────────────────────────────────────── */
 
@@ -61,8 +65,41 @@ function useDebounce(value: string, delay: number): string {
 const AVOID_TOGGLE_KEY = "tryvit:show-avoided";
 const VIEW_MODE_KEY = "tryvit:search-view";
 const PAGE_SIZE = 20;
+const DIACRITIC_MARKS = /\p{M}/gu;
 
 type ViewMode = "grid" | "list";
+
+function normalizeSearchText(value: string | null | undefined): string {
+  return (value ?? "")
+    .normalize("NFD")
+    .replace(DIACRITIC_MARKS, "")
+    .toLowerCase();
+}
+
+/**
+ * The API exposes a composite relevance value but not a match-reason enum.
+ * Disclose a broader relevance match only when the backend returned positive
+ * relevance and the submitted phrase is absent from every visible identity
+ * field. This does not reinterpret or change backend ranking.
+ */
+function isBroaderRelevanceMatch(
+  product: SearchResult,
+  submittedQuery: string,
+): boolean {
+  const needle = normalizeSearchText(submittedQuery.trim());
+  if (!needle || !Number.isFinite(product.relevance) || product.relevance <= 0) {
+    return false;
+  }
+
+  return ![
+    product.product_name,
+    product.product_name_en,
+    product.product_name_display,
+    product.brand,
+    product.category,
+    product.category_display,
+  ].some((value) => normalizeSearchText(value).includes(needle));
+}
 
 /* ── localStorage helpers ─────────────────────────────────────────────────── */
 
@@ -242,19 +279,33 @@ export default function SearchPage() {
 
   const resultsClassName =
     viewMode === "grid"
-      ? "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
-      : "space-y-2";
+      ? `${styles.results} ${styles.gridResults} grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3`
+      : `${styles.results} ${styles.listResults} space-y-2`;
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
+      <AppPage className={styles.page}>
       <Breadcrumbs
         items={[
           { labelKey: "nav.home", href: "/app" },
           { labelKey: "nav.search" },
         ]}
       />
-      <h1 className="sr-only">{t("search.title")}</h1>
-      <div className="flex lg:gap-6">
+      <AppPageHeader
+        eyebrow={t("nav.search")}
+        title={t("search.emptyState")}
+        description={t("search.emptyStateDescription")}
+        register={
+          data ? (
+            <>
+              <span>{t("common.productFrom", { country: data.country })}</span>
+              <span>{t("search.result", { count: data.total })}</span>
+              <span>{t("trust.evidence.scoreProvisionalLabel")}</span>
+            </>
+          ) : undefined
+        }
+      />
+      <div className={styles.workspace}>
         {/* Filter sidebar (desktop) */}
         <FilterPanel
           filters={filters}
@@ -264,13 +315,13 @@ export default function SearchPage() {
         />
 
         {/* Main content */}
-        <div className="min-w-0 flex-1 space-y-4 lg:space-y-6">
+        <div className={styles.content}>
           {/* Search input */}
           <form
             onSubmit={handleSubmit}
             role="search"
             aria-label={t("a11y.searchProducts")}
-            className="space-y-2"
+            className={styles.searchForm}
           >
             <div className="relative">
               <input
@@ -499,12 +550,6 @@ export default function SearchPage() {
           {/* Empty state — no search or filters active */}
           {!isSearchActive && recentSearches.length === 0 && (
             <div className="space-y-6">
-              <EmptyStateIllustration
-                type="no-results"
-                titleKey="search.emptyState"
-                descriptionKey="search.emptyStateDescription"
-              />
-
               {/* Popular search suggestions */}
               <div className="text-center">
                 <p className="mb-2 text-xs font-medium uppercase tracking-wider text-foreground-muted">
@@ -547,35 +592,30 @@ export default function SearchPage() {
               <LiveRegion
                 message={t("a11y.searchResultsStatus", { count: data.total })}
               />
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-foreground-secondary lg:text-base">
-                  {t("search.result", { count: data.total })}
-                  {data.query && (
-                    <> {t("search.resultsFor", { query: data.query })}</>
-                  )}
-                  {filters.sort_by && filters.sort_by !== "relevance" && (
-                    <span
-                      className="ml-2 inline-flex items-center gap-1 rounded-full bg-brand-subtle px-2 py-0.5 text-xs font-medium text-brand"
-                      data-testid="sort-indicator"
-                    >
-                      {t("search.sortedBy", {
-                        field: {
-                          name: t("filters.name"),
-                          unhealthiness: t("filters.healthScore"),
-                          nutri_score: t("filters.nutriScore"),
-                          calories: t("filters.calories"),
-                        }[filters.sort_by] ?? filters.sort_by,
-                        direction: filters.sort_order === "desc" ? "↓" : "↑",
-                      })}
-                    </span>
-                  )}
+              <AppSectionHeader
+                label={t("common.productFrom", { country: data.country })}
+                title={`${t("search.result", { count: data.total })}${
+                  data.query ? ` ${t("search.resultsFor", { query: data.query })}` : ""
+                }`}
+                meta={
+                  data.pages > 1
+                    ? t("common.pageOf", { page: data.page, pages: data.pages })
+                    : undefined
+                }
+              />
+              {filters.sort_by && filters.sort_by !== "relevance" ? (
+                <p className={styles.sortIndicator} data-testid="sort-indicator">
+                  {t("search.sortedBy", {
+                    field: {
+                      name: t("filters.name"),
+                      unhealthiness: t("filters.healthScore"),
+                      nutri_score: t("filters.nutriScore"),
+                      calories: t("filters.calories"),
+                    }[filters.sort_by] ?? filters.sort_by,
+                    direction: filters.sort_order === "desc" ? "↓" : "↑",
+                  })}
                 </p>
-                {data.pages > 1 && (
-                  <p className="text-xs text-foreground-muted">
-                    {t("common.pageOf", { page: data.page, pages: data.pages })}
-                  </p>
-                )}
-              </div>
+              ) : null}
 
               {allergenState.enabled && allergenState.isLoading && (
                 <output
@@ -676,6 +716,7 @@ export default function SearchPage() {
                         key={product.product_id}
                         product={product}
                         viewMode={viewMode}
+                        submittedQuery={submittedQuery}
                         allergenWarnings={allergenMap[product.product_id] ?? []}
                       />
                     ))}
@@ -741,72 +782,8 @@ export default function SearchPage() {
           />
         </div>
       </div>
+      </AppPage>
     </PullToRefresh>
-  );
-}
-
-/* ── ProductRow ────────────────────────────────────────────────────────────── */
-
-/** Inline tooltip showing the top health-flag contributors to the score. */
-function ScoreTooltip({ product }: Readonly<{ product: SearchResult }>) {
-  const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-
-  const flags: string[] = [];
-  if (product.high_sugar) flags.push(t("product.highSugar"));
-  if (product.high_salt) flags.push(t("product.highSalt"));
-  if (product.high_sat_fat) flags.push(t("product.highSatFat"));
-  if (product.high_additive_load) flags.push(t("product.manyAdditives"));
-
-  const interpretation = getScoreInterpretation(toTryVitScore(product.unhealthiness_score));
-
-  return (
-    <span className="relative inline-flex">
-      <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setOpen((v) => !v);
-        }}
-        className="touch-target inline-flex h-5 w-5 items-center justify-center rounded-full text-foreground-muted hover:text-foreground-secondary"
-        aria-label={t("search.whyThisScore")}
-        data-testid="score-tooltip-trigger"
-      >
-        <HelpCircle size={14} aria-hidden="true" />
-      </button>
-      {open && (
-        <div
-          className="absolute right-0 top-6 z-50 w-52 rounded-lg border border-border bg-surface p-3 shadow-lg sm:left-6 sm:right-auto sm:top-0"
-          data-testid="score-tooltip-content"
-        >
-          <p className={`text-xs font-semibold ${interpretation.color}`}>
-            {t(interpretation.key)}
-          </p>
-          {flags.length > 0 && (
-            <ul className="mt-1.5 space-y-0.5">
-              {flags.map((f) => (
-                <li
-                  key={f}
-                  className="flex items-center gap-1 text-xs text-foreground-secondary"
-                >
-                  <span
-                    className="h-1.5 w-1.5 rounded-full bg-error"
-                    aria-hidden="true"
-                  />
-                  {f}
-                </li>
-              ))}
-            </ul>
-          )}
-          {flags.length === 0 && (
-            <p className="mt-1 text-xs text-foreground-muted">
-              {t("search.noMajorFlags")}
-            </p>
-          )}
-        </div>
-      )}
-    </span>
   );
 }
 
@@ -814,165 +791,79 @@ function ProductRow({
   product,
   viewMode = "list",
   allergenWarnings = [],
+  submittedQuery,
 }: Readonly<{
   product: SearchResult;
   viewMode?: ViewMode;
   allergenWarnings?: AllergenWarning[];
+  submittedQuery: string;
 }>) {
   const { t } = useTranslation();
-  const band = SCORE_BANDS[product.score_band];
+  const name = product.product_name_display ?? product.product_name;
+  const broaderMatch = isBroaderRelevanceMatch(product, submittedQuery);
+  const warnings = [
+    product.high_sugar ? t("product.highSugar") : null,
+    product.high_salt ? t("product.highSalt") : null,
+    product.high_sat_fat ? t("product.highSatFat") : null,
+    product.high_additive_load ? t("product.manyAdditives") : null,
+  ].filter((warning): warning is string => warning !== null);
 
-  // ── Grid card ────────────────────────────────────────────────────────────
-  if (viewMode === "grid") {
-    return (
-      <li
-        className={`card flex flex-col gap-3 transition-all duration-fast hover:shadow-md hover:-translate-y-0.5 ${
-          product.is_avoided ? "opacity-50" : ""
-        }`}
-      >
-        <Link
-          href={`/app/product/${product.product_id}`}
-          className="flex flex-col gap-2 min-w-0"
-        >
-          {/* Product thumbnail */}
-          <div className="mx-auto">
-            <ProductThumbnail
-              imageUrl={product.image_thumb_url}
-              productName={product.product_name_display ?? product.product_name}
-              categorySlug={product.category}
-              categoryIcon={product.category_icon}
-              size="md"
-            />
-          </div>
-          {/* Score + Nutri-Score row */}
-          <div className="flex items-center justify-between">
-            <div
-              className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-bold ${band.bg} ${band.color}`}
+  return (
+    <ProductRegisterCard
+      productId={product.product_id}
+      href={`/app/product/${product.product_id}`}
+      name={name}
+      brand={product.brand}
+      category={product.category_display ?? product.category}
+      categorySlug={product.category}
+      imageUrl={product.image_thumb_url}
+      score={product.unhealthiness_score}
+      scoreBand={product.score_band}
+      variant={viewMode}
+      muted={product.is_avoided}
+      detail={
+        product.calories === null
+          ? t("trust.evidence.nutritionUnavailable")
+          : `${Math.round(product.calories)} kcal`
+      }
+      meta={
+        <>
+          {broaderMatch ? (
+            <span
+              className={styles.relatedMatch}
+              data-testid="broader-relevance-match"
+              aria-label={t("trust.searchRelevance.ariaLabel", {
+                reason: t("search.relatedTextMatch"),
+              })}
             >
-              {toTryVitScore(product.unhealthiness_score)}
-            </div>
-            <div className="flex items-center gap-1.5">
-              <NutriScoreBadge grade={product.nutri_score} size="sm" />
-              {product.nova_group && (
-                <NovaBadge group={Number(product.nova_group)} size="sm" />
-              )}
-            </div>
-          </div>
-          {/* Product name */}
-          <p className="truncate text-sm font-medium text-foreground">
-            {product.product_name_display ?? product.product_name}
-          </p>
-          {/* Brand + category */}
-          <p className="truncate text-xs text-foreground-secondary">
-            {product.brand} · {product.category_icon}{" "}
-            {product.category_display ?? product.category}
-          </p>
-          {/* Calories */}
-          <p className="text-xs text-foreground-muted">
-            {product.calories === null
-              ? t("trust.evidence.nutritionUnavailable")
-              : `${Math.round(product.calories)} kcal`}
-          </p>
-          {/* Allergen warnings */}
+              ≈ {t("search.relatedTextMatch")}
+            </span>
+          ) : null}
+          {warnings.map((warning) => (
+            <span className={styles.warning} key={warning}>
+              {warning}
+            </span>
+          ))}
           <AllergenChips warnings={allergenWarnings} />
-        </Link>
-        {/* Action buttons */}
-        <div className="flex items-center gap-1 border-t border-border/50 pt-2">
+        </>
+      }
+      badges={
+        <>
+          <NutriScoreBadge grade={product.nutri_score} size="sm" />
+          {product.nova_group ? (
+            <NovaBadge group={Number(product.nova_group)} size="sm" />
+          ) : null}
+        </>
+      }
+      actions={
+        <>
           <HealthWarningBadge productId={product.product_id} />
           <AvoidBadge productId={product.product_id} />
           <AddToListMenu productId={product.product_id} compact />
-          <CompareCheckbox
-            productId={product.product_id}
-            productName={product.product_name_display ?? product.product_name}
-          />
-        </div>
-      </li>
-    );
-  }
-
-  // ── List row (default) ────────────────────────────────────────────────────
-  return (
-    <li
-      className={`card hover-lift-press flex items-center gap-3 transition-all duration-fast hover:shadow-md ${
-        product.is_avoided ? "opacity-50" : ""
-      }`}
-    >
-      <Link
-        href={`/app/product/${product.product_id}`}
-        className="flex flex-1 items-center gap-3 min-w-0"
-      >
-        {/* Product thumbnail */}
-        <ProductThumbnail
-          imageUrl={product.image_thumb_url}
-          productName={product.product_name_display ?? product.product_name}
-          categorySlug={product.category}
-          categoryIcon={product.category_icon}
-          size="sm"
-        />
-
-        {/* Score badge */}
-        <div className="relative shrink-0">
-          <div
-            className={`flex h-12 w-12 items-center justify-center rounded-lg text-lg font-bold ${band.bg} ${band.color}`}
-          >
-            {toTryVitScore(product.unhealthiness_score)}
-          </div>
-          <span className="absolute -right-1 -top-1">
-            <ScoreTooltip product={product} />
-          </span>
-        </div>
-
-        {/* Product info */}
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-medium text-foreground">
-            {product.product_name_display ?? product.product_name}
-          </p>
-          <p className="truncate text-sm text-foreground-secondary">
-            {product.brand} · {product.category_icon}{" "}
-            {product.category_display ?? product.category}
-            <span className="ml-1 text-xs text-foreground-muted">
-              · {product.calories === null
-                ? t("trust.evidence.valueUnavailable")
-                : `${Math.round(product.calories)} kcal`}
-            </span>
-          </p>
-          {/* Allergen warnings */}
-          <AllergenChips warnings={allergenWarnings} />
-        </div>
-      </Link>
-
-      {/* Action buttons — grouped with tighter gap */}
-      <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
-        {/* Health warning badge */}
-        <HealthWarningBadge productId={product.product_id} />
-
-        {/* Avoid badge — hidden on xs */}
-        <span className="hidden xs:inline-flex">
-          <AvoidBadge productId={product.product_id} />
-        </span>
-
-        {/* Favorites heart — hidden on xs */}
-        <span className="hidden xs:inline-flex">
-          <AddToListMenu productId={product.product_id} compact />
-        </span>
-
-        {/* Compare checkbox */}
-        <CompareCheckbox
-          productId={product.product_id}
-          productName={product.product_name_display ?? product.product_name}
-        />
-
-        {/* NOVA processing badge — hidden on xs screens */}
-        {product.nova_group && (
-          <span className="hidden sm:inline-flex">
-            <NovaBadge group={Number(product.nova_group)} size="sm" />
-          </span>
-        )}
-
-        {/* Nutri-Score badge */}
-        <NutriScoreBadge grade={product.nutri_score} size="sm" showTooltip />
-      </div>
-    </li>
+          <CompareCheckbox productId={product.product_id} productName={name} />
+        </>
+      }
+    />
   );
 }
 

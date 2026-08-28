@@ -1,0 +1,446 @@
+.shell {
+  --onboarding-ink: #123d2c;
+  --onboarding-fold: #a64b2a;
+  --onboarding-rule: var(--color-border-default);
+  --tryvit-mark-front: var(--onboarding-ink);
+  --tryvit-mark-fold: var(--onboarding-fold);
+  --color-surface: var(--color-surface-1);
+  --color-surface-subtle: var(--color-canvas-subtle);
+  --color-surface-muted: var(--color-surface-2);
+  --color-text-primary: var(--color-content-primary);
+  --color-text-secondary: var(--color-content-secondary);
+  --color-text-muted: var(--color-content-muted);
+  --color-border: var(--color-border-subtle);
+  --color-border-strong: var(--color-border-default);
+  --color-brand: var(--color-action-primary-background);
+  --color-brand-hover: var(--color-action-primary-hover);
+  --color-brand-subtle: var(--color-surface-selected);
+  --color-focus: var(--color-border-focus);
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  background:
+    linear-gradient(color-mix(in srgb, var(--onboarding-rule) 13%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--onboarding-rule) 10%, transparent) 1px, transparent 1px),
+    var(--color-canvas);
+  background-size: 3rem 3rem;
+  color: var(--color-content-primary);
+}
+
+.header {
+  border-bottom: 1px solid var(--onboarding-rule);
+  padding-top: env(safe-area-inset-top);
+  background: color-mix(in srgb, var(--color-surface-1) 94%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+.headerInner {
+  display: flex;
+  min-height: 4.25rem;
+  max-width: 62rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-inline: auto;
+  padding: 0.6rem 1rem;
+}
+
+.brandIdentity {
+  color: var(--onboarding-ink);
+}
+
+.registerCaption {
+  color: var(--color-content-muted);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.main {
+  width: 100%;
+  max-width: 62rem;
+  flex: 1;
+  margin-inline: auto;
+  padding: 1rem 0.75rem 2rem;
+}
+
+.wizard {
+  position: relative;
+  width: 100%;
+  overflow: clip;
+  border: 1px solid var(--onboarding-rule);
+  border-radius: 1.5rem 0.25rem 1.5rem 1.5rem;
+  background: color-mix(in srgb, var(--color-surface-1) 98%, transparent);
+  box-shadow: 0 20px 56px rgb(23 37 29 / 0.12);
+}
+
+.wizard::before {
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  width: 2.7rem;
+  height: 2.7rem;
+  background: linear-gradient(225deg, var(--onboarding-fold) 0 49%, var(--onboarding-rule) 50% 53%, transparent 54%);
+  content: "";
+  pointer-events: none;
+}
+
+.progress {
+  border-bottom: 1px solid var(--onboarding-rule);
+  padding: 1rem 1rem 0.9rem;
+  background: var(--color-canvas-subtle);
+}
+
+.progressMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.progressCount {
+  color: var(--onboarding-ink);
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.09em;
+}
+
+.progressBars {
+  display: grid;
+  grid-template-columns: repeat(var(--onboarding-step-count), minmax(0, 1fr));
+  gap: 0.25rem;
+}
+
+.progressSegment {
+  height: 3px;
+  background: var(--color-border-subtle);
+  transition: background-color var(--ds-motion-duration-fast, 180ms) ease;
+}
+
+.progressSegmentComplete {
+  background: var(--onboarding-fold);
+}
+
+.step {
+  animation: onboarding-enter var(--ds-motion-duration-standard, 240ms) var(--ds-motion-easing-standard, ease-out) both;
+}
+
+.stepIntro {
+  display: grid;
+  gap: 0.65rem;
+  border-bottom: 1px solid var(--onboarding-rule);
+  padding: 1.35rem 1rem 1.2rem;
+}
+
+.welcomeIntro {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+}
+
+.heroMark {
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  place-items: center;
+  border: 1px solid var(--onboarding-rule);
+  border-radius: 0.85rem 0.15rem 0.85rem 0.85rem;
+  background: var(--color-surface-selected);
+  color: var(--onboarding-ink);
+}
+
+.title {
+  margin: 0;
+  color: var(--color-content-primary);
+  font-size: clamp(1.75rem, 5vw, 2.7rem);
+  font-weight: 790;
+  letter-spacing: -0.045em;
+  line-height: 1.04;
+}
+
+.description {
+  max-width: 44rem;
+  margin: 0;
+  color: var(--color-content-secondary);
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.registerSection {
+  border-bottom: 1px solid var(--onboarding-rule);
+  padding: 1.1rem 1rem 1.2rem;
+}
+
+.sectionTitle {
+  margin: 0 0 0.35rem;
+  color: var(--color-content-primary);
+  font-size: 1rem;
+  font-weight: 760;
+  letter-spacing: -0.015em;
+}
+
+.sectionDescription {
+  margin: 0 0 0.9rem;
+  color: var(--color-content-secondary);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.choiceList,
+.goalList {
+  display: grid;
+  border-top: 1px solid var(--onboarding-rule);
+}
+
+.choiceRow,
+.goalRow {
+  display: flex;
+  min-height: 3.5rem;
+  width: 100%;
+  align-items: center;
+  gap: 0.85rem;
+  border: 0;
+  border-bottom: 1px solid var(--onboarding-rule);
+  padding: 0.7rem 0.2rem;
+  background: transparent;
+  color: var(--color-content-primary);
+  text-align: left;
+  transition: background-color var(--ds-motion-duration-fast, 180ms) ease, color var(--ds-motion-duration-fast, 180ms) ease;
+}
+
+.choiceRow:hover,
+.goalRow:hover,
+.choiceTile:hover,
+.categoryChoice:hover,
+.allergenChoice:hover {
+  background: var(--color-interaction-hover);
+}
+
+.choiceSelected,
+.goalSelected,
+.choiceTileSelected,
+.categorySelected {
+  background: var(--color-interaction-selected);
+  color: var(--color-content-link);
+}
+
+.choiceSelected,
+.goalSelected {
+  box-shadow: inset 3px 0 0 var(--onboarding-fold);
+}
+
+.choiceCopy {
+  min-width: 0;
+  flex: 1;
+}
+
+.choiceTitle {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 730;
+}
+
+.choiceMeta {
+  display: block;
+  margin-top: 0.1rem;
+  color: var(--color-content-secondary);
+  font-size: 0.78rem;
+}
+
+.languageGrid,
+.optionGrid,
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+  gap: 0.5rem;
+}
+
+.choiceTile,
+.categoryChoice {
+  display: flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--onboarding-rule);
+  border-radius: 0.65rem 0.12rem 0.65rem 0.65rem;
+  padding: 0.55rem 0.7rem;
+  background: var(--color-surface-1);
+  color: var(--color-content-secondary);
+  font-size: 0.86rem;
+  font-weight: 680;
+  text-align: center;
+}
+
+.allergenGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.allergenChoice {
+  min-height: 2.75rem;
+  border: 1px solid var(--onboarding-rule);
+  border-radius: 0.6rem 0.12rem 0.6rem 0.6rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface-1);
+  color: var(--color-content-secondary);
+  font-size: 0.84rem;
+  font-weight: 650;
+}
+
+.allergenSelected {
+  border-color: var(--domain-allergen-contains-border);
+  background: var(--domain-allergen-contains-surface);
+  color: var(--domain-allergen-contains-foreground);
+}
+
+.toggleStack {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.85rem;
+  border-top: 1px solid var(--onboarding-rule);
+  padding-top: 0.55rem;
+}
+
+.toggleRow {
+  display: flex;
+  min-height: 2.75rem;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--color-content-secondary);
+  font-size: 0.84rem;
+}
+
+.toggleRow input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--color-action-primary-background);
+}
+
+.goalRow {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.8rem 0.7rem;
+}
+
+.categoryChoice {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  border-top: 1px solid var(--onboarding-rule);
+  padding: 0.85rem 1rem calc(0.85rem + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--color-surface-1) 96%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.skipArea {
+  padding: 0.8rem 1rem 1rem;
+  text-align: center;
+}
+
+.skipLink {
+  min-height: 2.75rem;
+  border-radius: 0.25rem;
+  padding-inline: 0.5rem;
+  color: var(--color-content-secondary);
+  font-size: 0.82rem;
+  text-decoration: underline;
+  text-underline-offset: 0.25rem;
+}
+
+@keyframes onboarding-enter {
+  from {
+    transform: translateY(0.35rem);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (min-width: 48rem) {
+  .main {
+    padding: 2.25rem 1.5rem 3rem;
+  }
+
+  .progress,
+  .stepIntro,
+  .registerSection,
+  .actions {
+    padding-inline: 1.75rem;
+  }
+
+  .welcomeIntro {
+    grid-template-columns: auto 1fr;
+  }
+
+  .optionGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .categoryGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+:global([data-theme="dark"]) .shell {
+  --onboarding-ink: var(--ds-color-forest-200);
+  --onboarding-fold: #ef9d75;
+  background:
+    linear-gradient(rgb(247 239 223 / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(247 239 223 / 0.032) 1px, transparent 1px),
+    var(--color-canvas);
+  background-size: 3rem 3rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step {
+    animation: none;
+  }
+
+  .progressSegment,
+  .choiceRow,
+  .goalRow,
+  .choiceTile,
+  .categoryChoice,
+  .allergenChoice {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .shell,
+  .header,
+  .wizard,
+  .actions,
+  .choiceTile,
+  .categoryChoice,
+  .allergenChoice {
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .choiceSelected,
+  .goalSelected,
+  .choiceTileSelected,
+  .categorySelected,
+  .allergenSelected {
+    border-color: Highlight;
+    color: LinkText;
+  }
+}

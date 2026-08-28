@@ -1,137 +1,141 @@
 "use client";
 
-// ─── Step 2: Diet + Allergens ───────────────────────────────────────────────
-// Combines diet preference selection with allergen checklist in a single step.
-// Issue #701: streamline onboarding from 7 steps to 4.
-
+import styles from "@/app/onboarding/OnboardingExperience.module.css";
 import type { StepProps } from "@/app/onboarding/types";
 import { Button } from "@/components/common/Button";
 import { ALLERGEN_TAGS, DIET_OPTIONS } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 
+interface DietAllergensStepProps extends StepProps {
+  readonly loading?: boolean;
+}
+
 export function DietAllergensStep({
   data,
+  loading = false,
   onChange,
   onNext,
   onBack,
-}: Readonly<StepProps>) {
+}: Readonly<DietAllergensStepProps>) {
   const { t } = useTranslation();
 
   function toggleAllergen(tag: string) {
-    const updated = data.allergens.includes(tag)
-      ? data.allergens.filter((a) => a !== tag)
+    const allergens = data.allergens.includes(tag)
+      ? data.allergens.filter((allergen) => allergen !== tag)
       : [...data.allergens, tag];
-    onChange({ allergens: updated });
+    onChange({ allergens });
   }
 
   return (
-    <div className="space-y-6 sm:space-y-7">
-      {/* ── Diet section ── */}
-      <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-        {t("onboarding.dietTitle")}
-      </h1>
-      <p className="max-w-md text-sm text-foreground-secondary sm:text-base">
-        {t("onboarding.dietSubtitle")}
-      </p>
-
-      <div className="grid grid-cols-3 gap-2 rounded-2xl border border-border/70 bg-surface-subtle/70 p-4 shadow-sm sm:p-5">
-        {DIET_OPTIONS.map((opt) => (
-          <button
-            type="button"
-            key={opt.value}
-            onClick={() => onChange({ diet: opt.value })}
-            aria-pressed={data.diet === opt.value}
-            className={`rounded-lg border-2 px-3 py-3 text-sm transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45 ${
-              data.diet === opt.value
-                ? "border-brand bg-brand-subtle font-medium text-brand"
-                : "border text-foreground-secondary hover:border-strong"
-            }`}
-            data-testid={`diet-${opt.value}`}
-          >
-            {t(opt.labelKey)}
-          </button>
-        ))}
+    <div className={styles.step}>
+      <div className={styles.stepIntro}>
+        <p className={styles.registerCaption} aria-hidden="true">02 / 03</p>
+        <h1 className={styles.title}>{t("onboarding.dietTitle")}</h1>
+        <p className={styles.description}>{t("onboarding.dietSubtitle")}</p>
       </div>
 
-      {data.diet !== "none" && (
-        <label className="mt-4 flex cursor-pointer items-center gap-3">
-          <input
-            type="checkbox"
-            checked={data.strictDiet}
-            onChange={(e) => onChange({ strictDiet: e.target.checked })}
-            className="h-4 w-4 rounded border-strong text-brand focus-visible:ring-brand"
-          />
-          <span className="text-sm text-foreground-secondary">
-            {t("onboarding.strictDiet")}
-          </span>
-        </label>
-      )}
-
-      {/* ── Allergens section ── */}
-      <section className="rounded-2xl border border-border/70 bg-surface-subtle/70 p-4 shadow-sm sm:p-5">
-        <h2 className="mb-2 text-base font-semibold text-foreground sm:text-lg">
-          {t("onboarding.allergenTitle")}
-        </h2>
-        <p className="mb-4 text-sm text-foreground-secondary">
-          {t("onboarding.allergenSubtitle")}
-        </p>
-
-        <div className="flex flex-wrap gap-2">
-          {ALLERGEN_TAGS.map((a) => (
-            <button
-              type="button"
-              key={a.tag}
-              onClick={() => toggleAllergen(a.tag)}
-              aria-pressed={data.allergens.includes(a.tag)}
-              className={`rounded-full border px-3 py-1.5 text-sm transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45 ${
-                data.allergens.includes(a.tag)
-                  ? "border-error-border bg-error-bg text-error-text"
-                  : "border text-foreground-secondary hover:border-strong"
-              }`}
-              data-testid={`allergen-${a.tag}`}
-            >
-              {t(a.labelKey)}
-            </button>
-          ))}
+      <section className={styles.registerSection}>
+        <div className={styles.optionGrid}>
+          {DIET_OPTIONS.map((option) => {
+            const selected = data.diet === option.value;
+            return (
+              <button
+                type="button"
+                key={option.value}
+                onClick={() => onChange({ diet: option.value })}
+                aria-pressed={selected}
+                disabled={loading}
+                className={`${styles.choiceTile} ${
+                  selected ? styles.choiceTileSelected : ""
+                }`}
+                data-testid={`diet-${option.value}`}
+              >
+                {t(option.labelKey)}
+              </button>
+            );
+          })}
         </div>
 
-        {data.allergens.length > 0 && (
-          <div className="mt-4 space-y-3">
-            <label className="flex cursor-pointer items-center gap-3">
+        {data.diet !== "none" ? (
+          <div className={styles.toggleStack}>
+            <label className={styles.toggleRow}>
+              <input
+                type="checkbox"
+                checked={data.strictDiet}
+                disabled={loading}
+                onChange={(event) => onChange({ strictDiet: event.target.checked })}
+              />
+              <span>{t("onboarding.strictDiet")}</span>
+            </label>
+          </div>
+        ) : null}
+      </section>
+
+      <section className={styles.registerSection}>
+        <p className={styles.registerCaption} aria-hidden="true">02 / 02</p>
+        <h2 className={styles.sectionTitle}>{t("onboarding.allergenTitle")}</h2>
+        <p className={styles.sectionDescription}>{t("onboarding.allergenSubtitle")}</p>
+
+        <div className={styles.allergenGrid}>
+          {ALLERGEN_TAGS.map((allergen) => {
+            const selected = data.allergens.includes(allergen.tag);
+            return (
+              <button
+                type="button"
+                key={allergen.tag}
+                onClick={() => toggleAllergen(allergen.tag)}
+                aria-pressed={selected}
+                disabled={loading}
+                className={`${styles.allergenChoice} ${
+                  selected ? styles.allergenSelected : ""
+                }`}
+                data-testid={`allergen-${allergen.tag}`}
+              >
+                {t(allergen.labelKey)}
+              </button>
+            );
+          })}
+        </div>
+
+        {data.allergens.length > 0 ? (
+          <div className={styles.toggleStack}>
+            <label className={styles.toggleRow}>
               <input
                 type="checkbox"
                 checked={data.strictAllergen}
-                onChange={(e) =>
-                  onChange({ strictAllergen: e.target.checked })
+                disabled={loading}
+                onChange={(event) =>
+                  onChange({ strictAllergen: event.target.checked })
                 }
-                className="h-4 w-4 rounded border-strong text-brand focus-visible:ring-brand"
               />
-              <span className="text-sm text-foreground-secondary">
-                {t("onboarding.strictAllergen")}
-              </span>
+              <span>{t("onboarding.strictAllergen")}</span>
             </label>
-            <label className="flex cursor-pointer items-center gap-3">
+            <label className={styles.toggleRow}>
               <input
                 type="checkbox"
                 checked={data.treatMayContain}
-                onChange={(e) =>
-                  onChange({ treatMayContain: e.target.checked })
+                disabled={loading}
+                onChange={(event) =>
+                  onChange({ treatMayContain: event.target.checked })
                 }
-                className="h-4 w-4 rounded border-strong text-brand focus-visible:ring-brand"
               />
-              <span className="text-sm text-foreground-secondary">
-                {t("onboarding.treatMayContain")}
-              </span>
+              <span>{t("onboarding.treatMayContain")}</span>
             </label>
           </div>
-        )}
+        ) : null}
       </section>
 
-      <div className="mt-1 flex gap-3">
-        <Button type="button" variant="secondary" onClick={onBack} className="flex-1">
+      <div className={styles.actions}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={onBack}
+          disabled={loading}
+          fullWidth
+        >
           {t("onboarding.back")}
         </Button>
-        <Button type="button" onClick={onNext} className="flex-1">
+        <Button type="button" onClick={onNext} disabled={loading} fullWidth>
           {t("onboarding.next")}
         </Button>
       </div>

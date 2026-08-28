@@ -13,6 +13,7 @@ import { showToast } from "@/lib/toast";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { OnboardingProgress } from "./OnboardingProgress";
+import styles from "./OnboardingExperience.module.css";
 import { DietAllergensStep } from "./steps/DietAllergensStep";
 import { GoalsCategoriesStep } from "./steps/GoalsCategoriesStep";
 import { WelcomeRegionStep } from "./steps/WelcomeRegionStep";
@@ -66,6 +67,7 @@ export function OnboardingWizard() {
   }, []);
 
   async function handleComplete() {
+    if (loading) return;
     setLoading(true);
     const result = await completeOnboarding(supabase, {
       country: data.country,
@@ -103,7 +105,7 @@ export function OnboardingWizard() {
       category_count: data.favoriteCategories.length,
     });
     showToast({ type: "success", messageKey: "onboarding.preferencesSaved" });
-    router.push("/app/categories");
+    router.push("/app/search");
     router.refresh();
   }
 
@@ -128,6 +130,7 @@ export function OnboardingWizard() {
   }, [track]);
 
   async function handleSkipAll() {
+    if (loading) return;
     setLoading(true);
     const result = await skipOnboarding(supabase);
     setLoading(false);
@@ -145,7 +148,7 @@ export function OnboardingWizard() {
     }
 
     track("onboarding_completed", { skipped: true });
-    router.push("/app/categories");
+    router.push("/app/search");
     router.refresh();
   }
 
@@ -154,38 +157,36 @@ export function OnboardingWizard() {
     onChange: updateData,
     onNext: step === TOTAL_STEPS - 1 ? handleComplete : goNext,
     onBack: goBack,
+    loading,
   };
 
   return (
     <div
       data-testid="onboarding-wizard"
-      className="rounded-3xl border border-border/70 bg-surface/95 px-4 py-5 shadow-[0_20px_60px_rgba(15,23,42,0.10)] backdrop-blur-sm sm:px-6 sm:py-6 dark:shadow-[0_24px_64px_rgba(0,0,0,0.30)]"
+      className={styles.wizard}
+      aria-busy={loading || undefined}
     >
-      {/* Progress bar (shown on all steps) */}
       <OnboardingProgress currentStep={step + 1} totalSteps={TOTAL_STEPS} />
 
-      {/* Step content */}
-      {step === 0 && (
-        <WelcomeRegionStep {...stepProps} onSkipAll={handleSkipAll} />
-      )}
-      {step === 1 && <DietAllergensStep {...stepProps} />}
-      {step === 2 && <GoalsCategoriesStep {...stepProps} />}
-
-      {/* Skip link (shown on steps 1+; step 0 has its own skip button) */}
-      {step > 0 && (
-        <div className="mt-6 text-center">
+      {step > 0 ? (
+        <div className={styles.skipArea}>
           <button
             type="button"
             onClick={handleSkipAll}
             disabled={loading}
-            aria-live="polite"
-            className="rounded-sm text-sm text-foreground-secondary underline underline-offset-4 transition-colors hover:text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand/45"
+            className={styles.skipLink}
             data-testid="onboarding-skip-all"
           >
             {loading ? t("onboarding.saving") : t("onboarding.skipForNow")}
           </button>
         </div>
+      ) : null}
+
+      {step === 0 && (
+        <WelcomeRegionStep {...stepProps} onSkipAll={handleSkipAll} />
       )}
+      {step === 1 && <DietAllergensStep {...stepProps} />}
+      {step === 2 && <GoalsCategoriesStep {...stepProps} />}
     </div>
   );
 }
