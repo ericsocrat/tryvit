@@ -1,16 +1,13 @@
 "use client";
 
-import { Footer } from "@/components/layout/Footer";
-import { Header } from "@/components/layout/Header";
 import { Disclaimer } from "@/components/learn/Disclaimer";
 import { LearnArticleShell } from "@/components/learn/LearnArticleShell";
+import { LearnRouteShell } from "@/components/learn/LearnRouteShell";
 import { LearnSectionCard } from "@/components/learn/LearnSectionCard";
-import { LearnSidebar } from "@/components/learn/LearnSidebar";
 import { LearnTopicNav } from "@/components/learn/LearnTopicNav";
 import { SourceCitation } from "@/components/learn/SourceCitation";
 import { useTranslation } from "@/lib/i18n";
 import { FlaskConical } from "lucide-react";
-import Link from "next/link";
 
 // ─── Additives topic page ──────────────────────────────────────────────────
 
@@ -31,21 +28,8 @@ export default function AdditivesPage() {
   ];
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-
-      <div className="mx-auto flex w-full max-w-5xl flex-1 gap-8 px-4 py-8">
-        <LearnSidebar className="w-56 shrink-0" />
-
-        <main id="main-content" className="min-w-0 flex-1">
-          <Link
-            href="/learn"
-            className="mb-4 inline-block text-sm text-brand hover:text-brand-hover md:hidden"
-          >
-            {t("learn.backToHub")}
-          </Link>
-
-          <LearnArticleShell
+    <LearnRouteShell>
+      <LearnArticleShell
             icon={FlaskConical}
             title={t("learn.additives.title")}
             summary={t("learn.additives.summary")}
@@ -97,11 +81,7 @@ export default function AdditivesPage() {
             </LearnSectionCard>
 
             <LearnTopicNav />
-          </LearnArticleShell>
-        </main>
-      </div>
-
-      <Footer />
-    </div>
+      </LearnArticleShell>
+    </LearnRouteShell>
   );
 }

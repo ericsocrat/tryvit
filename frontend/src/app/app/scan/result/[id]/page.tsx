@@ -12,6 +12,8 @@ import {
     ProductProfileSkeleton,
 } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { HealthWarningsCard } from "@/components/product/HealthWarningsCard";
 import { ProductEvidencePanel } from "@/components/trust/ProductEvidencePanel";
 import {
@@ -102,7 +104,7 @@ export default function ScanResultPage() {
             { labelKey: "nav.scan", href: "/app/scan" },
           ]}
         />
-        <div className="card border-error-border bg-error-bg py-8 text-center">
+        <div className={[surface.state, surface.errorState, "text-center"].join(" ")}>
           <div className="mb-2 flex justify-center">
             <AlertTriangle
               size={40}
@@ -143,7 +145,7 @@ export default function ScanResultPage() {
     (alternatives.length === 0 || eligibleAlternatives.length > 0);
 
   return (
-    <div className="space-y-4">
+    <AppPage className={surface.appPage}>
       {/* Breadcrumbs */}
       <Breadcrumbs
         items={[
@@ -153,18 +155,15 @@ export default function ScanResultPage() {
         ]}
       />
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="flex items-center gap-2 text-lg font-bold text-foreground">
-          <Camera size={20} aria-hidden="true" /> {t("product.scanResult")}
-        </h1>
-        <Link
-          href="/app/scan"
-          className="text-sm text-brand hover:text-brand-hover"
-        >
-          {t("scan.scanAnother")} →
-        </Link>
-      </div>
+      <AppPageHeader
+        eyebrow={t("nav.scan")}
+        title={t("product.scanResult")}
+        actions={
+          <Link href="/app/scan" className={surface.textAction}>
+            <Camera size={16} aria-hidden="true" /> {t("scan.scanAnother")} →
+          </Link>
+        }
+      />
 
       <ProductEvidencePanel
         provenance={provenanceQuery.data}
@@ -177,10 +176,14 @@ export default function ScanResultPage() {
       />
 
       {/* ── Scanned Product Card ─────────────────────────────────────────── */}
-      <div className="card">
+      <div className={surface.detailHero}>
         <div className="flex items-start gap-4">
           <div
-            className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-xl text-2xl font-bold ${band.bg} ${band.color}`}
+            className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-xl text-2xl font-bold ${
+              sourceRecommendationAllowed
+                ? `${band.bg} ${band.color}`
+                : "bg-surface-subtle text-foreground"
+            }`}
           >
             {toTryVitScore(product.scores.unhealthiness_score)}
           </div>
@@ -199,9 +202,15 @@ export default function ScanResultPage() {
                 {t("product.novaGroup", { group: product.scores.nova_group })}
               </span>
               <span
-                className={`rounded-full px-2 py-0.5 text-xs font-medium ${band.bg} ${band.color}`}
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                  sourceRecommendationAllowed
+                    ? `${band.bg} ${band.color}`
+                    : "bg-warning-bg text-warning-text"
+                }`}
               >
-                {t(band.labelKey)}
+                {sourceRecommendationAllowed
+                  ? t(band.labelKey)
+                  : t("trust.evidence.scoreProvisionalLabel")}
               </span>
             </div>
           </div>
@@ -217,13 +226,18 @@ export default function ScanResultPage() {
 
         {/* Health flags */}
         <HealthFlags product={product} />
+        {!sourceRecommendationAllowed ? (
+          <p className={surface.scannerNote}>
+            {t("trust.evidence.provisionalDescription")}
+          </p>
+        ) : null}
       </div>
 
       {/* ── Personalized Health Warnings ──────────────────────────────────── */}
       <HealthWarningsCard productId={productId} />
 
       {/* ── Quick Nutrition Summary ──────────────────────────────────────── */}
-      <div className="card">
+      <div className={surface.panel}>
         <h2 className="mb-2 text-sm font-semibold text-foreground-secondary">
           {t("product.nutritionPer100g")}
         </h2>
@@ -307,7 +321,7 @@ export default function ScanResultPage() {
           {t("product.scanAnother")}
         </ButtonLink>
       </div>
-    </div>
+    </AppPage>
   );
 }
 
@@ -368,7 +382,7 @@ function AlternativesSection({
 
   if (alternatives.length === 0) {
     return (
-      <div className="card bg-surface-subtle py-6 text-center">
+      <div className={[surface.panel, "text-center"].join(" ")}>
         <p className="text-sm text-foreground-secondary">
           {t("product.noAlternatives")}
         </p>
@@ -473,7 +487,7 @@ function ScanAlternativeCard({
 
   return (
     <Link href={`/app/product/${alt.product_id}`}>
-      <div className="card hover-lift-press flex items-center gap-3 border-success-border">
+      <div className={surface.record}>
         {/* Score */}
         <div
           className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-lg font-bold ${altBand.bg} ${altBand.color}`}

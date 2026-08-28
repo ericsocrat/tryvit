@@ -10,6 +10,8 @@ import { EmptyStateIllustration } from "@/components/common/EmptyStateIllustrati
 import { PullToRefresh } from "@/components/common/PullToRefresh";
 import { RecipeGridSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { RecipeCard } from "@/components/recipes";
 import { browseRecipes } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
@@ -100,7 +102,7 @@ export default function RecipesBrowsePage() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-    <div>
+    <AppPage className={surface.appPage}>
       <Breadcrumbs
         items={[
           { labelKey: "nav.home", href: "/app" },
@@ -108,12 +110,10 @@ export default function RecipesBrowsePage() {
         ]}
       />
 
-      <h1 className="mb-4 text-xl font-bold text-foreground lg:text-2xl">
-        {t("recipes.title")}
-      </h1>
+      <AppPageHeader eyebrow={t("nav.recipes")} title={t("recipes.title")} />
 
       {/* ── Search bar ────────────────────────────────────────────── */}
-      <div className="mb-3 flex gap-2" data-testid="recipe-filter">
+      <div className={surface.toolbar} data-testid="recipe-filter">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground-secondary" aria-hidden="true" />
           <input
@@ -228,7 +228,7 @@ export default function RecipesBrowsePage() {
 
       {/* ── Grid ─────────────────────────────────────────────────── */}
       {filteredData && filteredData.length > 0 ? (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
+        <div className={surface.grid}>
           {filteredData.map((recipe) => (
             <RecipeCard key={recipe.id} recipe={recipe} />
           ))}
@@ -240,7 +240,7 @@ export default function RecipesBrowsePage() {
           descriptionKey="recipes.emptyDescription"
         />
       )}
-    </div>
+    </AppPage>
     </PullToRefresh>
   );
 }

@@ -3,6 +3,7 @@
 // ─── Camera error card — 5-state-aware messaging with actionable CTAs ───────
 
 import { Button } from "@/components/common/Button";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import type { CameraErrorKind } from "@/hooks/use-barcode-scanner";
 import { useTranslation } from "@/lib/i18n";
 import { CameraOff, Keyboard, RefreshCw, ShieldAlert } from "lucide-react";
@@ -26,7 +27,7 @@ export function ScannerErrorState({
     error === "permission-unknown";
 
   return (
-    <div className="card border-warning-border bg-warning-bg px-5 py-6 text-center">
+    <div className={[surface.state, "text-center"].join(" ")}>
       <div className="mb-3 flex justify-center">
         {isPermissionError ? (
           <ShieldAlert

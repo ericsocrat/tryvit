@@ -15,6 +15,8 @@ import { queryKeys } from "@/lib/query-keys";
 import { useAchievements } from "@/hooks/use-achievements";
 import { AchievementGrid } from "@/components/achievements/AchievementGrid";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { ProgressBar } from "@/components/common/ProgressBar";
 import { EmptyState } from "@/components/common/EmptyState";
 import { PullToRefresh } from "@/components/common/PullToRefresh";
@@ -49,7 +51,7 @@ export default function AchievementsPage() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div className="space-y-6">
+      <AppPage className={surface.appPage}>
         <Breadcrumbs
         items={[
           { labelKey: "nav.home", href: "/app" },
@@ -57,18 +59,12 @@ export default function AchievementsPage() {
         ]}
       />
 
-      {/* Header */}
-      <div className="flex items-center gap-3">
-        <Icon icon={Trophy} size="lg" className="text-brand" />
-        <div>
-          <h1 className="text-xl font-bold text-foreground lg:text-2xl">
-            {t("achievements.title")}
-          </h1>
-          <p className="text-sm text-foreground-secondary">
-            {t("achievements.subtitle")}
-          </p>
-        </div>
-      </div>
+      <AppPageHeader
+        eyebrow={t("nav.achievements")}
+        title={t("achievements.title")}
+        description={t("achievements.subtitle")}
+        actions={<Icon icon={Trophy} size="lg" className="text-brand" />}
+      />
 
       {/* Loading state */}
       {isLoading && (
@@ -105,7 +101,7 @@ export default function AchievementsPage() {
       {!isLoading && !error && data && totalCount > 0 && (
         <>
           {/* Overall progress */}
-          <div className="mb-8 rounded-xl border border-border bg-surface p-4">
+          <div className={surface.panel}>
             <div className="mb-2 flex items-center justify-between text-sm">
               <span className="font-medium text-foreground">
                 {t("achievements.overallProgress")}
@@ -126,7 +122,7 @@ export default function AchievementsPage() {
           <AchievementGrid achievements={data.achievements} />
         </>
       )}
-      </div>
+      </AppPage>
     </PullToRefresh>
   );
 }

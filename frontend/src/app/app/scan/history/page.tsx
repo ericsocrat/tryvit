@@ -8,6 +8,8 @@ import { EmptyStateIllustration } from "@/components/common/EmptyStateIllustrati
 import { PullToRefresh } from "@/components/common/PullToRefresh";
 import { ScanHistorySkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { getScanHistory } from "@/lib/api";
 import { NUTRI_COLORS } from "@/lib/constants";
 import { formatRelativeTime } from "@/lib/format-time";
@@ -17,7 +19,7 @@ import { getScoreBand, toTryVitScore } from "@/lib/score-utils";
 import { createClient } from "@/lib/supabase/client";
 import type { ScanHistoryItem } from "@/lib/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ClipboardList } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
@@ -60,7 +62,7 @@ export default function ScanHistoryPage() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-    <div className="space-y-4">
+    <AppPage className={surface.appPage}>
       <div className="hidden md:block">
         <Breadcrumbs
           items={[
@@ -70,28 +72,23 @@ export default function ScanHistoryPage() {
           ]}
         />
       </div>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <AppPageHeader
+        eyebrow={t("nav.scan")}
+        title={t("scanHistory.title")}
+        description={t("scanHistory.subtitle")}
+        actions={
           <button
             onClick={() => router.back()}
-            className="inline-flex items-center justify-center rounded-lg p-1.5 text-foreground-secondary hover:bg-surface-muted md:hidden"
+            className={[surface.textAction, "md:hidden"].join(" ")}
             aria-label={t("common.back")}
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="flex items-center gap-2 text-lg font-semibold text-foreground">
-            <ClipboardList size={20} aria-hidden="true" />{" "}
-            {t("scanHistory.title")}
-          </h1>
-          <p className="text-sm text-foreground-secondary">
-            {t("scanHistory.subtitle")}
-          </p>
-        </div>
-      </div>
+        }
+      />
 
       {/* Filter toggle */}
-      <div className="flex gap-1 rounded-lg bg-surface-muted p-1">
+      <div className={surface.modeTabs}>
         {FILTERS.map((f) => (
           <button
             key={f.value}
@@ -99,11 +96,9 @@ export default function ScanHistoryPage() {
               setFilter(f.value);
               setPage(1);
             }}
-            className={`flex-1 cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              filter === f.value
-                ? "bg-surface text-brand shadow-sm"
-                : "text-foreground-secondary hover:text-foreground"
-            }`}
+            className={[surface.modeTab, filter === f.value ? surface.modeTabActive : ""]
+              .filter(Boolean)
+              .join(" ")}
           >
             {t(f.labelKey)}
           </button>
@@ -164,7 +159,7 @@ export default function ScanHistoryPage() {
           </Button>
         </div>
       )}
-    </div>
+    </AppPage>
     </PullToRefresh>
   );
 }
@@ -287,7 +282,7 @@ function ScanRow({
   if (scan.found && scan.product_id) {
     return (
       <li
-        className="card hover-lift-press animate-[fadeInUp_0.3s_ease-out_both]"
+        className={surface.record}
         style={{ animationDelay: `${index * 60}ms` }}
       >
         <button
@@ -342,7 +337,7 @@ function ScanRow({
   // Not found scan
   return (
     <li
-      className="card border-warning-border bg-warning-bg/50 animate-[fadeInUp_0.3s_ease-out_both]"
+      className={surface.state}
       style={{ animationDelay: `${index * 60}ms` }}
     >
       <div className="flex items-center gap-3">

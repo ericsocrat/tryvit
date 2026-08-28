@@ -3,6 +3,7 @@
 // ─── Health profile management section for Settings page ────────────────────
 
 import { Button } from "@/components/common/Button";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import {
     createHealthProfile,
     deleteHealthProfile,
@@ -357,7 +358,7 @@ export function HealthProfileSection() {
 
   if (isLoading) {
     return (
-      <section className="card" data-testid="health-profile-section">
+      <section className={surface.panel} data-testid="health-profile-section">
         <h2 className="mb-3 text-sm font-semibold text-foreground-secondary">
           {t("healthProfile.title")}
         </h2>
@@ -367,7 +368,7 @@ export function HealthProfileSection() {
   }
 
   return (
-    <section className="card" data-testid="health-profile-section">
+    <section className={surface.panel} data-testid="health-profile-section">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-foreground-secondary">
           {t("healthProfile.title")}

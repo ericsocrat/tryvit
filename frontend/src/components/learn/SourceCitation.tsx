@@ -24,7 +24,7 @@ export function SourceCitation({
 }: SourceCitationProps) {
   return (
     <cite
-      className={`block text-sm not-italic text-foreground-secondary ${className}`}
+      className={[styles.citation, className].filter(Boolean).join(" ")}
     >
       <span className="font-medium">{author}</span>
       {year ? ` (${year})` : ""}. <em>{title}</em>.
@@ -44,3 +44,4 @@ export function SourceCitation({
     </cite>
   );
 }
+import styles from "./LearnExperience.module.css";

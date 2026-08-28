@@ -10,6 +10,8 @@ import { IngredientUsageStats } from "@/components/ingredient/IngredientUsageSta
 import { ProductsContainingList } from "@/components/ingredient/ProductsContainingList";
 import { RelatedIngredientsList } from "@/components/ingredient/RelatedIngredientsList";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { getIngredientProfile } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
@@ -45,27 +47,27 @@ export default function IngredientProfilePage() {
 
   if (error || !profile || profile.error) {
     return (
-      <div className="space-y-4">
+      <AppPage className={surface.appPage}>
         <Breadcrumbs
           items={[
             { labelKey: "nav.home", href: "/app" },
             { labelKey: "nav.search", href: "/app/search" },
           ]}
         />
-        <div className="card py-8 text-center">
+        <div className={[surface.state, "text-center"].join(" ")}>
           <p className="mb-2 text-4xl">🔬</p>
           <p className="text-sm text-foreground-muted">
             {t("ingredient.notFound")}
           </p>
         </div>
-      </div>
+      </AppPage>
     );
   }
 
   const ing = profile.ingredient;
 
   return (
-    <div className="space-y-4">
+    <AppPage className={surface.appPage}>
       <Breadcrumbs
         items={[
           { labelKey: "nav.home", href: "/app" },
@@ -74,16 +76,17 @@ export default function IngredientProfilePage() {
         ]}
       />
 
-      {/* ── Header Card ──────────────────────────────────────────────── */}
-      <div className="card">
+      <AppPageHeader
+        eyebrow={t("nav.search")}
+        title={ing.name_display}
+      />
+
+      <div className={surface.detailHero}>
         <div className="flex items-start gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-surface-muted text-2xl">
             {ing.is_additive ? "🧪" : "🌿"}
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="text-lg font-bold text-foreground">
-              {ing.name_display}
-            </h1>
             {ing.additive_code && (
               <span className="inline-block rounded bg-purple-100 px-2 py-0.5 text-xs font-semibold text-purple-700">
                 {ing.additive_code}
@@ -117,7 +120,7 @@ export default function IngredientProfilePage() {
 
       {/* ── Concern Explanation ───────────────────────────────────────── */}
       {(ing.concern_description || ing.concern_reason) && (
-        <div className="card">
+        <div className={surface.panel}>
           <h2 className="mb-2 text-sm font-semibold text-foreground-secondary">
             {t("ingredient.concernDetails")}
           </h2>
@@ -159,7 +162,7 @@ export default function IngredientProfilePage() {
       {profile.related_ingredients.length > 0 && (
         <RelatedIngredientsList ingredients={profile.related_ingredients} />
       )}
-    </div>
+    </AppPage>
   );
 }
 

@@ -39,11 +39,10 @@ describe("Disclaimer", () => {
     expect(screen.getByRole("note")).toHaveClass("mt-8");
   });
 
-  it("uses amber styling", () => {
+  it("uses the shared disclaimer treatment", () => {
     render(<Disclaimer />);
     const aside = screen.getByRole("note");
-    expect(aside.className).toContain("border-warning-border");
-    expect(aside.className).toContain("bg-warning-bg");
+    expect(aside.className).toContain("disclaimer");
   });
 
   it("renders warning icon as decorative", () => {

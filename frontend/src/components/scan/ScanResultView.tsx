@@ -5,6 +5,7 @@
 import { Button, ButtonLink } from "@/components/common/Button";
 import { EmptyStateIllustration } from "@/components/common/EmptyStateIllustration";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { ScanMissSubmitCTA } from "@/components/scan/ScanMissSubmitCTA";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
 import { getCountryFlag, getCountryName, NUTRI_COLORS } from "@/lib/constants";
@@ -69,7 +70,7 @@ export function ScanErrorView({ ean, onRetry, onReset }: ScanErrorProps) {
   return (
     <FadeSlideIn>
       <div className="space-y-4">
-        <div className="card border-error-border bg-error-bg text-center">
+        <div className={[surface.state, surface.errorState, "text-center"].join(" ")}>
           <div className="mb-2 flex justify-center">
             <AlertTriangle
               size={40}
@@ -123,7 +124,7 @@ export function ScanNotFoundView({
   return (
     <FadeSlideIn>
       <div className="mx-auto max-w-md space-y-4">
-        <div className="card text-center">
+        <div className={[surface.state, "text-center"].join(" ")}>
           <div className="mb-2 flex animate-fade-in-up justify-center">
             <EmptyStateIllustration type="no-results" titleKey="scan.notFound" />
           </div>
@@ -238,7 +239,7 @@ export function ScanFoundView({
   return (
     <FadeSlideIn>
       <div className="space-y-4">
-        <div className="card text-center">
+        <div className={[surface.panel, "text-center"].join(" ")}>
           <div className="mb-3 flex justify-center">
             <CheckCircle
               size={48}

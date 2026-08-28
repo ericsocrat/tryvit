@@ -9,6 +9,8 @@ import { Button } from "@/components/common/Button";
 import { PullToRefresh } from "@/components/common/PullToRefresh";
 import { usePreferences } from "@/components/common/RouteGuard";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { ScannerErrorState } from "@/components/scan/ScannerErrorState";
 import {
     FadeSlideIn,
@@ -203,7 +205,7 @@ export default function ScanPage() {
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-    <div className="space-y-6">
+    <AppPage className={surface.appPage}>
       <div className="hidden md:block">
         <Breadcrumbs
           items={[
@@ -212,24 +214,21 @@ export default function ScanPage() {
           ]}
         />
       </div>
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <AppPageHeader
+        eyebrow={t("nav.scan")}
+        title={t("scan.title")}
+        actions={
+          <div className={surface.headerActions}>
           <button
             onClick={() => router.back()}
-            className="md:hidden rounded-lg p-1.5 text-foreground-secondary hover:bg-surface-muted"
+            className={[surface.textAction, "md:hidden"].join(" ")}
             aria-label={t("common.back")}
           >
             <ArrowLeft size={20} />
           </button>
-          <h1 className="flex items-center gap-2 text-xl font-bold text-foreground lg:text-2xl">
-            <Camera size={22} aria-hidden="true" /> {t("scan.title")}
-          </h1>
-        </div>
-        <div className="flex gap-2">
           <Link
             href="/app/scan/history"
-            className="text-sm text-brand hover:text-brand-hover"
+            className={surface.textAction}
           >
             <span className="inline-flex items-center gap-1">
               <ClipboardList size={14} aria-hidden="true" /> {t("scan.history")}
@@ -237,15 +236,16 @@ export default function ScanPage() {
           </Link>
           <Link
             href="/app/scan/submissions"
-            className="text-sm text-brand hover:text-brand-hover"
+            className={surface.textAction}
           >
             <span className="inline-flex items-center gap-1">
               <FileText size={16} aria-hidden="true" />{" "}
               {t("scan.mySubmissions")}
             </span>
           </Link>
-        </div>
-      </div>
+          </div>
+        }
+      />
 
       {/* ── Result states ─────────────────────────────────────────────────── */}
 
@@ -285,7 +285,13 @@ export default function ScanPage() {
 
       {/* Batch mode toggle (hidden when camera has an error) */}
       {!(mode === "camera" && cameraError) && (
-      <label className="touch-target flex cursor-pointer items-center gap-2 rounded-lg border border-border px-3 py-2.5">
+      <label
+        className={[
+          "touch-target",
+          surface.panel,
+          "flex cursor-pointer items-center gap-2",
+        ].join(" ")}
+      >
         <input
           type="checkbox"
           checked={batchMode}
@@ -300,16 +306,12 @@ export default function ScanPage() {
       )}
 
       {/* Mode toggle */}
-      <div className="flex gap-1 rounded-lg bg-surface-muted p-1">
+      <div className={surface.modeTabs}>
         <button
           onClick={() => setMode("camera")}
-          className={`flex-1 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
-            mode === "camera"
-              ? cameraError
-                ? "bg-surface text-warning-text shadow-sm"
-                : "bg-surface text-brand shadow-sm"
-              : "text-foreground-secondary hover:text-foreground"
-          }`}
+          className={[surface.modeTab, mode === "camera" ? surface.modeTabActive : ""]
+            .filter(Boolean)
+            .join(" ")}
         >
           <span className="inline-flex items-center gap-1">
             <Camera size={16} aria-hidden="true" /> {t("scan.camera")}
@@ -320,11 +322,9 @@ export default function ScanPage() {
             stopScanner();
             setMode("manual");
           }}
-          className={`flex-1 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
-            mode === "manual"
-              ? "bg-surface text-brand shadow-sm"
-              : "text-foreground-secondary hover:text-foreground"
-          }`}
+          className={[surface.modeTab, mode === "manual" ? surface.modeTabActive : ""]
+            .filter(Boolean)
+            .join(" ")}
         >
           <span className="inline-flex items-center gap-1">
             <Keyboard size={16} aria-hidden="true" /> {t("scan.manual")}
@@ -333,7 +333,7 @@ export default function ScanPage() {
       </div>
 
       {mode === "camera" ? (
-        <div className="space-y-3">
+        <div className={surface.scannerStage}>
           {cameraError ? (
             <FadeSlideIn>
               <ScannerErrorState
@@ -344,7 +344,7 @@ export default function ScanPage() {
             </FadeSlideIn>
           ) : (
             <>
-              <div className="relative overflow-hidden rounded-xl bg-black">
+              <div className={surface.viewfinder}>
                 <video
                   ref={videoRef}
                   className="aspect-4/3 w-full object-cover"
@@ -423,7 +423,7 @@ export default function ScanPage() {
 
               {/* Timeout hint */}
               {scanTimeout && (
-                <div className="card border-warning-border bg-warning-bg text-center">
+                <div className={[surface.state, "text-center"].join(" ")}>
                   <p className="text-sm font-semibold text-warning-text">
                     {t("scan.timeoutTitle")}
                   </p>
@@ -436,7 +436,7 @@ export default function ScanPage() {
           )}
         </div>
       ) : (
-        <form onSubmit={handleManualSubmit} className="space-y-3">
+        <form onSubmit={handleManualSubmit} className={surface.form}>
           <div className="flex gap-2">
             <input
               type="text"
@@ -488,7 +488,7 @@ export default function ScanPage() {
           </p>
 
           {/* Manual mode tips */}
-          <div className="rounded-lg border border-border bg-surface-muted/50 p-3">
+          <div className={surface.panel}>
             <p className="mb-2 text-xs font-semibold text-foreground-secondary">
               {t("scan.manualTipsTitle")}
             </p>
@@ -512,7 +512,7 @@ export default function ScanPage() {
 
       {/* Batch results tally */}
       {batchMode && batchResults.length > 0 && (
-        <div className="space-y-2">
+        <div className={surface.panel}>
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-foreground">
               {t("scan.scannedCount", { count: batchResults.length })}
@@ -524,11 +524,11 @@ export default function ScanPage() {
               {t("common.clear")}
             </button>
           </div>
-          <ul className="max-h-48 space-y-1 overflow-y-auto">
+          <ul className={surface.records}>
             {batchResults.map((p, i) => (
               <li
                 key={`${p.product_id}-${i}`}
-                className="flex items-center gap-2 rounded-lg border border-border px-3 py-2"
+                className={surface.record}
               >
                 <span
                   className={`inline-flex h-5 w-5 items-center justify-center rounded text-xs font-bold text-white ${
@@ -560,7 +560,7 @@ export default function ScanPage() {
       )}
         </>
       )}
-    </div>
+    </AppPage>
     </PullToRefresh>
   );
 }

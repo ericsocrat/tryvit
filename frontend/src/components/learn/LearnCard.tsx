@@ -2,6 +2,8 @@ import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import React, { type ReactNode } from "react";
 
+import styles from "./LearnExperience.module.css";
+
 interface LearnCardProps {
   /** Lucide icon component or ReactNode for the topic. */
   readonly icon: LucideIcon | ReactNode;
@@ -29,9 +31,9 @@ export function LearnCard({
   return (
     <Link
       href={href}
-      className={`group block rounded-2xl border border-border/70 bg-surface/95 p-6 shadow-sm transition-interactive hover-lift ${className}`}
+      className={[styles.topicCard, className].filter(Boolean).join(" ")}
     >
-      <div className="mb-4 flex items-center" aria-hidden="true">
+      <div className={styles.topicIcon} aria-hidden="true">
         {typeof icon === "function" ||
         (typeof icon === "object" &&
           icon !== null &&
@@ -39,12 +41,8 @@ export function LearnCard({
           ? React.createElement(icon as LucideIcon, { size: 32 })
           : icon}
       </div>
-      <h2 className="mb-2 text-lg font-semibold text-foreground transition-colors group-hover:text-brand-hover">
-        {title}
-      </h2>
-      <p className="text-sm leading-6 text-foreground-secondary">
-        {description}
-      </p>
+      <h2 className={styles.topicTitle}>{title}</h2>
+      <p className={styles.topicDescription}>{description}</p>
     </Link>
   );
 }

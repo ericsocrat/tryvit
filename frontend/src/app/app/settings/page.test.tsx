@@ -383,9 +383,7 @@ describe("ProfileSettingsPage", () => {
     const saveButton = screen.getByRole("button", { name: "Save changes" });
     const stickyBar = saveButton.closest("div");
 
-    expect(stickyBar).toHaveClass("sticky");
-    expect(stickyBar).toHaveClass("bottom-0");
-    expect(stickyBar).toHaveClass("backdrop-blur-sm");
+    expect(stickyBar?.className).toContain("stickyActions");
   });
 
   // ─── Unsaved changes integration ────────────────────────────────────────

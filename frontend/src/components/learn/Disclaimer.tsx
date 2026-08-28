@@ -3,6 +3,8 @@
 import { useTranslation } from "@/lib/i18n";
 import { AlertTriangle } from "lucide-react";
 
+import styles from "./LearnExperience.module.css";
+
 interface DisclaimerProps {
   /** Optional additional classes */
   readonly className?: string;
@@ -19,9 +21,9 @@ export function Disclaimer({ className = "" }: DisclaimerProps) {
     <aside
       role="note"
       aria-label={t("learn.disclaimerLabel")}
-      className={`rounded-lg border border-warning-border bg-warning-bg p-4 text-sm text-warning-text ${className}`}
+      className={[styles.disclaimer, className].filter(Boolean).join(" ")}
     >
-      <p className="flex items-start gap-2">
+      <p>
         <AlertTriangle
           size={18}
           className="mt-0.5 shrink-0"

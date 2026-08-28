@@ -5,11 +5,13 @@
 // Issue #616 — Aggregate recipe score badge
 // Issue #705 — Share, filter chips, search
 
-import { Card, Chip } from "@/components/common";
+import { Chip } from "@/components/common";
 import { Button } from "@/components/common/Button";
 import { Icon } from "@/components/common/Icon";
 import { RecipeGridSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
+import surface from "@/components/layout/CustomerSurface.module.css";
 import { IngredientProductList, RecipeScoreBadge } from "@/components/recipes";
 import { getRecipeDetail, getRecipeScore } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
@@ -103,7 +105,7 @@ export default function RecipeDetailPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <AppPage className={surface.appPage}>
       {/* Breadcrumbs */}
       <Breadcrumbs
         items={[
@@ -113,26 +115,22 @@ export default function RecipeDetailPage() {
         ]}
       />
 
-      {/* ── Header ─────────────────────────────────────────────────── */}
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-foreground lg:text-2xl">
-            {t(recipe.title_key)}
-          </h1>
-          <p className="mt-1 text-sm text-foreground-secondary">
-            {t(recipe.description_key)}
-          </p>
-        </div>
+      <AppPageHeader
+        eyebrow={t("nav.recipes")}
+        title={t(recipe.title_key)}
+        description={t(recipe.description_key)}
+        actions={
         <button
           type="button"
           onClick={handleShare}
-          className="shrink-0 rounded-lg p-2 text-foreground-secondary hover:bg-hover hover:text-foreground transition-colors"
+          className={surface.textAction}
           aria-label={t("recipes.share")}
           data-testid="share-recipe-button"
         >
           <Share2 className="h-5 w-5" />
         </button>
-      </div>
+        }
+      />
 
       {/* ── Link copied toast ──────────────────────────────────────── */}
       {copied && (
@@ -182,7 +180,7 @@ export default function RecipeDetailPage() {
       <RecipeScoreBadge score={recipeScore} showNutrition />
 
       {/* ── Ingredients ────────────────────────────────────────────── */}
-      <Card variant="outlined" padding="md">
+      <section className={surface.panel}>
         <h2 className="mb-3 text-base font-semibold text-foreground">
           {t("recipes.ingredientsTitle")}
         </h2>
@@ -209,10 +207,10 @@ export default function RecipeDetailPage() {
             </li>
           ))}
         </ul>
-      </Card>
+      </section>
 
       {/* ── Steps ──────────────────────────────────────────────────── */}
-      <Card variant="outlined" padding="md">
+      <section className={surface.panel}>
         <h2 className="mb-3 text-base font-semibold text-foreground">
           {t("recipes.stepsTitle")}
         </h2>
@@ -226,7 +224,7 @@ export default function RecipeDetailPage() {
             </li>
           ))}
         </ol>
-      </Card>
-    </div>
+      </section>
+    </AppPage>
   );
 }

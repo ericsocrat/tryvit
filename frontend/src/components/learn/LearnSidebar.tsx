@@ -16,6 +16,8 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import styles from "./LearnExperience.module.css";
+
 /** Topic definition for sidebar navigation. */
 interface LearnTopic {
   readonly slug: string;
@@ -61,20 +63,16 @@ export function LearnSidebar({ className = "" }: LearnSidebarProps) {
       aria-label={t("learn.sidebarLabel")}
       className={`hidden md:block ${className}`}
     >
-      <div className="sticky top-20 rounded-2xl border border-border/70 bg-surface/80 p-3 shadow-sm backdrop-blur-sm">
+      <div className={styles.sidebar}>
         <Link
           href="/learn"
-          className={`block rounded-xl px-3 py-2 text-sm font-medium transition-colors ${
-            pathname === "/learn"
-              ? "bg-brand-subtle text-brand"
-              : "text-foreground-secondary hover:bg-surface-subtle hover:text-foreground"
-          }`}
+          className={[styles.sidebarLink, pathname === "/learn" ? styles.sidebarLinkActive : ""]
+            .filter(Boolean)
+            .join(" ")}
         >
           <BookOpen size={16} className="inline-block" aria-hidden="true" />{" "}
           {t("learn.hubTitle")}
         </Link>
-
-        <div className="my-3 border-t border-border/70" />
 
         {TOPICS.map(({ slug, labelKey, icon: TopicIcon }) => {
           const href = `/learn/${slug}`;
@@ -83,11 +81,9 @@ export function LearnSidebar({ className = "" }: LearnSidebarProps) {
             <Link
               key={slug}
               href={href}
-              className={`block rounded-xl px-3 py-2 text-sm transition-colors ${
-                isActive
-                  ? "bg-brand-subtle font-medium text-brand"
-                  : "text-foreground-secondary hover:bg-surface-subtle hover:text-foreground"
-              }`}
+              className={[styles.sidebarLink, isActive ? styles.sidebarLinkActive : ""]
+                .filter(Boolean)
+                .join(" ")}
               aria-current={isActive ? "page" : undefined}
             >
               <TopicIcon

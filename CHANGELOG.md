@@ -120,6 +120,10 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Complete the approved folded-register rollout across Scanner and activity,
+  Settings, recipes, ingredients, achievements, anonymous shared views, Learn,
+  legal, offline, and forbidden surfaces; preserve evidence-gated scoring,
+  truthful unavailable states, privacy boundaries, and existing mutations.
 - Extend the approved folded-register product language across product detail, evidence,
   nutrition and alternatives, compare and saved comparisons, watchlist, lists, and list
   detail; preserve unavailable/provisional states, mutation rollback, and evidence-gated
