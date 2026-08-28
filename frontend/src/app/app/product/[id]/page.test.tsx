@@ -471,7 +471,7 @@ describe("ProductDetailPage", () => {
     render(<ProductDetailPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText("EAN: 5901234123457")).toBeInTheDocument();
+      expect(screen.getByText("EAN 5901234123457")).toBeInTheDocument();
     });
   });
 
@@ -483,11 +483,11 @@ describe("ProductDetailPage", () => {
     render(<ProductDetailPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText("Store: Żabka")).toBeInTheDocument();
+      expect(screen.getByText("Żabka")).toBeInTheDocument();
     });
   });
 
-  it("renders category with icon", async () => {
+  it("renders the category in the identity and identifier register", async () => {
     mockGetProductProfile.mockResolvedValue({
       ok: true,
       data: makeProfile(),
@@ -495,7 +495,7 @@ describe("ProductDetailPage", () => {
     render(<ProductDetailPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText("🍟 Chips")).toBeInTheDocument();
+      expect(screen.getAllByText("Chips")).toHaveLength(2);
     });
   });
 
@@ -759,7 +759,7 @@ describe("ProductDetailPage", () => {
     expect(screen.getByText("1.8 g")).toBeInTheDocument(); // salt
   });
 
-  it("nutrition tab shows dash for null trans fat", async () => {
+  it("nutrition tab keeps null trans fat evidence visibly unavailable", async () => {
     mockGetProductProfile.mockResolvedValue({
       ok: true,
       data: makeProfile(),
@@ -774,7 +774,7 @@ describe("ProductDetailPage", () => {
     });
 
     await user.click(screen.getByRole("tab", { name: "Nutrition" }));
-    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.getByText("Evidence unavailable")).toBeInTheDocument();
   });
 
   // ── Nutrition per-serving toggle ────────────────────────────────────
@@ -987,7 +987,9 @@ describe("ProductDetailPage", () => {
       expect(screen.getByText("Healthy Veggie Sticks")).toBeInTheDocument();
     });
     expect(screen.getByText("HealthBrand")).toBeInTheDocument();
-    expect(screen.getByText("−40 points better")).toBeInTheDocument();
+    expect(screen.getByTestId("product-register-card")).toHaveTextContent(
+      /40 points better/,
+    );
   });
 
   it("alternatives tab shows empty message when no alternatives", async () => {
@@ -1390,7 +1392,7 @@ describe("ProductDetailPage", () => {
 
   // ── Desktop split layout ─────────────────────────────────────────────────
 
-  it("renders a 12-column grid wrapper for desktop split layout", async () => {
+  it("renders the product intelligence split layout", async () => {
     mockGetProductProfile.mockResolvedValue({
       ok: true,
       data: makeProfile(),
@@ -1403,13 +1405,10 @@ describe("ProductDetailPage", () => {
       ).toBeGreaterThanOrEqual(1);
     });
 
-    // The grid wrapper should have the responsive grid classes
-    const gridEl = document.querySelector(".lg\\:grid-cols-12");
-    expect(gridEl).toBeInTheDocument();
-    expect(gridEl).toHaveClass("lg:grid", "lg:grid-cols-12", "lg:gap-6");
+    expect(screen.getByTestId("product-layout")).toBeInTheDocument();
   });
 
-  it("renders left column with sticky positioning classes", async () => {
+  it("renders the identity column", async () => {
     mockGetProductProfile.mockResolvedValue({
       ok: true,
       data: makeProfile(),
@@ -1422,12 +1421,10 @@ describe("ProductDetailPage", () => {
       ).toBeGreaterThanOrEqual(1);
     });
 
-    const leftCol = document.querySelector(".lg\\:col-span-5");
-    expect(leftCol).toBeInTheDocument();
-    expect(leftCol).toHaveClass("lg:sticky", "lg:top-20", "lg:self-start");
+    expect(screen.getByTestId("product-identity-column")).toBeInTheDocument();
   });
 
-  it("renders right column spanning 7 columns", async () => {
+  it("renders the analysis column", async () => {
     mockGetProductProfile.mockResolvedValue({
       ok: true,
       data: makeProfile(),
@@ -1440,8 +1437,7 @@ describe("ProductDetailPage", () => {
       ).toBeGreaterThanOrEqual(1);
     });
 
-    const rightCol = document.querySelector(".lg\\:col-span-7");
-    expect(rightCol).toBeInTheDocument();
+    expect(screen.getByTestId("product-analysis-column")).toBeInTheDocument();
   });
 
   it("places tab bar inside the right column", async () => {
@@ -1457,7 +1453,7 @@ describe("ProductDetailPage", () => {
       ).toBeGreaterThanOrEqual(1);
     });
 
-    const rightCol = document.querySelector(".lg\\:col-span-7");
+    const rightCol = screen.getByTestId("product-analysis-column");
     const tablist = screen.getByRole("tablist");
     expect(rightCol).toContainElement(tablist);
   });
@@ -1475,7 +1471,7 @@ describe("ProductDetailPage", () => {
       ).toBeGreaterThanOrEqual(1);
     });
 
-    const leftCol = document.querySelector(".lg\\:col-span-5");
+    const leftCol = screen.getByTestId("product-identity-column");
     // Header card contains the brand name
     const brand = screen.getByText("TestBrand");
     expect(leftCol).toContainElement(brand);
@@ -1604,8 +1600,8 @@ describe("ProductDetailPage", () => {
     it("score-interpretation is inside the left column, not tab content", async () => {
       await renderAndWait();
 
-      const leftCol = document.querySelector(".lg\\:col-span-5");
-      const rightCol = document.querySelector(".lg\\:col-span-7");
+      const leftCol = screen.getByTestId("product-identity-column");
+      const rightCol = screen.getByTestId("product-analysis-column");
       const scoreInterp = screen.getByTestId("score-interpretation");
 
       expect(leftCol).toContainElement(scoreInterp);
@@ -1615,8 +1611,8 @@ describe("ProductDetailPage", () => {
     it("health-warnings-card is inside the left column, not tab content", async () => {
       await renderAndWait();
 
-      const leftCol = document.querySelector(".lg\\:col-span-5");
-      const rightCol = document.querySelector(".lg\\:col-span-7");
+      const leftCol = screen.getByTestId("product-identity-column");
+      const rightCol = screen.getByTestId("product-analysis-column");
       const healthWarnings = screen.getByTestId("health-warnings-card");
 
       expect(leftCol).toContainElement(healthWarnings);
@@ -1626,8 +1622,8 @@ describe("ProductDetailPage", () => {
     it("tab-bar is inside the right column, not the left column", async () => {
       await renderAndWait();
 
-      const leftCol = document.querySelector(".lg\\:col-span-5");
-      const rightCol = document.querySelector(".lg\\:col-span-7");
+      const leftCol = screen.getByTestId("product-identity-column");
+      const rightCol = screen.getByTestId("product-analysis-column");
       const tabBar = screen.getByTestId("tab-bar");
 
       expect(rightCol).toContainElement(tabBar);
@@ -1959,7 +1955,7 @@ describe("ProductDetailPage", () => {
     const confidence = await screen.findByTestId(
       "score-confidence-unavailable",
     );
-    expect(confidence).toHaveAttribute("role", "status");
+    expect(confidence.tagName).toBe("OUTPUT");
     expect(confidence).toHaveTextContent(
       "Confidence evidence unavailable — treat this score as provisional.",
     );

@@ -8,14 +8,7 @@ const mockPathname = vi.fn<() => string>().mockReturnValue("/app");
 vi.mock("next/navigation", () => ({ usePathname: () => mockPathname() }));
 
 vi.mock("next/link", () => ({
-  default: ({
-    href,
-    children,
-    ...rest
-  }: {
-    href: string;
-    children: React.ReactNode;
-  }) => (
+  default: ({ href, children, ...rest }: { href: string; children: React.ReactNode }) => (
     <a href={href} {...rest}>
       {children}
     </a>
@@ -85,10 +78,7 @@ describe("MoreDrawer", () => {
       Settings: "/app/settings",
     };
     for (const [label, href] of Object.entries(linkMap)) {
-      expect(screen.getByText(label).closest("a")).toHaveAttribute(
-        "href",
-        href,
-      );
+      expect(screen.getByText(label).closest("a")).toHaveAttribute("href", href);
     }
   });
 
@@ -123,9 +113,7 @@ describe("MoreDrawer", () => {
 
   it("has the More navigation landmark", () => {
     render(<MoreDrawer open={true} onClose={onClose} />);
-    expect(
-      screen.getByRole("navigation", { name: "More navigation" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "More navigation" })).toBeInTheDocument();
   });
 
   // ─── Close interactions ───────────────────────────────────────────────
@@ -149,6 +137,12 @@ describe("MoreDrawer", () => {
       screen.getByRole("dialog"),
       new Event("cancel", { bubbles: false, cancelable: true }),
     );
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("provides an explicit keyboard-equivalent close interaction", () => {
+    render(<MoreDrawer open={true} onClose={onClose} />);
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 

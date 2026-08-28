@@ -387,9 +387,13 @@ describe("CategoryListingPage", () => {
   it("renders product score badges", async () => {
     render(<CategoryListingPage />, { wrapper: createWrapper() });
     await waitFor(() => {
-      expect(screen.getByText("28")).toBeInTheDocument();
+      expect(
+        screen.getAllByRole("meter", { name: /TryVit Score.*Provisional/i })[0],
+      ).toHaveValue(28);
     });
-    expect(screen.getByText("35")).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("meter", { name: /TryVit Score.*Provisional/i })[1],
+    ).toHaveValue(35);
   });
 
   it("renders nutri-score badges", async () => {
@@ -452,7 +456,9 @@ describe("CategoryListingPage", () => {
     expect(screen.queryByTestId("avoid-badge")).not.toBeInTheDocument();
     expect(screen.queryByTestId("compare-checkbox")).not.toBeInTheDocument();
     // But score and NutriScore are still visible
-    expect(screen.getByText("28")).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("meter", { name: /TryVit Score.*Provisional/i })[0],
+    ).toHaveValue(28);
     expect(screen.getByText("D")).toBeInTheDocument();
   });
 

@@ -3,7 +3,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { AlternativeProductCard } from "@/components/alternatives/AlternativeProductCard";
-import type { ProfileAlternative } from "@/lib/types";
+import type { ProductProvenance, ProfileAlternative } from "@/lib/types";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -18,8 +18,7 @@ vi.mock("@/lib/i18n", () => ({
     t: (key: string, params?: Record<string, string | number>) => {
       if (params) {
         let result = key;
-        for (const [k, v] of Object.entries(params))
-          result += ` ${k}=${v}`;
+        for (const [k, v] of Object.entries(params)) result += ` ${k}=${v}`;
         return result;
       }
       return key;
@@ -59,6 +58,29 @@ function makeAlt(overrides?: Partial<ProfileAlternative>): ProfileAlternative {
   };
 }
 
+function confirmedEvidence(productId = 99) {
+  return {
+    data: {
+      api_version: "1",
+      product_id: productId,
+      product_name: "Healthy Veggie Sticks",
+      overall_trust_score: 0.95,
+      freshness_status: "fresh",
+      source_count: 2,
+      data_completeness_pct: 100,
+      field_sources: {
+        unhealthiness_score: {
+          source: "Source",
+          last_updated: new Date().toISOString(),
+          confidence: 0.9,
+        },
+      },
+      trust_explanation: "Confirmed",
+      weakest_area: { field: null, confidence: null },
+    } satisfies ProductProvenance,
+  };
+}
+
 // ─── Tests ──────────────────────────────────────────────────────────────────
 
 describe("AlternativeProductCard", () => {
@@ -79,11 +101,18 @@ describe("AlternativeProductCard", () => {
   });
 
   it("renders delta text with translation key", () => {
-    render(<AlternativeProductCard alt={makeAlt()} currentScore={65} />);
+    render(
+      <AlternativeProductCard
+        alt={makeAlt()}
+        currentScore={65}
+        evidence={confirmedEvidence()}
+        comparisonAllowed
+      />,
+    );
 
-    expect(
-      screen.getByText("product.pointsBetter points=40"),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("product-register-card")).toHaveTextContent(
+      "product.pointsBetter points=40",
+    );
   });
 
   it("renders 'Much healthier' verdict for delta >= 20", () => {
@@ -91,12 +120,14 @@ describe("AlternativeProductCard", () => {
       <AlternativeProductCard
         alt={makeAlt({ score_delta: 25 })}
         currentScore={65}
+        evidence={confirmedEvidence()}
+        comparisonAllowed
       />,
     );
 
-    expect(
-      screen.getByText("product.verdictMuchHealthier"),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("product-register-card")).toHaveTextContent(
+      "product.verdictMuchHealthier",
+    );
   });
 
   it("renders 'Healthier' verdict for delta 10-19", () => {
@@ -104,10 +135,14 @@ describe("AlternativeProductCard", () => {
       <AlternativeProductCard
         alt={makeAlt({ score_delta: 15 })}
         currentScore={65}
+        evidence={confirmedEvidence()}
+        comparisonAllowed
       />,
     );
 
-    expect(screen.getByText("product.verdictHealthier")).toBeInTheDocument();
+    expect(screen.getByTestId("product-register-card")).toHaveTextContent(
+      "product.verdictHealthier",
+    );
   });
 
   it("renders 'Slightly healthier' verdict for delta < 10", () => {
@@ -115,38 +150,26 @@ describe("AlternativeProductCard", () => {
       <AlternativeProductCard
         alt={makeAlt({ score_delta: 5 })}
         currentScore={65}
+        evidence={confirmedEvidence()}
+        comparisonAllowed
       />,
     );
 
-    expect(
-      screen.getByText("product.verdictSlightlyHealthier"),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("product-register-card")).toHaveTextContent(
+      "product.verdictSlightlyHealthier",
+    );
   });
 
   it("renders similarity badge as percentage", () => {
-    render(
-      <AlternativeProductCard
-        alt={makeAlt({ similarity: 0.73 })}
-        currentScore={65}
-      />,
-    );
+    render(<AlternativeProductCard alt={makeAlt({ similarity: 0.73 })} currentScore={65} />);
 
-    expect(
-      screen.getByText("73% product.ingredientMatch"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("73% product.ingredientMatch")).toBeInTheDocument();
   });
 
   it("hides similarity badge when similarity is zero", () => {
-    render(
-      <AlternativeProductCard
-        alt={makeAlt({ similarity: 0 })}
-        currentScore={65}
-      />,
-    );
+    render(<AlternativeProductCard alt={makeAlt({ similarity: 0 })} currentScore={65} />);
 
-    expect(
-      screen.queryByText(/product\.ingredientMatch/),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/product\.ingredientMatch/)).not.toBeInTheDocument();
   });
 
   it("links to the alternative product page", () => {
@@ -157,7 +180,14 @@ describe("AlternativeProductCard", () => {
   });
 
   it("renders comparison bar with correct scores", () => {
-    render(<AlternativeProductCard alt={makeAlt()} currentScore={65} />);
+    render(
+      <AlternativeProductCard
+        alt={makeAlt()}
+        currentScore={65}
+        evidence={confirmedEvidence()}
+        comparisonAllowed
+      />,
+    );
 
     // Comparison bar is present with aria-label
     expect(
@@ -172,5 +202,17 @@ describe("AlternativeProductCard", () => {
 
     // NutriScoreBadge renders with the grade
     expect(screen.getByText("B")).toBeInTheDocument();
+  });
+
+  it("withholds comparative claims when evidence is unavailable", () => {
+    render(<AlternativeProductCard alt={makeAlt()} currentScore={65} />);
+
+    expect(screen.queryByText(/product\.pointsBetter/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/product\.verdict/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: /Score comparison/ })).not.toBeInTheDocument();
+    expect(screen.getByTestId("product-register-card")).toHaveAttribute(
+      "data-evidence-disposition",
+      "unavailable",
+    );
   });
 });

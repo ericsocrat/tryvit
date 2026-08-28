@@ -10,30 +10,18 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { EmptyStateIllustration } from "@/components/common/EmptyStateIllustration";
 import { PullToRefresh } from "@/components/common/PullToRefresh";
 import { ListViewSkeleton } from "@/components/common/skeletons";
+import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import {
-    useCreateList,
-    useDeleteList,
-    useListPreview,
-    useLists,
-} from "@/hooks/use-lists";
-import { SCORE_BANDS, scoreBandFromScore } from "@/lib/constants";
+import { useCreateList, useDeleteList, useLists } from "@/hooks/use-lists";
 import { useTranslation } from "@/lib/i18n";
 import { queryKeys } from "@/lib/query-keys";
-import { toTryVitScore } from "@/lib/score-utils";
-import type { FormSubmitEvent, ListItem, ProductList } from "@/lib/types";
+import type { FormSubmitEvent, ProductList } from "@/lib/types";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-    Ban,
-    ClipboardList,
-    FileText,
-    Heart,
-    Link2,
-    Trash2,
-    type LucideIcon,
-} from "lucide-react";
+import { Ban, FileText, Heart, Link2, Trash2, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useState } from "react";
+
+import styles from "./lists.module.css";
 
 export default function ListsPage() {
   const { t } = useTranslation();
@@ -69,118 +57,108 @@ export default function ListsPage() {
     );
   }
 
-  if (isLoading) {
-    return <ListViewSkeleton />;
-  }
-
-  if (error) {
-    return <EmptyState variant="error" titleKey="lists.loadFailed" />;
-  }
-
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-    <div className="space-y-6 lg:space-y-8">
-      <Breadcrumbs
-        items={[
-          { labelKey: "nav.home", href: "/app" },
-          { labelKey: "nav.lists" },
-        ]}
-      />
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-foreground flex items-center gap-2 lg:text-2xl">
-          <ClipboardList size={22} aria-hidden="true" /> {t("lists.title")}
-        </h1>
-        <Button
-          size="sm"
-          onClick={() => setShowForm((v) => !v)}
-        >
-          {showForm ? t("common.cancel") : t("lists.newList")}
-        </Button>
-      </div>
-
-      {mutationError && (
-        <p role="alert" className="rounded-lg bg-error-bg px-3 py-2 text-sm text-error-text">
-          {t("lists.mutationFailed")}
-        </p>
-      )}
-
-      {/* Create form */}
-      {showForm && (
-        <form onSubmit={handleCreate} className="card space-y-3">
-          <input
-            type="text"
-            placeholder={t("lists.namePlaceholder")}
-            aria-label={t("lists.nameLabel")}
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="input-field"
-            maxLength={100}
-            required
-            autoFocus
-          />
-          <input
-            type="text"
-            placeholder={t("lists.descriptionPlaceholder")}
-            aria-label={t("lists.descriptionLabel")}
-            value={newDesc}
-            onChange={(e) => setNewDesc(e.target.value)}
-            className="input-field"
-            maxLength={500}
-          />
-          <div className="flex gap-2">
-            <Button
-              type="submit"
-              size="sm"
-              disabled={createList.isPending || !newName.trim()}
-            >
-              {createList.isPending
-                ? t("lists.creating")
-                : t("lists.createList")}
+      <AppPage className={styles.page}>
+        <Breadcrumbs items={[{ labelKey: "nav.home", href: "/app" }, { labelKey: "nav.lists" }]} />
+      <AppPageHeader
+        eyebrow={t("nav.lists")}
+        title={t("lists.title")}
+        actions={
+            <Button size="sm" onClick={() => setShowForm((v) => !v)}>
+              {showForm ? t("common.cancel") : t("lists.newList")}
             </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              onClick={() => setShowForm(false)}
-            >
-              {t("common.cancel")}
-            </Button>
-          </div>
-        </form>
-      )}
+          }
+        />
 
-      {/* Empty state */}
-      {lists.length === 0 && (
-        <EmptyStateIllustration type="no-lists" titleKey="lists.emptyState" />
-      )}
+        {mutationError ? (
+          <p role="alert" className={styles.mutationError}>
+            {t("lists.mutationFailed")}
+          </p>
+        ) : null}
 
-      {/* List grid */}
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-        {lists.map((list) => (
-          <ListCard
-            key={list.id}
-            list={list}
-            onDelete={
-              list.is_default ? undefined : () => setConfirmDeleteId(list.id)
-            }
+        {isLoading ? <ListViewSkeleton /> : null}
+
+        {error ? (
+          <EmptyState
+            variant="error"
+            titleKey="lists.loadFailed"
+            action={{ labelKey: "common.retry", onClick: () => void handleRefresh() }}
           />
-        ))}
-      </div>
+        ) : null}
 
-      <ConfirmDialog
-        open={confirmDeleteId !== null}
-        title={t("lists.deleteList")}
-        description={t("lists.deleteWarning")}
-        confirmLabel={t("common.delete")}
-        variant="danger"
-        onConfirm={() => {
-          if (confirmDeleteId) deleteList.mutate(confirmDeleteId);
-          setConfirmDeleteId(null);
-        }}
-        onCancel={() => setConfirmDeleteId(null)}
-      />
-    </div>    </PullToRefresh>  );
+        {/* Create form */}
+        {!isLoading && !error && showForm ? (
+          <form onSubmit={handleCreate} className={styles.form}>
+            <input
+              type="text"
+              placeholder={t("lists.namePlaceholder")}
+              aria-label={t("lists.nameLabel")}
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="input-field"
+              maxLength={100}
+              required
+              autoFocus
+            />
+            <input
+              type="text"
+              placeholder={t("lists.descriptionPlaceholder")}
+              aria-label={t("lists.descriptionLabel")}
+              value={newDesc}
+              onChange={(e) => setNewDesc(e.target.value)}
+              className="input-field"
+              maxLength={500}
+            />
+            <div className={styles.formActions}>
+              <Button type="submit" size="sm" disabled={createList.isPending || !newName.trim()}>
+                {createList.isPending ? t("lists.creating") : t("lists.createList")}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowForm(false)}
+              >
+                {t("common.cancel")}
+              </Button>
+            </div>
+          </form>
+        ) : null}
+
+        {/* Empty state */}
+        {!isLoading && !error && lists.length === 0 ? (
+          <EmptyStateIllustration type="no-lists" titleKey="lists.emptyState" />
+        ) : null}
+
+        {/* List grid */}
+        {!isLoading && !error && lists.length > 0 ? (
+          <ul className={styles.grid}>
+            {lists.map((list) => (
+              <ListCard
+                key={list.id}
+                list={list}
+                onDelete={list.is_default ? undefined : () => setConfirmDeleteId(list.id)}
+              />
+            ))}
+          </ul>
+        ) : null}
+
+        <ConfirmDialog
+          open={confirmDeleteId !== null}
+          title={t("lists.deleteList")}
+          description={t("lists.deleteWarning")}
+          confirmLabel={t("common.delete")}
+          variant="danger"
+          onConfirm={() => {
+            if (confirmDeleteId) deleteList.mutate(confirmDeleteId);
+            setConfirmDeleteId(null);
+          }}
+          onCancel={() => setConfirmDeleteId(null)}
+        />
+      </AppPage>
+    </PullToRefresh>
+  );
 }
 
 // ─── ListCard ───────────────────────────────────────────────────────────────
@@ -188,11 +166,6 @@ export default function ListsPage() {
 const LIST_TYPE_ICONS: Record<string, LucideIcon> = {
   favorites: Heart,
   avoid: Ban,
-};
-
-const LIST_TYPE_ICON_COLORS: Record<string, string> = {
-  favorites: "text-red-500",
-  avoid: "text-red-600",
 };
 
 function ListCard({
@@ -204,112 +177,37 @@ function ListCard({
 }>) {
   const { t } = useTranslation();
   const TypeIcon = LIST_TYPE_ICONS[list.list_type] ?? FileText;
-  const { data: previewData } = useListPreview(list.id, list.item_count);
-
-  const previewItems: ListItem[] = previewData?.items ?? [];
-
-  // Compute health summary from preview items
-  const avgScore =
-    previewItems.length > 0
-      ? Math.round(
-          previewItems.reduce((sum, it) => sum + it.unhealthiness_score, 0) /
-            previewItems.length,
-        )
-      : null;
-  const avgBand =
-    avgScore === null ? null : SCORE_BANDS[scoreBandFromScore(avgScore)];
-
   return (
-    <Link href={`/app/lists/${list.id}`}>
-      <div className="card hover-lift-press flex flex-col gap-3 transition-all duration-fast">
-        {/* Top row — icon, name, meta */}
-        <div className="flex items-center gap-3">
-          <TypeIcon
-            size={24}
-            aria-hidden="true"
-            className={
-              LIST_TYPE_ICON_COLORS[list.list_type] ?? "text-foreground-muted"
-            }
-          />
+    <li className={styles.listRecord}>
+      <Link href={`/app/lists/${list.id}`} className={styles.listLink}>
+        <span className={styles.listIcon}>
+          <TypeIcon size={20} aria-hidden="true" />
+        </span>
 
-          <div className="min-w-0 flex-1">
-            <p className="font-medium text-foreground">{list.name}</p>
-            <p className="text-sm text-foreground-secondary">
-              {t("common.items", { count: list.item_count })}
-              {list.description && ` · ${list.description}`}
-            </p>
-          </div>
-
-          {list.share_enabled && (
-            <span
-              title={t("lists.shared")}
-              className="rounded-full bg-info/15 px-2 py-0.5 text-xs text-info"
-            >
-              <Link2 size={12} aria-hidden="true" className="inline" />{" "}
-              {t("lists.shared")}
+        <div className={styles.listCopy}>
+          <p className={styles.listName}>{list.name}</p>
+          <p className={styles.listMeta}>
+            {t("common.items", { count: list.item_count })}
+            {list.description && ` · ${list.description}`}
+          </p>
+          {list.share_enabled ? (
+            <span title={t("lists.shared")} className={styles.shared}>
+              <Link2 size={12} aria-hidden="true" className="inline" /> {t("lists.shared")}
             </span>
-          )}
-
-          {onDelete && (
-            <button
-              type="button"
-              title={t("common.delete")}
-              aria-label={`${t("common.delete")} ${list.name}`}
-              className="touch-target flex h-11 w-11 items-center justify-center rounded-full text-sm text-foreground-muted transition-colors hover:bg-error/10 hover:text-error"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onDelete();
-              }}
-            >
-              <Trash2 size={16} aria-hidden="true" />
-            </button>
-          )}
+          ) : null}
         </div>
-
-        {/* Preview thumbnails + health summary */}
-        {previewItems.length > 0 && (
-          <div
-            className="flex items-center gap-2 border-t border-border pt-2"
-            data-testid="list-preview"
-          >
-            {/* Mini score badges for up to 3 products */}
-            <div className="flex -space-x-1" data-testid="preview-thumbnails">
-              {previewItems.map((item) => {
-                const band =
-                  SCORE_BANDS[scoreBandFromScore(item.unhealthiness_score)];
-                return (
-                  <span
-                    key={item.item_id}
-                    title={item.product_name}
-                    className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ring-2 ring-surface ${band.bg} ${band.color}`}
-                  >
-                    {toTryVitScore(item.unhealthiness_score)}
-                  </span>
-                );
-              })}
-              {list.item_count > previewItems.length && (
-                <span
-                  className="flex h-7 w-7 items-center justify-center rounded-full bg-surface-muted text-xs text-foreground-secondary ring-2 ring-surface"
-                  data-testid="preview-overflow"
-                >
-                  +{list.item_count - previewItems.length}
-                </span>
-              )}
-            </div>
-
-            {/* Average score summary */}
-            {avgBand && avgScore !== null && (
-              <span
-                className={`ml-auto rounded-full px-2 py-0.5 text-xs font-medium ${avgBand.bg} ${avgBand.color}`}
-                data-testid="list-avg-score"
-              >
-                {t("lists.avgScore", { score: toTryVitScore(avgScore) })}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-    </Link>
+      </Link>
+      {onDelete ? (
+        <button
+          type="button"
+          title={t("common.delete")}
+          aria-label={`${t("common.delete")} ${list.name}`}
+          className={styles.deleteAction}
+          onClick={onDelete}
+        >
+          <Trash2 size={16} aria-hidden="true" />
+        </button>
+      ) : null}
+    </li>
   );
 }

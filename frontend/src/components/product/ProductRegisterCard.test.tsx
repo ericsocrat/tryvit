@@ -36,13 +36,26 @@ describe("ProductRegisterCard", () => {
       />,
     );
 
-    expect(
-      screen.getByRole("meter", { name: /TryVit Score.*Excellent/i }),
-    ).toHaveAttribute("aria-valuenow", "90");
+    expect(screen.getByRole("meter", { name: /TryVit Score.*Excellent/i })).toHaveValue(90);
     expect(screen.getByTestId("product-register-card")).toHaveAttribute(
       "data-evidence-disposition",
       "confirmed",
     );
+  });
+
+  it("keeps a confirmed zero unhealthiness score as a valid perfect score", () => {
+    render(
+      <ProductRegisterCard
+        productId={1}
+        href="/app/product/1"
+        name="Milk"
+        score={0}
+        scoreBand="low"
+        evidence={{ data: confirmed }}
+      />,
+    );
+
+    expect(screen.getByRole("meter", { name: /TryVit Score.*Excellent/i })).toHaveValue(100);
   });
 
   it("keeps the numeric score visible but provisional when evidence is unavailable", () => {
@@ -57,9 +70,7 @@ describe("ProductRegisterCard", () => {
       />,
     );
 
-    expect(
-      screen.getByRole("meter", { name: /TryVit Score.*Provisional score/i }),
-    ).toHaveAttribute("aria-valuenow", "90");
+    expect(screen.getByRole("meter", { name: /TryVit Score.*Provisional score/i })).toHaveValue(90);
     expect(screen.getByTestId("product-register-card")).toHaveAttribute(
       "data-evidence-disposition",
       "unavailable",
@@ -97,8 +108,8 @@ describe("ProductRegisterCard", () => {
       "data-evidence-disposition",
       "provisional",
     );
-    expect(
-      screen.getByRole("status", { name: /TryVit Score.*Provisional/i }),
-    ).toHaveTextContent("—");
+    expect(screen.getByRole("status", { name: /TryVit Score.*Provisional/i })).toHaveTextContent(
+      "—",
+    );
   });
 });

@@ -157,7 +157,7 @@ describe("Navigation", () => {
     render(<Navigation />);
     const badge = screen.getByTestId("nav-badge-lists");
     expect(badge).toHaveTextContent("3");
-    expect(screen.getByRole("link", { name: "3 Lists" })).toHaveAttribute("href", "/app/lists");
+    expect(screen.getByRole("link", { name: "Lists" })).toHaveAttribute("href", "/app/lists");
   });
 
   it("hides badge on Lists when user has no lists", () => {
@@ -183,7 +183,7 @@ describe("Navigation", () => {
     render(<Navigation />);
     const badge = screen.getByTestId("nav-badge-lists");
     expect(badge).toHaveTextContent("99+");
-    expect(screen.getByRole("link", { name: "99+ Lists" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Lists" })).toBeInTheDocument();
   });
 
   // ── More button & drawer (§67) ──────────────────────────────────────────
@@ -232,7 +232,7 @@ describe("Navigation", () => {
     render(<Navigation />);
     const badge = screen.getByTestId("nav-badge-compare");
     expect(badge).toHaveTextContent("3");
-    expect(screen.getByRole("button", { name: "3 More" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "More" })).toBeInTheDocument();
   });
 
   it("hides compare badge when no products are selected", () => {
@@ -246,7 +246,7 @@ describe("Navigation", () => {
     render(<Navigation />);
     const badge = screen.getByTestId("nav-badge-compare");
     expect(badge).toHaveTextContent("9+");
-    expect(screen.getByRole("button", { name: "9+ More" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "More" })).toBeInTheDocument();
   });
 
   it("passes axe with visible Lists and compare badge names", async () => {

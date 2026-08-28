@@ -12,6 +12,8 @@ import type { ProductProvenance } from "@/lib/types";
 import { AlertTriangle, Clock3, Database } from "lucide-react";
 import { useId } from "react";
 
+import styles from "./ProductEvidencePanel.module.css";
+
 interface ProductEvidencePanelProps {
   readonly provenance: ProductProvenance | undefined;
   readonly isLoading: boolean;
@@ -33,16 +35,12 @@ function fieldLabel(field: string): string {
     .join(" ");
 }
 
-export function toSourceFields(
-  provenance: ProductProvenance,
-): SourceField[] {
-  return Object.entries(provenance.field_sources ?? {}).map(
-    ([field, source]) => ({
-      field: fieldLabel(field),
-      source: source.source,
-      daysSinceUpdate: daysSince(source.last_updated),
-    }),
-  );
+export function toSourceFields(provenance: ProductProvenance): SourceField[] {
+  return Object.entries(provenance.field_sources ?? {}).map(([field, source]) => ({
+    field: fieldLabel(field),
+    source: source.source,
+    daysSinceUpdate: daysSince(source.last_updated),
+  }));
 }
 
 const DISPOSITION_COPY: Record<
@@ -80,7 +78,7 @@ export function ProductEvidencePanel({
   if (isLoading) {
     return (
       <output
-        className="block rounded-xl border border-border bg-surface-subtle px-3 py-2 text-sm text-foreground-secondary"
+        className={styles.loading}
         aria-live="polite"
         aria-busy="true"
         data-testid="product-evidence-loading"
@@ -92,19 +90,13 @@ export function ProductEvidencePanel({
 
   if (error || !provenance) {
     return (
-      <div
-        className="rounded-xl border border-warning-border bg-warning-bg p-3"
-        role="alert"
-        data-testid="product-evidence-unavailable"
-      >
-        <p className="flex items-center gap-1.5 text-sm font-semibold text-warning-text">
+      <div className={styles.error} role="alert" data-testid="product-evidence-unavailable">
+        <p className={styles.errorTitle}>
           <AlertTriangle size={16} aria-hidden="true" />
           {t("trust.evidence.unavailableTitle")}
         </p>
-        <p className="mt-1 text-xs text-warning-text">
-          {t("trust.evidence.unavailableDescription")}
-        </p>
-        <Button className="mt-2" size="sm" variant="secondary" onClick={onRetry}>
+        <p className={styles.errorDescription}>{t("trust.evidence.unavailableDescription")}</p>
+        <Button className={styles.retry} size="sm" variant="secondary" onClick={onRetry}>
           {t("common.retry")}
         </Button>
       </div>
@@ -117,67 +109,63 @@ export function ProductEvidencePanel({
   const freshnessKey =
     disposition === "not_collected"
       ? "trust.evidence.freshness.unavailable"
-      : ["fresh", "aging", "stale", "expired"].includes(
-            provenance.freshness_status,
-          )
+      : ["fresh", "aging", "stale", "expired"].includes(provenance.freshness_status)
         ? `trust.evidence.freshness.${provenance.freshness_status}`
         : "trust.evidence.freshness.unavailable";
 
   return (
     <section
-      className="rounded-xl border border-border bg-surface p-3"
+      className={styles.panel}
       aria-labelledby={titleId}
       data-testid="product-evidence-panel"
     >
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h2 id={titleId} className="text-sm font-semibold text-foreground">
+      <div className={styles.header}>
+        <div className={styles.copy}>
+          <h2 id={titleId} className={styles.title}>
             {t(copy.titleKey)}
           </h2>
-          <p className="mt-0.5 text-xs text-foreground-secondary">
-            {t(copy.descriptionKey)}
-          </p>
+          <p className={styles.description}>{t(copy.descriptionKey)}</p>
         </div>
-        {disposition !== "not_collected" && (
+        {disposition !== "not_collected" ? (
           <TrustBadge trustScore={provenance.overall_trust_score} size="sm" />
-        )}
+        ) : null}
       </div>
 
-      <dl className="mt-2 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3">
-        <div>
-          <dt className="text-foreground-muted">{t("trust.evidence.freshnessLabel")}</dt>
-          <dd className="flex items-center gap-1 font-medium text-foreground-secondary">
+      <dl className={styles.metrics}>
+        <div className={styles.metric}>
+          <dt className={styles.metricLabel}>{t("trust.evidence.freshnessLabel")}</dt>
+          <dd className={styles.metricValue}>
             <Clock3 size={12} aria-hidden="true" /> {t(freshnessKey)}
           </dd>
         </div>
-        <div>
-          <dt className="text-foreground-muted">{t("trust.evidence.completenessLabel")}</dt>
-          <dd className="font-medium text-foreground-secondary">
+        <div className={styles.metric}>
+          <dt className={styles.metricLabel}>{t("trust.evidence.completenessLabel")}</dt>
+          <dd className={styles.metricValue}>
             {disposition === "not_collected"
               ? t("trust.evidence.notCollectedValue")
               : provenance.data_completeness_pct == null
-              ? t("common.unknown")
-              : `${provenance.data_completeness_pct}%`}
+                ? t("common.unknown")
+                : `${provenance.data_completeness_pct}%`}
           </dd>
         </div>
-        <div>
-          <dt className="text-foreground-muted">{t("trust.evidence.sourcesLabel")}</dt>
-          <dd className="flex items-center gap-1 font-medium text-foreground-secondary">
+        <div className={styles.metric}>
+          <dt className={styles.metricLabel}>{t("trust.evidence.sourcesLabel")}</dt>
+          <dd className={styles.metricValue}>
             <Database size={12} aria-hidden="true" />
             {disposition === "not_collected"
               ? t("trust.evidence.notCollectedValue")
               : provenance.source_count == null
-              ? t("common.unknown")
-              : provenance.source_count}
+                ? t("common.unknown")
+                : provenance.source_count}
           </dd>
         </div>
       </dl>
 
-      {!compact && (
-        <div className="mt-3">
+      {!compact ? (
+        <div className={styles.sources}>
           <SourceAttribution sources={sources} />
         </div>
-      )}
+      ) : null}
     </section>
   );
 }

@@ -221,8 +221,11 @@ describe("ListDetailPage", () => {
 
   it("shows scores on list items", () => {
     render(<ListDetailPage />);
-    expect(screen.getByText("82")).toBeInTheDocument();
-    expect(screen.getByText("38")).toBeInTheDocument();
+    const meters = screen.getAllByRole("meter", {
+      name: /TryVit Score.*Provisional/i,
+    });
+    expect(meters[0]).toHaveValue(82);
+    expect(meters[1]).toHaveValue(38);
   });
 
   it("shows nutri-score labels", () => {
@@ -251,7 +254,7 @@ describe("ListDetailPage", () => {
     const user = userEvent.setup();
 
     const removeBtn = screen.getByRole("button", {
-      name: "Remove Healthy Bar",
+      name: "Remove from list Healthy Bar",
     });
     await user.click(removeBtn);
 
@@ -304,9 +307,7 @@ describe("ListDetailPage", () => {
     await user.click(screen.getByText("Cancel"));
     // Should be back to display mode
     expect(screen.queryByDisplayValue("My Favorites")).not.toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: /My Favorites/ }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /My Favorites/ })).toBeInTheDocument();
   });
 
   it("opens share panel", async () => {
@@ -379,10 +380,7 @@ describe("ListDetailPage", () => {
     });
     render(<ListDetailPage />);
     expect(screen.getByText(/This list is empty/)).toBeInTheDocument();
-    expect(screen.getByText("Search products").closest("a")).toHaveAttribute(
-      "href",
-      "/app/search",
-    );
+    expect(screen.getByText("Search products").closest("a")).toHaveAttribute("href", "/app/search");
   });
 
   it("shows singular item count", () => {

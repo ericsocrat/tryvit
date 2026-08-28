@@ -5,6 +5,7 @@
 "use client";
 
 import { AlternativeProductCard } from "@/components/alternatives/AlternativeProductCard";
+import type { ProductRegisterEvidenceState } from "@/components/product/ProductRegisterCard";
 import { useTranslation } from "@/lib/i18n";
 import type { ProfileAlternative } from "@/lib/types";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -16,12 +17,16 @@ interface AlternativesSectionProps {
   currentScore: number;
   /** How many to show before "Show more" (default: 3) */
   initialCount?: number;
+  evidenceByProductId?: Readonly<Record<number, ProductRegisterEvidenceState | undefined>>;
+  comparisonAllowed?: boolean;
 }
 
 export function AlternativesSection({
   alternatives,
   currentScore,
   initialCount = 3,
+  evidenceByProductId,
+  comparisonAllowed = false,
 }: Readonly<AlternativesSectionProps>) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
@@ -34,9 +39,7 @@ export function AlternativesSection({
     );
   }
 
-  const visible = expanded
-    ? alternatives
-    : alternatives.slice(0, initialCount);
+  const visible = expanded ? alternatives : alternatives.slice(0, initialCount);
   const hiddenCount = alternatives.length - initialCount;
 
   return (
@@ -44,13 +47,17 @@ export function AlternativesSection({
       <p className="text-sm text-foreground-secondary">
         {t("product.healthierOptions", { count: alternatives.length })}
       </p>
-      {visible.map((alt) => (
-        <AlternativeProductCard
-          key={alt.product_id}
-          alt={alt}
-          currentScore={currentScore}
-        />
-      ))}
+      <ul className="grid gap-3">
+        {visible.map((alt) => (
+          <AlternativeProductCard
+            key={alt.product_id}
+            alt={alt}
+            currentScore={currentScore}
+            evidence={evidenceByProductId?.[alt.product_id]}
+            comparisonAllowed={comparisonAllowed}
+          />
+        ))}
+      </ul>
       {hiddenCount > 0 && (
         <button
           type="button"

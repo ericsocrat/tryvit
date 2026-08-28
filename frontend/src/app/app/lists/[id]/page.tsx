@@ -10,24 +10,27 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { EmptyStateIllustration } from "@/components/common/EmptyStateIllustration";
 import { ListDetailSkeleton } from "@/components/common/skeletons";
 import { ExportButton } from "@/components/export/ExportButton";
+import { AppPage } from "@/components/layout/AppPage";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { NutriScoreBadge } from "@/components/common/NutriScoreBadge";
+import { ProductRegisterCard } from "@/components/product/ProductRegisterCard";
 import {
-    useListItems,
-    useLists,
-    useRemoveFromList,
-    useRevokeShare,
-    useToggleShare,
-    useUpdateList,
+  useListItems,
+  useLists,
+  useRemoveFromList,
+  useRevokeShare,
+  useToggleShare,
+  useUpdateList,
 } from "@/hooks/use-lists";
-import { NUTRI_COLORS, SCORE_BANDS } from "@/lib/constants";
+import { scoreBandFromScore } from "@/lib/constants";
 import type { ExportableProduct } from "@/lib/export";
 import { useTranslation } from "@/lib/i18n";
-import { toTryVitScore } from "@/lib/score-utils";
 import type { FormSubmitEvent, ListItem } from "@/lib/types";
-import { Ban, Heart, Link2, Pencil } from "lucide-react";
-import Link from "next/link";
+import { Ban, Heart, Link2, Pencil, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
+
+import styles from "@/app/app/lists/lists.module.css";
 
 export default function ListDetailPage() {
   const { t } = useTranslation();
@@ -129,7 +132,7 @@ export default function ListDetailPage() {
 
   if (error) {
     return (
-      <div className="space-y-4">
+      <AppPage className={styles.page}>
         <Breadcrumbs
           items={[
             { labelKey: "nav.home", href: "/app" },
@@ -146,12 +149,12 @@ export default function ListDetailPage() {
             },
           }}
         />
-      </div>
+      </AppPage>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <AppPage className={styles.page}>
       <Breadcrumbs
         items={[
           { labelKey: "nav.home", href: "/app" },
@@ -160,17 +163,17 @@ export default function ListDetailPage() {
         ]}
       />
 
-      {mutationError && (
-        <p role="alert" className="rounded-lg bg-error-bg px-3 py-2 text-sm text-error-text">
+      {mutationError ? (
+        <p role="alert" className={styles.mutationError}>
           {t("lists.mutationFailed")}
         </p>
-      )}
+      ) : null}
 
       {/* Header */}
-      {list && (
-        <div className="card">
+      {list ? (
+        <section className={styles.detailHeader}>
           {editing ? (
-            <form onSubmit={handleSaveEdit} className="space-y-3">
+            <form onSubmit={handleSaveEdit} className={styles.form}>
               <input
                 type="text"
                 value={editName}
@@ -188,12 +191,8 @@ export default function ListDetailPage() {
                 placeholder={t("lists.descriptionPlaceholder")}
                 maxLength={500}
               />
-              <div className="flex gap-2">
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={updateMutation.isPending}
-                >
+              <div className={styles.formActions}>
+                <Button type="submit" size="sm" disabled={updateMutation.isPending}>
                   {t("common.save")}
                 </Button>
                 <Button
@@ -207,45 +206,33 @@ export default function ListDetailPage() {
               </div>
             </form>
           ) : (
-            <div className="flex items-start justify-between">
+            <>
               <div>
-                <h1 className="text-lg font-bold text-foreground">
-                  {list.list_type === "favorites" && (
+                <h1 className={styles.detailTitle}>
+                  {list.list_type === "favorites" ? (
                     <>
-                      <Heart
-                        size={18}
-                        aria-hidden="true"
-                        className="inline text-red-500"
-                      />{" "}
+                      <Heart size={18} aria-hidden="true" className="inline text-red-500" />{" "}
                     </>
-                  )}
-                  {list.list_type === "avoid" && (
+                  ) : null}
+                  {list.list_type === "avoid" ? (
                     <>
-                      <Ban
-                        size={18}
-                        aria-hidden="true"
-                        className="inline text-red-600"
-                      />{" "}
+                      <Ban size={18} aria-hidden="true" className="inline text-red-600" />{" "}
                     </>
-                  )}
+                  ) : null}
                   {list.name}
                 </h1>
-                {list.description && (
-                  <p className="mt-1 text-sm text-foreground-secondary">
-                    {list.description}
-                  </p>
-                )}
-                <p className="mt-1 text-xs text-foreground-muted">
-                  {t("common.items", { count: list.item_count })}
-                </p>
+                {list.description ? (
+                  <p className={styles.detailDescription}>{list.description}</p>
+                ) : null}
+                <p className={styles.detailMeta}>{t("common.items", { count: list.item_count })}</p>
               </div>
-              <div className="flex gap-1">
+              <div className={styles.headerActions}>
                 {/* Edit button (not for defaults unless custom) */}
                 <button
                   type="button"
                   title={t("lists.editList")}
                   aria-label={t("lists.editList")}
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-sm transition-colors hover:bg-surface-muted"
+                  className={styles.iconAction}
                   onClick={() => {
                     setEditName(list.name);
                     setEditDesc(list.description ?? "");
@@ -255,35 +242,31 @@ export default function ListDetailPage() {
                   <Pencil size={14} aria-hidden="true" />
                 </button>
                 {/* Share button (not for avoid lists) */}
-                {list.list_type !== "avoid" && (
+                {list.list_type !== "avoid" ? (
                   <button
                     type="button"
                     title={t("lists.shareSettings")}
                     aria-label={t("lists.shareSettings")}
-                    className={`flex h-8 w-8 items-center justify-center rounded-full text-sm transition-colors hover:bg-surface-muted ${
-                      list.share_enabled ? "text-brand" : ""
-                    }`}
+                    className={`${styles.iconAction} ${list.share_enabled ? "text-brand" : ""}`}
                     onClick={() => setShowSharePanel((v) => !v)}
                   >
                     <Link2 size={14} aria-hidden="true" />
                   </button>
-                )}
+                ) : null}
                 {/* Export button */}
                 <ExportButton
                   products={exportableProducts}
                   filename={`list-${list.name.toLowerCase().replaceAll(/\s+/g, "-")}`}
                 />
               </div>
-            </div>
+            </>
           )}
 
           {/* Share panel */}
-          {showSharePanel && list.list_type !== "avoid" && (
-            <div className="mt-3 rounded-lg border border-border bg-surface-subtle p-3">
-              <p className="mb-2 text-sm font-medium text-foreground-secondary">
-                {t("lists.sharing")}
-              </p>
-              <div className="flex items-center gap-3">
+          {showSharePanel && list.list_type !== "avoid" ? (
+            <div className={styles.sharePanel}>
+              <p className={styles.shareTitle}>{t("lists.sharing")}</p>
+              <div className={styles.shareActions}>
                 <button
                   type="button"
                   className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -296,13 +279,9 @@ export default function ListDetailPage() {
                 >
                   {list.share_enabled ? t("lists.on") : t("lists.off")}
                 </button>
-                {list.share_enabled && list.share_token && (
+                {list.share_enabled && list.share_token ? (
                   <>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={handleCopyLink}
-                    >
+                    <Button variant="secondary" size="sm" onClick={handleCopyLink}>
                       {copied ? t("lists.copied") : t("lists.copyLink")}
                     </Button>
                     <button
@@ -313,25 +292,25 @@ export default function ListDetailPage() {
                       {t("lists.revoke")}
                     </button>
                   </>
-                )}
+                ) : null}
               </div>
             </div>
-          )}
-        </div>
-      )}
+          ) : null}
+        </section>
+      ) : null}
 
       {/* Empty state */}
-      {items.length === 0 && (
+      {items.length === 0 ? (
         <EmptyStateIllustration
           type="no-lists"
           titleKey="lists.emptyList"
           action={{ labelKey: "lists.searchProducts", href: "/app/search" }}
         />
-      )}
+      ) : null}
 
       {/* Items */}
-      {items.length > 0 && (
-        <ul className="space-y-2">
+      {items.length > 0 ? (
+        <ul className={styles.items}>
           {items.map((item) => (
             <ListItemRow
               key={item.item_id}
@@ -341,7 +320,7 @@ export default function ListDetailPage() {
             />
           ))}
         </ul>
-      )}
+      ) : null}
 
       <ConfirmDialog
         open={showRevokeConfirm}
@@ -352,17 +331,8 @@ export default function ListDetailPage() {
         onConfirm={handleRevokeShare}
         onCancel={() => setShowRevokeConfirm(false)}
       />
-    </div>
+    </AppPage>
   );
-}
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-function scoreToBandKey(score: number): keyof typeof SCORE_BANDS {
-  if (score <= 25) return "low";
-  if (score <= 50) return "moderate";
-  if (score <= 75) return "high";
-  return "very_high";
 }
 
 // ─── ListItemRow ────────────────────────────────────────────────────────────
@@ -377,68 +347,31 @@ function ListItemRow({
   isRemoving: boolean;
 }>) {
   const { t } = useTranslation();
-  // Derive score band from unhealthiness_score
-  const score = item.unhealthiness_score;
-  const bandKey = scoreToBandKey(score);
-  const band = SCORE_BANDS[bandKey];
-
-  const nutriClass = item.nutri_score_label
-    ? (NUTRI_COLORS[item.nutri_score_label] ??
-      "bg-surface-muted text-foreground-secondary")
-    : "bg-surface-muted text-foreground-secondary";
-
   return (
-    <li className="card hover-lift-press flex items-center gap-3">
-      <Link
-        href={`/app/product/${item.product_id}`}
-        className="flex min-w-0 flex-1 items-center gap-3"
-      >
-        {/* Score badge */}
-        <div
-          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg text-lg font-bold ${band.bg} ${band.color}`}
+    <ProductRegisterCard
+      productId={item.product_id}
+      href={`/app/product/${item.product_id}`}
+      name={item.product_name}
+      brand={item.brand}
+      category={item.category}
+      score={item.unhealthiness_score}
+      scoreBand={scoreBandFromScore(item.unhealthiness_score)}
+      detail={item.notes ?? undefined}
+      variant="list"
+      muted
+      badges={<NutriScoreBadge grade={item.nutri_score_label} size="sm" />}
+      actions={
+        <button
+          type="button"
+          title={t("lists.removeFromList")}
+          aria-label={`${t("lists.removeFromList")} ${item.product_name}`}
+          disabled={isRemoving}
+          className={styles.removeAction}
+          onClick={onRemove}
         >
-          {toTryVitScore(item.unhealthiness_score)}
-        </div>
-
-        {/* Product info */}
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-medium text-foreground">
-            {item.product_name}
-          </p>
-          <p className="truncate text-sm text-foreground-secondary">
-            {item.brand}
-            {item.category && ` · ${item.category}`}
-          </p>
-          {item.notes && (
-            <p className="mt-0.5 truncate text-xs text-foreground-muted italic">
-              {item.notes}
-            </p>
-          )}
-        </div>
-
-        {/* Nutri badge */}
-        <span
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${nutriClass}`}
-        >
-          {item.nutri_score_label ?? "?"}
-        </span>
-      </Link>
-
-      {/* Remove button */}
-      <button
-        type="button"
-        title={t("lists.removeFromList")}
-        aria-label={`Remove ${item.product_name}`}
-        disabled={isRemoving}
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm text-foreground-muted transition-colors hover:bg-error/10 hover:text-error disabled:opacity-50"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          onRemove();
-        }}
-      >
-        ✕
-      </button>
-    </li>
+          <X size={16} aria-hidden="true" />
+        </button>
+      }
+    />
   );
 }
