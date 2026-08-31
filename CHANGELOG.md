@@ -86,6 +86,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- Add one temporary, unlinked admin-only production Turnstile attestation surface that
+  redeems a `signup` token once, immediately replays the same in-memory token, and has
+  no Supabase Auth or database mutation path; removal is mandatory after certification.
 - Resolve both vulnerable development-only `js-yaml` lockfile branches with compatible
   patched releases, and record the still-open no-patch `extract-zip` alert as an
   unreachable browser-download path under TryVit's pinned Playwright/LHCI launcher.
