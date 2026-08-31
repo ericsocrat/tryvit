@@ -14,7 +14,7 @@ export default function TurnstileAttestationPage() {
       data-route-id="admin-turnstile-attestation"
     >
       <section className="rounded-2xl border border-border/70 bg-surface/95 p-5 shadow-sm sm:p-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand">
+        <p className="text-xs font-semibold uppercase tracking-wide text-brand">
           Temporary production security attestation
         </p>
         <h1 className="mt-2 text-2xl font-bold text-foreground">
