@@ -505,6 +505,38 @@ describe("proxy", () => {
       expect(location).toContain("/forbidden");
     });
 
+    it("protects the temporary Turnstile attestation route with ADMIN_EMAILS", async () => {
+      const originalEnv = process.env.ADMIN_EMAILS;
+      process.env.ADMIN_EMAILS = "admin@example.com";
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: "u1", email: "user@example.com" } },
+      });
+
+      const response = await proxy(
+        createRequest("/app/admin/turnstile-attestation"),
+      );
+
+      expect(response.status).toBe(303);
+      expect(response.headers.get("location") ?? "").toContain("/forbidden");
+      process.env.ADMIN_EMAILS = originalEnv;
+    });
+
+    it("allows an allowlisted admin to the temporary Turnstile attestation route", async () => {
+      const originalEnv = process.env.ADMIN_EMAILS;
+      process.env.ADMIN_EMAILS = "admin@example.com";
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: "u1", email: "admin@example.com" } },
+      });
+
+      const response = await proxy(
+        createRequest("/app/admin/turnstile-attestation"),
+      );
+
+      expect(response.status).not.toBe(303);
+      expect(response.status).not.toBe(307);
+      process.env.ADMIN_EMAILS = originalEnv;
+    });
+
     it("redirects to /forbidden when ADMIN_EMAILS is unset (deny-by-default)", async () => {
       const originalEnv = process.env.ADMIN_EMAILS;
       delete process.env.ADMIN_EMAILS;
