@@ -86,9 +86,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Security
 
-- Add one temporary, unlinked admin-only production Turnstile attestation surface that
-  redeems a `signup` token once, immediately replays the same in-memory token, and has
-  no Supabase Auth or database mutation path; removal is mandatory after certification.
+- Record the bounded production Turnstile attestation attempt: the temporary admin-only
+  route was removed after neither Codex browser nor foreground Edge initialized the
+  widget; no token, backend verification, signup, or data mutation occurred.
 - Resolve both vulnerable development-only `js-yaml` lockfile branches with compatible
   patched releases, and record the still-open no-patch `extract-zip` alert as an
   unreachable browser-download path under TryVit's pinned Playwright/LHCI launcher.
