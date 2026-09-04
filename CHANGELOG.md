@@ -89,6 +89,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- Make the shared Turnstile widget load explicitly and fail closed when the Cloudflare
+  script or widget cannot initialize, with localized status announcements and an
+  in-place retry that never logs, renders, or persists the challenge token.
 - Record the bounded production Turnstile attestation attempt: the temporary admin-only
   route was removed after neither Codex browser nor foreground Edge initialized the
   widget; no token, backend verification, signup, or data mutation occurred.

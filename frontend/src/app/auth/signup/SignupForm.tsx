@@ -214,6 +214,11 @@ function SelfServiceSignupForm({ redirect }: { readonly redirect: string }) {
             action="signup"
             size="compact"
             className="flex justify-center"
+            messages={{
+              loading: t("auth.captchaLoading"),
+              unavailable: t("auth.captchaUnavailable"),
+              retry: t("auth.captchaRetry"),
+            }}
           />
           <p id="signup-captcha-hint" className={authStyles.captchaHint} aria-live="polite">
             {turnstileToken ? t("auth.captchaVerified") : t("auth.captchaPrompt")}
