@@ -2,10 +2,7 @@
 // Server-led and read-only. In demo mode it degrades without touching Supabase.
 
 import { ButtonLink } from "@/components/common/Button";
-import { NutriScoreBadge } from "@/components/common/NutriScoreBadge";
 import { PublicUtilityShell } from "@/components/layout/PublicUtilityShell";
-import { ProductRegisterCard } from "@/components/product/ProductRegisterCard";
-import { scoreBandFromScore } from "@/lib/constants";
 import { translate } from "@/lib/i18n-core";
 import { readPublicSharedList } from "@/lib/public-shares";
 import { getServerLocale } from "@/lib/server-locale";
@@ -47,24 +44,32 @@ export default async function SharedListPage({ params }: { params: Promise<{ tok
               <p className="text-sm text-foreground-muted">{t("shared.listEmpty")}</p>
             </section>
           ) : (
-            <ul className="space-y-2">
-              {data.items.map((item) => {
-                return (
-                  <ProductRegisterCard
+            <section aria-labelledby="shared-list-evidence">
+              <h2
+                id="shared-list-evidence"
+                className="text-base font-semibold text-foreground"
+              >
+                {t("shared.listEvidenceWithheldTitle")}
+              </h2>
+              <p className="mt-1 text-sm text-warning-text" role="status">
+                {t("shared.listEvidenceWithheldDescription")}
+              </p>
+              <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+                {data.items.map((item) => (
+                  <li
                     key={item.product_id}
-                    productId={item.product_id}
-                    href={`/app/product/${item.product_id}`}
-                    name={item.product_name}
-                    brand={item.brand}
-                    category={item.category}
-                    score={item.unhealthiness_score}
-                    scoreBand={scoreBandFromScore(item.unhealthiness_score)}
-                    muted
-                    badges={<NutriScoreBadge grade={item.nutri_score_label} size="sm" />}
-                  />
-                );
-              })}
-            </ul>
+                    className="rounded-xl border bg-surface-subtle p-3"
+                  >
+                    <p className="font-medium text-foreground">
+                      {item.product_name}
+                    </p>
+                    <p className="text-sm text-foreground-secondary">
+                      {[item.brand, item.category].filter(Boolean).join(" · ")}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </section>
           )}
     </PublicUtilityShell>
   );

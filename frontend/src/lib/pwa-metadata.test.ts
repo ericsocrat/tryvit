@@ -176,8 +176,9 @@ describe("Product Layout", () => {
     expect(productLayoutSrc).toContain('"@type": "Product"');
   });
 
-  it("includes NutritionInformation schema", () => {
-    expect(productLayoutSrc).toContain("NutritionInformation");
+  it("does not attach unsupported NutritionInformation to Product", () => {
+    expect(productLayoutSrc).not.toContain('"@type": "NutritionInformation"');
+    expect(productLayoutSrc).not.toContain("nutrition: nutritionInfo");
   });
 
   it("uses title template (no hardcoded suffix)", () => {

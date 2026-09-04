@@ -295,7 +295,6 @@ export default function ScanResultPage() {
           loading={alternativesLoading}
           error={alternativesError}
           alternatives={eligibleAlternatives}
-          sourceScore={product.scores.unhealthiness_score}
           onRetry={() => {
             void refetchAlternatives();
           }}
@@ -331,14 +330,12 @@ function AlternativesSection({
   loading,
   error,
   alternatives,
-  sourceScore,
   onRetry,
   recommendationsAllowed,
 }: Readonly<{
   loading: boolean;
   error: Error | null;
   alternatives: Alternative[];
-  sourceScore: number;
   onRetry: () => void;
   recommendationsAllowed: boolean;
 }>) {
@@ -393,11 +390,7 @@ function AlternativesSection({
   return (
     <div className="space-y-2">
       {alternatives.map((alt) => (
-        <ScanAlternativeCard
-          key={alt.product_id}
-          alt={alt}
-          sourceScore={sourceScore}
-        />
+        <ScanAlternativeCard key={alt.product_id} alt={alt} />
       ))}
     </div>
   );
@@ -472,18 +465,9 @@ function NutrientPill({
 
 // ─── Scan Alternative Card ──────────────────────────────────────────────────
 
-function ScanAlternativeCard({
-  alt,
-  sourceScore,
-}: Readonly<{ alt: Alternative; sourceScore: number }>) {
+function ScanAlternativeCard({ alt }: Readonly<{ alt: Alternative }>) {
   const { t } = useTranslation();
   const altBand = SCORE_BANDS[scoreBandFromScore(alt.unhealthiness_score)];
-
-  // Calculate improvement percentage
-  const improvementPct =
-    sourceScore > 0
-      ? Math.round((alt.score_improvement / sourceScore) * 100)
-      : 0;
 
   return (
     <Link href={`/app/product/${alt.product_id}`}>
@@ -504,13 +488,9 @@ function ScanAlternativeCard({
             {alt.brand}
           </p>
           <p className="text-xs font-medium text-success-text">
-            {t("product.pointsBetter", { points: alt.score_improvement })}
-            {improvementPct > 0 && (
-              <span className="text-success">
-                {" "}
-                ({improvementPct}% healthier)
-              </span>
-            )}
+            {t("product.tryVitPointsHigher", {
+              points: alt.score_improvement,
+            })}
           </p>
         </div>
 

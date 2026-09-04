@@ -288,6 +288,7 @@ export default function ProductDetailPage() {
                     }
                     score={profile.scores.unhealthiness_score}
                     productId={productId}
+                    scoreProvenanceDisposition={provenanceDisposition}
                   />
                   <AvoidBadge productId={productId} />
                   <AddToListMenu productId={productId} />

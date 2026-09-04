@@ -8,10 +8,9 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import surface from "@/components/layout/CustomerSurface.module.css";
 import { ScanMissSubmitCTA } from "@/components/scan/ScanMissSubmitCTA";
 import { useReducedMotion } from "@/hooks/use-reduced-motion";
-import { getCountryFlag, getCountryName, NUTRI_COLORS } from "@/lib/constants";
+import { getCountryFlag, getCountryName } from "@/lib/constants";
 import { gs1CountryHint } from "@/lib/gs1";
 import { useTranslation } from "@/lib/i18n";
-import { getScoreBand, toTryVitScore } from "@/lib/score-utils";
 import type {
     RecordScanFoundResponse,
     RecordScanNotFoundResponse,
@@ -20,6 +19,7 @@ import {
     AlertTriangle,
     CheckCircle,
     ClipboardList,
+    Info,
     RefreshCw,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -213,28 +213,6 @@ export function ScanFoundView({
 }: ScanFoundProps) {
   const { t } = useTranslation();
   const prefersReduced = useReducedMotion();
-  const band = getScoreBand(product.unhealthiness_score);
-  const tryVitScore = toTryVitScore(product.unhealthiness_score);
-  const [animatedScore, setAnimatedScore] = useState(0);
-  // Derive: when motion is reduced or score is zero, skip animation entirely
-  // and render the final value. Otherwise show the rAF-driven count-up.
-  const showImmediate = prefersReduced || tryVitScore === 0;
-  const displayScore = showImmediate ? tryVitScore : animatedScore;
-
-  // Animated score count-up (rAF-only setState, no sync setState in effect)
-  useEffect(() => {
-    if (showImmediate) return;
-    let frame: number;
-    const start = performance.now();
-    const duration = 600; // ms
-    function tick(now: number) {
-      const progress = Math.min((now - start) / duration, 1);
-      setAnimatedScore(Math.round(progress * tryVitScore));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    }
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [tryVitScore, showImmediate]);
 
   return (
     <FadeSlideIn>
@@ -266,31 +244,13 @@ export function ScanFoundView({
             {t("scan.crossCountryBadge", { country: getCountryName(product.product_country) })}
           </p>
         )}
-        {band && (
-          <div className="mt-3 flex items-center justify-center gap-2">
-            <span
-              className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-sm font-semibold"
-              style={{ backgroundColor: band.bgColor, color: band.textColor }}
-            >
-              {displayScore}
-            </span>
-            <span className="text-sm text-foreground-secondary">
-              {t(band.labelKey)}
-            </span>
-          </div>
-        )}
-        {product.nutri_score && (
-          <div className="mt-2 flex items-center justify-center gap-1">
-            <span
-              className={`inline-flex h-6 w-6 items-center justify-center rounded text-xs font-bold text-white ${
-                NUTRI_COLORS[product.nutri_score] ?? "bg-foreground-muted"
-              }`}
-            >
-              {product.nutri_score}
-            </span>
-            <span className="text-xs text-foreground-muted">Nutri-Score</span>
-          </div>
-        )}
+        <p
+          className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-surface-subtle px-3 py-1 text-sm text-foreground-secondary"
+          role="status"
+        >
+          <Info size={14} aria-hidden="true" />
+          {t("scan.scoreEvidencePending")}
+        </p>
       </div>
       <div className="flex gap-2">
         <Button onClick={onViewDetails} className="flex-1">

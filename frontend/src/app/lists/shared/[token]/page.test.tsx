@@ -89,6 +89,11 @@ describe("SharedListPage", () => {
     expect(screen.getByText("Chips Original")).toBeInTheDocument();
     expect(screen.getByText("Green Juice")).toBeInTheDocument();
     expect(screen.getByText(/Lay's/)).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Scores and classifications are withheld because this public link does not include supporting provenance and freshness evidence.",
+    );
+    expect(screen.queryByText("TryVit Score")).not.toBeInTheDocument();
+    expect(screen.queryByText("Nutri-Score")).not.toBeInTheDocument();
   });
 
   it("renders empty lists truthfully", async () => {

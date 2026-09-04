@@ -3,8 +3,15 @@
 // The full image generation is an integration concern (needs edge runtime).
 
 import React from "react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getScoreColor, truncate } from "./opengraph-image";
+import { truncate } from "./opengraph-image";
+
+const source = readFileSync(
+  join(process.cwd(), "src/app/compare/shared/[token]/opengraph-image.tsx"),
+  "utf8",
+);
 
 // Make React available globally for JSX in the tested module
 vi.stubGlobal("React", React);
@@ -17,24 +24,17 @@ vi.mock("next/og", () => {
   return { ImageResponse: ImageResponseMock };
 });
 
-/* ── getScoreColor ─────────────────────────────────────────────────────── */
+vi.mock("@/lib/server-locale", () => ({
+  getServerLocale: () => Promise.resolve("en"),
+}));
+
 describe("comparison opengraph-image helpers", () => {
-  describe("getScoreColor", () => {
-    it.each([
-      [0, "#22c55e"],
-      [10, "#22c55e"],
-      [20, "#22c55e"],
-      [21, "#eab308"],
-      [40, "#eab308"],
-      [41, "#f97316"],
-      [60, "#f97316"],
-      [61, "#ef4444"],
-      [80, "#ef4444"],
-      [81, "#991b1b"],
-      [100, "#991b1b"],
-    ])("score %i → %s", (score: number, expected: string) => {
-      expect(getScoreColor(score)).toBe(expected);
-    });
+  it("publishes identities and evidence context without score claims", () => {
+    expect(source).toContain("shared.evidenceReviewRequired");
+    expect(source).toContain("shared.reviewEvidenceInTryVit");
+    expect(source).not.toContain("unhealthiness_score");
+    expect(source).not.toContain("getScoreHex");
+    expect(source).not.toContain("/100");
   });
 
   /* ── truncate ──────────────────────────────────────────────────────────── */

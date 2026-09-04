@@ -1,22 +1,20 @@
 // ─── Dynamic OpenGraph image for shared comparison cards ──────────────────────
-// Generates a 1200×630 PNG showing compared products with their TryVit scores.
-// Edge-cached for 1 hour.  Uses Next.js ImageResponse (Satori).
+// Generates a 1200×630 PNG showing compared product identities without
+// publishing scores that lack portable provenance and freshness evidence.
 
 import { ImageResponse } from "next/og";
-import { getScoreHex } from "@/lib/score-utils";
+import { translate } from "@/lib/i18n-core";
 import { fetchPublicSharedComparison } from "@/lib/public-shares";
+import { getServerLocale } from "@/lib/server-locale";
 
 /* ---------- route configuration ---------- */
 export const runtime = "nodejs";
-export const alt = "Product comparison card";
+export const alt = "Product comparison evidence card";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const revalidate = 3600; // 1 hour edge cache
 
 /* ---------- helpers ---------- */
-
-/** OG-specific score colour (not Tailwind — raw hex for Satori). */
-export const getScoreColor = getScoreHex;
 
 /** Truncate a string to `max` characters with an ellipsis. */
 export function truncate(text: string, max: number): string {
@@ -34,7 +32,7 @@ function getInterBoldFont(): Promise<ArrayBuffer> {
 }
 
 /* ---------- fallback card ---------- */
-function FallbackCard() {
+function FallbackCard({ label }: Readonly<{ label: string }>) {
   return (
     <div
       style={{
@@ -73,7 +71,9 @@ function FallbackCard() {
           TV
         </div>
         <div style={{ fontSize: 32, fontWeight: 700, color: "#111827" }}>TryVit</div>
-        <div style={{ fontSize: 18, color: "#6b7280", marginTop: 8 }}>Comparison not available</div>
+        <div style={{ fontSize: 18, color: "#6b7280", marginTop: 8 }}>
+          {label}
+        </div>
       </div>
     </div>
   );
@@ -83,11 +83,10 @@ function FallbackCard() {
 interface ProductRowProps {
   name: string;
   brand: string;
-  score: number;
-  scoreColor: string;
+  evidenceLabel: string;
 }
 
-function ProductRow({ name, brand, score, scoreColor }: ProductRowProps) {
+function ProductRow({ name, brand, evidenceLabel }: ProductRowProps) {
   return (
     <div
       style={{
@@ -99,23 +98,21 @@ function ProductRow({ name, brand, score, scoreColor }: ProductRowProps) {
         borderRadius: 16,
       }}
     >
-      {/* Score circle */}
       <div
         style={{
-          width: 64,
-          height: 64,
-          borderRadius: "50%",
-          backgroundColor: scoreColor,
+          padding: "8px 12px",
+          borderRadius: 999,
+          backgroundColor: "#e5e7eb",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#ffffff",
-          fontSize: 28,
+          color: "#4b5563",
+          fontSize: 13,
           fontWeight: 700,
           flexShrink: 0,
         }}
       >
-        {score}
+        {evidenceLabel}
       </div>
 
       {/* Product info */}
@@ -141,71 +138,60 @@ function ProductRow({ name, brand, score, scoreColor }: ProductRowProps) {
           <div style={{ fontSize: 16, color: "#6b7280", marginTop: 4 }}>{truncate(brand, 35)}</div>
         )}
       </div>
-
-      {/* Score bar */}
-      <div
-        style={{
-          display: "flex",
-          width: 200,
-          height: 12,
-          backgroundColor: "#e5e7eb",
-          borderRadius: 6,
-          overflow: "hidden",
-          flexShrink: 0,
-        }}
-      >
-        <div
-          style={{
-            width: `${Math.min(score, 100)}%`,
-            height: "100%",
-            backgroundColor: scoreColor,
-            borderRadius: 6,
-          }}
-        />
-      </div>
     </div>
   );
 }
 
 /* ---------- main image handler ---------- */
 export default async function OGImage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = await params;
-  const fontData = await getInterBoldFont();
+  const [{ token }, language, fontData] = await Promise.all([
+    params,
+    getServerLocale(),
+    getInterBoldFont(),
+  ]);
+  const t = (key: string, values?: Record<string, string | number>) =>
+    translate(language, key, values);
 
   const comparison = await fetchPublicSharedComparison(token);
   if (!comparison) {
-    return new ImageResponse(<FallbackCard />, {
-      ...size,
-      fonts: [
-        {
-          name: "Inter",
-          data: fontData,
-          weight: 700,
-          style: "normal" as const,
-        },
-      ],
-    });
+    return new ImageResponse(
+      <FallbackCard label={t("shared.serviceUnavailableTitle")} />,
+      {
+        ...size,
+        fonts: [
+          {
+            name: "Inter",
+            data: fontData,
+            weight: 700,
+            style: "normal" as const,
+          },
+        ],
+      },
+    );
   }
 
   /* ---- extract product data ---- */
-  const products: { product_name: string; brand: string; unhealthiness_score: number }[] =
+  const products: { product_name: string; brand: string }[] =
     comparison?.products ?? [];
 
   if (products.length < 2) {
-    return new ImageResponse(<FallbackCard />, {
-      ...size,
-      fonts: [
-        {
-          name: "Inter",
-          data: fontData,
-          weight: 700,
-          style: "normal" as const,
-        },
-      ],
-    });
+    return new ImageResponse(
+      <FallbackCard label={t("shared.comparisonInvalid")} />,
+      {
+        ...size,
+        fonts: [
+          {
+            name: "Inter",
+            data: fontData,
+            weight: 700,
+            style: "normal" as const,
+          },
+        ],
+      },
+    );
   }
 
-  const title = comparison.title ?? "Product Comparison";
+  const title = comparison.title ?? t("shared.productComparison");
   const displayProducts = products.slice(0, 4); // max 4 products
 
   /* ---- render card ---- */
@@ -252,7 +238,7 @@ export default async function OGImage({ params }: { params: Promise<{ token: str
               marginBottom: 4,
             }}
           >
-            Product Comparison
+            {t("shared.productComparison")}
           </div>
           <div
             style={{
@@ -294,8 +280,7 @@ export default async function OGImage({ params }: { params: Promise<{ token: str
             key={i}
             name={p.product_name}
             brand={p.brand}
-            score={p.unhealthiness_score}
-            scoreColor={getScoreColor(p.unhealthiness_score)}
+            evidenceLabel={t("shared.evidenceReviewRequired")}
           />
         ))}
       </div>
@@ -319,10 +304,12 @@ export default async function OGImage({ params }: { params: Promise<{ token: str
             fontWeight: 700,
           }}
         >
-          Compare on TryVit →
+          {t("shared.reviewEvidenceInTryVit")}
         </div>
 
-        <div style={{ fontSize: 16, color: "#9ca3af" }}>{products.length} products compared</div>
+        <div style={{ fontSize: 16, color: "#9ca3af" }}>
+          {t("shared.productsCompared", { count: products.length })}
+        </div>
       </div>
     </div>,
     {

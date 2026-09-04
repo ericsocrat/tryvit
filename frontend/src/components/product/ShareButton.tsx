@@ -1,6 +1,7 @@
 // ─── ShareButton — native share / clipboard fallback ──────────────────────
 "use client";
 
+import type { ProvenanceDisposition } from "@/hooks/use-product-provenance";
 import { eventBus } from "@/lib/events";
 import { useTranslation } from "@/lib/i18n";
 import { toTryVitScore } from "@/lib/score-utils";
@@ -10,20 +11,34 @@ interface ShareButtonProps {
   readonly productName: string;
   readonly score: number;
   readonly productId: number;
+  readonly scoreProvenanceDisposition: ProvenanceDisposition | null;
 }
 
 export function ShareButton({
   productName,
   score,
   productId,
+  scoreProvenanceDisposition,
 }: ShareButtonProps) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const handleShare = useCallback(async () => {
     const shareUrl = `${globalThis.location.origin}/app/product/${productId}`;
-    const shareTitle = `${productName} — TryVit Score: ${toTryVitScore(score)}/100`;
-    const shareText = `Check out ${productName} on TryVit — TryVit Score: ${toTryVitScore(score)}/100`;
+    const hasConfirmedScore = scoreProvenanceDisposition === "confirmed";
+    const displayScore = toTryVitScore(score);
+    const shareTitle = hasConfirmedScore
+      ? t("product.shareConfirmedTitle", {
+          name: productName,
+          score: displayScore,
+        })
+      : t("product.shareNeutralTitle", { name: productName });
+    const shareText = hasConfirmedScore
+      ? t("product.shareConfirmedText", {
+          name: productName,
+          score: displayScore,
+        })
+      : t("product.shareNeutralText", { name: productName });
 
     if (typeof navigator.share === "function") {
       try {
@@ -55,7 +70,7 @@ export function ShareButton({
     } catch {
       // Clipboard API unavailable (e.g. insecure context)
     }
-  }, [productName, score, productId]);
+  }, [productName, score, productId, scoreProvenanceDisposition, t]);
 
   return (
     <button

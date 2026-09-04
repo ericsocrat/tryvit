@@ -1,37 +1,19 @@
 ﻿// ─── Dynamic OpenGraph image for product share cards ──────────────────────────
-// Generates a 1200×630 PNG with product name, score ring, hero image, and
-// warnings.  Edge-cached for 1 hour.  Uses Next.js  ImageResponse (Satori).
+// Generates a 1200×630 PNG with product identity and neutral evidence copy.
+// Edge-cached for 1 hour. Uses Next.js ImageResponse (Satori).
 
-import { getScoreHex } from "@/lib/score-utils";
+import { translate } from "@/lib/i18n-core";
+import { getServerLocale } from "@/lib/server-locale";
 import { ImageResponse } from "next/og";
 
 /* ---------- route configuration ---------- */
 export const runtime = "nodejs";
-export const alt = "Product TryVit Score card";
+export const alt = "Product evidence card";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const revalidate = 3600; // 1 hour edge cache
 
 /* ---------- helpers ---------- */
-
-/** OG-specific score colour (not Tailwind — raw hex for Satori). */
-export const getScoreColor = getScoreHex;
-
-/** Human-readable band label for the OG card (TryVit terminology). */
-export function getScoreBandLabel(band: string): string {
-  switch (band) {
-    case "low":
-      return "Excellent";
-    case "moderate":
-      return "Good";
-    case "high":
-      return "Poor";
-    case "very_high":
-      return "Bad";
-    default:
-      return "";
-  }
-}
 
 /** Truncate a string to `max` characters with an ellipsis. */
 export function truncate(text: string, max: number): string {
@@ -50,7 +32,7 @@ function getInterBoldFont(): Promise<ArrayBuffer> {
 }
 
 /* ---------- fallback card ---------- */
-function FallbackCard() {
+function FallbackCard({ label }: Readonly<{ label: string }>) {
   return (
     <div
       style={{
@@ -75,7 +57,7 @@ function FallbackCard() {
           TryVit
         </div>
         <div style={{ fontSize: 18, color: "#6b7280", marginTop: 8 }}>
-          Product not found
+          {label}
         </div>
       </div>
     </div>
@@ -88,10 +70,13 @@ export default async function OGImage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  const [{ id }, language, fontData] = await Promise.all([
+    params,
+    getServerLocale(),
+    getInterBoldFont(),
+  ]);
   const productId = Number.parseInt(id, 10);
-
-  const fontData = await getInterBoldFont();
+  const t = (key: string) => translate(language, key);
 
   /* ---- fetch product data (anon key — public read) ---- */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,14 +91,17 @@ export default async function OGImage({
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
           Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""}`,
         },
-        body: JSON.stringify({ p_product_id: productId }),
+        body: JSON.stringify({
+          p_product_id: productId,
+          p_language: language,
+        }),
         next: { revalidate: 3600 },
       },
     );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     profile = await res.json();
   } catch {
-    return new ImageResponse(<FallbackCard />, {
+    return new ImageResponse(<FallbackCard label={t("product.ogEvidenceUnavailable")} />, {
       ...size,
       fonts: [
         {
@@ -134,18 +122,8 @@ export default async function OGImage({
     60,
   );
   const brand = truncate(profile.product?.brand ?? "", 40);
-  const rawScore = profile.scores?.unhealthiness_score;
-  const score: number | null = typeof rawScore === "number" ? rawScore : null;
-  const band: string | null = profile.scores?.score_band ?? null;
-  const scoreColor = score == null ? "#6b7280" : getScoreColor(score);
-  const bandLabel = band ? getScoreBandLabel(band) : "Evidence unavailable";
-
   const heroUrl: string | undefined = profile.images?.primary?.url;
   const categoryIcon: string = profile.product?.category_icon ?? "🍽️";
-
-  const warnings: { type: string; message: string }[] = (
-    profile.warnings ?? []
-  ).slice(0, 2);
 
   /* ---- render card ---- */
   return new ImageResponse(
@@ -216,45 +194,39 @@ export default async function OGImage({
             </div>
           )}
 
-          {/* Score ring + band */}
-          <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          {/* Neutral evidence summary. Detailed claims stay on the product page,
+              where their provenance and freshness can be shown alongside them. */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 10,
+              padding: "20px 24px",
+              borderRadius: 18,
+              backgroundColor: "#f3f4f6",
+            }}
+          >
             <div
               style={{
-                width: 100,
-                height: 100,
-                borderRadius: "50%",
-                backgroundColor: scoreColor,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#ffffff",
-                fontSize: 42,
-                fontWeight: 700,
+                fontSize: 14,
+                color: "#6b7280",
+                textTransform: "uppercase" as const,
+                letterSpacing: "0.08em",
               }}
             >
-              {score == null ? "?" : 100 - score}
+              {t("product.ogEvidenceLabel")}
             </div>
-
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <div
-                style={{
-                  fontSize: 14,
-                  color: "#9ca3af",
-                  textTransform: "uppercase" as const,
-                  letterSpacing: "0.05em",
-                }}
-              >
-                /100
-              </div>
-              <div style={{ fontSize: 24, fontWeight: 700, color: scoreColor }}>
-                {bandLabel}
-              </div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: "#111827" }}>
+              {t("product.ogEvidenceSummary")}
+            </div>
+            <div style={{ fontSize: 17, color: "#4b5563" }}>
+              {t("product.ogEvidenceAvailability")}
             </div>
           </div>
         </div>
       </div>
 
-      {/* ---- bottom — warnings + branding ---- */}
+      {/* ---- bottom — evidence context + branding ---- */}
       <div
         style={{
           display: "flex",
@@ -263,26 +235,9 @@ export default async function OGImage({
           marginTop: 24,
         }}
       >
-        {warnings.length > 0 ? (
-          <div style={{ display: "flex", gap: 16 }}>
-            {warnings.map((w: { type: string; message: string }) => (
-              <div
-                key={w.type}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  fontSize: 16,
-                  color: "#dc2626",
-                }}
-              >
-                ⚠ {truncate(w.message, 40)}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div />
-        )}
+        <div style={{ fontSize: 16, color: "#6b7280" }}>
+          {t("product.ogReviewEvidence")}
+        </div>
 
         <div
           style={{

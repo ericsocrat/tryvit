@@ -13,6 +13,7 @@ const defaultProps = {
   productName: "Lay's Classic Chips",
   score: 58,
   productId: 123,
+  scoreProvenanceDisposition: "confirmed" as const,
 };
 
 // globalThis.location.origin is read-only in JSDOM — override via defineProperty
@@ -54,11 +55,11 @@ describe("ShareButton", () => {
     });
 
     expect(shareMock).toHaveBeenCalledWith(
-      expect.objectContaining({
+      {
         url: "https://tryvit.app/app/product/123",
-        title: expect.stringContaining("Lay's Classic Chips"),
-        text: expect.stringContaining("42/100"),
-      }),
+        title: "Lay's Classic Chips — TryVit Score: 42/100",
+        text: "Check out Lay's Classic Chips on TryVit — TryVit Score: 42/100",
+      },
     );
 
     // Clean up
@@ -68,6 +69,36 @@ describe("ShareButton", () => {
       configurable: true,
     });
   });
+
+  it.each(["provisional", "not_collected", "expired", null] as const)(
+    "shares a neutral product reference when score provenance is %s",
+    async (scoreProvenanceDisposition) => {
+      const shareMock = vi.fn().mockResolvedValue(undefined);
+      Object.defineProperty(navigator, "share", {
+        value: shareMock,
+        writable: true,
+        configurable: true,
+      });
+
+      render(
+        <ShareButton
+          {...defaultProps}
+          scoreProvenanceDisposition={scoreProvenanceDisposition}
+        />,
+      );
+      await act(async () => {
+        fireEvent.click(screen.getByRole("button"));
+      });
+
+      expect(shareMock).toHaveBeenCalledWith({
+        url: "https://tryvit.app/app/product/123",
+        title: "Lay's Classic Chips on TryVit",
+        text: "View Lay's Classic Chips on TryVit",
+      });
+      expect(JSON.stringify(shareMock.mock.calls)).not.toContain("TryVit Score");
+      expect(JSON.stringify(shareMock.mock.calls)).not.toContain("42/100");
+    },
+  );
 
   it("falls back to clipboard when navigator.share is unavailable", async () => {
     // Ensure share is undefined

@@ -1,43 +1,17 @@
-// ─── Unit tests for OG image helper functions ────────────────────────────────
-// Tests the pure functions exported from opengraph-image.tsx.
-// The full image generation is an integration concern (needs edge runtime).
+// ─── Unit tests for product Open Graph image publishing ───────────────
+// The full image generation is an integration concern (needs the Next.js
+// ImageResponse runtime), so these tests cover its pure helper and claim boundary.
 
-import { getScoreBandLabel, getScoreColor, truncate } from "./opengraph-image";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { alt, truncate } from "./opengraph-image";
 
-describe("opengraph-image helpers", () => {
-  /* ── getScoreColor ─────────────────────────────────────────────────────── */
-  describe("getScoreColor", () => {
-    it.each([
-      [0, "#22c55e"],
-      [10, "#22c55e"],
-      [20, "#22c55e"],
-      [21, "#eab308"],
-      [40, "#eab308"],
-      [41, "#f97316"],
-      [60, "#f97316"],
-      [61, "#ef4444"],
-      [80, "#ef4444"],
-      [81, "#991b1b"],
-      [100, "#991b1b"],
-    ])("score %i → %s", (score: number, expected: string) => {
-      expect(getScoreColor(score)).toBe(expected);
-    });
-  });
+const source = readFileSync(
+  join(process.cwd(), "src/app/app/product/[id]/opengraph-image.tsx"),
+  "utf8",
+);
 
-  /* ── getScoreBandLabel ─────────────────────────────────────────────────── */
-  describe("getScoreBandLabel", () => {
-    it.each([
-      ["low", "Excellent"],
-      ["moderate", "Good"],
-      ["high", "Poor"],
-      ["very_high", "Bad"],
-      ["unknown", ""],
-    ])("band '%s' → '%s'", (band: string, expected: string) => {
-      expect(getScoreBandLabel(band)).toBe(expected);
-    });
-  });
-
-  /* ── truncate ──────────────────────────────────────────────────────────── */
+describe("opengraph-image", () => {
   describe("truncate", () => {
     it("returns text unchanged when shorter than max", () => {
       expect(truncate("hello", 10)).toBe("hello");
@@ -56,5 +30,16 @@ describe("opengraph-image helpers", () => {
     it("preserves full text at boundary", () => {
       expect(truncate("abc", 3)).toBe("abc");
     });
+  });
+
+  it("publishes a neutral evidence card without score or warning claims", () => {
+    expect(alt).toBe("Product evidence card");
+    expect(source).toContain("product.ogEvidenceSummary");
+    expect(source).toContain("product.ogEvidenceAvailability");
+    expect(source).toContain("p_language: language");
+    expect(source).not.toContain("unhealthiness_score");
+    expect(source).not.toContain("profile.warnings");
+    expect(source).not.toContain("/100");
+    expect(source).not.toContain("getScoreHex");
   });
 });

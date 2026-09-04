@@ -509,12 +509,16 @@ describe("ScanResultPage", () => {
       render(<ScanResultPage />, { wrapper: createWrapper() });
 
       await waitFor(() => {
-        expect(screen.getByText(/−40 points better/)).toBeInTheDocument();
+        expect(
+          screen.getByText(/40 points higher TryVit Score/),
+        ).toBeInTheDocument();
       });
-      expect(screen.getByText(/−35 points better/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/35 points higher TryVit Score/),
+      ).toBeInTheDocument();
     });
 
-    it("shows improvement percentage for alternatives", async () => {
+    it("does not present a score delta as a healthier percentage", async () => {
       mockGetProductDetail.mockResolvedValue({
         ok: true,
         data: makeProduct(),
@@ -524,11 +528,11 @@ describe("ScanResultPage", () => {
       render(<ScanResultPage />, { wrapper: createWrapper() });
 
       await waitFor(() => {
-        // 40/65 ≈ 62%
-        expect(screen.getByText(/62% healthier/)).toBeInTheDocument();
+        expect(
+          screen.getByText(/40 points higher TryVit Score/),
+        ).toBeInTheDocument();
       });
-      // 35/65 ≈ 54%
-      expect(screen.getByText(/54% healthier/)).toBeInTheDocument();
+      expect(screen.queryByText(/% healthier/)).not.toBeInTheDocument();
     });
 
     it("shows alternative brands", async () => {
