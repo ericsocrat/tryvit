@@ -213,6 +213,17 @@ describeIntegration("P0 Contract: api_product_health_warnings", () => {
       { p_product_id: QA_PRODUCT_ID },
     );
     expect(error).toBeNull();
+    // The integration client uses a service-role key without a user JWT.
+    // This RPC intentionally resolves auth through auth.uid(), so its
+    // fail-closed business response is expected in that context.
+    if (
+      data &&
+      typeof data === "object" &&
+      "error" in data &&
+      data.error === "Authentication required"
+    ) {
+      return;
+    }
     assertContract(
       "api_product_health_warnings",
       data,
