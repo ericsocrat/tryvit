@@ -4,13 +4,10 @@
 // Wraps useQuery for preferences and handles session expiry.
 
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
-import { getUserPreferences } from "@/lib/api";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { useUserPreferencesQuery } from "@/hooks/use-user-preferences-query";
 import { isAuthError } from "@/lib/rpc";
-import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
 import type { UserPreferences } from "@/lib/types";
-import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -20,24 +17,7 @@ interface RouteGuardProps {
 
 export function RouteGuard({ children }: Readonly<RouteGuardProps>) {
   const router = useRouter();
-  const supabase = createClient();
-
-  const { data, error, isLoading } = useQuery({
-    queryKey: queryKeys.preferences,
-    queryFn: async () => {
-      const result = await getUserPreferences(supabase);
-      if (!result.ok) {
-        if (isAuthError(result.error)) {
-          throw Object.assign(new Error(result.error.message), {
-            code: result.error.code,
-          });
-        }
-        throw new Error(result.error.message);
-      }
-      return result.data;
-    },
-    staleTime: staleTimes.preferences,
-  });
+  const { data, error, isPending } = useUserPreferencesQuery();
 
   useEffect(() => {
     if (error) {
@@ -63,7 +43,7 @@ export function RouteGuard({ children }: Readonly<RouteGuardProps>) {
     }
   }, [data, router]);
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <div className="rounded-xl border border-default bg-surface/95 p-3 shadow-[0_4px_12px_rgba(15,23,42,0.10)]">
@@ -82,17 +62,6 @@ export function RouteGuard({ children }: Readonly<RouteGuardProps>) {
  * Hook to get the current user preferences (already cached by RouteGuard).
  */
 export function usePreferences(): UserPreferences | undefined {
-  const supabase = createClient();
-
-  const { data } = useQuery({
-    queryKey: queryKeys.preferences,
-    queryFn: async () => {
-      const result = await getUserPreferences(supabase);
-      if (!result.ok) throw new Error(result.error.message);
-      return result.data;
-    },
-    staleTime: staleTimes.preferences,
-  });
-
+  const { data } = useUserPreferencesQuery();
   return data;
 }

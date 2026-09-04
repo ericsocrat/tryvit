@@ -1,5 +1,6 @@
 import { useLanguageStore } from "@/stores/language-store";
 import type * as I18nCoreModule from "@/lib/i18n-core";
+import { queryKeys } from "@/lib/query-keys";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -88,6 +89,23 @@ function createWrapper() {
   return Wrapper;
 }
 
+function createCachedWrapper(preferences: unknown) {
+  return function CachedWrapper({
+    children,
+  }: Readonly<{ children: React.ReactNode }>) {
+    const [client] = useState(() => {
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false, staleTime: 0 } },
+      });
+      queryClient.setQueryData(queryKeys.preferences, preferences);
+      return queryClient;
+    });
+    return (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+  };
+}
+
 const mockPrefsData = {
   user_id: "abc12345-6789-def0-1234-567890abcdef",
   country: "PL",
@@ -118,6 +136,32 @@ describe("ProfileSettingsPage", () => {
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /Profile & Preferences/i })).toBeInTheDocument();
     });
+  });
+
+  it("fails closed when preferences cannot be loaded, then hydrates after retry", async () => {
+    mockGetPrefs
+      .mockResolvedValueOnce({
+        ok: false,
+        error: { code: "500", message: "Preferences unavailable" },
+      })
+      .mockResolvedValueOnce({ ok: true, data: mockPrefsData });
+    render(<ProfileSettingsPage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    const retry = await screen.findByRole("button", { name: "Try again" });
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Profile & Preferences couldn't be loaded",
+    );
+    expect(screen.queryByText("Deutschland")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Save changes" }),
+    ).not.toBeInTheDocument();
+
+    await user.click(retry);
+
+    expect(await screen.findByText("Deutschland")).toBeInTheDocument();
+    expect(screen.queryByTestId("section-error")).not.toBeInTheDocument();
+    expect(mockGetPrefs).toHaveBeenCalledTimes(2);
   });
 
   it("renders country buttons", async () => {
@@ -202,7 +246,7 @@ describe("ProfileSettingsPage", () => {
     });
   });
 
-  it("passes through diet/allergen values from prefs when saving", async () => {
+  it("updates only profile-owned fields", async () => {
     mockGetPrefs.mockResolvedValue({
       ok: true,
       data: {
@@ -226,13 +270,25 @@ describe("ProfileSettingsPage", () => {
     await waitFor(() => {
       expect(mockSetPrefs).toHaveBeenCalledWith(
         expect.anything(),
-        expect.objectContaining({
+        {
           p_country: "DE",
-          p_diet_preference: "vegan",
-          p_avoid_allergens: ["gluten"],
-        }),
+          p_preferred_language: "de",
+        },
       );
     });
+  });
+
+  it("hydrates profile controls from cache-hot preferences", () => {
+    render(<ProfileSettingsPage />, {
+      wrapper: createCachedWrapper({
+        ...mockPrefsData,
+        country: "PL",
+        preferred_language: "pl",
+      }),
+    });
+
+    expect(screen.getByText("Polski")).toBeInTheDocument();
+    expect(screen.queryByText("Deutsch")).not.toBeInTheDocument();
   });
 
   it("shows success toast after saving", async () => {

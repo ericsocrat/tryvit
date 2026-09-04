@@ -1174,6 +1174,8 @@
     "contactText": "W sprawie pytań dotyczących tego regulaminu skontaktuj się z nami pod adresem:"
   },
   "onboarding": {
+    "preferencesUnavailableTitle": "Nie udało się wczytać Twoich preferencji",
+    "preferencesUnavailableDescription": "Nic nie zostało zmienione. Spróbuj ponownie, aby kontynuować.",
     "selectRegion": "Wybierz swój region",
     "regionSubtitle": "Pokażemy Ci produkty dostępne w Twoim kraju.",
     "pleaseSelectRegion": "Proszę wybrać region.",

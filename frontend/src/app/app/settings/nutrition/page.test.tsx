@@ -1,4 +1,5 @@
 import { useLanguageStore } from "@/stores/language-store";
+import { queryKeys } from "@/lib/query-keys";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -53,6 +54,23 @@ function createWrapper() {
   return Wrapper;
 }
 
+function createCachedWrapper(preferences: unknown) {
+  return function CachedWrapper({
+    children,
+  }: Readonly<{ children: React.ReactNode }>) {
+    const [client] = useState(() => {
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false, staleTime: 0 } },
+      });
+      queryClient.setQueryData(queryKeys.preferences, preferences);
+      return queryClient;
+    });
+    return (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+  };
+}
+
 const mockPrefsData = {
   user_id: "abc12345-6789-def0-1234-567890abcdef",
   country: "PL",
@@ -82,6 +100,36 @@ describe("NutritionSettingsPage", () => {
         screen.getByRole("heading", { name: /Nutrition & Diet/i }),
       ).toBeInTheDocument();
     });
+  });
+
+  it("fails closed when preferences cannot be loaded, then hydrates after retry", async () => {
+    mockGetPrefs
+      .mockResolvedValueOnce({
+        ok: false,
+        error: { code: "500", message: "Preferences unavailable" },
+      })
+      .mockResolvedValueOnce({ ok: true, data: mockPrefsData });
+    render(<NutritionSettingsPage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    const retry = await screen.findByRole("button", { name: "Try again" });
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Nutrition & Diet couldn't be loaded",
+    );
+    expect(screen.queryByText("No restriction")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Save changes" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("health-profile-section"),
+    ).not.toBeInTheDocument();
+
+    await user.click(retry);
+
+    expect(await screen.findByText("No restriction")).toBeInTheDocument();
+    expect(screen.getByTestId("health-profile-section")).toBeInTheDocument();
+    expect(screen.queryByTestId("section-error")).not.toBeInTheDocument();
+    expect(mockGetPrefs).toHaveBeenCalledTimes(2);
   });
 
   it("renders diet preference options", async () => {
@@ -186,7 +234,7 @@ describe("NutritionSettingsPage", () => {
     });
   });
 
-  it("passes through country/language from prefs when saving", async () => {
+  it("updates only nutrition-owned fields", async () => {
     mockGetPrefs.mockResolvedValue({
       ok: true,
       data: { ...mockPrefsData, country: "DE", preferred_language: "de" },
@@ -204,14 +252,44 @@ describe("NutritionSettingsPage", () => {
     await user.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() => {
-      expect(mockSetPrefs).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          p_country: "DE",
-          p_preferred_language: "de",
-          p_diet_preference: "vegetarian",
-        }),
-      );
+      expect(mockSetPrefs).toHaveBeenCalledWith(expect.anything(), {
+        p_diet_preference: "vegetarian",
+        p_avoid_allergens: [],
+        p_strict_diet: false,
+        p_strict_allergen: false,
+        p_treat_may_contain_as_unsafe: false,
+      });
+    });
+  });
+
+  it("preserves cache-hot allergens when another nutrition field changes", async () => {
+    const cachedPrefs = {
+      ...mockPrefsData,
+      diet_preference: "vegan",
+      avoid_allergens: ["gluten"],
+      strict_diet: true,
+      strict_allergen: true,
+      treat_may_contain_as_unsafe: true,
+    };
+    mockSetPrefs.mockResolvedValue({ ok: true });
+
+    render(<NutritionSettingsPage />, {
+      wrapper: createCachedWrapper(cachedPrefs),
+    });
+    const user = userEvent.setup();
+
+    expect(screen.getByText("Strict allergen matching")).toBeInTheDocument();
+    await user.click(screen.getByText("Vegetarian"));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => {
+      expect(mockSetPrefs).toHaveBeenCalledWith(expect.anything(), {
+        p_diet_preference: "vegetarian",
+        p_avoid_allergens: ["gluten"],
+        p_strict_diet: true,
+        p_strict_allergen: true,
+        p_treat_may_contain_as_unsafe: true,
+      });
     });
   });
 

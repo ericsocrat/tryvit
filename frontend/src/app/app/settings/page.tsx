@@ -4,6 +4,7 @@
 
 import { Button } from "@/components/common/Button";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
+import { SectionError } from "@/components/common/SectionError";
 import { SettingsSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
@@ -11,15 +12,16 @@ import surface from "@/components/layout/CustomerSurface.module.css";
 import { ThemeToggle } from "@/components/settings/ThemeToggle";
 import { useClientMessages } from "@/components/i18n/ClientMessagesProvider";
 import { useAnalytics } from "@/hooks/use-analytics";
+import { useUserPreferencesQuery } from "@/hooks/use-user-preferences-query";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
-import { getUserPreferences, setUserPreferences } from "@/lib/api";
+import { setUserPreferences } from "@/lib/api";
 import { COUNTRIES, COUNTRY_DEFAULT_LANGUAGES, getLanguagesForCountry } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { queryKeys } from "@/lib/query-keys";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
 import { useLanguageStore, type SupportedLanguage } from "@/stores/language-store";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 
 export default function ProfileSettingsPage() {
@@ -30,18 +32,19 @@ export default function ProfileSettingsPage() {
   const { activateLanguage, prepareLanguage } = useClientMessages();
   const setStoreLanguage = useLanguageStore((s) => s.setLanguage);
 
-  const { data: prefs, isLoading } = useQuery({
-    queryKey: queryKeys.preferences,
-    queryFn: async () => {
-      const result = await getUserPreferences(supabase);
-      if (!result.ok) throw new Error(result.error.message);
-      return result.data;
-    },
-    staleTime: staleTimes.preferences,
-  });
+  const {
+    data: prefs,
+    error: preferencesError,
+    isPending,
+    refetch: refetchPreferences,
+  } = useUserPreferencesQuery();
 
-  const [country, setCountry] = useState("");
-  const [language, setLanguage] = useState<SupportedLanguage>("en");
+  // React Query can provide cache-hot data on the first render. Seed the form
+  // from that value so controls never begin from guessed defaults.
+  const [country, setCountry] = useState(() => prefs?.country ?? "");
+  const [language, setLanguage] = useState<SupportedLanguage>(
+    () => (prefs?.preferred_language ?? "en") as SupportedLanguage,
+  );
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
 
@@ -79,6 +82,11 @@ export default function ProfileSettingsPage() {
   }, [handleBeforeUnload]);
 
   async function handleSave() {
+    if (!prefs) {
+      showToast({ type: "error", messageKey: "auth.preferencesFailed" });
+      return;
+    }
+
     setSaving(true);
 
     const prepared = await prepareLanguage(language);
@@ -91,15 +99,6 @@ export default function ProfileSettingsPage() {
     const result = await setUserPreferences(supabase, {
       p_country: country,
       p_preferred_language: language,
-      // Pass through existing diet/allergen values (managed on Nutrition page)
-      p_diet_preference: prefs?.diet_preference ?? "none",
-      p_avoid_allergens:
-        prefs?.avoid_allergens && prefs.avoid_allergens.length > 0
-          ? prefs.avoid_allergens
-          : undefined,
-      p_strict_diet: prefs?.strict_diet ?? false,
-      p_strict_allergen: prefs?.strict_allergen ?? false,
-      p_treat_may_contain_as_unsafe: prefs?.treat_may_contain_as_unsafe ?? false,
     });
     if (!result.ok) {
       setSaving(false);
@@ -132,8 +131,31 @@ export default function ProfileSettingsPage() {
     showToast({ type: "success", messageKey: "settings.preferencesSaved" });
   }
 
-  if (isLoading) {
+  if (isPending) {
     return <SettingsSkeleton />;
+  }
+
+  if (!prefs && preferencesError) {
+    return (
+      <AppPage className={surface.appPage}>
+        <Breadcrumbs
+          items={[
+            { labelKey: "nav.home", href: "/app" },
+            { labelKey: "nav.settings", href: "/app/settings" },
+            { labelKey: "settings.tabProfile" },
+          ]}
+        />
+        <AppPageHeader
+          eyebrow={t("nav.settings")}
+          title={t("settings.tabProfile")}
+        />
+        <SectionError
+          error={preferencesError}
+          label={t("settings.tabProfile")}
+          onRetry={() => void refetchPreferences()}
+        />
+      </AppPage>
+    );
   }
 
   return (

@@ -16,10 +16,11 @@ vi.mock("@/lib/api", () => ({
     mockGetProductAllergens(...args),
 }));
 
-const mockUsePreferences = vi.fn();
+const mockRefetchPreferences = vi.fn();
+const mockUseUserPreferencesQuery = vi.fn();
 
-vi.mock("@/components/common/RouteGuard", () => ({
-  usePreferences: () => mockUsePreferences(),
+vi.mock("@/hooks/use-user-preferences-query", () => ({
+  useUserPreferencesQuery: () => mockUseUserPreferencesQuery(),
 }));
 
 const mockMatchProductAllergens = vi.fn();
@@ -66,9 +67,14 @@ const glutenWarning = {
 describe("useProductAllergenWarnings", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockUsePreferences.mockReturnValue({
-      avoid_allergens: ["milk", "gluten"],
-      treat_may_contain_as_unsafe: false,
+    mockUseUserPreferencesQuery.mockReturnValue({
+      data: {
+        avoid_allergens: ["milk", "gluten"],
+        treat_may_contain_as_unsafe: false,
+      },
+      error: null,
+      isPending: false,
+      refetch: mockRefetchPreferences,
     });
   });
 
@@ -99,9 +105,14 @@ describe("useProductAllergenWarnings", () => {
   });
 
   it("returns empty map when no allergen preferences", () => {
-    mockUsePreferences.mockReturnValue({
-      avoid_allergens: [],
-      treat_may_contain_as_unsafe: false,
+    mockUseUserPreferencesQuery.mockReturnValue({
+      data: {
+        avoid_allergens: [],
+        treat_may_contain_as_unsafe: false,
+      },
+      error: null,
+      isPending: false,
+      refetch: mockRefetchPreferences,
     });
 
     const { result } = renderHook(
@@ -115,8 +126,13 @@ describe("useProductAllergenWarnings", () => {
     expect(mockGetProductAllergens).not.toHaveBeenCalled();
   });
 
-  it("returns empty map when preferences are undefined", () => {
-    mockUsePreferences.mockReturnValue(undefined);
+  it("keeps preference loading visible instead of treating it as no allergens", () => {
+    mockUseUserPreferencesQuery.mockReturnValue({
+      data: undefined,
+      error: null,
+      isPending: true,
+      refetch: mockRefetchPreferences,
+    });
 
     const { result } = renderHook(
       () => useProductAllergenWarnings([42]),
@@ -124,8 +140,32 @@ describe("useProductAllergenWarnings", () => {
     );
 
     expect(result.current.warnings).toEqual({});
-    expect(result.current.enabled).toBe(false);
+    expect(result.current.enabled).toBe(true);
+    expect(result.current.isLoading).toBe(true);
     expect(mockGetProductAllergens).not.toHaveBeenCalled();
+  });
+
+  it("keeps preference errors visible and retries the preference read", () => {
+    const preferenceError = new Error("preferences unavailable");
+    mockUseUserPreferencesQuery.mockReturnValue({
+      data: undefined,
+      error: preferenceError,
+      isPending: false,
+      refetch: mockRefetchPreferences,
+    });
+
+    const { result } = renderHook(
+      () => useProductAllergenWarnings([42]),
+      { wrapper: createWrapper() },
+    );
+
+    expect(result.current.warnings).toEqual({});
+    expect(result.current.enabled).toBe(true);
+    expect(result.current.error).toBe(preferenceError);
+    expect(mockGetProductAllergens).not.toHaveBeenCalled();
+
+    result.current.refetch();
+    expect(mockRefetchPreferences).toHaveBeenCalledOnce();
   });
 
   it("returns empty map when productIds is empty", () => {
@@ -163,9 +203,14 @@ describe("useProductAllergenWarnings", () => {
   });
 
   it("passes avoidAllergens and treatMayContainAsUnsafe to matcher", async () => {
-    mockUsePreferences.mockReturnValue({
-      avoid_allergens: ["peanuts"],
-      treat_may_contain_as_unsafe: true,
+    mockUseUserPreferencesQuery.mockReturnValue({
+      data: {
+        avoid_allergens: ["peanuts"],
+        treat_may_contain_as_unsafe: true,
+      },
+      error: null,
+      isPending: false,
+      refetch: mockRefetchPreferences,
     });
 
     const allergenData = {

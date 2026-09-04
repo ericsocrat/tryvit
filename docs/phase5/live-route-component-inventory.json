@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "47b02a57e5c167f51ea660658f9b5779c85126ab",
+    "baseSha": "4e5fa955700dc10d6b60b7052c2605f016114ed6",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "32d982cfcb8139b51c10be722aa3096b98d6f38ffa02710c35aeed7e4c386274"
+    "sourceFingerprint": "873f3a11c9859fc726653809701dca7a1ae485840a28f9b2c48c920345f2e53e"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -1921,10 +1921,12 @@
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
         "frontend/src/components/common/Button.tsx",
+        "frontend/src/components/common/SectionError.tsx",
         "frontend/src/components/common/skeletons/index.ts",
         "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/hooks/use-analytics.ts",
+        "frontend/src/hooks/use-user-preferences-query.ts",
         "frontend/src/lib/api.ts",
         "frontend/src/lib/constants.ts",
         "frontend/src/lib/i18n.ts",
@@ -1970,11 +1972,13 @@
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
         "frontend/src/components/common/Button.tsx",
+        "frontend/src/components/common/SectionError.tsx",
         "frontend/src/components/common/skeletons/index.ts",
         "frontend/src/components/layout/AppPage.tsx",
         "frontend/src/components/layout/Breadcrumbs.tsx",
         "frontend/src/components/settings/HealthProfileSection.tsx",
         "frontend/src/hooks/use-analytics.ts",
+        "frontend/src/hooks/use-user-preferences-query.ts",
         "frontend/src/lib/api.ts",
         "frontend/src/lib/constants.ts",
         "frontend/src/lib/i18n.ts",
@@ -2010,6 +2014,7 @@
       "directModuleImports": [
         "frontend/src/components/common/Button.tsx",
         "frontend/src/components/common/ConfirmDialog.tsx",
+        "frontend/src/components/common/SectionError.tsx",
         "frontend/src/components/common/skeletons/index.ts",
         "frontend/src/components/i18n/ClientMessagesProvider.tsx",
         "frontend/src/components/layout/AppPage.tsx",
@@ -2017,6 +2022,7 @@
         "frontend/src/components/settings/ThemeToggle.tsx",
         "frontend/src/hooks/use-analytics.ts",
         "frontend/src/hooks/use-unsaved-changes.ts",
+        "frontend/src/hooks/use-user-preferences-query.ts",
         "frontend/src/lib/api.ts",
         "frontend/src/lib/constants.ts",
         "frontend/src/lib/i18n.ts",
@@ -5294,6 +5300,9 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/app/onboarding/OnboardingWizard.tsx",
+        "frontend/src/components/common/Button.tsx",
+        "frontend/src/lib/i18n-core.ts",
+        "frontend/src/lib/server-locale.ts",
         "frontend/src/lib/supabase/server.ts"
       ],
       "directConsumers": [],
@@ -6643,6 +6652,7 @@
         "frontend/src/app/lists/shared/[token]/page.tsx",
         "frontend/src/app/not-found.tsx",
         "frontend/src/app/offline/page.tsx",
+        "frontend/src/app/onboarding/page.tsx",
         "frontend/src/app/onboarding/preferences/PreferencesForm.tsx",
         "frontend/src/app/onboarding/region/RegionForm.tsx",
         "frontend/src/app/onboarding/steps/AllergensStep.tsx",
@@ -8105,11 +8115,6 @@
       ],
       "transitiveRouteConsumers": [
         {
-          "modulePath": "frontend/src/app/app/categories/[slug]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app/categories/[slug]"
-        },
-        {
           "modulePath": "frontend/src/app/app/image-search/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/image-search"
@@ -8836,25 +8841,17 @@
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
         "frontend/src/components/common/LoadingSpinner.tsx",
-        "frontend/src/lib/api.ts",
-        "frontend/src/lib/query-keys.ts",
+        "frontend/src/hooks/use-user-preferences-query.ts",
         "frontend/src/lib/rpc.ts",
-        "frontend/src/lib/supabase/client.ts",
         "frontend/src/lib/toast.ts",
         "frontend/src/lib/types.ts"
       ],
       "directConsumers": [
         "frontend/src/app/app/scan/page.tsx",
         "frontend/src/app/app/scan/submit/page.tsx",
-        "frontend/src/components/common/index.ts",
-        "frontend/src/hooks/use-product-allergens.ts"
+        "frontend/src/components/common/index.ts"
       ],
       "transitiveRouteConsumers": [
-        {
-          "modulePath": "frontend/src/app/app/categories/[slug]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app/categories/[slug]"
-        },
         {
           "modulePath": "frontend/src/app/app/recipes/[slug]/page.tsx",
           "routeModuleKind": "page",
@@ -8874,11 +8871,6 @@
           "modulePath": "frontend/src/app/app/scan/submit/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/scan/submit"
-        },
-        {
-          "modulePath": "frontend/src/app/app/search/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app/search"
         }
       ],
       "targetRedesignPhases": [
@@ -8960,6 +8952,9 @@
         "frontend/src/lib/i18n.ts"
       ],
       "directConsumers": [
+        "frontend/src/app/app/settings/notifications/page.tsx",
+        "frontend/src/app/app/settings/nutrition/page.tsx",
+        "frontend/src/app/app/settings/page.tsx",
         "frontend/src/components/common/index.ts"
       ],
       "transitiveRouteConsumers": [
@@ -8972,6 +8967,21 @@
           "modulePath": "frontend/src/app/app/recipes/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/recipes"
+        },
+        {
+          "modulePath": "frontend/src/app/app/settings/notifications/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/settings/notifications"
+        },
+        {
+          "modulePath": "frontend/src/app/app/settings/nutrition/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/settings/nutrition"
+        },
+        {
+          "modulePath": "frontend/src/app/app/settings/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/settings"
         }
       ],
       "targetRedesignPhases": [
@@ -21235,9 +21245,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 568,
+    "inspectedModuleCount": 569,
     "violations": [],
-    "sourceFingerprint": "cb99658a306fa32e7bae74a2ff6c29d988d46aed4ba71a640274d49f3fc0e2ec"
+    "sourceFingerprint": "39b0abdf5d08ad4f314c2ec474adffa60ffa914bbd722fea047c79b378389cac"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
@@ -21279,6 +21289,7 @@
           "frontend/src/app/lists/shared/[token]/page.tsx",
           "frontend/src/app/not-found.tsx",
           "frontend/src/app/offline/page.tsx",
+          "frontend/src/app/onboarding/page.tsx",
           "frontend/src/app/onboarding/preferences/PreferencesForm.tsx",
           "frontend/src/app/onboarding/region/RegionForm.tsx",
           "frontend/src/app/onboarding/steps/AllergensStep.tsx",
@@ -21864,6 +21875,6 @@
         ]
       }
     ],
-    "sourceFingerprint": "f95d5a28b7413c4b57de32c611c11f4738366c59b84603b65601947c43172aa2"
+    "sourceFingerprint": "8ceb4e10c9ba4d8594c454e027835c4b6676cc6b0fd1006de15c759459fe74b4"
   }
 }

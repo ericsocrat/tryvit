@@ -99,6 +99,36 @@ describe("NotificationSettingsPage", () => {
     });
   });
 
+  it("fails closed when preferences cannot be loaded, then hydrates after retry", async () => {
+    mockGetPrefs
+      .mockResolvedValueOnce({
+        ok: false,
+        error: { code: "500", message: "Preferences unavailable" },
+      })
+      .mockResolvedValueOnce({ ok: true, data: mockPrefsData });
+    render(<NotificationSettingsPage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    const retry = await screen.findByRole("button", { name: "Try again" });
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Notifications couldn't be loaded",
+    );
+    expect(
+      screen.queryByTestId("score-changes-section"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("save-notification-prefs"),
+    ).not.toBeInTheDocument();
+
+    await user.click(retry);
+
+    expect(
+      await screen.findByTestId("score-changes-section"),
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("section-error")).not.toBeInTheDocument();
+    expect(mockGetPrefs).toHaveBeenCalledTimes(2);
+  });
+
   it("renders score changes section", async () => {
     render(<NotificationSettingsPage />, { wrapper: createWrapper() });
 
@@ -314,7 +344,7 @@ describe("NotificationSettingsPage", () => {
     });
   });
 
-  it("passes through country and language from prefs when saving", async () => {
+  it("updates only notification-owned fields", async () => {
     mockGetPrefs.mockResolvedValue({
       ok: true,
       data: { ...mockPrefsData, country: "DE", preferred_language: "de" },
@@ -332,13 +362,10 @@ describe("NotificationSettingsPage", () => {
     await user.click(screen.getByTestId("save-notification-prefs"));
 
     await waitFor(() => {
-      expect(mockSetPrefs).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          p_country: "DE",
-          p_preferred_language: "de",
-        }),
-      );
+      expect(mockSetPrefs).toHaveBeenCalledWith(expect.anything(), {
+        p_notification_score_changes: false,
+        p_notification_frequency: "immediate",
+      });
     });
   });
 

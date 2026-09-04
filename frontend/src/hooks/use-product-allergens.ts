@@ -5,9 +5,9 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
-import { usePreferences } from "@/components/common/RouteGuard";
 import { getProductAllergens } from "@/lib/api";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { useUserPreferencesQuery } from "@/hooks/use-user-preferences-query";
 import {
   matchProductAllergens,
   type AllergenWarning,
@@ -41,7 +41,8 @@ export function useProductAllergenWarnings(
   productIds: number[],
 ): ProductAllergenWarningState {
   const supabase = createClient();
-  const prefs = usePreferences();
+  const preferenceQuery = useUserPreferencesQuery();
+  const prefs = preferenceQuery.data;
 
   const avoidAllergens = useMemo(
     () => prefs?.avoid_allergens ?? [],
@@ -82,10 +83,21 @@ export function useProductAllergenWarnings(
 
   return {
     warnings,
-    enabled: productIds.length > 0 && hasAllergenPrefs,
-    isLoading: query.isLoading,
-    error: query.error,
+    // A pending or failed preference read is itself relevant evidence. Keep the
+    // surface active so consumers show loading/unavailable instead of implying
+    // that the user has no configured allergens.
+    enabled:
+      productIds.length > 0 &&
+      (preferenceQuery.isPending ||
+        Boolean(preferenceQuery.error) ||
+        hasAllergenPrefs),
+    isLoading: preferenceQuery.isPending || query.isLoading,
+    error: preferenceQuery.error ?? query.error,
     refetch: () => {
+      if (preferenceQuery.error || prefs === undefined) {
+        void preferenceQuery.refetch();
+        return;
+      }
       void query.refetch();
     },
   };
