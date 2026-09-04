@@ -12,11 +12,11 @@
     "guideTitle": "Darauf kommt es an",
     "guideAction": "Ratgeber entdecken",
     "factsTitle": "Etikettangaben prüfen",
-    "factsDescription": "Vergleichen Sie Nährwerte, ihre Bezugsmenge und Zutateninformationen mit der aktuellen Verpackung.",
+    "factsDescription": "Vergleiche Nährwerte, ihre Bezugsmenge und Zutateninformationen mit der aktuellen Verpackung.",
     "evidenceTitle": "Datenlücken erkennen",
-    "evidenceDescription": "Achten Sie auf Quellen und fehlende Angaben. Ein unbekannter Wert bedeutet nicht null.",
+    "evidenceDescription": "Achte auf Quellen und fehlende Angaben. Ein unbekannter Wert bedeutet nicht null.",
     "compareTitle": "Ähnliches vergleichen",
-    "compareDescription": "Wählen Sie ähnliche Produkte und prüfen Sie ihre Unterschiede. Ein Score ist ein Ausgangspunkt, kein Urteil."
+    "compareDescription": "Wähle ähnliche Produkte und prüfe ihre Unterschiede. Ein Score ist ein Ausgangspunkt, kein Urteil."
   },
   "nav": {
     "home": "Dashboard",

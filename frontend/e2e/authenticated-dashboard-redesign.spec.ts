@@ -228,7 +228,15 @@ test.describe("Dashboard redesign guarded review", () => {
   test.describe.configure({ mode: "default" });
   test.beforeAll(async () => {
     sourceIdentity = await collectSourceIdentity();
-    buildProvenance = JSON.parse(await readFile(".next/tryvit-visual-safety-provenance.json", "utf8"));
+    const provenance = JSON.parse(await readFile(".next/tryvit-visual-safety-provenance.json", "utf8"));
+    // Runtime addresses are sensitive environment values under the artifact
+    // contract. Bind the built bytes without exporting runtime configuration.
+    buildProvenance = {
+      schemaVersion: provenance.contract.schemaVersion,
+      sourceGitSha: provenance.contract.sourceGitSha,
+      buildId: provenance.contract.buildId,
+      assetDigest: provenance.assetDigest,
+    };
   });
   test.afterAll(async () => {
     try {
