@@ -17,7 +17,7 @@ import { getRecipeDetail, getRecipeScore } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { createClient } from "@/lib/supabase/client";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ChefHat, Clock, Share2, Timer, Users } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
@@ -36,16 +36,14 @@ export default function RecipeDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
   const supabase = createClient();
-  const queryClient = useQueryClient();
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
-  const { data: recipe, isLoading, error } = useQuery({
+  const { data: recipe, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.recipe(slug),
     queryFn: async () => {
       const result = await getRecipeDetail(supabase, slug);
       if (!result.ok) throw new Error(result.error.message);
-      if (!result.data) throw new Error("Recipe not found");
       return result.data;
     },
     staleTime: staleTimes.recipe,
@@ -65,18 +63,42 @@ export default function RecipeDetailPage() {
 
   if (isLoading) return <RecipeGridSkeleton />;
 
-  if (error || !recipe) {
+  if (error) {
     return (
-      <div className="py-12 text-center">
-        <p className="mb-3 text-sm text-error">{t("recipes.loadFailed")}</p>
-        <Button
-          onClick={() =>
-            queryClient.invalidateQueries({ queryKey: queryKeys.recipe(slug) })
-          }
-        >
-          {t("common.retry")}
-        </Button>
-      </div>
+      <AppPage className={surface.appPage}>
+        <Breadcrumbs
+          items={[
+            { labelKey: "nav.home", href: "/app" },
+            { labelKey: "nav.recipes", href: "/app/recipes" },
+          ]}
+        />
+        <div className={[surface.state, "text-center"].join(" ")}>
+          <p className="mb-3 text-sm text-error" role="alert">
+            {t("recipes.detailUnavailable")}
+          </p>
+          <Button onClick={() => void refetch()}>
+            {t("common.retry")}
+          </Button>
+        </div>
+      </AppPage>
+    );
+  }
+
+  if (!recipe) {
+    return (
+      <AppPage className={surface.appPage}>
+        <Breadcrumbs
+          items={[
+            { labelKey: "nav.home", href: "/app" },
+            { labelKey: "nav.recipes", href: "/app/recipes" },
+          ]}
+        />
+        <div className={[surface.state, "text-center"].join(" ")}>
+          <p className="text-sm text-foreground-muted">
+            {t("recipes.notFound")}
+          </p>
+        </div>
+      </AppPage>
     );
   }
 
