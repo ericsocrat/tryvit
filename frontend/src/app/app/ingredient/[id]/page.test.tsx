@@ -1,18 +1,22 @@
+import type { getIngredientProfile } from "@/lib/api";
 import type { IngredientProfile } from "@/lib/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
-const mockGetIngredientProfile = vi.fn();
+type GetIngredientProfile = typeof getIngredientProfile;
+
+const mockGetIngredientProfile = vi.fn<GetIngredientProfile>();
 
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({}),
 }));
 
 vi.mock("@/lib/api", () => ({
-  getIngredientProfile: (...args: unknown[]) =>
+  getIngredientProfile: (...args: Parameters<GetIngredientProfile>) =>
     mockGetIngredientProfile(...args),
 }));
 
@@ -97,15 +101,49 @@ describe("IngredientProfilePage", () => {
     expect(screen.getByRole("status", { name: "Loading ingredient" })).toBeInTheDocument();
   });
 
-  it("shows not-found when API returns error", async () => {
+  it("shows not-found without retry when the ingredient is absent", async () => {
     mockGetIngredientProfile.mockResolvedValue({
       ok: true,
-      data: { error: "Ingredient not found", ingredient_id: 42 },
+      data: null,
     });
     render(<IngredientProfilePage />, { wrapper: createWrapper() });
     expect(
       await screen.findByText("Ingredient not found."),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Retry" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("shows an accessible retry state when ingredient details are unavailable", async () => {
+    mockGetIngredientProfile.mockResolvedValue({
+      ok: false,
+      error: { code: "PGRST500", message: "Service unavailable" },
+    });
+    render(<IngredientProfilePage />, { wrapper: createWrapper() });
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Ingredient details are temporarily unavailable. Please try again.",
+    );
+    expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
+  });
+
+  it("retries ingredient details after a service failure", async () => {
+    mockGetIngredientProfile
+      .mockResolvedValueOnce({
+        ok: false,
+        error: { code: "PGRST500", message: "Service unavailable" },
+      })
+      .mockResolvedValueOnce({ ok: true, data: SAMPLE_PROFILE });
+    render(<IngredientProfilePage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    await user.click(await screen.findByRole("button", { name: "Retry" }));
+
+    expect(
+      await screen.findByRole("heading", { name: "Salt" }),
+    ).toBeInTheDocument();
+    expect(mockGetIngredientProfile).toHaveBeenCalledTimes(2);
   });
 
   it("renders ingredient name as heading", async () => {

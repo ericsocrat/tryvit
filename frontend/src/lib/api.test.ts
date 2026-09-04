@@ -1239,6 +1239,33 @@ describe("Product Profile API functions", () => {
       { p_ingredient_id: 99, p_language: "en" },
     );
   });
+
+  it("getIngredientProfile normalizes the documented missing response to null", async () => {
+    mockCallRpc.mockResolvedValue({
+      ok: false,
+      error: { code: "BUSINESS_ERROR", message: "Ingredient not found" },
+    });
+
+    await expect(getIngredientProfile(fakeSupabase, 99)).resolves.toEqual({
+      ok: true,
+      data: null,
+    });
+  });
+
+  it.each([
+    { code: "PGRST500", message: "Service unavailable" },
+    { code: "BUSINESS_ERROR", message: "Ingredient data unavailable" },
+  ])(
+    "getIngredientProfile preserves $code failures",
+    async (error) => {
+      const failure = { ok: false as const, error };
+      mockCallRpc.mockResolvedValue(failure);
+
+      await expect(getIngredientProfile(fakeSupabase, 99)).resolves.toEqual(
+        failure,
+      );
+    },
+  );
 });
 
 // ─── Dashboard Insights ─────────────────────────────────────────────────────

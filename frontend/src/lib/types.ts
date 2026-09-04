@@ -689,7 +689,6 @@ export interface IngredientProfile {
   ingredient: IngredientProfileIngredient;
   usage: IngredientUsage;
   related_ingredients: RelatedIngredient[];
-  error?: string;
 }
 
 export interface ProfileAllergens {

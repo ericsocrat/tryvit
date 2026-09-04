@@ -1347,6 +1347,7 @@
   },
   "ingredient": {
     "notFound": "Zutat nicht gefunden.",
+    "loadFailed": "Zutatendetails sind vorübergehend nicht verfügbar. Bitte versuchen Sie es erneut.",
     "vegan": "Vegan",
     "vegetarian": "Vegetarisch",
     "palmOil": "Palmöl",
@@ -1767,6 +1768,8 @@
   "recipes": {
     "title": "Rezepte",
     "loadFailed": "Rezepte konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "detailUnavailable": "Rezeptdetails sind vorübergehend nicht verfügbar. Bitte versuchen Sie es erneut.",
+    "notFound": "Rezept nicht gefunden.",
     "filterCategory": "Nach Kategorie filtern",
     "filterDifficulty": "Nach Schwierigkeit filtern",
     "allCategories": "Alle Kategorien",
