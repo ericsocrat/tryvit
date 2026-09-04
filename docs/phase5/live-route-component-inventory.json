@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "590911d2f0fe00885c70374008fab542a98f637b",
+    "baseSha": "caf53bcf1947c7530149acabe0bd5fe02ea7fbed",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "873f3a11c9859fc726653809701dca7a1ae485840a28f9b2c48c920345f2e53e"
+    "sourceFingerprint": "99fef316142ddf1a790ca072c445ef9db2793b8b9abd77263d87820fd116f12a"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -878,6 +878,7 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
+        "frontend/src/components/common/Button.tsx",
         "frontend/src/components/common/skeletons/index.ts",
         "frontend/src/components/ingredient/ConcernBadge.tsx",
         "frontend/src/components/ingredient/IngredientUsageStats.tsx",
@@ -6627,6 +6628,7 @@
         "frontend/src/app/app/admin/submissions/page.tsx",
         "frontend/src/app/app/categories/[slug]/page.tsx",
         "frontend/src/app/app/error.tsx",
+        "frontend/src/app/app/ingredient/[id]/page.tsx",
         "frontend/src/app/app/layout.tsx",
         "frontend/src/app/app/lists/[id]/page.tsx",
         "frontend/src/app/app/lists/page.tsx",
@@ -6712,6 +6714,11 @@
           "modulePath": "frontend/src/app/app/image-search/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/image-search"
+        },
+        {
+          "modulePath": "frontend/src/app/app/ingredient/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/ingredient/[id]"
         },
         {
           "modulePath": "frontend/src/app/app/layout.tsx",
@@ -18162,6 +18169,11 @@
           "routePath": "/app/image-search"
         },
         {
+          "modulePath": "frontend/src/app/app/ingredient/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/ingredient/[id]"
+        },
+        {
           "modulePath": "frontend/src/app/app/layout.tsx",
           "routeModuleKind": "layout",
           "routePath": "/app"
@@ -21247,7 +21259,7 @@
     ],
     "inspectedModuleCount": 569,
     "violations": [],
-    "sourceFingerprint": "39b0abdf5d08ad4f314c2ec474adffa60ffa914bbd722fea047c79b378389cac"
+    "sourceFingerprint": "94960db34dee9f8d6df56a3509710fa16581a95eda46b6a15483ccaedcd55b77"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
@@ -21264,6 +21276,7 @@
           "frontend/src/app/app/admin/submissions/page.tsx",
           "frontend/src/app/app/categories/[slug]/page.tsx",
           "frontend/src/app/app/error.tsx",
+          "frontend/src/app/app/ingredient/[id]/page.tsx",
           "frontend/src/app/app/layout.tsx",
           "frontend/src/app/app/lists/[id]/page.tsx",
           "frontend/src/app/app/lists/page.tsx",
@@ -21348,6 +21361,11 @@
             "modulePath": "frontend/src/app/app/image-search/page.tsx",
             "routeModuleKind": "page",
             "routePath": "/app/image-search"
+          },
+          {
+            "modulePath": "frontend/src/app/app/ingredient/[id]/page.tsx",
+            "routeModuleKind": "page",
+            "routePath": "/app/ingredient/[id]"
           },
           {
             "modulePath": "frontend/src/app/app/layout.tsx",
@@ -21875,6 +21893,6 @@
         ]
       }
     ],
-    "sourceFingerprint": "8ceb4e10c9ba4d8594c454e027835c4b6676cc6b0fd1006de15c759459fe74b4"
+    "sourceFingerprint": "996ea28fd3ffce7805e3100b17ea45d66a9f5f7ebfa30407b89cae35628fcfe2"
   }
 }
