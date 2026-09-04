@@ -105,7 +105,7 @@ export function OnboardingWizard() {
       category_count: data.favoriteCategories.length,
     });
     showToast({ type: "success", messageKey: "onboarding.preferencesSaved" });
-    router.push("/app/search");
+    router.push("/app");
     router.refresh();
   }
 
@@ -148,7 +148,7 @@ export function OnboardingWizard() {
     }
 
     track("onboarding_completed", { skipped: true });
-    router.push("/app/search");
+    router.push("/app");
     router.refresh();
   }
 

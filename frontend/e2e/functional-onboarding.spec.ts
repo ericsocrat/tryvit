@@ -168,11 +168,12 @@ test.describe("Onboarding: wizard flow", () => {
     });
   });
 
-  test("Skip from the first step goes directly to Search", async ({ page }) => {
+  test("Skip from the first step enters the first-use dashboard", async ({ page }) => {
     await signInOnboardingUser(page);
 
     await page.getByTestId("onboarding-skip-all").click();
-    await page.waitForURL(/\/app\/search$/, { timeout: 15_000 });
+    await page.waitForURL(/\/app$/, { timeout: 15_000 });
+    await expect(page.getByTestId("new-user-welcome")).toBeVisible();
   });
 
   test("country selection advances directly to Diet and Allergens", async ({
@@ -189,7 +190,7 @@ test.describe("Onboarding: wizard flow", () => {
     await expect(page.getByTestId("allergen-gluten")).toBeVisible();
   });
 
-  test("three-step completion saves and enters Search", async ({ page }) => {
+  test("three-step completion saves and enters the first-use dashboard", async ({ page }) => {
     await createOnboardingUser();
     await signInOnboardingUser(page);
 
@@ -202,10 +203,11 @@ test.describe("Onboarding: wizard flow", () => {
     await page.getByTestId("category-bread").click();
     await page.getByTestId("onboarding-complete").click();
 
-    await page.waitForURL(/\/app\/search$/, { timeout: 20_000 });
+    await page.waitForURL(/\/app$/, { timeout: 20_000 });
+    await expect(page.getByTestId("new-user-welcome")).toBeVisible();
   });
 
-  test("Skip from an inner step goes directly to Search", async ({ page }) => {
+  test("Skip from an inner step enters the first-use dashboard", async ({ page }) => {
     await createOnboardingUser();
     await signInOnboardingUser(page);
 
@@ -215,6 +217,7 @@ test.describe("Onboarding: wizard flow", () => {
       timeout: 10_000,
     });
     await page.getByTestId("onboarding-skip-all").click();
-    await page.waitForURL(/\/app\/search$/, { timeout: 15_000 });
+    await page.waitForURL(/\/app$/, { timeout: 15_000 });
+    await expect(page.getByTestId("new-user-welcome")).toBeVisible();
   });
 });
