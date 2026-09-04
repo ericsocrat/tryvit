@@ -50,18 +50,17 @@ describe("DashboardSkeleton", () => {
     render(<DashboardSkeleton />);
     const containers = screen.getAllByRole("status");
     const dashboard = containers.find(
-      (el) => el.getAttribute("aria-label") === "Loading dashboard",
+      (el) => el.getAttribute("aria-label") === "Loading your dashboard",
     );
     expect(dashboard).toBeTruthy();
     expect(dashboard?.getAttribute("aria-busy")).toBe("true");
   });
 
-  it("renders stats bar with 4 stat cards", () => {
+  it("keeps loading placeholders hidden from assistive technology", () => {
     const { container } = render(<DashboardSkeleton />);
-    // Stats grid has 4 card items
-    const statsGrid = container.querySelector(".grid");
-    const statCards = statsGrid?.querySelectorAll(".card");
-    expect(statCards?.length).toBe(4);
+    const blocks = container.querySelectorAll(".skeleton");
+    expect(blocks.length).toBeGreaterThan(0);
+    for (const block of blocks) expect(block).toHaveAttribute("aria-hidden", "true");
   });
 });
 

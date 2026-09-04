@@ -1,6 +1,6 @@
 import type { CategoryOverviewItem } from "@/lib/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { CategoriesBrowse } from "./CategoriesBrowse";
 
@@ -174,16 +174,27 @@ describe("CategoriesBrowse", () => {
     });
   });
 
-  it("scroll container has padding to prevent clipping under fade mask", async () => {
-    mockGetCategoryOverview.mockResolvedValue({
-      ok: true,
-      data: MOCK_CATEGORIES,
-    });
+
+  it("keeps an explicit empty state and the full category destination", async () => {
+    mockGetCategoryOverview.mockResolvedValue({ ok: true, data: [] });
     render(<CategoriesBrowse />, { wrapper: createWrapper() });
-    await waitFor(() => {
-      const list = screen.getByRole("list");
-      expect(list.className).toMatch(/px-4/);
-      expect(list.className).toMatch(/-mx-4/);
-    });
+    expect(await screen.findByText("No categories are available for your selected country yet.")).toBeInTheDocument();
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/app/categories");
+  });
+
+  it("retries a category failure without needing to reload the dashboard", async () => {
+    mockGetCategoryOverview.mockResolvedValueOnce({ ok: false, error: { message: "offline" } }).mockResolvedValueOnce({ ok: true, data: MOCK_CATEGORIES });
+    render(<CategoriesBrowse />, { wrapper: createWrapper() });
+    fireEvent.click(await screen.findByRole("button", { name: "Retry" }));
+    expect(await screen.findByText("Dairy")).toBeInTheDocument();
+    expect(mockGetCategoryOverview).toHaveBeenCalledTimes(2);
+  });
+
+  it("limits the preview to six categories while keeping View all available", async () => {
+    mockGetCategoryOverview.mockResolvedValue({ ok: true, data: Array.from({length: 8}, (_, i) => ({ ...MOCK_CATEGORIES[0], category: 'Category ' + i, slug: 'category-' + i, display_name: 'Category ' + i })) });
+    render(<CategoriesBrowse />, { wrapper: createWrapper() });
+    await screen.findByText("Category 0");
+    expect(screen.getAllByRole("listitem")).toHaveLength(6);
+    expect(screen.queryByText("Category 6")).not.toBeInTheDocument();
   });
 });

@@ -1,34 +1,28 @@
+import en from "@/../messages/en.json";
+import pl from "@/../messages/pl.json";
+import de from "@/../messages/de.json";
+import { translateFromMessages, type InterpolationParams } from "@/lib/i18n-format";
 import type { RecentlyViewedProduct } from "@/lib/types";
-import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RecentlyViewed, relativeTimeAgo } from "./RecentlyViewed";
 
-// ─── Mocks ──────────────────────────────────────────────────────────────────
-
+const mockLocale = vi.hoisted(() => ({ language: "en" as "en" | "pl" | "de" }));
+const dictionaries = { en, pl, de };
 vi.mock("@/lib/i18n", () => ({
   useTranslation: () => ({
-    t: (key: string) => {
-      const map: Record<string, string> = {
-        "dashboard.recentlyViewedCompact": "Recently Viewed",
-        "dashboard.viewAll": "View all",
-        "dashboard.viewHistory": "View history",
-      };
-      return map[key] ?? key;
-    },
+    language: mockLocale.language,
+    t: (key: string, params?: InterpolationParams) => translateFromMessages(dictionaries[mockLocale.language], en, key, params),
   }),
 }));
 
 vi.mock("next/image", () => ({
-  // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text -- alt is forwarded via {...props}
+  // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text -- image props are forwarded
   default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />,
 }));
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-function makeProduct(
-  id: number,
-  overrides: Partial<RecentlyViewedProduct> = {},
-): RecentlyViewedProduct {
+const VIEWED_AT = "2026-09-04T12:00:00.000Z";
+function makeProduct(id: number, overrides: Partial<RecentlyViewedProduct> = {}): RecentlyViewedProduct {
   return {
     product_id: id,
     product_name: `Product ${id}`,
@@ -37,191 +31,119 @@ function makeProduct(
     country: "PL",
     unhealthiness_score: 40,
     nutri_score_label: "C",
-    viewed_at: new Date().toISOString(),
+    viewed_at: VIEWED_AT,
     image_thumb_url: null,
     ...overrides,
   };
 }
 
-// ─── relativeTimeAgo unit tests ─────────────────────────────────────────────
+beforeEach(() => { mockLocale.language = "en"; });
+afterEach(() => { vi.useRealTimers(); });
 
 describe("relativeTimeAgo", () => {
-  it("returns 'now' for current time", () => {
-    expect(relativeTimeAgo(new Date().toISOString())).toBe("now");
-  });
+  beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(new Date(VIEWED_AT)); });
 
-  it("returns minutes for < 1 hour", () => {
-    const thirtyMinAgo = new Date(Date.now() - 30 * 60_000).toISOString();
-    expect(relativeTimeAgo(thirtyMinAgo)).toBe("30m");
-  });
+  it.each([[0, "now"], [30 * 60_000, "30m"], [5 * 3_600_000, "5h"], [3 * 86_400_000, "3d"], [14 * 86_400_000, "2w"]])(
+    "formats %i milliseconds ago as %s", (elapsed, label) => {
+      expect(relativeTimeAgo(new Date(Date.now() - elapsed).toISOString())).toBe(label);
+    },
+  );
 
-  it("returns hours for < 24 hours", () => {
-    const fiveHoursAgo = new Date(Date.now() - 5 * 3600_000).toISOString();
-    expect(relativeTimeAgo(fiveHoursAgo)).toBe("5h");
-  });
-
-  it("returns days for < 7 days", () => {
-    const threeDaysAgo = new Date(Date.now() - 3 * 86400_000).toISOString();
-    expect(relativeTimeAgo(threeDaysAgo)).toBe("3d");
-  });
-
-  it("returns weeks for >= 7 days", () => {
-    const twoWeeksAgo = new Date(Date.now() - 14 * 86400_000).toISOString();
-    expect(relativeTimeAgo(twoWeeksAgo)).toBe("2w");
+  it("treats future dates as now", () => {
+    expect(relativeTimeAgo("2027-01-01T00:00:00Z")).toBe("now");
   });
 });
 
-// ─── RecentlyViewed component tests ─────────────────────────────────────────
-
 describe("RecentlyViewed", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+  it("offers a real search entry point for empty history", () => {
+    render(<RecentlyViewed products={[]} />);
+    expect(screen.getByRole("heading", { name: "Your next find starts here." })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Search products" })).toHaveAttribute("href", "/app/search");
+    expect(screen.queryByTestId("recently-viewed-item")).not.toBeInTheDocument();
   });
 
-  it("returns null for empty products", () => {
-    const { container } = render(<RecentlyViewed products={[]} />);
-    expect(container.innerHTML).toBe("");
-  });
-
-  it("renders product names and brands", () => {
-    const products = [makeProduct(1), makeProduct(2)];
-    render(<RecentlyViewed products={products} />);
-
-    expect(screen.getByText("Product 1")).toBeInTheDocument();
-    expect(screen.getByText("Brand 1")).toBeInTheDocument();
-    expect(screen.getByText("Product 2")).toBeInTheDocument();
-  });
-
-  it("limits to 5 items", () => {
+  it("shows at most five actual products in supplied history order", () => {
     const products = Array.from({ length: 8 }, (_, i) => makeProduct(i + 1));
     render(<RecentlyViewed products={products} />);
-
-    const items = screen.getAllByTestId("recently-viewed-item");
-    expect(items).toHaveLength(5);
+    const rows = screen.getAllByTestId("recently-viewed-item");
+    expect(rows).toHaveLength(5);
+    rows.forEach((row, index) => {
+      expect(row).toHaveAttribute("href", `/app/product/${index + 1}`);
+      expect(within(row).getByText(`Product ${index + 1}`)).toBeInTheDocument();
+      expect(within(row).getByText(`Brand ${index + 1}`)).toBeInTheDocument();
+    });
+    expect(products).toHaveLength(8);
   });
 
-  it("shows TryVit scores in score circles", () => {
-    // unhealthiness 40 → TryVit 60
-    const products = [makeProduct(1, { unhealthiness_score: 40 })];
-    render(<RecentlyViewed products={products} />);
-
-    const item = screen.getByTestId("recently-viewed-item");
-    expect(item.textContent).toContain("60");
+  it("presents the existing score conversion with explicit units and direction", () => {
+    render(<RecentlyViewed products={[makeProduct(42)]} />);
+    expect(screen.getByRole("link", { name: /Product 42.*TryVit score: 60 out of 100; higher is better/ })).toHaveAttribute("href", "/app/product/42");
+    expect(screen.getByText("TryVit score · higher is better")).toBeInTheDocument();
+    expect(screen.getByText("/100")).toBeInTheDocument();
   });
 
-  it("shows dash for null scores", () => {
-    const products = [makeProduct(1, { unhealthiness_score: null })];
-    render(<RecentlyViewed products={products} />);
-
-    const item = screen.getByTestId("recently-viewed-item");
-    expect(item.textContent).toContain("–");
+  it.each([null, Number.NaN, -1, 0, 101, Number.POSITIVE_INFINITY])("labels an unusable raw score %s as unavailable", (score) => {
+    render(<RecentlyViewed products={[makeProduct(1, { unhealthiness_score: score })]} />);
+    expect(screen.getByText("Score unavailable")).toBeInTheDocument();
+    expect(screen.queryByText("/100")).not.toBeInTheDocument();
   });
 
-  it("links to product pages", () => {
-    const products = [makeProduct(42)];
-    render(<RecentlyViewed products={products} />);
-
-    const link = screen.getByTestId("recently-viewed-item");
-    expect(link).toHaveAttribute("href", "/app/product/42");
+  it.each([[100, 0], [1, 99]])("preserves boundary conversion %i to %i", (rawScore, score) => {
+    render(<RecentlyViewed products={[makeProduct(1, { unhealthiness_score: rawScore })]} />);
+    expect(screen.getByText(`TryVit score: ${score} out of 100; higher is better.`)).toBeInTheDocument();
   });
 
-  it("shows View history link", () => {
-    const products = [makeProduct(1)];
-    render(<RecentlyViewed products={products} />);
-
-    const link = screen.getByRole("link", { name: /View history/ });
-    expect(link).toHaveAttribute("href", "/app/search");
-  });
-
-  it("renders a single arrow icon in View history link (no text arrow)", () => {
-    const products = [makeProduct(1)];
-    render(<RecentlyViewed products={products} />);
-
-    const link = screen.getByRole("link", { name: /View history/ });
-    expect(link.querySelector("svg")).toBeInTheDocument();
-    expect(link.textContent).not.toContain("\u2192");
-  });
-
-  it("has section aria-label", () => {
-    const products = [makeProduct(1)];
-    render(<RecentlyViewed products={products} />);
-    expect(screen.getByLabelText("Recently Viewed")).toBeInTheDocument();
-  });
-
-  it("hides brand when null", () => {
-    const products = [makeProduct(1, { brand: null })];
-    render(<RecentlyViewed products={products} />);
-
-    expect(screen.getByText("Product 1")).toBeInTheDocument();
+  it("keeps product identification when brand and score are missing", () => {
+    render(<RecentlyViewed products={[makeProduct(1, { brand: null, unhealthiness_score: null })]} />);
+    expect(screen.getByRole("link", { name: /Product 1.*Score unavailable/ })).toBeInTheDocument();
     expect(screen.queryByText("Brand 1")).not.toBeInTheDocument();
   });
 
-  // ─── Image / badge / animation enrichment tests ─────────────────────────
-
-  it("renders product image when image_thumb_url is provided", () => {
-    const products = [
-      makeProduct(1, {
-        image_thumb_url: "https://images.openfoodfacts.org/images/products/test.jpg",
-      }),
-    ];
-    render(<RecentlyViewed products={products} />);
-
-    const img = screen.getByAltText("Product 1");
-    expect(img).toBeInTheDocument();
-    expect(img.tagName).toBe("IMG");
-    expect(img).toHaveAttribute(
-      "src",
-      "https://images.openfoodfacts.org/images/products/test.jpg",
-    );
+  it("uses a decorative category icon when no product photo is available", () => {
+    render(<RecentlyViewed products={[makeProduct(1)]} />);
+    const row = screen.getByTestId("recently-viewed-item");
+    expect(row.querySelector("img")).not.toBeInTheDocument();
+    expect(row.querySelector('svg[viewBox="0 0 24 24"]')).toBeInTheDocument();
   });
 
-  it("renders initial fallback when no image", () => {
-    const products = [makeProduct(1, { image_thumb_url: null })];
-    render(<RecentlyViewed products={products} />);
-
-    // Score circle shows TryVit score (unhealthiness 40 → TryVit 60)
-    const item = screen.getByTestId("recently-viewed-item");
-    expect(item.textContent).toContain("60");
-    // No <img> with product alt text
-    expect(screen.queryByAltText("Product 1")).not.toBeInTheDocument();
+  it.each([" Dairy ", "Seafood & Fish", "Chips-PL"])("normalizes database category %s to its dedicated icon", (category) => {
+    render(<RecentlyViewed products={[makeProduct(1, { category })]} />);
+    // Dedicated category illustrations use grouped paths; the generic utensils fallback does not.
+    expect(screen.getByTestId("recently-viewed-item").querySelector("svg g")).toBeInTheDocument();
   });
 
-  it("renders NutriScoreBadge when nutri_score_label is present", () => {
-    const products = [makeProduct(1, { nutri_score_label: "C" })];
-    render(<RecentlyViewed products={products} />);
-
-    expect(screen.getByLabelText("Nutri-Score C")).toBeInTheDocument();
+  it("shows a supplied product photo and falls back to a category icon after an image error", () => {
+    render(<RecentlyViewed products={[makeProduct(1, { image_thumb_url: "https://images.openfoodfacts.org/images/products/test.jpg" })]} />);
+    const row = screen.getByTestId("recently-viewed-item");
+    const image = row.querySelector("img");
+    expect(image).toHaveAttribute("alt", "");
+    expect(image).toHaveAttribute("src", "https://images.openfoodfacts.org/images/products/test.jpg");
+    expect(image).not.toBeNull();
+    if (image) fireEvent.error(image);
+    expect(row.querySelector("img")).not.toBeInTheDocument();
+    expect(row.querySelector('svg[viewBox="0 0 24 24"]')).toBeInTheDocument();
   });
 
-  it("omits NutriScoreBadge when nutri_score_label is null", () => {
-    const products = [makeProduct(1, { nutri_score_label: null })];
-    render(<RecentlyViewed products={products} />);
-
-    expect(screen.queryByLabelText(/Nutri-Score/)).not.toBeInTheDocument();
+  it.each(["en", "pl", "de"] as const)("renders an accessible date in %s", (language) => {
+    mockLocale.language = language;
+    render(<RecentlyViewed products={[makeProduct(1)]} />);
+    const date = new Intl.DateTimeFormat(language, { day: "numeric", month: "short", year: "numeric" }).format(new Date(VIEWED_AT));
+    const time = screen.getByText(date);
+    expect(time.tagName).toBe("TIME");
+    expect(time).toHaveAttribute("datetime", VIEWED_AT);
+    expect(time).toHaveAttribute("aria-label", translateFromMessages(dictionaries[language], en, "dashboard.home.viewedOn", { date }));
   });
 
-  it("renders time as styled pill", () => {
-    const products = [makeProduct(1)];
-    render(<RecentlyViewed products={products} />);
-
-    const timePill = screen.getByText("now");
-    expect(timePill).toBeInTheDocument();
-    expect(timePill.className).toContain("rounded-full");
-    expect(timePill.className).toContain("bg-surface-secondary");
+  it("omits an invalid date without losing the product link", () => {
+    render(<RecentlyViewed products={[makeProduct(1, { viewed_at: "invalid" })]} />);
+    expect(screen.getByTestId("recently-viewed-item")).toHaveAttribute("href", "/app/product/1");
+    expect(screen.getByTestId("recently-viewed-item").querySelector("time")).not.toBeInTheDocument();
   });
 
-  it("applies staggered slide-in-right animation delays", () => {
-    const products = [makeProduct(1), makeProduct(2), makeProduct(3)];
-    render(<RecentlyViewed products={products} />);
-
-    const items = screen.getAllByTestId("recently-viewed-item");
-    expect(items).toHaveLength(3);
-
-    items.forEach((link, i) => {
-      // The animated wrapper is the parent <div> of the <a> link
-      const wrapper = link.parentElement as HTMLElement;
-      expect(wrapper.className).toContain("animate-slide-in-right");
-      expect(wrapper.style.animationDelay).toBe(`${i * 30}ms`);
-    });
+  it("directs users to inspect available evidence without claiming verified or personalized results", () => {
+    render(<RecentlyViewed products={[makeProduct(1)]} />);
+    expect(screen.getByText("Open a product to check ingredients, allergens and available sources.")).toBeInTheDocument();
+    expect(screen.queryByText(/verified|recommended for you|allergen-free/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /View history/i })).not.toBeInTheDocument();
   });
 });

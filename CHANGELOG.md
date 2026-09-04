@@ -13,6 +13,15 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Frontend
+
+- Redesign the app dashboard around search, scanning, recently opened products,
+  and saved collections, with responsive layouts and EN/PL/DE content. Keep
+  saved-allergen warnings and explicit unavailable evidence; replace home swap
+  recommendations and browsing-derived health charts with label-reading guidance.
+- Recognize saved favorites and custom lists without product history, retain
+  cached dashboard content after failed refreshes, and offer local retry actions.
+
 ### Documentation
 
 - Define the prospective Phase 5A.3 route-migration lab-release methodology: exact

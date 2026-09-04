@@ -1,0 +1,73 @@
+.recent, .collections {
+  --products-accent: #28553b;
+  --products-tint: #eff1e8;
+  --products-panel: #f4f2e9;
+  min-width: 0;
+  color: var(--color-text-primary);
+}
+
+.sectionHeading { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem 1rem; }
+.sectionHeading h2, .collectionHeading h2 { margin: 0; font-size: 1.3rem; font-weight: 730; letter-spacing: -0.035em; line-height: 1.3; }
+.sectionHeading p, .collectionIntro { margin: 0.45rem 0 0; color: var(--color-text-secondary); font-size: 0.83rem; line-height: 1.6; }
+.textLink { display: inline-flex; min-height: 2.75rem; align-items: center; gap: 0.5rem; color: var(--products-accent); font-size: 0.79rem; font-weight: 700; }
+.textLink:hover { text-decoration: underline; text-underline-offset: 0.25em; }
+.scoreCaption { margin: 1rem 0 0; padding-bottom: 0.65rem; color: var(--color-text-secondary); font-size: 0.69rem; line-height: 1.5; text-align: right; }
+.productList { margin: 0; padding: 0; border-top: 1px solid var(--color-border-strong); list-style: none; }
+.productList > li { border-bottom: 1px solid var(--color-border); }
+.productRow { display: flex; min-width: 0; min-height: 5.2rem; align-items: center; gap: 0.8rem; padding: 0.8rem 0.1rem; border-radius: 0.15rem; color: inherit; transition: background-color 150ms ease; }
+.productRow:hover { background: var(--products-tint); }
+.thumbnail { display: grid; width: 2.8rem; height: 3.4rem; flex-shrink: 0; place-items: center; overflow: hidden; border: 1px solid var(--color-border); border-radius: 0.3rem; background: var(--products-tint); color: var(--products-accent); }
+.productImage { width: 100%; height: 100%; object-fit: contain; }
+.productCopy { display: grid; min-width: 0; flex: 1; gap: 0.3rem; }
+.productName { display: -webkit-box; overflow: hidden; font-size: 0.88rem; font-weight: 680; line-height: 1.45; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.productMeta { display: flex; flex-wrap: wrap; gap: 0.15rem 0.6rem; color: var(--color-text-secondary); font-size: 0.72rem; line-height: 1.5; overflow-wrap: anywhere; }
+.productMeta time { white-space: nowrap; }
+.productScore { width: 4.2rem; flex-shrink: 0; text-align: right; }
+.scoreValue { font-size: 1.22rem; font-weight: 730; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; }
+.scoreValue > span { margin-left: 0.12rem; color: var(--color-text-secondary); font-size: 0.67rem; font-weight: 500; letter-spacing: 0; }
+.unavailable { display: block; color: var(--color-text-secondary); font-size: 0.68rem; line-height: 1.45; }
+.rowArrow { flex-shrink: 0; color: var(--products-accent); }
+.evidenceNote { max-width: 62ch; margin: 0.8rem 0 0; color: var(--color-text-secondary); font-size: 0.71rem; line-height: 1.6; }
+.emptyRecent { margin-top: 1.25rem; border-block: 1px solid var(--color-border-strong); padding: 1.8rem 0; }
+.emptyRecent > svg, .emptyFavorites > svg { color: var(--products-accent); }
+.emptyRecent h3, .emptyFavorites h3 { margin: 0.85rem 0 0.4rem; font-size: 1rem; font-weight: 680; letter-spacing: -0.02em; }
+.emptyRecent p, .emptyFavorites p { max-width: 45ch; margin: 0; color: var(--color-text-secondary); font-size: 0.82rem; line-height: 1.65; }
+
+.collections { display: flex; flex-direction: column; border: 1px solid var(--color-border-strong); border-radius: 0.4rem 0.4rem 1rem 0.4rem; padding: 1.3rem; background: var(--products-panel); }
+.collectionHeading { display: flex; align-items: center; gap: 0.65rem; }
+.collectionHeading > svg { flex-shrink: 0; color: var(--products-accent); }
+.collectionCounts { display: flex; flex-wrap: wrap; gap: 0.45rem 1.05rem; margin-top: 1rem; color: var(--products-accent); font-size: 0.78rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.favoritesHeading { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 1.6rem; color: var(--products-accent); }
+.favoritesHeading h3 { margin: 0; font-size: 0.8rem; font-weight: 700; }
+.collections .scoreCaption { margin-top: 0.4rem; font-size: 0.63rem; }
+.collections .productRow { gap: 0.6rem; min-height: 4.6rem; }
+.collections .thumbnail { width: 2.25rem; height: 2.75rem; background: var(--color-surface); }
+.collections .productName { font-size: 0.8rem; }
+.collections .productScore { width: 3.9rem; }
+.collections .scoreValue { font-size: 1.08rem; }
+.collections .rowArrow { display: none; }
+.collectionFooter { margin-top: auto; }
+.collectionLink { display: flex; min-height: 2.9rem; align-items: center; justify-content: space-between; gap: 0.8rem; padding-top: 0.8rem; color: var(--products-accent); font-size: 0.82rem; font-weight: 700; }
+.collectionTools { display: flex; flex-wrap: wrap; column-gap: 1.2rem; margin-top: 0.65rem; border-top: 1px solid var(--color-border); }
+.collectionTools .textLink { font-size: 0.71rem; }
+.collectionLink:hover { text-decoration: underline; text-underline-offset: 0.25em; }
+.emptyFavorites { margin-block: 1.65rem 1.4rem; }
+.previewUnavailable { margin-block: 1.6rem; color: var(--color-text-secondary); font-size: 0.82rem; line-height: 1.65; }
+.recent a:focus-visible, .collections a:focus-visible { outline: 3px solid var(--color-border-focus, #975235); outline-offset: 4px; }
+
+:global(html[data-theme="dark"]) .recent, :global(html[data-theme="dark"]) .collections { --products-accent: #bad7bd; --products-tint: #26372d; --products-panel: #1d2b24; }
+@media (max-width: 479px) {
+  .sectionHeading { gap: 0.2rem; }
+  .sectionHeading h2, .collectionHeading h2 { font-size: 1.2rem; }
+  .productRow { gap: 0.65rem; }
+  .thumbnail { width: 2.4rem; height: 3rem; }
+  .productScore { width: 3.8rem; }
+  .rowArrow { display: none; }
+  .collections { padding: 1.15rem; }
+}
+@media (prefers-reduced-motion: reduce) { .productRow { transition: none; } }
+@media (forced-colors: active) {
+  .collections, .thumbnail { border-color: CanvasText; background: Canvas; color: CanvasText; }
+  .recent a, .collections a { color: LinkText; }
+  .recent a:focus-visible, .collections a:focus-visible { outline-color: Highlight; }
+}
