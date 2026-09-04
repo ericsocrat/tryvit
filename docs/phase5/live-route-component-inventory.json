@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "caf53bcf1947c7530149acabe0bd5fe02ea7fbed",
+    "baseSha": "8fc2c3419b42b61d503d97a3eb8d3b290034d0fc",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "f35b18d582732e316c1628182ec30823169bd98681904970fdafc4d8409e5d77"
+    "sourceFingerprint": "55e599a9e9cc5fa61fb4c155adc013bbbc487ef71716b4f8ad814f697bd01ff6"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -21227,7 +21227,7 @@
     ],
     "inspectedModuleCount": 569,
     "violations": [],
-    "sourceFingerprint": "6817d6b0c666ca457c3c5ed912d8ff51dcf8c8fb82d42ee2e5eda0eb54206f4d"
+    "sourceFingerprint": "1936c0a47355f7d53ae559c7e3efb9ab208c7887c98eeead4af9381658b6362e"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
