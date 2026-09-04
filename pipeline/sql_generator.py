@@ -64,17 +64,16 @@ _DIRECT_OFF_PROVENANCE_FIELDS = frozenset(
     }
 )
 
-# These fields are replaced or invalidated by every OFF refresh. Ingredient,
-# allergen, and store junctions are additive today, so their aggregate claims
-# are cleared but never refreshed until those sets can be replaced atomically.
+# These fields are replaced or invalidated by every OFF refresh. Ingredient
+# and allergen junctions are additive today, so their existing aggregate
+# provenance is neither erased nor refreshed until those sets can be replaced
+# atomically.
 _OFF_REPLACED_PROVENANCE_FIELDS = tuple(
     sorted(
         _DIRECT_OFF_PROVENANCE_FIELDS
         | {
             "prep_method",
             "store_availability",
-            "ingredients_text",
-            "allergens",
             "controversies",
         }
     )
@@ -100,7 +99,9 @@ _PIPELINE_MUTATED_PROVENANCE_FIELDS = tuple(
             "additives_count",
             "ingredient_concern_level",
             "ingredients_raw",
+            "ingredients_text",
             "allergen_tags",
+            "allergens",
             "calories",
             "total_fat_g",
             "saturated_fat_g",

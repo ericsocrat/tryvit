@@ -13,6 +13,7 @@ import pytest
 
 import pipeline.sql_generator as sql_generator
 from pipeline.sql_generator import (
+    _OFF_REPLACED_PROVENANCE_FIELDS,
     _chunk,
     _gen_03_add_nutrition,
     _gen_04_scoring,
@@ -264,6 +265,10 @@ class TestBatchContent:
 
 
 class TestProvenanceGeneration:
+    def test_additive_aggregate_provenance_is_neither_erased_nor_refreshed(self) -> None:
+        assert "ingredients_text" not in _OFF_REPLACED_PROVENANCE_FIELDS
+        assert "allergens" not in _OFF_REPLACED_PROVENANCE_FIELDS
+
     def test_explicit_fetch_metadata_is_persisted_with_canonical_fields(self) -> None:
         product = dict(_PRODUCT_TEMPLATE)
         product["_off_fields_present"] = (
