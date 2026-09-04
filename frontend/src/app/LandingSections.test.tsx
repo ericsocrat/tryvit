@@ -21,7 +21,8 @@ describe("LandingSections", () => {
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "Read the package. See the reasoning. Make your own call.",
     );
-    expect(screen.getByText(/confidence and missing evidence stay visible/i)).toBeInTheDocument();
+    expect(screen.getByText(/scan a barcode, browse products, and compare label facts/i)).toBeInTheDocument();
+    expect(screen.getByText(/where the information comes from and what is still missing/i)).toBeInTheDocument();
   });
 
   it("renders four accountable evidence layers in order", () => {
@@ -58,7 +59,7 @@ describe("LandingSections", () => {
 
   it("renders production-safe live actions", () => {
     render(<LandingSections language="en" />);
-    expect(screen.getByRole("link", { name: "Create an account" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Beta access" })).toHaveAttribute(
       "href",
       "/auth/signup",
     );
@@ -79,7 +80,8 @@ describe("LandingSections", () => {
         name: "The website is available; live product data is paused",
       }),
     ).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Create an account" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Beta access" })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("link").some((link) => link.getAttribute("href") === "/auth/signup")).toBe(false);
     expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: "Contact" }).length).toBeGreaterThan(0);
     expect(screen.getByText(/does not check for an account or session/iu)).toBeInTheDocument();
