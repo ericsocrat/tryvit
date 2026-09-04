@@ -1104,7 +1104,7 @@ describe("ScanPage", () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
-  it("found preview shows score band for product", async () => {
+  it("found preview withholds score and band until evidence-aware details", async () => {
     mockRecordScan.mockResolvedValue(mockFoundResponse);
     const user = userEvent.setup();
 
@@ -1119,13 +1119,14 @@ describe("ScanPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Product Found!")).toBeInTheDocument();
     });
-    // unhealthiness_score 65 → TryVit Score 35, band = "Poor"
-    // Score uses count-up animation, wait for final value
-    await waitFor(() => expect(screen.getByText("35")).toBeInTheDocument());
-    expect(screen.getByText("Poor")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Scores are withheld here. View details to check product evidence.",
+    );
+    expect(screen.queryByText("35")).not.toBeInTheDocument();
+    expect(screen.queryByText("Poor")).not.toBeInTheDocument();
   });
 
-  it("found preview shows nutri-score badge", async () => {
+  it("found preview withholds Nutri-Score from the unproven response", async () => {
     mockRecordScan.mockResolvedValue(mockFoundResponse);
     const user = userEvent.setup();
 
@@ -1140,8 +1141,8 @@ describe("ScanPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Product Found!")).toBeInTheDocument();
     });
-    expect(screen.getByText("D")).toBeInTheDocument();
-    expect(screen.getByText("Nutri-Score")).toBeInTheDocument();
+    expect(screen.queryByText("D")).not.toBeInTheDocument();
+    expect(screen.queryByText("Nutri-Score")).not.toBeInTheDocument();
   });
 
   // ─── Paste Button ──────────────────────────────────────────────────────────
