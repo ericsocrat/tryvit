@@ -1,6 +1,9 @@
+-- Migration: fix health-warning evidence truth
 -- Health-warning truthfulness: canonical celiac matching and explicit evidence
 -- completeness. The public RPC keeps its existing warning_count/warnings fields
 -- and adds evidence_completeness + evaluation_disposition for fail-closed clients.
+-- Rollback: re-apply compute_health_warnings from 20260319000300 and
+-- api_product_health_warnings from 20260214000200.
 --
 -- product_allergen_info stores positive evidence only. A missing gluten row is
 -- therefore not proof that gluten is absent; celiac all-clear is withheld unless

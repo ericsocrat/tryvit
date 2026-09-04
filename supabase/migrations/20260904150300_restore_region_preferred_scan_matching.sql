@@ -1,7 +1,10 @@
+-- Migration: restore region-preferred scanner matching
 -- Restore truthful product selection in api_record_scan after
 -- 20260321000500_country_scoped_submission_uniqueness.sql replaced the RPC and
 -- unintentionally removed the active-product filter, region preference, and
 -- is_cross_country response field introduced by 20260321000200.
+-- Rollback: re-apply api_record_scan from
+-- 20260321000500_country_scoped_submission_uniqueness.sql.
 --
 -- This migration intentionally preserves:
 --   * the existing (text, text) signature and caller grants;
