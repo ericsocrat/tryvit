@@ -812,7 +812,13 @@
     "noWarnings": "No health warnings",
     "loading": "Checking personalized health warnings…",
     "unavailableTitle": "Health warning evidence unavailable",
-    "unavailableDescription": "TryVit could not evaluate this product against your health profile. This does not mean the product is within your limits."
+    "unavailableDescription": "TryVit could not evaluate this product against your health profile. This does not mean the product is within your limits.",
+    "incompleteTitle": "Health warning check incomplete",
+    "incompleteDescription": "Evidence required by your health profile is missing. TryVit cannot give this product an all-clear.",
+    "partialDescription": "These warnings use available evidence. Other checks required by your profile could not be completed.",
+    "notApplicableTitle": "No health checks configured",
+    "notApplicableDescription": "Your active profile has no conditions or nutrient limits to evaluate for this product.",
+    "reviewProfile": "Review health profile"
   },
   "productActions": {
     "removeFromFavorites": "Remove from Favorites",

@@ -179,7 +179,22 @@ export function HealthWarningsCard({
     );
   }
 
-  // No warnings returned for this explicit, successfully evaluated profile.
+  if (warningsData.evaluation_disposition === "not_applicable") {
+    return <HealthWarningsNotApplicable />;
+  }
+
+  const isCompleteEvaluation =
+    warningsData.evaluation_disposition === "evaluated" &&
+    warningsData.evidence_completeness.status === "complete";
+  const isPartialWarningResult =
+    warningsData.evaluation_disposition === "partial" &&
+    warningsData.warning_count > 0;
+
+  if (!isCompleteEvaluation && !isPartialWarningResult) {
+    return <HealthWarningsEvidenceGap />;
+  }
+
+  // No warnings returned only after every applicable check was evaluated.
   if (warningsData.warning_count === 0) {
     return (
       <div
@@ -248,6 +263,15 @@ export function HealthWarningsCard({
           />
         ))}
       </ul>
+
+      {warningsData.evaluation_disposition === "partial" && (
+        <p
+          className="mt-3 border-t border-warning-border pt-2 text-xs text-warning-text"
+          role="status"
+        >
+          {t("healthWarnings.partialDescription")}
+        </p>
+      )}
     </div>
   );
 }
@@ -281,6 +305,64 @@ function HealthWarningsUnavailable({ onRetry }: Readonly<{ onRetry: () => void }
           >
             {t("common.retry")}
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HealthWarningsEvidenceGap() {
+  const { t } = useTranslation();
+
+  return (
+    <div
+      className="rounded-xl border border-warning-border bg-warning-bg p-4"
+      data-testid="health-warnings-card"
+      role="alert"
+    >
+      <div className="flex items-start gap-2">
+        <AlertTriangle
+          size={20}
+          className="mt-0.5 shrink-0 text-warning-text"
+          aria-hidden="true"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-warning-text">
+            {t("healthWarnings.incompleteTitle")}
+          </p>
+          <p className="mt-0.5 text-xs text-warning-text">
+            {t("healthWarnings.incompleteDescription")}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function HealthWarningsNotApplicable() {
+  const { t } = useTranslation();
+
+  return (
+    <div
+      className="rounded-xl border bg-surface-subtle p-4"
+      data-testid="health-warnings-card"
+      role="status"
+    >
+      <div className="flex items-start gap-2">
+        <Info size={20} className="mt-0.5 shrink-0" aria-hidden="true" />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-foreground-secondary">
+            {t("healthWarnings.notApplicableTitle")}
+          </p>
+          <p className="mt-0.5 text-xs text-foreground-secondary">
+            {t("healthWarnings.notApplicableDescription")}
+          </p>
+          <Link
+            href="/app/settings"
+            className="mt-2 inline-block text-xs font-semibold text-brand underline underline-offset-2 hover:text-brand-hover"
+          >
+            {t("healthWarnings.reviewProfile")}
+          </Link>
         </div>
       </div>
     </div>
@@ -352,6 +434,30 @@ export function HealthWarningBadge({
         title={t("healthWarnings.unavailableTitle")}
         aria-label={t("healthWarnings.unavailableTitle")}
         data-testid="health-warnings-unavailable-badge"
+      >
+        <AlertTriangle size={12} aria-hidden="true" />
+      </span>
+    );
+  }
+
+  if (warningsData?.evaluation_disposition === "not_applicable") {
+    return null;
+  }
+
+  const isCompleteEvaluation =
+    warningsData?.evaluation_disposition === "evaluated" &&
+    warningsData.evidence_completeness.status === "complete";
+  const isPartialWarningResult =
+    warningsData?.evaluation_disposition === "partial" &&
+    warningsData.warning_count > 0;
+
+  if (hasProfile && warningsData && !isCompleteEvaluation && !isPartialWarningResult) {
+    return (
+      <span
+        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-warning-bg text-warning-text"
+        title={t("healthWarnings.incompleteTitle")}
+        aria-label={t("healthWarnings.incompleteTitle")}
+        data-testid="health-warnings-incomplete-badge"
       >
         <AlertTriangle size={12} aria-hidden="true" />
       </span>

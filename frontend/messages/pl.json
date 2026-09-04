@@ -812,7 +812,13 @@
     "noWarnings": "Brak ostrzeżeń zdrowotnych",
     "loading": "Sprawdzanie spersonalizowanych ostrzeżeń zdrowotnych…",
     "unavailableTitle": "Dane ostrzeżeń zdrowotnych są niedostępne",
-    "unavailableDescription": "TryVit nie mógł ocenić produktu względem Twojego profilu zdrowotnego. Nie oznacza to, że produkt mieści się w Twoich limitach."
+    "unavailableDescription": "TryVit nie mógł ocenić produktu względem Twojego profilu zdrowotnego. Nie oznacza to, że produkt mieści się w Twoich limitach.",
+    "incompleteTitle": "Niepełna ocena ostrzeżeń zdrowotnych",
+    "incompleteDescription": "Brakuje danych wymaganych przez Twój profil zdrowotny. TryVit nie może potwierdzić, że produkt jest odpowiedni.",
+    "partialDescription": "Te ostrzeżenia opierają się na dostępnych danych. Innych kontroli wymaganych przez Twój profil nie udało się wykonać.",
+    "notApplicableTitle": "Brak skonfigurowanych kontroli zdrowotnych",
+    "notApplicableDescription": "Aktywny profil nie zawiera schorzeń ani limitów składników odżywczych, które można ocenić dla tego produktu.",
+    "reviewProfile": "Sprawdź profil zdrowotny"
   },
   "productActions": {
     "removeFromFavorites": "Usuń z ulubionych",

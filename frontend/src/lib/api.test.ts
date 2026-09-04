@@ -713,6 +713,58 @@ describe("Scanner & Submissions API functions", () => {
     });
   });
 
+  it("recordScan preserves the region-selected product and cross-country disposition", async () => {
+    const response = {
+      api_version: "1.0",
+      found: true as const,
+      product_id: 999991,
+      product_name: "pgTAP Dual-EAN DE",
+      product_name_en: null,
+      product_name_display: "pgTAP Dual-EAN DE",
+      brand: "Dual Brand",
+      category: "pgtap-test-cat",
+      category_display: "pgTAP Test",
+      category_icon: "📦",
+      unhealthiness_score: 30,
+      nutri_score: "B" as const,
+      scan_country: "DE",
+      product_country: "DE",
+      is_cross_country: false,
+    };
+    mockCallRpc.mockResolvedValue({ ok: true, data: response });
+
+    const result = await recordScan(fakeSupabase, "4015000969604", "DE");
+
+    expect(result).toEqual({ ok: true, data: response });
+    expect(result.ok && result.data).toMatchObject({
+      product_id: 999991,
+      scan_country: "DE",
+      product_country: "DE",
+      is_cross_country: false,
+    });
+  });
+
+  it("recordScan preserves a not-found disposition for a deprecated-only EAN", async () => {
+    const response = {
+      api_version: "1.0",
+      found: false as const,
+      ean: "4015000969611",
+      has_pending_submission: false,
+      scan_country: "PL",
+    };
+    mockCallRpc.mockResolvedValue({ ok: true, data: response });
+
+    const result = await recordScan(fakeSupabase, "4015000969611", "PL");
+
+    expect(result).toEqual({ ok: true, data: response });
+    expect(result.ok && result.data).toMatchObject({
+      found: false,
+      ean: "4015000969611",
+      scan_country: "PL",
+    });
+    expect(result.ok && "product_id" in result.data).toBe(false);
+  });
+
   it("getScanHistory applies defaults for missing params", async () => {
     mockCallRpc.mockResolvedValue({ ok: true, data: { scans: [] } });
     await getScanHistory(fakeSupabase);

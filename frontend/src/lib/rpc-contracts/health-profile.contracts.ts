@@ -56,11 +56,35 @@ const HealthWarningSchema = z
   })
   .passthrough();
 
+const HealthWarningEvidenceCompletenessSchema = z
+  .object({
+    status: z.enum([
+      "complete",
+      "incomplete",
+      "unavailable",
+      "not_applicable",
+    ]),
+    required_count: z.number().int().nonnegative(),
+    evaluated_count: z.number().int().nonnegative(),
+    required: z.array(z.string()),
+    evaluated: z.array(z.string()),
+    missing: z.array(z.string()),
+  })
+  .passthrough();
+
 export const HealthWarningsContract = z
   .object({
     api_version: z.string(),
     product_id: z.number(),
     warning_count: z.number(),
     warnings: z.array(HealthWarningSchema),
+    evidence_completeness: HealthWarningEvidenceCompletenessSchema,
+    evaluation_disposition: z.enum([
+      "evaluated",
+      "partial",
+      "withheld",
+      "not_applicable",
+      "not_evaluated",
+    ]),
   })
   .passthrough();

@@ -118,7 +118,10 @@ api_product_health_warnings:
   returns: jsonb
   p95_target: 100
   deprecated: false
-  notes: Health warnings based on user's active health profile.
+  notes: >
+    Health warnings based on the user's active health profile. Returns explicit
+    evidence_completeness and evaluation_disposition fields so incomplete
+    condition-relevant evidence cannot be interpreted as an all-clear.
 
 # ═══════════════════════════════════════════════════════════════════
 # CATEGORY DOMAIN
@@ -570,10 +573,13 @@ api_record_scan:
   auth: authenticated
   params:
     p_ean: { type: text, required: true }
+    p_scan_country: { type: text, required: false, default: "NULL" }
   returns: jsonb
   p95_target: 100
   deprecated: false
-  notes: Records a barcode scan and returns matched product (if any).
+  notes: >
+    Records a barcode scan and returns an active matched product (if any),
+    preferring the resolved scan country and exposing cross-country disposition.
 
 api_get_scan_history:
   domain: scanner

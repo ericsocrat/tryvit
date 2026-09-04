@@ -910,11 +910,35 @@ export interface HealthWarning {
   message: string;
 }
 
+export type HealthWarningEvidenceStatus =
+  | "complete"
+  | "incomplete"
+  | "unavailable"
+  | "not_applicable";
+
+export type HealthWarningEvaluationDisposition =
+  | "evaluated"
+  | "partial"
+  | "withheld"
+  | "not_applicable"
+  | "not_evaluated";
+
+export interface HealthWarningEvidenceCompleteness {
+  status: HealthWarningEvidenceStatus;
+  required_count: number;
+  evaluated_count: number;
+  required: string[];
+  evaluated: string[];
+  missing: string[];
+}
+
 export interface HealthWarningsResponse {
   api_version: string;
   product_id: number;
   warning_count: number;
   warnings: HealthWarning[];
+  evidence_completeness: HealthWarningEvidenceCompleteness;
+  evaluation_disposition: HealthWarningEvaluationDisposition;
 }
 
 // ─── Product Lists ──────────────────────────────────────────────────────────
@@ -1109,6 +1133,7 @@ export interface RecordScanFoundResponse {
   category_icon: string;
   unhealthiness_score: number;
   nutri_score: NutriGrade;
+  scan_country: string | null;
   product_country: string;
   is_cross_country: boolean;
 }
@@ -1118,6 +1143,7 @@ export interface RecordScanNotFoundResponse {
   found: false;
   ean: string;
   has_pending_submission: boolean;
+  scan_country: string | null;
 }
 
 export type RecordScanResponse =

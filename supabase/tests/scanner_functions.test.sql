@@ -7,7 +7,7 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 
 BEGIN;
-SELECT plan(107);
+SELECT plan(112);
 
 -- ─── Fixtures ───────────────────────────────────────────────────────────────
 
@@ -631,6 +631,20 @@ SELECT is(
   'PL user gets PL product when same EAN exists in PL + DE (#926)'
 );
 
+-- Matching a same-country duplicate is explicitly not cross-country.
+SELECT is(
+  (public.api_record_scan('4015000969604', 'DE'))->>'is_cross_country',
+  'false',
+  'region-preferred duplicate reports is_cross_country=false'
+);
+
+-- An unscoped duplicate lookup is deterministic by product_id.
+SELECT is(
+  ((public.api_record_scan('4015000969604'))->>'product_id')::bigint,
+  999990::bigint,
+  'unscoped duplicate EAN lookup uses deterministic product_id ordering'
+);
+
 -- Cross-country fallback: user in XX scans PL-only EAN
 SELECT is(
   (public.api_record_scan('5901234123457', 'PL'))->>'found',
@@ -651,6 +665,42 @@ SELECT is(
   (public.api_record_scan('4015000969611'))->>'found',
   'false',
   'deprecated product excluded from scan lookup (#926)'
+);
+
+SELECT is(
+  (public.api_record_scan('4015000969611')) ? 'product_id',
+  false,
+  'deprecated-only EAN never exposes a product payload'
+);
+
+-- If a deprecated row sorts before an active row for the same EAN, the active
+-- row must still win rather than allowing the lower product_id to leak through.
+INSERT INTO public.products (
+  product_id, ean, product_name, brand, category, country,
+  unhealthiness_score, nutri_score_label, is_deprecated, deprecated_reason
+) VALUES (
+  999987, '4015000969628', 'pgTAP Deprecated Duplicate', 'Dual Brand',
+  'pgtap-test-cat', 'PL', 50, 'D', true, 'test-deprecated'
+) ON CONFLICT (product_id) DO NOTHING;
+
+INSERT INTO public.products (
+  product_id, ean, product_name, brand, category, country,
+  unhealthiness_score, nutri_score_label, is_deprecated
+) VALUES (
+  999988, '4015000969628', 'pgTAP Active Duplicate', 'Dual Brand',
+  'pgtap-test-cat', 'DE', 25, 'A', false
+) ON CONFLICT (product_id) DO NOTHING;
+
+SELECT is(
+  ((public.api_record_scan('4015000969628', 'PL'))->>'product_id')::bigint,
+  999988::bigint,
+  'active product wins when a lower-id deprecated row shares its EAN'
+);
+
+SELECT is(
+  (public.api_record_scan('4015000969628', 'PL'))->>'is_cross_country',
+  'true',
+  'active cross-country fallback retains is_cross_country=true'
 );
 
 
