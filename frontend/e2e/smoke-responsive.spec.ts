@@ -61,14 +61,14 @@ test.describe("Landing page responsive behavior", () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
     // Should still render hero and CTAs
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Read the package");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("A closer look.");
     await expect(page.locator('a[href="#service-status"]').first()).toBeVisible();
   });
 
   test("desktop layout at 1440px", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto("/");
-    await expect(page.getByRole("heading", { level: 1 })).toContainText("Read the package");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("A closer look.");
   });
 });
 

@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "8fc2c3419b42b61d503d97a3eb8d3b290034d0fc",
+    "baseSha": "6ccd49a6bd8fe271060df9146247c608e3447e2c",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "55e599a9e9cc5fa61fb4c155adc013bbbc487ef71716b4f8ad814f697bd01ff6"
+    "sourceFingerprint": "80d1d8f819500791be3590c4cbe7f8df9bb711ae89d147678bb841966f35e587"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12,9 +12,9 @@
     "frontend/src/design-system"
   ],
   "moduleCounts": {
-    "total": 457,
+    "total": 458,
     "route-module": 95,
-    "app-support-module": 87,
+    "app-support-module": 88,
     "shared-component-module": 205,
     "design-system-module": 70
   },
@@ -64,6 +64,7 @@
       "directModuleImports": [
         "frontend/src/app/_landing-v2/LandingIdentity.tsx",
         "frontend/src/app/_landing-v2/LandingLiveAuthAction.client.tsx",
+        "frontend/src/app/_landing-v2/LandingProductPreview.tsx",
         "frontend/src/app/_landing-v2/PackageLabelNarrative.tsx",
         "frontend/src/app/_landing-v2/copy.ts",
         "frontend/src/stores/language-store.ts"
@@ -97,6 +98,7 @@
       "directModuleImports": [],
       "directConsumers": [
         "frontend/src/app/LandingSections.tsx",
+        "frontend/src/app/_landing-v2/LandingProductPreview.tsx",
         "frontend/src/app/_landing-v2/LandingPublicShell.tsx"
       ],
       "transitiveRouteConsumers": [
@@ -128,6 +130,36 @@
       "directConsumers": [
         "frontend/src/app/LandingSections.tsx",
         "frontend/src/app/_landing-v2/LandingPublicShell.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5A.3"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/app/_landing-v2/LandingProductPreview.tsx",
+      "classification": "app-support-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": false,
+      "runtimeBoundary": "server-only",
+      "directModuleImports": [
+        "frontend/src/app/_landing-v2/LandingIdentity.tsx",
+        "frontend/src/app/_landing-v2/copy.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/LandingSections.tsx"
       ],
       "transitiveRouteConsumers": [
         {
@@ -269,6 +301,7 @@
       "directConsumers": [
         "frontend/src/app/HomePageContent.tsx",
         "frontend/src/app/LandingSections.tsx",
+        "frontend/src/app/_landing-v2/LandingProductPreview.tsx",
         "frontend/src/app/_landing-v2/LandingPublicShell.tsx",
         "frontend/src/app/page.tsx"
       ],
@@ -21225,9 +21258,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 569,
+    "inspectedModuleCount": 570,
     "violations": [],
-    "sourceFingerprint": "1936c0a47355f7d53ae559c7e3efb9ab208c7887c98eeead4af9381658b6362e"
+    "sourceFingerprint": "4a9f53825c686fe3a48f9e6337b43bbb2e4e686e4296d903031cfb8ab3c87aa6"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

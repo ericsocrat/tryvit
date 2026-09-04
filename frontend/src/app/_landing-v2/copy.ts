@@ -30,6 +30,19 @@ export interface LandingCopy {
   readonly identityLabel: string;
   readonly eyebrow: string;
   readonly title: string;
+  readonly titleAccent: string;
+  readonly accessNote: string;
+  readonly features: readonly string[];
+  readonly preview: {
+    readonly heading: string;
+    readonly basis: string;
+    readonly sugars: string;
+    readonly sugarValue: string;
+    readonly saturatedFat: string;
+    readonly saturatedFatValue: string;
+    readonly missing: string;
+    readonly note: string;
+  };
   readonly liveIntro: string;
   readonly demoIntro: string;
   readonly primary: string;
@@ -106,13 +119,26 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
       darkTheme: "Use dark theme",
     },
     identityLabel: "Food intelligence · Poland and Germany",
-    eyebrow: "Food intelligence you can inspect",
-    title: "Read the package. See the reasoning. Make your own call.",
+    eyebrow: "A fresh perspective on everyday food",
+    title: "A closer look.",
+    titleAccent: "A clearer choice.",
+    accessNote: "Private beta · access by invitation",
+    features: ["Scan a barcode", "Understand the label", "Compare similar products"],
+    preview: {
+      heading: "Behind the label",
+      basis: "Per 100 ml · example values",
+      sugars: "Sugars",
+      sugarValue: "3.2 g",
+      saturatedFat: "Saturated fat",
+      saturatedFatValue: "0.4 g",
+      missing: "Processing information missing",
+      note: "An illustrative preview, not a real product assessment.",
+    },
     liveIntro:
       "Scan a barcode, browse products, and compare label facts. See where the information comes from and what is still missing.",
     demoIntro:
       "TryVit separates label facts from calculations, context, and decisions. The method remains available while live product data is paused.",
-    primary: "Explore the evidence",
+    primary: "See how it works",
     secondary: "Beta access",
     package: "Package source",
     observed: "Observed facts",
@@ -123,7 +149,7 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     reset: "Fold back to source",
     packageName: "Oat drink",
     synthetic: "Synthetic example",
-    evidenceTitle: "One answer, four accountable layers",
+    evidenceTitle: "There’s more to food than the front label.",
     evidenceIntro:
       "A conclusion is useful only when you can trace what came from the package, what TryVit calculated, what context was applied, and what remains unknown.",
     observedDetail: "Sugars 3.2 g and saturated fat 0.4 g per 100 ml",
@@ -134,13 +160,13 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     contextMeta: "Moderate confidence · one material input missing",
     decisionDetail: "Check the current package and inspect the missing processing input.",
     decisionMeta: "Next action · evidence remains attached",
-    methodTitle: "Method before mystique",
+    methodTitle: "The reasoning, not just a rating.",
     methodBody:
       "Observed package facts stay separate from calculated results. A method version, source date, and missing-input state travel with every conclusion.",
-    marketTitle: "Designed for European labels",
+    marketTitle: "At home in your everyday shop.",
     marketBody:
       "Polish and German copy, metric units, serving-basis differences, and incomplete records are interface requirements—not footnotes after launch.",
-    privacyTitle: "Private before personal",
+    privacyTitle: "Your curiosity. Your control.",
     privacyBody: {
       live:
         "This page uses a synthetic example and checks only whether you already have a TryVit session so it can show the right account action. It does not start the camera or look up product data before you choose to continue.",
@@ -155,8 +181,8 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     siteAvailable: "Available",
     dataStatus: "Product data",
     dataPaused: "Paused",
-    finalEyebrow: "Keep the proof attached",
-    finalTitle: "Start with the question—not a verdict.",
+    finalEyebrow: "Take a little clarity with you",
+    finalTitle: "Your next shop. A fresh perspective.",
     finalBody:
       "Explore the method now. Account and product actions remain clearly separated from this public explanation.",
     finalPrimary: "Review the method",
@@ -191,13 +217,26 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
       darkTheme: "Włącz ciemny motyw",
     },
     identityLabel: "Dane o żywności · Polska i Niemcy",
-    eyebrow: "Dane o żywności, które można sprawdzić",
-    title: "Odczytaj opakowanie. Poznaj tok rozumowania. Podejmij własną decyzję.",
+    eyebrow: "Świeże spojrzenie na codzienną żywność",
+    title: "Przyjrzyj się bliżej.",
+    titleAccent: "Wybieraj świadomie.",
+    accessNote: "Prywatna beta · dostęp na zaproszenie",
+    features: ["Zeskanuj kod kreskowy", "Odczytaj opakowanie", "Porównaj podobne produkty"],
+    preview: {
+      heading: "Za etykietą",
+      basis: "Na 100 ml · przykładowe wartości",
+      sugars: "Cukry",
+      sugarValue: "3,2 g",
+      saturatedFat: "Tłuszcze nasycone",
+      saturatedFatValue: "0,4 g",
+      missing: "Brak danych o przetworzeniu",
+      note: "Ilustracja działania, nie ocena rzeczywistego produktu.",
+    },
     liveIntro:
       "Skanuj kody kreskowe, przeglądaj produkty i porównuj dane z etykiet. Sprawdź, skąd pochodzą informacje i czego jeszcze brakuje.",
     demoIntro:
       "TryVit oddziela dane z etykiety od obliczeń, kontekstu i decyzji. Metoda pozostaje dostępna, gdy dane produktów na żywo są wstrzymane.",
-    primary: "Przejrzyj dane",
+    primary: "Zobacz, jak to działa",
     secondary: "Dostęp do bety",
     package: "Źródło na opakowaniu",
     observed: "Dane z opakowania",
@@ -208,7 +247,7 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     reset: "Wróć do źródła",
     packageName: "Napój owsiany",
     synthetic: "Przykład syntetyczny",
-    evidenceTitle: "Jedna odpowiedź, cztery rozliczalne warstwy",
+    evidenceTitle: "Żywność to więcej niż przód opakowania.",
     evidenceIntro:
       "Wniosek jest użyteczny, gdy można sprawdzić dane z opakowania, obliczenia TryVit, zastosowany kontekst i to, czego nadal nie wiadomo.",
     observedDetail: "Cukry 3,2 g i tłuszcze nasycone 0,4 g na 100 ml",
@@ -219,13 +258,13 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     contextMeta: "Umiarkowana wiarygodność · brak jednej ważnej informacji",
     decisionDetail: "Sprawdź aktualne opakowanie i brakującą klasyfikację przetworzenia.",
     decisionMeta: "Następny krok · źródła i uzasadnienie pozostają powiązane",
-    methodTitle: "Najpierw metoda, potem efekt",
+    methodTitle: "Uzasadnienie, nie tylko ocena.",
     methodBody:
       "Dane z opakowania pozostają oddzielone od obliczeń. Wersja metody, data źródła i brakujące informacje towarzyszą każdemu wnioskowi.",
-    marketTitle: "Projektowany dla europejskich etykiet",
+    marketTitle: "Blisko codziennych zakupów.",
     marketBody:
       "Polskie i niemieckie teksty, jednostki metryczne, różne porcje i niepełne rekordy są wymaganiami interfejsu, a nie późniejszym przypisem.",
-    privacyTitle: "Prywatność przed personalizacją",
+    privacyTitle: "Twoja ciekawość. Twoja kontrola.",
     privacyBody: {
       live:
         "Ta strona korzysta z syntetycznego przykładu i sprawdza jedynie, czy masz już sesję TryVit, aby wyświetlić właściwe działanie dotyczące konta. Nie uruchamia aparatu ani wyszukiwania danych produktów, dopóki nie zdecydujesz się kontynuować.",
@@ -240,8 +279,8 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     siteAvailable: "Dostępna",
     dataStatus: "Dane produktów",
     dataPaused: "Wstrzymane",
-    finalEyebrow: "Zachowaj dostęp do danych",
-    finalTitle: "Zacznij od pytania, nie od werdyktu.",
+    finalEyebrow: "Zabierz ze sobą więcej wiedzy",
+    finalTitle: "Kolejne zakupy. Świeże spojrzenie.",
     finalBody:
       "Poznaj metodę. Działania związane z kontem i produktami pozostają wyraźnie oddzielone od publicznego wyjaśnienia.",
     finalPrimary: "Poznaj metodę",
@@ -276,13 +315,26 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
       darkTheme: "Dunkles Design verwenden",
     },
     identityLabel: "Lebensmittelinformation · Polen und Deutschland",
-    eyebrow: "Nachprüfbare Lebensmittelinformation",
-    title: "Verpackung lesen. Begründung verstehen. Selbst entscheiden.",
+    eyebrow: "Ein frischer Blick auf alltägliche Lebensmittel",
+    title: "Genauer hinsehen.",
+    titleAccent: "Bewusster wählen.",
+    accessNote: "Private Beta · Zugang auf Einladung",
+    features: ["Barcode scannen", "Etikett verstehen", "Ähnliche Produkte vergleichen"],
+    preview: {
+      heading: "Hinter dem Etikett",
+      basis: "Je 100 ml · Beispielwerte",
+      sugars: "Zucker",
+      sugarValue: "3,2 g",
+      saturatedFat: "Gesättigte Fettsäuren",
+      saturatedFatValue: "0,4 g",
+      missing: "Angaben zur Verarbeitung fehlen",
+      note: "Eine illustrative Vorschau, keine Bewertung eines realen Produkts.",
+    },
     liveIntro:
       "Barcodes scannen, Produkte durchsuchen und Etikettangaben vergleichen. Sehen Sie, woher die Informationen stammen und was noch fehlt.",
     demoIntro:
       "TryVit trennt Verpackungsangaben von Berechnungen, Kontext und Entscheidungen. Die Methode bleibt verfügbar, während Live-Produktdaten pausiert sind.",
-    primary: "Evidenz erkunden",
+    primary: "So funktioniert’s",
     secondary: "Beta-Zugang",
     package: "Verpackungsquelle",
     observed: "Verpackungsangaben",
@@ -293,7 +345,7 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     reset: "Zur Quelle zurückfalten",
     packageName: "Haferdrink",
     synthetic: "Synthetisches Beispiel",
-    evidenceTitle: "Eine Antwort, vier nachvollziehbare Ebenen",
+    evidenceTitle: "Lebensmittel sind mehr als ihre Vorderseite.",
     evidenceIntro:
       "Eine Schlussfolgerung ist erst nützlich, wenn Verpackungsangaben, TryVit-Berechnung, angewandter Kontext und offene Fragen nachvollziehbar bleiben.",
     observedDetail: "3,2 g Zucker und 0,4 g gesättigte Fettsäuren je 100 ml",
@@ -304,13 +356,13 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     contextMeta: "Mittlere Datenverlässlichkeit · eine wesentliche Angabe fehlt",
     decisionDetail: "Aktuelle Verpackung und fehlende Verarbeitungseingabe prüfen.",
     decisionMeta: "Nächster Schritt · Evidenz bleibt verbunden",
-    methodTitle: "Methode vor Inszenierung",
+    methodTitle: "Die Gründe, nicht nur die Bewertung.",
     methodBody:
       "Beobachtete Verpackungsangaben bleiben von Berechnungen getrennt. Methodenversion, Quelldatum und fehlende Eingaben begleiten jede Schlussfolgerung.",
-    marketTitle: "Für europäische Etiketten gestaltet",
+    marketTitle: "Für Ihren alltäglichen Einkauf.",
     marketBody:
       "Polnische und deutsche Textlängen, metrische Einheiten, Bezugsgrößen und unvollständige Datensätze sind Anforderungen an die Oberfläche—keine spätere Fußnote.",
-    privacyTitle: "Datenschutz vor Personalisierung",
+    privacyTitle: "Ihre Neugier. Ihre Kontrolle.",
     privacyBody: {
       live:
         "Diese Seite verwendet ein synthetisches Beispiel und prüft nur, ob bereits eine TryVit-Sitzung besteht, damit sie die passende Kontoaktion anzeigen kann. Sie startet weder die Kamera noch eine Produktdatensuche, bevor Sie sich zum Fortfahren entscheiden.",
@@ -325,8 +377,8 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     siteAvailable: "Verfügbar",
     dataStatus: "Produktdaten",
     dataPaused: "Pausiert",
-    finalEyebrow: "Den Nachweis verbunden lassen",
-    finalTitle: "Mit einer Frage beginnen—nicht mit einem Urteil.",
+    finalEyebrow: "Ein bisschen mehr Klarheit mitnehmen",
+    finalTitle: "Ihr nächster Einkauf. Ein frischer Blick.",
     finalBody:
       "Methode jetzt nachvollziehen. Konto- und Produktaktionen bleiben von dieser öffentlichen Erklärung klar getrennt.",
     finalPrimary: "Methode prüfen",

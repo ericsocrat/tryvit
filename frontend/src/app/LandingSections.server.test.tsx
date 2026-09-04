@@ -8,15 +8,15 @@ describe("server-rendered landing locales", () => {
   it.each([
     [
       "en" as const,
-      "Read the package. See the reasoning. Make your own call.",
+      "A closer look. A clearer choice.",
     ],
     [
       "pl" as const,
-      "Odczytaj opakowanie. Poznaj tok rozumowania. Podejmij własną decyzję.",
+      "Przyjrzyj się bliżej. Wybieraj świadomie.",
     ],
     [
       "de" as const,
-      "Verpackung lesen. Begründung verstehen. Selbst entscheiden.",
+      "Genauer hinsehen. Bewusster wählen.",
     ],
   ])("renders complete %s content without duplicating the shell identity", (language, heading) => {
     render(<LandingSections language={language} />);

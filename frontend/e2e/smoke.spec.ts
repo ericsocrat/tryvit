@@ -37,7 +37,8 @@ test.describe("Public pages", () => {
     const response = await page.goto("/");
     expect(response).not.toBeNull();
     const serverHtml = await response!.text();
-    expect(serverHtml).toContain("Read the package. See the reasoning. Make your own call.");
+    expect(serverHtml).toContain("A closer look.");
+    expect(serverHtml).toContain("A clearer choice.");
     expect(serverHtml).toMatch(/<html[^>]+lang="en"/u);
 
     await page.waitForLoadState("networkidle");
@@ -48,7 +49,7 @@ test.describe("Public pages", () => {
     ).toHaveCount(1);
     await expect(
       page.getByRole("heading", {
-        name: "Read the package. See the reasoning. Make your own call.",
+        name: "A closer look. A clearer choice.",
       }),
     ).toBeVisible();
     await expect(page.getByText("Demo mode").first()).toBeVisible();
@@ -59,7 +60,7 @@ test.describe("Public pages", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Method before mystique" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "The reasoning, not just a rating." })).toBeVisible();
   });
 
   test("landing page has correct title", async ({ page }) => {
@@ -157,12 +158,12 @@ test.describe("Polish public locale", () => {
 
     const response = await page.goto("/");
     expect(await response!.text()).toContain(
-      "Odczytaj opakowanie. Poznaj tok rozumowania. Podejmij własną decyzję.",
+      "Przyjrzyj się bliżej.",
     );
     await expect(page.locator("html")).toHaveAttribute("lang", "pl");
     await expect(
       page.getByRole("heading", {
-        name: "Odczytaj opakowanie. Poznaj tok rozumowania. Podejmij własną decyzję.",
+        name: "Przyjrzyj się bliżej. Wybieraj świadomie.",
       }),
     ).toBeVisible();
     expect(hydrationErrors).toEqual([]);
@@ -199,7 +200,7 @@ test.describe("German public locale", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "de");
     await expect(
       page.getByRole("heading", {
-        name: "Verpackung lesen. Begründung verstehen. Selbst entscheiden.",
+        name: "Genauer hinsehen. Bewusster wählen.",
       }),
     ).toBeVisible();
   });
@@ -232,7 +233,7 @@ test.describe("Server-rendered landing without JavaScript", () => {
 
   test("preserves meaningful paused-mode content", async ({ page }) => {
     const response = await page.goto("/");
-    expect(await response!.text()).toContain("Read the package. See the reasoning. Make your own call.");
+    expect(await response!.text()).toContain("A closer look.");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.getByText("Demo mode").first()).toBeVisible();
   });
