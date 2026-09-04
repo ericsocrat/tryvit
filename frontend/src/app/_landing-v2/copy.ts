@@ -109,11 +109,11 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     eyebrow: "Food intelligence you can inspect",
     title: "Read the package. See the reasoning. Make your own call.",
     liveIntro:
-      "TryVit separates label facts from calculations, context, and decisions—so confidence and missing evidence stay visible.",
+      "Scan a barcode, browse products, and compare label facts. See where the information comes from and what is still missing.",
     demoIntro:
       "TryVit separates label facts from calculations, context, and decisions. The method remains available while live product data is paused.",
     primary: "Explore the evidence",
-    secondary: "Create an account",
+    secondary: "Beta access",
     package: "Package source",
     observed: "Observed facts",
     derived: "Derived interpretation",
@@ -194,11 +194,11 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     eyebrow: "Dane o żywności, które można sprawdzić",
     title: "Odczytaj opakowanie. Poznaj tok rozumowania. Podejmij własną decyzję.",
     liveIntro:
-      "TryVit oddziela dane z etykiety od obliczeń, kontekstu i decyzji—wiarygodność i brakujące informacje pozostają widoczne.",
+      "Skanuj kody kreskowe, przeglądaj produkty i porównuj dane z etykiet. Sprawdź, skąd pochodzą informacje i czego jeszcze brakuje.",
     demoIntro:
       "TryVit oddziela dane z etykiety od obliczeń, kontekstu i decyzji. Metoda pozostaje dostępna, gdy dane produktów na żywo są wstrzymane.",
     primary: "Przejrzyj dane",
-    secondary: "Utwórz konto",
+    secondary: "Dostęp do bety",
     package: "Źródło na opakowaniu",
     observed: "Dane z opakowania",
     derived: "Wyliczona interpretacja",
@@ -279,11 +279,11 @@ export const LANDING_COPY: Readonly<Record<SupportedLanguage, LandingCopy>> = Ob
     eyebrow: "Nachprüfbare Lebensmittelinformation",
     title: "Verpackung lesen. Begründung verstehen. Selbst entscheiden.",
     liveIntro:
-      "TryVit trennt Verpackungsangaben von Berechnungen, Kontext und Entscheidungen—Datenverlässlichkeit und fehlende Evidenz bleiben sichtbar.",
+      "Barcodes scannen, Produkte durchsuchen und Etikettangaben vergleichen. Sehen Sie, woher die Informationen stammen und was noch fehlt.",
     demoIntro:
       "TryVit trennt Verpackungsangaben von Berechnungen, Kontext und Entscheidungen. Die Methode bleibt verfügbar, während Live-Produktdaten pausiert sind.",
     primary: "Evidenz erkunden",
-    secondary: "Konto erstellen",
+    secondary: "Beta-Zugang",
     package: "Verpackungsquelle",
     observed: "Verpackungsangaben",
     derived: "Abgeleitete Einordnung",

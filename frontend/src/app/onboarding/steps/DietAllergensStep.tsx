@@ -29,7 +29,6 @@ export function DietAllergensStep({
   return (
     <div className={styles.step}>
       <div className={styles.stepIntro}>
-        <p className={styles.registerCaption} aria-hidden="true">02 / 03</p>
         <h1 className={styles.title}>{t("onboarding.dietTitle")}</h1>
         <p className={styles.description}>{t("onboarding.dietSubtitle")}</p>
       </div>
@@ -72,7 +71,6 @@ export function DietAllergensStep({
       </section>
 
       <section className={styles.registerSection}>
-        <p className={styles.registerCaption} aria-hidden="true">02 / 02</p>
         <h2 className={styles.sectionTitle}>{t("onboarding.allergenTitle")}</h2>
         <p className={styles.sectionDescription}>{t("onboarding.allergenSubtitle")}</p>
 

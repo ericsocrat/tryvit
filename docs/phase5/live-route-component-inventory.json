@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "590911d2f0fe00885c70374008fab542a98f637b",
+    "baseSha": "caf53bcf1947c7530149acabe0bd5fe02ea7fbed",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "873f3a11c9859fc726653809701dca7a1ae485840a28f9b2c48c920345f2e53e"
+    "sourceFingerprint": "f35b18d582732e316c1628182ec30823169bd98681904970fdafc4d8409e5d77"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12557,7 +12557,6 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/dashboard/NutritionTip.tsx",
         "frontend/src/lib/i18n.ts"
       ],
       "directConsumers": [
@@ -12577,17 +12576,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 2
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/dashboard/NovaDistribution.tsx",
@@ -12631,8 +12620,7 @@
         "frontend/src/lib/qa-mode.ts"
       ],
       "directConsumers": [
-        "frontend/src/app/app/ReturningDashboard.tsx",
-        "frontend/src/components/dashboard/NewUserWelcome.tsx"
+        "frontend/src/app/app/ReturningDashboard.tsx"
       ],
       "transitiveRouteConsumers": [
         {
@@ -17037,17 +17025,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "transition-all",
-          "occurrences": [
-            {
-              "value": "transition-all",
-              "count": 2
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/recipes/index.ts",
@@ -20658,11 +20636,6 @@
           "count": 2
         },
         {
-          "path": "frontend/src/components/dashboard/NewUserWelcome.tsx",
-          "value": ".card",
-          "count": 2
-        },
-        {
           "path": "frontend/src/components/dashboard/QuickActions.tsx",
           "value": ".card",
           "count": 1
@@ -21187,11 +21160,6 @@
           "count": 1
         },
         {
-          "path": "frontend/src/components/recipes/RecipeScoreBadge.tsx",
-          "value": "transition-all",
-          "count": 2
-        },
-        {
           "path": "frontend/src/components/scan/CategoryPicker.tsx",
           "value": "transition-all",
           "count": 2
@@ -21247,7 +21215,7 @@
     ],
     "inspectedModuleCount": 569,
     "violations": [],
-    "sourceFingerprint": "39b0abdf5d08ad4f314c2ec474adffa60ffa914bbd722fea047c79b378389cac"
+    "sourceFingerprint": "6817d6b0c666ca457c3c5ed912d8ff51dcf8c8fb82d42ee2e5eda0eb54206f4d"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

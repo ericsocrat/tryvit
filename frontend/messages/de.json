@@ -1,4 +1,23 @@
 {
+  "firstUse": {
+    "title": "Lernen Sie Ihr Essen besser kennen.",
+    "subtitle": "Beginnen Sie mit einem vertrauten Produkt. Prüfen Sie das Etikett, verstehen Sie die Daten und vergleichen Sie Ihre Optionen.",
+    "startHere": "Ein guter Anfang",
+    "scanTitle": "Ein Produkt. Mehr Klarheit.",
+    "scanDescription": "Scannen Sie den Barcode einer Verpackung, um Nährwerte, Zutaten und verfügbare Daten nachzuschlagen.",
+    "scanHint": "Kamera oder manuelle Barcode-Eingabe. Sie entscheiden.",
+    "exploreTitle": "Keine Verpackung zur Hand?",
+    "exploreDescription": "Suchen Sie ein Produkt nach Name oder Marke oder entdecken Sie die Lebensmittelkategorien Ihres Alltags.",
+    "searchAction": "Produkte suchen",
+    "guideTitle": "Darauf kommt es an",
+    "guideAction": "Ratgeber entdecken",
+    "factsTitle": "Etikettangaben prüfen",
+    "factsDescription": "Vergleichen Sie Nährwerte, ihre Bezugsmenge und Zutateninformationen mit der aktuellen Verpackung.",
+    "evidenceTitle": "Datenlücken erkennen",
+    "evidenceDescription": "Achten Sie auf Quellen und fehlende Angaben. Ein unbekannter Wert bedeutet nicht null.",
+    "compareTitle": "Ähnliches vergleichen",
+    "compareDescription": "Wählen Sie ähnliche Produkte und prüfen Sie ihre Unterschiede. Ein Score ist ein Ausgangspunkt, kein Urteil."
+  },
   "nav": {
     "home": "Dashboard",
     "search": "Suche",
@@ -1762,6 +1781,28 @@
       "improving": "Verbessernd",
       "worsening": "Verschlechternd",
       "stable": "Stabil"
+    }
+  },
+  "recipeScore": {
+    "title": "TryVit Score verknüpfter Produkte",
+    "direction": "Höhere Werte stehen für ein günstigeres Nährwertprofil.",
+    "scoreLabel": "TryVit Score verknüpfter Produkte: {score} von 100; höher ist besser",
+    "noLinks": "Noch keine verknüpften Produkte. Produktbewertungen und durchschnittliche Nährwerte sind nicht verfügbar.",
+    "unavailable": "Keine verwendbare Produktbewertung verfügbar.",
+    "linkedIngredients": "Produkte für {linked} von {total} Zutaten verknüpft",
+    "coverage": "{percent}% der Zutaten haben verknüpfte Produkte",
+    "coverageLabel": "Zutaten mit verknüpften Produkten",
+    "evidenceNote": "Dies ist der Durchschnitt verknüpfter Produktbewertungen, keine Bewertung des fertigen Gerichts. Verknüpfte Zutaten bestätigen weder Datenqualität noch Aktualität.",
+    "nutritionTitle": "Durchschnitt verknüpfter Produkte · je 100 g",
+    "nutritionNote": "Einfache Mittelwerte verfügbarer Produktdaten. Rezeptmengen und Portionsgrößen werden nicht berücksichtigt; dies sind keine Nährwerte des Gerichts oder einer Portion.",
+    "unknown": "Unbekannt",
+    "nutrients": {
+      "calories": "Energie",
+      "protein": "Eiweiß",
+      "fat": "Fett",
+      "sugars": "Zucker",
+      "salt": "Salz",
+      "fibre": "Ballaststoffe"
     }
   },
   "recipes": {

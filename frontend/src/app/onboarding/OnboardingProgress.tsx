@@ -35,9 +35,6 @@ export function OnboardingProgress({
       />
       <div className={styles.progressMeta} aria-hidden="true">
         <span className={styles.registerCaption}>{stepLabel}</span>
-        <span className={styles.progressCount}>
-          {String(currentStep).padStart(2, "0")} / {String(totalSteps).padStart(2, "0")}
-        </span>
       </div>
       <div className={styles.progressBars} style={progressStyle} aria-hidden="true">
         {Array.from({ length: totalSteps }, (_, i) => (
