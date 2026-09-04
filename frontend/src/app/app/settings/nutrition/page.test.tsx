@@ -1,4 +1,5 @@
 import { useLanguageStore } from "@/stores/language-store";
+import { queryKeys } from "@/lib/query-keys";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -51,6 +52,23 @@ function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
 
 function createWrapper() {
   return Wrapper;
+}
+
+function createCachedWrapper(preferences: unknown) {
+  return function CachedWrapper({
+    children,
+  }: Readonly<{ children: React.ReactNode }>) {
+    const [client] = useState(() => {
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false, staleTime: 0 } },
+      });
+      queryClient.setQueryData(queryKeys.preferences, preferences);
+      return queryClient;
+    });
+    return (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+  };
 }
 
 const mockPrefsData = {
@@ -240,6 +258,37 @@ describe("NutritionSettingsPage", () => {
         p_strict_diet: false,
         p_strict_allergen: false,
         p_treat_may_contain_as_unsafe: false,
+      });
+    });
+  });
+
+  it("preserves cache-hot allergens when another nutrition field changes", async () => {
+    const cachedPrefs = {
+      ...mockPrefsData,
+      diet_preference: "vegan",
+      avoid_allergens: ["gluten"],
+      strict_diet: true,
+      strict_allergen: true,
+      treat_may_contain_as_unsafe: true,
+    };
+    mockSetPrefs.mockResolvedValue({ ok: true });
+
+    render(<NutritionSettingsPage />, {
+      wrapper: createCachedWrapper(cachedPrefs),
+    });
+    const user = userEvent.setup();
+
+    expect(screen.getByText("Strict allergen matching")).toBeInTheDocument();
+    await user.click(screen.getByText("Vegetarian"));
+    await user.click(screen.getByRole("button", { name: "Save changes" }));
+
+    await waitFor(() => {
+      expect(mockSetPrefs).toHaveBeenCalledWith(expect.anything(), {
+        p_diet_preference: "vegetarian",
+        p_avoid_allergens: ["gluten"],
+        p_strict_diet: true,
+        p_strict_allergen: true,
+        p_treat_may_contain_as_unsafe: true,
       });
     });
   });

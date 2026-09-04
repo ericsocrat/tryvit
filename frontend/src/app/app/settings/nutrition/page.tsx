@@ -35,11 +35,19 @@ export default function NutritionSettingsPage() {
     refetch: refetchPreferences,
   } = useUserPreferencesQuery();
 
-  const [diet, setDiet] = useState("none");
-  const [allergens, setAllergens] = useState<string[]>([]);
-  const [strictDiet, setStrictDiet] = useState(false);
-  const [strictAllergen, setStrictAllergen] = useState(false);
-  const [treatMayContain, setTreatMayContain] = useState(false);
+  // React Query can provide cache-hot data on the first render. Seed the form
+  // from that value so a later edit cannot submit guessed defaults.
+  const [diet, setDiet] = useState(() => prefs?.diet_preference ?? "none");
+  const [allergens, setAllergens] = useState<string[]>(
+    () => prefs?.avoid_allergens ?? [],
+  );
+  const [strictDiet, setStrictDiet] = useState(() => prefs?.strict_diet ?? false);
+  const [strictAllergen, setStrictAllergen] = useState(
+    () => prefs?.strict_allergen ?? false,
+  );
+  const [treatMayContain, setTreatMayContain] = useState(
+    () => prefs?.treat_may_contain_as_unsafe ?? false,
+  );
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
 

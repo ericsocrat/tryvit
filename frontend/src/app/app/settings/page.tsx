@@ -39,8 +39,12 @@ export default function ProfileSettingsPage() {
     refetch: refetchPreferences,
   } = useUserPreferencesQuery();
 
-  const [country, setCountry] = useState("");
-  const [language, setLanguage] = useState<SupportedLanguage>("en");
+  // React Query can provide cache-hot data on the first render. Seed the form
+  // from that value so controls never begin from guessed defaults.
+  const [country, setCountry] = useState(() => prefs?.country ?? "");
+  const [language, setLanguage] = useState<SupportedLanguage>(
+    () => (prefs?.preferred_language ?? "en") as SupportedLanguage,
+  );
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
 

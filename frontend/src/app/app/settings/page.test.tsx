@@ -1,5 +1,6 @@
 import { useLanguageStore } from "@/stores/language-store";
 import type * as I18nCoreModule from "@/lib/i18n-core";
+import { queryKeys } from "@/lib/query-keys";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -86,6 +87,23 @@ function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
 
 function createWrapper() {
   return Wrapper;
+}
+
+function createCachedWrapper(preferences: unknown) {
+  return function CachedWrapper({
+    children,
+  }: Readonly<{ children: React.ReactNode }>) {
+    const [client] = useState(() => {
+      const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false, staleTime: 0 } },
+      });
+      queryClient.setQueryData(queryKeys.preferences, preferences);
+      return queryClient;
+    });
+    return (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+  };
 }
 
 const mockPrefsData = {
@@ -258,6 +276,19 @@ describe("ProfileSettingsPage", () => {
         },
       );
     });
+  });
+
+  it("hydrates profile controls from cache-hot preferences", () => {
+    render(<ProfileSettingsPage />, {
+      wrapper: createCachedWrapper({
+        ...mockPrefsData,
+        country: "PL",
+        preferred_language: "pl",
+      }),
+    });
+
+    expect(screen.getByText("Polski")).toBeInTheDocument();
+    expect(screen.queryByText("Deutsch")).not.toBeInTheDocument();
   });
 
   it("shows success toast after saving", async () => {
