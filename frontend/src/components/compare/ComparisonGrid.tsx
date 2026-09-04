@@ -185,7 +185,7 @@ const ROW_PROVENANCE_REQUIREMENTS: Readonly<Record<string, { field: string; maxA
     protein_g: { field: "protein_100g", maxAgeDays: 120 },
     carbs_g: { field: "carbs_100g", maxAgeDays: 120 },
     additives_count: { field: "additive_count", maxAgeDays: 120 },
-    allergen_count: { field: "allergen_tags", maxAgeDays: 60 },
+    allergen_count: { field: "allergens", maxAgeDays: 60 },
   };
 
 const WARNING_PROVENANCE_REQUIREMENTS = [

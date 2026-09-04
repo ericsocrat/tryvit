@@ -2,9 +2,8 @@
 
 Sequences the pipeline for all categories in a country:
   1. pipeline.run → fetch from OFF API → generate SQL files
-  2. Execute generated SQL (including ordered step 02 enrichment when enabled)
-  3. CALL score_category('CategoryName') via psql
-  4. Log results to JSON report
+  2. Execute all generated SQL (including enrichment and scoring) atomically
+  3. Log results to JSON report
 
 Usage::
 
@@ -62,7 +61,19 @@ def _psql_cmd(query: str) -> list[str]:
     local mode uses docker exec into the Supabase container."""
     db_url = os.environ.get("DATABASE_URL")
     if db_url:
-        return ["psql", db_url, "-t", "-A", "-F", "|", "-c", query]
+        return [
+            "psql",
+            db_url,
+            "-X",
+            "-v",
+            "ON_ERROR_STOP=1",
+            "-t",
+            "-A",
+            "-F",
+            "|",
+            "-c",
+            query,
+        ]
     return [
         "docker",
         "exec",
@@ -72,6 +83,9 @@ def _psql_cmd(query: str) -> list[str]:
         DB_USER,
         "-d",
         DB_NAME,
+        "-X",
+        "-v",
+        "ON_ERROR_STOP=1",
         "-t",
         "-A",
         "-F",
@@ -88,15 +102,13 @@ def _run_psql(query: str) -> str:
     return result.stdout.strip()
 
 
-def _execute_sql_file(filepath: Path) -> None:
-    """Execute a single SQL file against the database."""
+def _psql_script_cmd() -> list[str]:
+    """Build one fail-closed psql command that reads a script from stdin."""
     db_url = os.environ.get("DATABASE_URL")
     if db_url:
-        cmd = ["psql", db_url, "-f", str(filepath)]
+        prefix = ["psql", db_url]
     else:
-        # Read file content and pipe via docker exec
-        sql = filepath.read_text(encoding="utf-8")
-        cmd = [
+        prefix = [
             "docker",
             "exec",
             "-i",
@@ -107,15 +119,56 @@ def _execute_sql_file(filepath: Path) -> None:
             "-d",
             DB_NAME,
         ]
-        subprocess.run(
-            cmd,
-            input=sql,
-            capture_output=True,
-            text=True,
-            check=True,
+    return [
+        *prefix,
+        "-X",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "--single-transaction",
+        "-f",
+        "-",
+    ]
+
+
+def _without_outer_transaction(sql: str) -> str:
+    """Remove only a legacy file's first BEGIN and final COMMIT wrapper.
+
+    Older generated enrichment files were standalone transactions.  Removing
+    only their outer boundary lets the orchestrator own one transaction without
+    touching BEGIN/END blocks inside SQL functions or DO statements.
+    """
+    lines = sql.splitlines()
+    executable = [
+        index
+        for index, line in enumerate(lines)
+        if line.strip() and not line.lstrip().startswith("--")
+    ]
+    if executable and lines[executable[0]].strip().upper() == "BEGIN;":
+        lines[executable[0]] = "-- outer BEGIN delegated to orchestrator"
+    if executable and lines[executable[-1]].strip().upper() == "COMMIT;":
+        lines[executable[-1]] = "-- outer COMMIT delegated to orchestrator"
+    return "\n".join(lines)
+
+
+def _execute_sql_files_atomic(sql_files: list[Path]) -> None:
+    """Execute ordered SQL files in one psql session and one transaction."""
+    script_parts: list[str] = []
+    for sql_file in sql_files:
+        script_parts.extend(
+            (
+                f"-- BEGIN FILE: {sql_file.name}",
+                _without_outer_transaction(sql_file.read_text(encoding="utf-8")),
+                f"-- END FILE: {sql_file.name}",
+                "",
+            )
         )
-        return
-    subprocess.run(cmd, capture_output=True, text=True, check=True)
+    subprocess.run(
+        _psql_script_cmd(),
+        input="\n".join(script_parts),
+        capture_output=True,
+        text=True,
+        check=True,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -249,6 +302,8 @@ class PipelineOrchestrator:
             # Phase 3: Execute generated SQL files
             output_dir = PIPELINE_DIR / dir_slug
             sql_count = self._execute_sql_files(output_dir)
+            if sql_count == 0:
+                raise RuntimeError(f"No generated SQL files found in {output_dir}")
             result["sql_files_executed"] = sql_count
             print(f"  Executed {sql_count} SQL files")
 
@@ -260,11 +315,10 @@ class PipelineOrchestrator:
             if result["enriched"]:
                 print("  Deterministic enrichment applied")
 
-            # Phase 5: Score category
-            self._score_category(category)
+            # Step 04 scores inside the same transaction as every other file.
             result["scored"] = True
             self._report["products_scored"] += 1
-            print("  Scoring complete")
+            print("  Scoring complete in atomic category transaction")
 
         except Exception as exc:
             result["status"] = "error"
@@ -302,13 +356,9 @@ class PipelineOrchestrator:
             return 0
 
         sql_files = sorted(folder.glob("PIPELINE__*.sql"))
-        for sql_file in sql_files:
-            _execute_sql_file(sql_file)
+        if sql_files:
+            _execute_sql_files_atomic(sql_files)
         return len(sql_files)
-
-    def _score_category(self, category: str) -> None:
-        """CALL score_category('CategoryName') via psql."""
-        _run_psql(f"CALL score_category('{category}');")
 
     # -- reporting -----------------------------------------------------------
 

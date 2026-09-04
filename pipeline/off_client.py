@@ -6,7 +6,9 @@ schema, and respects the OFF API rate-limit guidelines.
 
 from __future__ import annotations
 
+import datetime
 import logging
+import math
 import re
 import time
 from typing import Any
@@ -27,6 +29,50 @@ PAGE_SIZE = 50
 REQUEST_DELAY = 1.0  # seconds between requests
 REQUEST_TIMEOUT = 90  # seconds (OFF API can be slow)
 MAX_RETRIES = 3
+
+# Internal metadata added only after a successful OFF response.  The extractor
+# carries it into generated pipeline records, but never mistakes it for an
+# upstream product field.
+_OFF_FETCHED_AT_KEY = "_tryvit_fetched_at"
+
+# Public provenance field vocabulary consumed by the database and product
+# trust surfaces.  Keep the normalized value keys (``calories``,
+# ``total_fat_g``, etc.) unchanged; this tuple deliberately uses the canonical
+# field-level provenance names.
+_OFF_PROVENANCE_FIELD_ORDER = (
+    "product_name",
+    "brand",
+    "ean",
+    "category",
+    "prep_method",
+    "controversies",
+    "calories_100g",
+    "fat_100g",
+    "saturated_fat_100g",
+    "trans_fat_100g",
+    "carbs_100g",
+    "sugars_100g",
+    "fiber_100g",
+    "protein_100g",
+    "salt_100g",
+    "nutri_score_label",
+    "nova_classification",
+    "image_url",
+    "image_ingredients_url",
+    "image_nutrition_url",
+)
+
+
+def _utc_now_iso() -> str:
+    """Return a stable UTC ISO-8601 timestamp for a successful API fetch."""
+    return datetime.datetime.now(datetime.UTC).isoformat().replace("+00:00", "Z")
+
+
+def _with_fetch_metadata(product: dict, fetched_at: str) -> dict:
+    """Copy an OFF product and attach TryVit-owned fetch-time metadata."""
+    stamped = dict(product)
+    stamped[_OFF_FETCHED_AT_KEY] = fetched_at
+    return stamped
 
 
 def _get_json(session: requests.Session, url: str, params: dict) -> dict | None:
@@ -103,7 +149,13 @@ def _search_by_tags(
             products = data.get("products", [])
             if not products:
                 break
-            _collect_products(products, seen_codes, results, max_results)
+            _collect_products(
+                products,
+                seen_codes,
+                results,
+                max_results,
+                fetched_at=_utc_now_iso(),
+            )
             if page * PAGE_SIZE >= _safe_int(data.get("count", 0)):
                 break
             page += 1
@@ -137,7 +189,13 @@ def _search_by_terms(
             products = data.get("products", [])
             if not products:
                 break
-            _collect_products(products, seen_codes, results, max_results)
+            _collect_products(
+                products,
+                seen_codes,
+                results,
+                max_results,
+                fetched_at=_utc_now_iso(),
+            )
             if page * PAGE_SIZE >= _safe_int(data.get("count", 0)):
                 break
             page += 1
@@ -150,13 +208,14 @@ def _collect_products(
     seen_codes: set[str],
     results: list[dict],
     max_results: int,
+    fetched_at: str | None = None,
 ) -> None:
-    """Append unseen products to *results* (mutates both collections)."""
+    """Append unseen products to *results* with successful-fetch metadata."""
     for p in products:
         code = p.get("code", "")
         if code and code not in seen_codes:
             seen_codes.add(code)
-            results.append(p)
+            results.append(_with_fetch_metadata(p, fetched_at) if fetched_at else dict(p))
             if len(results) >= max_results:
                 return
 
@@ -241,7 +300,10 @@ def fetch_product_by_ean(ean: str) -> dict | None:
         if data.get("status") != 1:
             return None
 
-        return data.get("product")
+        product = data.get("product")
+        if not isinstance(product, dict):
+            return None
+        return _with_fetch_metadata(product, _utc_now_iso())
 
 
 # ---------------------------------------------------------------------------
@@ -249,14 +311,57 @@ def fetch_product_by_ean(ean: str) -> dict | None:
 # ---------------------------------------------------------------------------
 
 
-def _round1(value: Any, default: str = "0") -> str:
-    """Round a numeric value to 1 decimal place and return as string."""
-    if value is None:
+def _round1(value: Any, default: str | None = None) -> str | None:
+    """Round a finite numeric value, preserving unknown instead of inventing zero."""
+    if value is None or isinstance(value, bool):
         return default
     try:
-        return str(round(float(value), 1))
+        numeric = float(value)
     except (ValueError, TypeError):
         return default
+    if not math.isfinite(numeric):
+        return default
+    return str(round(numeric, 1))
+
+
+def _positive_int(value: Any) -> int | None:
+    """Return a positive integer without coercing malformed revision values."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value if value > 0 else None
+    if isinstance(value, str):
+        stripped = value.strip()
+        if stripped.isdecimal():
+            parsed = int(stripped)
+            return parsed if parsed > 0 else None
+    return None
+
+
+def _nonnegative_int(value: Any) -> int | None:
+    """Return a non-negative integer while keeping absent/invalid data unknown."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value if value >= 0 else None
+    if isinstance(value, str):
+        stripped = value.strip()
+        if stripped.isdecimal():
+            return int(stripped)
+    return None
+
+
+def _normalise_fetched_at(value: Any) -> str | None:
+    """Validate internal fetch metadata and return canonical UTC ISO-8601."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return None
+    return parsed.astimezone(datetime.UTC).isoformat().replace("+00:00", "Z")
 
 
 # ---------------------------------------------------------------------------
@@ -473,9 +578,11 @@ def _detect_prep_method(categories_tags: list[str], product_name: str) -> str | 
     return None
 
 
-def _detect_controversies(off_product: dict) -> str:
-    """Check ingredient text for palm oil."""
-    ingredients = (off_product.get("ingredients_text") or "").lower()
+def _detect_controversies(off_product: dict) -> str | None:
+    """Check ingredient text for palm oil, preserving absent evidence as unknown."""
+    ingredients = (off_product.get("ingredients_text") or "").strip().lower()
+    if not ingredients:
+        return None
     if "palm oil" in ingredients or "huile de palme" in ingredients:
         return "palm oil"
     return "none"
@@ -544,14 +651,28 @@ def extract_product_data(off_product: dict) -> dict | None:
     dict | None
         Normalised product dict ready for validation and SQL generation.
     """
-    nutriments = off_product.get("nutriments", {})
-
-    # Required fields — skip if any of these are missing
-    calories_raw = nutriments.get("energy-kcal_100g")
-    fat_raw = nutriments.get("fat_100g")
-    protein_raw = nutriments.get("proteins_100g")
-    if calories_raw is None or fat_raw is None or protein_raw is None:
+    nutriments = off_product.get("nutriments")
+    if not isinstance(nutriments, dict):
         return None
+
+    # Required fields — skip if any value is absent or not finite numeric
+    calories = _round1(nutriments.get("energy-kcal_100g"))
+    total_fat_g = _round1(nutriments.get("fat_100g"))
+    protein_g = _round1(nutriments.get("proteins_100g"))
+    if calories is None or total_fat_g is None or protein_g is None:
+        return None
+
+    nutrient_values = {
+        "calories_100g": calories,
+        "fat_100g": total_fat_g,
+        "saturated_fat_100g": _round1(nutriments.get("saturated-fat_100g")),
+        "trans_fat_100g": _round1(nutriments.get("trans-fat_100g")),
+        "carbs_100g": _round1(nutriments.get("carbohydrates_100g")),
+        "sugars_100g": _round1(nutriments.get("sugars_100g")),
+        "fiber_100g": _round1(nutriments.get("fiber_100g")),
+        "protein_100g": protein_g,
+        "salt_100g": _round1(nutriments.get("salt_100g")),
+    }
 
     # Product name
     product_name = _resolve_product_name(off_product)
@@ -562,14 +683,19 @@ def extract_product_data(off_product: dict) -> dict | None:
     brand = _resolve_brand(off_product)
 
     # EAN
-    ean = off_product.get("code", "")
+    ean_raw = off_product.get("code")
+    ean = str(ean_raw).strip() if ean_raw is not None else ""
 
     # Category resolution
-    categories_tags: list[str] = off_product.get("categories_tags", [])
+    raw_categories = off_product.get("categories_tags")
+    categories_tags: list[str] = raw_categories if isinstance(raw_categories, list) else []
     category = resolve_category(categories_tags)
 
     # Prep method & controversies
-    prep_method = _detect_prep_method(categories_tags, product_name) or "not-applicable"
+    detected_prep_method = _detect_prep_method(categories_tags, product_name)
+    # ``products.prep_method`` is NOT NULL.  Retain the storage fallback while
+    # withholding its provenance unless OFF data actually supported it.
+    prep_method = detected_prep_method or "not-applicable"
     controversies = _detect_controversies(off_product)
 
     # Store availability
@@ -581,7 +707,55 @@ def extract_product_data(off_product: dict) -> dict | None:
     # NOVA & Nutri-Score
     nova = _parse_nova(off_product)
     nutriscore_raw = off_product.get("nutriscore_grade")
-    nutri_score_label = nutriscore_raw.upper() if nutriscore_raw else None
+    nutriscore_candidate = str(nutriscore_raw).strip().upper() if nutriscore_raw else None
+    nutri_score_label = (
+        nutriscore_candidate
+        if nutriscore_candidate in {"A", "B", "C", "D", "E"}
+        else None
+    )
+
+    additives_count = _nonnegative_int(off_product.get("additives_n"))
+    image_front_raw = off_product.get("image_front_url")
+    image_ingredients_raw = off_product.get("image_ingredients_url")
+    image_nutrition_raw = off_product.get("image_nutrition_url")
+    image_front_url = (
+        image_front_raw.strip()
+        if isinstance(image_front_raw, str) and image_front_raw.strip()
+        else None
+    )
+    image_ingredients_url = (
+        image_ingredients_raw.strip()
+        if isinstance(image_ingredients_raw, str) and image_ingredients_raw.strip()
+        else None
+    )
+    image_nutrition_url = (
+        image_nutrition_raw.strip()
+        if isinstance(image_nutrition_raw, str) and image_nutrition_raw.strip()
+        else None
+    )
+
+    source_fields = {"product_name"}
+    source_fields.update(name for name, value in nutrient_values.items() if value is not None)
+    if (off_product.get("brands") or "").strip():
+        source_fields.add("brand")
+    if ean:
+        source_fields.add("ean")
+    if category is not None:
+        source_fields.add("category")
+    if detected_prep_method is not None:
+        source_fields.add("prep_method")
+    if controversies is not None:
+        source_fields.add("controversies")
+    if nutri_score_label is not None:
+        source_fields.add("nutri_score_label")
+    if nova is not None:
+        source_fields.add("nova_classification")
+    if isinstance(image_front_url, str) and image_front_url.startswith("https://"):
+        source_fields.add("image_url")
+    if isinstance(image_ingredients_url, str) and image_ingredients_url.startswith("https://"):
+        source_fields.add("image_ingredients_url")
+    if isinstance(image_nutrition_url, str) and image_nutrition_url.startswith("https://"):
+        source_fields.add("image_nutrition_url")
 
     return {
         "product_name": product_name,
@@ -593,17 +767,17 @@ def extract_product_data(off_product: dict) -> dict | None:
         "controversies": controversies,
         "store_availability": store_availability,
         # Nutrition (per 100 g)
-        "calories": _round1(calories_raw),
-        "total_fat_g": _round1(fat_raw),
-        "saturated_fat_g": _round1(nutriments.get("saturated-fat_100g")),
-        "trans_fat_g": _round1(nutriments.get("trans-fat_100g"), "0"),
-        "carbs_g": _round1(nutriments.get("carbohydrates_100g")),
-        "sugars_g": _round1(nutriments.get("sugars_100g")),
-        "fibre_g": _round1(nutriments.get("fiber_100g"), "0"),
-        "protein_g": _round1(protein_raw),
-        "salt_g": _round1(nutriments.get("salt_100g")),
+        "calories": calories,
+        "total_fat_g": total_fat_g,
+        "saturated_fat_g": nutrient_values["saturated_fat_100g"],
+        "trans_fat_g": nutrient_values["trans_fat_100g"],
+        "carbs_g": nutrient_values["carbs_100g"],
+        "sugars_g": nutrient_values["sugars_100g"],
+        "fibre_g": nutrient_values["fiber_100g"],
+        "protein_g": protein_g,
+        "salt_g": nutrient_values["salt_100g"],
         # Scores / classifications
-        "additives_count": off_product.get("additives_n", 0) or 0,
+        "additives_count": additives_count,
         "nova_classification": nova,
         "nutri_score_label": nutri_score_label,
         # Ingredients
@@ -614,10 +788,15 @@ def extract_product_data(off_product: dict) -> dict | None:
         "_allergens_tags": off_product.get("allergens_tags") or [],
         "_traces_tags": off_product.get("traces_tags") or [],
         # OFF metadata (used by validator)
-        "_completeness": off_product.get("completeness", 0),
+        "_completeness": off_product.get("completeness"),
         "_has_image": bool(off_product.get("image_url")),
+        "_off_revision": _positive_int(off_product.get("rev")),
+        "_fetched_at": _normalise_fetched_at(off_product.get(_OFF_FETCHED_AT_KEY)),
+        "_off_fields_present": tuple(
+            field for field in _OFF_PROVENANCE_FIELD_ORDER if field in source_fields
+        ),
         # Image URLs (used by sql_generator._gen_06_add_images)
-        "image_front_url": off_product.get("image_front_url") or None,
-        "image_ingredients_url": off_product.get("image_ingredients_url") or None,
-        "image_nutrition_url": off_product.get("image_nutrition_url") or None,
+        "image_front_url": image_front_url,
+        "image_ingredients_url": image_ingredients_url,
+        "image_nutrition_url": image_nutrition_url,
     }

@@ -291,6 +291,8 @@ class EnrichmentTests(unittest.TestCase):
             with mock.patch.object(sql_generator, "PIPELINES_ROOT", root):
                 files = generate_pipeline("Chips", [product], str(output), country="DE")
             names = [path.name for path in files]
+            enrichment = next(path for path in files if path.name.endswith("__02_enrichment.sql"))
+            enrichment_sql = enrichment.read_text(encoding="utf-8")
         self.assertLess(
             names.index("PIPELINE__chips-de__01_insert_products.sql"),
             names.index("PIPELINE__chips-de__02_enrichment.sql"),
@@ -299,6 +301,8 @@ class EnrichmentTests(unittest.TestCase):
             names.index("PIPELINE__chips-de__02_enrichment.sql"),
             names.index("PIPELINE__chips-de__03_add_nutrition.sql"),
         )
+        self.assertNotIn("\nBEGIN;\n", enrichment_sql)
+        self.assertNotIn("\nCOMMIT;\n", enrichment_sql)
 
     def test_standard_phase4b_generation_retains_ci_deferral_marker(self) -> None:
         product = {

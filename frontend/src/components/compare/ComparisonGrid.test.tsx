@@ -400,6 +400,50 @@ describe("ComparisonGrid", () => {
     ).toBe(true);
   });
 
+  it("uses canonical allergen provenance before ranking the allergen row", () => {
+    const comparisonProducts = [
+      productA,
+      { ...productB, allergen_tags: "", allergen_count: 0 },
+    ];
+    const provenanceByProductId = Object.fromEntries(
+      comparisonProducts.map((product) => {
+        const provenance = scoreOnlyProvenance(product.product_id);
+        return [
+          product.product_id,
+          {
+            ...provenance,
+            field_sources: {
+              ...provenance.field_sources,
+              allergens: {
+                source: "Open Food Facts API",
+                last_updated: new Date().toISOString(),
+                confidence: 0.6,
+              },
+            },
+          },
+        ];
+      }),
+    );
+
+    render(
+      <ComparisonGrid
+        products={comparisonProducts}
+        recommendationAllowed
+        provenanceByProductId={provenanceByProductId}
+      />,
+    );
+
+    const allergenRow = screen.getAllByText("Allergens")[0].closest("tr");
+    const allergenCells = allergenRow?.querySelectorAll("td") ?? [];
+    expect(
+      [...allergenCells].some(
+        (cell) =>
+          cell.className.includes("text-success-text") ||
+          cell.className.includes("text-error-text"),
+      ),
+    ).toBe(true);
+  });
+
   it("ranks evidenced values without requiring provenance for a missing value", () => {
     const productC = makeProduct({
       product_id: 3,

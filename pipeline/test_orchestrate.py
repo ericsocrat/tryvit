@@ -13,6 +13,8 @@ from pipeline.orchestrate import (
     DB_CONTAINER,
     PipelineOrchestrator,
     _psql_cmd,
+    _psql_script_cmd,
+    _without_outer_transaction,
 )
 
 # ─── _psql_cmd ───────────────────────────────────────────────────────────
@@ -26,6 +28,8 @@ class TestPsqlCmd:
         assert "docker" in cmd
         assert DB_CONTAINER in cmd
         assert "SELECT 1;" in cmd
+        assert "-X" in cmd
+        assert "ON_ERROR_STOP=1" in cmd
 
     def test_direct_mode(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """With DATABASE_URL, uses psql directly."""
@@ -34,6 +38,30 @@ class TestPsqlCmd:
         assert cmd[0] == "psql"
         assert "postgresql://localhost/test" in cmd
         assert "docker" not in cmd
+        assert "-X" in cmd
+        assert "ON_ERROR_STOP=1" in cmd
+
+    def test_script_command_is_one_fail_closed_transaction(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.setenv("DATABASE_URL", "postgresql://localhost/test")
+
+        cmd = _psql_script_cmd()
+
+        assert cmd[:2] == ["psql", "postgresql://localhost/test"]
+        assert "-X" in cmd
+        assert "ON_ERROR_STOP=1" in cmd
+        assert "--single-transaction" in cmd
+        assert cmd[-2:] == ["-f", "-"]
+
+    def test_only_outer_legacy_transaction_is_delegated(self) -> None:
+        sql = """-- generated\nBEGIN;\nDO $$\nBEGIN\n  PERFORM 1;\nEND;\n$$;\nCOMMIT;\n"""
+
+        delegated = _without_outer_transaction(sql)
+
+        assert "outer BEGIN delegated" in delegated
+        assert "outer COMMIT delegated" in delegated
+        assert "DO $$\nBEGIN\n  PERFORM 1;\nEND;\n$$;" in delegated
 
 
 # ─── PipelineOrchestrator.__init__ ────────────────────────────────────────
@@ -75,6 +103,26 @@ class TestOrchestratorInit:
 
 
 class TestRunCategory:
+    @mock.patch("pipeline.orchestrate.PipelineOrchestrator._execute_sql_files", return_value=6)
+    @mock.patch("pipeline.orchestrate._run_psql", return_value="0")
+    @mock.patch("pipeline.orchestrate.run_pipeline")
+    def test_scoring_runs_only_inside_generated_atomic_sql(
+        self,
+        mock_run_pipeline: mock.MagicMock,
+        mock_psql: mock.MagicMock,
+        mock_execute: mock.MagicMock,
+    ) -> None:
+        orch = PipelineOrchestrator(country="PL", categories=["Dairy"])
+
+        result = orch.run_category("Dairy")
+
+        assert result["status"] == "success"
+        assert result["scored"] is True
+        mock_run_pipeline.assert_called_once()
+        mock_execute.assert_called_once()
+        assert mock_psql.call_count == 1
+        assert "COUNT(*)" in mock_psql.call_args.args[0]
+
     @mock.patch("pipeline.orchestrate._run_psql", return_value="0")
     @mock.patch("pipeline.orchestrate.run_pipeline")
     def test_dry_run_skips_execution(
@@ -207,10 +255,10 @@ class TestExecuteSqlFiles:
         count = orch._execute_sql_files(tmp_path / "no-such-dir")
         assert count == 0
 
-    @mock.patch("pipeline.orchestrate._execute_sql_file")
+    @mock.patch("pipeline.orchestrate.subprocess.run")
     def test_executes_in_order(
         self,
-        mock_exec: mock.MagicMock,
+        mock_run: mock.MagicMock,
         tmp_path: Path,
     ) -> None:
         # Create mock SQL files
@@ -222,7 +270,27 @@ class TestExecuteSqlFiles:
         orch = PipelineOrchestrator(country="PL", categories=["Dairy"], dry_run=True)
         count = orch._execute_sql_files(tmp_path)
         assert count == 3
-        assert mock_exec.call_count == 3
-        # Verify sorted order
-        called_names = [Path(c.args[0]).name for c in mock_exec.call_args_list]
-        assert called_names == sorted(called_names)
+        mock_run.assert_called_once()
+        command = mock_run.call_args.args[0]
+        script = mock_run.call_args.kwargs["input"]
+        assert "--single-transaction" in command
+        assert "ON_ERROR_STOP=1" in command
+        assert script.index("SELECT 1;") < script.index("SELECT 2;") < script.index("SELECT 3;")
+
+    @mock.patch(
+        "pipeline.orchestrate.subprocess.run",
+        side_effect=subprocess.CalledProcessError(1, "psql"),
+    )
+    def test_atomic_execution_failure_propagates(
+        self,
+        mock_run: mock.MagicMock,
+        tmp_path: Path,
+    ) -> None:
+        (tmp_path / "PIPELINE__test__01_insert.sql").write_text("SELECT 1;")
+        (tmp_path / "PIPELINE__test__02_fail.sql").write_text("SELECT missing;")
+        orch = PipelineOrchestrator(country="PL", categories=["Dairy"], dry_run=True)
+
+        with pytest.raises(subprocess.CalledProcessError):
+            orch._execute_sql_files(tmp_path)
+
+        mock_run.assert_called_once()

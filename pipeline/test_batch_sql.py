@@ -12,7 +12,13 @@ from pathlib import Path
 import pytest
 
 import pipeline.sql_generator as sql_generator
-from pipeline.sql_generator import _chunk, generate_pipeline
+from pipeline.sql_generator import (
+    _chunk,
+    _gen_03_add_nutrition,
+    _gen_04_scoring,
+    _gen_05_source_provenance,
+    generate_pipeline,
+)
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -37,9 +43,21 @@ _PRODUCT_TEMPLATE = {
     "salt_g": 0.5,
     "nutri_score_label": "C",
     "nutri_score_source": "off_computed",
-    "nova_group": "3",
+    "nova_classification": "3",
     "source_url": "https://world.openfoodfacts.org/product/1234",
     "image_url": "https://images.openfoodfacts.org/img.jpg",
+    "_fetched_at": "2026-09-04T12:34:56Z",
+    "_off_revision": 42,
+    "_off_fields_present": (
+        "brand",
+        "product_name",
+        "ean",
+        "calories_100g",
+        "fat_100g",
+        "protein_100g",
+        "nutri_score_label",
+        "nova_classification",
+    ),
 }
 
 
@@ -238,6 +256,113 @@ class TestBatchContent:
             path = tmp_output / f"PIPELINE__test-cat__03_batch_{i:03d}_add_nutrition.sql"
             content = path.read_text()
             assert "on conflict (product_id)" in content.lower()
+
+
+# ---------------------------------------------------------------------------
+# Truthful source/freshness/provenance generation
+# ---------------------------------------------------------------------------
+
+
+class TestProvenanceGeneration:
+    def test_explicit_fetch_metadata_is_persisted_with_canonical_fields(self) -> None:
+        product = dict(_PRODUCT_TEMPLATE)
+        product["_off_fields_present"] = (
+            "brand",
+            "calories_100g",
+            "allergens",
+            "ingredients_text",
+            "store_availability",
+            "future_unknown_field",
+        )
+
+        sql = _gen_05_source_provenance("TestCat", [product], "2026-09-04")
+
+        assert "last_fetched_at = d.fetched_at" in sql
+        assert "off_revision = d.off_revision" in sql
+        assert "2026-09-04T12:34:56Z" in sql
+        assert "42" in sql
+        assert "ARRAY['brand', 'calories_100g']::text[]" in sql
+        assert "future_unknown_field" not in sql
+
+    def test_missing_fetch_receipt_does_not_create_source_claim(self) -> None:
+        product = dict(_PRODUCT_TEMPLATE)
+        product.pop("_fetched_at")
+
+        sql = _gen_05_source_provenance("TestCat", [product], "2026-09-04")
+
+        assert "No explicit successful-fetch metadata was supplied" in sql
+        assert "source_type = 'off_api'" not in sql
+        assert "last_fetched_at =" not in sql
+
+    @pytest.mark.parametrize(
+        "timestamp",
+        ["not-a-timestamp", "2026-09-04T12:34:56", "2026-09-04T14:34:56+02:00"],
+    )
+    def test_invalid_or_non_utc_fetch_timestamp_fails_closed(self, timestamp: str) -> None:
+        product = dict(_PRODUCT_TEMPLATE, _fetched_at=timestamp)
+
+        with pytest.raises(ValueError, match="_fetched_at"):
+            _gen_05_source_provenance("TestCat", [product], "2026-09-04")
+
+    @pytest.mark.parametrize("revision", [0, -1, True, "42"])
+    def test_invalid_off_revision_fails_closed(self, revision: object) -> None:
+        product = dict(_PRODUCT_TEMPLATE, _off_revision=revision)
+
+        with pytest.raises(ValueError, match="_off_revision"):
+            _gen_05_source_provenance("TestCat", [product], "2026-09-04")
+
+    def test_absent_nova_remains_null_instead_of_becoming_group_four(self) -> None:
+        product = dict(_PRODUCT_TEMPLATE, nova_classification=None)
+
+        sql = _gen_04_scoring("TestCat", [product], "2026-09-04")
+
+        assert "'Product', null)" in sql
+        assert "'Product', '4')" not in sql
+
+    def test_optional_nutrition_absence_emits_sql_null(self) -> None:
+        product = dict(_PRODUCT_TEMPLATE, saturated_fat_g=None, trans_fat_g=None)
+
+        sql = _gen_03_add_nutrition("TestCat", [product])
+
+        assert "100, 5.0, null::numeric, null::numeric, 15.0" in sql
+
+    def test_derived_provenance_is_separate_from_off_fields(self) -> None:
+        product = dict(_PRODUCT_TEMPLATE)
+        product["_off_fields_present"] = (
+            *product["_off_fields_present"],
+            "prep_method",
+            "controversies",
+        )
+
+        sql = _gen_05_source_provenance("TestCat", [product], "2026-09-04")
+
+        assert "'derived_calculation'" in sql
+        assert "('prep_method', CASE WHEN 'prep_method' = ANY(d.derived_fields)" in sql
+        assert "('controversies', CASE WHEN 'controversies' = ANY(d.derived_fields)" in sql
+        assert "('score_model_version', to_jsonb(p.score_model_version))" in sql
+        assert "('unhealthiness_score', to_jsonb(p.unhealthiness_score))" not in sql
+        assert "('confidence', to_jsonb(p.confidence))" not in sql
+
+    def test_source_priority_conflicts_abort_before_provenance_replacement(self) -> None:
+        sql = _gen_05_source_provenance(
+            "TestCat", [dict(_PRODUCT_TEMPLATE)], "2026-09-04"
+        )
+
+        assert "Pipeline refresh requires source reconciliation" in sql
+        assert "p.source_type NOT IN ('off_api', 'off_search')" in sql
+        assert "pf.source_type NOT IN ('off_api', 'derived_calculation')" in sql
+        assert sql.count(
+            "WHERE product_field_provenance.source_type = excluded.source_type"
+        ) == 2
+
+    def test_confidence_view_refreshes_after_source_metadata(self) -> None:
+        sql = _gen_05_source_provenance(
+            "TestCat", [dict(_PRODUCT_TEMPLATE)], "2026-09-04"
+        )
+
+        assert sql.rstrip().endswith(
+            "REFRESH MATERIALIZED VIEW CONCURRENTLY v_product_confidence;"
+        )
 
     def test_batch_header_comment(self, tmp_output: Path) -> None:
         products = _make_products(150)
