@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "2ea87ca3121cf3583c0eae7186721dd2635e848d",
+    "baseSha": "e7d86486a924a47e8ab286b77cc45065c759f3e8",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "80d1d8f819500791be3590c4cbe7f8df9bb711ae89d147678bb841966f35e587"
+    "sourceFingerprint": "c1f2fb5ff4605e86ab30b1d54f54e426f224540c07f629dbb1078649b0040b4b"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -12,10 +12,10 @@
     "frontend/src/design-system"
   ],
   "moduleCounts": {
-    "total": 458,
+    "total": 461,
     "route-module": 95,
     "app-support-module": 88,
-    "shared-component-module": 205,
+    "shared-component-module": 208,
     "design-system-module": 70
   },
   "modules": [
@@ -397,12 +397,9 @@
         "frontend/src/components/common/ErrorBoundary.tsx",
         "frontend/src/components/common/PullToRefresh.tsx",
         "frontend/src/components/dashboard/CategoriesBrowse.tsx",
-        "frontend/src/components/dashboard/DashboardGreeting.tsx",
-        "frontend/src/components/dashboard/HealthInsightsPanel.tsx",
-        "frontend/src/components/dashboard/HealthSummary.tsx",
-        "frontend/src/components/dashboard/NutritionTip.tsx",
-        "frontend/src/components/dashboard/QuickActions.tsx",
-        "frontend/src/components/dashboard/QuickWinCard.tsx",
+        "frontend/src/components/dashboard/DashboardAllergenNotice.tsx",
+        "frontend/src/components/dashboard/DashboardCollections.tsx",
+        "frontend/src/components/dashboard/DashboardWorkspace.tsx",
         "frontend/src/components/dashboard/RecentlyViewed.tsx",
         "frontend/src/lib/types.ts"
       ],
@@ -1145,11 +1142,12 @@
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
         "frontend/src/app/app/ReturningDashboard.tsx",
-        "frontend/src/components/common/EmptyState.tsx",
         "frontend/src/components/common/skeletons/DashboardSkeleton.tsx",
+        "frontend/src/components/dashboard/DashboardWorkspace.tsx",
         "frontend/src/components/dashboard/NewUserWelcome.tsx",
         "frontend/src/hooks/use-analytics.ts",
         "frontend/src/lib/api.ts",
+        "frontend/src/lib/i18n.ts",
         "frontend/src/lib/query-keys.ts",
         "frontend/src/lib/supabase/client.ts"
       ],
@@ -7027,6 +7025,7 @@
         "frontend/src/app/onboarding/steps/GoalsCategoriesStep.tsx",
         "frontend/src/components/common/ProductThumbnail.tsx",
         "frontend/src/components/dashboard/CategoriesBrowse.tsx",
+        "frontend/src/components/dashboard/RecentlyViewed.tsx",
         "frontend/src/components/product/CategoryPlaceholder.tsx",
         "frontend/src/components/search/FilterPanel.tsx",
         "frontend/src/components/search/SearchAutocomplete.tsx"
@@ -7367,7 +7366,6 @@
         "frontend/src/app/app/compare/saved/page.tsx",
         "frontend/src/app/app/lists/[id]/page.tsx",
         "frontend/src/app/app/lists/page.tsx",
-        "frontend/src/app/app/page.tsx",
         "frontend/src/app/app/product/[id]/page.tsx",
         "frontend/src/app/app/scan/history/page.tsx",
         "frontend/src/app/app/search/page.tsx",
@@ -7415,11 +7413,6 @@
           "modulePath": "frontend/src/app/app/lists/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/lists"
-        },
-        {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
         },
         {
           "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
@@ -8017,11 +8010,6 @@
           "routePath": "/app/lists/[id]"
         },
         {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
-        },
-        {
           "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/product/[id]"
@@ -8430,8 +8418,7 @@
         "frontend/src/app/app/search/page.tsx",
         "frontend/src/app/app/watchlist/page.tsx",
         "frontend/src/components/alternatives/AlternativeProductCard.tsx",
-        "frontend/src/components/common/index.ts",
-        "frontend/src/components/dashboard/RecentlyViewed.tsx"
+        "frontend/src/components/common/index.ts"
       ],
       "transitiveRouteConsumers": [
         {
@@ -8443,11 +8430,6 @@
           "modulePath": "frontend/src/app/app/lists/[id]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/lists/[id]"
-        },
-        {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
         },
         {
           "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
@@ -10108,10 +10090,11 @@
       "classification": "shared-component-module",
       "routeModuleKind": null,
       "routePath": null,
-      "hasUseClientDirective": false,
-      "runtimeBoundary": "client-reachable",
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/common/Skeleton.tsx"
+        "frontend/src/components/common/Skeleton.tsx",
+        "frontend/src/lib/i18n.ts"
       ],
       "directConsumers": [
         "frontend/src/app/app/page.tsx",
@@ -10241,17 +10224,7 @@
       "migrationGate": "phase-5a1b-entry-and-facade-verification",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 4
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/common/skeletons/IngredientDetailSkeleton.tsx",
@@ -12339,15 +12312,9 @@
       "directConsumers": [
         "frontend/src/components/dashboard/HealthInsightsPanel.tsx"
       ],
-      "transitiveRouteConsumers": [
-        {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
-        }
-      ],
+      "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
-        "5D"
+        "5F"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -12368,8 +12335,7 @@
         "frontend/src/lib/api.ts",
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/query-keys.ts",
-        "frontend/src/lib/supabase/client.ts",
-        "frontend/src/lib/types.ts"
+        "frontend/src/lib/supabase/client.ts"
       ],
       "directConsumers": [
         "frontend/src/app/app/ReturningDashboard.tsx"
@@ -12404,15 +12370,9 @@
       "directConsumers": [
         "frontend/src/components/dashboard/HealthInsightsPanel.tsx"
       ],
-      "transitiveRouteConsumers": [
-        {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
-        }
-      ],
+      "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
-        "5D"
+        "5F"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -12431,6 +12391,70 @@
       ]
     },
     {
+      "path": "frontend/src/components/dashboard/DashboardAllergenNotice.tsx",
+      "classification": "shared-component-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/lib/api.ts",
+        "frontend/src/lib/constants.ts",
+        "frontend/src/lib/i18n.ts",
+        "frontend/src/lib/query-keys.ts",
+        "frontend/src/lib/supabase/client.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/app/ReturningDashboard.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/app/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5D"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/components/dashboard/DashboardCollections.tsx",
+      "classification": "shared-component-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/components/dashboard/RecentlyViewed.tsx",
+        "frontend/src/lib/i18n.ts",
+        "frontend/src/lib/types.ts"
+      ],
+      "directConsumers": [
+        "frontend/src/app/app/ReturningDashboard.tsx"
+      ],
+      "transitiveRouteConsumers": [
+        {
+          "modulePath": "frontend/src/app/app/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app"
+        }
+      ],
+      "targetRedesignPhases": [
+        "5D"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
       "path": "frontend/src/components/dashboard/DashboardGreeting.tsx",
       "classification": "shared-component-module",
       "routeModuleKind": null,
@@ -12440,8 +12464,31 @@
       "directModuleImports": [
         "frontend/src/lib/i18n.ts"
       ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [],
+      "targetRedesignPhases": [
+        "5F"
+      ],
+      "disposition": "migrate-to-v2",
+      "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
+      "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
+      "designSystemStatus": "v1",
+      "classifiedLegacyDebt": []
+    },
+    {
+      "path": "frontend/src/components/dashboard/DashboardWorkspace.tsx",
+      "classification": "shared-component-module",
+      "routeModuleKind": null,
+      "routePath": null,
+      "hasUseClientDirective": true,
+      "runtimeBoundary": "client-entry",
+      "directModuleImports": [
+        "frontend/src/lib/i18n.ts"
+      ],
       "directConsumers": [
-        "frontend/src/app/app/ReturningDashboard.tsx"
+        "frontend/src/app/app/ReturningDashboard.tsx",
+        "frontend/src/app/app/page.tsx",
+        "frontend/src/components/dashboard/NewUserWelcome.tsx"
       ],
       "transitiveRouteConsumers": [
         {
@@ -12478,18 +12525,10 @@
         "frontend/src/lib/query-keys.ts",
         "frontend/src/lib/supabase/client.ts"
       ],
-      "directConsumers": [
-        "frontend/src/app/app/ReturningDashboard.tsx"
-      ],
-      "transitiveRouteConsumers": [
-        {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
-        }
-      ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
-        "5D"
+        "5F"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -12522,15 +12561,9 @@
       "directConsumers": [
         "frontend/src/components/dashboard/HealthInsightsPanel.tsx"
       ],
-      "transitiveRouteConsumers": [
-        {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
-        }
-      ],
+      "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
-        "5D"
+        "5F"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -12551,18 +12584,10 @@
         "frontend/src/lib/score-utils.ts",
         "frontend/src/lib/types.ts"
       ],
-      "directConsumers": [
-        "frontend/src/app/app/ReturningDashboard.tsx"
-      ],
-      "transitiveRouteConsumers": [
-        {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
-        }
-      ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
-        "5D"
+        "5F"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -12597,7 +12622,7 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/lib/i18n.ts"
+        "frontend/src/components/dashboard/DashboardWorkspace.tsx"
       ],
       "directConsumers": [
         "frontend/src/app/app/page.tsx"
@@ -12632,15 +12657,9 @@
       "directConsumers": [
         "frontend/src/components/dashboard/HealthInsightsPanel.tsx"
       ],
-      "transitiveRouteConsumers": [
-        {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
-        }
-      ],
+      "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
-        "5D"
+        "5F"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -12659,18 +12678,10 @@
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/qa-mode.ts"
       ],
-      "directConsumers": [
-        "frontend/src/app/app/ReturningDashboard.tsx"
-      ],
-      "transitiveRouteConsumers": [
-        {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
-        }
-      ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
-        "5D"
+        "5F"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -12689,18 +12700,10 @@
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/types.ts"
       ],
-      "directConsumers": [
-        "frontend/src/app/app/ReturningDashboard.tsx"
-      ],
-      "transitiveRouteConsumers": [
-        {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
-        }
-      ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
-        "5D"
+        "5F"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -12732,18 +12735,10 @@
         "frontend/src/lib/score-utils.ts",
         "frontend/src/lib/types.ts"
       ],
-      "directConsumers": [
-        "frontend/src/app/app/ReturningDashboard.tsx"
-      ],
-      "transitiveRouteConsumers": [
-        {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
-        }
-      ],
+      "directConsumers": [],
+      "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
-        "5D"
+        "5F"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -12775,15 +12770,9 @@
       "directConsumers": [
         "frontend/src/components/dashboard/HealthInsightsPanel.tsx"
       ],
-      "transitiveRouteConsumers": [
-        {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
-        }
-      ],
+      "transitiveRouteConsumers": [],
       "targetRedesignPhases": [
-        "5D"
+        "5F"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -12809,13 +12798,14 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
-        "frontend/src/components/common/NutriScoreBadge.tsx",
+        "frontend/src/components/common/CategoryIcon.tsx",
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/score-utils.ts",
         "frontend/src/lib/types.ts"
       ],
       "directConsumers": [
-        "frontend/src/app/app/ReturningDashboard.tsx"
+        "frontend/src/app/app/ReturningDashboard.tsx",
+        "frontend/src/components/dashboard/DashboardCollections.tsx"
       ],
       "transitiveRouteConsumers": [
         {
@@ -12831,17 +12821,7 @@
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
       "removalGate": "replacement-or-route-removal-approved-and-zero-transitive-route-consumers",
       "designSystemStatus": "v1",
-      "classifiedLegacyDebt": [
-        {
-          "category": "legacy-card",
-          "occurrences": [
-            {
-              "value": ".card",
-              "count": 1
-            }
-          ]
-        }
-      ]
+      "classifiedLegacyDebt": []
     },
     {
       "path": "frontend/src/components/dashboard/ScoreSparkline.tsx",
@@ -16534,19 +16514,13 @@
       ],
       "transitiveRouteConsumers": [
         {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
-        },
-        {
           "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/product/[id]"
         }
       ],
       "targetRedesignPhases": [
-        "5C.2",
-        "5D"
+        "5C.2"
       ],
       "disposition": "migrate-to-v2",
       "migrationGate": "approved-5a2-golden-reference-and-authorized-phase-entry",
@@ -18606,11 +18580,6 @@
           "routePath": "/app/lists"
         },
         {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
-        },
-        {
           "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/product/[id]"
@@ -18716,11 +18685,6 @@
           "modulePath": "frontend/src/app/app/lists/[id]/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/lists/[id]"
-        },
-        {
-          "modulePath": "frontend/src/app/app/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/app"
         },
         {
           "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
@@ -20606,11 +20570,6 @@
           "count": 2
         },
         {
-          "path": "frontend/src/components/common/skeletons/DashboardSkeleton.tsx",
-          "value": ".card",
-          "count": 4
-        },
-        {
           "path": "frontend/src/components/common/skeletons/IngredientDetailSkeleton.tsx",
           "value": ".card",
           "count": 2
@@ -20692,11 +20651,6 @@
         },
         {
           "path": "frontend/src/components/dashboard/RecentComparisons.tsx",
-          "value": ".card",
-          "count": 1
-        },
-        {
-          "path": "frontend/src/components/dashboard/RecentlyViewed.tsx",
           "value": ".card",
           "count": 1
         },
@@ -21258,9 +21212,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 570,
+    "inspectedModuleCount": 573,
     "violations": [],
-    "sourceFingerprint": "4a9f53825c686fe3a48f9e6337b43bbb2e4e686e4296d903031cfb8ab3c87aa6"
+    "sourceFingerprint": "5af9a0809647b9ce8f48f91bd0efe95ad89ad2755dfdf5b7cec180589e798b92"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
@@ -21657,7 +21611,6 @@
           "frontend/src/app/app/compare/saved/page.tsx",
           "frontend/src/app/app/lists/[id]/page.tsx",
           "frontend/src/app/app/lists/page.tsx",
-          "frontend/src/app/app/page.tsx",
           "frontend/src/app/app/product/[id]/page.tsx",
           "frontend/src/app/app/scan/history/page.tsx",
           "frontend/src/app/app/search/page.tsx",
@@ -21704,11 +21657,6 @@
             "modulePath": "frontend/src/app/app/lists/page.tsx",
             "routeModuleKind": "page",
             "routePath": "/app/lists"
-          },
-          {
-            "modulePath": "frontend/src/app/app/page.tsx",
-            "routeModuleKind": "page",
-            "routePath": "/app"
           },
           {
             "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
@@ -21787,11 +21735,6 @@
             "modulePath": "frontend/src/app/app/lists/[id]/page.tsx",
             "routeModuleKind": "page",
             "routePath": "/app/lists/[id]"
-          },
-          {
-            "modulePath": "frontend/src/app/app/page.tsx",
-            "routeModuleKind": "page",
-            "routePath": "/app"
           },
           {
             "modulePath": "frontend/src/app/app/product/[id]/page.tsx",
@@ -21894,6 +21837,6 @@
         ]
       }
     ],
-    "sourceFingerprint": "996ea28fd3ffce7805e3100b17ea45d66a9f5f7ebfa30407b89cae35628fcfe2"
+    "sourceFingerprint": "51097d81182b28529a7c6ac2bb2813d5da5969840e3b876ca22e71caaab9a1ef"
   }
 }

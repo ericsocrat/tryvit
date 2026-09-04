@@ -71,4 +71,3 @@
   .recent a, .collections a { color: LinkText; }
   .recent a:focus-visible, .collections a:focus-visible { outline-color: Highlight; }
 }
-
