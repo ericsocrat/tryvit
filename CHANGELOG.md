@@ -63,6 +63,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### CI
 
+- Isolate the PR Gate's duplicate warn-only npm audit in a bounded non-required job so
+  registry latency cannot cancel the required TypeScript and ESLint context; retain the
+  dedicated dependency-audit workflow as the blocking HIGH+ dependency-change gate.
 - Keep renderer source-equivalence mutation fixtures distinct from the moving
   authoritative runner baseline, allow a bounded heterogeneous-host wrapper
   budget, and verify Batch 3 public Polish/German routes in locale-specific

@@ -74,6 +74,7 @@ function workflowEventSection(workflow: string, eventName: string): string {
 const workflowSources = {
   bundleSize: readWorkflow("bundle-size.yml"),
   codeql: readWorkflow("codeql.yml"),
+  dependencyAudit: readWorkflow("dependency-audit.yml"),
   phase5Visual: readWorkflow("phase5a0d-visual-baselines.yml"),
   prScreenshots: readWorkflow("pr-screenshots.yml"),
   prGate: readWorkflow("pr-gate.yml"),
@@ -99,6 +100,12 @@ const phase5VisualJobs = {
   generate: jobSection(workflowSources.phase5Visual, "generate-candidates"),
 };
 const prGateUnitJob = jobSection(workflowSources.prGate, "unit-tests");
+const prGateStaticJob = jobSection(workflowSources.prGate, "static-checks");
+const prGateDependencyAdvisoryJob = jobSection(
+  workflowSources.prGate,
+  "dependency-audit-advisory",
+);
+const dependencyAuditNpmJob = jobSection(workflowSources.dependencyAudit, "npm-audit");
 const mainGateUnitJob = jobSection(workflowSources.mainGate, "unit-tests");
 
 const hostedSupabasePatterns: RegExp[] = [
@@ -135,6 +142,33 @@ describe("browser workflow visual-safety contract", () => {
       ),
     ).not.toThrow();
   }, 60_000);
+
+  it("keeps the required static context focused on type-check and lint", () => {
+    expect(prGateStaticJob).toMatch(/^    name: Typecheck & Lint$/mu);
+    expect(prGateStaticJob).toMatch(/^    timeout-minutes: 5$/mu);
+    expect(prGateStaticJob).toContain("npm run type-check");
+    expect(prGateStaticJob).toContain("npm run lint");
+    expect(prGateStaticJob).not.toContain("npm audit");
+  });
+
+  it("isolates advisory npm audit without weakening the dedicated dependency gate", () => {
+    expect(prGateDependencyAdvisoryJob).toMatch(
+      /^    name: Dependency Audit Advisory$/mu,
+    );
+    expect(prGateDependencyAdvisoryJob).toMatch(/^    continue-on-error: true$/mu);
+    expect(prGateDependencyAdvisoryJob).toMatch(
+      /run: npm audit --package-lock-only --omit=dev --audit-level=high\s+timeout-minutes: 2\s+continue-on-error: true/mu,
+    );
+    expect(prGateDependencyAdvisoryJob).not.toContain("npm ci");
+    expect(dependencyAuditNpmJob).toContain(
+      "npm audit --omit=dev --audit-level=high",
+    );
+    expect(dependencyAuditNpmJob).not.toContain("continue-on-error: true");
+    expect(workflowSources.dependencyAudit).toMatch(
+      /pull_request:[\s\S]*frontend\/package-lock\.json[\s\S]*frontend\/package\.json/mu,
+    );
+    expect(workflowSources.dependencyAudit).toContain('cron: "0 7 * * 1"');
+  });
 
   it("keeps unit-test enforcement inside a larger job-level cleanup budget", () => {
     expect(prGateUnitJob).toMatch(/^    timeout-minutes: 8$/mu);
