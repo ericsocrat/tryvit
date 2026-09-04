@@ -75,12 +75,40 @@ const noWarnings: HealthWarningsResponse = {
   product_id: 42,
   warning_count: 0,
   warnings: [],
+  evaluation_disposition: "evaluated",
+  evidence_completeness: {
+    status: "complete",
+    required_count: 2,
+    evaluated_count: 2,
+    required: ["diabetes.high_sugar_flag", "diabetes.sugars_g"],
+    evaluated: ["diabetes.high_sugar_flag", "diabetes.sugars_g"],
+    missing: [],
+  },
 };
 
 const twoWarnings: HealthWarningsResponse = {
   api_version: "1.0",
   product_id: 42,
   warning_count: 2,
+  evaluation_disposition: "evaluated",
+  evidence_completeness: {
+    status: "complete",
+    required_count: 4,
+    evaluated_count: 4,
+    required: [
+      "diabetes.high_sugar_flag",
+      "diabetes.sugars_g",
+      "hypertension.high_salt_flag",
+      "hypertension.salt_g",
+    ],
+    evaluated: [
+      "diabetes.high_sugar_flag",
+      "diabetes.sugars_g",
+      "hypertension.high_salt_flag",
+      "hypertension.salt_g",
+    ],
+    missing: [],
+  },
   warnings: [
     {
       condition: "diabetes",
@@ -99,6 +127,15 @@ const criticalWarning: HealthWarningsResponse = {
   api_version: "1.0",
   product_id: 42,
   warning_count: 1,
+  evaluation_disposition: "evaluated",
+  evidence_completeness: {
+    status: "complete",
+    required_count: 1,
+    evaluated_count: 1,
+    required: ["celiac_disease.gluten_assessment"],
+    evaluated: ["celiac_disease.gluten_assessment"],
+    missing: [],
+  },
   warnings: [
     {
       condition: "celiac_disease",
@@ -106,6 +143,54 @@ const criticalWarning: HealthWarningsResponse = {
       message: "Contains gluten — unsafe for celiac disease",
     },
   ],
+};
+
+const withheldWarnings: HealthWarningsResponse = {
+  api_version: "1.0",
+  product_id: 42,
+  warning_count: 0,
+  warnings: [],
+  evaluation_disposition: "withheld",
+  evidence_completeness: {
+    status: "incomplete",
+    required_count: 2,
+    evaluated_count: 1,
+    required: ["diabetes.high_sugar_flag", "diabetes.sugars_g"],
+    evaluated: ["diabetes.high_sugar_flag"],
+    missing: ["diabetes.sugars_g"],
+  },
+};
+
+const partialWarnings: HealthWarningsResponse = {
+  ...criticalWarning,
+  evaluation_disposition: "partial",
+  evidence_completeness: {
+    status: "incomplete",
+    required_count: 2,
+    evaluated_count: 1,
+    required: [
+      "celiac_disease.gluten_assessment",
+      "heart_disease.saturated_fat_g",
+    ],
+    evaluated: ["celiac_disease.gluten_assessment"],
+    missing: ["heart_disease.saturated_fat_g"],
+  },
+};
+
+const noApplicableChecks: HealthWarningsResponse = {
+  api_version: "1.0",
+  product_id: 42,
+  warning_count: 0,
+  warnings: [],
+  evaluation_disposition: "not_applicable",
+  evidence_completeness: {
+    status: "not_applicable",
+    required_count: 0,
+    evaluated_count: 0,
+    required: [],
+    evaluated: [],
+    missing: [],
+  },
 };
 
 // ─── HealthWarningsCard Tests ───────────────────────────────────────────────
@@ -198,6 +283,57 @@ describe("HealthWarningsCard", () => {
     expect(screen.getByText(/My Health/)).toBeInTheDocument();
   });
 
+  it("withholds the all-clear when condition evidence is incomplete", async () => {
+    mockGetActiveHealthProfile.mockResolvedValue(ok(activeProfile));
+    mockGetProductHealthWarnings.mockResolvedValue(ok(withheldWarnings));
+
+    render(<HealthWarningsCard productId={42} />, {
+      wrapper: createWrapper(),
+    });
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Health warning check incomplete",
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "TryVit cannot give this product an all-clear.",
+    );
+    expect(screen.queryByText("Within your limits")).not.toBeInTheDocument();
+  });
+
+  it("keeps known warnings visible while disclosing a partial evaluation", async () => {
+    mockGetActiveHealthProfile.mockResolvedValue(ok(activeProfile));
+    mockGetProductHealthWarnings.mockResolvedValue(ok(partialWarnings));
+
+    render(<HealthWarningsCard productId={42} />, {
+      wrapper: createWrapper(),
+    });
+
+    expect(
+      await screen.findByText("Contains gluten — unsafe for celiac disease"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Other checks required by your profile could not be completed.",
+    );
+    expect(screen.queryByText("Within your limits")).not.toBeInTheDocument();
+  });
+
+  it("renders a neutral state when the profile has no applicable checks", async () => {
+    mockGetActiveHealthProfile.mockResolvedValue(ok(activeProfile));
+    mockGetProductHealthWarnings.mockResolvedValue(ok(noApplicableChecks));
+
+    render(<HealthWarningsCard productId={42} />, {
+      wrapper: createWrapper(),
+    });
+
+    expect(
+      await screen.findByText("No health checks configured"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Review health profile" }),
+    ).toHaveAttribute("href", "/app/settings");
+    expect(screen.queryByText("Within your limits")).not.toBeInTheDocument();
+  });
+
   it("renders warnings sorted by severity", async () => {
     mockGetActiveHealthProfile.mockResolvedValue(ok(activeProfile));
     mockGetProductHealthWarnings.mockResolvedValue(ok(twoWarnings));
@@ -282,6 +418,31 @@ describe("HealthWarningBadge", () => {
       expect(container.querySelector("svg")).toBeTruthy();
     });
     expect(screen.getByTitle("No health warnings")).toBeInTheDocument();
+  });
+
+  it("renders an incomplete badge instead of a green check when all-clear is withheld", async () => {
+    mockGetActiveHealthProfile.mockResolvedValue(ok(activeProfile));
+    mockGetProductHealthWarnings.mockResolvedValue(ok(withheldWarnings));
+
+    render(<HealthWarningBadge productId={42} />, {
+      wrapper: createWrapper(),
+    });
+
+    const badge = await screen.findByTestId("health-warnings-incomplete-badge");
+    expect(badge).toHaveAccessibleName("Health warning check incomplete");
+    expect(screen.queryByTitle("No health warnings")).not.toBeInTheDocument();
+  });
+
+  it("renders no badge when the profile has no applicable checks", async () => {
+    mockGetActiveHealthProfile.mockResolvedValue(ok(activeProfile));
+    mockGetProductHealthWarnings.mockResolvedValue(ok(noApplicableChecks));
+
+    const { container } = render(<HealthWarningBadge productId={42} />, {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(mockGetProductHealthWarnings).toHaveBeenCalled());
+    expect(container.firstChild).toBeNull();
   });
 
   it("renders an unavailable badge instead of a green check on failure", async () => {

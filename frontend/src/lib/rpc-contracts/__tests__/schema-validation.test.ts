@@ -261,6 +261,34 @@ describe("Schema validation: valid data accepted", () => {
       product_id: 1,
       warning_count: 1,
       warnings: [{ condition: "diabetes", severity: "high", message: "High sugar" }],
+      evaluation_disposition: "evaluated",
+      evidence_completeness: {
+        status: "complete",
+        required_count: 1,
+        evaluated_count: 1,
+        required: ["diabetes.sugars_g"],
+        evaluated: ["diabetes.sugars_g"],
+        missing: [],
+      },
+    };
+    expect(HealthWarningsContract.safeParse(data).success).toBe(true);
+  });
+
+  it("HealthWarningsContract accepts an explicit withheld all-clear", () => {
+    const data = {
+      api_version: "1.0",
+      product_id: 1,
+      warning_count: 0,
+      warnings: [],
+      evaluation_disposition: "withheld",
+      evidence_completeness: {
+        status: "incomplete",
+        required_count: 1,
+        evaluated_count: 0,
+        required: ["celiac_disease.gluten_assessment"],
+        evaluated: [],
+        missing: ["celiac_disease.gluten_assessment"],
+      },
     };
     expect(HealthWarningsContract.safeParse(data).success).toBe(true);
   });

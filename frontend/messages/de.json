@@ -812,7 +812,13 @@
     "noWarnings": "Keine Gesundheitswarnungen",
     "loading": "Personalisierte Gesundheitswarnungen werden geprüft…",
     "unavailableTitle": "Nachweise für Gesundheitswarnungen nicht verfügbar",
-    "unavailableDescription": "TryVit konnte dieses Produkt nicht mit Ihrem Gesundheitsprofil abgleichen. Das bedeutet nicht, dass es innerhalb Ihrer Grenzwerte liegt."
+    "unavailableDescription": "TryVit konnte dieses Produkt nicht mit Ihrem Gesundheitsprofil abgleichen. Das bedeutet nicht, dass es innerhalb Ihrer Grenzwerte liegt.",
+    "incompleteTitle": "Prüfung der Gesundheitswarnungen unvollständig",
+    "incompleteDescription": "Für Ihr Gesundheitsprofil erforderliche Nachweise fehlen. TryVit kann für dieses Produkt keine Entwarnung geben.",
+    "partialDescription": "Diese Warnungen beruhen auf den verfügbaren Nachweisen. Weitere für Ihr Profil erforderliche Prüfungen konnten nicht abgeschlossen werden.",
+    "notApplicableTitle": "Keine Gesundheitsprüfungen konfiguriert",
+    "notApplicableDescription": "Ihr aktives Profil enthält keine Erkrankungen oder Nährstoffgrenzen, die für dieses Produkt geprüft werden können.",
+    "reviewProfile": "Gesundheitsprofil prüfen"
   },
   "productActions": {
     "removeFromFavorites": "Aus Favoriten entfernen",

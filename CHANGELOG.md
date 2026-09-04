@@ -111,6 +111,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Make personalized health warnings fail closed when condition-relevant evidence is
+  incomplete, match canonical `gluten` allergen tags, and restore active-only,
+  region-preferred deterministic barcode matching with explicit cross-country results.
 - Replace the placeholder contact address with the monitored TryVit issue tracker and
   withhold affirmative score, confidence, and traffic-light guidance whenever required
   product provenance is provisional or unavailable.
