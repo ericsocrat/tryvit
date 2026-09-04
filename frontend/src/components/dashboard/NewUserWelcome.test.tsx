@@ -38,7 +38,7 @@ describe("NewUserWelcome", () => {
   it("renders welcome title and subtitle", () => {
     render(<NewUserWelcome />);
     expect(screen.getByText("Welcome to TryVit")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 1, name: "Get to know what’s in your food." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Start with what you eat." })).toBeInTheDocument();
   });
 
   it("renders scan CTA linking to /app/scan", () => {
@@ -73,7 +73,7 @@ describe("NewUserWelcome", () => {
 
   it("names the welcome section with its main heading", () => {
     render(<NewUserWelcome />);
-    expect(screen.getByRole("region", { name: "Get to know what’s in your food." })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Start with what you eat." })).toBeInTheDocument();
   });
 
   it("has data-testid on container", () => {

@@ -1,15 +1,14 @@
 "use client";
 
-// ─── RecentlyViewed — compact recently viewed product list ──────────────────
-
-import { NutriScoreBadge } from "@/components/common/NutriScoreBadge";
+import { CategoryIcon } from "@/components/common/CategoryIcon";
 import { useTranslation } from "@/lib/i18n";
-import { getScoreBand, toTryVitScore } from "@/lib/score-utils";
+import { toTryVitScore } from "@/lib/score-utils";
 import type { RecentlyViewedProduct } from "@/lib/types";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, History } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useState, type ReactNode } from "react";
+import styles from "./DashboardProducts.module.css";
 
 const MAX_ITEMS = 5;
 
@@ -17,10 +16,7 @@ interface RecentlyViewedProps {
   products: RecentlyViewedProduct[];
 }
 
-/**
- * Compact relative time string ("1m", "2h", "3d", "1w").
- * Intentionally terse for dashboard cards.
- */
+/** Retained for consumers of the compact relative-time helper. */
 export function relativeTimeAgo(isoDate: string): string {
   const now = Date.now();
   const then = new Date(isoDate).getTime();
@@ -36,100 +32,107 @@ export function relativeTimeAgo(isoDate: string): string {
   return `${weeks}w`;
 }
 
-export function RecentlyViewed({ products }: Readonly<RecentlyViewedProps>) {
+type DashboardProduct = Pick<
+  RecentlyViewedProduct,
+  "product_id" | "product_name" | "brand" | "category" | "unhealthiness_score" | "image_thumb_url"
+>;
+
+/** Shared row keeps saved and recently opened products equally inspectable. */
+export function DashboardProductRow({
+  product,
+  detail,
+  testId,
+}: Readonly<{ product: DashboardProduct; detail?: ReactNode; testId: string }>) {
   const { t } = useTranslation();
-
-  const items = useMemo(() => products.slice(0, MAX_ITEMS), [products]);
-
-  if (items.length === 0) return null;
+  const [failedImage, setFailedImage] = useState<string | null>(null);
+  const rawScore = product.unhealthiness_score;
+  const score = rawScore !== null && Number.isFinite(rawScore) && rawScore >= 1 && rawScore <= 100
+    ? toTryVitScore(rawScore)
+    : null;
+  const imageUrl = product.image_thumb_url !== failedImage ? product.image_thumb_url : null;
+  const categorySlug = product.category.trim().toLowerCase().replaceAll(/[^a-z0-9]+/g, "-").replaceAll(/^-|-$/g, "");
 
   return (
-    <section
-      data-testid="recently-viewed-compact"
-      aria-label={t("dashboard.recentlyViewedCompact")}
-    >
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground-secondary">
-          {t("dashboard.recentlyViewedCompact")}
-        </h2>
-        <Link
-          href="/app/search"
-          className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-        >
-          {t("dashboard.viewHistory")}
-          <ArrowRight className="h-3 w-3" aria-hidden="true" />
+    <Link href={`/app/product/${product.product_id}`} prefetch={false} className={styles.productRow} data-testid={testId}>
+      <span className={styles.thumbnail} aria-hidden="true">
+        {imageUrl ? (
+          <Image
+            src={imageUrl}
+            alt=""
+            width={44}
+            height={52}
+            className={styles.productImage}
+            loading="lazy"
+            onError={() => setFailedImage(imageUrl)}
+          />
+        ) : <CategoryIcon slug={categorySlug} size="lg" />}
+      </span>
+      <span className={styles.productCopy}>
+        <span className={styles.productName}>{product.product_name}</span>
+        <span className={styles.productMeta}>
+          {product.brand ? <span>{product.brand}</span> : null}
+          {detail}
+        </span>
+      </span>
+      <span className={styles.productScore}>
+        {score === null ? (
+          <span className={styles.unavailable}>{t("dashboard.home.scoreUnavailable")}</span>
+        ) : (
+          <>
+            <span className="sr-only">{t("dashboard.home.productScore", { score })}</span>
+            <span aria-hidden="true" className={styles.scoreValue}>{score}<span>/100</span></span>
+          </>
+        )}
+      </span>
+      <ArrowRight size={15} aria-hidden="true" className={styles.rowArrow} />
+    </Link>
+  );
+}
+
+export function RecentlyViewed({ products }: Readonly<RecentlyViewedProps>) {
+  const { t, language } = useTranslation();
+  const items = products.slice(0, MAX_ITEMS);
+  const dateFormatter = new Intl.DateTimeFormat(language, { day: "numeric", month: "short", year: "numeric" });
+
+  return (
+    <section className={styles.recent} data-testid="recently-viewed-compact" aria-labelledby="dashboard-recent-title">
+      <div className={styles.sectionHeading}>
+        <div>
+          <h2 id="dashboard-recent-title">{t("dashboard.recentlyViewedCompact")}</h2>
+          <p>{t("dashboard.home.recentIntro")}</p>
+        </div>
+        <Link href="/app/search" prefetch={false} className={styles.textLink}>
+          {t("dashboard.home.searchProducts")}<ArrowRight size={15} aria-hidden="true" />
         </Link>
       </div>
 
-      <div className="space-y-2">
-        {items.map((product, index) => {
-          const tryVit =
-            product.unhealthiness_score != null
-              ? toTryVitScore(product.unhealthiness_score)
-              : null;
-          const band =
-            product.unhealthiness_score != null
-              ? getScoreBand(product.unhealthiness_score)
-              : null;
-          const timeAgo = relativeTimeAgo(product.viewed_at);
-
-          return (
-            <div
-              key={product.product_id}
-              className="animate-slide-in-right"
-              style={{ animationDelay: `${index * 30}ms`, animationFillMode: "both" }}
-            >
-              <Link
-                href={`/app/product/${product.product_id}`}
-                data-testid="recently-viewed-item"
-                className="card hover-lift-press flex items-center gap-3 px-3 py-2.5 transition-shadow hover:shadow-md"
-              >
-                {/* Product thumbnail or score circle fallback */}
-                {product.image_thumb_url ? (
-                  <Image
-                    src={product.image_thumb_url}
-                    alt={product.product_name}
-                    width={36}
-                    height={36}
-                    className="h-9 w-9 shrink-0 rounded-lg object-cover"
-                    loading="lazy"
+      {items.length > 0 ? (
+        <>
+          <p className={styles.scoreCaption}>{t("dashboard.home.productScoreCaption")}</p>
+          <ul className={styles.productList}>
+            {items.map((product) => {
+              const date = new Date(product.viewed_at);
+              const dateLabel = Number.isNaN(date.getTime()) ? null : dateFormatter.format(date);
+              return (
+                <li key={product.product_id}>
+                  <DashboardProductRow
+                    product={product}
+                    testId="recently-viewed-item"
+                    detail={dateLabel ? <time dateTime={product.viewed_at} aria-label={t("dashboard.home.viewedOn", { date: dateLabel })}>{dateLabel}</time> : null}
                   />
-                ) : (
-                  <div
-                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${band?.bgColor ?? "bg-muted"}`}
-                  >
-                    <span
-                      className={`text-xs font-bold tabular-nums ${band?.textColor ?? "text-foreground-secondary"}`}
-                    >
-                      {tryVit ?? "–"}
-                    </span>
-                  </div>
-                )}
-
-                {/* Name + brand */}
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">{product.product_name}</p>
-                  {product.brand && (
-                    <p className="truncate text-xs text-foreground-secondary">
-                      {product.brand}
-                    </p>
-                  )}
-                </div>
-
-                {/* NutriScore badge */}
-                {product.nutri_score_label && (
-                  <NutriScoreBadge grade={product.nutri_score_label} size="sm" />
-                )}
-
-                {/* Relative time pill */}
-                <span className="shrink-0 rounded-full bg-surface-secondary px-2 py-0.5 text-xs tabular-nums text-foreground-secondary">
-                  {timeAgo}
-                </span>
-              </Link>
-            </div>
-          );
-        })}
-      </div>
+                </li>
+              );
+            })}
+          </ul>
+          <p className={styles.evidenceNote}>{t("dashboard.home.productEvidenceNote")}</p>
+        </>
+      ) : (
+        <div className={styles.emptyRecent}>
+          <History size={25} aria-hidden="true" />
+          <h3>{t("dashboard.home.recentEmptyTitle")}</h3>
+          <p>{t("dashboard.home.recentEmptyDescription")}</p>
+        </div>
+      )}
     </section>
   );
 }
