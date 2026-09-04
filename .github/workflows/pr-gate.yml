@@ -4,6 +4,7 @@
 # ═══════════════════════════════════════════════════════════════════════════════
 # Parallel job graph:
 #   static-checks ──────────────────┐
+#   dependency-audit-advisory ──────┤ (non-blocking, bounded network check)
 #   unit-tests ─────────────────────┤ (all run immediately)
 #   build ── e2e-smoke              │
 #
@@ -97,11 +98,6 @@ jobs:
         run: npm run lint
         timeout-minutes: 3
 
-      # ── Dependency audit (informational — dedicated workflow is the gate) ──
-      - name: npm audit (warn only)
-        run: npm audit --omit=dev --audit-level=high 2>&1 || echo "::warning::npm audit found vulnerabilities — see dependency-audit workflow for details"
-        continue-on-error: true
-
       - name: CI runtime summary
         if: ${{ !cancelled() }}
         working-directory: .
@@ -120,6 +116,46 @@ jobs:
           name: ci-timings-static-checks
           path: ci-timings/
           retention-days: 7
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Advisory dependency scan — isolated from required static analysis.
+  # The dedicated dependency-audit workflow remains the blocking HIGH+ gate
+  # for dependency changes and the scheduled scan for newly disclosed CVEs.
+  # ─────────────────────────────────────────────────────────────────────────
+  dependency-audit-advisory:
+    name: Dependency Audit Advisory
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 4
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+
+      - name: Audit production dependencies (advisory)
+        id: audit
+        run: npm audit --package-lock-only --omit=dev --audit-level=high
+        timeout-minutes: 2
+        continue-on-error: true
+
+      - name: Summarize advisory audit
+        if: ${{ always() }}
+        working-directory: .
+        env:
+          AUDIT_OUTCOME: ${{ steps.audit.outcome }}
+        run: |
+          if [ "$AUDIT_OUTCOME" = "success" ]; then
+            echo "✓ Advisory production-dependency audit passed"
+          else
+            echo "::warning::Advisory npm audit did not pass or timed out — the dedicated dependency-audit workflow remains authoritative for dependency changes"
+          fi
 
   # ─────────────────────────────────────────────────────────────────────────
   # Job 2: Unit tests — runs in parallel with build after static-checks
