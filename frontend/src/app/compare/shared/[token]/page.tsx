@@ -2,7 +2,6 @@
 // Server-led and read-only. In demo mode it degrades without touching Supabase.
 
 import { ButtonLink } from "@/components/common/Button";
-import { ComparisonGrid } from "@/components/compare/ComparisonGrid";
 import { PublicUtilityShell } from "@/components/layout/PublicUtilityShell";
 import { translate } from "@/lib/i18n-core";
 import { readPublicSharedComparison } from "@/lib/public-shares";
@@ -52,13 +51,34 @@ export default async function SharedComparisonPage({
         )}
 
         {data && data.products.length >= 2 && (
-          <section>
+          <section aria-labelledby="shared-comparison-evidence">
             <Scale size={20} aria-hidden="true" />
-            <ComparisonGrid
-              products={data.products}
-              showAvoidBadge={false}
-              recommendationAllowed={false}
-            />
+            <h2
+              id="shared-comparison-evidence"
+              className="mt-2 text-base font-semibold text-foreground"
+            >
+              {t("shared.comparisonEvidenceWithheldTitle")}
+            </h2>
+            <p className="mt-1 text-sm text-warning-text" role="status">
+              {t("shared.comparisonEvidenceWithheldDescription")}
+            </p>
+            <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+              {data.products.map((product) => (
+                <li
+                  key={product.product_id}
+                  className="rounded-xl border bg-surface-subtle p-3"
+                >
+                  <p className="font-medium text-foreground">
+                    {product.product_name}
+                  </p>
+                  {product.brand ? (
+                    <p className="text-sm text-foreground-secondary">
+                      {product.brand}
+                    </p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
           </section>
         )}
 

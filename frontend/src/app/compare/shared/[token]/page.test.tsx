@@ -20,30 +20,16 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("@/components/compare/ComparisonGrid", () => ({
-  ComparisonGrid: ({
-    products,
-    recommendationAllowed,
-  }: {
-    products: unknown[];
-    recommendationAllowed: boolean;
-  }) => (
-    <div
-      data-testid="comparison-grid"
-      data-recommendation-allowed={String(recommendationAllowed)}
-    >
-      {products.length} products
-    </div>
-  ),
-}));
-
 const comparison = {
   api_version: "1",
   comparison_id: "cmp-1",
   title: "Chips vs Drinks",
   product_count: 2,
   created_at: "2025-01-15T10:00:00Z",
-  products: [{ product_id: 1 }, { product_id: 2 }],
+  products: [
+    { product_id: 1, product_name: "Product A", brand: "Brand A" },
+    { product_id: 2, product_name: "Product B", brand: "Brand B" },
+  ],
 };
 
 async function renderPage(token = "comp-token-xyz") {
@@ -71,17 +57,18 @@ describe("SharedComparisonPage", () => {
     expect(screen.queryByText(/invalid or has expired/i)).not.toBeInTheDocument();
   });
 
-  it("renders comparison data through a narrow client grid", async () => {
+  it("renders product identities while withholding public scores and rankings", async () => {
     mockReadPublicSharedComparison.mockResolvedValue({ status: "ok", data: comparison });
     await renderPage();
 
     expect(screen.getByText("Chips vs Drinks")).toBeInTheDocument();
     expect(screen.getByText(/2 products compared/)).toBeInTheDocument();
-    expect(screen.getByTestId("comparison-grid")).toHaveTextContent("2 products");
-    expect(screen.getByTestId("comparison-grid")).toHaveAttribute(
-      "data-recommendation-allowed",
-      "false",
+    expect(screen.getByText("Product A")).toBeInTheDocument();
+    expect(screen.getByText("Brand B")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Scores and rankings are withheld because this public link does not include the supporting provenance and freshness evidence.",
     );
+    expect(screen.queryByText("TryVit Score")).not.toBeInTheDocument();
   });
 
   it("uses the localized default title", async () => {

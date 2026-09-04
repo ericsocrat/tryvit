@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -64,23 +64,6 @@ vi.mock("@/components/scan/ScanMissSubmitCTA", () => ({
   ),
 }));
 
-vi.mock("@/lib/score-utils", () => ({
-  toTryVitScore: (u: number) => 100 - u,
-  getScoreBand: (u: number) => {
-    if (u >= 1 && u <= 20)
-      return { band: "green", labelKey: "scoreBand.excellent", bgColor: "#dcfce7", textColor: "#166534" };
-    if (u >= 21 && u <= 40)
-      return { band: "yellow", labelKey: "scoreBand.good", bgColor: "#fef9c3", textColor: "#854d0e" };
-    if (u >= 41 && u <= 60)
-      return { band: "orange", labelKey: "scoreBand.moderate", bgColor: "#fff7ed", textColor: "#9a3412" };
-    if (u >= 61 && u <= 80)
-      return { band: "red", labelKey: "scoreBand.poor", bgColor: "#fef2f2", textColor: "#991b1b" };
-    if (u >= 81 && u <= 100)
-      return { band: "darkred", labelKey: "scoreBand.bad", bgColor: "#fef2f2", textColor: "#7f1d1d" };
-    return null;
-  },
-}));
-
 vi.mock("@/lib/gs1", () => ({
   gs1CountryHint: (ean: string) => {
     if (ean.startsWith("590")) return { code: "PL", name: "Poland" };
@@ -90,13 +73,6 @@ vi.mock("@/lib/gs1", () => ({
 }));
 
 vi.mock("@/lib/constants", () => ({
-  NUTRI_COLORS: {
-    A: "bg-green-600",
-    B: "bg-lime-500",
-    C: "bg-yellow-500",
-    D: "bg-orange-500",
-    E: "bg-red-600",
-  },
   getCountryFlag: (code: string) => {
     const flags: Record<string, string> = { PL: "🇵🇱", DE: "🇩🇪" };
     return flags[code] ?? "🌐";
@@ -368,34 +344,22 @@ describe("ScanFoundView", () => {
     expect(screen.queryByText("TestBrand")).toBeNull();
   });
 
-  it("renders TryVit score badge", async () => {
+  it("withholds the score and band until product evidence is checked", () => {
     render(
       <ScanFoundView product={mockFoundProduct} onViewDetails={onViewDetails} onReset={onReset} />,
     );
-    // toTryVitScore(35) = 65 — score animates via count-up, so wait for it
-    await waitFor(() => expect(screen.getByText("65")).toBeInTheDocument());
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "scan.scoreEvidencePending",
+    );
+    expect(screen.queryByText("65")).not.toBeInTheDocument();
+    expect(screen.queryByText("scoreBand.good")).not.toBeInTheDocument();
   });
 
-  it("renders score band label", () => {
+  it("withholds Nutri-Score until product evidence is checked", () => {
     render(
       <ScanFoundView product={mockFoundProduct} onViewDetails={onViewDetails} onReset={onReset} />,
     );
-    expect(screen.getByText("scoreBand.good")).toBeInTheDocument();
-  });
-
-  it("renders Nutri-Score badge when present", () => {
-    render(
-      <ScanFoundView product={mockFoundProduct} onViewDetails={onViewDetails} onReset={onReset} />,
-    );
-    expect(screen.getByText("C")).toBeInTheDocument();
-    expect(screen.getByText("Nutri-Score")).toBeInTheDocument();
-  });
-
-  it("does not render Nutri-Score when null", () => {
-    const product = { ...mockFoundProduct, nutri_score: null };
-    render(
-      <ScanFoundView product={product} onViewDetails={onViewDetails} onReset={onReset} />,
-    );
+    expect(screen.queryByText("C")).toBeNull();
     expect(screen.queryByText("Nutri-Score")).toBeNull();
   });
 

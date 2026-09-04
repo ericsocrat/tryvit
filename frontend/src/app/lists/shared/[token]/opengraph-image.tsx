@@ -1,34 +1,25 @@
 // ─── Dynamic OpenGraph image for shared list cards ────────────────────────────
-// Generates a 1200×630 PNG showing list name, product count, average score,
-// and top items.  Edge-cached for 1 hour.  Uses Next.js ImageResponse (Satori).
+// Generates a 1200×630 PNG showing list and product identities without
+// publishing scores that lack portable provenance and freshness evidence.
 
 import { ImageResponse } from "next/og";
-import { getScoreHex } from "@/lib/score-utils";
+import { translate } from "@/lib/i18n-core";
 import { fetchPublicSharedList } from "@/lib/public-shares";
+import { getServerLocale } from "@/lib/server-locale";
 
 /* ---------- route configuration ---------- */
 export const runtime = "nodejs";
-export const alt = "Shared product list card";
+export const alt = "Shared product list evidence card";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const revalidate = 3600; // 1 hour edge cache
 
 /* ---------- helpers ---------- */
 
-/** OG-specific score colour (not Tailwind — raw hex for Satori). */
-export const getScoreColor = getScoreHex;
-
 /** Truncate a string to `max` characters with an ellipsis. */
 export function truncate(text: string, max: number): string {
   if (text.length <= max) return text;
   return text.slice(0, max - 1) + "…";
-}
-
-/** Compute average score from an array of items. */
-export function averageScore(items: { unhealthiness_score: number }[]): number {
-  if (items.length === 0) return 0;
-  const sum = items.reduce((acc, it) => acc + it.unhealthiness_score, 0);
-  return Math.round(sum / items.length);
 }
 
 /* ---------- font loader ---------- */
@@ -41,7 +32,7 @@ function getInterBoldFont(): Promise<ArrayBuffer> {
 }
 
 /* ---------- fallback card ---------- */
-function FallbackCard() {
+function FallbackCard({ label }: Readonly<{ label: string }>) {
   return (
     <div
       style={{
@@ -80,7 +71,9 @@ function FallbackCard() {
           TV
         </div>
         <div style={{ fontSize: 32, fontWeight: 700, color: "#111827" }}>TryVit</div>
-        <div style={{ fontSize: 18, color: "#6b7280", marginTop: 8 }}>List not available</div>
+        <div style={{ fontSize: 18, color: "#6b7280", marginTop: 8 }}>
+          {label}
+        </div>
       </div>
     </div>
   );
@@ -90,11 +83,10 @@ function FallbackCard() {
 interface ItemRowProps {
   name: string;
   brand: string;
-  score: number;
-  scoreColor: string;
+  evidenceLabel: string;
 }
 
-function ItemRow({ name, brand, score, scoreColor }: ItemRowProps) {
+function ItemRow({ name, brand, evidenceLabel }: ItemRowProps) {
   return (
     <div
       style={{
@@ -108,20 +100,19 @@ function ItemRow({ name, brand, score, scoreColor }: ItemRowProps) {
     >
       <div
         style={{
-          width: 48,
-          height: 48,
-          borderRadius: "50%",
-          backgroundColor: scoreColor,
+          padding: "7px 10px",
+          borderRadius: 999,
+          backgroundColor: "#e5e7eb",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: "#ffffff",
-          fontSize: 20,
+          color: "#4b5563",
+          fontSize: 12,
           fontWeight: 700,
           flexShrink: 0,
         }}
       >
-        {score}
+        {evidenceLabel}
       </div>
       <div
         style={{
@@ -151,12 +142,17 @@ function ItemRow({ name, brand, score, scoreColor }: ItemRowProps) {
 
 /* ---------- main image handler ---------- */
 export default async function OGImage({ params }: { params: Promise<{ token: string }> }) {
-  const { token } = await params;
-  const fontData = await getInterBoldFont();
+  const [{ token }, language, fontData] = await Promise.all([
+    params,
+    getServerLocale(),
+    getInterBoldFont(),
+  ]);
+  const t = (key: string, values?: Record<string, string | number>) =>
+    translate(language, key, values);
 
   const listData = await fetchPublicSharedList(token);
   if (!listData) {
-    return new ImageResponse(<FallbackCard />, {
+    return new ImageResponse(<FallbackCard label={t("shared.serviceUnavailableTitle")} />, {
       ...size,
       fonts: [
         {
@@ -170,14 +166,14 @@ export default async function OGImage({ params }: { params: Promise<{ token: str
   }
 
   /* ---- extract data ---- */
-  const listName: string = listData?.list_name ?? "Product List";
+  const listName: string = listData?.list_name ?? t("shared.sharedList");
   const description: string | null = listData?.description ?? null;
   const totalCount: number = listData?.total_count ?? 0;
-  const items: { product_name: string; brand: string; unhealthiness_score: number }[] =
+  const items: { product_name: string; brand: string }[] =
     listData?.items ?? [];
 
   if (items.length === 0) {
-    return new ImageResponse(<FallbackCard />, {
+    return new ImageResponse(<FallbackCard label={t("shared.listEmpty")} />, {
       ...size,
       fonts: [
         {
@@ -190,8 +186,6 @@ export default async function OGImage({ params }: { params: Promise<{ token: str
     });
   }
 
-  const avgScore = averageScore(items);
-  const avgColor = getScoreColor(avgScore);
   const displayItems = items.slice(0, 5); // show up to 5 items
   const remaining = totalCount - displayItems.length;
 
@@ -239,7 +233,7 @@ export default async function OGImage({ params }: { params: Promise<{ token: str
               marginBottom: 4,
             }}
           >
-            Shared List
+            {t("shared.sharedList")}
           </div>
           <div
             style={{
@@ -264,33 +258,22 @@ export default async function OGImage({ params }: { params: Promise<{ token: str
           )}
         </div>
 
-        {/* Average score circle */}
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
             alignItems: "center",
-            gap: 6,
+            justifyContent: "center",
+            maxWidth: 220,
+            padding: "10px 14px",
+            borderRadius: 999,
+            backgroundColor: "#e5e7eb",
+            color: "#4b5563",
+            fontSize: 13,
+            fontWeight: 700,
             flexShrink: 0,
           }}
         >
-          <div
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: "50%",
-              backgroundColor: avgColor,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#ffffff",
-              fontSize: 32,
-              fontWeight: 700,
-            }}
-          >
-            {avgScore}
-          </div>
-          <div style={{ fontSize: 12, color: "#9ca3af" }}>avg score</div>
+          {t("shared.evidenceReviewRequired")}
         </div>
       </div>
 
@@ -308,8 +291,7 @@ export default async function OGImage({ params }: { params: Promise<{ token: str
             key={i}
             name={item.product_name}
             brand={item.brand}
-            score={item.unhealthiness_score}
-            scoreColor={getScoreColor(item.unhealthiness_score)}
+            evidenceLabel={t("shared.evidenceReviewRequired")}
           />
         ))}
         {remaining > 0 && (
@@ -321,7 +303,7 @@ export default async function OGImage({ params }: { params: Promise<{ token: str
               padding: "8px 0",
             }}
           >
-            + {remaining} more products
+            {t("shared.moreProducts", { count: remaining })}
           </div>
         )}
       </div>
@@ -345,7 +327,7 @@ export default async function OGImage({ params }: { params: Promise<{ token: str
             fontWeight: 700,
           }}
         >
-          View on TryVit →
+          {t("shared.reviewEvidenceInTryVit")}
         </div>
 
         <div
@@ -357,7 +339,7 @@ export default async function OGImage({ params }: { params: Promise<{ token: str
             color: "#9ca3af",
           }}
         >
-          📋 TryVit — {totalCount} products
+          📋 TryVit — {t("common.products", { count: totalCount })}
         </div>
       </div>
     </div>,

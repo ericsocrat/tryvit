@@ -111,6 +111,11 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Withhold unproven scores from scan-found, sharing, metadata, Open Graph, and
+  structured-data surfaces; replace percentage-health claims with explicit
+  TryVit Score deltas; gate comparison export/public sharing on field evidence;
+  neutralize legacy public list/comparison links; and emit checksum-valid GTIN
+  properties while preserving evidence-gated detailed comparisons.
 - Make personalized health warnings fail closed when condition-relevant evidence is
   incomplete, match canonical `gluten` allergen tags, and restore active-only,
   region-preferred deterministic barcode matching with explicit cross-country results.

@@ -55,19 +55,24 @@ export function isValidEan(code: string): boolean {
 
 /**
  * Compute the GS1 check digit for an EAN-8, UPC-A, or EAN-13 barcode.
- * Pass the full code (including check digit position) or just the payload digits.
+ * Full 8/12/13-digit codes and unambiguous 7/11-digit payloads are accepted.
+ * A 12-digit input is treated as a complete UPC-A code, not an EAN-13 payload.
  * Returns the expected check digit (0–9).
  */
 export function computeEanCheckDigit(digits: string): number {
   const stripped = digits.replace(/\D/g, "");
-  // Use up to 12 (EAN-13) or 7 (EAN-8) payload digits
-  const payload = stripped.length >= 12 ? stripped.slice(0, 12) : stripped.slice(0, 7);
+  const payload =
+    stripped.length === 8 ||
+    stripped.length === 12 ||
+    stripped.length === 13
+      ? stripped.slice(0, -1)
+      : stripped;
   let sum = 0;
-  const isEan13 = payload.length >= 12;
+  const isEan13 = payload.length === 12;
   for (let i = 0; i < payload.length; i++) {
     const digit = Number(payload[i]);
-    // EAN-13/UPC-A: positions 0,2,4… weight 1; positions 1,3,5… weight 3
-    // EAN-8: positions 0,2,4,6 weight 3; positions 1,3,5 weight 1
+    // EAN-13 payload: even zero-based positions use weight 1.
+    // UPC-A and EAN-8 payloads: even zero-based positions use weight 3.
     const weight = isEan13 ? (i % 2 === 0 ? 1 : 3) : (i % 2 === 0 ? 3 : 1);
     sum += digit * weight;
   }

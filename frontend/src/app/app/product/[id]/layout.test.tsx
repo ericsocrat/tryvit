@@ -5,6 +5,9 @@ import ProductLayout, { generateMetadata } from "./layout";
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
 const mockRpc = vi.fn();
+const { mockGetServerLocale } = vi.hoisted(() => ({
+  mockGetServerLocale: vi.fn(async (): Promise<string> => "en"),
+}));
 
 vi.mock("@/lib/supabase/server", () => ({
   createServerSupabaseClient: vi.fn().mockResolvedValue({
@@ -16,6 +19,10 @@ vi.mock("@/lib/query-keys", () => ({
   queryKeys: {
     productProfile: (id: number) => ["product", "profile", id],
   },
+}));
+
+vi.mock("@/lib/server-locale", () => ({
+  getServerLocale: mockGetServerLocale,
 }));
 
 vi.mock("@tanstack/react-query", () => ({
@@ -37,7 +44,7 @@ const FULL_PROFILE = {
     product_name: "Piątnica Skyr Naturalny",
     product_name_display: "Piątnica Skyr",
     brand: "Piątnica",
-    ean: "5900820012345",
+    ean: "5901234123457",
   },
   scores: { unhealthiness_score: 5 },
   nutrition: {
@@ -55,6 +62,7 @@ const FULL_PROFILE = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  mockGetServerLocale.mockResolvedValue("en");
   mockRpc.mockResolvedValue({ data: FULL_PROFILE });
 });
 
@@ -66,17 +74,20 @@ describe("generateMetadata", () => {
     expect(metadata.title).toBe("Piątnica Skyr");
   });
 
-  it("returns description with brand and score", async () => {
+  it("returns neutral evidence-oriented description with brand", async () => {
     const metadata = await generateMetadata(mockParams("42"));
     expect(metadata.description).toContain("Piątnica Skyr");
     expect(metadata.description).toContain("by Piątnica");
-    expect(metadata.description).toContain("Health Score: 5/100");
+    expect(metadata.description).toContain(
+      "nutrition, ingredients, source details, and evidence availability",
+    );
+    expect(JSON.stringify(metadata)).not.toMatch(/health score|5\/100/iu);
   });
 
   it("returns openGraph metadata", async () => {
     const metadata = await generateMetadata(mockParams("42"));
     const og = metadata.openGraph as Record<string, unknown>;
-    expect(og.title).toBe("Piątnica Skyr — Health Score: 5/100");
+    expect(og.title).toBe("Piątnica Skyr");
     expect(og.type).toBe("article");
   });
 
@@ -84,7 +95,7 @@ describe("generateMetadata", () => {
     const metadata = await generateMetadata(mockParams("42"));
     const twitter = metadata.twitter as Record<string, unknown>;
     expect(twitter.card).toBe("summary_large_image");
-    expect(twitter.title).toBe("Piątnica Skyr — Health Score: 5/100");
+    expect(twitter.title).toBe("Piątnica Skyr");
   });
 
   it("falls back to product_name when display name is missing", async () => {
@@ -126,14 +137,14 @@ describe("generateMetadata", () => {
     expect(metadata.title).toBe("Product");
   });
 
-  it("keeps missing score evidence explicit instead of fabricating zero", async () => {
+  it("does not publish a score claim when score evidence is missing", async () => {
     mockRpc.mockResolvedValue({
       data: { product: { product_name: "Test" } },
     });
 
     const metadata = await generateMetadata(mockParams("1"));
-    expect(metadata.description).toContain("Health score evidence unavailable");
-    expect(metadata.description).not.toContain("Health Score: 0/100");
+    expect(metadata.description).toContain("evidence availability");
+    expect(JSON.stringify(metadata)).not.toMatch(/health score|0\/100/iu);
   });
 });
 
@@ -164,13 +175,13 @@ describe("ProductLayout", () => {
     expect(jsonLd["@context"]).toBe("https://schema.org");
     expect(jsonLd["@type"]).toBe("Product");
     expect(jsonLd.name).toBe("Piątnica Skyr");
-    expect(jsonLd.gtin13).toBe("5900820012345");
+    expect(jsonLd.gtin13).toBe("5901234123457");
     expect(jsonLd.image).toBe("https://example.com/skyr.jpg");
     expect(jsonLd.brand).toEqual({ "@type": "Brand", name: "Piątnica" });
     expect(jsonLd.url).toBe("https://tryvit.app/app/product/42");
   });
 
-  it("includes nutrition information in JSON-LD", async () => {
+  it("does not attach unsupported NutritionInformation to Product JSON-LD", async () => {
     const ui = await ProductLayout({
       children: <p>child</p>,
       params: Promise.resolve({ id: "42" }),
@@ -180,11 +191,8 @@ describe("ProductLayout", () => {
     const script = container.querySelector('script[type="application/ld+json"]');
     const jsonLd = JSON.parse(script!.textContent ?? "{}");
 
-    expect(jsonLd.nutrition["@type"]).toBe("NutritionInformation");
-    expect(jsonLd.nutrition.servingSize).toBe("100 g");
-    expect(jsonLd.nutrition.calories).toBe("59 kcal");
-    expect(jsonLd.nutrition.fatContent).toBe("0.2 g");
-    expect(jsonLd.nutrition.proteinContent).toBe("10 g");
+    expect(jsonLd.nutrition).toBeUndefined();
+    expect(script?.textContent).not.toContain("NutritionInformation");
   });
 
   it("omits JSON-LD script when profile is null", async () => {
@@ -222,5 +230,100 @@ describe("ProductLayout", () => {
     expect(jsonLd.brand).toBeUndefined();
     expect(jsonLd.gtin13).toBeUndefined();
     expect(jsonLd.image).toBeUndefined();
+  });
+
+  it("requests and publishes the product name in the selected locale", async () => {
+    mockGetServerLocale.mockResolvedValue("pl");
+    mockRpc.mockResolvedValue({
+      data: {
+        ...FULL_PROFILE,
+        product: {
+          ...FULL_PROFILE.product,
+          product_name_display: "Polski skyr",
+        },
+      },
+    });
+
+    const metadata = await generateMetadata(mockParams("42"));
+
+    expect(mockRpc).toHaveBeenCalledWith("api_get_product_profile", {
+      p_product_id: 42,
+      p_language: "pl",
+    });
+    expect(metadata.title).toBe("Polski skyr");
+    expect(metadata.description).toContain("wartości odżywcze");
+  });
+
+  it("uses the correct Schema.org GTIN property for an EAN-8", async () => {
+    mockRpc.mockResolvedValue({
+      data: {
+        ...FULL_PROFILE,
+        product: {
+          ...FULL_PROFILE.product,
+          ean: "96385074",
+        },
+      },
+    });
+
+    const ui = await ProductLayout({
+      children: <p>child</p>,
+      params: Promise.resolve({ id: "8" }),
+    });
+
+    const { container } = render(<>{ui}</>);
+    const script = container.querySelector('script[type="application/ld+json"]');
+    const jsonLd = JSON.parse(script!.textContent ?? "{}");
+
+    expect(jsonLd.gtin8).toBe("96385074");
+    expect(jsonLd.gtin13).toBeUndefined();
+  });
+
+  it("uses the correct Schema.org GTIN property for a valid UPC-A", async () => {
+    mockRpc.mockResolvedValue({
+      data: {
+        ...FULL_PROFILE,
+        product: {
+          ...FULL_PROFILE.product,
+          ean: "725272730706",
+        },
+      },
+    });
+
+    const ui = await ProductLayout({
+      children: <p>child</p>,
+      params: Promise.resolve({ id: "12" }),
+    });
+
+    const { container } = render(<>{ui}</>);
+    const script = container.querySelector('script[type="application/ld+json"]');
+    const jsonLd = JSON.parse(script!.textContent ?? "{}");
+
+    expect(jsonLd.gtin12).toBe("725272730706");
+    expect(jsonLd.gtin13).toBeUndefined();
+  });
+
+  it("omits an invalid GTIN instead of publishing it as GTIN-13", async () => {
+    mockRpc.mockResolvedValue({
+      data: {
+        ...FULL_PROFILE,
+        product: {
+          ...FULL_PROFILE.product,
+          ean: "5901234123450",
+        },
+      },
+    });
+
+    const ui = await ProductLayout({
+      children: <p>child</p>,
+      params: Promise.resolve({ id: "13" }),
+    });
+
+    const { container } = render(<>{ui}</>);
+    const script = container.querySelector('script[type="application/ld+json"]');
+    const jsonLd = JSON.parse(script!.textContent ?? "{}");
+
+    expect(jsonLd.gtin8).toBeUndefined();
+    expect(jsonLd.gtin12).toBeUndefined();
+    expect(jsonLd.gtin13).toBeUndefined();
   });
 });

@@ -23,9 +23,21 @@ vi.mock("@/hooks/use-compare", () => ({
   useCompareProducts: (...args: unknown[]) => mockUseCompareProducts(...args),
 }));
 
+const mockUseProductProvenanceMap = vi.fn();
 vi.mock("@/hooks/use-product-provenance", () => ({
-  useProductProvenanceMap: () => ({}),
+  useProductProvenanceMap: (...args: unknown[]) =>
+    mockUseProductProvenanceMap(...args),
   canRecommendFromProvenance: () => false,
+  getProvenanceDisposition: (value: { disposition?: string }) =>
+    value.disposition ?? "not_collected",
+  hasUsableProvenanceField: (
+    value: { usableFields?: string[] },
+    field: string,
+  ) => value.usableFields?.includes(field) ?? false,
+}));
+
+vi.mock("@/components/export/ExportButton", () => ({
+  ExportButton: () => <div data-testid="comparison-export" />,
 }));
 
 vi.mock("@/components/trust/ProductEvidencePanel", () => ({
@@ -86,6 +98,7 @@ beforeEach(() => {
     isLoading: false,
     error: null,
   });
+  mockUseProductProvenanceMap.mockReturnValue({});
 });
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
@@ -155,13 +168,143 @@ describe("ComparePage", () => {
 
     it("renders ShareComparison toolbar", () => {
       mockUseCompareProducts.mockReturnValue({
-        data: { product_count: 3, products: [{}, {}, {}] },
+        data: {
+          product_count: 3,
+          products: [
+            { product_id: 1 },
+            { product_id: 2 },
+            { product_id: 3 },
+          ],
+        },
         isLoading: false,
         error: null,
+      });
+      mockUseProductProvenanceMap.mockReturnValue({
+        1: { data: { disposition: "confirmed" }, isLoading: false, error: null },
+        2: { data: { disposition: "confirmed" }, isLoading: false, error: null },
+        3: { data: { disposition: "confirmed" }, isLoading: false, error: null },
       });
       render(<ComparePage />, { wrapper: createWrapper() });
       expect(screen.getByTestId("share-comparison")).toBeInTheDocument();
       expect(screen.getByText("Comparing 3 products")).toBeInTheDocument();
+    });
+
+    it("withholds export when score evidence is not confirmed", () => {
+      mockUseCompareProducts.mockReturnValue({
+        data: {
+          product_count: 2,
+          products: [{ product_id: 1 }, { product_id: 2 }],
+        },
+        isLoading: false,
+        error: null,
+      });
+      mockUseProductProvenanceMap.mockReturnValue({
+        1: { data: { disposition: "confirmed" }, isLoading: false, error: null },
+        2: { data: { disposition: "provisional" }, isLoading: false, error: null },
+      });
+
+      render(<ComparePage />, { wrapper: createWrapper() });
+
+      expect(screen.getByTestId("comparison-export-withheld")).toHaveTextContent(
+        "Export and public sharing are withheld until every exported product field has confirmed evidence.",
+      );
+      expect(screen.queryByTestId("comparison-export")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("share-comparison")).not.toBeInTheDocument();
+    });
+
+    it("allows export and sharing only when every populated field has confirmed evidence", () => {
+      mockUseCompareProducts.mockReturnValue({
+        data: {
+          product_count: 2,
+          products: [
+            {
+              product_id: 1,
+              product_name: "Product A",
+              unhealthiness_score: 20,
+            },
+            {
+              product_id: 2,
+              product_name: "Product B",
+              unhealthiness_score: 30,
+            },
+          ],
+        },
+        isLoading: false,
+        error: null,
+      });
+      mockUseProductProvenanceMap.mockReturnValue({
+        1: {
+          data: {
+            disposition: "confirmed",
+            usableFields: ["product_name", "unhealthiness_score"],
+          },
+          isLoading: false,
+          error: null,
+        },
+        2: {
+          data: {
+            disposition: "confirmed",
+            usableFields: ["product_name", "unhealthiness_score"],
+          },
+          isLoading: false,
+          error: null,
+        },
+      });
+
+      render(<ComparePage />, { wrapper: createWrapper() });
+
+      expect(screen.getByTestId("comparison-export")).toBeInTheDocument();
+      expect(
+        screen.queryByTestId("comparison-export-withheld"),
+      ).not.toBeInTheDocument();
+      expect(screen.getByTestId("share-comparison")).toBeInTheDocument();
+    });
+
+    it("withholds export when a populated nutrition field lacks provenance", () => {
+      mockUseCompareProducts.mockReturnValue({
+        data: {
+          product_count: 2,
+          products: [
+            {
+              product_id: 1,
+              product_name: "Product A",
+              unhealthiness_score: 20,
+              sugars_g: 8,
+            },
+            {
+              product_id: 2,
+              product_name: "Product B",
+              unhealthiness_score: 30,
+            },
+          ],
+        },
+        isLoading: false,
+        error: null,
+      });
+      mockUseProductProvenanceMap.mockReturnValue({
+        1: {
+          data: {
+            disposition: "confirmed",
+            usableFields: ["product_name", "unhealthiness_score"],
+          },
+          isLoading: false,
+          error: null,
+        },
+        2: {
+          data: {
+            disposition: "confirmed",
+            usableFields: ["product_name", "unhealthiness_score"],
+          },
+          isLoading: false,
+          error: null,
+        },
+      });
+
+      render(<ComparePage />, { wrapper: createWrapper() });
+
+      expect(screen.getByTestId("comparison-export-withheld")).toBeInTheDocument();
+      expect(screen.queryByTestId("comparison-export")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("share-comparison")).not.toBeInTheDocument();
     });
 
     it("shows partial results warning when some products missing", () => {

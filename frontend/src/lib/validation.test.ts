@@ -162,6 +162,10 @@ describe("computeEanCheckDigit", () => {
     // 036000291452 → check digit 2
     expect(computeEanCheckDigit("036000291452")).toBe(2);
   });
+
+  it("computes a non-coincidental UPC-A check digit", () => {
+    expect(computeEanCheckDigit("725272730706")).toBe(6);
+  });
 });
 
 // ─── isValidEanChecksum ─────────────────────────────────────────────────────
@@ -177,6 +181,11 @@ describe("isValidEanChecksum", () => {
 
   it("returns true for valid UPC-A checksum", () => {
     expect(isValidEanChecksum("036000291452")).toBe(true);
+  });
+
+  it("distinguishes valid and invalid non-coincidental UPC-A checksums", () => {
+    expect(isValidEanChecksum("725272730706")).toBe(true);
+    expect(isValidEanChecksum("725272730704")).toBe(false);
   });
 
   it("returns false for invalid check digit", () => {

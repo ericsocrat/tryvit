@@ -1990,6 +1990,46 @@ describe("ProductDetailPage", () => {
     expect(screen.queryByText("Healthy Veggie Sticks")).not.toBeInTheDocument();
   });
 
+  it("shares a neutral product reference when score provenance is unavailable", async () => {
+    mockUseProductProvenance.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      error: new Error("provenance unavailable"),
+      refetch: vi.fn(),
+    });
+    mockGetProductProfile.mockResolvedValue({
+      ok: true,
+      data: makeProfile(),
+    });
+    const share = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "share", {
+      value: share,
+      writable: true,
+      configurable: true,
+    });
+
+    try {
+      const user = userEvent.setup();
+      render(<ProductDetailPage />, { wrapper: createWrapper() });
+
+      await user.click(
+        await screen.findByRole("button", { name: "Share this product" }),
+      );
+
+      expect(share).toHaveBeenCalledWith({
+        url: "http://localhost:3000/app/product/42",
+        title: "Test Chips Original on TryVit",
+        text: "View Test Chips Original on TryVit",
+      });
+    } finally {
+      Object.defineProperty(navigator, "share", {
+        value: undefined,
+        writable: true,
+        configurable: true,
+      });
+    }
+  });
+
   it("removes affirmative health guidance from a favorable score without provenance", async () => {
     localStorage.setItem("tryvit:product-full-analysis", "false");
     mockUseProductProvenance.mockReturnValue({

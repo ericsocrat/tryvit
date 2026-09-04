@@ -3,8 +3,15 @@
 // The full image generation is an integration concern (needs edge runtime).
 
 import React from "react";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { averageScore, getScoreColor, truncate } from "./opengraph-image";
+import { truncate } from "./opengraph-image";
+
+const source = readFileSync(
+  join(process.cwd(), "src/app/lists/shared/[token]/opengraph-image.tsx"),
+  "utf8",
+);
 
 // Make React available globally for JSX in the tested module
 vi.stubGlobal("React", React);
@@ -17,24 +24,17 @@ vi.mock("next/og", () => {
   return { ImageResponse: ImageResponseMock };
 });
 
-/* ── getScoreColor ─────────────────────────────────────────────────────── */
+vi.mock("@/lib/server-locale", () => ({
+  getServerLocale: () => Promise.resolve("en"),
+}));
+
 describe("list opengraph-image helpers", () => {
-  describe("getScoreColor", () => {
-    it.each([
-      [0, "#22c55e"],
-      [10, "#22c55e"],
-      [20, "#22c55e"],
-      [21, "#eab308"],
-      [40, "#eab308"],
-      [41, "#f97316"],
-      [60, "#f97316"],
-      [61, "#ef4444"],
-      [80, "#ef4444"],
-      [81, "#991b1b"],
-      [100, "#991b1b"],
-    ])("score %i → %s", (score: number, expected: string) => {
-      expect(getScoreColor(score)).toBe(expected);
-    });
+  it("publishes identities and evidence context without score claims", () => {
+    expect(source).toContain("shared.evidenceReviewRequired");
+    expect(source).toContain("shared.reviewEvidenceInTryVit");
+    expect(source).not.toContain("unhealthiness_score");
+    expect(source).not.toContain("averageScore");
+    expect(source).not.toContain("getScoreHex");
   });
 
   /* ── truncate ──────────────────────────────────────────────────────────── */
@@ -55,31 +55,6 @@ describe("list opengraph-image helpers", () => {
 
     it("preserves full text at boundary", () => {
       expect(truncate("abc", 3)).toBe("abc");
-    });
-  });
-
-  /* ── averageScore ──────────────────────────────────────────────────────── */
-  describe("averageScore", () => {
-    it("returns 0 for empty array", () => {
-      expect(averageScore([])).toBe(0);
-    });
-
-    it("returns the score for single item", () => {
-      expect(averageScore([{ unhealthiness_score: 42 }])).toBe(42);
-    });
-
-    it("computes rounded average for multiple items", () => {
-      const items = [
-        { unhealthiness_score: 10 },
-        { unhealthiness_score: 20 },
-        { unhealthiness_score: 33 },
-      ];
-      expect(averageScore(items)).toBe(21); // (10+20+33)/3 = 21
-    });
-
-    it("rounds to nearest integer", () => {
-      const items = [{ unhealthiness_score: 10 }, { unhealthiness_score: 11 }];
-      expect(averageScore(items)).toBe(11); // (10+11)/2 = 10.5 → 11
     });
   });
 

@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "11814b0a08df12d7f4f537f72896ab73c5671a0f",
+    "baseSha": "47b02a57e5c167f51ea660658f9b5779c85126ab",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "78a9e45f71fc4c73ee3524bc43183fd79bba38d7d0a353a8cc05762703ccdd0d"
+    "sourceFingerprint": "32d982cfcb8139b51c10be722aa3096b98d6f38ffa02710c35aeed7e4c386274"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -755,6 +755,7 @@
         "frontend/src/lib/events/index.ts",
         "frontend/src/lib/export.ts",
         "frontend/src/lib/i18n.ts",
+        "frontend/src/lib/types.ts",
         "frontend/src/stores/compare-store.ts"
       ],
       "directConsumers": [],
@@ -1201,9 +1202,14 @@
       "hasUseClientDirective": false,
       "runtimeBoundary": "server-only",
       "directModuleImports": [
+        "frontend/src/lib/i18n-core.ts",
         "frontend/src/lib/query-keys.ts",
+        "frontend/src/lib/server-locale.ts",
         "frontend/src/lib/site-metadata.ts",
-        "frontend/src/lib/supabase/server.ts"
+        "frontend/src/lib/supabase/server.ts",
+        "frontend/src/lib/types.ts",
+        "frontend/src/lib/validation.ts",
+        "frontend/src/stores/language-store.ts"
       ],
       "directConsumers": [],
       "transitiveRouteConsumers": [
@@ -1230,7 +1236,8 @@
       "hasUseClientDirective": false,
       "runtimeBoundary": "server-only",
       "directModuleImports": [
-        "frontend/src/lib/score-utils.ts"
+        "frontend/src/lib/i18n-core.ts",
+        "frontend/src/lib/server-locale.ts"
       ],
       "directConsumers": [],
       "transitiveRouteConsumers": [],
@@ -2547,8 +2554,9 @@
       "hasUseClientDirective": false,
       "runtimeBoundary": "server-only",
       "directModuleImports": [
+        "frontend/src/lib/i18n-core.ts",
         "frontend/src/lib/public-shares.ts",
-        "frontend/src/lib/score-utils.ts"
+        "frontend/src/lib/server-locale.ts"
       ],
       "directConsumers": [],
       "transitiveRouteConsumers": [],
@@ -2570,7 +2578,6 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/components/common/Button.tsx",
-        "frontend/src/components/compare/ComparisonGrid.tsx",
         "frontend/src/components/layout/PublicUtilityShell.tsx",
         "frontend/src/lib/i18n-core.ts",
         "frontend/src/lib/public-shares.ts",
@@ -5058,8 +5065,9 @@
       "hasUseClientDirective": false,
       "runtimeBoundary": "server-only",
       "directModuleImports": [
+        "frontend/src/lib/i18n-core.ts",
         "frontend/src/lib/public-shares.ts",
-        "frontend/src/lib/score-utils.ts"
+        "frontend/src/lib/server-locale.ts"
       ],
       "directConsumers": [],
       "transitiveRouteConsumers": [],
@@ -5081,10 +5089,7 @@
       "runtimeBoundary": "server-only",
       "directModuleImports": [
         "frontend/src/components/common/Button.tsx",
-        "frontend/src/components/common/NutriScoreBadge.tsx",
         "frontend/src/components/layout/PublicUtilityShell.tsx",
-        "frontend/src/components/product/ProductRegisterCard.tsx",
-        "frontend/src/lib/constants.ts",
         "frontend/src/lib/i18n-core.ts",
         "frontend/src/lib/public-shares.ts",
         "frontend/src/lib/server-locale.ts"
@@ -7013,11 +7018,6 @@
           "routePath": "/app/watchlist"
         },
         {
-          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/lists/shared/[token]"
-        },
-        {
           "modulePath": "frontend/src/app/onboarding/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/onboarding"
@@ -7152,11 +7152,6 @@
           "modulePath": "frontend/src/app/app/recipes/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/recipes"
-        },
-        {
-          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/compare/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
@@ -8005,16 +8000,6 @@
           "modulePath": "frontend/src/app/app/watchlist/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/watchlist"
-        },
-        {
-          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/compare/shared/[token]"
-        },
-        {
-          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/lists/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
@@ -8399,7 +8384,6 @@
         "frontend/src/app/app/scan/result/[id]/page.tsx",
         "frontend/src/app/app/search/page.tsx",
         "frontend/src/app/app/watchlist/page.tsx",
-        "frontend/src/app/lists/shared/[token]/page.tsx",
         "frontend/src/components/alternatives/AlternativeProductCard.tsx",
         "frontend/src/components/common/index.ts",
         "frontend/src/components/dashboard/RecentlyViewed.tsx"
@@ -8449,11 +8433,6 @@
           "modulePath": "frontend/src/app/app/watchlist/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/watchlist"
-        },
-        {
-          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/lists/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
@@ -8648,11 +8627,6 @@
           "modulePath": "frontend/src/app/app/watchlist/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/watchlist"
-        },
-        {
-          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/lists/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
@@ -12213,23 +12187,16 @@
         "frontend/src/lib/types.ts"
       ],
       "directConsumers": [
-        "frontend/src/app/app/compare/page.tsx",
-        "frontend/src/app/compare/shared/[token]/page.tsx"
+        "frontend/src/app/app/compare/page.tsx"
       ],
       "transitiveRouteConsumers": [
         {
           "modulePath": "frontend/src/app/app/compare/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/compare"
-        },
-        {
-          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/compare/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
-        "5A.3",
         "5C.2"
       ],
       "disposition": "migrate-to-v2",
@@ -12297,15 +12264,9 @@
           "modulePath": "frontend/src/app/app/compare/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/compare"
-        },
-        {
-          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/compare/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
-        "5A.3",
         "5C.2"
       ],
       "disposition": "migrate-to-v2",
@@ -15714,15 +15675,9 @@
           "modulePath": "frontend/src/app/app/search/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/search"
-        },
-        {
-          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/compare/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
-        "5A.3",
         "5C.1",
         "5C.2"
       ],
@@ -16323,7 +16278,6 @@
         "frontend/src/app/app/product/[id]/page.tsx",
         "frontend/src/app/app/search/page.tsx",
         "frontend/src/app/app/watchlist/page.tsx",
-        "frontend/src/app/lists/shared/[token]/page.tsx",
         "frontend/src/components/alternatives/AlternativeProductCard.tsx",
         "frontend/src/components/alternatives/AlternativesSection.tsx"
       ],
@@ -16352,15 +16306,9 @@
           "modulePath": "frontend/src/app/app/watchlist/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/watchlist"
-        },
-        {
-          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/lists/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
-        "5A.3",
         "5C.1",
         "5C.2",
         "5D"
@@ -16680,6 +16628,7 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
+        "frontend/src/hooks/use-product-provenance.ts",
         "frontend/src/lib/events/index.ts",
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/score-utils.ts"
@@ -17243,7 +17192,6 @@
         "frontend/src/lib/constants.ts",
         "frontend/src/lib/gs1.ts",
         "frontend/src/lib/i18n.ts",
-        "frontend/src/lib/score-utils.ts",
         "frontend/src/lib/types.ts"
       ],
       "directConsumers": [
@@ -18770,16 +18718,6 @@
           "modulePath": "frontend/src/app/app/watchlist/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/watchlist"
-        },
-        {
-          "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/compare/shared/[token]"
-        },
-        {
-          "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
-          "routeModuleKind": "page",
-          "routePath": "/lists/shared/[token]"
         }
       ],
       "targetRedesignPhases": [
@@ -21299,7 +21237,7 @@
     ],
     "inspectedModuleCount": 568,
     "violations": [],
-    "sourceFingerprint": "8a0eafb81eb3704cb29916d4a5e37fd6fb787c61278993c76d5142a58fc87b3e"
+    "sourceFingerprint": "cb99658a306fa32e7bae74a2ff6c29d988d46aed4ba71a640274d49f3fc0e2ec"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
@@ -21854,16 +21792,6 @@
             "modulePath": "frontend/src/app/app/watchlist/page.tsx",
             "routeModuleKind": "page",
             "routePath": "/app/watchlist"
-          },
-          {
-            "modulePath": "frontend/src/app/compare/shared/[token]/page.tsx",
-            "routeModuleKind": "page",
-            "routePath": "/compare/shared/[token]"
-          },
-          {
-            "modulePath": "frontend/src/app/lists/shared/[token]/page.tsx",
-            "routeModuleKind": "page",
-            "routePath": "/lists/shared/[token]"
           }
         ]
       },
@@ -21936,6 +21864,6 @@
         ]
       }
     ],
-    "sourceFingerprint": "2d666498429d615898ce3d5d7e9695a4c0d73610c925ee72321f497334a19d60"
+    "sourceFingerprint": "f95d5a28b7413c4b57de32c611c11f4738366c59b84603b65601947c43172aa2"
   }
 }
