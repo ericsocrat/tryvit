@@ -1,76 +1,65 @@
 "use client";
 
-// ─── NewUserWelcome — onboarding CTA for users with no activity ─────────────
-
 import { useTranslation } from "@/lib/i18n";
-import { Camera, Grid3X3 } from "lucide-react";
+import { ArrowRight, Barcode, BookOpen, Camera, Grid3X3, Search } from "lucide-react";
 import Link from "next/link";
-import { tipIndexForToday } from "./NutritionTip";
+import styles from "./NewUserWelcome.module.css";
 
-/**
- * Reuses existing tip keys (dashboard.tip.0 … tip.13) for the fun fact.
- * Same count as NutritionTip's TIP_COUNT.
- */
-const FUN_FACT_COUNT = 14;
-
+/** A useful first screen before the user has any product history. */
 export function NewUserWelcome() {
   const { t } = useTranslation();
-  const factIndex = tipIndexForToday() % FUN_FACT_COUNT;
-
   return (
-    <section
-      className="space-y-4"
-      aria-label={t("dashboard.newUserTitle")}
-      data-testid="new-user-welcome"
-    >
-      {/* Header */}
-      <div className="text-center">
-        <h2 className="text-lg font-semibold">{t("dashboard.newUserTitle")}</h2>
-        <p className="text-sm text-foreground-secondary">{t("dashboard.newUserSubtitle")}</p>
+    <section className={styles.welcome} aria-labelledby="first-use-title" data-testid="new-user-welcome">
+      <header className={styles.intro}>
+        <p className={styles.eyebrow}>{t("dashboard.newUserTitle")}</p>
+        <h1 id="first-use-title">{t("firstUse.title")}</h1>
+        <p className={styles.subtitle}>{t("firstUse.subtitle")}</p>
+      </header>
+      <div className={styles.actions}>
+        <article className={styles.scanCard}>
+          <div className={styles.scanTop}>
+            <span className={styles.scanLabel}>{t("firstUse.startHere")}</span>
+            <div className={styles.barcode} aria-hidden="true"><Barcode strokeWidth={1.2} /></div>
+          </div>
+          <h2>{t("firstUse.scanTitle")}</h2>
+          <p>{t("firstUse.scanDescription")}</p>
+          <Link href="/app/scan" prefetch={false} className={styles.scanAction} data-testid="new-user-scan-cta">
+            <Camera size={19} aria-hidden="true" />
+            {t("dashboard.newUserScanTitle")}
+            <ArrowRight size={19} aria-hidden="true" />
+          </Link>
+          <span className={styles.scanHint}>{t("firstUse.scanHint")}</span>
+        </article>
+        <article className={styles.exploreCard}>
+          <Search size={26} strokeWidth={1.5} aria-hidden="true" />
+          <h2>{t("firstUse.exploreTitle")}</h2>
+          <p>{t("firstUse.exploreDescription")}</p>
+          <Link href="/app/search" prefetch={false} className={styles.textAction} data-testid="new-user-search-cta">
+            {t("firstUse.searchAction")} <ArrowRight size={18} aria-hidden="true" />
+          </Link>
+          <Link href="/app/categories" prefetch={false} className={styles.browseAction} data-testid="new-user-browse-cta">
+            <Grid3X3 size={17} aria-hidden="true" /> {t("dashboard.newUserBrowseTitle")}
+            <ArrowRight size={17} aria-hidden="true" />
+          </Link>
+        </article>
       </div>
-
-      {/* Action cards */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        {/* Scan CTA */}
-        <Link
-          href="/app/scan"
-          prefetch={false}
-          className="card hover-lift-press flex items-center gap-4 rounded-xl border bg-surface p-4 shadow-sm"
-          data-testid="new-user-scan-cta"
-        >
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand/10">
-            <Camera size={24} className="text-brand" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold">{t("dashboard.newUserScanTitle")}</p>
-            <p className="text-xs text-foreground-secondary">{t("dashboard.newUserScanDesc")}</p>
-          </div>
-        </Link>
-
-        {/* Browse CTA */}
-        <Link
-          href="/app/categories"
-          prefetch={false}
-          className="card hover-lift-press flex items-center gap-4 rounded-xl border bg-surface p-4 shadow-sm"
-          data-testid="new-user-browse-cta"
-        >
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand/10">
-            <Grid3X3 size={24} className="text-brand" />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold">{t("dashboard.newUserBrowseTitle")}</p>
-            <p className="text-xs text-foreground-secondary">{t("dashboard.newUserBrowseDesc")}</p>
-          </div>
-        </Link>
-      </div>
-
-      {/* Fun fact */}
-      <div className="rounded-xl border bg-surface p-4 shadow-sm" data-testid="new-user-fun-fact">
-        <p className="text-xs font-semibold uppercase tracking-wide text-foreground-secondary">
-          {t("dashboard.newUserFunFact")}
-        </p>
-        <p className="mt-1 text-sm">{t(`dashboard.tip.${factIndex}`)}</p>
-      </div>
+      <section className={styles.guide} aria-labelledby="first-use-guide">
+        <div className={styles.guideHeading}>
+          <h2 id="first-use-guide">{t("firstUse.guideTitle")}</h2>
+          <Link href="/learn" prefetch={false} className={styles.guideLink}>
+            <BookOpen size={16} aria-hidden="true" /> {t("firstUse.guideAction")}
+          </Link>
+        </div>
+        <ol className={styles.steps}>
+          {(["facts", "evidence", "compare"] as const).map((step, index) => (
+            <li key={step}>
+              <span className={styles.stepNumber} aria-hidden="true">0{index + 1}</span>
+              <h3>{t(`firstUse.${step}Title`)}</h3>
+              <p>{t(`firstUse.${step}Description`)}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
     </section>
   );
 }

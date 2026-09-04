@@ -1,4 +1,23 @@
 {
+  "firstUse": {
+    "title": "Poznaj lepiej swoją żywność.",
+    "subtitle": "Zacznij od znanego produktu. Sprawdź etykietę, poznaj dostępne dane i porównaj swoje opcje.",
+    "startHere": "Dobry początek",
+    "scanTitle": "Jeden produkt. Więcej jasności.",
+    "scanDescription": "Zeskanuj kod kreskowy z opakowania, aby sprawdzić wartości odżywcze, składniki i dostępne dane.",
+    "scanHint": "Aparat lub ręczne wpisanie kodu. Ty wybierasz.",
+    "exploreTitle": "Nie masz opakowania pod ręką?",
+    "exploreDescription": "Znajdź produkt po nazwie lub marce albo przejrzyj kategorie żywności, które kupujesz najczęściej.",
+    "searchAction": "Wyszukaj produkty",
+    "guideTitle": "Na co zwrócić uwagę",
+    "guideAction": "Poznaj poradniki",
+    "factsTitle": "Sprawdź dane z etykiety",
+    "factsDescription": "Porównaj wartości odżywcze, jednostkę odniesienia i informacje o składnikach z aktualnym opakowaniem.",
+    "evidenceTitle": "Zauważ brakujące informacje",
+    "evidenceDescription": "Sprawdź źródło i luki w danych. Nieznana wartość nie oznacza zera.",
+    "compareTitle": "Porównuj podobne produkty",
+    "compareDescription": "Wybierz podobne produkty i sprawdź różnice. Wynik jest punktem wyjścia, a nie werdyktem."
+  },
   "nav": {
     "home": "Pulpit",
     "search": "Szukaj",
@@ -1763,6 +1782,28 @@
       "improving": "Poprawa",
       "worsening": "Pogorszenie",
       "stable": "Stabilny"
+    }
+  },
+  "recipeScore": {
+    "title": "TryVit Score powiązanych produktów",
+    "direction": "Wyższy wynik oznacza korzystniejszy profil żywieniowy.",
+    "scoreLabel": "TryVit Score powiązanych produktów: {score} na 100; im wyżej, tym lepiej",
+    "noLinks": "Brak powiązanych produktów. Wyniki produktów i średnie wartości odżywcze są niedostępne.",
+    "unavailable": "Brak wiarygodnego wyniku produktów.",
+    "linkedIngredients": "Produkty powiązano z {linked} z {total} składników",
+    "coverage": "{percent}% składników ma powiązane produkty",
+    "coverageLabel": "Składniki z powiązanymi produktami",
+    "evidenceNote": "To średnia wyników powiązanych produktów, a nie gotowej potrawy. Powiązanie składników nie potwierdza jakości ani aktualności danych.",
+    "nutritionTitle": "Średnie powiązanych produktów · na 100 g",
+    "nutritionNote": "Proste średnie dostępnych wartości produktów. Nie uwzględniają ilości składników ani wielkości porcji; nie są wartościami odżywczymi potrawy ani porcji.",
+    "unknown": "Nieznane",
+    "nutrients": {
+      "calories": "Energia",
+      "protein": "Białko",
+      "fat": "Tłuszcz",
+      "sugars": "Cukry",
+      "salt": "Sól",
+      "fibre": "Błonnik"
     }
   },
   "recipes": {

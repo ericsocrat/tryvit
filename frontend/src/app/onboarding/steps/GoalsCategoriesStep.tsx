@@ -37,7 +37,6 @@ export function GoalsCategoriesStep({
   return (
     <div className={styles.step}>
       <div className={styles.stepIntro}>
-        <p className={styles.registerCaption} aria-hidden="true">03 / 03</p>
         <h1 className={styles.title}>{t("onboarding.healthGoalsTitle")}</h1>
         <p className={styles.description}>{t("onboarding.healthGoalsSubtitle")}</p>
       </div>
@@ -67,7 +66,6 @@ export function GoalsCategoriesStep({
       </section>
 
       <section className={styles.registerSection}>
-        <p className={styles.registerCaption} aria-hidden="true">02 / 02</p>
         <h2 className={styles.sectionTitle}>{t("onboarding.categoriesTitle")}</h2>
         <p className={styles.sectionDescription}>{t("onboarding.categoriesSubtitle")}</p>
 

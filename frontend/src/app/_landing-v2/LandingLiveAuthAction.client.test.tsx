@@ -22,11 +22,11 @@ describe("LandingLiveAuthAction", () => {
         className="action"
         dashboardLabel="Dashboard"
         signedOutHref="/auth/signup"
-        signedOutLabel="Create an account"
+        signedOutLabel="Beta access"
       />,
     );
 
-    expect(screen.getByRole("link", { name: "Create an account" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Beta access" })).toHaveAttribute(
       "href",
       "/auth/signup",
     );

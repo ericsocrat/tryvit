@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
+import { render, screen, within } from "@testing-library/react";
+import { axe } from "vitest-axe";
 import { RecipeScoreBadge } from "./RecipeScoreBadge";
 import type { RecipeScore } from "@/lib/types";
-
-// ─── Mock data ──────────────────────────────────────────────────────────────
+import { useLanguageStore } from "@/stores/language-store";
 
 const baseScore: RecipeScore = {
   api_version: "v1",
@@ -16,159 +16,125 @@ const baseScore: RecipeScore = {
     avg_saturated_fat_g: 2.1,
     avg_sugars_g: 8.5,
     avg_salt_g: 0.3,
-    avg_protein_g: 5.0,
+    avg_protein_g: 5,
     avg_fibre_g: 3.2,
   },
   coverage_pct: 75,
   confidence: "medium",
   ingredient_count: 4,
   linked_count: 3,
-  note: "Aggregate score is the weighted average of linked product scores.",
+  note: "Score is the average unhealthiness of linked products (per 100g).",
 };
 
-const greenScore: RecipeScore = {
-  ...baseScore,
-  aggregate_score: 12,
-  score_band: "green",
-  coverage_pct: 100,
-  confidence: "high",
-  ingredient_count: 3,
-  linked_count: 3,
-};
-
-const emptyScore: RecipeScore = {
-  ...baseScore,
-  aggregate_score: 0,
-  score_band: "green",
-  coverage_pct: 0,
-  confidence: "low",
-  linked_count: 0,
-  nutrition_summary: {
-    avg_calories: null,
-    avg_total_fat_g: null,
-    avg_saturated_fat_g: null,
-    avg_sugars_g: null,
-    avg_salt_g: null,
-    avg_protein_g: null,
-    avg_fibre_g: null,
-  },
-};
-
-// ─── Render tests ───────────────────────────────────────────────────────────
+afterEach(() => useLanguageStore.setState({ language: "en" }));
 
 describe("RecipeScoreBadge", () => {
-  // ─── Null / undefined guard ─────────────────────────────────────────────
-
-  it("renders nothing when score is null", () => {
-    const { container } = render(<RecipeScoreBadge score={null} />);
-    expect(container.innerHTML).toBe("");
+  it.each([null, undefined])("renders nothing when score is %s", (score) => {
+    const { container } = render(<RecipeScoreBadge score={score} />);
+    expect(container).toBeEmptyDOMElement();
   });
 
-  it("renders nothing when score is undefined", () => {
-    const { container } = render(<RecipeScoreBadge score={undefined} />);
-    expect(container.innerHTML).toBe("");
+  it("does not treat an error envelope as score evidence", () => {
+    const error = { error: "Recipe not found" } as unknown as RecipeScore;
+    const { container } = render(<RecipeScoreBadge score={error} />);
+    expect(container).toBeEmptyDOMElement();
   });
 
-  // ─── Empty state (no linked products) ───────────────────────────────────
-
-  it("renders empty state when no products are linked", () => {
-    render(<RecipeScoreBadge score={emptyScore} />);
-    expect(screen.getByTestId("recipe-score-empty")).toBeInTheDocument();
-    expect(
-      screen.getByText(/no linked products yet/i),
-    ).toBeInTheDocument();
+  it("explains unavailable averages when no products are linked", () => {
+    render(<RecipeScoreBadge score={{ ...baseScore, linked_count: 0, aggregate_score: 0 }} />);
+    expect(screen.getByTestId("recipe-score-empty")).toHaveTextContent("No linked products yet.");
+    expect(screen.queryByLabelText(/TryVit Score:/)).not.toBeInTheDocument();
   });
 
-  // ─── Score display ──────────────────────────────────────────────────────
-
-  it("renders the aggregate score value", () => {
-    render(<RecipeScoreBadge score={baseScore} />);
-    expect(screen.getByText("25")).toBeInTheDocument();
+  it.each([
+    [25, 75],
+    [12, 88],
+    [100, 0],
+  ])("converts raw unhealthiness %s into TryVit Score %s", (raw, expected) => {
+    render(<RecipeScoreBadge score={{ ...baseScore, aggregate_score: raw }} />);
+    expect(screen.getByRole("img", {
+      name: `Linked-product TryVit Score: ${expected} out of 100; higher is better`,
+    })).toHaveTextContent(`${expected}/100`);
+    expect(screen.getByText("Higher scores indicate a more favorable nutrition profile.")).toBeInTheDocument();
   });
 
-  it("renders band label for yellow score", () => {
-    render(<RecipeScoreBadge score={baseScore} />);
-    expect(screen.getByText("Good")).toBeInTheDocument();
-  });
+  it.each([0, -1, 101, Number.NaN, Number.POSITIVE_INFINITY])(
+    "withholds the score for missing or invalid raw value %s",
+    (aggregate_score) => {
+      render(<RecipeScoreBadge score={{ ...baseScore, aggregate_score }} />);
+      expect(screen.getByText("A usable product score is not available.")).toBeInTheDocument();
+      expect(screen.queryByLabelText(/TryVit Score:/)).not.toBeInTheDocument();
+    },
+  );
 
-  it("renders band label for green score", () => {
-    render(<RecipeScoreBadge score={greenScore} />);
-    expect(screen.getByText("Excellent")).toBeInTheDocument();
-  });
-
-  it("renders ingredient coverage text", () => {
-    render(<RecipeScoreBadge score={baseScore} />);
-    expect(
-      screen.getByText("Based on 3 of 4 ingredients"),
-    ).toBeInTheDocument();
-  });
-
-  // ─── Coverage bar ───────────────────────────────────────────────────────
-
-  it("shows coverage percentage", () => {
-    render(<RecipeScoreBadge score={baseScore} />);
-    expect(screen.getByText("75% ingredient coverage")).toBeInTheDocument();
-  });
-
-  it("renders progressbar with correct aria values", () => {
-    render(<RecipeScoreBadge score={baseScore} />);
-    const bar = screen.getByRole("progressbar");
+  it("labels link coverage without claiming evidence confidence", () => {
+    render(<RecipeScoreBadge score={{ ...baseScore, confidence: "high" }} />);
+    expect(screen.getByText("Products linked for 3 of 4 ingredients")).toBeInTheDocument();
+    expect(screen.queryByText(/high confidence/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/Ingredient links do not verify evidence quality or freshness/)).toBeInTheDocument();
+    const bar = screen.getByRole("progressbar", { name: "Ingredients with linked products" });
     expect(bar).toHaveAttribute("aria-valuenow", "75");
-    expect(bar).toHaveAttribute("aria-valuemin", "0");
-    expect(bar).toHaveAttribute("aria-valuemax", "100");
+    expect(bar).toHaveAttribute("aria-valuetext", "75% of ingredients have linked products");
   });
 
-  // ─── Confidence ─────────────────────────────────────────────────────────
+  it("does not invent coverage for an unavailable percentage", () => {
+    render(<RecipeScoreBadge score={{ ...baseScore, coverage_pct: Number.NaN }} />);
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+    expect(screen.getByText("Products linked for 3 of 4 ingredients")).toBeInTheDocument();
+  });
 
-  it("shows medium confidence for 75% coverage", () => {
+  it("hides the optional nutrition section by default", () => {
     render(<RecipeScoreBadge score={baseScore} />);
-    expect(screen.getByText("Medium confidence")).toBeInTheDocument();
+    expect(screen.queryByTestId("recipe-score-nutrition")).not.toBeInTheDocument();
   });
 
-  it("shows high confidence for 100% coverage", () => {
-    render(<RecipeScoreBadge score={greenScore} />);
-    expect(screen.getByText("High confidence")).toBeInTheDocument();
-  });
-
-  // ─── Nutrition summary ────────────────────────────────────────────────
-
-  it("hides nutrition summary by default", () => {
-    render(<RecipeScoreBadge score={baseScore} />);
-    expect(
-      screen.queryByTestId("recipe-score-nutrition"),
-    ).not.toBeInTheDocument();
-  });
-
-  it("shows nutrition summary when showNutrition is true", () => {
+  it("describes per-100g product averages instead of suggesting daily or serving intake", () => {
     render(<RecipeScoreBadge score={baseScore} showNutrition />);
-    expect(
-      screen.getByTestId("recipe-score-nutrition"),
-    ).toBeInTheDocument();
-
-    // Nutrient bars rendered with progressbar role
-    const bars = screen.getAllByRole("progressbar");
-    expect(bars.length).toBeGreaterThanOrEqual(3);
-
-    // Verify specific nutrient bars exist
-    expect(screen.getByTestId("nutrient-bar-calories")).toBeInTheDocument();
-    expect(screen.getByTestId("nutrient-bar-protein")).toBeInTheDocument();
-    expect(screen.getByTestId("nutrient-bar-salt")).toBeInTheDocument();
+    expect(screen.getByText("Linked-product averages · per 100 g")).toBeInTheDocument();
+    expect(screen.getByText(/Recipe quantities and serving sizes are not included/)).toBeInTheDocument();
+    expect(screen.getAllByRole("progressbar")).toHaveLength(1);
+    const energy = screen.getByTestId("recipe-nutrient-calories");
+    expect(within(energy).getByRole("term")).toHaveTextContent("Energy");
+    expect(within(energy).getByRole("definition")).toHaveTextContent("150.5 kcal");
+    expect(screen.queryByText(/daily/i)).not.toBeInTheDocument();
   });
 
-  // ─── Accessibility ──────────────────────────────────────────────────────
-
-  it("has accessible score label", () => {
-    render(<RecipeScoreBadge score={baseScore} />);
-    expect(
-      screen.getByLabelText("Recipe score: 25"),
-    ).toBeInTheDocument();
+  it("retains confirmed zero and explicitly labels missing or invalid nutrients", () => {
+    render(<RecipeScoreBadge score={{
+      ...baseScore,
+      nutrition_summary: {
+        ...baseScore.nutrition_summary,
+        avg_calories: null,
+        avg_protein_g: 0,
+        avg_salt_g: Number.NaN,
+        avg_fibre_g: -1,
+      },
+    }} showNutrition />);
+    expect(screen.getByTestId("recipe-nutrient-calories")).toHaveTextContent("Unknown");
+    expect(screen.getByTestId("recipe-nutrient-salt")).toHaveTextContent("Unknown");
+    expect(screen.getByTestId("recipe-nutrient-fibre")).toHaveTextContent("Unknown");
+    expect(screen.getByTestId("recipe-nutrient-protein")).toHaveTextContent("0 g");
   });
 
-  // ─── Custom className ─────────────────────────────────────────────────
+  it.each([
+    ["pl", "Średnie powiązanych produktów · na 100 g", "Energia"],
+    ["de", "Durchschnitt verknüpfter Produkte · je 100 g", "Energie"],
+  ] as const)("localizes product evidence and decimal values in %s", (language, title, energy) => {
+    useLanguageStore.setState({ language });
+    render(<RecipeScoreBadge score={baseScore} showNutrition />);
+    expect(screen.getByText(title)).toBeInTheDocument();
+    expect(screen.getByTestId("recipe-nutrient-calories")).toHaveTextContent(energy);
+    expect(screen.getByTestId("recipe-nutrient-calories")).toHaveTextContent("150,5 kcal");
+    expect(screen.queryByText(/Higher scores|ingredients have|High confidence/)).not.toBeInTheDocument();
+  });
 
-  it("applies custom className", () => {
+  it("keeps the score, coverage, and nutrient facts accessible", async () => {
+    const { container } = render(<RecipeScoreBadge score={baseScore} showNutrition />);
+    expect(await axe(container)).toHaveNoViolations();
+  });
+
+  it("applies caller spacing", () => {
     render(<RecipeScoreBadge score={baseScore} className="mt-4" />);
-    const badge = screen.getByTestId("recipe-score-badge");
-    expect(badge.className).toContain("mt-4");
+    expect(screen.getByTestId("recipe-score-badge")).toHaveClass("mt-4");
   });
 });

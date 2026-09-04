@@ -1,4 +1,23 @@
 {
+  "firstUse": {
+    "title": "Get to know what’s in your food.",
+    "subtitle": "Start with a product you know. Explore its label, understand the evidence, and compare your options.",
+    "startHere": "A good place to start",
+    "scanTitle": "One product. A clearer picture.",
+    "scanDescription": "Scan the barcode on a package to look up its nutrition, ingredients, and available evidence.",
+    "scanHint": "Camera or manual barcode entry. Your choice.",
+    "exploreTitle": "No package nearby?",
+    "exploreDescription": "Find a familiar product by name or brand, or explore the food categories you buy most.",
+    "searchAction": "Search products",
+    "guideTitle": "What to look for",
+    "guideAction": "Explore the guides",
+    "factsTitle": "Read the label facts",
+    "factsDescription": "Check nutrition values, their measurement basis, and ingredient information against the current package.",
+    "evidenceTitle": "Notice what’s missing",
+    "evidenceDescription": "Look at the source and the information gaps. An unknown value does not mean zero.",
+    "compareTitle": "Compare like with like",
+    "compareDescription": "Choose similar products and review their differences. A score is a starting point, not a verdict."
+  },
   "nav": {
     "home": "Dashboard",
     "search": "Search",
@@ -1763,6 +1782,28 @@
       "improving": "Improving",
       "worsening": "Worsening",
       "stable": "Stable"
+    }
+  },
+  "recipeScore": {
+    "title": "Linked-product TryVit Score",
+    "direction": "Higher scores indicate a more favorable nutrition profile.",
+    "scoreLabel": "Linked-product TryVit Score: {score} out of 100; higher is better",
+    "noLinks": "No linked products yet. Product scores and nutrition averages are unavailable.",
+    "unavailable": "A usable product score is not available.",
+    "linkedIngredients": "Products linked for {linked} of {total} ingredients",
+    "coverage": "{percent}% of ingredients have linked products",
+    "coverageLabel": "Ingredients with linked products",
+    "evidenceNote": "This averages linked product scores, not the prepared recipe. Ingredient links do not verify evidence quality or freshness.",
+    "nutritionTitle": "Linked-product averages · per 100 g",
+    "nutritionNote": "Simple averages of available product values. Recipe quantities and serving sizes are not included; these are not recipe or per-serving nutrition values.",
+    "unknown": "Unknown",
+    "nutrients": {
+      "calories": "Energy",
+      "protein": "Protein",
+      "fat": "Fat",
+      "sugars": "Sugars",
+      "salt": "Salt",
+      "fibre": "Fibre"
     }
   },
   "recipes": {

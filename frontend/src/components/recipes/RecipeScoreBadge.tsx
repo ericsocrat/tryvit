@@ -1,187 +1,119 @@
-/**
- * RecipeScoreBadge — Aggregate TryVit Score badge for a recipe.
- *
- * Displays the average unhealthiness score computed from linked product scores,
- * with coverage indicator showing what percentage of ingredients are linked.
- * Confidence band (high/medium/low) is derived from coverage.
- *
- * Issue #616.
- */
-
 "use client";
 
 import { useTranslation } from "@/lib/i18n";
-import { getScoreBand } from "@/lib/score-utils";
+import { getScoreBand, toTryVitScore } from "@/lib/score-utils";
 import type { RecipeScore } from "@/lib/types";
 import React from "react";
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
 export interface RecipeScoreBadgeProps {
-  /** Recipe score data from api_get_recipe_score. */
   readonly score: RecipeScore | null | undefined;
-  /** Show nutrition summary details. @default false */
   readonly showNutrition?: boolean;
-  /** Additional CSS classes. */
   readonly className?: string;
 }
 
-// ─── Confidence styling ─────────────────────────────────────────────────────
+const NUTRIENTS = [
+  { field: "avg_calories", name: "calories", unit: "kcal" },
+  { field: "avg_protein_g", name: "protein", unit: "g" },
+  { field: "avg_total_fat_g", name: "fat", unit: "g" },
+  { field: "avg_sugars_g", name: "sugars", unit: "g" },
+  { field: "avg_salt_g", name: "salt", unit: "g" },
+  { field: "avg_fibre_g", name: "fibre", unit: "g" },
+] as const;
 
-const CONFIDENCE_STYLE: Record<string, { label: string; className: string }> = {
-  high: { label: "High confidence", className: "text-success-text" },
-  medium: { label: "Medium confidence", className: "text-warning-text" },
-  low: { label: "Low confidence", className: "text-error-text" },
-};
-
-// ─── NutrientBar — visual bar for a single nutrient value ───────────────────
-
-interface NutrientBarProps {
-  readonly label: string;
-  readonly value: number | null | undefined;
-  readonly unit: string;
-  /** Daily reference intake ceiling for the bar. */
-  readonly max: number;
-  /** Positive nutrient (protein, fibre) — use brand color instead of warning. */
-  readonly positive?: boolean;
-}
-
-function NutrientBar({ label, value, unit, max, positive }: NutrientBarProps) {
-  if (value == null) return null;
-  const pct = Math.min(Math.round((value / max) * 100), 100);
-  const barColor = positive ? "bg-success" : pct > 75 ? "bg-warning" : "bg-brand-primary";
-
-  return (
-    <div className="text-xs" data-testid={`nutrient-bar-${label.toLowerCase()}`}>
-      <div className="flex items-center justify-between text-foreground-muted mb-0.5">
-        <span>{label}</span>
-        <span>
-          {value} {unit}
-        </span>
-      </div>
-      <div className="h-1.5 w-full rounded-full bg-surface-muted overflow-hidden">
-        <div
-          className={`h-full rounded-full ${barColor} transition-all duration-500`}
-          style={{ width: `${pct}%` }}
-          role="progressbar"
-          aria-valuenow={value}
-          aria-valuemin={0}
-          aria-valuemax={max}
-          aria-label={`${label}: ${value} ${unit}`}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ─── Component ──────────────────────────────────────────────────────────────
-
+/** Product averages describe the linked evidence, not the prepared recipe. */
 export const RecipeScoreBadge = React.memo(function RecipeScoreBadge({
   score,
   showNutrition = false,
   className = "",
 }: Readonly<RecipeScoreBadgeProps>) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
-  // ─── No data state ──────────────────────────────────────────────────────
+  if (!score || "error" in score) return null;
 
-  if (!score) {
-    return null;
-  }
-
-  // ─── Error state (recipe not found) ─────────────────────────────────────
-
-  if ("error" in score) {
-    return null;
-  }
-
-  // ─── No linked products → informational state ──────────────────────────
+  const cardClass = [
+    "rounded-xl border border-border bg-surface p-4",
+    className,
+  ].filter(Boolean).join(" ");
 
   if (score.linked_count === 0) {
     return (
-      <div
-        className={[
-          "rounded-xl border border-border bg-surface-card p-4",
-          className,
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        data-testid="recipe-score-empty"
-      >
-        <p className="text-sm text-foreground-muted">
-          No linked products yet — score will appear when ingredients are mapped.
-        </p>
+      <div className={cardClass} data-testid="recipe-score-empty">
+        <p className="text-sm text-foreground-muted">{t("recipeScore.noLinks")}</p>
       </div>
     );
   }
 
-  // ─── Score display ──────────────────────────────────────────────────────
-
+  // The RPC uses 0 when no scored product contributes. Do not invert that
+  // sentinel into a perfect score, or clamp malformed scores into valid ones.
   const band = getScoreBand(score.aggregate_score);
-  const bgClass = band?.bgColor ?? "bg-surface-muted";
-  const textClass = band?.textColor ?? "text-foreground-muted";
-  const bandLabel = band ? t(band.labelKey) : "N/A";
-  const conf = CONFIDENCE_STYLE[score.confidence] ?? CONFIDENCE_STYLE.low;
+  const displayScore = band ? toTryVitScore(score.aggregate_score) : null;
+  const coverage = Number.isFinite(score.coverage_pct)
+    ? Math.max(0, Math.min(100, score.coverage_pct))
+    : null;
+  const numberFormat = new Intl.NumberFormat(language, { maximumFractionDigits: 1 });
 
   return (
-    <div
-      className={[
-        "rounded-xl border border-border bg-surface-card p-4",
-        className,
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      data-testid="recipe-score-badge"
-    >
-      {/* Header row: score pill + label */}
-      <div className="flex items-center gap-3">
-        <span
-          className={[
-            "inline-flex items-center justify-center rounded-full px-3 py-1 text-lg font-bold",
-            bgClass,
-            textClass,
-          ].join(" ")}
-          aria-label={`Recipe score: ${score.aggregate_score}`}
-        >
-          {score.aggregate_score}
-        </span>
-        <div className="flex flex-col">
-          <span className={`text-sm font-semibold ${textClass}`}>
-            {bandLabel}
+    <div className={cardClass} data-testid="recipe-score-badge">
+      <div className="flex items-start gap-3">
+        {displayScore !== null && band && (
+          <span
+            role="img"
+            className={`inline-flex shrink-0 items-baseline gap-0.5 rounded-xl px-3 py-2 ${band.bgColor} ${band.textColor}`}
+            aria-label={t("recipeScore.scoreLabel", { score: displayScore })}
+          >
+            <span className="text-2xl font-bold tabular-nums">{displayScore}</span>
+            <span className="text-xs">/100</span>
           </span>
-          <span className="text-xs text-foreground-muted">
-            Based on {score.linked_count} of {score.ingredient_count} ingredients
-          </span>
+        )}
+        <div className="min-w-0">
+          <h3 className="text-sm font-semibold text-foreground">{t("recipeScore.title")}</h3>
+          <p className="mt-1 text-xs text-foreground-muted">
+            {displayScore === null ? t("recipeScore.unavailable") : t("recipeScore.direction")}
+          </p>
         </div>
       </div>
 
-      {/* Coverage bar */}
-      <div className="mt-3" data-testid="recipe-score-coverage">
-        <div className="flex items-center justify-between text-xs text-foreground-muted mb-1">
-          <span>{score.coverage_pct}% ingredient coverage</span>
-          <span className={conf.className}>{conf.label}</span>
-        </div>
-        <div className="h-1.5 w-full rounded-full bg-surface-muted overflow-hidden">
+      <div className="mt-4" data-testid="recipe-score-coverage">
+        <p className="text-xs text-foreground-secondary">
+          {t("recipeScore.linkedIngredients", {
+            linked: score.linked_count,
+            total: score.ingredient_count,
+          })}
+        </p>
+        {coverage !== null && (
           <div
-            className="h-full rounded-full bg-brand-primary transition-all duration-500"
-            style={{ width: `${Math.min(score.coverage_pct, 100)}%` }}
+            className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface-muted"
             role="progressbar"
-            aria-valuenow={score.coverage_pct}
+            aria-label={t("recipeScore.coverageLabel")}
+            aria-valuenow={coverage}
             aria-valuemin={0}
             aria-valuemax={100}
-          />
-        </div>
+            aria-valuetext={t("recipeScore.coverage", { percent: numberFormat.format(coverage) })}
+          >
+            <div className="h-full rounded-full bg-brand-primary" style={{ width: `${coverage}%` }} />
+          </div>
+        )}
+        <p className="mt-2 text-xs leading-relaxed text-foreground-muted">{t("recipeScore.evidenceNote")}</p>
       </div>
 
-      {/* Optional nutrition summary */}
-      {showNutrition && score.nutrition_summary && (
-        <div className="mt-3 space-y-2" data-testid="recipe-score-nutrition">
-          <NutrientBar label="Calories" value={score.nutrition_summary.avg_calories} unit="kcal" max={2000} />
-          <NutrientBar label="Protein" value={score.nutrition_summary.avg_protein_g} unit="g" max={50} positive />
-          <NutrientBar label="Fat" value={score.nutrition_summary.avg_total_fat_g} unit="g" max={70} />
-          <NutrientBar label="Sugars" value={score.nutrition_summary.avg_sugars_g} unit="g" max={90} />
-          <NutrientBar label="Salt" value={score.nutrition_summary.avg_salt_g} unit="g" max={6} />
-          <NutrientBar label="Fibre" value={score.nutrition_summary.avg_fibre_g} unit="g" max={30} positive />
+      {showNutrition && (
+        <div className="mt-4 border-t border-border pt-4" data-testid="recipe-score-nutrition">
+          <h4 className="text-xs font-semibold text-foreground-secondary">{t("recipeScore.nutritionTitle")}</h4>
+          <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-3">
+            {NUTRIENTS.map(({ field, name, unit }) => {
+              const value = score.nutrition_summary?.[field];
+              const known = typeof value === "number" && Number.isFinite(value) && value >= 0;
+              return (
+                <div key={field} data-testid={`recipe-nutrient-${name}`}>
+                  <dt className="text-xs text-foreground-muted">{t(`recipeScore.nutrients.${name}`)}</dt>
+                  <dd className="mt-0.5 text-sm font-medium tabular-nums text-foreground">
+                    {known ? `${numberFormat.format(value)} ${unit}` : t("recipeScore.unknown")}
+                  </dd>
+                </div>
+              );
+            })}
+          </dl>
+          <p className="mt-3 text-xs leading-relaxed text-foreground-muted">{t("recipeScore.nutritionNote")}</p>
         </div>
       )}
     </div>

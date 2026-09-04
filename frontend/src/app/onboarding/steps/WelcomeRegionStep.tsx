@@ -43,7 +43,6 @@ export function WelcomeRegionStep({
       </div>
 
       <section className={styles.registerSection}>
-        <p className={styles.registerCaption} aria-hidden="true">01 / 02</p>
         <h2 className={styles.sectionTitle}>{t("onboarding.regionTitle")}</h2>
         <div className={styles.choiceList}>
           {COUNTRIES.map((country) => {
@@ -76,7 +75,6 @@ export function WelcomeRegionStep({
 
       {data.country && availableLanguages.length > 0 ? (
         <section className={styles.registerSection}>
-          <p className={styles.registerCaption} aria-hidden="true">02 / 02</p>
           <h2 className={styles.sectionTitle}>{t("onboarding.languageLabel")}</h2>
           <div className={styles.languageGrid}>
             {availableLanguages.map((language) => {

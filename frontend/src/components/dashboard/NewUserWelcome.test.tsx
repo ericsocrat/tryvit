@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import { translate } from "@/lib/i18n-core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NewUserWelcome } from "./NewUserWelcome";
 
@@ -23,24 +24,8 @@ vi.mock("next/link", () => ({
 
 vi.mock("@/lib/i18n", () => ({
   useTranslation: () => ({
-    t: (key: string) => {
-      const map: Record<string, string> = {
-        "dashboard.newUserTitle": "Welcome to TryVit",
-        "dashboard.newUserSubtitle": "Start exploring healthier food choices.",
-        "dashboard.newUserScanTitle": "Scan a product",
-        "dashboard.newUserScanDesc": "Use your camera to scan a barcode.",
-        "dashboard.newUserBrowseTitle": "Browse categories",
-        "dashboard.newUserBrowseDesc": "Explore products by category.",
-        "dashboard.newUserFunFact": "Fun Fact",
-        "dashboard.tip.0": "Reading labels can save lives!",
-      };
-      return map[key] ?? key;
-    },
+    t: (key: string) => translate("en", key),
   }),
-}));
-
-vi.mock("./NutritionTip", () => ({
-  tipIndexForToday: () => 0,
 }));
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
@@ -53,7 +38,7 @@ describe("NewUserWelcome", () => {
   it("renders welcome title and subtitle", () => {
     render(<NewUserWelcome />);
     expect(screen.getByText("Welcome to TryVit")).toBeInTheDocument();
-    expect(screen.getByText("Start exploring healthier food choices.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Get to know what’s in your food." })).toBeInTheDocument();
   });
 
   it("renders scan CTA linking to /app/scan", () => {
@@ -75,19 +60,20 @@ describe("NewUserWelcome", () => {
 
     expect(screen.getByTestId("new-user-scan-cta")).toHaveAttribute("data-prefetch", "false");
     expect(screen.getByTestId("new-user-browse-cta")).toHaveAttribute("data-prefetch", "false");
+    expect(screen.getByTestId("new-user-search-cta")).toHaveAttribute("data-prefetch", "false");
+    expect(screen.getByTestId("new-user-search-cta")).toHaveAttribute("href", "/app/search");
   });
 
-  it("renders fun fact section with tip text", () => {
+  it("explains label, evidence and comparison without invented product claims", () => {
     render(<NewUserWelcome />);
-    const funFact = screen.getByTestId("new-user-fun-fact");
-    expect(funFact).toBeInTheDocument();
-    expect(screen.getByText("Fun Fact")).toBeInTheDocument();
-    expect(screen.getByText("Reading labels can save lives!")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "What to look for" })).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")).toHaveLength(3);
+    expect(screen.getByRole("link", { name: "Explore the guides" })).toHaveAttribute("href", "/learn");
   });
 
-  it("has section aria-label", () => {
+  it("names the welcome section with its main heading", () => {
     render(<NewUserWelcome />);
-    expect(screen.getByLabelText("Welcome to TryVit")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Get to know what’s in your food." })).toBeInTheDocument();
   });
 
   it("has data-testid on container", () => {
