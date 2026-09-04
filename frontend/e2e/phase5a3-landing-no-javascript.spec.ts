@@ -7,9 +7,10 @@ test("retains complete server-rendered meaning without JavaScript", async ({ pag
   const response = await page.goto("/");
   expect(response?.status()).toBe(200);
   const html = await response!.text();
-  expect(html).toContain("Read the package. See the reasoning. Make your own call.");
-  expect(html).toContain("One answer, four accountable layers");
-  expect(html).toContain("Method before mystique");
+  expect(html).toContain("A closer look.");
+  expect(html).toContain("A clearer choice.");
+  expect(html).toContain("There’s more to food than the front label.");
+  expect(html).toContain("The reasoning, not just a rating.");
   expect(html).toContain("The website is available; live product data is paused");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   const primaryNavigation = page.getByRole("navigation", { name: "Primary navigation" });

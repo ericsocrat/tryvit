@@ -69,7 +69,7 @@ test("retains exact project-locale landing evidence", async ({ page }, testInfo)
   if (polish) {
     await expect(
       page.getByRole("heading", {
-        name: "Odczytaj opakowanie. Poznaj tok rozumowania. Podejmij własną decyzję.",
+        name: "Przyjrzyj się bliżej. Wybieraj świadomie.",
       }),
     ).toBeVisible();
     await page.addStyleTag({
@@ -81,7 +81,7 @@ test("retains exact project-locale landing evidence", async ({ page }, testInfo)
   } else {
     await expect(
       page.getByRole("heading", {
-        name: "Verpackung lesen. Begründung verstehen. Selbst entscheiden.",
+        name: "Genauer hinsehen. Bewusster wählen.",
       }),
     ).toBeVisible();
     await expect(page.getByText(/Datenverlässlichkeit/iu).first()).toBeVisible();

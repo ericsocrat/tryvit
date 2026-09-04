@@ -19,7 +19,7 @@ describe("LandingSections", () => {
     render(<LandingSections language="en" />);
     expect(screen.queryByRole("img", { name: "TryVit" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Read the package. See the reasoning. Make your own call.",
+      "A closer look. A clearer choice.",
     );
     expect(screen.getByText(/scan a barcode, browse products, and compare label facts/i)).toBeInTheDocument();
     expect(screen.getByText(/where the information comes from and what is still missing/i)).toBeInTheDocument();
@@ -35,6 +35,14 @@ describe("LandingSections", () => {
       "Decision and next action",
     ]);
     expect(screen.getByText(/processing is not assessed/i)).toBeInTheDocument();
+  });
+
+  it("labels the product preview as illustrative and keeps missing evidence visible", () => {
+    render(<LandingSections language="en" />);
+    expect(screen.getByRole("figure", { name: "An illustrative preview, not a real product assessment." })).toBeInTheDocument();
+    expect(screen.getByText("Processing information missing")).toBeInTheDocument();
+    expect(screen.getByText("Per 100 ml · example values")).toBeInTheDocument();
+    expect(screen.getByText("Private beta · access by invitation")).toBeInTheDocument();
   });
 
   it("retains meaningful package-to-label content before interaction", async () => {

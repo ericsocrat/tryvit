@@ -271,10 +271,10 @@ async function runJourney(page: Page, motion: MotionMode) {
     await page.waitForTimeout(dwell);
   }
 
-  await expect(page.getByRole("heading", { name: "Method before mystique" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Private before personal" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "The reasoning, not just a rating." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your curiosity. Your control." })).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: "Start with the question—not a verdict." }),
+    page.getByRole("heading", { name: "Your next shop. A fresh perspective." }),
   ).toBeVisible();
   await assertFullyInViewport(page, "footer");
   await expect(

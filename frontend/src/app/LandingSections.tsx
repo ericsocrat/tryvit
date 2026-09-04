@@ -2,11 +2,11 @@ import type { SupportedLanguage } from "@/stores/language-store";
 import { getLandingCopy, type LandingCopy } from "./_landing-v2/copy";
 import {
   LandingGlyph,
-  LandingMark,
   type LandingGlyphName,
 } from "./_landing-v2/LandingIdentity";
 import { LandingLiveAuthAction } from "./_landing-v2/LandingLiveAuthAction.client";
 import { PackageLabelNarrative } from "./_landing-v2/PackageLabelNarrative";
+import { LandingProductPreview } from "./_landing-v2/LandingProductPreview";
 import styles from "./_landing-v2/landing.module.css";
 
 function StatusBand({ copy }: Readonly<{ copy: LandingCopy }>) {
@@ -36,11 +36,12 @@ function Hero({ dataAvailable, copy }: Readonly<{ dataAvailable: boolean; copy: 
     <section className={styles.hero} aria-labelledby="landing-title">
       <div className={styles.heroCopy}>
         <p className={styles.eyebrow}>{copy.eyebrow}</p>
-        <h1 id="landing-title">{copy.title}</h1>
+        <h1 id="landing-title">{copy.title} <em>{copy.titleAccent}</em></h1>
         <p className={styles.heroIntro}>{dataAvailable ? copy.liveIntro : copy.demoIntro}</p>
         <div className={styles.heroActions}>
           <a className={styles.primaryAction} href="#evidence">
             {copy.primary}
+            <span aria-hidden="true">↗</span>
           </a>
           {dataAvailable ? (
             <LandingLiveAuthAction
@@ -55,22 +56,26 @@ function Hero({ dataAvailable, copy }: Readonly<{ dataAvailable: boolean; copy: 
             </a>
           )}
         </div>
+        {dataAvailable ? <p className={styles.accessNote}>{copy.accessNote}</p> : null}
       </div>
-      <div aria-hidden="true" className={styles.heroWatermark}>
-        <LandingMark size={80} />
-      </div>
-      <PackageLabelNarrative
-        actionLabel={copy.decode}
-        contextualLabel={copy.contextual}
-        decisionLabel={copy.decision}
-        derivedLabel={copy.derived}
-        observedLabel={copy.observed}
-        packageLabel={copy.package}
-        packageName={copy.packageName}
-        resetLabel={copy.reset}
-        syntheticLabel={copy.synthetic}
-      />
+      <LandingProductPreview copy={copy} />
     </section>
+  );
+}
+
+function PackageExample({ copy }: Readonly<{ copy: LandingCopy }>) {
+  return (
+    <PackageLabelNarrative
+      actionLabel={copy.decode}
+      contextualLabel={copy.contextual}
+      decisionLabel={copy.decision}
+      derivedLabel={copy.derived}
+      observedLabel={copy.observed}
+      packageLabel={copy.package}
+      packageName={copy.packageName}
+      resetLabel={copy.reset}
+      syntheticLabel={copy.synthetic}
+    />
   );
 }
 
@@ -87,7 +92,7 @@ function EvidenceRow({ kind, label, title, detail, meta }: EvidenceRowProps) {
     <article className={styles.evidenceRow} data-evidence-kind={kind}>
       <div className={styles.evidenceKind}>
         <LandingGlyph name={kind} />
-        <span>{label}</span>
+        <span className={styles.visuallyHidden}>{label}</span>
       </div>
       <div>
         <h3>{title}</h3>
@@ -112,6 +117,7 @@ function EvidenceSection({ copy }: Readonly<{ copy: LandingCopy }>) {
         <EvidenceRow kind="context" label={copy.contextual} title={copy.contextual} detail={copy.contextDetail} meta={copy.contextMeta} />
         <EvidenceRow kind="decision" label={copy.decision} title={copy.decision} detail={copy.decisionDetail} meta={copy.decisionMeta} />
       </div>
+      <PackageExample copy={copy} />
     </section>
   );
 }
@@ -184,6 +190,9 @@ export function LandingSections({
   return (
     <>
       <Hero copy={copy} dataAvailable={dataAvailable} />
+      <ol className={styles.featureStrip} aria-label={copy.primary}>
+        {copy.features.map((feature, index) => <li key={feature}><span aria-hidden="true">0{index + 1}</span>{feature}</li>)}
+      </ol>
       {!dataAvailable ? <StatusBand copy={copy} /> : null}
       <EvidenceSection copy={copy} />
       <Principles copy={copy} dataAvailable={dataAvailable} />
