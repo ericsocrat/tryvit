@@ -416,15 +416,29 @@ export function getProductProfileByEan(
 
 // ─── Ingredient Profiles ────────────────────────────────────────────────────
 
-export function getIngredientProfile(
+const INGREDIENT_NOT_FOUND_ERROR = "Ingredient not found";
+
+export async function getIngredientProfile(
   supabase: SupabaseClient,
   ingredientId: number,
   language?: string,
-): Promise<RpcResult<IngredientProfile>> {
-  return callRpc<IngredientProfile>(supabase, "api_get_ingredient_profile", {
+): Promise<RpcResult<IngredientProfile | null>> {
+  const result = await callRpc<IngredientProfile>(supabase, "api_get_ingredient_profile", {
     p_ingredient_id: ingredientId,
     ...(language ? { p_language: language } : {}),
   });
+
+  // The RPC encodes a missing row as `{ error: "Ingredient not found" }`.
+  // Normalize only that documented absence; preserve every other failure.
+  if (
+    !result.ok &&
+    result.error.code === "BUSINESS_ERROR" &&
+    result.error.message === INGREDIENT_NOT_FOUND_ERROR
+  ) {
+    return { ok: true, data: null };
+  }
+
+  return result;
 }
 
 // ─── Health Profiles ────────────────────────────────────────────────────────

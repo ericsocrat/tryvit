@@ -1366,6 +1366,7 @@
   },
   "ingredient": {
     "notFound": "Nie znaleziono składnika.",
+    "loadFailed": "Szczegóły składnika są tymczasowo niedostępne. Spróbuj ponownie.",
     "vegan": "Wegańskie",
     "vegetarian": "Wegetariańskie",
     "palmOil": "Olej palmowy",
@@ -1808,6 +1809,8 @@
   "recipes": {
     "title": "Przepisy",
     "loadFailed": "Nie udało się załadować przepisów. Spróbuj ponownie.",
+    "detailUnavailable": "Szczegóły przepisu są tymczasowo niedostępne. Spróbuj ponownie.",
+    "notFound": "Nie znaleziono przepisu.",
     "filterCategory": "Filtruj według kategorii",
     "filterDifficulty": "Filtruj według trudności",
     "allCategories": "Wszystkie kategorie",

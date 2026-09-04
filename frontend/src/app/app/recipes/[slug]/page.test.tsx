@@ -1,3 +1,4 @@
+import type { getRecipeDetail, getRecipeScore } from "@/lib/api";
 import type { RecipeDetail } from "@/lib/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
@@ -32,11 +33,16 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-const mockGetRecipeDetail = vi.fn();
-const mockGetRecipeScore = vi.fn();
+type GetRecipeDetail = typeof getRecipeDetail;
+type GetRecipeScore = typeof getRecipeScore;
+
+const mockGetRecipeDetail = vi.fn<GetRecipeDetail>();
+const mockGetRecipeScore = vi.fn<GetRecipeScore>();
 vi.mock("@/lib/api", () => ({
-  getRecipeDetail: (...args: unknown[]) => mockGetRecipeDetail(...args),
-  getRecipeScore: (...args: unknown[]) => mockGetRecipeScore(...args),
+  getRecipeDetail: (...args: Parameters<GetRecipeDetail>) =>
+    mockGetRecipeDetail(...args),
+  getRecipeScore: (...args: Parameters<GetRecipeScore>) =>
+    mockGetRecipeScore(...args),
 }));
 
 vi.mock("@/components/common/skeletons", () => ({
@@ -142,7 +148,10 @@ const mockRecipeWithProducts: RecipeDetail = {
 beforeEach(() => {
   vi.clearAllMocks();
   mockGetRecipeDetail.mockResolvedValue({ ok: true, data: mockRecipe });
-  mockGetRecipeScore.mockResolvedValue({ ok: true, data: null });
+  mockGetRecipeScore.mockResolvedValue({
+    ok: false,
+    error: { code: "PGRST500", message: "Score unavailable" },
+  });
 });
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
@@ -254,41 +263,36 @@ describe("RecipeDetailPage", () => {
     expect(screen.getByText("healthy")).toBeInTheDocument();
   });
 
-  it("shows error state on API failure", async () => {
-    mockGetRecipeDetail.mockResolvedValue({
-      ok: false,
-      error: { message: "Not found" },
-    });
+  it("shows not-found without retry when the recipe is absent", async () => {
+    mockGetRecipeDetail.mockResolvedValue({ ok: true, data: null });
 
     render(<RecipeDetailPage />, { wrapper: createWrapper() });
 
-    await waitFor(() => {
-      expect(
-        screen.getByText("Could not load recipes. Please try again."),
-      ).toBeInTheDocument();
-    });
+    expect(await screen.findByText("Recipe not found.")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Retry" }),
+    ).not.toBeInTheDocument();
   });
 
-  it("shows retry button on error", async () => {
+  it("shows an accessible retry state when recipe details are unavailable", async () => {
     mockGetRecipeDetail.mockResolvedValue({
       ok: false,
-      error: { message: "Not found" },
+      error: { code: "PGRST500", message: "Service unavailable" },
     });
 
     render(<RecipeDetailPage />, { wrapper: createWrapper() });
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "Retry" }),
-      ).toBeInTheDocument();
-    });
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Recipe details are temporarily unavailable. Please try again.",
+    );
+    expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
   });
 
   it("retries on retry button click", async () => {
     mockGetRecipeDetail
       .mockResolvedValueOnce({
         ok: false,
-        error: { message: "Not found" },
+        error: { code: "PGRST500", message: "Service unavailable" },
       })
       .mockResolvedValueOnce({ ok: true, data: mockRecipe });
 
@@ -468,14 +472,14 @@ describe("RecipeDetailPage", () => {
   it("uses text-error class on error message", async () => {
     mockGetRecipeDetail.mockResolvedValue({
       ok: false,
-      error: { message: "Server error" },
+      error: { code: "PGRST500", message: "Server error" },
     });
 
     render(<RecipeDetailPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
       const errorMsg = screen.getByText(
-        "Could not load recipes. Please try again.",
+        "Recipe details are temporarily unavailable. Please try again.",
       );
       expect(errorMsg.className).toContain("text-error");
       expect(errorMsg.className).not.toContain("text-red-500");

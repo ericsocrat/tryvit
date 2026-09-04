@@ -878,6 +878,7 @@
       "hasUseClientDirective": true,
       "runtimeBoundary": "client-entry",
       "directModuleImports": [
+        "frontend/src/components/common/Button.tsx",
         "frontend/src/components/common/skeletons/index.ts",
         "frontend/src/components/ingredient/ConcernBadge.tsx",
         "frontend/src/components/ingredient/IngredientUsageStats.tsx",
@@ -6627,6 +6628,7 @@
         "frontend/src/app/app/admin/submissions/page.tsx",
         "frontend/src/app/app/categories/[slug]/page.tsx",
         "frontend/src/app/app/error.tsx",
+        "frontend/src/app/app/ingredient/[id]/page.tsx",
         "frontend/src/app/app/layout.tsx",
         "frontend/src/app/app/lists/[id]/page.tsx",
         "frontend/src/app/app/lists/page.tsx",
@@ -6712,6 +6714,11 @@
           "modulePath": "frontend/src/app/app/image-search/page.tsx",
           "routeModuleKind": "page",
           "routePath": "/app/image-search"
+        },
+        {
+          "modulePath": "frontend/src/app/app/ingredient/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/ingredient/[id]"
         },
         {
           "modulePath": "frontend/src/app/app/layout.tsx",
@@ -18140,6 +18147,11 @@
           "routePath": "/app/image-search"
         },
         {
+          "modulePath": "frontend/src/app/app/ingredient/[id]/page.tsx",
+          "routeModuleKind": "page",
+          "routePath": "/app/ingredient/[id]"
+        },
+        {
           "modulePath": "frontend/src/app/app/layout.tsx",
           "routeModuleKind": "layout",
           "routePath": "/app"
@@ -21232,6 +21244,7 @@
           "frontend/src/app/app/admin/submissions/page.tsx",
           "frontend/src/app/app/categories/[slug]/page.tsx",
           "frontend/src/app/app/error.tsx",
+          "frontend/src/app/app/ingredient/[id]/page.tsx",
           "frontend/src/app/app/layout.tsx",
           "frontend/src/app/app/lists/[id]/page.tsx",
           "frontend/src/app/app/lists/page.tsx",
@@ -21316,6 +21329,11 @@
             "modulePath": "frontend/src/app/app/image-search/page.tsx",
             "routeModuleKind": "page",
             "routePath": "/app/image-search"
+          },
+          {
+            "modulePath": "frontend/src/app/app/ingredient/[id]/page.tsx",
+            "routeModuleKind": "page",
+            "routePath": "/app/ingredient/[id]"
           },
           {
             "modulePath": "frontend/src/app/app/layout.tsx",
@@ -21843,6 +21861,6 @@
         ]
       }
     ],
-    "sourceFingerprint": "8ceb4e10c9ba4d8594c454e027835c4b6676cc6b0fd1006de15c759459fe74b4"
+    "sourceFingerprint": "996ea28fd3ffce7805e3100b17ea45d66a9f5f7ebfa30407b89cae35628fcfe2"
   }
 }

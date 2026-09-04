@@ -5,6 +5,7 @@
 // containing it, and co-occurring ingredients.
 
 import { IngredientDetailSkeleton } from "@/components/common/skeletons";
+import { Button } from "@/components/common/Button";
 import { ConcernBadge } from "@/components/ingredient/ConcernBadge";
 import { IngredientUsageStats } from "@/components/ingredient/IngredientUsageStats";
 import { ProductsContainingList } from "@/components/ingredient/ProductsContainingList";
@@ -30,6 +31,7 @@ export default function IngredientProfilePage() {
     data: profile,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: queryKeys.ingredientProfile(ingredientId),
     queryFn: async () => {
@@ -45,7 +47,28 @@ export default function IngredientProfilePage() {
     return <IngredientDetailSkeleton />;
   }
 
-  if (error || !profile || profile.error) {
+  if (error) {
+    return (
+      <AppPage className={surface.appPage}>
+        <Breadcrumbs
+          items={[
+            { labelKey: "nav.home", href: "/app" },
+            { labelKey: "nav.search", href: "/app/search" },
+          ]}
+        />
+        <div className={[surface.state, "text-center"].join(" ")}>
+          <p className="mb-3 text-sm text-error" role="alert">
+            {t("ingredient.loadFailed")}
+          </p>
+          <Button onClick={() => void refetch()}>
+            {t("common.retry")}
+          </Button>
+        </div>
+      </AppPage>
+    );
+  }
+
+  if (!profile) {
     return (
       <AppPage className={surface.appPage}>
         <Breadcrumbs
