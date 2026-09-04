@@ -120,6 +120,32 @@ describe("ProfileSettingsPage", () => {
     });
   });
 
+  it("fails closed when preferences cannot be loaded, then hydrates after retry", async () => {
+    mockGetPrefs
+      .mockResolvedValueOnce({
+        ok: false,
+        error: { code: "500", message: "Preferences unavailable" },
+      })
+      .mockResolvedValueOnce({ ok: true, data: mockPrefsData });
+    render(<ProfileSettingsPage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    const retry = await screen.findByRole("button", { name: "Try again" });
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Profile & Preferences couldn't be loaded",
+    );
+    expect(screen.queryByText("Deutschland")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Save changes" }),
+    ).not.toBeInTheDocument();
+
+    await user.click(retry);
+
+    expect(await screen.findByText("Deutschland")).toBeInTheDocument();
+    expect(screen.queryByTestId("section-error")).not.toBeInTheDocument();
+    expect(mockGetPrefs).toHaveBeenCalledTimes(2);
+  });
+
   it("renders country buttons", async () => {
     render(<ProfileSettingsPage />, { wrapper: createWrapper() });
 
@@ -202,7 +228,7 @@ describe("ProfileSettingsPage", () => {
     });
   });
 
-  it("passes through diet/allergen values from prefs when saving", async () => {
+  it("updates only profile-owned fields", async () => {
     mockGetPrefs.mockResolvedValue({
       ok: true,
       data: {
@@ -226,11 +252,10 @@ describe("ProfileSettingsPage", () => {
     await waitFor(() => {
       expect(mockSetPrefs).toHaveBeenCalledWith(
         expect.anything(),
-        expect.objectContaining({
+        {
           p_country: "DE",
-          p_diet_preference: "vegan",
-          p_avoid_allergens: ["gluten"],
-        }),
+          p_preferred_language: "de",
+        },
       );
     });
   });

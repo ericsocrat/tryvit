@@ -1174,6 +1174,8 @@
     "contactText": "For questions about these terms, contact us at:"
   },
   "onboarding": {
+    "preferencesUnavailableTitle": "We couldn't load your preferences",
+    "preferencesUnavailableDescription": "Nothing has been changed. Try again to continue.",
     "selectRegion": "Select your region",
     "regionSubtitle": "We'll show you products available in your country.",
     "pleaseSelectRegion": "Please select your region.",

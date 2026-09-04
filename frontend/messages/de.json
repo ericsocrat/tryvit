@@ -1174,6 +1174,8 @@
     "contactText": "Bei Fragen zu diesen Bedingungen kontaktieren Sie uns unter:"
   },
   "onboarding": {
+    "preferencesUnavailableTitle": "Ihre Einstellungen konnten nicht geladen werden",
+    "preferencesUnavailableDescription": "Es wurde nichts geändert. Versuchen Sie es erneut, um fortzufahren.",
     "selectRegion": "Wählen Sie Ihre Region",
     "regionSubtitle": "Wir zeigen Ihnen Produkte, die in Ihrem Land erhältlich sind.",
     "pleaseSelectRegion": "Bitte wählen Sie Ihre Region.",

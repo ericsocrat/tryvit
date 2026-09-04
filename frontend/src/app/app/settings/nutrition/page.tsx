@@ -3,20 +3,22 @@
 // ─── Settings — Nutrition & Diet (Diet, Allergens, Health Profiles) ─────────
 
 import { Button } from "@/components/common/Button";
+import { SectionError } from "@/components/common/SectionError";
 import { SettingsSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
 import surface from "@/components/layout/CustomerSurface.module.css";
 import { HealthProfileSection } from "@/components/settings/HealthProfileSection";
 import { useAnalytics } from "@/hooks/use-analytics";
-import { getUserPreferences, setUserPreferences } from "@/lib/api";
+import { useUserPreferencesQuery } from "@/hooks/use-user-preferences-query";
+import { setUserPreferences } from "@/lib/api";
 import { ALLERGEN_PRESETS, ALLERGEN_TAGS, DIET_OPTIONS } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { queryKeys } from "@/lib/query-keys";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
 import { useLanguageStore } from "@/stores/language-store";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 export default function NutritionSettingsPage() {
@@ -26,15 +28,12 @@ export default function NutritionSettingsPage() {
   const { t } = useTranslation();
   const setStoreLanguage = useLanguageStore((s) => s.setLanguage);
 
-  const { data: prefs, isLoading } = useQuery({
-    queryKey: queryKeys.preferences,
-    queryFn: async () => {
-      const result = await getUserPreferences(supabase);
-      if (!result.ok) throw new Error(result.error.message);
-      return result.data;
-    },
-    staleTime: staleTimes.preferences,
-  });
+  const {
+    data: prefs,
+    error: preferencesError,
+    isPending,
+    refetch: refetchPreferences,
+  } = useUserPreferencesQuery();
 
   const [diet, setDiet] = useState("none");
   const [allergens, setAllergens] = useState<string[]>([]);
@@ -84,13 +83,16 @@ export default function NutritionSettingsPage() {
   }
 
   async function handleSave() {
+    if (!prefs) {
+      showToast({ type: "error", messageKey: "auth.preferencesFailed" });
+      return;
+    }
+
     setSaving(true);
     const result = await setUserPreferences(supabase, {
-      // Pass through existing country/language (managed on Profile page)
-      p_country: prefs?.country ?? "PL",
-      p_preferred_language: prefs?.preferred_language ?? "en",
       p_diet_preference: diet,
-      p_avoid_allergens: allergens.length > 0 ? allergens : undefined,
+      // Empty is an intentional clear; omission means preserve.
+      p_avoid_allergens: allergens,
       p_strict_diet: strictDiet,
       p_strict_allergen: strictAllergen,
       p_treat_may_contain_as_unsafe: treatMayContain,
@@ -104,7 +106,7 @@ export default function NutritionSettingsPage() {
 
     // Sync the language store (in case prefs changed upstream)
     setStoreLanguage(
-      (prefs?.preferred_language ?? "en") as Parameters<
+      prefs.preferred_language as Parameters<
         typeof setStoreLanguage
       >[0],
     );
@@ -125,8 +127,31 @@ export default function NutritionSettingsPage() {
     showToast({ type: "success", messageKey: "settings.preferencesSaved" });
   }
 
-  if (isLoading) {
+  if (isPending) {
     return <SettingsSkeleton />;
+  }
+
+  if (!prefs && preferencesError) {
+    return (
+      <AppPage className={surface.appPage}>
+        <Breadcrumbs
+          items={[
+            { labelKey: "nav.home", href: "/app" },
+            { labelKey: "nav.settings", href: "/app/settings" },
+            { labelKey: "settings.tabNutrition" },
+          ]}
+        />
+        <AppPageHeader
+          eyebrow={t("nav.settings")}
+          title={t("settings.tabNutrition")}
+        />
+        <SectionError
+          error={preferencesError}
+          label={t("settings.tabNutrition")}
+          onRetry={() => void refetchPreferences()}
+        />
+      </AppPage>
+    );
   }
 
   return (

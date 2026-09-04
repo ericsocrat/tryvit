@@ -3,14 +3,15 @@
 // ─── Settings — Notifications (Push Toggle, Score Alerts, Frequency) ────────
 
 import { Button } from "@/components/common/Button";
+import { SectionError } from "@/components/common/SectionError";
 import { SettingsSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
 import surface from "@/components/layout/CustomerSurface.module.css";
 import { useAnalytics } from "@/hooks/use-analytics";
+import { useUserPreferencesQuery } from "@/hooks/use-user-preferences-query";
 import {
     deletePushSubscription,
-    getUserPreferences,
     savePushSubscription,
     setUserPreferences,
 } from "@/lib/api";
@@ -25,11 +26,11 @@ import {
     subscribeToPush,
     unsubscribeFromPush,
 } from "@/lib/push-manager";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { queryKeys } from "@/lib/query-keys";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
 import type { NotificationFrequency } from "@/lib/types";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Bell, BellOff, BellRing, Clock } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -54,15 +55,12 @@ export default function NotificationSettingsPage() {
   const [dirty, setDirty] = useState(false);
 
   // ─── Load user preferences ─────────────────────────────────────────────────
-  const { data: prefs, isLoading } = useQuery({
-    queryKey: queryKeys.preferences,
-    queryFn: async () => {
-      const result = await getUserPreferences(supabase);
-      if (!result.ok) throw new Error(result.error.message);
-      return result.data;
-    },
-    staleTime: staleTimes.preferences,
-  });
+  const {
+    data: prefs,
+    error: preferencesError,
+    isPending,
+    refetch: refetchPreferences,
+  } = useUserPreferencesQuery();
 
   // ─── Populate from fetched prefs ────────────────────────────────────────────
   useEffect(() => {
@@ -154,10 +152,13 @@ export default function NotificationSettingsPage() {
 
   // ─── Save notification preferences ─────────────────────────────────────────
   async function handleSavePreferences() {
+    if (!prefs) {
+      showToast({ type: "error", messageKey: "auth.preferencesFailed" });
+      return;
+    }
+
     setSavingPrefs(true);
     const result = await setUserPreferences(supabase, {
-      p_country: prefs?.country ?? "PL",
-      p_preferred_language: prefs?.preferred_language ?? "en",
       p_notification_score_changes: scoreChanges,
       p_notification_frequency: frequency,
     });
@@ -177,8 +178,31 @@ export default function NotificationSettingsPage() {
     showToast({ type: "success", messageKey: "notifications.preferencesSaved" });
   }
 
-  if (isLoading) {
+  if (isPending) {
     return <SettingsSkeleton />;
+  }
+
+  if (!prefs && preferencesError) {
+    return (
+      <AppPage className={surface.appPage}>
+        <Breadcrumbs
+          items={[
+            { labelKey: "nav.home", href: "/app" },
+            { labelKey: "nav.settings", href: "/app/settings" },
+            { labelKey: "settings.tabNotifications" },
+          ]}
+        />
+        <AppPageHeader
+          eyebrow={t("nav.settings")}
+          title={t("settings.tabNotifications")}
+        />
+        <SectionError
+          error={preferencesError}
+          label={t("settings.tabNotifications")}
+          onRetry={() => void refetchPreferences()}
+        />
+      </AppPage>
+    );
   }
 
   return (

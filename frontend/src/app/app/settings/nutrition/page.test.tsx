@@ -84,6 +84,36 @@ describe("NutritionSettingsPage", () => {
     });
   });
 
+  it("fails closed when preferences cannot be loaded, then hydrates after retry", async () => {
+    mockGetPrefs
+      .mockResolvedValueOnce({
+        ok: false,
+        error: { code: "500", message: "Preferences unavailable" },
+      })
+      .mockResolvedValueOnce({ ok: true, data: mockPrefsData });
+    render(<NutritionSettingsPage />, { wrapper: createWrapper() });
+    const user = userEvent.setup();
+
+    const retry = await screen.findByRole("button", { name: "Try again" });
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Nutrition & Diet couldn't be loaded",
+    );
+    expect(screen.queryByText("No restriction")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Save changes" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("health-profile-section"),
+    ).not.toBeInTheDocument();
+
+    await user.click(retry);
+
+    expect(await screen.findByText("No restriction")).toBeInTheDocument();
+    expect(screen.getByTestId("health-profile-section")).toBeInTheDocument();
+    expect(screen.queryByTestId("section-error")).not.toBeInTheDocument();
+    expect(mockGetPrefs).toHaveBeenCalledTimes(2);
+  });
+
   it("renders diet preference options", async () => {
     render(<NutritionSettingsPage />, { wrapper: createWrapper() });
 
@@ -186,7 +216,7 @@ describe("NutritionSettingsPage", () => {
     });
   });
 
-  it("passes through country/language from prefs when saving", async () => {
+  it("updates only nutrition-owned fields", async () => {
     mockGetPrefs.mockResolvedValue({
       ok: true,
       data: { ...mockPrefsData, country: "DE", preferred_language: "de" },
@@ -204,14 +234,13 @@ describe("NutritionSettingsPage", () => {
     await user.click(screen.getByRole("button", { name: "Save changes" }));
 
     await waitFor(() => {
-      expect(mockSetPrefs).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({
-          p_country: "DE",
-          p_preferred_language: "de",
-          p_diet_preference: "vegetarian",
-        }),
-      );
+      expect(mockSetPrefs).toHaveBeenCalledWith(expect.anything(), {
+        p_diet_preference: "vegetarian",
+        p_avoid_allergens: [],
+        p_strict_diet: false,
+        p_strict_allergen: false,
+        p_treat_may_contain_as_unsafe: false,
+      });
     });
   });
 
