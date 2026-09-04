@@ -147,37 +147,56 @@ if ($DryRun) {
     exit 0
 }
 
-# Execute each file
+# Execute each category as one ordered, fail-closed transaction
 $successCount = 0
 $failCount = 0
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
-foreach ($file in $allFiles) {
-    $relativePath = $file.FullName.Replace($PSScriptRoot, "").TrimStart("\", "/")
-    # Show batch progress for batched pipeline files
-    $batchLabel = ""
-    if ($file.Name -match '_batch_(\d{3})_') {
-        $batchNum = $Matches[1]
-        $stepPrefix = ($file.Name -split '_batch_')[0]
-        $totalBatches = @($allFiles | Where-Object { $_.Name -like "$stepPrefix*_batch_*" }).Count
-        $batchLabel = "  [batch $batchNum/$totalBatches]"
+foreach ($folder in $categoryFolders) {
+    $categoryFiles = @($allFiles | Where-Object { $_.Directory.FullName -eq $folder.FullName } | Sort-Object Name)
+    if ($categoryFiles.Count -eq 0) {
+        continue
     }
-    Write-Host "  RUN  $relativePath$batchLabel" -ForegroundColor Yellow -NoNewline
 
-    $sqlContent = Get-Content $file.FullName -Raw
-    $output = $sqlContent | docker exec -i $CONTAINER psql -U $DB_USER -d $DB_NAME --single-transaction -v ON_ERROR_STOP=1 2>&1
+    Write-Host "  RUN  $($folder.Name) ($($categoryFiles.Count) ordered files, one transaction)" -ForegroundColor Yellow -NoNewline
+
+    $sqlParts = @()
+    foreach ($file in $categoryFiles) {
+        $lines = @(Get-Content $file.FullName)
+        $meaningful = @()
+        for ($lineIndex = 0; $lineIndex -lt $lines.Count; $lineIndex++) {
+            $trimmed = $lines[$lineIndex].Trim()
+            if ($trimmed -ne "" -and -not $trimmed.StartsWith("--")) {
+                $meaningful += $lineIndex
+            }
+        }
+
+        # Historical standalone enrichment files own BEGIN/COMMIT wrappers.
+        # Delegate only those outer boundaries to this category transaction.
+        if ($meaningful.Count -gt 0 -and $lines[$meaningful[0]].Trim().ToUpperInvariant() -eq "BEGIN;") {
+            $lines[$meaningful[0]] = "-- outer BEGIN delegated to RUN_LOCAL"
+        }
+        if ($meaningful.Count -gt 0 -and $lines[$meaningful[-1]].Trim().ToUpperInvariant() -eq "COMMIT;") {
+            $lines[$meaningful[-1]] = "-- outer COMMIT delegated to RUN_LOCAL"
+        }
+
+        $sqlParts += "-- BEGIN FILE: $($file.Name)"
+        $sqlParts += ($lines -join [Environment]::NewLine)
+        $sqlParts += "-- END FILE: $($file.Name)"
+    }
+    $sqlContent = $sqlParts -join ([Environment]::NewLine + [Environment]::NewLine)
+    $output = $sqlContent | docker exec -i $CONTAINER psql -U $DB_USER -d $DB_NAME -X -v ON_ERROR_STOP=1 --single-transaction -f - 2>&1
 
     if ($LASTEXITCODE -eq 0) {
         Write-Host "  ✓" -ForegroundColor Green
-        $successCount++
+        $successCount += $categoryFiles.Count
     }
     else {
         Write-Host "  ✗ FAILED" -ForegroundColor Red
-        Write-Host "    $output" -ForegroundColor DarkRed
+        Write-Host "    $($output | Select-Object -Last 5)" -ForegroundColor DarkRed
         $failCount++
-        # Stop on first error to prevent cascading failures
         Write-Host ""
-        Write-Host "ABORTED: Stopping pipeline due to error." -ForegroundColor Red
+        Write-Host "ABORTED: Category transaction rolled back; stopping pipeline." -ForegroundColor Red
         break
     }
 }

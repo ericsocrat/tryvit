@@ -38,6 +38,84 @@ from pipeline.enrichment import (
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PIPELINES_ROOT = PROJECT_ROOT / "db" / "pipelines"
 
+# Field names in ``product_field_provenance`` are a stable logical contract,
+# not necessarily the physical column names in ``nutrition_facts``.  These
+# names are consumed by the comparison/export trust gates.
+_DIRECT_OFF_PROVENANCE_FIELDS = frozenset(
+    {
+        "product_name",
+        "brand",
+        "ean",
+        "category",
+        "calories_100g",
+        "fat_100g",
+        "saturated_fat_100g",
+        "trans_fat_100g",
+        "carbs_100g",
+        "sugars_100g",
+        "fiber_100g",
+        "protein_100g",
+        "salt_100g",
+        "nutri_score_label",
+        "nova_classification",
+        "image_url",
+        "image_ingredients_url",
+        "image_nutrition_url",
+    }
+)
+
+# These fields are replaced or invalidated by every OFF refresh. Ingredient
+# and allergen junctions are additive today, so their existing aggregate
+# provenance is neither erased nor refreshed until those sets can be replaced
+# atomically.
+_OFF_REPLACED_PROVENANCE_FIELDS = tuple(
+    sorted(
+        _DIRECT_OFF_PROVENANCE_FIELDS
+        | {
+            "prep_method",
+            "store_availability",
+            "controversies",
+        }
+    )
+)
+
+_SCORING_PROVENANCE_FIELDS = (
+    "score_model_version",
+)
+
+# A refresh mutates these logical fields. If another source owns one of them,
+# the atomic category transaction must stop for explicit reconciliation.
+_PIPELINE_MUTATED_PROVENANCE_FIELDS = tuple(
+    sorted(
+        set(_OFF_REPLACED_PROVENANCE_FIELDS)
+        | set(_SCORING_PROVENANCE_FIELDS)
+        | {
+            "product_type",
+            "nutri_score_source",
+            "unhealthiness_score",
+            "data_completeness_pct",
+            "confidence",
+            "additive_count",
+            "additives_count",
+            "ingredient_concern_level",
+            "ingredients_raw",
+            "ingredients_text",
+            "allergen_tags",
+            "allergens",
+            "calories",
+            "total_fat_g",
+            "saturated_fat_g",
+            "trans_fat_g",
+            "carbs_g",
+            "sugars_g",
+            "fibre_g",
+            "protein_g",
+            "salt_g",
+            "image_front_url",
+        }
+    )
+)
+
 
 class PipelineOutputPathError(ValueError):
     """Raised when a generated SQL path escapes the trusted pipeline root."""
@@ -105,16 +183,16 @@ def _sql_text(value: str | None) -> str:
 
 
 def _sql_num(value: str | float | int | None) -> str:
-    """Return a bare numeric literal or ``null``.
+    """Return a bare numeric literal or a typed SQL ``null``.
 
     Strips non-numeric characters (except ``-`` and ``.``) so values like
     ``"12.5 g"`` become ``12.5``.
     """
     if value is None:
-        return "null"
+        return "null::numeric"
     s = str(value).strip()
     if not s:
-        return "null"
+        return "null::numeric"
     # Strip trailing units / whitespace
     cleaned = ""
     for ch in s:
@@ -123,7 +201,7 @@ def _sql_num(value: str | float | int | None) -> str:
         elif cleaned:
             break
     if not cleaned or cleaned in (".", "-", "-."):
-        return "null"
+        return "null::numeric"
     return cleaned
 
 
@@ -132,6 +210,68 @@ def _sql_null_or_text(value: str | None) -> str:
     if not value:
         return "null"
     return _sql_text(value)
+
+
+def _sql_text_array(values: list[str] | tuple[str, ...]) -> str:
+    """Return a deterministic PostgreSQL ``text[]`` literal."""
+    if not values:
+        return "ARRAY[]::text[]"
+    return "ARRAY[" + ", ".join(_sql_text(value) for value in values) + "]::text[]"
+
+
+def _validated_fetched_at(value: object) -> str | None:
+    """Validate and normalize an explicit successful-fetch timestamp.
+
+    Missing metadata is allowed for historical/manual generator callers, but a
+    supplied timestamp must be an ISO-8601 UTC string.  This keeps a malformed
+    fetch signal from becoming database freshness evidence.
+    """
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("_fetched_at must be a non-empty ISO-8601 UTC string")
+    candidate = value.strip()
+    try:
+        parsed = datetime.datetime.fromisoformat(candidate.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError("_fetched_at must be a valid ISO-8601 UTC timestamp") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() != datetime.timedelta(0):
+        raise ValueError("_fetched_at must include the UTC timezone")
+    return parsed.astimezone(datetime.UTC).isoformat().replace("+00:00", "Z")
+
+
+def _validated_off_revision(value: object) -> int | None:
+    """Return a positive OFF revision, rejecting invalid supplied metadata."""
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        raise ValueError("_off_revision must be a positive integer or None")
+    return value
+
+
+def _explicit_off_fields(product: dict) -> tuple[str, ...]:
+    """Return recognized, explicitly source-backed logical field names.
+
+    The extractor contract uses a deterministic tuple.  Accept other ordinary
+    collections for compatibility with serialized fixtures, while ignoring
+    unknown future keys rather than turning them into provenance claims.
+    """
+    raw_fields = product.get("_off_fields_present", ())
+    if raw_fields is None:
+        return ()
+    if isinstance(raw_fields, (str, bytes)) or not isinstance(
+        raw_fields, (list, tuple, set, frozenset)
+    ):
+        raise ValueError("_off_fields_present must be a collection of field names")
+    return tuple(
+        sorted(
+            {
+                field
+                for field in raw_fields
+                if isinstance(field, str) and field in _DIRECT_OFF_PROVENANCE_FIELDS
+            }
+        )
+    )
 
 
 def _identity_key(brand: str, product_name: str) -> str:
@@ -398,10 +538,13 @@ def _gen_04_scoring(category: str, products: list[dict], today: str, country: st
     # NOVA values
     nova_lines: list[str] = []
     for i, p in enumerate(products):
-        nova_raw = p.get("nova_classification") or ""
-        nova = nova_raw if nova_raw in ("1", "2", "3", "4") else "4"
+        nova_raw = p.get("nova_classification")
+        nova = str(nova_raw) if str(nova_raw) in ("1", "2", "3", "4") else None
         comma = "," if i < len(products) - 1 else ""
-        nova_lines.append(f"    ({_sql_text(p['brand'])}, {_sql_text(p['product_name'])}, {_sql_text(nova)}){comma}")
+        nova_lines.append(
+            f"    ({_sql_text(p['brand'])}, {_sql_text(p['product_name'])}, "
+            f"{_sql_null_or_text(nova)}){comma}"
+        )
     nova_block = "\n".join(nova_lines)
 
     scoring_sql = f"""\
@@ -448,46 +591,259 @@ CALL score_category({_sql_text(category)}, 100, {_sql_text(country)});
 def _gen_05_source_provenance(category: str, products: list[dict], today: str, country: str = "PL") -> str:
     """Generate file 05 — source provenance.
 
-    Updates ``products`` with source URL, EAN, and type for every
-    product in the category.
+    Product-level source/freshness metadata and field-level provenance are
+    emitted only for records carrying the extractor's explicit successful-fetch
+    signals.  Fallback-normalized values never create provenance by themselves.
     """
-    # Build (brand, product_name, ean, source_url) values
-    prov_lines: list[str] = []
+    evidence_rows: list[str] = []
+    for p in products:
+        fetched_at = _validated_fetched_at(p.get("_fetched_at"))
+        if fetched_at is None:
+            # Historical/manual generator callers have no successful-fetch
+            # receipt.  They must not acquire synthetic OFF provenance.
+            continue
 
-    for i, p in enumerate(products):
-        brand = _sql_text(p["brand"])
-        name = _sql_text(p["product_name"])
-        ean = p.get("ean") or ""
-        comma = "," if i < len(products) - 1 else ""
+        revision = _validated_off_revision(p.get("_off_revision"))
+        fields = _explicit_off_fields(p)
+        ean = str(p.get("ean") or "")
+        ean_is_explicit = "ean" in fields and bool(ean)
+        source_ean = _sql_text(ean) if ean_is_explicit else "null"
+        source_url = (
+            _sql_text(f"https://world.openfoodfacts.org/product/{ean}")
+            if ean_is_explicit
+            else "null"
+        )
+        raw_fields = set(p.get("_off_fields_present") or ())
+        derived_fields = [
+            field
+            for field in ("prep_method", "controversies")
+            if field in raw_fields
+        ]
+        evidence_rows.append(
+            "    ("
+            + ", ".join(
+                (
+                    _sql_text(p["brand"]),
+                    _sql_text(p["product_name"]),
+                    source_url,
+                    source_ean,
+                    f"{_sql_text(fetched_at)}::timestamptz",
+                    "null::integer" if revision is None else str(revision),
+                    _sql_text_array(fields),
+                    _sql_text_array(derived_fields),
+                )
+            )
+            + ")"
+        )
 
-        # Source URL: if we have an EAN, link to the OFF product page
-        if ean:
-            source_url = _sql_text(f"https://world.openfoodfacts.org/product/{ean}")
-            source_ean = _sql_text(ean)
-        else:
-            source_url = "null"
-            source_ean = "null"
-
-        prov_lines.append(f"    ({brand}, {name}, {source_url}, {source_ean}){comma}")
-
-    prov_block = "\n".join(prov_lines)
-
-    return f"""\
+    if not evidence_rows:
+        return f"""\
 -- PIPELINE ({category}): source provenance
 -- Generated: {today}
 
--- 1. Update source info on products
+-- No explicit successful-fetch metadata was supplied.  Source, freshness,
+-- revision, and field-level provenance intentionally remain unchanged.
+"""
+
+    evidence_block = ",\n".join(evidence_rows)
+    replaced_fields = _sql_text_array(_OFF_REPLACED_PROVENANCE_FIELDS)
+    derived_refresh_fields = _sql_text_array(
+        ("prep_method", "controversies", *_SCORING_PROVENANCE_FIELDS)
+    )
+    mutated_fields = _sql_text_array(_PIPELINE_MUTATED_PROVENANCE_FIELDS)
+
+    return f"""\
+-- PIPELINE ({category}): source provenance and freshness
+-- Generated: {today}
+-- Only extractor-confirmed fields receive OFF provenance.
+
+-- 0. Fail closed before this atomic category transaction can replace a value
+-- owned by a different source. Such rows require explicit reconciliation.
+DO $provenance_guard$
+DECLARE
+  conflicting_record record;
+BEGIN
+  WITH fetch_evidence(
+    brand, product_name, source_url, source_ean, fetched_at, off_revision,
+    direct_fields, derived_fields
+  ) AS (
+    VALUES
+{evidence_block}
+  )
+  SELECT conflict.product_id, conflict.field_name, conflict.source_type
+  INTO conflicting_record
+  FROM (
+    SELECT p.product_id, 'source_type'::text AS field_name, p.source_type
+    FROM fetch_evidence d
+    JOIN products p ON p.country = {_sql_text(country)}
+      AND p.brand = d.brand AND p.product_name = d.product_name
+    WHERE p.source_type IS NOT NULL
+      AND p.source_type NOT IN ('off_api', 'off_search')
+
+    UNION ALL
+
+    SELECT p.product_id, pf.field_name, pf.source_type
+    FROM fetch_evidence d
+    JOIN products p ON p.country = {_sql_text(country)}
+      AND p.brand = d.brand AND p.product_name = d.product_name
+    JOIN product_field_provenance pf ON pf.product_id = p.product_id
+    WHERE pf.field_name = ANY({mutated_fields})
+      AND pf.source_type NOT IN ('off_api', 'derived_calculation')
+  ) AS conflict
+  LIMIT 1;
+
+  IF FOUND THEN
+    RAISE EXCEPTION USING MESSAGE = format(
+      'Pipeline refresh requires source reconciliation for product %s field %s owned by %s',
+      conflicting_record.product_id,
+      conflicting_record.field_name,
+      conflicting_record.source_type
+    );
+  END IF;
+END
+$provenance_guard$;
+
+-- 1. Update product-level source and successful-fetch metadata.
+WITH fetch_evidence(
+  brand, product_name, source_url, source_ean, fetched_at, off_revision,
+  direct_fields, derived_fields
+) AS (
+  VALUES
+{evidence_block}
+)
 UPDATE products p SET
   source_type = 'off_api',
   source_url = d.source_url,
-  source_ean = d.source_ean
-FROM (
-  VALUES
-{prov_block}
-) AS d(brand, product_name, source_url, source_ean)
+  source_ean = d.source_ean,
+  last_fetched_at = d.fetched_at,
+  off_revision = d.off_revision
+FROM fetch_evidence d
 WHERE p.country = {_sql_text(country)} AND p.brand = d.brand
   AND p.product_name = d.product_name
   AND p.category = {_sql_text(category)} AND p.is_deprecated IS NOT TRUE;
+
+-- 2. Clear prior OFF claims for fields this refresh replaces.  Additive
+-- ingredient/allergen evidence is retained when the new response omits it.
+WITH fetch_evidence(
+  brand, product_name, source_url, source_ean, fetched_at, off_revision,
+  direct_fields, derived_fields
+) AS (
+  VALUES
+{evidence_block}
+)
+DELETE FROM product_field_provenance pf
+USING products p, fetch_evidence d
+WHERE pf.product_id = p.product_id
+  AND p.country = {_sql_text(country)} AND p.brand = d.brand
+  AND p.product_name = d.product_name
+  AND p.category = {_sql_text(category)} AND p.is_deprecated IS NOT TRUE
+  AND pf.source_type = 'off_api'
+  AND pf.field_name = ANY({replaced_fields});
+
+-- 3. Record only explicitly present OFF fields, using fetch time rather than
+-- SQL execution time as the evidence timestamp.
+WITH fetch_evidence(
+  brand, product_name, source_url, source_ean, fetched_at, off_revision,
+  direct_fields, derived_fields
+) AS (
+  VALUES
+{evidence_block}
+)
+INSERT INTO product_field_provenance (
+  product_id, field_name, source_type, source_url, confidence,
+  verified_at, verified_by, notes, recorded_at
+)
+SELECT
+  p.product_id,
+  field_name,
+  'off_api',
+  d.source_url,
+  source.base_confidence,
+  null,
+  null,
+  'Automated ingestion from explicit Open Food Facts evidence',
+  d.fetched_at
+FROM fetch_evidence d
+JOIN products p ON p.country = {_sql_text(country)} AND p.brand = d.brand
+  AND p.product_name = d.product_name
+  AND p.category = {_sql_text(category)} AND p.is_deprecated IS NOT TRUE
+CROSS JOIN LATERAL unnest(d.direct_fields) AS field_name
+JOIN data_sources source ON source.source_key = 'off_api'
+ON CONFLICT (product_id, field_name) DO UPDATE SET
+  source_type = excluded.source_type,
+  source_url = excluded.source_url,
+  confidence = excluded.confidence,
+  verified_at = excluded.verified_at,
+  verified_by = excluded.verified_by,
+  notes = excluded.notes,
+  recorded_at = excluded.recorded_at
+WHERE product_field_provenance.source_type = excluded.source_type;
+
+-- 4. Refresh provenance for deterministic values produced from the current
+-- source cohort, then record only values that actually exist.
+WITH fetch_evidence(
+  brand, product_name, source_url, source_ean, fetched_at, off_revision,
+  direct_fields, derived_fields
+) AS (
+  VALUES
+{evidence_block}
+)
+DELETE FROM product_field_provenance pf
+USING products p, fetch_evidence d
+WHERE pf.product_id = p.product_id
+  AND p.country = {_sql_text(country)} AND p.brand = d.brand
+  AND p.product_name = d.product_name
+  AND p.category = {_sql_text(category)} AND p.is_deprecated IS NOT TRUE
+  AND pf.source_type = 'derived_calculation'
+  AND pf.field_name = ANY({derived_refresh_fields});
+
+WITH fetch_evidence(
+  brand, product_name, source_url, source_ean, fetched_at, off_revision,
+  direct_fields, derived_fields
+) AS (
+  VALUES
+{evidence_block}
+)
+INSERT INTO product_field_provenance (
+  product_id, field_name, source_type, source_url, confidence,
+  verified_at, verified_by, notes, recorded_at
+)
+SELECT
+  p.product_id,
+  derived.field_name,
+  'derived_calculation',
+  d.source_url,
+  source.base_confidence,
+  null,
+  null,
+  'Deterministically derived during the same atomic OFF refresh',
+  d.fetched_at
+FROM fetch_evidence d
+JOIN products p ON p.country = {_sql_text(country)} AND p.brand = d.brand
+  AND p.product_name = d.product_name
+  AND p.category = {_sql_text(category)} AND p.is_deprecated IS NOT TRUE
+CROSS JOIN LATERAL (
+  VALUES
+    ('prep_method', CASE WHEN 'prep_method' = ANY(d.derived_fields) THEN to_jsonb(p.prep_method) END),
+    ('controversies', CASE WHEN 'controversies' = ANY(d.derived_fields) THEN to_jsonb(p.controversies) END),
+    ('score_model_version', to_jsonb(p.score_model_version))
+) AS derived(field_name, field_value)
+JOIN data_sources source ON source.source_key = 'derived_calculation'
+WHERE derived.field_value IS NOT NULL
+  AND derived.field_value <> 'null'::jsonb
+ON CONFLICT (product_id, field_name) DO UPDATE SET
+  source_type = excluded.source_type,
+  source_url = excluded.source_url,
+  confidence = excluded.confidence,
+  verified_at = excluded.verified_at,
+  verified_by = excluded.verified_by,
+  notes = excluded.notes,
+  recorded_at = excluded.recorded_at
+WHERE product_field_provenance.source_type = excluded.source_type;
+
+-- score_category refreshed this view before source_type was updated above.
+-- Refresh it again after provenance so the committed view matches the cohort.
+REFRESH MATERIALIZED VIEW CONCURRENTLY v_product_confidence;
 """
 
 
@@ -892,6 +1248,7 @@ def generate_pipeline(
                 allergen_evidence,
                 "normalized pipeline input (Open Food Facts explicit evidence)",
                 phase=phase,
+                include_transaction=False,
             ),
         )
     else:

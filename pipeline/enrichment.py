@@ -478,8 +478,15 @@ def generate_enrichment_sql(
     source_label: str,
     reference_properties: Mapping[str, tuple[bool, str, str, str]] | None = None,
     phase: str | None = None,
+    *,
+    include_transaction: bool = True,
 ) -> str:
-    """Generate stable, idempotent linkage SQL keyed by country and EAN."""
+    """Generate stable, idempotent linkage SQL keyed by country and EAN.
+
+    Standalone enrichment artifacts own their transaction by default.  The
+    category pipeline disables that wrapper because its orchestrator applies
+    every ordered SQL file in one outer, fail-closed transaction.
+    """
     canonical_by_source = {
         (row.evidence.country, row.evidence.ean, row.normalized_text): row.canonical_name
         for row in matches
@@ -521,9 +528,11 @@ def generate_enrichment_sql(
         f"-- Category: {category}",
         f"-- Source: {source_label}",
         "-- Identity: products(country, ean); absence of rows means unknown.",
-        "BEGIN;",
-        "",
     ]
+    if include_transaction:
+        lines.extend(["BEGIN;", ""])
+    else:
+        lines.append("")
     if linked:
         properties = reference_properties or {}
         needed_references = {row.canonical_name for row in linked if row.canonical_name}
@@ -645,7 +654,10 @@ def generate_enrichment_sql(
                 "",
             ]
         )
-    lines.extend(["COMMIT;", ""])
+    if include_transaction:
+        lines.extend(["COMMIT;", ""])
+    else:
+        lines.append("")
     return "\n".join(lines)
 
 
