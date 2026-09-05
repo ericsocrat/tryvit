@@ -26,6 +26,9 @@ on:
       - "**.js"
       - "**.ts"
       - "**.tsx"
+      - "**.py"
+      - "requirements*.txt"
+      - "pyproject.toml"
   pull_request:
     branches: [main, codex/phase-5a0d-performance-visual-gates]
     # No paths filter — the code_scanning ruleset rule requires CodeQL to
@@ -53,9 +56,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: ["javascript-typescript"]
-        # Python analysis is available but our Python code is pipeline-only
-        # (not deployed). Add "python" here if pipeline code becomes critical.
+        language: ["javascript-typescript", "python"]
+        # Ingestion is a product-critical trust boundary, even when not served
+        # by Vercel. Analyze both supported implementation languages.
 
     steps:
       - name: Checkout repository
@@ -93,9 +96,11 @@ jobs:
       - name: Summary
         if: ${{ !cancelled() }}
         run: |
-          echo "## CodeQL Security Analysis" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Language: **${{ matrix.language }}**" >> "$GITHUB_STEP_SUMMARY"
-          echo "Query suite: **security-extended**" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Results: [Security → Code scanning](https://github.com/${{ github.repository }}/security/code-scanning)" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## CodeQL Security Analysis"
+            echo ""
+            echo "Language: **${{ matrix.language }}**"
+            echo "Query suite: **security-extended**"
+            echo ""
+            echo "Results: [Security → Code scanning](https://github.com/${{ github.repository }}/security/code-scanning)"
+          } >> "$GITHUB_STEP_SUMMARY"

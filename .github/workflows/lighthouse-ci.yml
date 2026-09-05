@@ -1,29 +1,35 @@
 name: Lighthouse CI
 
 on:
-  pull_request:
-    branches: [main, codex/phase-5a0d-performance-visual-gates]
-    paths:
-      - "frontend/**"
-      - "supabase/config.toml"
-      - "supabase/migrations/**"
-      - ".github/workflows/lighthouse-ci.yml"
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact source commit to measure under the retained methodology
+        required: true
+        type: string
+      question:
+        description: Specific unresolved performance question (define before measuring)
+        required: true
+        type: string
+  schedule:
+    # Fixed-method surveillance, separate from ordinary PR iteration.
+    - cron: "0 5 * * 1"
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: lighthouse-experiment-${{ github.event.inputs.source_sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
   lighthouse:
     name: Guarded Lighthouse (public + local)
-    # PR #1304 governs the retained cohort and must not collect a replacement cohort.
-    if: ${{ github.head_ref != 'codex/phase-5a3-lab-performance-methodology' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
+      EXPERIMENT_SOURCE_SHA: ${{ github.event.inputs.source_sha || github.sha }}
+      EXPERIMENT_QUESTION: ${{ github.event.inputs.question || 'Weekly fixed-method lab surveillance; not field Core Web Vitals.' }}
       VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
       BASE_URL: http://127.0.0.1:3000
     defaults:
@@ -31,16 +37,23 @@ jobs:
         working-directory: frontend
 
     steps:
+      - name: Require explicit experiment scope before measurement
+        working-directory: .
+        shell: bash
+        run: |
+          [[ "$EXPERIMENT_SOURCE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          test "${#EXPERIMENT_QUESTION}" -ge 10
+          printf 'Lab experiment source: %s\n\nQuestion: %s\n\nRetain every valid sample; this is not field CWV evidence.\n' "$EXPERIMENT_SOURCE_SHA" "$EXPERIMENT_QUESTION" >> "$GITHUB_STEP_SUMMARY"
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ env.EXPERIMENT_SOURCE_SHA }}
           persist-credentials: false
 
-      - name: Attest exact pull-request head
+      - name: Attest exact experiment source
         working-directory: .
         shell: bash
-        run: test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"
+        run: test "$(git rev-parse HEAD)" = "$EXPERIMENT_SOURCE_SHA"
 
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0

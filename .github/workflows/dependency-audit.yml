@@ -1,12 +1,13 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# Dependency Audit — Block PRs with known CVEs in production dependencies
+# Dependency Audit — Report known dependency vulnerabilities
 # ═══════════════════════════════════════════════════════════════════════════════
 # Runs `npm audit` against production dependencies at HIGH severity threshold.
 # Also runs `pip audit` for the Python pipeline (if pip-audit is available).
 #
 # This is the CI GATE counterpart to Dependabot (which creates fix PRs).
 # Dependabot alerts + auto-merge handle remediation.
-# This workflow PREVENTS merging code that introduces new vulnerabilities.
+# The Change Risk Gate aggregates this result for dependency changes. Until
+# that aggregate is required in the ruleset, this is not enforced merge policy.
 #
 # Severity levels: critical, high, moderate, low
 # Gate: fails on HIGH+ (production deps only — devDependencies are not shipped)
@@ -27,6 +28,10 @@ on:
       - "frontend/package-lock.json"
       - "frontend/package.json"
       - "requirements.txt"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - "scripts/ci/**"
+      - ".github/workflows/**"
   # Weekly scan catches newly disclosed CVEs against existing lockfile
   schedule:
     - cron: "0 7 * * 1" # Monday 07:00 UTC
@@ -119,7 +124,11 @@ jobs:
           echo "" >> "$GITHUB_STEP_SUMMARY"
 
           set +e
-          audit_output=$(pip-audit -r requirements.txt --desc 2>&1)
+          # Include executable test tooling once; this overlay retains all
+          # production pins and adds only the hash-pinned test dependencies.
+          audit_requirements=requirements.txt
+          if [ -f requirements-test.txt ]; then audit_requirements=requirements-test.txt; fi
+          audit_output=$(pip-audit -r "$audit_requirements" --desc 2>&1)
           audit_exit=$?
           set -e
 

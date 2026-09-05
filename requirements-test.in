@@ -1,0 +1,6 @@
+# Test-only overlay. Production dependency pins remain owned by requirements.txt.
+# Regenerate: uv pip compile --generate-hashes --universal --python-version 3.12
+#   --default-index https://pypi.org/simple --no-config requirements-test.in
+#   --output-file requirements-test.txt
+-r requirements.txt
+pytest==9.1.1

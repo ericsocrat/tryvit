@@ -1,0 +1,86 @@
+name: Manifest-bound Database Deployment
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      source_sha:
+        type: string
+        required: true
+      migration_manifest:
+        type: string
+        required: true
+      dry_run:
+        type: boolean
+        required: true
+      staging_run_id:
+        type: string
+        default: ""
+      recovery_receipt:
+        type: string
+        default: ""
+permissions:
+  contents: read
+  actions: read
+# All callers share one mutex per actual target. Never cancel a migration.
+concurrency:
+  group: database-${{ inputs.environment }}
+  cancel-in-progress: false
+jobs:
+  authorize-dispatch:
+    name: Require trusted-main dispatch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 1
+    steps:
+      - name: Reject non-main or non-dispatch invocation
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          SOURCE_REF: ${{ github.ref }}
+          DISPATCH_SHA: ${{ github.sha }}
+          REQUESTED_SHA: ${{ inputs.source_sha }}
+        run: |
+          test "$EVENT_NAME" = workflow_dispatch
+          test "$SOURCE_REF" = refs/heads/main
+          test "$DISPATCH_SHA" = "$REQUESTED_SHA"
+  deploy:
+    name: Manifest-bound database ${{ inputs.environment }}
+    needs: authorize-dispatch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: ${{ inputs.environment == 'production' && 'Production' || 'Staging' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Execute trusted dispatch code, never code selected by an input ref.
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.21.1"
+      - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
+        with:
+          version: 2.111.0
+      - name: Validate release policy unit contracts
+        run: node --test scripts/ci/database-release.test.mjs
+      - name: Validate evidence and execute exact migration set
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          TARGET_ENVIRONMENT: ${{ inputs.environment }}
+          MIGRATION_MANIFEST: ${{ inputs.migration_manifest }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          STAGING_RUN_ID: ${{ inputs.staging_run_id }}
+          RECOVERY_RECEIPT: ${{ inputs.recovery_receipt }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_STAGING_PROJECT_REF: ${{ secrets.SUPABASE_STAGING_PROJECT_REF }}
+          SUPABASE_DB_PASSWORD: ${{ inputs.environment == 'production' && secrets.SUPABASE_DB_PASSWORD || secrets.SUPABASE_STAGING_DB_PASSWORD }}
+        run: node scripts/ci/database-release.mjs
+      - name: Upload sanitized deployment receipt only
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: database-receipt-${{ inputs.environment }}
+          path: database-receipt.json
+          if-no-files-found: error
+          retention-days: 30

@@ -11,6 +11,8 @@ on:
       - "supabase/config.toml"
       - "supabase/migrations/**"
       - ".github/workflows/phase5a0d-visual-baselines.yml"
+      - ".github/workflows/**"
+      - "scripts/ci/**"
   workflow_dispatch:
 
 permissions:
@@ -22,7 +24,7 @@ concurrency:
 
 jobs:
   policy-enablement:
-    name: Verify immutable visual baselines
+    name: Historical policy enablement scope
     if: ${{ github.event_name == 'pull_request' && ((github.event.pull_request.base.sha == '296742c9b941e0aad9cfb5b00dfa3738af9eba0e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-policy') || (github.event.pull_request.base.sha == '3887b1dc8eda1a59ce25725bf04996749f98935e' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-attestation-shell-fix') || (github.event.pull_request.base.sha == '920d9d01fdff3ab88eb46c082114f5fca998834c' && github.event.pull_request.head.ref == 'codex/phase-5a0d-attestation-label-trigger') || (github.event.pull_request.base.sha == 'd071d00970a108a13ab91aa7e1e736ca2416e119' && github.event.pull_request.head.ref == 'codex/phase-5a0d-renderer-identity-diagnostics') || (github.event.pull_request.base.sha == 'd9257be564c5097ef473b153202fc8e92c5a70e1' && github.event.pull_request.head.ref == 'codex/phase-5a0d-attested-manifest-restore') || (github.event.pull_request.base.sha == 'bb70102aa16b4aedf9a968c6c535dc99a3517b1d' && github.event.pull_request.head.ref == 'codex/phase-5a0d-attestation-flag') || (github.event.pull_request.base.sha == '94a41d63204eaf3181c0507e9ea63fbc3b84a140' && github.event.pull_request.head.ref == 'codex/phase5a0d-intentional-redesign-baseline-policy') || (github.event.pull_request.base.sha == '9c1bab1b4eac28d2cfe24a7cea1f0759fac1eafd' && github.event.pull_request.head.ref == 'codex/phase5a0d-host-runner-observation')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5

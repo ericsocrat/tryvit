@@ -1,362 +1,47 @@
-# ═══════════════════════════════════════════════════════════════════════════════
-# Deploy Database — Manual workflow with approval gate
-# Issue #120 — CI Deployment Workflow
-# ═══════════════════════════════════════════════════════════════════════════════
-# Triggered manually via GitHub Actions UI. Runs schema diff, pre-deploy backup,
-# supabase db push, and post-deploy sanity. Production requires reviewer approval.
-#
-# Secrets required:
-#   SUPABASE_ACCESS_TOKEN  — CLI authentication
-#   SUPABASE_DB_PASSWORD   — direct DB access (backup + sanity)
-#
-# See DEPLOYMENT.md for full documentation.
-# ═══════════════════════════════════════════════════════════════════════════════
-
 name: Deploy Database
-
+# Single entrypoint. A dispatch is an explicit authorization, not a claim that
+# GitHub Environment reviewer rules exist. Existing environment rules still apply.
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Target environment"
-        required: true
+        description: Target environment
         type: choice
-        options:
-          - production
-          - staging
+        options: [staging, production]
         default: staging
+        required: true
+      source_sha:
+        description: Exact current-main source SHA
+        type: string
+        required: true
+      migration_manifest:
+        description: Committed manifest path with ordered migration SHA-256 digests
+        type: string
+        required: true
       dry_run:
-        description: "Dry run — show diff only, do not push"
-        required: false
+        description: Validate exact pending migrations without applying them
         type: boolean
-        default: false
-
+        default: true
+        required: true
+      staging_run_id:
+        description: Successful staging Deploy Database run for this source and manifest
+        type: string
+        required: false
+      recovery_receipt:
+        description: Committed sanitized backup-restore receipt (production only)
+        type: string
+        required: false
 permissions:
   contents: read
-
-# ── Concurrency: prevent parallel deploys to the same environment ───────────
-concurrency:
-  group: deploy-${{ github.event.inputs.environment }}
-  cancel-in-progress: false
-
+  actions: read
 jobs:
-  # ─────────────────────────────────────────────────────────────────────────
-  # Job 1: Pre-flight validation
-  # ─────────────────────────────────────────────────────────────────────────
-  preflight:
-    name: Pre-flight checks
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    outputs:
-      has_pending: ${{ steps.diff.outputs.has_pending }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Validate required secrets
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-          SUPABASE_STAGING_PROJECT_REF: ${{ secrets.SUPABASE_STAGING_PROJECT_REF }}
-        run: |
-          missing=""
-          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then missing="$missing SUPABASE_ACCESS_TOKEN"; fi
-
-          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            if [ -z "$SUPABASE_PROJECT_REF" ]; then missing="$missing SUPABASE_PROJECT_REF"; fi
-          else
-            if [ -z "$SUPABASE_STAGING_PROJECT_REF" ]; then missing="$missing SUPABASE_STAGING_PROJECT_REF"; fi
-          fi
-
-          if [ -n "$missing" ]; then
-            echo "::error::Missing required secrets:$missing — configure them in GitHub Settings > Secrets"
-            exit 1
-          fi
-          echo "✅ All required secrets are configured"
-
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
-        with:
-          version: latest
-
-      - name: Link project
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-          SUPABASE_STAGING_PROJECT_REF: ${{ secrets.SUPABASE_STAGING_PROJECT_REF }}
-        run: |
-          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            supabase link --project-ref "$SUPABASE_PROJECT_REF"
-          else
-            supabase link --project-ref "$SUPABASE_STAGING_PROJECT_REF"
-          fi
-
-      - name: Schema diff (pending migrations)
-        id: diff
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-        run: |
-          echo "## Schema Diff (${{ github.event.inputs.environment }})" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-
-          if [ "${{ github.event.inputs.dry_run }}" != "true" ]; then
-            echo "has_pending=true" >> "$GITHUB_OUTPUT"
-            echo "ℹ️ Skipping schema diff for live deploy to avoid long-running shadow DB operations." >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "**Dry run:** ${{ github.event.inputs.dry_run }}" >> "$GITHUB_STEP_SUMMARY"
-            echo "**Environment:** ${{ github.event.inputs.environment }}" >> "$GITHUB_STEP_SUMMARY"
-            echo "**Triggered by:** @${{ github.actor }}" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-
-          set +e
-          diff_output=$(timeout 180s supabase db diff --linked 2>&1)
-          diff_exit=$?
-          set -e
-          if [ "$diff_exit" -eq 124 ]; then
-            echo "has_pending=true" >> "$GITHUB_OUTPUT"
-            echo "⚠️ Schema diff timed out after 180s; continuing deploy with conservative assumption of pending changes." >> "$GITHUB_STEP_SUMMARY"
-          elif [ -z "$diff_output" ] || echo "$diff_output" | grep -q "No changes found"; then
-            echo "has_pending=false" >> "$GITHUB_OUTPUT"
-            echo "✅ No schema drift detected — remote matches migration state." >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "has_pending=true" >> "$GITHUB_OUTPUT"
-            echo '```sql' >> "$GITHUB_STEP_SUMMARY"
-            echo "$diff_output" >> "$GITHUB_STEP_SUMMARY"
-            echo '```' >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Dry run:** ${{ github.event.inputs.dry_run }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Environment:** ${{ github.event.inputs.environment }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "**Triggered by:** @${{ github.actor }}" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Abort if dry run
-        if: github.event.inputs.dry_run == 'true'
-        run: |
-          echo "::notice::Dry run — schema diff shown above. No deployment performed."
-          exit 0
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # Job 2: Deploy with backup and sanity
-  # ─────────────────────────────────────────────────────────────────────────
   deploy:
-    name: Deploy to ${{ github.event.inputs.environment }}
-    runs-on: ubuntu-latest
-    needs: preflight
-    permissions:
-      contents: read
-    if: github.event.inputs.dry_run != 'true'
-
-    # GitHub Environment — production requires reviewer approval
-    environment: ${{ github.event.inputs.environment }}
-
-    env:
-      # Supabase pooler host — same endpoint for all projects, distinguished by PGUSER
-      PGHOST: "aws-1-eu-west-1.pooler.supabase.com"
-      PGPORT: "5432"
-      PGDATABASE: postgres
-
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
-        with:
-          version: latest
-
-      - name: Resolve project ref
-        id: env
-        env:
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-          SUPABASE_STAGING_PROJECT_REF: ${{ secrets.SUPABASE_STAGING_PROJECT_REF }}
-        run: |
-          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            echo "project_ref=$SUPABASE_PROJECT_REF" >> "$GITHUB_OUTPUT"
-            echo "pg_user=postgres.$SUPABASE_PROJECT_REF" >> "$GITHUB_OUTPUT"
-          else
-            echo "project_ref=$SUPABASE_STAGING_PROJECT_REF" >> "$GITHUB_OUTPUT"
-            echo "pg_user=postgres.$SUPABASE_STAGING_PROJECT_REF" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Link project
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: supabase link --project-ref "${{ steps.env.outputs.project_ref }}"
-
-      # ── Pre-deploy backup ─────────────────────────────────────────────
-      - name: Pre-deploy backup
-        id: backup
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: |
-          set -euo pipefail
-          mkdir -p backups
-          backup_file="backups/deploy_backup_$(date +%Y%m%d_%H%M%S).sql"
-          echo "Creating pre-deploy backup..."
-          supabase db dump --linked --data-only -f "$backup_file"
-
-          if [ ! -s "$backup_file" ]; then
-            echo "::error::Backup file is empty — aborting deployment"
-            exit 1
-          fi
-
-          backup_size=$(du -h "$backup_file" | cut -f1)
-          echo "backup_file=$backup_file" >> "$GITHUB_OUTPUT"
-          echo "✅ Backup created: $backup_file ($backup_size)" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload backup artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: deploy-backup-${{ github.event.inputs.environment }}-${{ github.sha }}
-          path: backups/
-          retention-days: 30
-
-      # ── Push migrations ────────────────────────────────────────────────
-      - name: Push migrations
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: |
-          set -euo pipefail
-          echo "Pushing pending migrations to ${{ github.event.inputs.environment }}..."
-          supabase db push --linked --include-all
-          echo "✅ Migrations applied successfully" >> "$GITHUB_STEP_SUMMARY"
-
-      # ── Post-deploy sanity checks ──────────────────────────────────────
-      - name: Post-deploy sanity checks
-        env:
-          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          PGUSER: ${{ steps.env.outputs.pg_user }}
-        run: |
-          set -euo pipefail
-
-          echo "## Post-Deploy Sanity (${{ github.event.inputs.environment }})" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-
-          failed=0
-          check_num=0
-
-          # Run the full sanity SQL file — each check returns 0 rows on success.
-          # We run the entire file as one psql invocation for reliability,
-          # then also run per-check for granular reporting.
-          #
-          # Extract individual check blocks using awk:
-          #   Each block starts with a line matching "-- CHECK N:" and ends
-          #   before the next "-- CHECK" or EOF.
-          awk '/^-- CHECK [0-9]+:/{if(block) print block "\x00"; block=$0; next}
-               block{block=block "\n" $0}
-               END{if(block) print block "\x00"}' \
-            supabase/sanity/sanity_checks.sql > /tmp/sanity_blocks.txt
-
-          while IFS= read -r -d $'\0' block; do
-            # Extract check number and name from the block
-            chk_line=$(echo "$block" | grep -m1 '^-- CHECK [0-9]*:' || true)
-            if [ -z "$chk_line" ]; then continue; fi
-
-            chk_num=$(echo "$chk_line" | sed -E 's/^-- CHECK ([0-9]+):.*/\1/')
-            chk_name=$(echo "$chk_line" | sed -E 's/^-- CHECK [0-9]+:\s*//')
-            check_num=$((check_num + 1))
-
-            result=$(echo "$block" | psql --tuples-only --no-align 2>&1 || true)
-            result_trimmed=$(echo "$result" | sed '/^$/d')
-
-            if [ -z "$result_trimmed" ]; then
-              echo "✅ Check $chk_num: $chk_name — PASS" >> "$GITHUB_STEP_SUMMARY"
-            else
-              echo "❌ Check $chk_num: $chk_name — FAIL" >> "$GITHUB_STEP_SUMMARY"
-              echo '```' >> "$GITHUB_STEP_SUMMARY"
-              echo "$result_trimmed" >> "$GITHUB_STEP_SUMMARY"
-              echo '```' >> "$GITHUB_STEP_SUMMARY"
-              failed=$((failed + 1))
-            fi
-          done < /tmp/sanity_blocks.txt
-
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          if [ "$failed" -gt 0 ]; then
-            echo "::error::$failed of $check_num sanity check(s) failed on ${{ github.event.inputs.environment }}"
-            echo "❌ **$failed of $check_num sanity check(s) failed**" >> "$GITHUB_STEP_SUMMARY"
-            exit 1
-          else
-            echo "✅ **All $check_num sanity checks passed**" >> "$GITHUB_STEP_SUMMARY"
-          fi
-
-      # ── Post-deploy health verification ─────────────────────────────────
-      # Issue #180 — Verify the health endpoint responds 200 after deploy.
-      # Waits 30 s for Vercel/edge functions to stabilize after migration push.
-      # Non-blocking: missing PRODUCTION_URL secret should not fail the deploy
-      # when the core migration + sanity steps have already passed.
-      - name: Verify health endpoint
-        continue-on-error: true
-        env:
-          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
-          STAGING_URL: ${{ secrets.STAGING_URL }}
-        run: |
-          set -euo pipefail
-
-          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
-            BASE_URL="${PRODUCTION_URL:?PRODUCTION_URL secret is not set}"
-          else
-            BASE_URL="${STAGING_URL:?STAGING_URL secret is not set}"
-          fi
-
-          HEALTH_URL="${BASE_URL}/api/health"
-          echo "Waiting 30 s for deployment to stabilize..."
-          sleep 30
-
-          echo "Checking health endpoint: $HEALTH_URL"
-          HTTP_CODE=$(curl -s -o /tmp/health_response.json -w "%{http_code}" "$HEALTH_URL" --max-time 10 || echo "000")
-
-          if [ "$HTTP_CODE" -ne 200 ]; then
-            echo "::error::Health check failed! HTTP $HTTP_CODE"
-            echo "❌ **Health check failed** — HTTP $HTTP_CODE" >> "$GITHUB_STEP_SUMMARY"
-            if [ -s /tmp/health_response.json ]; then
-              echo '```json' >> "$GITHUB_STEP_SUMMARY"
-              cat /tmp/health_response.json >> "$GITHUB_STEP_SUMMARY"
-              echo '```' >> "$GITHUB_STEP_SUMMARY"
-            fi
-            exit 1
-          fi
-
-          echo "✅ Health check passed (HTTP 200)"
-          echo "✅ **Health check passed** (HTTP 200)" >> "$GITHUB_STEP_SUMMARY"
-          echo '```json' >> "$GITHUB_STEP_SUMMARY"
-          jq . /tmp/health_response.json >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || cat /tmp/health_response.json >> "$GITHUB_STEP_SUMMARY"
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
-
-      # ── Deploy summary ─────────────────────────────────────────────────
-      - name: Deploy summary
-        if: success()
-        run: |
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "---" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Deployment Complete ✅" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Environment:** ${{ github.event.inputs.environment }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Commit:** \`${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Triggered by:** @${{ github.actor }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Backup:** See artifact \`deploy-backup-${{ github.event.inputs.environment }}-${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Failure summary
-        if: failure()
-        run: |
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "---" >> "$GITHUB_STEP_SUMMARY"
-          echo "### ⚠️ Deployment Failed" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Environment:** ${{ github.event.inputs.environment }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "- **Backup artifact** available for restore: \`deploy-backup-${{ github.event.inputs.environment }}-${{ github.sha }}\`" >> "$GITHUB_STEP_SUMMARY"
-          echo "- See [Rollback Procedures](DEPLOYMENT.md#rollback-procedures) for recovery steps" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Alert on deploy failure
-        if: failure()
-        env:
-          ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
-        run: |
-          if [ -n "$ALERT_WEBHOOK_URL" ]; then
-            curl -sf -X POST "$ALERT_WEBHOOK_URL" \
-              -H 'Content-Type: application/json' \
-              -d '{"text": "Deploy to ${{ github.event.inputs.environment }} FAILED — https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
-          fi
+    uses: ./.github/workflows/database-deploy-reusable.yml
+    with:
+      environment: ${{ inputs.environment }}
+      source_sha: ${{ inputs.source_sha }}
+      migration_manifest: ${{ inputs.migration_manifest }}
+      dry_run: ${{ inputs.dry_run }}
+      staging_run_id: ${{ inputs.staging_run_id }}
+      recovery_receipt: ${{ inputs.recovery_receipt }}
+    secrets: inherit

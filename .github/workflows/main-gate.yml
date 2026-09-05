@@ -79,7 +79,7 @@ jobs:
           pct=0; [ "$BASELINE_STATIC" -gt 0 ] && pct=$(( (d-BASELINE_STATIC)*100/BASELINE_STATIC ))
           [ "$pct" -gt 30 ] && echo "::warning::Static checks regression: ${d}s (+${pct}% vs ${BASELINE_STATIC}s)"
           mkdir -p ci-timings
-          echo '{"job":"static-checks","duration_seconds":'$d',"baseline_seconds":'$BASELINE_STATIC',"delta_pct":'$pct'}' > ci-timings/static-checks.json
+          printf '{"job":"static-checks","duration_seconds":%s,"baseline_seconds":%s,"delta_pct":%s}\n' "$d" "$BASELINE_STATIC" "$pct" > ci-timings/static-checks.json
 
       - name: Upload CI timings
         if: ${{ !cancelled() }}
@@ -132,17 +132,19 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           if [ -f coverage/coverage-summary.json ]; then
-            echo "## 📊 Coverage Summary" >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "| Metric | Coverage |" >> "$GITHUB_STEP_SUMMARY"
-            echo "|--------|----------|" >> "$GITHUB_STEP_SUMMARY"
+            {
+            echo "## 📊 Coverage Summary"
+            echo ""
+            echo "| Metric | Coverage |"
+            echo "|--------|----------|"
             node -e "
               const s = require('./coverage/coverage-summary.json').total;
               const fmt = (k) => '| ' + k.charAt(0).toUpperCase() + k.slice(1) + ' | ' + s[k].pct + '% |';
               ['lines','branches','functions','statements'].forEach(k => console.log(fmt(k)));
-            " >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "Thresholds: lines ≥ 92%, branches ≥ 85%, functions ≥ 88%, statements ≥ 90%" >> "$GITHUB_STEP_SUMMARY"
+            "
+            echo ""
+            echo "Thresholds: lines ≥ 92%, branches ≥ 85%, functions ≥ 88%, statements ≥ 90%"
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload coverage for SonarCloud
@@ -161,7 +163,7 @@ jobs:
           pct=0; [ "$BASELINE_UNIT" -gt 0 ] && pct=$(( (d-BASELINE_UNIT)*100/BASELINE_UNIT ))
           [ "$pct" -gt 30 ] && echo "::warning::Unit tests regression: ${d}s (+${pct}% vs ${BASELINE_UNIT}s)"
           mkdir -p ci-timings
-          echo '{"job":"unit-tests","duration_seconds":'$d',"baseline_seconds":'$BASELINE_UNIT',"delta_pct":'$pct'}' > ci-timings/unit-tests.json
+          printf '{"job":"unit-tests","duration_seconds":%s,"baseline_seconds":%s,"delta_pct":%s}\n' "$d" "$BASELINE_UNIT" "$pct" > ci-timings/unit-tests.json
 
       - name: Upload CI timings
         if: ${{ !cancelled() }}
@@ -229,7 +231,7 @@ jobs:
           pct=0; [ "$BASELINE_BUILD" -gt 0 ] && pct=$(( (d-BASELINE_BUILD)*100/BASELINE_BUILD ))
           [ "$pct" -gt 30 ] && echo "::warning::Build regression: ${d}s (+${pct}% vs ${BASELINE_BUILD}s)"
           mkdir -p ci-timings
-          echo '{"job":"build","duration_seconds":'$d',"baseline_seconds":'$BASELINE_BUILD',"delta_pct":'$pct'}' > ci-timings/build.json
+          printf '{"job":"build","duration_seconds":%s,"baseline_seconds":%s,"delta_pct":%s}\n' "$d" "$BASELINE_BUILD" "$pct" > ci-timings/build.json
 
       - name: Upload CI timings
         if: ${{ !cancelled() }}
@@ -246,7 +248,8 @@ jobs:
   e2e:
     name: Playwright Smoke E2E
     runs-on: ubuntu-latest
-    needs: build
+    # The guarded runtime owns a separate environment-matched build; no artifact
+    # is downloaded here, so waiting on the independent Build only adds latency.
     permissions:
       contents: read
     timeout-minutes: 15
@@ -336,7 +339,7 @@ jobs:
           pct=0; [ "$BASELINE_E2E" -gt 0 ] && pct=$(( (d-BASELINE_E2E)*100/BASELINE_E2E ))
           [ "$pct" -gt 30 ] && echo "::warning::E2E regression: ${d}s (+${pct}% vs ${BASELINE_E2E}s)"
           mkdir -p ci-timings
-          echo '{"job":"e2e","duration_seconds":'$d',"baseline_seconds":'$BASELINE_E2E',"delta_pct":'$pct'}' > ci-timings/e2e.json
+          printf '{"job":"e2e","duration_seconds":%s,"baseline_seconds":%s,"delta_pct":%s}\n' "$d" "$BASELINE_E2E" "$pct" > ci-timings/e2e.json
 
       - name: Upload CI timings
         if: ${{ !cancelled() }}
@@ -396,7 +399,7 @@ jobs:
           pct=0; [ "$BASELINE_SONAR" -gt 0 ] && pct=$(( (d-BASELINE_SONAR)*100/BASELINE_SONAR ))
           [ "$pct" -gt 30 ] && echo "::warning::SonarCloud regression: ${d}s (+${pct}% vs ${BASELINE_SONAR}s)"
           mkdir -p ci-timings
-          echo '{"job":"sonar","duration_seconds":'$d',"baseline_seconds":'$BASELINE_SONAR',"delta_pct":'$pct'}' > ci-timings/sonar.json
+          printf '{"job":"sonar","duration_seconds":%s,"baseline_seconds":%s,"delta_pct":%s}\n' "$d" "$BASELINE_SONAR" "$pct" > ci-timings/sonar.json
 
       - name: Upload CI timings
         if: ${{ !cancelled() }}

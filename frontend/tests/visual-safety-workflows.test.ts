@@ -99,7 +99,7 @@ const phase5VisualJobs = {
   verify: jobSection(workflowSources.phase5Visual, "verify"),
   generate: jobSection(workflowSources.phase5Visual, "generate-candidates"),
 };
-const prGateUnitJob = jobSection(workflowSources.prGate, "unit-tests");
+const prGateUnitJob = jobSection(workflowSources.prGate, "unit-shards");
 const prGateStaticJob = jobSection(workflowSources.prGate, "static-checks");
 const prGateDependencyAdvisoryJob = jobSection(
   workflowSources.prGate,
@@ -173,8 +173,13 @@ describe("browser workflow visual-safety contract", () => {
   it("keeps unit-test enforcement inside a larger job-level cleanup budget", () => {
     expect(prGateUnitJob).toMatch(/^    timeout-minutes: 8$/mu);
     expect(prGateUnitJob).toMatch(
-      /- name: Run unit tests\s+run: npx vitest run\s+timeout-minutes: 6/mu,
+      /- name: Run unit tests\s+run: npx vitest run --shard=\$\{\{ matrix.shard \}\}\/2\s+timeout-minutes: 6/mu,
     );
+    const aggregate = jobSection(workflowSources.prGate, "unit-tests");
+    expect(aggregate).toContain("name: Unit Tests");
+    expect(aggregate).toContain("needs: unit-shards");
+    expect(aggregate).toContain("if: ${{ always() }}");
+    expect(aggregate).toContain('test "$SHARDS_RESULT" = success');
   });
 
   it("declares the complete visual-safety script contract", () => {
@@ -474,11 +479,15 @@ describe("browser workflow visual-safety contract", () => {
     expect(workflowSources.lighthouse).not.toContain("treosh/lighthouse-ci-action");
   });
 
-  it("binds the authoritative Lighthouse report to the literal pull-request head", () => {
-    expect(workflowSources.lighthouse).toContain("ref: ${{ github.event.pull_request.head.sha }}");
+  it("binds deliberate Lighthouse experiments to an exact source without automatic PR measurements", () => {
+    expect(workflowSources.lighthouse).toContain("ref: ${{ env.EXPERIMENT_SOURCE_SHA }}");
     expect(workflowSources.lighthouse).toContain(
-      'test "$(git rev-parse HEAD)" = "${{ github.event.pull_request.head.sha }}"',
+      'test "$(git rev-parse HEAD)" = "$EXPERIMENT_SOURCE_SHA"',
     );
+    expect(workflowSources.lighthouse).toContain("workflow_dispatch:");
+    expect(workflowSources.lighthouse).toContain("schedule:");
+    expect(workflowSources.lighthouse).not.toContain("pull_request:");
+    expect(workflowSources.lighthouse).not.toContain("  push:");
   });
 
   it("pins the Phase 5A.0d workflow runner, Node patch, and checkout credentials", () => {
@@ -682,7 +691,6 @@ describe("browser workflow visual-safety contract", () => {
     const stackedGateWorkflows = {
       bundleSize: workflowSources.bundleSize,
       codeql: workflowSources.codeql,
-      lighthouse: workflowSources.lighthouse,
       phase5Visual: workflowSources.phase5Visual,
       prGate: workflowSources.prGate,
       prScreenshots: workflowSources.prScreenshots,
@@ -809,7 +817,6 @@ describe("browser workflow visual-safety contract", () => {
 
   it("runs authenticated visual and performance gates for migration changes", () => {
     for (const workflow of [
-      workflowSources.lighthouse,
       workflowSources.bundleSize,
       workflowSources.phase5Visual,
       workflowSources.qualityGate,
@@ -1101,7 +1108,7 @@ describe("browser workflow visual-safety contract", () => {
     }
   });
 
-  it("triggers screenshot and Lighthouse safety checks for infrastructure edits", () => {
+  it("triggers screenshot safety checks for infrastructure edits without automatic Lighthouse measurements", () => {
     for (const requiredPath of [
       "frontend/e2e/**",
       "frontend/tests/visual-safety-workflows.test.ts",
@@ -1115,9 +1122,8 @@ describe("browser workflow visual-safety contract", () => {
       expect(workflowSources.prScreenshots).toContain(requiredPath);
     }
 
-    expect(workflowSources.lighthouse).toContain("frontend/**");
-    expect(workflowSources.lighthouse).toContain("supabase/config.toml");
-    expect(workflowSources.lighthouse).toContain(".github/workflows/lighthouse-ci.yml");
+    expect(workflowSources.lighthouse).not.toContain("  pull_request:");
+    expect(workflowSources.lighthouse).toContain("  workflow_dispatch:");
     expect(workflowSources.qualityGate).toContain("frontend/**");
     expect(workflowSources.qualityGate).toContain("supabase/config.toml");
   });

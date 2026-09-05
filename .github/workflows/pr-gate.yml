@@ -33,6 +33,19 @@ env:
   BASELINE_SMOKE: 300
 
 jobs:
+  ci-policy-tests:
+    name: CI Policy Tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.21.1"
+      - name: Test candidate policy without production secrets
+        run: node --test scripts/ci/*.test.mjs
   # ─────────────────────────────────────────────────────────────────────────
   # Job 1: Static analysis (typecheck + lint) — runs first, fails fast
   # ─────────────────────────────────────────────────────────────────────────
@@ -54,33 +67,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       # ── Enhancement D: lightweight security hygiene scan ───────────────
-      - name: Security hygiene scan
+      - name: Security hygiene scan (redacted)
         working-directory: .
-        run: |
-          failed=0
-
-          # 1. Fail if any workflow uses supabase link with a bare hardcoded ref
-          #    (not wrapped in a secrets expression or env var). Ignores comments and this scan.
-          hits=$(grep -rEn 'supabase link --project-ref' .github/workflows/ \
-            | grep -vE '\$\{\{|\$SUPABASE_|^\s*#|grep|echo' || true)
-          if [ -n "$hits" ]; then
-            echo "$hits"
-            echo "::error::Hardcoded Supabase project ref found in workflow files"
-            failed=1
-          fi
-
-          # 2. Check for obvious secret/token patterns in committed source files
-          hits=$(grep -rEn --include='*.ts' --include='*.tsx' --include='*.js' --include='*.json' \
-            'sk_live_|sk_test_|eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.' \
-            . 2>/dev/null | grep -vE 'node_modules|\.next' | head -5 || true)
-          if [ -n "$hits" ]; then
-            echo "$hits"
-            echo "::error::Potential secret/token pattern found in source files"
-            failed=1
-          fi
-
-          if [ "$failed" -ne 0 ]; then exit 1; fi
-          echo "✓ Security hygiene scan passed"
+        run: node scripts/ci/security-hygiene.mjs
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -107,7 +96,7 @@ jobs:
           pct=0; [ "$BASELINE_STATIC" -gt 0 ] && pct=$(( (d-BASELINE_STATIC)*100/BASELINE_STATIC ))
           [ "$pct" -gt 30 ] && echo "::warning::Static checks regression: ${d}s (+${pct}% vs ${BASELINE_STATIC}s)"
           mkdir -p ci-timings
-          echo '{"job":"static-checks","duration_seconds":'$d',"baseline_seconds":'$BASELINE_STATIC',"delta_pct":'$pct'}' > ci-timings/static-checks.json
+          printf '{"job":"static-checks","duration_seconds":%s,"baseline_seconds":%s,"delta_pct":%s}\n' "$d" "$BASELINE_STATIC" "$pct" > ci-timings/static-checks.json
 
       - name: Upload CI timings
         if: ${{ !cancelled() }}
@@ -160,8 +149,12 @@ jobs:
   # ─────────────────────────────────────────────────────────────────────────
   # Job 2: Unit tests — runs in parallel with build after static-checks
   # ─────────────────────────────────────────────────────────────────────────
-  unit-tests:
-    name: Unit Tests
+  unit-shards:
+    name: Unit shard ${{ matrix.shard }}/2
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -193,7 +186,7 @@ jobs:
       - run: npm ci
 
       - name: Run unit tests
-        run: npx vitest run
+        run: npx vitest run --shard=${{ matrix.shard }}/2
         timeout-minutes: 6
 
       - name: CI runtime summary
@@ -205,15 +198,27 @@ jobs:
           pct=0; [ "$BASELINE_UNIT" -gt 0 ] && pct=$(( (d-BASELINE_UNIT)*100/BASELINE_UNIT ))
           [ "$pct" -gt 30 ] && echo "::warning::Unit tests regression: ${d}s (+${pct}% vs ${BASELINE_UNIT}s)"
           mkdir -p ci-timings
-          echo '{"job":"unit-tests","duration_seconds":'$d',"baseline_seconds":'$BASELINE_UNIT',"delta_pct":'$pct'}' > ci-timings/unit-tests.json
+          printf '{"job":"unit-tests","duration_seconds":%s,"baseline_seconds":%s,"delta_pct":%s}\n' "$d" "$BASELINE_UNIT" "$pct" > ci-timings/unit-tests.json
 
       - name: Upload CI timings
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: ci-timings-unit-tests
+          name: ci-timings-unit-tests-${{ matrix.shard }}
           path: ci-timings/
           retention-days: 7
+
+  unit-tests:
+    name: Unit Tests
+    needs: unit-shards
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Require both deterministic shards
+        env:
+          SHARDS_RESULT: ${{ needs.unit-shards.result }}
+        run: test "$SHARDS_RESULT" = success
 
   # ─────────────────────────────────────────────────────────────────────────
   # Job 3: Build — runs in parallel with unit-tests after static-checks
@@ -265,7 +270,7 @@ jobs:
           pct=0; [ "$BASELINE_BUILD" -gt 0 ] && pct=$(( (d-BASELINE_BUILD)*100/BASELINE_BUILD ))
           [ "$pct" -gt 30 ] && echo "::warning::Build regression: ${d}s (+${pct}% vs ${BASELINE_BUILD}s)"
           mkdir -p ci-timings
-          echo '{"job":"build","duration_seconds":'$d',"baseline_seconds":'$BASELINE_BUILD',"delta_pct":'$pct'}' > ci-timings/build.json
+          printf '{"job":"build","duration_seconds":%s,"baseline_seconds":%s,"delta_pct":%s}\n' "$d" "$BASELINE_BUILD" "$pct" > ci-timings/build.json
 
       - name: Upload CI timings
         if: ${{ !cancelled() }}
@@ -372,7 +377,7 @@ jobs:
           pct=0; [ "$BASELINE_SMOKE" -gt 0 ] && pct=$(( (d-BASELINE_SMOKE)*100/BASELINE_SMOKE ))
           [ "$pct" -gt 30 ] && echo "::warning::E2E smoke regression: ${d}s (+${pct}% vs ${BASELINE_SMOKE}s)"
           mkdir -p ci-timings
-          echo '{"job":"e2e-smoke","duration_seconds":'$d',"baseline_seconds":'$BASELINE_SMOKE',"delta_pct":'$pct'}' > ci-timings/e2e-smoke.json
+          printf '{"job":"e2e-smoke","duration_seconds":%s,"baseline_seconds":%s,"delta_pct":%s}\n' "$d" "$BASELINE_SMOKE" "$pct" > ci-timings/e2e-smoke.json
 
       - name: Upload CI timings
         if: ${{ !cancelled() }}
