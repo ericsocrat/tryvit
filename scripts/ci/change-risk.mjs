@@ -21,7 +21,7 @@ export function classifyChanges(paths) {
     if (/scor(?:e|ing)|nutrition|provenance|evidence|allergen/iu.test(file) && !file.startsWith('docs/')) risk.scoring = true;
     if (/^frontend\/|^supabase\/(?:migrations\/|config\.toml)/u.test(file)) risk.visual = true;
     if (/^\.github\/|^scripts\/ci\//u.test(file)) risk.workflow = true;
-    if (/camera|scanner|ocr|service.worker|middleware|proxy\.|\.css$/iu.test(file)) risk.browserSensitive = true;
+    if (/camera|scanner|ocr|service.worker|middleware|proxy\./iu.test(file) || file.toLowerCase().endsWith('.css')) risk.browserSensitive = true;
     if (/\.py$|^requirements|^pyproject/u.test(file)) risk.python = true;
     // Changing the classifier or its execution boundary must exercise every lane.
     if (/^scripts\/ci\/|^\.github\/workflows\//u.test(file)) for (const key of Object.keys(risk)) risk[key] = true;

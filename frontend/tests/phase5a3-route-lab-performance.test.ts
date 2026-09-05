@@ -97,11 +97,15 @@ describe("Phase 5A.3 route-migration lab-performance methodology", () => {
     expect(methodologyDocument).toContain("| Mobile p75 | `2268.47 ms` | **PASS** |");
   });
 
-  it("skips new Lighthouse collection only for this methodology governance branch", () => {
+  it("retains cohorts while new Lighthouse collection requires a deliberate experiment or schedule", () => {
     expect(lighthouseWorkflow).toContain(
-      "if: ${{ github.head_ref != 'codex/phase-5a3-lab-performance-methodology' }}",
+      "Specific unresolved performance question (define before measuring)",
     );
-    expect(lighthouseWorkflow.match(/phase-5a3-lab-performance-methodology/gu)).toHaveLength(1);
+    expect(lighthouseWorkflow).toContain("  workflow_dispatch:");
+    expect(lighthouseWorkflow).toContain("  schedule:");
+    expect(lighthouseWorkflow).not.toContain("  pull_request:");
+    expect(lighthouseWorkflow).not.toContain("  push:");
+    expect(lighthouseWorkflow).not.toContain("phase-5a3-lab-performance-methodology");
   });
 
   it("defines five-run p75 as the fourth ordered sample", () => {
