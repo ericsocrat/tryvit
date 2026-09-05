@@ -1,0 +1,73 @@
+name: Change Risk Assessment
+# This context is introduced visibly but is NOT claimed as ruleset-required
+# until its exact-head rollout and failure-injection checks are approved.
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+permissions:
+  contents: read
+  checks: read
+  pull-requests: read
+concurrency:
+  group: change-risk-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  policy:
+    name: Trusted change applicability
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    outputs:
+      checks: ${{ steps.classify.outputs.checks }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.21.1"
+      - name: Fetch candidate as data only
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+          git fetch --no-tags --no-write-fetch-head origin "$HEAD_SHA"
+          test "$(git rev-parse HEAD)" = "$BASE_SHA"
+      - name: Classify exact base-to-head change
+        id: classify
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/ci/change-risk.mjs classify "$BASE_SHA" "$HEAD_SHA"
+  gate:
+    name: Publish exact-head risk verdict
+    needs: policy
+    if: ${{ always() }}
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 70
+    steps:
+      - name: Require successful applicability policy
+        env:
+          POLICY_RESULT: ${{ needs.policy.result }}
+        run: test "$POLICY_RESULT" = success
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22.21.1"
+      - name: Require applicable exact-head results
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          EXPECTED_CHECKS: ${{ needs.policy.outputs.checks }}
+        run: node scripts/ci/await-risk-checks.mjs

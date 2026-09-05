@@ -20,6 +20,8 @@ on:
       - "data-quality/**"
       - "fetch_off_category.py"
       - ".github/workflows/qa.yml"
+      - "requirements*.txt"
+      - "requirements*.in"
   pull_request:
     branches: [main]
     paths:
@@ -39,6 +41,10 @@ on:
       - "RUN_SEED.ps1"
       - "RUN_SANITY.ps1"
       - ".github/workflows/qa.yml"
+      - "requirements*.txt"
+      - "requirements*.in"
+      - ".github/workflows/**"
+      - "scripts/ci/**"
   workflow_dispatch:
     inputs:
       fail_on_warn:
@@ -95,18 +101,10 @@ jobs:
           cache: "pip"
 
       - name: Install Python dependencies
-        run: pip install -r requirements.txt
+        run: pip install --require-hashes -r requirements-test.txt
 
-      - name: Data-quality report unit tests
-        run: python -m unittest test_data_quality_report.py
-
-      - name: Deterministic enrichment unit tests
-        run: >-
-          python -m unittest
-          pipeline.test_enrichment
-          pipeline.test_enrichment_governance
-          pipeline.test_phase4d
-          pipeline.test_phase4e
+      - name: Pipeline unit and ingestion-contract tests
+        run: python -m pytest pipeline test_data_quality_report.py
 
       - name: Deterministic enrichment generated-output check
         run: |
