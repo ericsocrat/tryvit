@@ -370,6 +370,17 @@ function approvedManifestTransition() {
   return { base, next };
 }
 
+test("retains a changed hosted runner observation without treating it as renderer identity", () => {
+  const { base, next } = approvedManifestTransition();
+  const before = structuredClone(base);
+  next.runner.imageVersion = "20260831.293.1";
+  const { manifestChecksum: _checksum, ...payload } = next;
+  next.manifestChecksum = sha256(stableJson(payload));
+  assert.doesNotThrow(() => assertManifestTransition(base, next, LANDING_PATHS));
+  assert.deepEqual(base, before);
+  assert.equal(next.runner.imageVersion, "20260831.293.1");
+});
+
 test("permits only approved case hashes, sizes, source, and checksum to change", () => {
   const { base, next } = approvedManifestTransition();
   assert.doesNotThrow(() => assertManifestTransition(base, next, LANDING_PATHS));
@@ -377,7 +388,10 @@ test("permits only approved case hashes, sizes, source, and checksum to change",
     (value) => { value.settings.maxDiffPixelRatio = 1; },
     (value) => { value.settings.locale = "pl-PL"; },
     (value) => { value.settings.reducedMotion = "no-preference"; },
-    (value) => { value.runner.imageVersion = "drift"; },
+    (value) => { value.runner.imageOS = "ubuntu22"; },
+    (value) => { value.runner.arch = "arm64"; },
+    (value) => { value.versions.node = "v24.11.1"; },
+    (value) => { value.versions.chromium = "152.0.0.0"; },
     (value) => { value.cases[0].width = 391; },
     (value) => { value.cases[3].sha256 = "0".repeat(64); },
   ]) {
@@ -893,6 +907,16 @@ test("v3 shares full artifact validation and rejects stale base or reviewed pixe
     assert.throws(() => validateIntentionalRedesign(fixture.options), /candidate-artifact-invalid/u);
   } finally {
     rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
+
+test("rejects missing or malformed hosted runner observations", () => {
+  for (const value of [null, "", 42, "unsafe\nobservation"]) {
+    const { base, next } = approvedManifestTransition();
+    next.runner.imageVersion = value;
+    const { manifestChecksum: _checksum, ...payload } = next;
+    next.manifestChecksum = sha256(stableJson(payload));
+    assert.throws(() => assertManifestTransition(base, next, LANDING_PATHS));
   }
 });
 
