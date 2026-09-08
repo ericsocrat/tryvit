@@ -9,7 +9,7 @@ The implementation integrates current main
 `1f66ab761a4d419f65745625dd0caad9c0ce77c5` on
 `codex/evidence-first-consumer`. The seven consumer migrations are bound by
 [`evidence-first-consumer.migrations.json`](evidence-first-consumer.migrations.json),
-SHA-256 `a7028bca6b57b5f5324194484975b1710d652a39593e4f0cc74f09d701675ab4`.
+SHA-256 `f2f164f0e669f310fcf480eae89b4f6d09ead69fa8d0ee2e3acfe27b2bdcf048`.
 They retire unsafe consumer interpretations and legacy responses, supply Home
 and scan contracts, and preserve exact image/classification observation lineage.
 Historical formulas and records remain; a refresh-required response must not be
@@ -26,12 +26,36 @@ internal consistency, not scientific validity of the retired model.
 
 ## Recovery and applied-database rehearsal
 
-Current release proof: the [09:18 expanded restoration](evidence-first-consumer.recovery-20260908-091848.json)
+Current release proof: the [12:37 restoration](evidence-first-consumer.recovery-20260908-1237.json)
+and [12:39 seven-migration rehearsal](evidence-first-consumer.integration-20260908-123917.json)
+bind the current manifest. All 17 tables restored with matching schema/data,
+authority and privacy checks; all **300/300 assertions** passed under the
+original non-superuser managed role. Whole-schema lint: 161 functions, zero
+errors, 15 warnings. No remote operations occurred.
+
+The four additional assertions cover deterministic ingredient-case selection,
+retained legacy assertions, recorded-source priority and alternate query plans.
+The expanded cohort rehearsal found case-only ingredient-name changes with
+unchanged stored rows. Reversing the tied SQL input reproduced Salt/salt selection;
+the new regression failed before the fix. C5 now resolves equal-priority ties
+with the raw name under C collation. It changes no stored ingredient or source row.
+
+The [12:20 restoration](evidence-first-consumer.recovery-20260908-1220.json) and
+[12:21 rehearsal](evidence-first-consumer.integration-20260908-122114.json)
+remain historical 296-assertion proof for manifest
+`4b6a2808465617361c127e65fc824ad8aed51bf3a40e690a74843a3c11c80405`.
+Relative to its predecessor `a7028bca6b57b5f5324194484975b1710d652a39593e4f0cc74f09d701675ab4`,
+its only SQL-file change was two leading documentation comments per unmerged
+migration, adding required Migration/Rollback descriptions. Exact suffix-byte
+comparison verified no SQL statement changes. The new proof uses a separate
+copy of the encrypted restoration inputs; prior receipts and archives remain.
+
+Earlier proof: the [09:18 expanded restoration](evidence-first-consumer.recovery-20260908-091848.json)
 covers exactly 17 tables and 96,533 rows, including the two maintenance metadata
 tables. The [09:23 seven-migration rehearsal](evidence-first-consumer.integration-20260908-092354.json)
 passed **296/296 assertions** under the original non-superuser managed role.
 Whole-user-schema lint checked 161 functions: zero errors, 15 warnings. Both
-receipts bind the current seven-migration manifest and the `consumer-v1` scope.
+receipts bind the preceding seven-migration manifest and the `consumer-v1` scope.
 The release driver rejects a smaller 15-table receipt for this profile.
 
 Earlier five-migration evidence follows and remains historical, not authorization

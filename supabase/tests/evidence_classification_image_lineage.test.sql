@@ -82,5 +82,33 @@ SELECT is((SELECT jsonb_array_length(m->'sources') FROM legacy_image_model),0,'l
 DELETE FROM public.product_images WHERE product_id IN(SELECT product_id FROM legacy_image_product) AND image_type='front';
 SELECT is(evidence_private.product_one((SELECT product_id FROM legacy_image_product),'en')->'image','null'::jsonb,
   'ingredient-label photo is not substituted for missing front photo');
+-- Differently cased legacy assertions are retained, but their displayed
+-- representative must not depend on join/input order. Recorded evidence wins.
+CREATE TEMP TABLE tie_fixture_ingredients AS WITH inserted AS (
+  INSERT INTO public.ingredient_ref(name_en) VALUES ('evidence case salt'),('Evidence Case Salt')
+  RETURNING ingredient_id,name_en
+) SELECT * FROM inserted;
+INSERT INTO public.ingredient_ref(name_en) SELECT 'MILK'
+WHERE NOT EXISTS(SELECT 1 FROM public.ingredient_ref WHERE name_en='MILK');
+INSERT INTO public.product_ingredient(product_id,ingredient_id,position)
+SELECT p.product_id,i.ingredient_id,CASE WHEN i.name_en='evidence case salt' THEN 1 ELSE 2 END
+FROM legacy_image_product p CROSS JOIN tie_fixture_ingredients i;
+CREATE TEMP TABLE stable_ingredient_response AS
+SELECT evidence_private.product_one(product_id,'en')->'ingredients'->'items' AS ingredients FROM legacy_image_product;
+SELECT is((SELECT item->>'name' FROM stable_ingredient_response,jsonb_array_elements(ingredients) item
+  WHERE lower(item->>'name')='evidence case salt'),'Evidence Case Salt','legacy case ties choose a deterministic C-collated name');
+SELECT is((SELECT count(*)::integer FROM public.product_ingredient WHERE product_id IN(SELECT product_id FROM legacy_image_product)),
+  2,'display deduplication does not delete either legacy assertion');
+INSERT INTO public.product_ingredient(product_id,ingredient_id,position)
+SELECT (r.result->>'product_id')::bigint,i.ingredient_id,1 FROM observed_record r CROSS JOIN public.ingredient_ref i
+WHERE i.ingredient_id=(SELECT min(ingredient_id) FROM public.ingredient_ref WHERE name_en='MILK');
+SELECT ok(EXISTS(SELECT 1 FROM observed_record r,
+  jsonb_array_elements(evidence_private.product_one((r.result->>'product_id')::bigint,'en')->'ingredients'->'items') item
+  WHERE lower(item->>'name')='milk' AND item->>'name'='Milk' AND item->>'state'='recorded'
+    AND item->>'observation_id'=r.result->>'observation_id'),'recorded evidence retains priority over raw-name casing');
+SET LOCAL enable_hashjoin=off;
+SET LOCAL enable_seqscan=off;
+SELECT is(evidence_private.product_one((SELECT product_id FROM legacy_image_product),'en')->'ingredients'->'items',
+  (SELECT ingredients FROM stable_ingredient_response),'ingredient representative remains stable under alternate scan/join planning');
 SELECT * FROM finish();
 ROLLBACK;

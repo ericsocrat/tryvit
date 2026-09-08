@@ -5,31 +5,31 @@
   "migrations": [
     {
       "path": "supabase/migrations/20260905121451_score_interpretation_retirement.sql",
-      "sha256": "05eed9f6ec85c4a04688dd7882541717f672e5aac874b192fc256992392bf4a7"
+      "sha256": "60cb44ed05e75b37a2bb48541478f027b2cd655f44538b5fc56141242fb423b0"
     },
     {
       "path": "supabase/migrations/20260905125804_evidence_first_home.sql",
-      "sha256": "e98094530bfc2894248a4fbd12c78ee2236ffae32a839d8e35e3a5193c12c6bf"
+      "sha256": "f5b92fdcd67e01e4672c80a50d399f698ad28b1d833398a08e28c6c3fc4c6071"
     },
     {
       "path": "supabase/migrations/20260905130739_evidence_first_scan.sql",
-      "sha256": "c93edc4056984b4371d8297659aeca81f0f164bc6b0b177f895064987c6e6908"
+      "sha256": "509d0214ac08ba6eb68acb024817dc8faa5eb2483b07f01c9bae27e7fe8597aa"
     },
     {
       "path": "supabase/migrations/20260905133720_evidence_first_legacy_api_retirement.sql",
-      "sha256": "e288c6c90a9a92b7444c0c6f8e4bd4ce153436a8aa97f4f046dca3af5bc64fef"
+      "sha256": "0f1a5f4253449cfb3595e1120f1e5f57e6365e72b6a53b541a31b89daaa9ae53"
     },
     {
       "path": "supabase/migrations/20260908030935_evidence_first_classification_image_lineage.sql",
-      "sha256": "21b8afd4595dad8926f116f420403dfea288c19c88ba4da62a6a2813b71dbe37"
+      "sha256": "4fd8e5f0fa578cdc720db17d5d2a2bfd1c2898fac5efe154b4093764f8b0738c"
     },
     {
       "path": "supabase/migrations/20260908065059_evidence_profile_validator_bonus_types.sql",
-      "sha256": "cf138105ac1733baa5be10ec59ab4a257999d1fd6de41fa1e391f31fed09862b"
+      "sha256": "b07e057adeeafd39c699e6e4170a2d74f00f09942f15f95ad1934ee149df35c5"
     },
     {
       "path": "supabase/migrations/20260908085203_evidence_compute_score_registry_correction.sql",
-      "sha256": "823c39d59e553165f43118188cb8a12b2db10c8c86db7cf674600ffea38ef2d1"
+      "sha256": "ff4a979722b05eb826ab36ffc38acb421ba0dcea65c051a0f18fac73f9603b21"
     }
   ]
 }

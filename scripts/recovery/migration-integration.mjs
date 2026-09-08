@@ -20,7 +20,7 @@ export const CONSUMER_SUITES=Object.freeze([
   ['supabase/tests/evidence_first_home.test.sql',43],
   ['supabase/tests/evidence_first_scan.test.sql',29],
   ['supabase/tests/evidence_first_legacy_api_retirement.test.sql',127],
-  ['supabase/tests/evidence_classification_image_lineage.test.sql',14],
+  ['supabase/tests/evidence_classification_image_lineage.test.sql',18],
   ['supabase/tests/evidence_profile_validator.test.sql',39],
   ['supabase/tests/evidence_compute_score_registry.test.sql',5],
 ]);

@@ -1,3 +1,5 @@
+-- Migration: Retire unsafe legacy consumer API payloads without deleting data.
+-- Rollback: Keep refresh-required boundaries; restore internal definitions only from reviewed recovery with consumer access still restricted.
 -- Close historical consumer capabilities, not merely their UI imports.
 -- Historical formula/data implementations remain operator-only and unchanged.
 -- No catalog, user, score history, preference or membership row is rewritten.

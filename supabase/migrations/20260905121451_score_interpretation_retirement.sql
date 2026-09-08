@@ -1,3 +1,5 @@
+-- Migration: Retire unsupported consumer interpretations while retaining history.
+-- Rollback: Use a compatible evidence-first build and reviewed forward repair; retain queue/history rows.
 -- Retire unsupported consumer interpretations without deleting stored history,
 -- user preferences, watches, queue records, recipe rows or earned milestones.
 BEGIN;

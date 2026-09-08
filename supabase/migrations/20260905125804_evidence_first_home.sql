@@ -1,3 +1,5 @@
+-- Migration: Add the owner-scoped evidence-first Home projection.
+-- Rollback: Restore the prior function from verified schema recovery only with a compatible client; never restore consumer score claims.
 -- One owner-scoped Home projection: no aggregate score, winner or inferred safety.
 BEGIN;
 CREATE OR REPLACE FUNCTION public.api_home_read_model(p_language text DEFAULT 'en')

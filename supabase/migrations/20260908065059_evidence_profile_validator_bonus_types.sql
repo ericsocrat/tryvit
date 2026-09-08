@@ -1,3 +1,5 @@
+-- Migration: Correct historical penalty/bonus validation without recalibration.
+-- Rollback: Restore the prior validator definition from verified schema recovery; no formula/configuration rows are changed.
 -- Validate historical penalty/bonus semantics without changing model config,
 -- score functions, their registry hashes, or existing function privileges.
 CREATE OR REPLACE FUNCTION public.validate_country_profile(

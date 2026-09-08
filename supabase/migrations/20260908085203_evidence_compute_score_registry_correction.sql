@@ -1,3 +1,5 @@
+-- Migration: Correct the guarded current compute_score integrity registry hash.
+-- Rollback: Restore only the captured registry row through a reviewed compare-and-set; never change function bodies or historical scores.
 -- Correct current integrity metadata omitted by the v3.3 migration.
 -- This does not change a scoring function, model configuration or stored score.
 -- Previous body: 20260225000000_canonical_scoring_engine.sql

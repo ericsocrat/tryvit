@@ -1,3 +1,5 @@
+-- Migration: Preserve scan transaction semantics behind an evidence-only public response.
+-- Rollback: Use a compatible evidence-first build and forward repair of the wrapper; preserve scan history and rate limits.
 -- Keep the proven scan-history/rate-limit transaction, but do not publish its
 -- legacy scoring payload. The previous public entrypoint becomes refresh-only.
 BEGIN;

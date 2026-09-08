@@ -1,3 +1,5 @@
+-- Migration: Bind classifications and images to their exact source observations.
+-- Rollback: Restore prior read-function definitions from verified schema recovery only if source evidence remains fail-closed; observations are retained.
 -- C forward repair: exact classification and image observation lineage.
 -- B migrations and stored observations remain unchanged. Dates resolve through
 -- sources[]; a legacy image import timestamp is never a source-update date.
@@ -112,7 +114,9 @@ BEGIN
   ), selected AS (
     SELECT DISTINCT ON (lower(name)) name,state,observation_id
     FROM assertions WHERE NULLIF(btrim(name),'') IS NOT NULL
-    ORDER BY lower(name),CASE WHEN state='recorded' THEN 0 ELSE 1 END,observation_id
+    -- Case variants with equal evidence priority need a stable representative;
+    -- do not let join order choose a different display name on the next read.
+    ORDER BY lower(name),CASE WHEN state='recorded' THEN 0 ELSE 1 END,observation_id,name COLLATE "C"
   ) SELECT COALESCE(jsonb_agg(jsonb_build_object('name',name,'state',state,'observation_id',observation_id)
     ORDER BY name),'[]'::jsonb) INTO v_ingredients FROM selected;
 

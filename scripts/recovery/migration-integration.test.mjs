@@ -5,7 +5,7 @@ import {CONSUMER_SUITES,integrationSuites,parseTap,SUITES,withLocalFixtures} fro
 test('reviewed manifest selects its own complete contract suite',()=>{
   assert.equal(integrationSuites('docs/releases/evidence-first-foundation.migrations.json'),SUITES);
   assert.equal(integrationSuites('docs/releases/evidence-first-consumer.migrations.json'),CONSUMER_SUITES);
-  assert.equal(CONSUMER_SUITES.reduce((sum,[,count])=>sum+count,0),296);
+  assert.equal(CONSUMER_SUITES.reduce((sum,[,count])=>sum+count,0),300);
   assert.throws(()=>integrationSuites('docs/releases/other.migrations.json'));
   assert.throws(()=>integrationSuites('../evidence-first-consumer.migrations.json'));
 });
