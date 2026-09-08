@@ -23,16 +23,37 @@ export function containedFile(root, relative) {
   return target;
 }
 
-export function validateManifest(root, manifest) {
+export function validateManifest(root, manifest, environment = 'production') {
+  requireThat(['staging', 'production'].includes(environment), 'invalid-release-environment');
   requireThat(manifest.schemaVersion === 1 && ['catalog-only', 'schema-and-catalog', 'database'].includes(manifest.scope), 'invalid-migration-manifest');
   requireThat(Array.isArray(manifest.migrations) && manifest.migrations.length > 0, 'empty-migration-manifest');
-  const paths = manifest.migrations.map((entry) => entry.path);
-  requireThat(new Set(paths).size === paths.length && JSON.stringify(paths) === JSON.stringify([...paths].sort()), 'manifest-order-or-duplicates');
-  for (const entry of manifest.migrations) {
-    requireThat(/^supabase\/migrations\/\d{14}_[a-z0-9_]+\.sql$/u.test(entry.path) && digest.test(entry.sha256 ?? ''), 'invalid-migration-entry');
-    requireThat(hash(readFileSync(containedFile(root, entry.path))) === entry.sha256, 'migration-digest-mismatch');
+  const prerequisites = manifest.stagingPrerequisites === undefined ? [] : manifest.stagingPrerequisites;
+  requireThat(Array.isArray(prerequisites), 'invalid-staging-prerequisites');
+  for (const entries of [prerequisites, manifest.migrations]) {
+    const paths = entries.map((entry) => entry.path);
+    requireThat(new Set(paths).size === paths.length && JSON.stringify(paths) === JSON.stringify([...paths].sort()), 'manifest-order-or-duplicates');
+    for (const entry of entries) {
+      requireThat(/^supabase\/migrations\/\d{14}_[a-z0-9_]+\.sql$/u.test(entry.path) && digest.test(entry.sha256 ?? ''), 'invalid-migration-entry');
+      // Verify every byte in the shared manifest, including prerequisites on a
+      // production run. Environment selection must not weaken evidence binding.
+      requireThat(hash(readFileSync(containedFile(root, entry.path))) === entry.sha256, 'migration-digest-mismatch');
+    }
   }
-  return paths.map((file) => path.posix.basename(file));
+  const version = (entry) => path.posix.basename(entry.path).slice(0, 14);
+  const all = [...prerequisites, ...manifest.migrations];
+  requireThat(new Set(all.map(version)).size === all.length, 'manifest-version-overlap-or-duplicates');
+  requireThat(prerequisites.every((entry) => version(entry) < version(manifest.migrations[0])), 'staging-prerequisites-not-older-prefix');
+  return (environment === 'staging' ? all : manifest.migrations).map((entry) => path.posix.basename(entry.path));
+}
+
+export function validatePendingMigrations(pending, expected) {
+  requireThat(Array.isArray(pending) && Array.isArray(expected) && JSON.stringify(pending) === JSON.stringify(expected), 'pending-migrations-do-not-match-manifest');
+}
+
+export function validateDatabaseAccess(environment, password, token) {
+  requireThat(['staging', 'production'].includes(environment), 'invalid-release-environment');
+  requireThat(typeof token === 'string' && token.trim().length > 0, 'database-access-not-configured');
+  requireThat(environment === 'staging' || (typeof password === 'string' && password.trim().length > 0), 'database-access-not-configured');
 }
 
 export function validateRecovery(receipt, manifestHash, scope, now = Date.now()) {
@@ -90,7 +111,7 @@ async function main() {
   requireThat(['admin', 'maintain', 'write'].includes(permission), 'dispatch-actor-not-authorized');
   const manifestBytes = readFileSync(containedFile(root, manifestPath));
   const manifest = JSON.parse(manifestBytes);
-  const expected = validateManifest(root, manifest);
+  const expected = validateManifest(root, manifest, environment);
   const manifestHash = hash(manifestBytes);
   requireThat(process.env.DRY_RUN === 'true' || process.env.DRY_RUN === 'false', 'invalid-dry-run-value');
   if (environment === 'production' && process.env.DRY_RUN === 'false') {
@@ -104,10 +125,13 @@ async function main() {
     requireThat(existsSync(receiptFile), 'staging-receipt-missing');
     validateStaging(stagingRun, JSON.parse(readFileSync(receiptFile, 'utf8')), sourceSha, manifestHash);
   }
-  requireThat(process.env.SUPABASE_DB_PASSWORD && process.env.SUPABASE_ACCESS_TOKEN, 'database-access-not-configured');
+  // The workflow pins CLI 2.111.0. In staging only, PAT-only access may use its
+  // normal temporary-login-role path: credential provisioning is a mutation,
+  // including when the migration command below is a dry run.
+  validateDatabaseAccess(environment, process.env.SUPABASE_DB_PASSWORD, process.env.SUPABASE_ACCESS_TOKEN);
   command('supabase', ['link', '--project-ref', projectRef], 'database-link-failed');
   const pending = pendingMigrations(command('supabase', ['db', 'push', '--linked', '--dry-run'], 'migration-dry-run-failed'));
-  requireThat(JSON.stringify(pending) === JSON.stringify(expected), 'pending-migrations-do-not-match-manifest');
+  validatePendingMigrations(pending, expected);
   let lintPassed = false;
   let remainingMigrations = pending.length;
   if (process.env.DRY_RUN === 'false') {

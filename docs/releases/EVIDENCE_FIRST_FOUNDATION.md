@@ -4,9 +4,11 @@ This is the backend foundation slice of the approved rebuild. It does not promot
 the redesigned frontend, certify all catalog facts, or complete private-beta
 readiness. Apply and verify this schema before promoting its v2 consumers.
 
-**Source and database deployment are separate gates.** Bounded forward repairs
-and the fresh September 8 isolated recovery/integration drill pass for the final
-manifest. Source merge requires exact-head required CI, database QA and recovery
+**Source and database deployment are separate gates.** The shared manifest now
+includes ten staging-only historical prerequisites. The production-baseline
+same-digest recovery rebind passed; the exact 15-migration staging rehearsal
+remains a separate prerequisite. Earlier five-only receipts are retained, not
+relabeled. Source merge requires exact-head required CI, database QA and recovery
 verification. Staging dispatch then uses the resulting exact current main;
 production deployment additionally requires successful staging evidence. Requiring
 that current-main staging dispatch before source merge would be circular.
@@ -25,12 +27,33 @@ their fixture-only adaptations are recorded below.
 
 ## Exact deployment scope
 
-The ordered five-migration set is recorded in
+The ordered five-migration production set and ten staging prerequisites are recorded in
 [`evidence-first-foundation.migrations.json`](evidence-first-foundation.migrations.json).
-The manifest has 967 LF bytes and SHA-256
-`7c93df9aeb1c8240b87111e507df58c3616b2766714575e190b0e683776c2cbc`.
+The manifest has 2849 LF bytes and SHA-256
+`3389ef688241f5e14a2ac0e1912fc4dd082e33c844b8a7d69fc535b5eb60cd4b`.
 Its `schema-and-catalog` recovery scope does not claim to restore private user
 rows, history rows, managed Auth services, or storage objects.
+
+`stagingPrerequisites` pins the ten missing historical migrations from the
+verified 227-version staging baseline to the 237-version production baseline.
+They are a sorted, disjoint older prefix, followed by the same five foundation
+migrations: staging must show exactly 15 pending files; production exactly 5.
+Every entry's bytes are verified in either environment. Partial catch-up,
+unexpected pending files, overlapping versions or altered hashes remain HOLD;
+there is no `--include-all` or selective omission. A manifest without this optional
+field retains the original same-set behavior. Both deployment receipts bind this
+one shared manifest digest. Staging catch-up recovery/authority checks are a
+separate rehearsal; the production schema/catalog receipt does not claim them.
+
+The workflow pins Supabase CLI 2.111.0. Staging may use an access token without
+a database password through the CLI's normal temporary-login-role path. That
+credential provisioning is mutating even when `db push --dry-run` applies no
+migrations, so it belongs to an authorized staging dispatch, not read-only
+inspection. Production still requires both its database password and access token.
+Exact project bindings, current-main requirements and production's matching
+successful staging/recovery requirements are unchanged.
+The workflow selects the secret name before reading its value: an unset production
+password stays empty and is rejected, never replaced by the staging password.
 
 1. **Ingestion:** immutable sanitized observations, stable source/market identity,
    idempotent source-owned projection, conflict quarantine, exact quantities and
@@ -99,9 +122,9 @@ source-specific license is replaced by a project-wide notice.
   Together with the previously passed ingestion/read/search/collections suites,
   the foundation now has 222 assertions, including a new suggestion-reader
   regression pending fresh B reconstruction; this is not a fresh full-suite CI result.
-- September 8 final list-refresh production-schema/catalog reconstruction: **222/222
+- September 8 shared-manifest production-schema/catalog reconstruction: **222/222
   assertions passed**, with all five migrations applied as the original managed
-  non-superuser role at 03:40:00.463Z. Whole-user-schema lint checked 160 functions: zero errors,
+  non-superuser role at 04:21:11.306Z. Whole-user-schema lint checked 160 functions: zero errors,
   15 warnings. This is an isolated integration result, not production deployment.
   The count is one lower because the legacy list reader is now a SQL refresh
   response instead of a PL/pgSQL compatibility function; lint selection is unchanged.
@@ -149,12 +172,18 @@ receipt binds the earlier manifest, not the final manifest above, and is outside
 the release validator's 24-hour operational window as of September 8. It cannot
 authorize deployment. A fresh genuine restore and newly generated sanitized
 receipt are required; do not rewrite this historical receipt's timestamp or hash.
-The separate [September 8 final-manifest receipt](evidence-first-foundation.recovery-20260908-034016.json)
-now supplies that evidence: actual schema capture at 01:51:12.652Z and restoration
-at 03:40:16.408Z, bound to the final list-refresh manifest. The earlier September 8 receipts are
-retained unchanged and do not authorize this revised manifest. All eleven checks passed; the fresh
-catalog snapshot still contains 15 tables and 96,523 matching rows. Its current
-release-validator check passes. Recheck its 24-hour window at actual deployment.
+The [September 8 list-refresh receipt](evidence-first-foundation.recovery-20260908-034016.json)
+records actual capture at 01:51:12.652Z and restoration at 03:40:16.408Z for the
+previous five-only manifest. All eleven checks passed for 15 tables and 96,523
+matching rows. Adding staging prerequisites changes the shared manifest digest;
+this receipt does not authorize the revised manifest. It remains unchanged;
+a genuine restore/rebind was required for the new shared digest.
+That rebind is now recorded separately in the
+[shared-manifest receipt](evidence-first-foundation.recovery-20260908-042117.json):
+actual restoration at 04:21:17.447Z from the original 01:51:12.652Z schema capture,
+with all eleven checks passing and exact manifest binding. The production-baseline
+five-migration integration passed all 222 assertions. These results do not certify
+the staging-only prerequisite application or replace its separate rehearsal.
 Private production rows were not exported. Backup,
 encrypted archive, key and bootstrap supplement remain outside the repository.
 

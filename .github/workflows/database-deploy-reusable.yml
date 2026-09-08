@@ -75,7 +75,7 @@ jobs:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
           SUPABASE_STAGING_PROJECT_REF: ${{ secrets.SUPABASE_STAGING_PROJECT_REF }}
-          SUPABASE_DB_PASSWORD: ${{ inputs.environment == 'production' && secrets.SUPABASE_DB_PASSWORD || secrets.SUPABASE_STAGING_DB_PASSWORD }}
+          SUPABASE_DB_PASSWORD: ${{ secrets[inputs.environment == 'production' && 'SUPABASE_DB_PASSWORD' || 'SUPABASE_STAGING_DB_PASSWORD'] }}
         run: node scripts/ci/database-release.mjs
       - name: Upload sanitized deployment receipt only
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

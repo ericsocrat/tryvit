@@ -7,6 +7,26 @@ import test from 'node:test';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const workflow = (name) => readFileSync(path.join(root, '.github/workflows', name), 'utf8');
 
+test('database password selection chooses the secret name before resolving an empty value', () => {
+  const source = workflow('database-deploy-reusable.yml');
+  const expression = source.match(/^\s*SUPABASE_DB_PASSWORD:\s*(.+)$/mu)?.[1];
+  // Deliberately support only this reviewed selector grammar. Moving secrets
+  // into the boolean operands reintroduces cross-environment fallback.
+  const parse = value => value?.match(/^\$\{\{\s*secrets\[inputs\.environment == '([^']+)' && '([^']+)' \|\| '([^']+)'\]\s*\}\}$/u);
+  const selector = parse(expression);
+  assert.ok(selector, 'workflow must select a literal secret name before lookup');
+  assert.deepEqual(selector.slice(1), ['production', 'SUPABASE_DB_PASSWORD', 'SUPABASE_STAGING_DB_PASSWORD']);
+  const resolve = (environment, secrets) => secrets[environment === selector[1] ? selector[2] : selector[3]] ?? '';
+  const both = { SUPABASE_DB_PASSWORD: 'synthetic-prod', SUPABASE_STAGING_DB_PASSWORD: 'synthetic-stage' };
+  assert.equal(resolve('production', both), 'synthetic-prod');
+  assert.equal(resolve('staging', both), 'synthetic-stage');
+  assert.equal(resolve('production', { SUPABASE_STAGING_DB_PASSWORD: 'synthetic-stage' }), '');
+  assert.equal(resolve('production', { ...both, SUPABASE_DB_PASSWORD: '' }), '');
+  assert.equal(resolve('staging', { SUPABASE_DB_PASSWORD: 'synthetic-prod' }), '');
+  assert.equal(resolve('staging', { ...both, SUPABASE_STAGING_DB_PASSWORD: '' }), '');
+  assert.equal(parse("${{ inputs.environment == 'production' && secrets.SUPABASE_DB_PASSWORD || secrets.SUPABASE_STAGING_DB_PASSWORD }}"), null);
+});
+
 test('required Unit Tests is an always-run fail-closed aggregate of two shards', () => {
   const source = workflow('pr-gate.yml');
   assert.match(source, /shard: \[1, 2\]/u);

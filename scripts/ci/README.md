@@ -79,7 +79,13 @@ driver verifies exact current main again immediately before mutation. Existing
 GitHub Environment protections continue to apply; this implementation does **not**
 claim that a human reviewer rule is configured or manufacture reviewer approval.
 
-The CLI dry-run pending list must exactly equal the manifest. No `--include-all`,
+The CLI dry-run pending list must exactly equal the environment-selected manifest
+set. Optional `stagingPrerequisites` entries must be hashed, sorted, version-unique,
+disjoint and older than every production migration. Staging expects that entire
+prefix plus `migrations`; production expects only `migrations`. Both sets' bytes
+are always verified and both receipts bind the same full-manifest digest. Missing
+prerequisites preserve the original behavior; partial catch-up is not accepted.
+No `--include-all`,
 seed, or role replay is permitted. After applying, no migration may remain pending
 and database lint must pass. CLI output remains in process memory because errors
 may contain SQL literals, record values, or credentials. Only stable failure codes
@@ -87,9 +93,14 @@ and a sanitized deployment receipt are emitted. Production deployment smoke is
 still a separate required operational verification; DB lint is not product proof.
 
 Required access: existing Supabase access token and production project/password;
-staging must have its own `SUPABASE_STAGING_PROJECT_REF` and
-`SUPABASE_STAGING_DB_PASSWORD`. Missing access fails closed. No secret values are
-written into receipts.
+staging must have its own `SUPABASE_STAGING_PROJECT_REF`. Its database password
+is optional: pinned CLI 2.111.0 may provision a temporary login role using the PAT.
+This is a credential mutation even on a migration dry run, and requires the
+authorized staging workflow; it is not read-only inspection. Production cannot
+use the passwordless path. Missing required access fails closed. The workflow
+chooses the environment's secret name
+before lookup, so an empty production secret cannot select the staging password.
+No secret values are written into receipts.
 
 ### Staging evidence
 
