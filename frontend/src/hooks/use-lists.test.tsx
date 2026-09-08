@@ -16,8 +16,9 @@ import {
     useUpdateList,
 } from "@/hooks/use-lists";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { advancePrivateAccountEpoch } from "@/lib/private-client-state";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -96,6 +97,30 @@ vi.mock("@/lib/events", () => ({
 }));
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
+
+describe("account changes during list mutations", () => {
+  it.each(["add", "remove"] as const)("ignores late %s callbacks from the previous account", async (operation) => {
+    vi.clearAllMocks();
+    let resolve!: (value: unknown) => void;
+    const response = new Promise(done => { resolve = done; });
+    const request = operation === "add" ? mockAddToList : mockRemoveFromList;
+    request.mockReturnValue(response);
+    const useOperation = operation === "add" ? useAddToList : useRemoveFromList;
+    const { result, unmount } = renderHook(() => useOperation(), { wrapper: createWrapper() });
+    let pending!: Promise<unknown>;
+    act(() => { pending = result.current.mutateAsync({ listId: "private-A-list", productId: 91, listType: "favorites" }); });
+    await waitFor(() => expect(request).toHaveBeenCalledOnce());
+    unmount();
+    advancePrivateAccountEpoch();
+    await act(async () => { resolve({ ok: true, data: { success: true, list_type: "favorites" } }); await pending; });
+    expect(mockAddFavorite).not.toHaveBeenCalled();
+    expect(mockRemoveFavorite).not.toHaveBeenCalled();
+    expect(mockAddAvoided).not.toHaveBeenCalled();
+    expect(mockRemoveAvoided).not.toHaveBeenCalled();
+    expect(mockTrack).not.toHaveBeenCalled();
+    expect(mockEventBusEmit).not.toHaveBeenCalled();
+  });
+});
 
 function createWrapper() {
   const queryClient = new QueryClient({
@@ -603,6 +628,17 @@ describe("useAddToList", () => {
 
 describe("useRemoveFromList", () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it.each([{ success: false }, { ok: false }])("preserves saved stores on nested application failure %j", async (data) => {
+    mockRemoveFromList.mockResolvedValue({ ok: true, data });
+    const { result } = renderHook(() => useRemoveFromList(), { wrapper: createWrapper() });
+    result.current.mutate({ listId: "l1", productId: 42, listType: "favorites" });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(mockRemoveFavorite).not.toHaveBeenCalled();
+    expect(mockRemoveAvoided).not.toHaveBeenCalled();
+    expect(mockTrack).not.toHaveBeenCalled();
+    expect(mockEventBusEmit).not.toHaveBeenCalled();
+  });
 
   it("calls removeFromList API", async () => {
     mockRemoveFromList.mockResolvedValue({

@@ -1,0 +1,72 @@
+{
+  "checkedAt": "2026-09-08T06:43:16.700Z",
+  "result": "CONFIGURED_NOT_DEPLOYED",
+  "method": "read-only-direct-decrypted-record-verification",
+  "approvedPlanSha256": "34b5de803b2f4e5e4909c1266585c6f63c274bc740d26f9e6a2f59ebe6ca987b",
+  "checks": {
+    "productionMetadata": true,
+    "productionReadableValues": true,
+    "previewDesiredHashes": true,
+    "previewStaging": true,
+    "noPreviewServiceKey": true,
+    "noBranchOverrides": true
+  },
+  "previewRecords": [
+    {
+      "id": "eL1d69omopvyt6v4",
+      "key": "NEXT_PUBLIC_SUPABASE_URL",
+      "target": [
+        "preview"
+      ],
+      "decrypted": true,
+      "sha256": "93c049962354e091338e780597b62b7c788da40150348c2f8f197841275aefe0",
+      "projectRef": "rxtaicdpnaqigowdbmsb",
+      "role": null
+    },
+    {
+      "id": "bl7Ar94XnsaaZnzG",
+      "key": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "target": [
+        "preview"
+      ],
+      "decrypted": true,
+      "sha256": "6c6b9ebc6cec31aa04c8ec171127f357e5e3832f67c6d362fd72912d98ae5754",
+      "projectRef": "rxtaicdpnaqigowdbmsb",
+      "role": "anon"
+    }
+  ],
+  "productionRecords": [
+    {
+      "id": "JPo3xALStAKuGrYf",
+      "key": "NEXT_PUBLIC_SUPABASE_URL",
+      "target": [
+        "production"
+      ],
+      "decrypted": true,
+      "sha256": "b34952aa93f389130369accc5461c1e74d8885f8e101570c4e71922ea4bbdce2",
+      "projectRef": "uskvezwftkkudvksmken",
+      "role": null
+    },
+    {
+      "id": "jsaxFxj5wi3XH2bp",
+      "key": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "target": [
+        "production"
+      ],
+      "decrypted": true,
+      "sha256": "6e20728ed3c3c4d9e77207ad5f72112a18fe9aed4cb81a0cee85ec419b54e367",
+      "projectRef": "uskvezwftkkudvksmken",
+      "role": "anon"
+    }
+  ],
+  "productionSensitiveServiceValueHash": "UNAVAILABLE; metadata preserved, no value fetched",
+  "mutationRetry": false,
+  "originalAttemptResult": "HOLD_due_to_local_dotenv_override_in_env_run",
+  "priorRemotePreviewTarget": "UNPROVEN_from_original_env_run",
+  "existingDeploymentsVerified": false,
+  "sourceEvidence": [
+    "preview-isolation-plan-20260908.json",
+    "preview-isolation-after-attempt-20260908.json",
+    "preview-isolation-direct-readback-20260908.json"
+  ]
+}

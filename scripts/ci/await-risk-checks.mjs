@@ -1,18 +1,25 @@
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { evaluateChecks } from './change-risk.mjs';
+import { collectWorkflowEvidence } from './risk-workflows.mjs';
 
 export async function publishRiskGate({ api, headSha, prNumber, expected, now = Date.now, sleep = (ms) => new Promise((done) => setTimeout(done, ms)), onCreated = () => {}, timeoutMs = 65 * 60 * 1000 }) {
   if (!/^[a-f0-9]{40}$/u.test(headSha ?? '') || !/^\d+$/u.test(String(prNumber)) || !Array.isArray(expected) || !expected.length || expected.some((name) => typeof name !== 'string')) throw new Error('invalid-risk-gate-inputs');
+  let initialLabels;
+  const evidenceCache = { workflows: new Map(), jobs: new Map() };
   const assertCurrentHead = async () => {
     const pr = await api(`pulls/${prNumber}`);
     if (pr.head.sha !== headSha) throw new Error('pr-head-changed');
+    if (!Array.isArray(pr.labels) || pr.labels.some((label) => typeof label.name !== 'string')) throw new Error('invalid-current-pr-labels');
+    const labels = JSON.stringify(pr.labels.map((label) => label.name).filter((name) => ['phase5a0d-intentional-redesign-approved', 'phase5a0d-renderer-attestation-approved'].includes(name)).sort());
+    if (initialLabels !== undefined && labels !== initialLabels) throw new Error('pr-labels-changed');
+    initialLabels = labels;
   };
   // pull_request_target jobs attach to the base commit. Publish a distinct
   // explicit head check; the base-owned job must not share this context name.
   await assertCurrentHead();
   const check = await api('check-runs', 'POST', { name: 'Change Risk Gate', head_sha: headSha, status: 'in_progress', started_at: new Date(now()).toISOString() });
-  if (!Number.isSafeInteger(check.id) || check.head_sha !== headSha) throw new Error('created-check-head-mismatch');
+  if (!Number.isSafeInteger(check.id) || check.id <= 0 || check.head_sha !== headSha) throw new Error('created-check-head-mismatch');
   onCreated(check.id);
   let conclusion = 'failure';
   let summary = 'Risk assessment did not complete.';
@@ -28,9 +35,13 @@ export async function publishRiskGate({ api, headSha, prNumber, expected, now = 
         if (response.check_runs.length < 100) break;
         if (page === 10) throw new Error('check-pagination-limit');
       }
-      const result = evaluateChecks(expected, runs, headSha);
+      const metadata = await collectWorkflowEvidence(api, expected, headSha, prNumber, evidenceCache);
+      const result = evaluateChecks(expected, runs, headSha, metadata);
       if (result.pass) {
         // Reject a head change even between collection and final publication.
+        await assertCurrentHead();
+        const confirmed = await collectWorkflowEvidence(api, expected, headSha, prNumber, evidenceCache);
+        if (JSON.stringify(metadata) !== JSON.stringify(confirmed)) throw new Error('workflow-evidence-changed-before-publication');
         await assertCurrentHead();
         conclusion = 'success';
         summary = 'Every applicable exact-head check passed.';

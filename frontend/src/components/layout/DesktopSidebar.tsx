@@ -13,6 +13,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import {
   ADMIN_ITEMS,
   SIDEBAR_SECTIONS,
+  isNavigationItemActive,
   type AppNavItem,
 } from "./app-navigation";
 
@@ -38,13 +39,20 @@ export function DesktopSidebar({ country = null }: Readonly<DesktopSidebarProps>
 
       <div className={styles.sidebarBody}>
         {SIDEBAR_SECTIONS.map((section) => (
-          <section key={section.labelKey} className={styles.navSection}>
+          section.labelKey === "nav.sectionMore" ? (
+            <details key={section.labelKey} className={styles.navSection} open={section.items.some((item) => isNavigationItemActive(item, activeRoute))}>
+              <summary className={styles.navDisclosure}>{t(section.labelKey)}</summary>
+              {section.items.map((item) => (
+                <SidebarLink key={item.href} item={item} isActive={isNavigationItemActive(item, activeRoute)} />
+              ))}
+            </details>
+          ) : <section key={section.labelKey} className={styles.navSection}>
             <h2 className={styles.registerLabel}>{t(section.labelKey)}</h2>
             {section.items.map((item) => (
               <SidebarLink
                 key={item.href}
                 item={item}
-                isActive={activeRoute === item.routeKey}
+                isActive={isNavigationItemActive(item, activeRoute)}
               />
             ))}
           </section>
@@ -65,7 +73,7 @@ export function DesktopSidebar({ country = null }: Readonly<DesktopSidebarProps>
                     isActive ? styles.sidebarLinkActive : ""
                   }`}
                 >
-                  <Icon icon={item.icon} size="md" />
+                  <Icon icon={item.icon} size="md" strokeWidth={1.75} />
                   <span>{t(item.labelKey)}</span>
                 </Link>
               );
@@ -104,7 +112,7 @@ function SidebarLink({
       } ${item.prominent ? styles.sidebarLinkProminent : ""}`}
       data-prominent={item.prominent ? "true" : undefined}
     >
-      <Icon icon={item.icon} size="md" />
+      <Icon icon={item.icon} size="md" strokeWidth={1.75} />
       <span>{t(item.labelKey)}</span>
     </Link>
   );

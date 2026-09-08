@@ -1,5 +1,11 @@
 # Data Sources
 
+> Historical source-priority proposal. A registry entry or priority does not prove
+> that a source was used, a field is correct, or a package was verified. Scope and
+> counts below are dated, not current production evidence. Use the
+> [evidence-first source contract](EVIDENCE_DATA_POLICY.md) for new ingestion and
+> [the release ledger](implementation/EVIDENCE_FIRST_REBUILD.md) for rollout.
+
 > **Last updated:** 2026-02-11
 > **Scope:** Poland (`PL`) only
 > **Active sources:** 1 type (off_api), 1,025 entries

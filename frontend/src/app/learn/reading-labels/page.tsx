@@ -56,14 +56,15 @@ export default function ReadingLabelsPage() {
             <LearnSectionCard title={t("learn.sourcesTitle")}>
               <SourceCitation
                 author="EU"
-                title="Regulation (EU) No 1169/2011 on the provision of food information to consumers"
+                title="Regulation (EU) No 1169/2011 — Articles 9, 16, 18, 30–33 and Annex V (consolidated 1 April 2025)"
                 year={2011}
-                url="https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32011R1169"
+                url="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02011R1169-20250401"
               />
               <SourceCitation
                 author="EU"
-                title="Regulation (EU) No 1169/2011, Annex XIII — Reference intakes"
+                title="Regulation (EU) No 1169/2011 — Annex I (sugars definition; consolidated 1 April 2025)"
                 year={2011}
+                url="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02011R1169-20250401"
               />
             </LearnSectionCard>
 

@@ -49,9 +49,9 @@ export default function AllergensPage() {
             <LearnSectionCard title={t("learn.sourcesTitle")}>
               <SourceCitation
                 author="EU"
-                title="Regulation (EU) No 1169/2011 on the provision of food information to consumers"
+                title="Regulation (EU) No 1169/2011 — Article 21 and Annex II (consolidated 1 April 2025)"
                 year={2011}
-                url="https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:32011R1169"
+                url="https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02011R1169-20250401"
               />
             </LearnSectionCard>
 

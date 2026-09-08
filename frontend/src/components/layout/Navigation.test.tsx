@@ -10,10 +10,10 @@ vi.mock("next/navigation", () => ({ usePathname: () => mockPathname() }));
 
 const translations: Record<string, string> = {
   "a11y.mainNavigation": "Main navigation",
-  "nav.home": "Dashboard",
-  "nav.search": "Search",
+  "nav.home": "Home",
+  "nav.find": "Find",
   "nav.scan": "Scan",
-  "nav.lists": "Lists",
+  "nav.saved": "Saved",
   "nav.more": "More",
 };
 vi.mock("@/lib/i18n", () => ({
@@ -67,10 +67,10 @@ describe("Navigation", () => {
 
   it("renders all 5 nav items", () => {
     render(<Navigation />);
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Search")).toBeInTheDocument();
+    expect(screen.getByText("Home")).toBeInTheDocument();
+    expect(screen.getByText("Find")).toBeInTheDocument();
     expect(screen.getByText("Scan")).toBeInTheDocument();
-    expect(screen.getByText("Lists")).toBeInTheDocument();
+    expect(screen.getByText("Saved")).toBeInTheDocument();
     expect(screen.getByText("More")).toBeInTheDocument();
   });
 
@@ -83,8 +83,8 @@ describe("Navigation", () => {
 
   it("has correct hrefs", () => {
     render(<Navigation />);
-    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/app");
-    expect(screen.getByRole("link", { name: "Search" })).toHaveAttribute("href", "/app/search");
+    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/app");
+    expect(screen.getByRole("link", { name: "Find" })).toHaveAttribute("href", "/app/search");
     expect(screen.getByRole("link", { name: "Scan" })).toHaveAttribute("href", "/app/scan");
   });
 
@@ -99,26 +99,26 @@ describe("Navigation", () => {
   it("marks active item with aria-current=page", () => {
     mockPathname.mockReturnValue("/app/search");
     render(<Navigation />);
-    expect(screen.getByRole("link", { name: "Search" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: "Dashboard" })).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: "Find" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Home" })).not.toHaveAttribute("aria-current");
   });
 
   it("matches nested route as active", () => {
     mockPathname.mockReturnValue("/app/search/results");
     render(<Navigation />);
-    expect(screen.getByRole("link", { name: "Search" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Find" })).toHaveAttribute("aria-current", "page");
   });
 
   it("marks Dashboard active only on exact /app path", () => {
     mockPathname.mockReturnValue("/app");
     render(<Navigation />);
-    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("aria-current", "page");
   });
 
   it("does not mark Dashboard active for nested paths", () => {
     mockPathname.mockReturnValue("/app/search");
     render(<Navigation />);
-    expect(screen.getByRole("link", { name: "Dashboard" })).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: "Home" })).not.toHaveAttribute("aria-current");
   });
 
   it("no item active for unmatched path", () => {
@@ -157,7 +157,7 @@ describe("Navigation", () => {
     render(<Navigation />);
     const badge = screen.getByTestId("nav-badge-lists");
     expect(badge).toHaveTextContent("3");
-    expect(screen.getByRole("link", { name: "Lists" })).toHaveAttribute("href", "/app/lists");
+    expect(screen.getByRole("link", { name: "Saved" })).toHaveAttribute("href", "/app/lists");
   });
 
   it("hides badge on Lists when user has no lists", () => {
@@ -183,7 +183,7 @@ describe("Navigation", () => {
     render(<Navigation />);
     const badge = screen.getByTestId("nav-badge-lists");
     expect(badge).toHaveTextContent("99+");
-    expect(screen.getByRole("link", { name: "Lists" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Saved" })).toBeInTheDocument();
   });
 
   // ── More button & drawer (§67) ──────────────────────────────────────────
@@ -215,7 +215,7 @@ describe("Navigation", () => {
 
   it("marks Search and Scan as prominent one-hand actions", () => {
     render(<Navigation />);
-    expect(screen.getByText("Search").closest("a")).toHaveAttribute(
+    expect(screen.getByText("Find").closest("a")).toHaveAttribute(
       "data-prominent",
       "true",
     );

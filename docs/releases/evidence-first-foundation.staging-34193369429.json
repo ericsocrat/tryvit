@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "environment": "staging",
+  "sourceSha": "7e3ec3d3be9480cde07f0c6d6e0c69aad08f4b77",
+  "migrationManifestSha256": "3389ef688241f5e14a2ac0e1912fc4dd082e33c844b8a7d69fc535b5eb60cd4b",
+  "result": "PASS",
+  "dryRun": false,
+  "remainingMigrations": 0,
+  "lintPassed": true,
+  "timestamp": "2026-09-08T06:10:18.413Z"
+}

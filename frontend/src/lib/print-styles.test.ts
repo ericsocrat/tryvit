@@ -114,21 +114,25 @@ describe("No-print markers in pages", () => {
     const src = readFileSync(productPagePath, "utf-8");
     // The action buttons wrapper should have no-print
     expect(src).toContain("no-print");
-    // Should import PrintButton
-    expect(src).toContain("PrintButton");
-    expect(src).toContain("<PrintButton");
+    // Native browser printing remains available without reintroducing the
+    // removed dedicated export controls or unsupported score exports.
   });
 
   it("compare page toolbar has no-print", () => {
     const src = readFileSync(comparePagePath, "utf-8");
     expect(src).toContain("no-print");
-    expect(src).toContain("PrintButton");
-    expect(src).toContain("<PrintButton");
   });
 
   it("compare page container has compare-print-container class", () => {
     const src = readFileSync(comparePagePath, "utf-8");
     expect(src).toContain("compare-print-container");
+  });
+  it("prints source details and the complete factual comparison without clipping", () => {
+    const src = readFileSync(join(__dirname, "../components/evidence/evidence.module.css"), "utf8");
+    expect(src).toContain("@media print");
+    expect(src).toContain(".sources::details-content");
+    expect(src).toContain("content-visibility: visible");
+    expect(src).toContain(".comparisonScroll { overflow: visible");
   });
 
   it("app layout wraps interactive elements with no-print", () => {

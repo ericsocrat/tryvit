@@ -5,6 +5,7 @@ import {
   requestNotificationPermission,
   urlBase64ToUint8Array,
   getCurrentPushSubscription,
+  inspectCurrentPushSubscription,
   subscribeToPush,
   unsubscribeFromPush,
   extractSubscriptionData,
@@ -295,6 +296,28 @@ describe("getCurrentPushSubscription", () => {
     });
     const result = await getCurrentPushSubscription();
     expect(result).toBeNull();
+  });
+});
+
+describe("inspectCurrentPushSubscription", () => {
+  it("returns absent without waiting for a future worker", async () => {
+    const getRegistration = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "serviceWorker", { value: { getRegistration, ready: new Promise(() => {}) }, configurable: true });
+    await expect(inspectCurrentPushSubscription()).resolves.toBeNull();
+    expect(getRegistration).toHaveBeenCalledOnce();
+  });
+  it("returns an existing subscription without requesting permission", async () => {
+    const subscription = { endpoint: "https://push.example.test/synthetic" };
+    Object.defineProperty(navigator, "serviceWorker", { value: { getRegistration: vi.fn().mockResolvedValue({ pushManager: { getSubscription: vi.fn().mockResolvedValue(subscription) } }) }, configurable: true });
+    await expect(inspectCurrentPushSubscription()).resolves.toBe(subscription);
+  });
+  it("does not turn a registration lookup failure into absence", async () => {
+    Object.defineProperty(navigator, "serviceWorker", { value: { getRegistration: vi.fn().mockRejectedValue(new Error("unavailable")) }, configurable: true });
+    await expect(inspectCurrentPushSubscription()).rejects.toThrow("unavailable");
+  });
+  it("does not turn subscription lookup failure into absence", async () => {
+    Object.defineProperty(navigator, "serviceWorker", { value: { getRegistration: vi.fn().mockResolvedValue({ pushManager: { getSubscription: vi.fn().mockRejectedValue(new Error("unavailable")) } }) }, configurable: true });
+    await expect(inspectCurrentPushSubscription()).rejects.toThrow("unavailable");
   });
 });
 

@@ -1,4 +1,12 @@
-# Scoring Methodology
+# Legacy scoring methodology — retired from consumer use
+
+> **Historical specification, not current scientific guidance.** The evidence-first
+> rebuild retires this project's weighted aggregate. Its weights, harm language,
+> additive tiers and claimed scientific justification below were not validated as
+> a model of health outcomes or personal suitability. Passing implementation tests
+> did not establish that validity. Preserved here for audit and historical replay;
+> do not use it to rank current products. See [current evidence policy](EVIDENCE_DATA_POLICY.md)
+> and the [release ledger](implementation/EVIDENCE_FIRST_REBUILD.md) for deployment status.
 
 > **Version:** 3.3
 > **Last updated:** 2026-03-16

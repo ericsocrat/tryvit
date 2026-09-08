@@ -7,7 +7,7 @@ const initialMessages = { language: "en" as const, active: en };
 
 // Mock sonner Toaster — lightweight stub
 vi.mock("sonner", () => ({
-  Toaster: () => <div data-testid="toaster" />,
+  Toaster: ({ richColors }: { richColors: boolean }) => <div data-testid="toaster" data-rich-colors={String(richColors)} />,
 }));
 
 describe("Providers", () => {
@@ -27,6 +27,7 @@ describe("Providers", () => {
       </Providers>,
     );
     expect(screen.getByTestId("toaster")).toBeInTheDocument();
+    expect(screen.getByTestId("toaster")).toHaveAttribute("data-rich-colors", "false");
   });
 
   it("renders the localized skip link before application content", () => {

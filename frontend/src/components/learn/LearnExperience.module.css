@@ -7,27 +7,18 @@
 .disclaimer,
 .citation {
   --learn-rule: color-mix(in srgb, var(--color-border-strong) 70%, transparent);
-  --learn-fold: #a64b2a;
   position: relative;
   overflow: hidden;
   border: 1px solid var(--learn-rule);
-  border-radius: 1rem 0.25rem 1rem 1rem;
+  border-radius: 1rem;
   background: color-mix(in srgb, var(--color-surface) 97%, transparent);
-}
-
-:global(html[data-theme="dark"]) .routeShell {
-  --learn-fold: #f2a271;
 }
 
 .routeShell {
   display: flex;
   min-block-size: 100vh;
   flex-direction: column;
-  background:
-    linear-gradient(color-mix(in srgb, var(--learn-rule) 18%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--learn-rule) 18%, transparent) 1px, transparent 1px),
-    var(--color-background);
-  background-size: 3rem 3rem;
+  background: var(--color-background);
 }
 
 .routeBody {
@@ -53,18 +44,6 @@
   font-weight: 720;
 }
 
-.article::before,
-.section::before,
-.topicCard::before {
-  position: absolute;
-  inset: 0 0 auto auto;
-  inline-size: 1.25rem;
-  aspect-ratio: 1;
-  background: linear-gradient(225deg, var(--learn-fold) 0 48%, var(--learn-rule) 49% 52%, transparent 53%);
-  content: "";
-  pointer-events: none;
-}
-
 .articleHeader {
   padding: clamp(1.25rem, 3.5vw, 2.25rem);
   border-block-end: 1px solid var(--learn-rule);
@@ -72,8 +51,8 @@
 
 .eyebrow {
   margin: 0;
-  color: var(--learn-fold);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  color: var(--color-brand);
+  font-family: var(--ds-type-family-sans);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.13em;
@@ -93,7 +72,7 @@
   aspect-ratio: 1;
   place-items: center;
   border: 1px solid var(--learn-rule);
-  border-radius: 0.25rem 0.8rem 0.8rem 0.8rem;
+  border-radius: 0.8rem;
   color: var(--color-brand);
   background: var(--color-brand-subtle);
 }
@@ -194,7 +173,7 @@
 
 .sidebarLink:hover,
 .sidebarLinkActive {
-  border-color: var(--learn-fold);
+  border-color: var(--color-brand);
   color: var(--color-foreground);
   background: var(--color-surface-subtle);
 }
@@ -214,7 +193,7 @@
   align-items: center;
   padding: 0.65rem 0.75rem;
   border: 1px solid var(--learn-rule);
-  border-radius: 0.65rem 0.2rem 0.65rem 0.65rem;
+  border-radius: 0.65rem;
   color: var(--color-foreground-secondary);
 }
 

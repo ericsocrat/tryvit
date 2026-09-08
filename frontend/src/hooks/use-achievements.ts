@@ -10,6 +10,7 @@ import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { showToast } from "@/lib/toast";
 import { useTranslation } from "@/lib/i18n";
 import type { AchievementCategory } from "@/lib/types";
+import { activityWithoutHealthClaims } from "@/lib/evidence/activity";
 
 /* ── Constants ────────────────────────────────────────────────────────────── */
 
@@ -30,9 +31,11 @@ export function useAchievements() {
     queryFn: async () => {
       const result = await getAchievements(supabase);
       if (!result.ok) throw new Error(result.error.message);
+      if (result.data.error) throw new Error(result.data.error);
       return result.data;
     },
     staleTime: staleTimes.achievements,
+    select: activityWithoutHealthClaims,
   });
 }
 
@@ -57,6 +60,7 @@ export function useAchievementProgress() {
         increment,
       );
       if (!result.ok) throw new Error(result.error.message);
+      if (result.data.error) throw new Error(result.data.error);
       return result.data;
     },
     onSuccess: (data) => {

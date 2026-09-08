@@ -1,416 +1,70 @@
--- ═══════════════════════════════════════════════════════════════════════════════
--- QA Suite: API Contract Tests
--- Validates that every API function returns the exact documented key set.
--- Any key added or removed will break these checks, forcing a deliberate
--- api_version bump.
--- ═══════════════════════════════════════════════════════════════════════════════
-
--- Helper: compare an actual sorted key array against an expected sorted key array.
--- Returns TRUE if they match exactly.
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #1  api_product_detail — top-level keys (19)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_product_detail(2)) k
-    ) = ARRAY[
-        'allergens','api_version','brand','category','category_display','category_icon',
-        'country','ean','flags','freshness','ingredients','nutrition_per_100g','prep_method',
-        'product_id','product_name','product_type','scores','store_availability','trust'
-    ]
-    THEN 'PASS' ELSE 'FAIL' END AS "#1  product_detail top-level keys (19)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #2  api_product_detail → scores keys (8)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_product_detail(2)->'scores') k
-    ) = ARRAY[
-        'nova_group','nutri_score','nutri_score_color',
-        'nutri_score_official_in_country','nutri_score_source',
-        'processing_risk','score_band','unhealthiness_score'
-    ]
-    THEN 'PASS' ELSE 'FAIL' END AS "#2  product_detail → scores keys (8)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #3  api_product_detail → flags keys (5)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_product_detail(2)->'flags') k
-    ) = ARRAY['has_palm_oil','high_additive_load','high_salt','high_sat_fat','high_sugar']
-    THEN 'PASS' ELSE 'FAIL' END AS "#3  product_detail → flags keys (5)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #4  api_product_detail → nutrition_per_100g keys (9)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_product_detail(2)->'nutrition_per_100g') k
-    ) = ARRAY[
-        'calories','carbs_g','fibre_g','protein_g','salt_g','saturated_fat_g',
-        'sugars_g','total_fat_g','trans_fat_g'
-    ]
-    THEN 'PASS' ELSE 'FAIL' END AS "#4  product_detail → nutrition keys (9)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #5  api_product_detail → ingredients keys (6)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_product_detail(2)->'ingredients') k
-    ) = ARRAY['additive_names','additives_count','count','data_quality','vegan_status','vegetarian_status']
-    THEN 'PASS' ELSE 'FAIL' END AS "#5  product_detail → ingredients keys (6)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #6  api_product_detail → allergens keys (4)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_product_detail(2)->'allergens') k
-    ) = ARRAY['count','tags','trace_count','trace_tags']
-    THEN 'PASS' ELSE 'FAIL' END AS "#6  product_detail → allergens keys (4)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #7  api_product_detail → trust keys (5)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_product_detail(2)->'trust') k
-    ) = ARRAY['confidence','data_completeness_pct','ingredient_data_quality','nutrition_data_quality','source_type']
-    THEN 'PASS' ELSE 'FAIL' END AS "#7  product_detail → trust keys (5)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #8  api_product_detail → freshness keys (3)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_product_detail(2)->'freshness') k
-    ) = ARRAY['created_at','data_age_days','updated_at']
-    THEN 'PASS' ELSE 'FAIL' END AS "#8  product_detail → freshness keys (3)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #9  api_search_products — top-level keys (9)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_search_products('cola')) k
-    ) = ARRAY['api_version','country','filters_applied','page','page_size','pages','query','results','total']
-    THEN 'PASS' ELSE 'FAIL' END AS "#9  search_products top-level keys (9)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #10 api_search_products → result item keys (20)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(DISTINCT k ORDER BY k) FROM jsonb_array_elements(api_search_products('cola')->'results') r(val), jsonb_object_keys(r.val) k
-    ) = ARRAY[
-        'brand','calories','category','category_display','category_icon',
-        'high_additive_load','high_salt','high_sat_fat','high_sugar',
-        'image_thumb_url','is_avoided','nova_group','nutri_score',
-        'product_id','product_name','product_name_display','product_name_en',
-        'relevance','score_band','unhealthiness_score'
-    ]
-    THEN 'PASS' ELSE 'FAIL' END AS "#10 search_products → item keys (20)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #11 api_category_listing — top-level keys (9)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_category_listing('Chips')) k
-    ) = ARRAY['api_version','category','country','limit','offset','products','sort_by','sort_dir','total_count']
-    THEN 'PASS' ELSE 'FAIL' END AS "#11 category_listing top-level keys (9)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #12 api_category_listing → product item keys (21)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(DISTINCT k ORDER BY k) FROM jsonb_array_elements(api_category_listing('Chips')->'products') r(val), jsonb_object_keys(r.val) k
-    ) = ARRAY[
-        'brand','calories','confidence','data_completeness_pct','ean',
-        'high_salt_flag','high_sat_fat_flag','high_sugar_flag','image_thumb_url',
-        'nova_group','nutri_score','nutri_score_source','processing_risk','product_id','product_name',
-        'protein_g','salt_g','score_band','sugars_g','total_fat_g','unhealthiness_score'
-    ]
-    THEN 'PASS' ELSE 'FAIL' END AS "#12 category_listing → item keys (21)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #13 api_score_explanation — top-level keys (10)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_score_explanation(2)) k
-    ) = ARRAY[
-        'api_version','brand','category','category_context','product_id',
-        'product_name','score_breakdown','summary','top_factors','warnings'
-    ]
-    THEN 'PASS' ELSE 'FAIL' END AS "#13 score_explanation top-level keys (10)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #14 api_score_explanation → summary keys (9)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_score_explanation(2)->'summary') k
-    ) = ARRAY[
-        'headline','nova_group','nutri_score','nutri_score_note',
-        'nutri_score_official_in_country','nutri_score_source',
-        'processing_risk','score','score_band'
-    ]
-    THEN 'PASS' ELSE 'FAIL' END AS "#14 score_explanation → summary keys (9)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #15 api_score_explanation → category_context keys (4)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_score_explanation(2)->'category_context') k
-    ) = ARRAY['category_avg_score','category_rank','category_total','relative_position']
-    THEN 'PASS' ELSE 'FAIL' END AS "#15 score_explanation → category_context keys (4)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #16 api_better_alternatives — top-level keys (5)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_better_alternatives(2)) k
-    ) = ARRAY['alternatives','alternatives_count','api_version','search_scope','source_product']
-    THEN 'PASS' ELSE 'FAIL' END AS "#16 better_alternatives top-level keys (5)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #17 api_better_alternatives → source_product keys (6)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_better_alternatives(2)->'source_product') k
-    ) = ARRAY['brand','category','nutri_score','product_id','product_name','unhealthiness_score']
-    THEN 'PASS' ELSE 'FAIL' END AS "#17 alternatives → source_product keys (6)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #18 api_data_confidence — top-level keys (8)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_data_confidence(2)) k
-    ) = ARRAY[
-        'api_version','components','confidence_band','confidence_score',
-        'data_completeness_profile','explanation','missing_data','product_id'
-    ]
-    THEN 'PASS' ELSE 'FAIL' END AS "#18 data_confidence top-level keys (8)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #19 api_data_confidence → components keys (5)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_data_confidence(2)->'components') k
-    ) = ARRAY['allergens','ean','ingredients','nutrition','source']
-    THEN 'PASS' ELSE 'FAIL' END AS "#19 data_confidence → components keys (5)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #20 api_data_confidence → data_completeness_profile keys (3)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_data_confidence(2)->'data_completeness_profile') k
-    ) = ARRAY['allergens','ingredients','nutrition']
-    THEN 'PASS' ELSE 'FAIL' END AS "#20 confidence → completeness_profile keys (3)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #21 All api_* functions have api_version = '1.0'
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT COUNT(*) = 9 FROM (
-            SELECT api_product_detail(2)->>'api_version'       AS v
-            UNION ALL SELECT api_search_products('cola')->>'api_version'
-            UNION ALL SELECT api_category_listing('Chips')->>'api_version'
-            UNION ALL SELECT api_score_explanation(2)->>'api_version'
-            UNION ALL SELECT api_better_alternatives(2)->>'api_version'
-            UNION ALL SELECT api_data_confidence(2)->>'api_version'
-            UNION ALL SELECT api_product_detail_by_ean('0000000000000')->>'api_version'
-            UNION ALL SELECT api_get_user_preferences()->>'api_version'
-            UNION ALL SELECT api_set_user_preferences()->>'api_version'
-        ) sub WHERE v = '1.0'
-    )
-    THEN 'PASS' ELSE 'FAIL' END AS "#21 all API functions return api_version = 1.0";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #22 api_search_products error path includes api_version
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN api_search_products('x')->>'api_version' = '1.0'
-         AND api_search_products('x') ? 'error'
-    THEN 'PASS' ELSE 'FAIL' END AS "#22 search error response includes api_version";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #23 All api_* functions are SECURITY DEFINER (still, after recreation)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN COUNT(*) = 22
-    THEN 'PASS' ELSE 'FAIL' END AS "#23 all api_* remain SECURITY DEFINER (22)"
-FROM pg_proc p
-JOIN pg_namespace n ON n.oid = p.pronamespace
-WHERE n.nspname = 'public'
-  AND p.proname LIKE 'api_%'
-  AND p.prosecdef = true;
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #24 v_api_category_overview_by_country has expected columns
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(column_name::text ORDER BY column_name)
-        FROM information_schema.columns
-        WHERE table_schema = 'public'
-          AND table_name = 'v_api_category_overview_by_country'
-    ) = ARRAY[
-        'avg_score','category','category_description','country_code','display_name',
-        'icon_emoji','max_score','median_score','min_score','pct_nova_4',
-        'pct_nutri_a_b','product_count','slug','sort_order'
-    ]
-    THEN 'PASS' ELSE 'FAIL' END AS "#24 overview_by_country columns (14)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #25 api_search_products with p_country returns filtered results
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT (api_search_products('co', '{"country":"PL"}'::jsonb, 1, 5))->>'country'
-    ) = 'PL'
-    THEN 'PASS' ELSE 'FAIL' END AS "#25 search with p_country echoes country";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #26 api_product_detail_by_ean — error response keys (5)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_product_detail_by_ean('0000000000000')) k
-    ) = ARRAY['api_version','country','ean','error','found']
-    THEN 'PASS' ELSE 'FAIL' END AS "#26 ean_lookup error response keys (5)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #27 api_product_detail_by_ean — success response has scan key
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT api_product_detail_by_ean(p.ean) ? 'scan'
-        FROM products p
-        WHERE p.ean IS NOT NULL AND p.is_deprecated IS NOT TRUE AND p.country = 'PL'
-        LIMIT 1
-    )
-    THEN 'PASS' ELSE 'FAIL' END AS "#27 ean_lookup success has scan key";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #28 api_product_detail_by_ean → scan metadata keys (3)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k)
-        FROM jsonb_object_keys((
-            SELECT api_product_detail_by_ean(p.ean)->'scan'
-            FROM products p
-            WHERE p.ean IS NOT NULL AND p.is_deprecated IS NOT TRUE AND p.country = 'PL'
-            LIMIT 1
-        )) k
-    ) = ARRAY['alternative_count','found','scanned_ean']
-    THEN 'PASS' ELSE 'FAIL' END AS "#28 ean_lookup → scan keys (3)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #29 api_get_user_preferences — auth-required error response keys (2)
---      Without auth context (QA runs as postgres), returns auth error.
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_get_user_preferences()) k
-    ) = ARRAY['api_version','error']
-    THEN 'PASS' ELSE 'FAIL' END AS "#29 get_user_preferences auth-error keys (2)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #30 api_set_user_preferences — auth-required error response keys (2)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(api_set_user_preferences()) k
-    ) = ARRAY['api_version','error']
-    THEN 'PASS' ELSE 'FAIL' END AS "#30 set_user_preferences auth error keys (2)";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #31 api_search_products — country is never null (explicit args, NULL country)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN api_search_products(
-        p_query := 'cola',
-        p_filters := '{}'::jsonb,
-        p_page := 1,
-        p_page_size := 5
-    )->>'country' IS NOT NULL
-    THEN 'PASS' ELSE 'FAIL' END AS "#31 search_products country never null";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #32 api_category_listing — country is never null (dynamic category, NULL country)
--- ─────────────────────────────────────────────────────────────────────────────
-WITH active_cat AS (
-    SELECT category FROM category_ref WHERE is_active = true ORDER BY category LIMIT 1
-)
-SELECT
-    CASE WHEN api_category_listing(
-        p_category := (SELECT category FROM active_cat),
-        p_sort_by := 'score',
-        p_sort_dir := 'asc',
-        p_limit := 5,
-        p_offset := 0,
-        p_country := NULL,
-        p_diet_preference := NULL,
-        p_avoid_allergens := NULL,
-        p_strict_diet := false,
-        p_strict_allergen := false,
-        p_treat_may_contain := false
-    )->>'country' IS NOT NULL
-    THEN 'PASS' ELSE 'FAIL' END AS "#32 category_listing country never null";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #33 api_product_detail_by_ean — country is never null (explicit args, NULL country)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN api_product_detail_by_ean(
-        p_ean := '0000000000000',
-        p_country := NULL
-    )->>'country' IS NOT NULL
-    THEN 'PASS' ELSE 'FAIL' END AS "#33 ean_lookup country never null";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #34 api_get_product_allergens — returns jsonb object (empty for missing IDs)
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN api_get_product_allergens(ARRAY[-1]::bigint[]) = '{}'::jsonb
-    THEN 'PASS' ELSE 'FAIL' END AS "#34 get_product_allergens empty for missing IDs";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #35 api_get_product_allergens — product entries have contains+traces keys
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT COALESCE(bool_and(
-            v ? 'contains' AND v ? 'traces'
-        ), true)
-        FROM jsonb_each(api_get_product_allergens(
-            (SELECT array_agg(product_id) FROM (
-                SELECT product_id FROM product_allergen_info LIMIT 5
-            ) s)
-        )) AS kv(k, v)
-    )
-    THEN 'PASS' ELSE 'FAIL' END AS "#35 get_product_allergens entries have contains+traces";
-
--- ─────────────────────────────────────────────────────────────────────────────
--- #36 api_get_filter_options — response includes nova_groups key
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT api_get_filter_options('PL') ? 'nova_groups'
-    )
-    THEN 'PASS' ELSE 'FAIL' END AS "#36 get_filter_options includes nova_groups";
+-- Exact current consumer keys; source fixtures are local and fully rolled back.
+BEGIN;
+CREATE TEMP TABLE qa_contract_context AS SELECT gen_random_uuid() uid,gen_random_uuid() batch,gen_random_uuid() source,gen_random_uuid() observation;
+INSERT INTO auth.users(id) SELECT uid FROM qa_contract_context;
+SELECT set_config('request.jwt.claims',jsonb_build_object('sub',uid,'role','authenticated')::text,true) FROM qa_contract_context;
+INSERT INTO public.user_preferences(user_id,country,diet_preference,preferred_language) SELECT uid,'PL','none','en' FROM qa_contract_context ON CONFLICT(user_id) DO UPDATE SET country='PL',diet_preference='none',preferred_language='en';
+CREATE TEMP TABLE qa_contract_product AS WITH added AS (
+ INSERT INTO public.products(country,brand,product_name,category)
+ SELECT 'PL',uid::text,'Synthetic API contract fixture','Dairy' FROM qa_contract_context RETURNING product_id) SELECT product_id FROM added;
+INSERT INTO public.ingestion_batches(id,source_key,country,extractor_version,idempotency_key)
+SELECT batch,'off_api','PL','qa-contract',uid::text FROM qa_contract_context;
+INSERT INTO public.product_source_records(id,source_key,external_id,country,product_id)
+SELECT source,'off_api',uid::text,'PL',product_id FROM qa_contract_context CROSS JOIN qa_contract_product;
+INSERT INTO public.product_source_observations(id,source_record_id,batch_id,extractor_version,payload_hash,sanitized_payload,extracted_fields,source_url,license,retrieved_at,status)
+SELECT observation,source,batch,'qa-contract',repeat('a',64),'{}',
+ '{"salt_100g":{"value":"0.1000","state":"recorded","unit":"g","basis":"per_100g","preparation_state":"as_sold","qualifier":"eq"},"nutri_score_label":{"value":"A","state":"recorded","version":null},"nova_classification":{"value":"4","state":"recorded"}}',
+ 'https://example.org/synthetic-qa','Synthetic only',now()-interval '1 day','accepted' FROM qa_contract_context;
+UPDATE public.product_source_records SET selected_observation_id=c.observation FROM qa_contract_context c WHERE id=c.source;
+INSERT INTO public.product_field_provenance(product_id,field_name,source_type,source_url,confidence,observation_id,evidence_state,basis,unit,qualifier,preparation_state)
+SELECT product_id,'salt_100g','off_api','https://example.org/synthetic-qa',NULL,observation,'recorded','per_100g','g','eq','as_sold' FROM qa_contract_context CROSS JOIN qa_contract_product;
+INSERT INTO public.product_source_assertions(source_record_id,observation_id,kind,position,assertion)
+SELECT source,observation,kind,0,body FROM qa_contract_context CROSS JOIN (VALUES
+ ('ingredient','{"text":"Synthetic ingredient"}'::jsonb),('contains','{"tag":"milk"}'::jsonb),('traces','{"tag":"gluten"}'::jsonb)) a(kind,body);
+CREATE TEMP TABLE qa_contract AS SELECT public.api_product_read_model(ARRAY[product_id],'en') b FROM qa_contract_product;
+CREATE TEMP TABLE qa_contract_model AS SELECT b->'products'->0 m FROM qa_contract;
+CREATE TEMP TABLE qa_contract_find AS SELECT public.api_find_products((SELECT uid::text FROM qa_contract_context),'{}',1,20,false,'en') b;
+CREATE FUNCTION pg_temp.qa_keys(value jsonb,expected text[]) RETURNS boolean LANGUAGE sql IMMUTABLE AS $$
+ SELECT (SELECT array_agg(k ORDER BY k) FROM jsonb_object_keys(value) k)=(SELECT array_agg(k ORDER BY k) FROM unnest(expected) k);
+$$;
+CREATE FUNCTION pg_temp.qa_retired(value jsonb) RETURNS boolean LANGUAGE sql IMMUTABLE AS $$
+ SELECT value=jsonb_build_object('api_version','2','policy_version','evidence-first-v1','error','refresh_required','status','refresh_required','message','Refresh TryVit to use source-backed product evidence.');
+$$;
+SELECT '1. legacy product_detail is refresh-only' AS check_name,CASE WHEN (pg_temp.qa_retired(public.api_product_detail(-1))) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '2. legacy get_product_profile is refresh-only' AS check_name,CASE WHEN (pg_temp.qa_retired(public.api_get_product_profile(-1))) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '3. legacy score_explanation is refresh-only' AS check_name,CASE WHEN (pg_temp.qa_retired(public.api_score_explanation(-1))) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '4. legacy data_confidence is refresh-only' AS check_name,CASE WHEN (pg_temp.qa_retired(public.api_data_confidence(-1))) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '5. legacy product_provenance is refresh-only' AS check_name,CASE WHEN (pg_temp.qa_retired(public.api_product_provenance(-1))) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '6. legacy search_products is refresh-only' AS check_name,CASE WHEN (pg_temp.qa_retired(public.api_search_products('test'))) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '7. legacy category_listing is refresh-only' AS check_name,CASE WHEN (pg_temp.qa_retired(public.api_category_listing('Dairy'))) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '8. legacy better_alternatives is refresh-only' AS check_name,CASE WHEN (pg_temp.qa_retired(public.api_better_alternatives(-1))) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '9. legacy get_products_for_compare is refresh-only' AS check_name,CASE WHEN (pg_temp.qa_retired(public.api_get_products_for_compare(ARRAY[1]::bigint[]))) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '10. legacy get_watchlist is refresh-only' AS check_name,CASE WHEN (pg_temp.qa_retired(public.api_get_watchlist())) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '11. legacy get_recently_viewed is refresh-only' AS check_name,CASE WHEN (pg_temp.qa_retired(public.api_get_recently_viewed())) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '12. legacy get_filter_options is refresh-only' AS check_name,CASE WHEN (pg_temp.qa_retired(public.api_get_filter_options())) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '13. canonical envelope keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(b,ARRAY['api_version','policy_version','products','missing_ids']) FROM qa_contract)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '14. canonical product keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m,ARRAY['product_id','product_name','product_name_original','brand','country','category','ean','is_deprecated','image','nutrition','ingredients','allergens','suitability','classifications','sources','evidence','score']) FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '15. nutrition keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m->'nutrition',ARRAY['calories','total_fat_g','saturated_fat_g','trans_fat_g','carbs_g','sugars_g','fibre_g','protein_g','salt_g']) FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '16. nutrient observation keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m->'nutrition'->'salt_g',ARRAY['value','unit','basis','preparation_state','state','qualifier','observation_id']) FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '17. source observation keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m->'sources'->0,ARRAY['observation_id','source_key','source_url','license','retrieved_at','source_updated_at']) FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '18. classification container keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m->'classifications',ARRAY['nutri_score','nova']) FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '19. Nutri-Score observation keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m->'classifications'->'nutri_score',ARRAY['value','source','version','observation_id']) FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '20. NOVA observation keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m->'classifications'->'nova',ARRAY['value','source','observation_id']) FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '21. ingredient container keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m->'ingredients',ARRAY['state','items']) FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '22. ingredient assertion keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m->'ingredients'->'items'->0,ARRAY['name','state','observation_id']) FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '23. allergen container keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m->'allergens',ARRAY['state','contains','traces']) FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '24. contains assertion keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m->'allergens'->'contains'->0,ARRAY['name','state','observation_id']) FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '25. traces assertion keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m->'allergens'->'traces'->0,ARRAY['name','state','observation_id']) FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '26. suitability is not inferred positive' AS check_name,CASE WHEN ((SELECT m->'suitability'='{"vegan":"unknown","vegetarian":"unknown"}'::jsonb FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '27. evidence summary keys and actual field count' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m->'evidence',ARRAY['state','recorded_fields','total_fields','reasons']) AND m->'evidence'->>'recorded_fields'='1' FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '28. retirement marker cannot contain a score' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(m->'score',ARRAY['status','value','model_version','reason']) AND m->'score'->>'status'='retired' AND m->'score'->'value'='null'::jsonb FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '29. old list export has no successful nullable grades' AS check_name,CASE WHEN (pg_temp.qa_retired(public.api_get_list_items((SELECT uid FROM qa_contract_context)))) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '30. classification retains exact observation and unknown version' AS check_name,CASE WHEN ((SELECT m->'classifications'->'nutri_score'->>'observation_id'=(SELECT observation::text FROM qa_contract_context) AND m->'classifications'->'nutri_score'->'version'='null'::jsonb FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '31. source decimal precision and basis survive' AS check_name,CASE WHEN ((SELECT m->'nutrition'->'salt_g'->>'value'='0.1000' AND m->'nutrition'->'salt_g'->>'basis'='per_100g' FROM qa_contract_model)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '32. filter options retain requested context' AS check_name,CASE WHEN (public.api_find_filter_options('PL','en')->>'country'='PL') IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '33. canonical search envelope keys' AS check_name,CASE WHEN ((SELECT pg_temp.qa_keys(b,ARRAY['api_version','policy_version','query','country','language','total','page','pages','page_size','filters_applied','preferences_applied','results']) FROM qa_contract_find)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '34. search contains the same source-linked product' AS check_name,CASE WHEN ((SELECT b->>'total'='1' AND b->'results'->0->>'product_id'=(SELECT product_id::text FROM qa_contract_product) AND b->'results'->0->'classifications'->'nova'->>'observation_id'=(SELECT observation::text FROM qa_contract_context) FROM qa_contract_find)) IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT '35. unsupported search ranking fails closed' AS check_name,CASE WHEN (public.api_find_products(NULL,'{"sort_by":"unhealthiness"}')->>'error'='Unsupported search ordering') IS TRUE THEN 0 ELSE 1 END AS violations;
+SELECT set_config('request.jwt.claims','{}',true);
+SELECT '36. anonymous canonical read has no product payload' AS check_name,CASE WHEN (public.api_product_read_model(ARRAY[(SELECT product_id FROM qa_contract_product)])='{"error":"Authentication required"}'::jsonb) IS TRUE THEN 0 ELSE 1 END AS violations;
+ROLLBACK;

@@ -10,14 +10,10 @@ import { ScanHistorySkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
 import surface from "@/components/layout/CustomerSurface.module.css";
-import { getScanHistory } from "@/lib/api";
-import { NUTRI_COLORS } from "@/lib/constants";
-import { formatRelativeTime } from "@/lib/format-time";
+import { getEvidenceScanHistory as getScanHistory, type EvidenceScanHistoryItem as ScanHistoryItem } from "@/lib/evidence/scan";
 import { useTranslation } from "@/lib/i18n";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
-import { getScoreBand, toTryVitScore } from "@/lib/score-utils";
 import { createClient } from "@/lib/supabase/client";
-import type { ScanHistoryItem } from "@/lib/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -39,7 +35,7 @@ export default function ScanHistoryPage() {
   const [filter, setFilter] = useState<string>("all");
 
   const { data, isLoading, error } = useQuery({
-    queryKey: queryKeys.scanHistory(page, filter),
+    queryKey: [...queryKeys.scanHistory(page, filter), "evidence-first-v2"],
     queryFn: async () => {
       const result = await getScanHistory(supabase, page, 20, filter);
       if (!result.ok) throw new Error(result.error.message);
@@ -88,7 +84,7 @@ export default function ScanHistoryPage() {
       />
 
       {/* Filter toggle */}
-      <div className={surface.modeTabs}>
+      <div className={`${surface.modeTabs} ${surface.threeModeTabs}`}>
         {FILTERS.map((f) => (
           <button
             key={f.value}
@@ -172,7 +168,9 @@ function groupScans(scans: ScanHistoryItem[]): GroupedScan[] {
   const grouped: GroupedScan[] = [];
   for (const scan of scans) {
     const prev = grouped[grouped.length - 1];
-    if (prev && prev.ean === scan.ean) {
+    if (prev && prev.ean === scan.ean && prev.found === scan.found &&
+      prev.product_id === scan.product_id && prev.submission_status === scan.submission_status &&
+      new Date(prev.scanned_at).toDateString() === new Date(scan.scanned_at).toDateString()) {
       prev.count += 1;
     } else {
       grouped.push({ ...scan, count: 1 });
@@ -189,6 +187,8 @@ function groupByDate(scans: GroupedScan[]): DateGroup[] {
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterday = new Date(today);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
   yesterday.setDate(yesterday.getDate() - 1);
   const weekAgo = new Date(today);
   weekAgo.setDate(weekAgo.getDate() - 7);
@@ -198,11 +198,13 @@ function groupByDate(scans: GroupedScan[]): DateGroup[] {
     yesterday: [],
     thisWeek: [],
     earlier: [],
+    other: [],
   };
 
   for (const scan of scans) {
     const d = new Date(scan.scanned_at);
-    if (d >= today) groups.today.push(scan);
+    if (Number.isNaN(d.getTime()) || d >= tomorrow) groups.other.push(scan);
+    else if (d >= today) groups.today.push(scan);
     else if (d >= yesterday) groups.yesterday.push(scan);
     else if (d >= weekAgo) groups.thisWeek.push(scan);
     else groups.earlier.push(scan);
@@ -213,6 +215,7 @@ function groupByDate(scans: GroupedScan[]): DateGroup[] {
     { key: "yesterday", labelKey: "scanHistory.yesterday" },
     { key: "thisWeek", labelKey: "scanHistory.thisWeek" },
     { key: "earlier", labelKey: "scanHistory.earlier" },
+    { key: "other", labelKey: "evidenceUi.otherDates" },
   ];
 
   return keys
@@ -275,9 +278,9 @@ function ScanRow({
   index: number;
   onNavigate: (productId: number) => void;
 }>) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const date = new Date(scan.scanned_at);
-  const timeStr = formatRelativeTime(date);
+  const timeStr = Number.isNaN(date.getTime()) ? t("evidenceUi.dateUnavailable") : new Intl.DateTimeFormat(language, { dateStyle: "medium", timeStyle: "short" }).format(date);
 
   if (scan.found && scan.product_id) {
     return (
@@ -289,27 +292,6 @@ function ScanRow({
           onClick={() => onNavigate(scan.product_id ?? 0)}
           className="flex w-full items-center gap-3 text-left"
         >
-          {/* Nutri badge */}
-          {scan.nutri_score && (
-            <span
-              className={`flex h-7 w-7 shrink-0 items-center justify-center rounded text-xs font-bold text-white ${
-                NUTRI_COLORS[scan.nutri_score] ?? "bg-foreground-muted"
-              }`}
-            >
-              {scan.nutri_score}
-            </span>
-          )}
-          {/* TryVit Score badge */}
-          {scan.unhealthiness_score != null && (() => {
-            const band = getScoreBand(scan.unhealthiness_score);
-            return band ? (
-              <span
-                className={`flex h-7 shrink-0 items-center justify-center rounded px-1.5 text-xs font-bold ${band.bgColor} ${band.textColor}`}
-              >
-                {toTryVitScore(scan.unhealthiness_score)}
-              </span>
-            ) : null;
-          })()}
           <div className="min-w-0 flex-1">
             <p className="truncate font-medium text-foreground">
               {scan.product_name}
@@ -319,7 +301,7 @@ function ScanRow({
             </p>
           </div>
           <div className="flex shrink-0 flex-col items-end">
-            <span className="text-xs text-foreground-muted">{timeStr}</span>
+            <time className="text-xs text-foreground-muted" dateTime={Number.isNaN(date.getTime()) ? undefined : scan.scanned_at}>{timeStr}</time>
             <span className="mt-0.5 text-xs font-mono text-foreground-muted">
               {scan.ean}
             </span>
@@ -342,14 +324,14 @@ function ScanRow({
     >
       <div className="flex items-center gap-3">
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-warning text-sm">
-          ❓
+          —
         </span>
         <div className="min-w-0 flex-1">
           <p className="font-mono text-sm text-foreground-secondary">
             {scan.ean}
           </p>
           <p className="text-xs text-foreground-secondary">
-            {t("scanHistory.notFound")}
+            {t(scan.found ? "scanHistory.found" : "scanHistory.notFound")}
             {scan.submission_status && (
               <span className="ml-1">
                 ·{" "}
@@ -361,10 +343,10 @@ function ScanRow({
           </p>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-1">
-          <span className="text-xs text-foreground-muted">{timeStr}</span>
-          {!scan.submission_status && (
+          <time className="text-xs text-foreground-muted" dateTime={Number.isNaN(date.getTime()) ? undefined : scan.scanned_at}>{timeStr}</time>
+          {!scan.found && !scan.submission_status && (
             <Link
-              href={`/app/scan/submit?ean=${scan.ean}`}
+              href={`/app/scan/submit?ean=${encodeURIComponent(scan.ean)}`}
               className="text-xs text-brand hover:text-brand-hover"
             >
               {t("scanHistory.submit")}

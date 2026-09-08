@@ -131,9 +131,11 @@ test.describe("Landing page features", () => {
     await expect(page.getByText("Sugars 3.2 g and saturated fat 0.4 g per 100 ml")).toBeVisible();
   });
 
-  test("renders the derived evidence layer", async ({ page }) => {
+  test("explains compatible values without an overall product grade", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByText("72 / 100 provisional method output")).toBeVisible();
+    await expect(page.getByText("Compare these values only with the same units and preparation basis")).toBeVisible();
+    await expect(page.getByText("No overall product grade", { exact: true })).toBeVisible();
+    await expect(page.getByText(/72\s*\/\s*100|provisional method output/i)).toHaveCount(0);
   });
 
   test("renders explicit missingness", async ({ page }) => {

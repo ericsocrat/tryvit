@@ -1,393 +1,106 @@
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type * as CollectionsApi from "@/lib/evidence/collections";
+import { fixtureListId, savedListFixture } from "@/lib/evidence/collections.fixtures";
+import { translate } from "@/lib/i18n-core";
 import ListDetailPage from "./page";
 
-// ─── Mocks ──────────────────────────────────────────────────────────────────
+const mocks = vi.hoisted(() => ({ list: vi.fn(), remove: vi.fn(), update: vi.fn(), toggle: vi.fn(), revoke: vi.fn() }));
+vi.mock("next/navigation", () => ({ useParams: () => ({ id: "aaaaaaaa-1111-4111-8111-111111111111" }) }));
+vi.mock("@/lib/supabase/client", () => ({ createClient: () => ({}) }));
+vi.mock("@/lib/evidence/collections", async (original) => ({ ...await original<typeof CollectionsApi>(), getSavedList: mocks.list }));
+vi.mock("@/lib/api", () => ({ removeFromList: mocks.remove, updateList: mocks.update, toggleShare: mocks.toggle, revokeShare: mocks.revoke }));
+vi.mock("@/hooks/use-analytics", () => ({ useAnalytics: () => ({ track: vi.fn() }) }));
+vi.mock("@/lib/events", () => ({ eventBus: { emit: vi.fn() } }));
 
-vi.mock("next/navigation", () => ({
-  useParams: () => ({ id: "list-abc-123" }),
-}));
-
-vi.mock("next/link", () => ({
-  default: ({
-    href,
-    children,
-    ...rest
-  }: {
-    href: string;
-    children: React.ReactNode;
-    className?: string;
-  }) => (
-    <a href={href} {...rest}>
-      {children}
-    </a>
-  ),
-}));
-
-const mockRemoveMutate = vi.fn();
-const mockUpdateMutate = vi.fn();
-const mockToggleShareMutate = vi.fn();
-const mockRevokeMutate = vi.fn();
-const mockRemoveReset = vi.fn();
-const mockUpdateReset = vi.fn();
-const mockToggleShareReset = vi.fn();
-const mockRevokeReset = vi.fn();
-
-const mockUseLists = vi.fn();
-const mockUseListItems = vi.fn();
-
-vi.mock("@/hooks/use-lists", () => ({
-  useLists: () => mockUseLists(),
-  useListItems: (id: string) => mockUseListItems(id),
-  useRemoveFromList: () => ({
-    mutate: mockRemoveMutate,
-    isPending: false,
-    reset: mockRemoveReset,
-  }),
-  useUpdateList: () => ({
-    mutate: mockUpdateMutate,
-    isPending: false,
-    reset: mockUpdateReset,
-  }),
-  useToggleShare: () => ({
-    mutate: mockToggleShareMutate,
-    isPending: false,
-    reset: mockToggleShareReset,
-  }),
-  useRevokeShare: () => ({
-    mutate: mockRevokeMutate,
-    isPending: false,
-    reset: mockRevokeReset,
-  }),
-}));
-
-vi.mock("@/components/common/skeletons", () => ({
-  ListDetailSkeleton: () => <div data-testid="skeleton" role="status" aria-label="Loading list" />,
-}));
-
-vi.mock("@/components/common/ConfirmDialog", () => ({
-  ConfirmDialog: ({
-    open,
-    title,
-    onConfirm,
-    onCancel,
-  }: {
-    open: boolean;
-    title: string;
-    onConfirm: () => void;
-    onCancel: () => void;
-    [key: string]: unknown;
-  }) =>
-    open ? (
-      <div data-testid="confirm-dialog">
-        <p>{title}</p>
-        <button onClick={onConfirm}>Confirm</button>
-        <button onClick={onCancel}>Dialog-Cancel</button>
-      </div>
-    ) : null,
-}));
-
-// ─── Data ───────────────────────────────────────────────────────────────────
-
-const mockList = {
-  id: "list-abc-123",
-  name: "My Favorites",
-  description: "Healthy picks",
-  list_type: "favorites" as const,
-  is_default: false,
-  share_enabled: false,
-  share_token: null,
-  item_count: 2,
-  created_at: "2025-01-01T00:00:00Z",
-  updated_at: "2025-01-10T00:00:00Z",
-};
-
-const mockItems = [
-  {
-    item_id: "item-1",
-    product_id: 101,
-    position: 1,
-    notes: "Morning snack",
-    added_at: "2025-01-05T12:00:00Z",
-    product_name: "Healthy Bar",
-    brand: "GoodBrand",
-    category: "cereals",
-    unhealthiness_score: 18,
-    nutri_score_label: "A",
-    nova_classification: "1",
-    calories: 120,
-  },
-  {
-    item_id: "item-2",
-    product_id: 202,
-    position: 2,
-    notes: null,
-    added_at: "2025-01-06T14:00:00Z",
-    product_name: "Nice Chips",
-    brand: "ChipCo",
-    category: "chips",
-    unhealthiness_score: 62,
-    nutri_score_label: "D",
-    nova_classification: "4",
-    calories: 540,
-  },
-];
-
+let data = savedListFixture();
 beforeEach(() => {
-  vi.clearAllMocks();
-  mockUseLists.mockReturnValue({
-    data: { lists: [mockList] },
-  });
-  mockUseListItems.mockReturnValue({
-    data: { items: mockItems },
-    isLoading: false,
-    error: null,
-    refetch: vi.fn(),
-  });
+  vi.clearAllMocks(); data = savedListFixture();
+  mocks.list.mockImplementation(() => Promise.resolve({ ok: true, data }));
+  mocks.remove.mockResolvedValue({ ok: true, data: { success: true } });
+  mocks.update.mockResolvedValue({ ok: true, data: { success: true } });
+  mocks.toggle.mockResolvedValue({ ok: true, data: { success: true } });
+  mocks.revoke.mockResolvedValue({ ok: true, data: { success: true } });
 });
+function mount() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(<QueryClientProvider client={client}><ListDetailPage /></QueryClientProvider>);
+}
 
-// ─── Tests ──────────────────────────────────────────────────────────────────
-
-describe("ListDetailPage", () => {
-  it("shows loading skeleton when loading", () => {
-    mockUseListItems.mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      error: null,
-    });
-    render(<ListDetailPage />);
-    expect(screen.getByRole("status", { name: "Loading list" })).toBeInTheDocument();
+describe("evidence-first saved list", () => {
+  it("preserves saved order, notes and archived identity without grades", async () => {
+    mount(); await screen.findByRole("heading", { name: "Morning list" });
+    const rows = screen.getAllByTestId("product-register-card");
+    expect(rows[0]).toHaveTextContent("Fixture product 2");
+    expect(rows[1]).toHaveTextContent("Fixture product 1");
+    expect(screen.getByText("Morning note")).toBeInTheDocument();
+    expect(screen.getByText("Archived product")).toBeInTheDocument();
+    expect(screen.queryByRole("meter")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /export/i })).not.toBeInTheDocument();
+    expect(mocks.list).toHaveBeenCalledWith({}, fixtureListId, 0, "en");
   });
 
-  it("shows error state with retry button", () => {
-    const mockRefetch = vi.fn();
-    mockUseListItems.mockReturnValue({
-      data: undefined,
-      isLoading: false,
-      error: new Error("fail"),
-      refetch: mockRefetch,
-    });
-    render(<ListDetailPage />);
-    expect(screen.getByText("Failed to load list.")).toBeInTheDocument();
-    const retryBtn = screen.getByRole("button", { name: "Retry" });
-    expect(retryBtn).toBeInTheDocument();
-    retryBtn.click();
-    expect(mockRefetch).toHaveBeenCalledTimes(1);
+  it("retains an unavailable product entry and its note, not an empty list", async () => {
+    data.items[0].product = null;
+    mount(); await screen.findByRole("heading", { name: "Morning list" });
+    expect(screen.getByText("Product 2")).toBeInTheDocument();
+    expect(screen.getByText("Morning note")).toBeInTheDocument();
+    expect(screen.getByText(/This saved entry and its notes are retained/)).toBeInTheDocument();
+    expect(screen.getAllByTestId("product-register-card")).toHaveLength(2);
   });
 
-  it("shows breadcrumb link to lists", () => {
-    render(<ListDetailPage />);
-    const nav = screen.getByRole("navigation", { name: "Breadcrumb" });
-    const link = nav.querySelector('a[href="/app/lists"]');
-    expect(link).toBeTruthy();
+  it.each(["transport", "outer", "inner"] as const)("keeps rows and notes after %s removal failure", async (failure) => {
+    if (failure === "transport") mocks.remove.mockRejectedValue(new Error("Offline"));
+    if (failure === "outer") mocks.remove.mockResolvedValue({ ok: false, error: { message: "Denied" } });
+    if (failure === "inner") mocks.remove.mockResolvedValue({ ok: true, data: { success: false } });
+    mount(); await screen.findByRole("heading", { name: "Morning list" });
+    fireEvent.click(screen.getByRole("button", { name: /Remove from list Fixture product 2/i }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(translate("en", "lists.mutationFailed"));
+    expect(screen.getByText("Morning note")).toBeInTheDocument();
+    expect(screen.getAllByTestId("product-register-card")).toHaveLength(2);
   });
 
-  it("renders list name with favorites icon", () => {
-    render(<ListDetailPage />);
-    const heading = screen.getByRole("heading", { name: /My Favorites/ });
-    expect(heading).toBeInTheDocument();
-    // Heart icon is now a Lucide SVG
-    expect(heading.querySelector("svg")).toBeTruthy();
+  it("refreshes the same membership key only after successful removal", async () => {
+    mocks.remove.mockImplementation(() => { data = { ...data, total_count: 1, items: data.items.slice(1) }; return Promise.resolve({ ok: true, data: { success: true } }); });
+    mount(); await screen.findByRole("heading", { name: "Morning list" });
+    fireEvent.click(screen.getByRole("button", { name: /Remove from list Fixture product 2/i }));
+    await waitFor(() => expect(screen.getAllByTestId("product-register-card")).toHaveLength(1));
+    expect(screen.getByText("Second note")).toBeInTheDocument();
   });
 
-  it("renders avoid icon for avoid lists", () => {
-    mockUseLists.mockReturnValue({
-      data: {
-        lists: [{ ...mockList, list_type: "avoid", name: "Avoid List" }],
-      },
-    });
-    render(<ListDetailPage />);
-    // Ban icon is now a Lucide SVG
-    const avoidHeading = screen.getByRole("heading", { level: 1 });
-    expect(avoidHeading.querySelector("svg")).toBeTruthy();
+  it("keeps failed edits retryable and sends an explicit empty description", async () => {
+    mocks.update.mockResolvedValue({ ok: true, data: { ok: false } });
+    mount(); await screen.findByRole("heading", { name: "Morning list" });
+    fireEvent.click(screen.getByRole("button", { name: translate("en", "lists.editList") }));
+    const name = screen.getByRole("textbox", { name: translate("en", "lists.nameLabel") });
+    fireEvent.change(name, { target: { value: "Edited name" } });
+    fireEvent.change(screen.getByRole("textbox", { name: translate("en", "lists.descriptionLabel") }), { target: { value: "" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await screen.findByRole("alert");
+    expect(name).toHaveValue("Edited name");
+    expect(mocks.update).toHaveBeenCalledWith({}, fixtureListId, "Edited name", "");
   });
 
-  it("shows description", () => {
-    render(<ListDetailPage />);
-    expect(screen.getByText("Healthy picks")).toBeInTheDocument();
+  it("keeps public sharing paused without changing existing share state", async () => {
+    mount(); await screen.findByRole("heading", { name: "Morning list" });
+    fireEvent.click(screen.getByRole("button", { name: translate("en", "lists.shareSettings") }));
+    expect(screen.getByText(/Public sharing and exports are paused/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: translate("en", "lists.off") })).toBeDisabled();
+    expect(mocks.toggle).not.toHaveBeenCalled();
   });
 
-  it("shows item count", () => {
-    render(<ListDetailPage />);
-    expect(screen.getByText("2 items")).toBeInTheDocument();
+  it("provides pagination rather than silently stopping at the first page", async () => {
+    data.total_count = 21;
+    mount(); await screen.findByRole("heading", { name: "Morning list" });
+    fireEvent.click(screen.getByRole("button", { name: translate("en", "common.next") }));
+    await waitFor(() => expect(mocks.list).toHaveBeenLastCalledWith({}, fixtureListId, 20, "en"));
   });
 
-  it("renders product items", () => {
-    render(<ListDetailPage />);
-    expect(screen.getByText("Healthy Bar")).toBeInTheDocument();
-    expect(screen.getByText("Nice Chips")).toBeInTheDocument();
-  });
-
-  it("shows scores on list items", () => {
-    render(<ListDetailPage />);
-    const meters = screen.getAllByRole("meter", {
-      name: /TryVit Score.*Provisional/i,
-    });
-    expect(meters[0]).toHaveValue(82);
-    expect(meters[1]).toHaveValue(38);
-  });
-
-  it("shows nutri-score labels", () => {
-    render(<ListDetailPage />);
-    expect(screen.getByText("A")).toBeInTheDocument();
-    expect(screen.getByText("D")).toBeInTheDocument();
-  });
-
-  it("shows item notes", () => {
-    render(<ListDetailPage />);
-    expect(screen.getByText("Morning snack")).toBeInTheDocument();
-  });
-
-  it("shows product links", () => {
-    render(<ListDetailPage />);
-    const links = screen
-      .getAllByRole("link")
-      .filter((a) => a.getAttribute("href")?.startsWith("/app/product/"));
-    expect(links).toHaveLength(2);
-    expect(links[0]).toHaveAttribute("href", "/app/product/101");
-    expect(links[1]).toHaveAttribute("href", "/app/product/202");
-  });
-
-  it("calls remove mutation when clicking remove button", async () => {
-    render(<ListDetailPage />);
-    const user = userEvent.setup();
-
-    const removeBtn = screen.getByRole("button", {
-      name: "Remove from list Healthy Bar",
-    });
-    await user.click(removeBtn);
-
-    expect(mockRemoveMutate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        listId: "list-abc-123",
-        productId: 101,
-      }),
-    );
-  });
-
-  it("enters edit mode when clicking edit button", async () => {
-    render(<ListDetailPage />);
-    const user = userEvent.setup();
-
-    await user.click(screen.getByTitle("Edit list"));
-
-    expect(screen.getByDisplayValue("My Favorites")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Healthy picks")).toBeInTheDocument();
-  });
-
-  it("saves edit on form submit", async () => {
-    render(<ListDetailPage />);
-    const user = userEvent.setup();
-
-    await user.click(screen.getByTitle("Edit list"));
-
-    const nameInput = screen.getByDisplayValue("My Favorites");
-    await user.clear(nameInput);
-    await user.type(nameInput, "Updated Name");
-
-    await user.click(screen.getByText("Save"));
-
-    expect(mockUpdateMutate).toHaveBeenCalledWith(
-      expect.objectContaining({
-        listId: "list-abc-123",
-        name: "Updated Name",
-      }),
-      expect.anything(),
-    );
-  });
-
-  it("cancels edit mode", async () => {
-    render(<ListDetailPage />);
-    const user = userEvent.setup();
-
-    await user.click(screen.getByTitle("Edit list"));
-    expect(screen.getByDisplayValue("My Favorites")).toBeInTheDocument();
-
-    await user.click(screen.getByText("Cancel"));
-    // Should be back to display mode
-    expect(screen.queryByDisplayValue("My Favorites")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /My Favorites/ })).toBeInTheDocument();
-  });
-
-  it("opens share panel", async () => {
-    render(<ListDetailPage />);
-    const user = userEvent.setup();
-
-    await user.click(screen.getByTitle("Share settings"));
-
-    expect(screen.getByText("Sharing")).toBeInTheDocument();
-    expect(screen.getByText("Off")).toBeInTheDocument();
-  });
-
-  it("toggles share on", async () => {
-    render(<ListDetailPage />);
-    const user = userEvent.setup();
-
-    await user.click(screen.getByTitle("Share settings"));
-    await user.click(screen.getByText("Off"));
-
-    expect(mockToggleShareMutate).toHaveBeenCalledWith({
-      listId: "list-abc-123",
-      enabled: true,
-    });
-    expect(mockRemoveReset).toHaveBeenCalledOnce();
-    expect(mockUpdateReset).toHaveBeenCalledOnce();
-    expect(mockToggleShareReset).toHaveBeenCalledOnce();
-    expect(mockRevokeReset).toHaveBeenCalledOnce();
-    expect(mockToggleShareReset.mock.invocationCallOrder[0]).toBeLessThan(
-      mockToggleShareMutate.mock.invocationCallOrder[0],
-    );
-  });
-
-  it("shows copy link and revoke when sharing enabled", async () => {
-    mockUseLists.mockReturnValue({
-      data: {
-        lists: [
-          {
-            ...mockList,
-            share_enabled: true,
-            share_token: "tok-xyz",
-          },
-        ],
-      },
-    });
-    render(<ListDetailPage />);
-    const user = userEvent.setup();
-
-    await user.click(screen.getByTitle("Share settings"));
-
-    expect(screen.getByText("On")).toBeInTheDocument();
-    expect(screen.getByText("Copy link")).toBeInTheDocument();
-    expect(screen.getByText("Revoke")).toBeInTheDocument();
-  });
-
-  it("does not show share button for avoid lists", () => {
-    mockUseLists.mockReturnValue({
-      data: {
-        lists: [{ ...mockList, list_type: "avoid" }],
-      },
-    });
-    render(<ListDetailPage />);
-    expect(screen.queryByTitle("Share settings")).not.toBeInTheDocument();
-  });
-
-  it("shows empty state when no items", () => {
-    mockUseListItems.mockReturnValue({
-      data: { items: [] },
-      isLoading: false,
-      error: null,
-    });
-    render(<ListDetailPage />);
-    expect(screen.getByText(/This list is empty/)).toBeInTheDocument();
-    expect(screen.getByText("Search products").closest("a")).toHaveAttribute("href", "/app/search");
-  });
-
-  it("shows singular item count", () => {
-    mockUseLists.mockReturnValue({
-      data: { lists: [{ ...mockList, item_count: 1 }] },
-    });
-    render(<ListDetailPage />);
-    expect(screen.getByText("1 item")).toBeInTheDocument();
+  it("keeps a read failure distinct from an empty list and offers retry", async () => {
+    mocks.list.mockResolvedValueOnce({ ok: false, error: { message: "Unavailable" } });
+    mount(); await screen.findByText(translate("en", "lists.loadListFailed"));
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByRole("heading", { name: "Morning list" })).toBeInTheDocument();
   });
 });

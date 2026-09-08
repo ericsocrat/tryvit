@@ -135,6 +135,23 @@ jobs:
           set -euo pipefail
           python check_pipeline_structure.py
 
+      - name: Enable query statistics in the owned CI PostgreSQL service
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          set -euo pipefail
+          # CREATE EXTENSION alone does not load its shared-memory runtime.
+          # Exercise report_slow_queries against real statistics, not a stub.
+          docker exec "$POSTGRES_CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+            -c "ALTER SYSTEM SET shared_preload_libraries = 'pg_stat_statements';"
+          docker restart "$POSTGRES_CONTAINER" > /dev/null
+          for attempt in $(seq 1 30); do
+            if pg_isready --quiet; then break; fi
+            sleep 1
+          done
+          pg_isready --quiet
+          psql -At -v ON_ERROR_STOP=1 -c "SHOW shared_preload_libraries" | grep -Fx pg_stat_statements
+
       - name: Apply schema migrations
         run: |
           set -euo pipefail
@@ -471,8 +488,8 @@ jobs:
           $sb = [System.Text.StringBuilder]::new()
           [void]$sb.AppendLine("## QA Summary")
           [void]$sb.AppendLine("")
-          [void]$sb.AppendLine("| Suite | ID | Checks | Status | Runtime |")
-          [void]$sb.AppendLine("|-------|----|--------|--------|---------|")
+          [void]$sb.AppendLine("| Suite | ID | Executed / Untested | Status | Role | Runtime |")
+          [void]$sb.AppendLine("|-------|----|---------------------|--------|------|---------|")
           foreach ($s in $qa.suites) {
             $icon = switch ($s.status) {
               'pass' { ':white_check_mark:' }
@@ -482,10 +499,12 @@ jobs:
               default { ':grey_question:' }
             }
             $rt = if ($s.runtime_ms) { "$($s.runtime_ms) ms" } else { '—' }
-            [void]$sb.AppendLine("| $($s.name) | ``$($s.suite_id)`` | $($s.checks) | $icon $($s.status) | $rt |")
+            $executed = if ($null -ne $s.executed_checks) { $s.executed_checks } else { $s.checks }
+            [void]$sb.AppendLine("| $($s.name) | ``$($s.suite_id)`` | $executed / $($s.untested_checks) | $icon $($s.status) | $($s.assessment_role) | $rt |")
           }
           [void]$sb.AppendLine("")
-          [void]$sb.AppendLine("**Overall: $($qa.overall)** — $($qa.summary.passed) passed, $($qa.summary.failed) failed, $($qa.summary.warnings) warnings")
+          [void]$sb.AppendLine("**Overall: $($qa.overall)** — $($qa.summary.passed) passed, $($qa.summary.blocking_failed) blocking failures, $($qa.summary.diagnostic_failed) diagnostic findings, $($qa.summary.execution_errors) execution errors, $($qa.summary.untested) untested, $($qa.summary.unassessed_suites) unassessed inventories, $($qa.summary.warnings) source warnings")
+          [void]$sb.AppendLine("Consumer retirement contracts: **$($qa.consumer_retirement.status)**; all listed suites must execute and pass.")
           [void]$sb.AppendLine("")
           [void]$sb.AppendLine("*Schema version: $($qa.version) · Timestamp: $($qa.timestamp)*")
           $sb.ToString() | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
@@ -506,7 +525,7 @@ jobs:
           if ($failed) { exit 1 }
           $qa = Get-Content 'qa.json' -Raw | ConvertFrom-Json
           if ($qa.overall -eq 'fail') {
-            Write-Host "::error::QA FAILED — $($qa.summary.failed) check(s) failed"
+            Write-Host "::error::QA FAILED — $($qa.summary.blocking_failed) blocking failures; $($qa.summary.diagnostic_failed) diagnostic findings; $($qa.summary.execution_errors) execution errors; $($qa.summary.untested) untested checks; $($qa.summary.unassessed_suites) unassessed inventories"
             $failed = $true
           }
           if ($qa.overall -eq 'warn') {

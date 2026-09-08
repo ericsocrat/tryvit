@@ -41,7 +41,7 @@ export const HOME_ITEM: AppNavItem = {
 
 export const SEARCH_ITEM: AppNavItem = {
   href: "/app/search",
-  labelKey: "nav.search",
+  labelKey: "nav.find",
   icon: Search,
   routeKey: "search",
   prominent: true,
@@ -57,7 +57,7 @@ export const SCAN_ITEM: AppNavItem = {
 
 export const LISTS_ITEM: AppNavItem = {
   href: "/app/lists",
-  labelKey: "nav.lists",
+  labelKey: "nav.saved",
   icon: ClipboardList,
   routeKey: "lists",
 };
@@ -108,7 +108,7 @@ export const LEARN_ITEM: AppNavItem = {
   href: "/learn",
   labelKey: "nav.learn",
   icon: BookOpen,
-  routeKey: null,
+  routeKey: "learn",
 };
 
 export const SETTINGS_ITEM: AppNavItem = {
@@ -122,12 +122,12 @@ export const MOBILE_PRIMARY_ITEMS = [HOME_ITEM, SEARCH_ITEM, SCAN_ITEM, LISTS_IT
 
 export const SIDEBAR_SECTIONS: readonly AppNavSection[] = [
   {
-    labelKey: "nav.sectionBrowse",
-    items: [SEARCH_ITEM, SCAN_ITEM, CATEGORIES_ITEM, RECIPES_ITEM, IMAGE_SEARCH_ITEM],
+    labelKey: "nav.sectionPrimary",
+    items: [HOME_ITEM, SEARCH_ITEM, SCAN_ITEM, LISTS_ITEM, COMPARE_ITEM],
   },
   {
-    labelKey: "nav.sectionYourStuff",
-    items: [HOME_ITEM, LISTS_ITEM, WATCHLIST_ITEM, COMPARE_ITEM, ACHIEVEMENTS_ITEM],
+    labelKey: "nav.sectionMore",
+    items: [CATEGORIES_ITEM, IMAGE_SEARCH_ITEM, WATCHLIST_ITEM, RECIPES_ITEM, ACHIEVEMENTS_ITEM],
   },
   {
     labelKey: "nav.sectionApp",
@@ -139,16 +139,16 @@ export const HEADER_PRIMARY_ITEMS = [
   HOME_ITEM,
   SEARCH_ITEM,
   SCAN_ITEM,
-  CATEGORIES_ITEM,
   LISTS_ITEM,
+  COMPARE_ITEM,
 ] as const;
 
 export const HEADER_MORE_ITEMS = [
-  WATCHLIST_ITEM,
-  COMPARE_ITEM,
-  ACHIEVEMENTS_ITEM,
-  RECIPES_ITEM,
+  CATEGORIES_ITEM,
   IMAGE_SEARCH_ITEM,
+  WATCHLIST_ITEM,
+  RECIPES_ITEM,
+  ACHIEVEMENTS_ITEM,
   LEARN_ITEM,
   SETTINGS_ITEM,
 ] as const;
@@ -202,4 +202,10 @@ export const MORE_ROUTE_KEYS = new Set<PrimaryRouteKey>([
   "recipes",
   "image-search",
   "admin",
+  "learn",
 ]);
+
+/** Null means no matched destination, never a match for an unmatched page. */
+export function isNavigationItemActive(item: AppNavItem, activeRoute: PrimaryRouteKey): boolean {
+  return item.routeKey !== null && activeRoute === item.routeKey;
+}

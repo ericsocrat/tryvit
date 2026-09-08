@@ -85,7 +85,7 @@ describe("useAchievements", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(result.current.data?.total).toBe(18);
+    expect(result.current.data?.total).toBe(1);
     expect(result.current.data?.unlocked).toBe(1);
     expect(result.current.data?.achievements).toHaveLength(1);
     expect(mockGetAchievements).toHaveBeenCalledOnce();
@@ -228,6 +228,15 @@ describe("useAchievementProgress", () => {
       type: "error",
       message: "achievements.progressError",
     });
+  });
+
+  it("rejects a retired application-level result without success or invalidation", async () => {
+    mockIncrementProgress.mockResolvedValue({ ok: true, data: { error: "Score-based milestone retired", status: "retired", newly_unlocked: true } });
+    const { result } = renderHook(() => useAchievementProgress(), { wrapper: createWrapper() });
+    result.current.mutate({ slug: "first_low_score" });
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(mockShowToast).not.toHaveBeenCalledWith(expect.objectContaining({ type: "success" }));
+    expect(mockInvalidateQueries).not.toHaveBeenCalled();
   });
 
   it("passes custom increment value", async () => {

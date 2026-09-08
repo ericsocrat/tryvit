@@ -1,3 +1,5 @@
+BEGIN;
+CREATE FUNCTION pg_temp.qa_ok(condition boolean) RETURNS integer LANGUAGE sql IMMUTABLE AS $$ SELECT CASE WHEN condition IS TRUE THEN 0 ELSE 1 END; $$;
 -- ============================================================
 -- QA: View & Function Consistency
 -- Validates that materialized views, API functions, and
@@ -21,58 +23,25 @@ WHERE conf_count != master_count;
 -- ═══════════════════════════════════════════════════════════════════════════
 -- 2. v_api_category_overview categories match category_ref active categories
 -- ═══════════════════════════════════════════════════════════════════════════
-SELECT '2. v_api_category_overview complete' AS check_name,
+SELECT '2. retained category overviews have complete categories and consistent totals' AS check_name,
        COUNT(*) AS violations
 FROM (
     SELECT (SELECT COUNT(*) FROM v_api_category_overview) AS api_cats,
-           (SELECT COUNT(*) FROM category_ref WHERE is_active = true) AS ref_cats
+           (SELECT COUNT(*) FROM category_ref WHERE is_active = true) AS ref_cats,
+           (SELECT COALESCE(SUM(product_count),0) FROM v_api_category_overview) AS global_products,
+           (SELECT COALESCE(SUM(product_count),0) FROM v_api_category_overview_by_country) AS country_products,
+           (SELECT COUNT(*) FROM v_master) AS active_products
 ) sub
-WHERE api_cats != ref_cats;
+WHERE api_cats != ref_cats OR global_products != active_products OR country_products != global_products;
 
--- ═══════════════════════════════════════════════════════════════════════════
--- 3. api_score_explanation returns non-null for all scored products
--- ═══════════════════════════════════════════════════════════════════════════
-SELECT '3. api_score_explanation covers all products' AS check_name,
-       COUNT(*) AS violations
-FROM products p
-WHERE p.is_deprecated IS NOT TRUE
-  AND p.unhealthiness_score IS NOT NULL
-  AND api_score_explanation(p.product_id) IS NULL;
-
--- ═══════════════════════════════════════════════════════════════════════════
--- 4. api_score_explanation JSON has required keys
--- ═══════════════════════════════════════════════════════════════════════════
-SELECT '4. api_score_explanation has required keys' AS check_name,
-       COUNT(*) AS violations
-FROM products p
-CROSS JOIN LATERAL api_score_explanation(p.product_id) AS detail
-WHERE p.is_deprecated IS NOT TRUE
-  AND p.unhealthiness_score IS NOT NULL
-  AND NOT (
-    detail ? 'product_id'
-    AND detail ? 'score_breakdown'
-    AND detail ? 'top_factors'
-    AND detail ? 'summary'
-  );
-
--- ═══════════════════════════════════════════════════════════════════════════
--- 5. api_product_detail trust section includes confidence
--- ═══════════════════════════════════════════════════════════════════════════
-SELECT '5. api_product_detail trust has confidence' AS check_name,
-       COUNT(*) AS violations
-FROM v_master m
-CROSS JOIN LATERAL api_product_detail(m.product_id) AS detail
-WHERE NOT ((detail->'trust') ? 'confidence');
-
--- ═══════════════════════════════════════════════════════════════════════════
--- 6. api_product_detail nutrition matches v_master calories
--- ═══════════════════════════════════════════════════════════════════════════
-SELECT '6. api_product_detail nutrition consistent with v_master' AS check_name,
-       COUNT(*) AS violations
-FROM v_master m
-CROSS JOIN LATERAL api_product_detail(m.product_id) AS detail
-WHERE m.calories IS NOT NULL
-  AND (detail->'nutrition_per_100g'->>'calories')::numeric != m.calories;
+SELECT '3. score explanation is refresh-only' AS check_name, pg_temp.qa_ok(public.api_score_explanation(-1)->>'error'='refresh_required') AS violations;
+SELECT '4. score explanation exposes no derived payload' AS check_name, pg_temp.qa_ok(NOT(public.api_score_explanation(-1) ?| ARRAY['score_breakdown','summary','top_factors','product_id'])) AS violations;
+SELECT '5. retired detail has no health confidence payload' AS check_name, pg_temp.qa_ok(public.api_product_detail(-1)->>'error'='refresh_required' AND NOT(public.api_product_detail(-1) ? 'trust')) AS violations;
+SELECT '6. canonical nutrition preserves field structure' AS check_name,COUNT(*) AS violations
+FROM public.products p CROSS JOIN LATERAL evidence_private.product_one(p.product_id,'en') m
+WHERE p.is_deprecated IS NOT TRUE AND (jsonb_typeof(m->'nutrition') IS DISTINCT FROM 'object'
+ OR (SELECT count(*) FROM jsonb_each(m->'nutrition'))<>9
+ OR EXISTS(SELECT 1 FROM jsonb_each(m->'nutrition') f WHERE NOT(f.value ?& ARRAY['value','state','basis','unit','preparation_state','observation_id','qualifier'])));
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- 7. v_master score_breakdown factors count = 10 (9 penalties + 1 bonus, v3.3)
@@ -200,3 +169,5 @@ SELECT '16. v_submission_country_analytics has 7 columns' AS check_name,
 FROM information_schema.columns
 WHERE table_schema = 'public'
   AND table_name = 'v_submission_country_analytics';
+
+ROLLBACK;

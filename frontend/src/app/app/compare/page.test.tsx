@@ -1,378 +1,165 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { useState } from "react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { evidenceEnvelope, evidenceProduct, legacyProduct } from "@/components/evidence/product-evidence.fixtures";
+import { useCompareStore } from "@/stores/compare-store";
+import type * as EvidenceApi from "@/lib/evidence/api";
 import ComparePage from "./page";
+import { parseComparisonIds } from "@/lib/evidence/comparison-selection";
 
-// ─── Mocks ──────────────────────────────────────────────────────────────────
+const state = vi.hoisted(() => ({ search: "ids=1,2" }));
+const mocks = vi.hoisted(() => ({ read: vi.fn(), push: vi.fn(), save: vi.fn(), saveState: { isPending: false, isSuccess: false, isError: false } }));
+vi.mock("next/navigation", () => ({ useSearchParams: () => new URLSearchParams(state.search), useRouter: () => ({ push: mocks.push }) }));
+vi.mock("@/lib/evidence/api", async (importOriginal) => ({ ...await importOriginal<typeof EvidenceApi>(), getProductReadModels: mocks.read }));
+vi.mock("@/lib/supabase/client", () => ({ createClient: () => ({}) }));
+vi.mock("@/hooks/use-compare", () => ({ useSaveComparison: () => ({ ...mocks.saveState, mutate: mocks.save }) }));
 
-const mockGet = vi.fn();
-vi.mock("next/navigation", () => ({
-  useSearchParams: () => ({ get: mockGet }),
-}));
-
-vi.mock("next/link", () => ({
-  default: ({ href, children }: { href: string; children: React.ReactNode }) => (
-    <a href={href}>{children}</a>
-  ),
-}));
-
-const mockUseCompareProducts = vi.fn();
-vi.mock("@/hooks/use-compare", () => ({
-  useCompareProducts: (...args: unknown[]) => mockUseCompareProducts(...args),
-}));
-
-const mockUseProductProvenanceMap = vi.fn();
-vi.mock("@/hooks/use-product-provenance", () => ({
-  useProductProvenanceMap: (...args: unknown[]) =>
-    mockUseProductProvenanceMap(...args),
-  canRecommendFromProvenance: () => false,
-  getProvenanceDisposition: (value: { disposition?: string }) =>
-    value.disposition ?? "not_collected",
-  hasUsableProvenanceField: (
-    value: { usableFields?: string[] },
-    field: string,
-  ) => value.usableFields?.includes(field) ?? false,
-}));
-
-vi.mock("@/components/export/ExportButton", () => ({
-  ExportButton: () => <div data-testid="comparison-export" />,
-}));
-
-vi.mock("@/components/trust/ProductEvidencePanel", () => ({
-  ProductEvidencePanel: () => <div data-testid="product-evidence-panel" />,
-}));
-
-const mockClear = vi.fn();
-vi.mock("@/stores/compare-store", () => ({
-  useCompareStore: (selector: (s: { clear: () => void }) => unknown) =>
-    selector({ clear: mockClear }),
-}));
-
-vi.mock("@/components/compare/ComparisonGrid", () => ({
-  ComparisonGrid: ({
-    products,
-    showAvoidBadge,
-  }: {
-    products: unknown[];
-    showAvoidBadge: boolean;
-  }) => (
-    <div data-testid="comparison-grid" data-avoid={showAvoidBadge}>
-      {products.length} products
-    </div>
-  ),
-}));
-
-vi.mock("@/components/compare/ShareComparison", () => ({
-  ShareComparison: ({ productIds }: { productIds: number[] }) => (
-    <div data-testid="share-comparison">{productIds.join(",")}</div>
-  ),
-}));
-
-vi.mock("@/components/common/skeletons", () => ({
-  ComparisonGridSkeleton: () => <div data-testid="skeleton" role="status" aria-busy="true" />,
-}));
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [client] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: { queries: { retry: false, staleTime: 0 } },
-      }),
-  );
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+function mount() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const ui = () => <QueryClientProvider client={client}><ComparePage /></QueryClientProvider>;
+  return { ...render(ui()), client, ui };
 }
-
-function createWrapper() {
-  return Wrapper;
-}
-
 beforeEach(() => {
+  state.search = "ids=1,2";
   vi.clearAllMocks();
-  mockGet.mockReturnValue(null);
-  mockUseCompareProducts.mockReturnValue({
-    data: undefined,
-    isLoading: false,
-    error: null,
-  });
-  mockUseProductProvenanceMap.mockReturnValue({});
+  useCompareStore.getState().clear();
+  Object.assign(mocks.saveState, { isPending: false, isSuccess: false, isError: false });
+  mocks.read.mockImplementation((_client: unknown, ids: number[]) => Promise.resolve({ ok: true, data: evidenceEnvelope(ids.map((id) => evidenceProduct(id, { value: String(id) }))) }));
 });
 
-// ─── Tests ──────────────────────────────────────────────────────────────────
-
-describe("ComparePage", () => {
-  describe("empty state (no/insufficient IDs)", () => {
-    it("shows empty state when no ids param", () => {
-      render(<ComparePage />, { wrapper: createWrapper() });
-      expect(screen.getByText("Start by choosing 2–4 products to compare")).toBeInTheDocument();
-    });
-
-    it("shows empty state when only one id", () => {
-      mockGet.mockReturnValue("5");
-      render(<ComparePage />, { wrapper: createWrapper() });
-      expect(screen.getByText("Start by choosing 2–4 products to compare")).toBeInTheDocument();
-    });
-
-    it("links to search page from empty state", () => {
-      render(<ComparePage />, { wrapper: createWrapper() });
-      const link = screen.getByText("Search Products");
-      expect(link.closest("a")).toHaveAttribute("href", "/app/search");
-    });
-
-    it("links to saved comparisons from empty state", () => {
-      render(<ComparePage />, { wrapper: createWrapper() });
-      const link = screen.getByText("Saved Comparisons");
-      expect(link.closest("a")).toHaveAttribute("href", "/app/compare/saved");
-    });
+describe("comparison URL contract", () => {
+  it.each(["-1,2", "1.5,2", "Infinity,2", "1,2,3,4,5", "1,,2", "1,9007199254740992", "01,2"])("rejects invalid selection %s without silently truncating", (value) => {
+    expect(parseComparisonIds(value).invalid).toBe(true);
   });
 
-  describe("with valid IDs", () => {
-    beforeEach(() => {
-      mockGet.mockReturnValue("1,2,3");
-    });
-
-    it("shows skeleton loading state while fetching", () => {
-      mockUseCompareProducts.mockReturnValue({
-        data: undefined,
-        isLoading: true,
-        error: null,
-      });
-      render(<ComparePage />, { wrapper: createWrapper() });
-      expect(screen.getByTestId("skeleton")).toBeInTheDocument();
-    });
-
-    it("shows error state on failure", () => {
-      mockUseCompareProducts.mockReturnValue({
-        data: undefined,
-        isLoading: false,
-        error: new Error("Network error"),
-      });
-      render(<ComparePage />, { wrapper: createWrapper() });
-      expect(screen.getByText("Failed to load comparison data.")).toBeInTheDocument();
-      expect(screen.getByTestId("empty-state")).toHaveAttribute("data-variant", "error");
-    });
-
-    it("renders ComparisonGrid when data loaded", () => {
-      mockUseCompareProducts.mockReturnValue({
-        data: { product_count: 3, products: [{}, {}, {}] },
-        isLoading: false,
-        error: null,
-      });
-      render(<ComparePage />, { wrapper: createWrapper() });
-      expect(screen.getByTestId("comparison-grid")).toBeInTheDocument();
-      expect(screen.getByText("3 products")).toBeInTheDocument();
-    });
-
-    it("renders ShareComparison toolbar", () => {
-      mockUseCompareProducts.mockReturnValue({
-        data: {
-          product_count: 3,
-          products: [
-            { product_id: 1 },
-            { product_id: 2 },
-            { product_id: 3 },
-          ],
-        },
-        isLoading: false,
-        error: null,
-      });
-      mockUseProductProvenanceMap.mockReturnValue({
-        1: { data: { disposition: "confirmed" }, isLoading: false, error: null },
-        2: { data: { disposition: "confirmed" }, isLoading: false, error: null },
-        3: { data: { disposition: "confirmed" }, isLoading: false, error: null },
-      });
-      render(<ComparePage />, { wrapper: createWrapper() });
-      expect(screen.getByTestId("share-comparison")).toBeInTheDocument();
-      expect(screen.getByText("Comparing 3 products")).toBeInTheDocument();
-    });
-
-    it("withholds export when score evidence is not confirmed", () => {
-      mockUseCompareProducts.mockReturnValue({
-        data: {
-          product_count: 2,
-          products: [{ product_id: 1 }, { product_id: 2 }],
-        },
-        isLoading: false,
-        error: null,
-      });
-      mockUseProductProvenanceMap.mockReturnValue({
-        1: { data: { disposition: "confirmed" }, isLoading: false, error: null },
-        2: { data: { disposition: "provisional" }, isLoading: false, error: null },
-      });
-
-      render(<ComparePage />, { wrapper: createWrapper() });
-
-      expect(screen.getByTestId("comparison-export-withheld")).toHaveTextContent(
-        "Export and public sharing are withheld until every exported product field has confirmed evidence.",
-      );
-      expect(screen.queryByTestId("comparison-export")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("share-comparison")).not.toBeInTheDocument();
-    });
-
-    it("allows export and sharing only when every populated field has confirmed evidence", () => {
-      mockUseCompareProducts.mockReturnValue({
-        data: {
-          product_count: 2,
-          products: [
-            {
-              product_id: 1,
-              product_name: "Product A",
-              unhealthiness_score: 20,
-            },
-            {
-              product_id: 2,
-              product_name: "Product B",
-              unhealthiness_score: 30,
-            },
-          ],
-        },
-        isLoading: false,
-        error: null,
-      });
-      mockUseProductProvenanceMap.mockReturnValue({
-        1: {
-          data: {
-            disposition: "confirmed",
-            usableFields: ["product_name", "unhealthiness_score"],
-          },
-          isLoading: false,
-          error: null,
-        },
-        2: {
-          data: {
-            disposition: "confirmed",
-            usableFields: ["product_name", "unhealthiness_score"],
-          },
-          isLoading: false,
-          error: null,
-        },
-      });
-
-      render(<ComparePage />, { wrapper: createWrapper() });
-
-      expect(screen.getByTestId("comparison-export")).toBeInTheDocument();
-      expect(
-        screen.queryByTestId("comparison-export-withheld"),
-      ).not.toBeInTheDocument();
-      expect(screen.getByTestId("share-comparison")).toBeInTheDocument();
-    });
-
-    it("withholds export when a populated nutrition field lacks provenance", () => {
-      mockUseCompareProducts.mockReturnValue({
-        data: {
-          product_count: 2,
-          products: [
-            {
-              product_id: 1,
-              product_name: "Product A",
-              unhealthiness_score: 20,
-              sugars_g: 8,
-            },
-            {
-              product_id: 2,
-              product_name: "Product B",
-              unhealthiness_score: 30,
-            },
-          ],
-        },
-        isLoading: false,
-        error: null,
-      });
-      mockUseProductProvenanceMap.mockReturnValue({
-        1: {
-          data: {
-            disposition: "confirmed",
-            usableFields: ["product_name", "unhealthiness_score"],
-          },
-          isLoading: false,
-          error: null,
-        },
-        2: {
-          data: {
-            disposition: "confirmed",
-            usableFields: ["product_name", "unhealthiness_score"],
-          },
-          isLoading: false,
-          error: null,
-        },
-      });
-
-      render(<ComparePage />, { wrapper: createWrapper() });
-
-      expect(screen.getByTestId("comparison-export-withheld")).toBeInTheDocument();
-      expect(screen.queryByTestId("comparison-export")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("share-comparison")).not.toBeInTheDocument();
-    });
-
-    it("shows partial results warning when some products missing", () => {
-      mockUseCompareProducts.mockReturnValue({
-        data: { product_count: 2, products: [{}, {}] },
-        isLoading: false,
-        error: null,
-      });
-      render(<ComparePage />, { wrapper: createWrapper() });
-      expect(screen.getByText(/1 product not found/)).toBeInTheDocument();
-    });
-
-    it("does not show partial warning when all products found", () => {
-      mockUseCompareProducts.mockReturnValue({
-        data: { product_count: 3, products: [{}, {}, {}] },
-        isLoading: false,
-        error: null,
-      });
-      render(<ComparePage />, { wrapper: createWrapper() });
-      expect(screen.queryByText(/products? not found/)).not.toBeInTheDocument();
-    });
-
-    it("clear button calls store clear", async () => {
-      mockUseCompareProducts.mockReturnValue({
-        data: { product_count: 3, products: [{}, {}, {}] },
-        isLoading: false,
-        error: null,
-      });
-      render(<ComparePage />, { wrapper: createWrapper() });
-      const user = userEvent.setup();
-      await user.click(screen.getByText("Clear selection"));
-      expect(mockClear).toHaveBeenCalled();
-    });
-
-    it("header links to saved comparisons", () => {
-      mockUseCompareProducts.mockReturnValue({
-        data: { product_count: 3, products: [{}, {}, {}] },
-        isLoading: false,
-        error: null,
-      });
-      render(<ComparePage />, { wrapper: createWrapper() });
-      const link = screen.getByText("Saved Comparisons");
-      expect(link.closest("a")).toHaveAttribute("href", "/app/compare/saved");
-    });
+  it("deduplicates valid IDs and preserves user-selected order", () => {
+    expect(parseComparisonIds("2,1,2")).toEqual({ ids: [2, 1], invalid: false });
+    expect(parseComparisonIds("")).toEqual({ ids: [], invalid: false });
   });
 
-  describe("ID parsing", () => {
-    it("filters out invalid IDs (NaN, negatives)", () => {
-      mockGet.mockReturnValue("1,abc,-5,3");
-      mockUseCompareProducts.mockReturnValue({
-        data: { product_count: 2, products: [{}, {}] },
-        isLoading: false,
-        error: null,
-      });
-      render(<ComparePage />, { wrapper: createWrapper() });
-      // Should call useCompareProducts with [1, 3]
-      expect(mockUseCompareProducts).toHaveBeenCalledWith([1, 3]);
-    });
+  it("does not fetch an empty or invalid comparison", () => {
+    state.search = "";
+    const { rerender, ui } = mount();
+    expect(screen.getByRole("heading", { name: "Choose two to four different products" })).toBeInTheDocument();
+    expect(mocks.read).not.toHaveBeenCalled();
+    state.search = "ids=bad";
+    rerender(ui());
+    expect(screen.getByRole("alert")).toHaveTextContent("This comparison link is invalid");
+    expect(mocks.read).not.toHaveBeenCalled();
+  });
 
-    it("caps at 4 IDs", () => {
-      mockGet.mockReturnValue("1,2,3,4,5,6");
-      mockUseCompareProducts.mockReturnValue({
-        data: undefined,
-        isLoading: false,
-        error: null,
-      });
-      render(<ComparePage />, { wrapper: createWrapper() });
-      expect(mockUseCompareProducts).toHaveBeenCalledWith([1, 2, 3, 4]);
-    });
+  it("keeps current in-memory selection reachable from an empty URL", () => {
+    state.search = "";
+    useCompareStore.getState().add(2, "Second");
+    useCompareStore.getState().add(1, "First");
+    mount();
+    expect(screen.getByRole("link", { name: "Compare selected products" })).toHaveAttribute("href", "/app/compare?ids=2,1");
+  });
+
+  it("clears URL and selection together, and restores the URL-selected products on back", async () => {
+    const { rerender, ui } = mount();
+    await screen.findByRole("table");
+    await waitFor(() => expect(useCompareStore.getState().getIds()).toEqual([1, 2]));
+    fireEvent.click(screen.getByRole("button", { name: "Clear selection" }));
+    expect(mocks.push).toHaveBeenCalledWith("/app/compare");
+    expect(useCompareStore.getState().getIds()).toEqual([]);
+    state.search = "";
+    rerender(ui());
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    state.search = "ids=1,2";
+    rerender(ui());
+    await screen.findByRole("table");
+    await waitFor(() => expect(useCompareStore.getState().getIds()).toEqual([1, 2]));
+  });
+
+  it("updates displayed products when a different same-length URL selection is opened", async () => {
+    const { rerender, ui } = mount();
+    await screen.findByRole("table");
+    state.search = "ids=3,4";
+    rerender(ui());
+    await screen.findByRole("columnheader", { name: /Fixture product 3/ });
+    expect(screen.queryByRole("columnheader", { name: /Fixture product 1/ })).not.toBeInTheDocument();
+  });
+});
+
+describe("factual comparison", () => {
+  it("announces loading and compares only neutral recorded values", async () => {
+    let complete!: (value: unknown) => void;
+    mocks.read.mockReturnValue(new Promise((resolve) => { complete = resolve; }));
+    mount();
+    expect(screen.getByRole("status")).toHaveTextContent("Loading comparison evidence");
+    complete({ ok: true, data: evidenceEnvelope([evidenceProduct(1, { value: "2" }), evidenceProduct(2, { value: "1" })]) });
+    const table = await screen.findByRole("table", { name: "Recorded nutrition comparison" });
+    expect(within(table).getAllByText("Lower recorded value than the first product")).toHaveLength(9);
+    expect(within(table).queryByText(/winner|healthier|score/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /export|share/i })).not.toBeInTheDocument();
+  });
+
+  it("retains legacy values but withholds arithmetic and overall ranking", async () => {
+    mocks.read.mockResolvedValue({ ok: true, data: evidenceEnvelope([legacyProduct(1), legacyProduct(2)]) });
+    mount();
+    const table = await screen.findByRole("table");
+    expect(within(table).getAllByText("Unverified legacy record")).toHaveLength(18);
+    expect(within(table).getAllByText("Not compared: source evidence is unavailable")).toHaveLength(9);
+    expect(within(table).queryByText("Per 100 g")).not.toBeInTheDocument();
+    expect(screen.queryByRole("meter")).not.toBeInTheDocument();
+  });
+
+  it("withholds arithmetic when product-level evidence conflicts even if prior values were recorded", async () => {
+    const product = evidenceProduct(2);
+    product.evidence.state = "conflicting";
+    mocks.read.mockResolvedValue({ ok: true, data: evidenceEnvelope([evidenceProduct(1), product]) });
+    mount();
+    const table = await screen.findByRole("table");
+    expect(within(table).getAllByText("Not compared: product evidence is conflicting")).toHaveLength(9);
+  });
+
+  it.each([
+    [{ basis: "per_100ml" as const }, "Not compared: units, basis, serving size or preparation are not compatible"],
+    [{ qualifier: "lt" as const }, "Not compared: values are not both exact"],
+    [{ preparation_state: "prepared" as const }, "Not compared: units, basis, serving size or preparation are not compatible"],
+  ])("explains incompatible or qualified values %j", async (change, explanation) => {
+    mocks.read.mockResolvedValue({ ok: true, data: evidenceEnvelope([evidenceProduct(1), evidenceProduct(2, change)]) });
+    mount();
+    const table = await screen.findByRole("table");
+    expect(within(table).getAllByText(explanation)).toHaveLength(9);
+  });
+
+  it("retains product warnings without inferring allergen absence", async () => {
+    const product = legacyProduct(2);
+    product.allergens = { state: "unverified", contains: [{ name: "en:milk", state: "unverified", observation_id: null }], traces: [] };
+    mocks.read.mockResolvedValue({ ok: true, data: evidenceEnvelope([legacyProduct(1), product]) });
+    mount();
+    await screen.findByRole("table");
+    expect(screen.getByText("Milk")).toBeInTheDocument();
+    expect(screen.getByText(/Allergen absence has not been assessed/)).toBeInTheDocument();
+  });
+
+  it("reports missing selected IDs and does not compare a single returned product", async () => {
+    mocks.read.mockResolvedValue({ ok: true, data: evidenceEnvelope([evidenceProduct(1)], [2]) });
+    mount();
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Unavailable selected products: 1"));
+    expect(screen.getByRole("heading", { name: "Not enough available products to compare" })).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it("returns to valid evidence through retry after a failed request", async () => {
+    mocks.read.mockResolvedValueOnce({ ok: false, error: { message: "Unavailable" } });
+    mount();
+    expect(await screen.findByRole("alert")).toHaveTextContent("Comparison information couldn’t load");
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByRole("table")).toBeInTheDocument();
+  });
+
+  it("saves only displayed product IDs and keeps selection after a failed save", async () => {
+    const { rerender, ui } = mount();
+    await screen.findByRole("table");
+    fireEvent.click(screen.getByRole("button", { name: "Save Comparison" }));
+    expect(mocks.save).toHaveBeenCalledWith({ productIds: [1, 2] });
+    mocks.saveState.isError = true;
+    rerender(ui());
+    expect(screen.getByRole("alert")).toHaveTextContent("The comparison wasn’t saved");
+    expect(useCompareStore.getState().getIds()).toEqual([1, 2]);
+    expect(screen.queryByText("Comparison saved")).not.toBeInTheDocument();
   });
 });

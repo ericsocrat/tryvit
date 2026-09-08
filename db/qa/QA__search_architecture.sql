@@ -209,14 +209,7 @@ END AS "T17_quality_report_pending_status";
 
 -- ─── T18: api_search_products still returns valid structure ────────────
 
-SELECT CASE
-    WHEN (
-        SELECT api_search_products('test')
-    ) ? 'results'
-    AND (SELECT api_search_products('test')) ? 'total'
-    AND (SELECT api_search_products('test')) ? 'query'
-    THEN 'PASS' ELSE 'FAIL'
-END AS "T18_search_products_valid_structure";
+SELECT CASE WHEN public.api_search_products('test')=jsonb_build_object('api_version','2','policy_version','evidence-first-v1','error','refresh_required','status','refresh_required','message','Refresh TryVit to use source-backed product evidence.') THEN 'PASS' ELSE 'FAIL' END AS "T18_legacy_search_refresh_only";
 
 -- ─── T19: search_ranking_config partial unique index enforced ──────────
 

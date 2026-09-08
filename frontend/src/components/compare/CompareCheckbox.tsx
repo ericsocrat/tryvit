@@ -11,11 +11,13 @@ import { Scale } from "lucide-react";
 interface CompareCheckboxProps {
   productId: number;
   productName?: string;
+  showLabel?: boolean;
 }
 
 export function CompareCheckbox({
   productId,
   productName,
+  showLabel = false,
 }: Readonly<CompareCheckboxProps>) {
   const { t } = useTranslation();
   const isSelected = useCompareStore((s) => s.isSelected(productId));
@@ -31,7 +33,7 @@ export function CompareCheckbox({
   }
 
   function getVariantClass(): string {
-    if (isSelected) return "border-brand bg-brand text-white";
+    if (isSelected) return "border-brand bg-brand text-on-brand";
     if (disabled)
       return "border bg-surface-subtle text-foreground-muted cursor-not-allowed";
     return "border-strong bg-surface text-foreground-muted hover:border-brand hover:text-brand";
@@ -47,15 +49,16 @@ export function CompareCheckbox({
       }}
       disabled={disabled}
       title={getTitle()}
-      className={`touch-target flex h-10 w-10 shrink-0 items-center justify-center rounded border transition-colors ${getVariantClass()}`}
+      className={`touch-target flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-lg border transition-colors ${showLabel ? "px-3 text-sm font-medium" : "w-11"} ${getVariantClass()}`}
+      aria-pressed={isSelected}
       aria-label={
-        isSelected
+        showLabel ? `${t("nav.compare")}: ${isSelected ? t("compare.removeFromComparison") : t("compare.addToComparison")}` : isSelected
           ? t("compare.removeFromComparison")
           : t("compare.addToComparison")
       }
     >
       {isSelected ? (
-        <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
           <path
             fillRule="evenodd"
             d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
@@ -65,6 +68,7 @@ export function CompareCheckbox({
       ) : (
         <Scale size={14} aria-hidden="true" />
       )}
+      {showLabel ? <span>{t("nav.compare")}</span> : null}
     </button>
   );
 }

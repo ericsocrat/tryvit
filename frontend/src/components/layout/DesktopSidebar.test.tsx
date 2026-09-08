@@ -29,6 +29,26 @@ vi.mock("@/stores/admin-store", () => ({
 }));
 
 describe("DesktopSidebar", () => {
+  it("keeps secondary tools collapsed until requested", () => {
+    mockPathname.mockReturnValue("/app");
+    render(<DesktopSidebar />);
+    expect(screen.getByText("More tools").closest("details")).not.toHaveAttribute("open");
+  });
+
+  it("opens the secondary section for an active secondary route", () => {
+    mockPathname.mockReturnValue("/app/recipes");
+    render(<DesktopSidebar />);
+    expect(screen.getByText("More tools").closest("details")).toHaveAttribute("open");
+    expect(screen.getByRole("link", { name: "Recipes" })).toHaveAttribute("aria-current", "page");
+  });
+
+  it("never labels Learn as current on a product detail route", () => {
+    mockPathname.mockReturnValue("/app/product/42");
+    render(<DesktopSidebar />);
+    expect(screen.getByRole("link", { name: "Learn" })).not.toHaveAttribute("aria-current");
+    expect(document.querySelector('[aria-current="page"]')).toBeNull();
+  });
+
   beforeEach(() => {
     mockPathname.mockReturnValue("/app");
     mockIsAdmin.mockReturnValue(false);
@@ -36,10 +56,10 @@ describe("DesktopSidebar", () => {
 
   it("renders all primary nav items", () => {
     render(<DesktopSidebar />);
-    expect(screen.getByText("Dashboard")).toBeInTheDocument();
-    expect(screen.getByText("Search")).toBeInTheDocument();
+    expect(screen.getByText("Home")).toBeInTheDocument();
+    expect(screen.getByText("Find")).toBeInTheDocument();
     expect(screen.getByText("Scan")).toBeInTheDocument();
-    expect(screen.getByText("Lists")).toBeInTheDocument();
+    expect(screen.getByText("Saved")).toBeInTheDocument();
     expect(screen.getByText("Compare")).toBeInTheDocument();
     expect(screen.getByText("Categories")).toBeInTheDocument();
     expect(screen.getByText("Achievements")).toBeInTheDocument();
@@ -118,38 +138,38 @@ describe("DesktopSidebar", () => {
   it("marks Dashboard as active on /app", () => {
     mockPathname.mockReturnValue("/app");
     render(<DesktopSidebar />);
-    const homeLink = screen.getByText("Dashboard").closest("a");
+    const homeLink = screen.getByText("Home").closest("a");
     expect(homeLink).toHaveAttribute("aria-current", "page");
   });
 
   it("marks Search as active on /app/search", () => {
     mockPathname.mockReturnValue("/app/search");
     render(<DesktopSidebar />);
-    const searchLink = screen.getByText("Search").closest("a");
+    const searchLink = screen.getByText("Find").closest("a");
     expect(searchLink).toHaveAttribute("aria-current", "page");
   });
 
   it("marks Search as active on nested route /app/search/saved", () => {
     mockPathname.mockReturnValue("/app/search/saved");
     render(<DesktopSidebar />);
-    const searchLink = screen.getByText("Search").closest("a");
+    const searchLink = screen.getByText("Find").closest("a");
     expect(searchLink).toHaveAttribute("aria-current", "page");
   });
 
   it("does not mark Dashboard active on /app/search", () => {
     mockPathname.mockReturnValue("/app/search");
     render(<DesktopSidebar />);
-    const homeLink = screen.getByText("Dashboard").closest("a");
+    const homeLink = screen.getByText("Home").closest("a");
     expect(homeLink).not.toHaveAttribute("aria-current");
   });
 
   it("has correct hrefs for all primary items", () => {
     render(<DesktopSidebar />);
     const expectedHrefs = [
-      { label: "Dashboard", href: "/app" },
-      { label: "Search", href: "/app/search" },
+      { label: "Home", href: "/app" },
+      { label: "Find", href: "/app/search" },
       { label: "Scan", href: "/app/scan" },
-      { label: "Lists", href: "/app/lists" },
+      { label: "Saved", href: "/app/lists" },
       { label: "Compare", href: "/app/compare" },
       { label: "Categories", href: "/app/categories" },
       { label: "Settings", href: "/app/settings" },
@@ -173,7 +193,7 @@ describe("DesktopSidebar", () => {
 
   it("marks Search and Scan as prominent application actions", () => {
     render(<DesktopSidebar />);
-    expect(screen.getByText("Search").closest("a")).toHaveAttribute(
+    expect(screen.getByText("Find").closest("a")).toHaveAttribute(
       "data-prominent",
       "true",
     );

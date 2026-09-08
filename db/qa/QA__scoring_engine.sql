@@ -132,38 +132,7 @@ END AS "T11_snapshots_table";
 
 -- ─── T12: api_score_explanation includes model_version and scored_at ─────
 
-SELECT CASE
-    WHEN EXISTS (
-        SELECT 1 FROM products
-        WHERE unhealthiness_score IS NOT NULL
-          AND is_deprecated IS NOT TRUE
-        LIMIT 1
-    )
-    AND (
-        SELECT api_score_explanation(
-            (SELECT product_id FROM products
-             WHERE unhealthiness_score IS NOT NULL
-               AND is_deprecated IS NOT TRUE
-             LIMIT 1)
-        )
-    ) ? 'model_version'
-    AND (
-        SELECT api_score_explanation(
-            (SELECT product_id FROM products
-             WHERE unhealthiness_score IS NOT NULL
-               AND is_deprecated IS NOT TRUE
-             LIMIT 1)
-        )
-    ) ? 'scored_at'
-    THEN 'PASS'
-    WHEN NOT EXISTS (
-        SELECT 1 FROM products
-        WHERE unhealthiness_score IS NOT NULL
-          AND is_deprecated IS NOT TRUE
-    )
-    THEN 'SKIP — no scored products'
-    ELSE 'FAIL'
-END AS "T12_explanation_has_metadata";
+SELECT CASE WHEN public.api_score_explanation(-1)=jsonb_build_object('api_version','2','policy_version','evidence-first-v1','error','refresh_required','status','refresh_required','message','Refresh TryVit to use source-backed product evidence.') THEN 'PASS' ELSE 'FAIL' END AS "T12_consumer_score_endpoint_refresh_only";
 
 -- ─── T13: admin_scoring_versions returns array ──────────────────────────
 
@@ -175,11 +144,7 @@ END AS "T13_admin_versions_works";
 
 -- ─── T14: api_score_history returns valid shape ─────────────────────────
 
-SELECT CASE
-    WHEN (api_score_history(1, 10))->>'api_version' = '1.0'
-     AND (api_score_history(1, 10)) ? 'history'
-    THEN 'PASS' ELSE 'FAIL'
-END AS "T14_score_history_shape";
+SELECT CASE WHEN public.api_score_history(-1,10)=jsonb_build_object('api_version','2','policy_version','evidence-first-v1','error','refresh_required','status','refresh_required','message','Refresh TryVit to use source-backed product evidence.') THEN 'PASS' ELSE 'FAIL' END AS "T14_consumer_score_endpoint_refresh_only";
 
 -- ─── T15: detect_score_drift callable (no snapshots = empty) ─────────────
 

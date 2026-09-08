@@ -1,15 +1,15 @@
 "use client";
 
 import { useTranslation } from "@/lib/i18n";
-import type { DashboardData } from "@/lib/types";
-import { ArrowRight, Heart, Layers } from "lucide-react";
+import type { HomeReadModel } from "@/lib/evidence/home";
+import { ArrowRight, Heart } from "lucide-react";
 import Link from "next/link";
 import { DashboardProductRow } from "./RecentlyViewed";
 import styles from "./DashboardProducts.module.css";
 
 interface DashboardCollectionsProps {
-  favorites: DashboardData["favorites_preview"];
-  stats: Pick<DashboardData["stats"], "favorites_count" | "lists_count">;
+  favorites: HomeReadModel["favorites_preview"];
+  stats: Pick<HomeReadModel["stats"], "favorites_count" | "lists_count">;
 }
 
 export function DashboardCollections({ favorites, stats }: Readonly<DashboardCollectionsProps>) {
@@ -19,7 +19,6 @@ export function DashboardCollections({ favorites, stats }: Readonly<DashboardCol
   return (
     <section className={styles.collections} aria-labelledby="dashboard-collections-title" data-testid="dashboard-collections">
       <div className={styles.collectionHeading}>
-        <Layers size={21} aria-hidden="true" />
         <h2 id="dashboard-collections-title">{t("dashboard.home.collectionsTitle")}</h2>
       </div>
       <p className={styles.collectionIntro}>{t("dashboard.home.collectionsIntro")}</p>
@@ -32,9 +31,7 @@ export function DashboardCollections({ favorites, stats }: Readonly<DashboardCol
         <>
           <div className={styles.favoritesHeading}>
             <h3>{t("dashboard.favorites")}</h3>
-            <Heart size={15} aria-hidden="true" />
           </div>
-          <p className={styles.scoreCaption}>{t("dashboard.home.productScoreCaption")}</p>
           <ul className={styles.productList}>
             {items.map((product) => (
               <li key={product.product_id}>

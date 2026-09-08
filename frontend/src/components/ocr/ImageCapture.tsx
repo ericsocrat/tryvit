@@ -46,6 +46,7 @@ export function ImageCapture({ onCapture, processing }: ImageCaptureProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [cameraActive, setCameraActive] = useState(false);
+  const [cameraPending, setCameraPending] = useState(false);
   const cameraSupported = useSyncExternalStore(
     emptySubscribe,
     getCameraSupportSnapshot,
@@ -53,10 +54,12 @@ export function ImageCapture({ onCapture, processing }: ImageCaptureProps) {
   );
   const [cameraError, setCameraError] = useState<string | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const requestRef = useRef(0);
 
   // Cleanup camera stream on unmount
   useEffect(() => {
     return () => {
+      requestRef.current += 1;
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((t) => t.stop());
         streamRef.current = null;
@@ -65,24 +68,50 @@ export function ImageCapture({ onCapture, processing }: ImageCaptureProps) {
   }, []);
 
   const startCamera = useCallback(async () => {
+    const request = ++requestRef.current;
     setCameraError(null);
+    setCameraPending(true);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
       });
-      streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+      if (request !== requestRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
       }
+      streamRef.current = stream;
       setCameraActive(true);
     } catch {
-      setCameraError(t("imageSearch.cameraError"));
+      if (request !== requestRef.current) return;
+      setCameraError(t("imageSearch.capture.cameraError"));
       setCameraActive(false);
+    } finally {
+      if (request === requestRef.current) setCameraPending(false);
     }
   }, [t]);
 
+  // The video exists only after cameraActive renders. Attaching inside
+  // getUserMedia's continuation would run before that element is mounted.
+  useEffect(() => {
+    const video = videoRef.current;
+    const stream = streamRef.current;
+    if (!cameraActive || !video || !stream) return;
+    const request = requestRef.current;
+    video.srcObject = stream;
+    void video.play().catch(() => {
+      if (request !== requestRef.current) return;
+      stream.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+      video.srcObject = null;
+      setCameraActive(false);
+      setCameraError(t("imageSearch.capture.cameraError"));
+    });
+    return () => { video.srcObject = null; };
+  }, [cameraActive, t]);
+
   const stopCamera = useCallback(() => {
+    requestRef.current += 1;
+    setCameraPending(false);
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
@@ -153,7 +182,7 @@ export function ImageCapture({ onCapture, processing }: ImageCaptureProps) {
               data-testid="capture-btn"
             >
               <Icon icon={Camera} size="sm" className="mr-1.5" />
-              {t("imageSearch.capture")}
+              {t("imageSearch.capture.capturePhoto")}
             </Button>
             <button
               type="button"
@@ -171,30 +200,32 @@ export function ImageCapture({ onCapture, processing }: ImageCaptureProps) {
       {!cameraActive && (
         <div className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed border-border p-8">
           <p className="text-center text-sm text-foreground-secondary">
-            {t("imageSearch.instructions")}
+            {t("imageSearch.capture.instructions")}
           </p>
 
           <div className="flex gap-3">
+            {cameraPending ? <Button variant="secondary" onClick={stopCamera}>{t("common.cancel")}</Button> : null}
             {cameraSupported && (
               <Button
                 onClick={startCamera}
-                disabled={processing}
+                disabled={processing || cameraPending}
+                aria-busy={cameraPending}
                 className="flex items-center gap-2"
                 data-testid="open-camera-btn"
               >
                 <Icon icon={SwitchCamera} size="sm" />
-                {t("imageSearch.openCamera")}
+                {t("imageSearch.capture.openCamera")}
               </Button>
             )}
             <Button
               variant="secondary"
               onClick={() => fileInputRef.current?.click()}
-              disabled={processing}
+              disabled={processing || cameraPending}
               className="flex items-center gap-2"
               data-testid="upload-btn"
             >
               <Icon icon={Upload} size="sm" />
-              {t("imageSearch.uploadPhoto")}
+              {t("imageSearch.capture.uploadPhoto")}
             </Button>
           </div>
 
@@ -205,7 +236,7 @@ export function ImageCapture({ onCapture, processing }: ImageCaptureProps) {
           )}
 
           <p className="mt-2 text-center text-xs text-foreground-secondary">
-            {t("imageSearch.tips")}
+            {t("imageSearch.capture.tips")}
           </p>
         </div>
       )}

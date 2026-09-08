@@ -64,12 +64,12 @@ SELECT '5. EAN lookup uses index' AS check_name,
        ) THEN 0 ELSE 1 END AS violations;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- #6  Servings per-100g lookup uses partial index
+-- #6  Current stored-nutrition lookup (without inventing measurement basis)
 -- ─────────────────────────────────────────────────────────────────────────────
-SELECT '6. servings per-100g uses index' AS check_name,
+SELECT '6. stored nutrition lookup uses index' AS check_name,
        CASE WHEN NOT EXISTS (
            SELECT 1 FROM check_plan_quality(
-               'SELECT * FROM servings WHERE product_id = 1 AND serving_basis = ''per 100 g'''
+               'SELECT * FROM nutrition_facts WHERE product_id = 1'
            ) WHERE node_type = 'Seq Scan'
              AND estimated_rows > 100
        ) THEN 0 ELSE 1 END AS violations;
@@ -90,21 +90,20 @@ SELECT '7. product_ingredient join uses index' AS check_name,
 SELECT '8. product detail pattern has no critical warnings' AS check_name,
        CASE WHEN NOT EXISTS (
            SELECT 1 FROM check_plan_quality(
-               'SELECT p.*, s.calories, s.fat, s.carbs, s.protein '
+               'SELECT p.product_id, nf.calories, nf.total_fat_g, nf.carbs_g, nf.protein_g '
                || 'FROM products p '
-               || 'LEFT JOIN servings s ON s.product_id = p.product_id '
-               || 'AND s.serving_basis = ''per 100 g'' '
+               || 'LEFT JOIN nutrition_facts nf ON nf.product_id = p.product_id '
                || 'WHERE p.product_id = 1'
            ) WHERE warning LIKE '%Sequential scan%'
        ) THEN 0 ELSE 1 END AS violations;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- #9  Confidence MV lookup uses index (high-frequency operation)
+-- #9  Source-record lineage lookup uses index
 -- ─────────────────────────────────────────────────────────────────────────────
-SELECT '9. confidence MV lookup uses index' AS check_name,
+SELECT '9. source-record lineage lookup uses index' AS check_name,
        CASE WHEN NOT EXISTS (
            SELECT 1 FROM check_plan_quality(
-               'SELECT * FROM v_product_confidence WHERE product_id = 1'
+               'SELECT * FROM product_source_records WHERE product_id = 1'
            ) WHERE node_type = 'Seq Scan'
        ) THEN 0 ELSE 1 END AS violations;
 

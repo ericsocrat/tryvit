@@ -74,8 +74,8 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("@/lib/api", () => ({
-  recordScan: (...args: unknown[]) => mockRecordScan(...args),
+vi.mock("@/lib/evidence/scan", () => ({
+  recordEvidenceScan: (...args: unknown[]) => mockRecordScan(...args),
 }));
 
 vi.mock("@/lib/validation", () => ({
@@ -1120,7 +1120,7 @@ describe("ScanPage", () => {
       expect(screen.getByText("Product Found!")).toBeInTheDocument();
     });
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Scores are withheld here. View details to check product evidence.",
+      "Open the product to review its recorded facts, sources and limitations.",
     );
     expect(screen.queryByText("35")).not.toBeInTheDocument();
     expect(screen.queryByText("Poor")).not.toBeInTheDocument();

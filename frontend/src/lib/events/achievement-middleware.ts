@@ -17,16 +17,14 @@ import type { AppEvent } from "./types";
  * Exported for unit testing; not meant for direct application use.
  */
 export async function processEvent(event: AppEvent): Promise<void> {
+  const mappings = ACHIEVEMENT_MAP.filter((m) => m.event === event.type);
+  if (mappings.length === 0) return;
   const supabase = createClient();
 
   // Skip if user is not authenticated (anonymous visitors don't earn achievements)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Activity bookkeeping must not reject into the event bus when auth is offline.
+  const user = await supabase.auth.getUser().then((result) => result.data.user).catch(() => null);
   if (!user) return;
-
-  const mappings = ACHIEVEMENT_MAP.filter((m) => m.event === event.type);
-  if (mappings.length === 0) return;
 
   for (const mapping of mappings) {
     // Evaluate optional condition guard
@@ -44,7 +42,7 @@ export async function processEvent(event: AppEvent): Promise<void> {
       mapping.increment,
     )
       .then((result) => {
-        if (result.ok && result.data.newly_unlocked) {
+        if (result.ok && !result.data.error && result.data.newly_unlocked === true) {
           showToast({
             type: "success",
             messageKey: "achievements.unlocked",

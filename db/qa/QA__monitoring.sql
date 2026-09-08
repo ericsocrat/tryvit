@@ -98,20 +98,13 @@ SELECT
 -- ─────────────────────────────────────────────────────────────────────────────
 -- #10 mv_refresh_log has at least one entry per MV
 -- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT COUNT(DISTINCT mv_name) FROM mv_refresh_log
-    ) = 3
-    THEN 'PASS' ELSE 'FAIL' END AS "#10 mv_refresh_log covers all 3 MVs";
+SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM pg_matviews mv WHERE mv.schemaname='public'
+ AND NOT EXISTS(SELECT 1 FROM public.mv_refresh_log l WHERE l.mv_name=mv.matviewname))
+ THEN 'PASS' ELSE 'FAIL' END AS "#10 refresh history covers every current materialized view";
 
--- ─────────────────────────────────────────────────────────────────────────────
--- #11 mv_last_refresh() returns rows with valid age
--- ─────────────────────────────────────────────────────────────────────────────
-SELECT
-    CASE WHEN (
-        SELECT COUNT(*) FROM mv_last_refresh() WHERE age_minutes >= 0
-    ) = 3
-    THEN 'PASS' ELSE 'FAIL' END AS "#11 mv_last_refresh() returns 3 rows with valid age";
+SELECT CASE WHEN NOT EXISTS(SELECT 1 FROM pg_matviews mv WHERE mv.schemaname='public'
+ AND NOT EXISTS(SELECT 1 FROM public.mv_last_refresh() r WHERE r.mv_name=mv.matviewname AND r.age_minutes>=0))
+ THEN 'PASS' ELSE 'FAIL' END AS "#11 each current materialized view has a valid refresh age";
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- #12 check_flag_readiness() returns exactly 8 rows (one per flag)

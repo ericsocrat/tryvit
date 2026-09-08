@@ -72,7 +72,7 @@ describe("showToast", () => {
 
   it("resolves messageKey via i18n", () => {
     showToast({ type: "success", messageKey: "nav.home" });
-    expect(toast.success).toHaveBeenCalledWith("Dashboard", expect.any(Object));
+    expect(toast.success).toHaveBeenCalledWith("Home", expect.any(Object));
   });
 
   it("uses a readable defensive fallback before the provider registers", () => {
@@ -84,7 +84,7 @@ describe("showToast", () => {
   it("resolves messageKey in Polish", () => {
     useLanguageStore.getState().setLanguage("pl");
     showToast({ type: "success", messageKey: "nav.home" });
-    expect(toast.success).toHaveBeenCalledWith("Pulpit", expect.any(Object));
+    expect(toast.success).toHaveBeenCalledWith("Start", expect.any(Object));
   });
 
   it("interpolates messageParams", () => {

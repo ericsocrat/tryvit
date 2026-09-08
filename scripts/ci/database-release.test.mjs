@@ -3,7 +3,44 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { containedFile, hash, pendingMigrations, validateDatabaseAccess, validateManifest, validatePendingMigrations, validateProjectBinding, validateRecovery, validateStaging } from './database-release.mjs';
+import { CONSUMER_TABLES } from './recovery-scopes.mjs';
+import { checkNativeProductionBinding, containedFile, hash, pendingMigrations, validateDatabaseAccess, validateManifest, validateNativeProductionBinding, validatePendingMigrations, validateProjectBinding, validateRecovery, validateStaging } from './database-release.mjs';
+
+test('native production Git deployment must be explicitly disabled', () => {
+  const ref = 'uskvezwftkkudvksmken';
+  const branch = { project_ref: ref, is_default: true, git_branch: '' };
+  assert.doesNotThrow(() => validateNativeProductionBinding([branch], ref));
+  assert.doesNotThrow(() => validateNativeProductionBinding([{ ...branch, git_branch: null }], ref));
+  for (const binding of ['main', 'another-branch', undefined, false, ' ']) {
+    assert.throws(() => validateNativeProductionBinding([{ ...branch, git_branch: binding }], ref));
+  }
+  for (const state of [null, {}, [], [branch, branch], [{ ...branch, project_ref: 'wrong' }], [{ ...branch, is_default: false }]]) {
+    assert.throws(() => validateNativeProductionBinding(state, ref));
+  }
+});
+
+test('native deployment query is read-only, bounded, and sanitizes failures', async () => {
+  const ref = 'uskvezwftkkudvksmken';
+  let called = 0;
+  await checkNativeProductionBinding(ref, 'synthetic-token', async (url, options) => {
+    called += 1;
+    assert.equal(url, `https://api.supabase.com/v1/projects/${ref}/branches`);
+    assert.equal(options.method, 'GET');
+    assert.equal(options.redirect, 'error');
+    assert.ok(options.signal instanceof AbortSignal);
+    assert.equal(options.headers.Authorization, 'Bearer synthetic-token');
+    return { ok: true, json: async () => [{ project_ref: ref, is_default: true, git_branch: '' }] };
+  });
+  assert.equal(called, 1);
+  for (const request of [
+    async () => { throw new Error('synthetic-private-upstream-detail'); },
+    async () => ({ ok: false }),
+    async () => ({ ok: true, json: async () => { throw new Error('synthetic-private-body'); } }),
+  ]) {
+    await assert.rejects(checkNativeProductionBinding(ref, 'synthetic-token', request), { message: 'native-deployment-state-unavailable' });
+  }
+  await assert.rejects(checkNativeProductionBinding('wrong', 'synthetic-token', async () => { throw new Error('must-not-call'); }), { message: 'native-deployment-access-invalid' });
+});
 
 test('only staging permits PAT-only CLI credential provisioning', () => {
   assert.doesNotThrow(() => validateDatabaseAccess('staging', undefined, 'synthetic-pat'));
@@ -107,6 +144,26 @@ test('staging must be successful actual deployment of same manifest and source',
   for (const patch of [{ dryRun: true }, { remainingMigrations: 1 }, { lintPassed: false }, { sourceSha: 'e'.repeat(40) }]) assert.throws(() => validateStaging(run, { ...receipt, ...patch }, source, manifestHash));
   assert.throws(() => validateStaging({ ...run, conclusion: 'cancelled' }, receipt, source, manifestHash));
   assert.throws(() => validateStaging({ ...run, path: '.github/workflows/dr-drill.yml' }, receipt, source, manifestHash));
+});
+
+test('consumer recovery requires the exact expanded tables and authority proof', () => {
+  const receipt = { ...recovery, schemaVersion: 2, scopeProfile: 'consumer-v1', scope: 'schema-and-catalog',
+    catalogTables: [...CONSUMER_TABLES], catalogTableCount: 17,
+    encryptedBackupSha256: 'c'.repeat(64), catalogSha256: 'd'.repeat(64), restoredCatalogSha256: 'd'.repeat(64),
+    checks: { ...recovery.checks, schema: true, grants: true, rls: true, functions: true,
+      roleAttributes: true, roleMemberships: true, extensionBootstrap: true, syntheticRoles: true },
+    privateProductionRowsExported: false,
+    sourceFingerprints: { schema: 'e'.repeat(64), grants: 'e'.repeat(64), rls: 'e'.repeat(64), functions: 'e'.repeat(64) },
+    restoredFingerprints: { schema: 'e'.repeat(64), grants: 'e'.repeat(64), rls: 'e'.repeat(64), functions: 'e'.repeat(64) },
+    exclusions: ['privateUserRows','historyRows','managedAuthServices','storageObjects'] };
+  const validate = value => validateRecovery(value, manifestHash, 'schema-and-catalog', now, 'consumer-v1');
+  assert.doesNotThrow(() => validate(receipt));
+  for (const patch of [{ schemaVersion: 1 }, { scopeProfile: undefined }, { catalogTableCount: 15 },
+    { catalogTables: CONSUMER_TABLES.slice(0, 15) },
+    { catalogTables: [...CONSUMER_TABLES.slice(0, 16), 'user_preferences'] },
+    { catalogTables: [...CONSUMER_TABLES.slice(0, 16), CONSUMER_TABLES[0]] },
+    { checks: { ...receipt.checks, roleAttributes: false } }]) assert.throws(() => validate({ ...receipt, ...patch }));
+  assert.throws(() => validateRecovery(receipt, manifestHash, 'schema-and-catalog', now));
 });
 test('only recognized pinned CLI dry-run output is accepted', () => {
   assert.deepEqual(pendingMigrations('DRY RUN: migrations will *not* be pushed to the database.\nWould push these migrations:\n • 20260905000000_evidence.sql\n'), ['20260905000000_evidence.sql']);

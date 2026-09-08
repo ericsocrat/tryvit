@@ -3,6 +3,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { CONSUMER_TABLES } from './recovery-scopes.mjs';
 
 const sha = /^[a-f0-9]{40}$/u;
 const digest = /^[a-f0-9]{64}$/u;
@@ -26,6 +27,7 @@ export function containedFile(root, relative) {
 export function validateManifest(root, manifest, environment = 'production') {
   requireThat(['staging', 'production'].includes(environment), 'invalid-release-environment');
   requireThat(manifest.schemaVersion === 1 && ['catalog-only', 'schema-and-catalog', 'database'].includes(manifest.scope), 'invalid-migration-manifest');
+  requireThat(manifest.recoveryProfile === undefined || (manifest.recoveryProfile === 'consumer-v1' && manifest.scope === 'schema-and-catalog'), 'unsupported-recovery-profile');
   requireThat(Array.isArray(manifest.migrations) && manifest.migrations.length > 0, 'empty-migration-manifest');
   const prerequisites = manifest.stagingPrerequisites === undefined ? [] : manifest.stagingPrerequisites;
   requireThat(Array.isArray(prerequisites), 'invalid-staging-prerequisites');
@@ -56,8 +58,42 @@ export function validateDatabaseAccess(environment, password, token) {
   requireThat(environment === 'staging' || (typeof password === 'string' && password.trim().length > 0), 'database-access-not-configured');
 }
 
-export function validateRecovery(receipt, manifestHash, scope, now = Date.now()) {
-  requireThat(receipt.schemaVersion === 1 && receipt.environment === 'production' && receipt.method === 'backup-restore' && receipt.result === 'PASS', 'recovery-not-a-successful-backup-restore');
+export function validateNativeProductionBinding(branches, productionRef) {
+  requireThat(Array.isArray(branches), 'native-deployment-state-unavailable');
+  const defaults = branches.filter((branch) => branch?.is_default === true);
+  requireThat(defaults.length === 1 && defaults[0].project_ref === productionRef, 'native-production-branch-mismatch');
+  const binding = defaults[0].git_branch;
+  requireThat(binding === '' || binding === null, 'native-production-git-deployment-enabled-or-unknown');
+}
+
+export async function checkNativeProductionBinding(productionRef, token, request = fetch) {
+  requireThat(productionRef === 'uskvezwftkkudvksmken' && typeof token === 'string' && token.trim().length > 0, 'native-deployment-access-invalid');
+  let branches;
+  try {
+    const response = await request(`https://api.supabase.com/v1/projects/${productionRef}/branches`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+      redirect: 'error',
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!response.ok) throw new Error('request-failed');
+    branches = await response.json();
+  } catch {
+    // Never serialize upstream bodies, request headers or network exceptions.
+    throw new Error('native-deployment-state-unavailable');
+  }
+  validateNativeProductionBinding(branches, productionRef);
+}
+
+export function validateRecovery(receipt, manifestHash, scope, now = Date.now(), requiredProfile = 'catalog-v1') {
+  requireThat(['catalog-v1','consumer-v1'].includes(requiredProfile), 'unsupported-recovery-profile');
+  const consumer = requiredProfile === 'consumer-v1';
+  requireThat(receipt.schemaVersion === (consumer ? 2 : 1) && receipt.environment === 'production' && receipt.method === 'backup-restore' && receipt.result === 'PASS', 'recovery-not-a-successful-backup-restore');
+  requireThat((receipt.scopeProfile ?? 'catalog-v1') === requiredProfile, 'recovery-profile-mismatch');
+  if (consumer) {
+    requireThat(scope === 'schema-and-catalog' && receipt.catalogTableCount === CONSUMER_TABLES.length && Array.isArray(receipt.catalogTables) && JSON.stringify([...receipt.catalogTables].sort()) === JSON.stringify([...CONSUMER_TABLES].sort()), 'consumer-recovery-table-scope-mismatch');
+    requireThat(['roleAttributes','roleMemberships','extensionBootstrap','syntheticRoles'].every(key => receipt.checks?.[key] === true), 'consumer-recovery-authority-checks-incomplete');
+  }
   requireThat(receipt.migrationManifestSha256 === manifestHash && receipt.scope === scope, 'recovery-manifest-or-scope-mismatch');
   requireThat(digest.test(receipt.backupSha256 ?? '') && receipt.restoredBackupSha256 === receipt.backupSha256, 'recovery-backup-mismatch');
   const at = Date.parse(receipt.restoredAt);
@@ -115,7 +151,7 @@ async function main() {
   const manifestHash = hash(manifestBytes);
   requireThat(process.env.DRY_RUN === 'true' || process.env.DRY_RUN === 'false', 'invalid-dry-run-value');
   if (environment === 'production' && process.env.DRY_RUN === 'false') {
-    validateRecovery(JSON.parse(readFileSync(containedFile(root, process.env.RECOVERY_RECEIPT), 'utf8')), manifestHash, manifest.scope);
+    validateRecovery(JSON.parse(readFileSync(containedFile(root, process.env.RECOVERY_RECEIPT), 'utf8')), manifestHash, manifest.scope, undefined, manifest.recoveryProfile ?? 'catalog-v1');
     requireThat(/^\d+$/u.test(process.env.STAGING_RUN_ID ?? ''), 'staging-run-required');
     const stagingRun = api(`repos/${repository}/actions/runs/${process.env.STAGING_RUN_ID}`);
     const stagingDir = path.join(process.env.RUNNER_TEMP, 'staging-release-evidence');
@@ -129,6 +165,9 @@ async function main() {
   // normal temporary-login-role path: credential provisioning is a mutation,
   // including when the migration command below is a dry run.
   validateDatabaseAccess(environment, process.env.SUPABASE_DB_PASSWORD, process.env.SUPABASE_ACCESS_TOKEN);
+  // Repository workflow consolidation cannot disable a platform-owned Git
+  // deployment. Fail closed if that competing production path reappears.
+  await checkNativeProductionBinding(process.env.SUPABASE_PROJECT_REF, process.env.SUPABASE_ACCESS_TOKEN);
   command('supabase', ['link', '--project-ref', projectRef], 'database-link-failed');
   const pending = pendingMigrations(command('supabase', ['db', 'push', '--linked', '--dry-run'], 'migration-dry-run-failed'));
   validatePendingMigrations(pending, expected);
@@ -137,6 +176,7 @@ async function main() {
   if (process.env.DRY_RUN === 'false') {
     // Recheck main immediately before mutation; never deploy a stale dispatch.
     requireThat(api(`repos/${repository}/git/ref/heads/main`).object.sha === sourceSha, 'main-moved-before-deployment');
+    await checkNativeProductionBinding(process.env.SUPABASE_PROJECT_REF, process.env.SUPABASE_ACCESS_TOKEN);
     command('supabase', ['db', 'push', '--linked', '--yes'], 'migration-apply-failed');
     remainingMigrations = pendingMigrations(command('supabase', ['db', 'push', '--linked', '--dry-run'], 'post-migration-check-failed')).length;
     requireThat(remainingMigrations === 0, 'pending-migrations-remain');

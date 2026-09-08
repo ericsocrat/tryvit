@@ -3,7 +3,7 @@
 /**
  * WatchButton — toggle button on product profile for watch/unwatch.
  * Calls api_watch_product / api_unwatch_product.
- * Shows a notification prompt after the first successful watch action.
+ * Preserves saved watch membership; score-change notification dispatch is retired.
  */
 
 import { useState } from "react";
@@ -14,7 +14,6 @@ import { Icon } from "@/components/common/Icon";
 import { createClient } from "@/lib/supabase/client";
 import { watchProduct, unwatchProduct, isWatchingProduct } from "@/lib/api";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
-import { NotificationPrompt } from "@/components/pwa/NotificationPrompt";
 
 interface WatchButtonProps {
   productId: number;
@@ -33,7 +32,6 @@ export function WatchButton({
   const [optimisticWatching, setOptimisticWatching] = useState<boolean | null>(
     null,
   );
-  const [showNotifPrompt, setShowNotifPrompt] = useState(false);
 
   const {
     data: watchStatus,
@@ -56,6 +54,7 @@ export function WatchButton({
     mutationFn: async () => {
       const result = await watchProduct(supabase, productId);
       if (!result.ok) throw new Error(result.error.message);
+      if (result.data.success !== true || result.data.watching !== true) throw new Error("Watch was not confirmed");
       return result.data;
     },
     onMutate: () => setOptimisticWatching(true),
@@ -64,8 +63,6 @@ export function WatchButton({
         queryKey: queryKeys.isWatching(productId),
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.watchlist() });
-      // Show notification prompt after first watch
-      setShowNotifPrompt(true);
     },
     onSettled: () => setOptimisticWatching(null),
   });
@@ -74,6 +71,7 @@ export function WatchButton({
     mutationFn: async () => {
       const result = await unwatchProduct(supabase, productId);
       if (!result.ok) throw new Error(result.error.message);
+      if (result.data.success !== true || result.data.watching !== false) throw new Error("Unwatch was not confirmed");
       return result.data;
     },
     onMutate: () => setOptimisticWatching(false),
@@ -176,9 +174,6 @@ export function WatchButton({
         >
           {t("watchlist.updateFailed")}
         </p>
-      )}
-      {showNotifPrompt && (
-        <NotificationPrompt onDismiss={() => setShowNotifPrompt(false)} />
       )}
     </div>
   );

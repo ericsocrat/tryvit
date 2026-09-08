@@ -1,5 +1,13 @@
 # Data Provenance & Freshness Governance
 
+> **Legacy architecture reference.** The existence of these tables and functions
+> did not establish that product fields actually had provenance. The 2026-09-05
+> audit found no field-provenance rows for any of the 2,434 active products in its
+> production snapshot. Legacy confidence constants are not probabilities of
+> correctness. The [evidence-first policy](EVIDENCE_DATA_POLICY.md) defines the new
+> immutable-observation contract; consult the [release ledger](implementation/EVIDENCE_FIRST_REBUILD.md)
+> for what is implemented versus deployed.
+
 > **Issue:** #193 · **Priority:** P1-High · **Labels:** architecture, database, multi-country
 
 ## Overview

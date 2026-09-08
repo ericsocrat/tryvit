@@ -4,16 +4,17 @@ name: Change Risk Assessment
 on:
   pull_request_target:
     branches: [main]
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 permissions:
   contents: read
   checks: read
   pull-requests: read
 concurrency:
-  group: change-risk-${{ github.event.pull_request.number }}
+  group: change-risk-${{ github.event.pull_request.number }}-${{ ((github.event.action != 'labeled' && github.event.action != 'unlabeled') || github.event.label.name == 'phase5a0d-intentional-redesign-approved' || github.event.label.name == 'phase5a0d-renderer-attestation-approved') && 'applicable' || github.run_id }}
   cancel-in-progress: true
 jobs:
   policy:
+    if: ${{ (github.event.action != 'labeled' && github.event.action != 'unlabeled') || github.event.label.name == 'phase5a0d-intentional-redesign-approved' || github.event.label.name == 'phase5a0d-renderer-attestation-approved' }}
     name: Trusted change applicability
     runs-on: ubuntu-24.04
     timeout-minutes: 3
@@ -45,8 +46,10 @@ jobs:
   gate:
     name: Publish exact-head risk verdict
     needs: policy
-    if: ${{ always() }}
+    if: ${{ always() && needs.policy.result != 'skipped' }}
     permissions:
+      actions: read
+      issues: read
       contents: read
       checks: write
       pull-requests: read

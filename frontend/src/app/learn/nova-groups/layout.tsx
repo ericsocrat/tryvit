@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 export const metadata: Metadata = {
   title: "NOVA Food Classification",
   description:
-    "Understand NOVA food processing groups 1–4, from minimally processed to ultra-processed, and their health implications.",
+    "Understand NOVA processing groups 1–4, their classification criteria, and why a group is not an individual health-risk assessment.",
 };
 
 export default function NovaGroupsLayout({

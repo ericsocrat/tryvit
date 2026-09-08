@@ -5,7 +5,8 @@ import { NewUserWelcome } from "@/components/dashboard/NewUserWelcome";
 import { DashboardHeader, DashboardStart } from "@/components/dashboard/DashboardWorkspace";
 import styles from "@/components/dashboard/DashboardWorkspace.module.css";
 import { useAnalytics } from "@/hooks/use-analytics";
-import { getDashboardData } from "@/lib/api";
+import { getHomeReadModel, homeQueryKey } from "@/lib/evidence/home";
+import { useUserPreferencesQuery } from "@/hooks/use-user-preferences-query";
 import { useTranslation } from "@/lib/i18n";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { createClient } from "@/lib/supabase/client";
@@ -23,17 +24,19 @@ export default function DashboardPage() {
   const [supabase] = useState(createClient);
   const queryClient = useQueryClient();
   const { track } = useAnalytics();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const preferences = useUserPreferencesQuery();
   const [displayName, setDisplayName] = useState<string | null>(null);
 
   const { data, isLoading, isError, isFetching, refetch } = useQuery({
-    queryKey: queryKeys.dashboard,
+    queryKey: homeQueryKey(preferences.data, language),
     queryFn: async () => {
-      const result = await getDashboardData(supabase);
+      const result = await getHomeReadModel(supabase, language);
       if (!result.ok) throw new Error(result.error.message);
       return result.data;
     },
     staleTime: staleTimes.dashboard,
+    enabled: !!preferences.data && !preferences.error,
   });
 
   const hasContent = Boolean(
@@ -43,8 +46,7 @@ export default function DashboardPage() {
       data.stats.total_scanned > 0 ||
       data.favorites_preview.length > 0 ||
       data.stats.favorites_count > 0 ||
-      // Onboarding creates two empty system lists: Favorites and Avoid.
-      data.stats.lists_count > 2),
+      data.stats.custom_lists_count > 0),
   );
 
   useEffect(() => {
@@ -73,11 +75,11 @@ export default function DashboardPage() {
   const handleRefresh = useCallback(async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.dashboard }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboardInsights }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.preferences }),
     ]);
   }, [queryClient]);
 
-  if (isLoading) {
+  if (isLoading || preferences.isPending) {
     return <DashboardSkeleton />;
   }
 
@@ -89,7 +91,7 @@ export default function DashboardPage() {
           <AlertCircle size={24} aria-hidden="true" />
           <div>
             <div role="alert"><h2 id="dashboard-error-title">{t("dashboard.home.errorTitle")}</h2><p>{t("dashboard.home.errorDescription")}</p></div>
-            <button type="button" className={styles.retry} onClick={() => void refetch()} disabled={isFetching}>
+            <button type="button" className={styles.retry} onClick={() => void (preferences.error ? preferences.refetch() : refetch())} disabled={isFetching}>
               <RefreshCw size={16} aria-hidden="true" />{t(isFetching ? "common.loading" : "dashboard.home.retry")}
             </button>
           </div>
@@ -100,10 +102,10 @@ export default function DashboardPage() {
   }
 
   const dashboard = data;
-  const refreshNotice = isError ? (
+  const refreshNotice = isError || preferences.error ? (
     <div className={`${styles.workspace} ${styles.sectionMessage}`} role="alert">
       <p>{t("dashboard.home.staleError")}</p>
-      <button type="button" className={styles.retry} onClick={() => void refetch()} disabled={isFetching}>{t(isFetching ? "common.loading" : "dashboard.home.retry")}</button>
+      <button type="button" className={styles.retry} onClick={() => void (preferences.error ? preferences.refetch() : refetch())} disabled={isFetching}>{t(isFetching ? "common.loading" : "dashboard.home.retry")}</button>
     </div>
   ) : null;
 
@@ -118,6 +120,8 @@ export default function DashboardPage() {
         dashboard={dashboard}
         displayName={displayName}
         onRefresh={handleRefresh}
+        stale={isError || !!preferences.error}
+        refreshing={isFetching}
       />
     </Suspense>
   );

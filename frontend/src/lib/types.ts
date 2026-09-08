@@ -1086,7 +1086,7 @@ export interface CompareResponse {
 export interface SaveComparisonResponse {
   api_version: string;
   comparison_id: string;
-  share_token: string;
+  share_token: string | null;
   product_ids: number[];
   title: string | null;
 }
@@ -1095,7 +1095,7 @@ export interface SavedComparison {
   comparison_id: string;
   title: string | null;
   product_ids: number[];
-  share_token: string;
+  share_token: string | null;
   created_at: string;
   product_names: string[];
 }
@@ -1602,6 +1602,10 @@ export interface AchievementsResponse {
   achievements: AchievementDef[];
   total: number;
   unlocked: number;
+  error?: string;
+  retired_achievements?: Array<{
+    id: string; slug: string; progress: number; unlocked_at: string | null; status: "retired";
+  }>;
 }
 
 export interface AchievementProgressResponse {

@@ -1,370 +1,59 @@
 "use client";
 
-// ─── Settings — Notifications (Push Toggle, Score Alerts, Frequency) ────────
-
 import { Button } from "@/components/common/Button";
-import { SectionError } from "@/components/common/SectionError";
-import { SettingsSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
 import surface from "@/components/layout/CustomerSurface.module.css";
-import { useAnalytics } from "@/hooks/use-analytics";
-import { useUserPreferencesQuery } from "@/hooks/use-user-preferences-query";
-import {
-    deletePushSubscription,
-    savePushSubscription,
-    setUserPreferences,
-} from "@/lib/api";
-import { NOTIFICATION_FREQUENCY_OPTIONS } from "@/lib/constants";
+import { deletePushSubscription } from "@/lib/api";
 import { useTranslation } from "@/lib/i18n";
-import {
-    extractSubscriptionData,
-    getCurrentPushSubscription,
-    getNotificationPermission,
-    isPushSupported,
-    requestNotificationPermission,
-    subscribeToPush,
-    unsubscribeFromPush,
-} from "@/lib/push-manager";
-import { queryKeys } from "@/lib/query-keys";
+import { inspectCurrentPushSubscription, isPushSupported } from "@/lib/push-manager";
 import { createClient } from "@/lib/supabase/client";
-import { showToast } from "@/lib/toast";
-import type { NotificationFrequency } from "@/lib/types";
-import { useQueryClient } from "@tanstack/react-query";
-import { Bell, BellOff, BellRing, Clock } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
+/** No new permission prompt while there is no supported notification service. */
 export default function NotificationSettingsPage() {
-  const supabase = createClient();
-  const queryClient = useQueryClient();
-  const { track } = useAnalytics();
   const { t } = useTranslation();
-
-  // ─── Push notification state ────────────────────────────────────────────────
-  const [pushEnabled, setPushEnabled] = useState(false);
-  const [pushSupported, setPushSupported] = useState(false);
-  const [pushPermission, setPushPermission] = useState<
-    NotificationPermission | "unsupported"
-  >("unsupported");
-  const [togglingPush, setTogglingPush] = useState(false);
-
-  // ─── Score change preference state ──────────────────────────────────────────
-  const [scoreChanges, setScoreChanges] = useState(true);
-  const [frequency, setFrequency] = useState<NotificationFrequency>("immediate");
-  const [savingPrefs, setSavingPrefs] = useState(false);
-  const [dirty, setDirty] = useState(false);
-
-  // ─── Load user preferences ─────────────────────────────────────────────────
-  const {
-    data: prefs,
-    error: preferencesError,
-    isPending,
-    refetch: refetchPreferences,
-  } = useUserPreferencesQuery();
-
-  // ─── Populate from fetched prefs ────────────────────────────────────────────
+  const [subscription, setSubscription] = useState<PushSubscription | null>(null);
+  const [state, setState] = useState<"loading" | "ready" | "error" | "removing" | "removed">("loading");
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
-    if (prefs) {
-      setScoreChanges(prefs.notification_score_changes ?? true);
-      setFrequency(prefs.notification_frequency ?? "immediate");
-    }
-  }, [prefs]);
+    let active = true;
+    setState("loading");
+    if (!isPushSupported()) { setState("ready"); return; }
+    inspectCurrentPushSubscription().then((value) => {
+      if (active) { setSubscription(value); setState("ready"); }
+    }).catch(() => { if (active) setState("error"); });
+    return () => { active = false; };
+  }, [attempt]);
 
-  // ─── Check push notification status ─────────────────────────────────────────
-  useEffect(() => {
-    const supported = isPushSupported();
-    setPushSupported(supported);
-    setPushPermission(getNotificationPermission());
-    if (supported) {
-      getCurrentPushSubscription()
-        .then((sub) => setPushEnabled(!!sub))
-        .catch(() => setPushEnabled(false));
-    }
-  }, []);
-
-  // ─── Push toggle handlers ──────────────────────────────────────────────────
-  const disablePush = useCallback(async () => {
-    const sub = await getCurrentPushSubscription();
-    if (sub) {
-      const subData = extractSubscriptionData(sub);
-      if (subData) {
-        await deletePushSubscription(supabase, subData.endpoint);
-      }
-      await unsubscribeFromPush();
-    }
-    setPushEnabled(false);
-    track("push_notification_disabled");
-    showToast({ type: "success", messageKey: "notifications.disabled" });
-  }, [supabase, track]);
-
-  const enablePush = useCallback(async () => {
-    const permission = await requestNotificationPermission();
-    setPushPermission(permission);
-    if (permission !== "granted") {
-      showToast({
-        type: "error",
-        messageKey: "notifications.permissionDenied",
-      });
-      return;
-    }
-
-    const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-    if (!vapidKey) {
-      showToast({ type: "error", messageKey: "common.error" });
-      return;
-    }
-
-    const subscription = await subscribeToPush(vapidKey);
-    if (!subscription) {
-      showToast({ type: "error", messageKey: "common.error" });
-      return;
-    }
-
-    const subData = extractSubscriptionData(subscription);
-    if (subData) {
-      await savePushSubscription(
-        supabase,
-        subData.endpoint,
-        subData.p256dh,
-        subData.auth,
-      );
-    }
-
-    setPushEnabled(true);
-    track("push_notification_enabled");
-    showToast({ type: "success", messageKey: "notifications.enabled" });
-  }, [supabase, track]);
-
-  const handleTogglePush = useCallback(async () => {
-    setTogglingPush(true);
+  async function removeSubscription() {
+    if (!subscription) return;
+    setState("removing");
     try {
-      if (pushEnabled) {
-        await disablePush();
-      } else {
-        await enablePush();
-      }
-    } catch {
-      showToast({ type: "error", messageKey: "common.error" });
-    } finally {
-      setTogglingPush(false);
-    }
-  }, [pushEnabled, disablePush, enablePush]);
-
-  // ─── Save notification preferences ─────────────────────────────────────────
-  async function handleSavePreferences() {
-    if (!prefs) {
-      showToast({ type: "error", messageKey: "auth.preferencesFailed" });
-      return;
-    }
-
-    setSavingPrefs(true);
-    const result = await setUserPreferences(supabase, {
-      p_notification_score_changes: scoreChanges,
-      p_notification_frequency: frequency,
-    });
-    setSavingPrefs(false);
-
-    if (!result.ok) {
-      showToast({ type: "error", message: result.error.message });
-      return;
-    }
-
-    await queryClient.invalidateQueries({ queryKey: queryKeys.preferences });
-    setDirty(false);
-    track("notification_preferences_updated", {
-      score_changes: scoreChanges,
-      frequency,
-    });
-    showToast({ type: "success", messageKey: "notifications.preferencesSaved" });
+      const result = await deletePushSubscription(createClient(), subscription.endpoint);
+      if (!result.ok || result.data.success !== true || result.data.error) throw new Error("Removal not confirmed");
+      // Successful idempotent backend deletion may report deleted=false.
+      if (!(await subscription.unsubscribe())) throw new Error("Browser removal not confirmed");
+      setSubscription(null);
+      setState("removed");
+    } catch { setState("error"); }
   }
 
-  if (isPending) {
-    return <SettingsSkeleton />;
-  }
-
-  if (!prefs && preferencesError) {
-    return (
-      <AppPage className={surface.appPage}>
-        <Breadcrumbs
-          items={[
-            { labelKey: "nav.home", href: "/app" },
-            { labelKey: "nav.settings", href: "/app/settings" },
-            { labelKey: "settings.tabNotifications" },
-          ]}
-        />
-        <AppPageHeader
-          eyebrow={t("nav.settings")}
-          title={t("settings.tabNotifications")}
-        />
-        <SectionError
-          error={preferencesError}
-          label={t("settings.tabNotifications")}
-          onRetry={() => void refetchPreferences()}
-        />
-      </AppPage>
-    );
-  }
-
-  return (
-    <AppPage className={surface.appPage}>
-      <Breadcrumbs
-        items={[
-          { labelKey: "nav.home", href: "/app" },
-          { labelKey: "nav.settings", href: "/app/settings" },
-          { labelKey: "settings.tabNotifications" },
-        ]}
-      />
-      <AppPageHeader eyebrow={t("nav.settings")} title={t("settings.tabNotifications")} />
-
-      {/* ─── Push Notifications ──────────────────────────────────────────── */}
-      {pushSupported && (
-        <section className={surface.panel} data-testid="push-notifications-section">
-          <h2 className="mb-3 text-sm font-semibold text-foreground-secondary lg:text-base">
-            {t("notifications.title")}
-          </h2>
-          <p className="mb-3 text-sm text-foreground-secondary">
-            {t("notifications.settingsDescription")}
-          </p>
-          {pushPermission === "denied" ? (
-            <p
-              className="text-sm text-warning-text"
-              data-testid="push-denied-message"
-            >
-              {t("notifications.blockedByBrowser")}
-            </p>
-          ) : (
-            <button
-              type="button"
-              onClick={handleTogglePush}
-              disabled={togglingPush}
-              className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-                pushEnabled
-                  ? "border-error-border text-error-text hover:bg-error-bg"
-                  : "border-brand/30 text-brand hover:bg-brand-subtle"
-              }`}
-              data-testid="push-toggle-button"
-            >
-              {pushEnabled ? (
-                <BellOff size={14} aria-hidden="true" />
-              ) : (
-                <Bell size={14} aria-hidden="true" />
-              )}
-              {togglingPush && t("common.loading")}
-              {!togglingPush && pushEnabled && t("notifications.disable")}
-              {!togglingPush && !pushEnabled && t("notifications.enable")}
-            </button>
-          )}
-        </section>
-      )}
-
-      {/* ─── Score Change Alerts ──────────────────────────────────────────── */}
-      <section className={surface.panel} data-testid="score-changes-section">
-        <div className="flex items-start gap-3">
-          <BellRing
-            size={20}
-            className="mt-0.5 shrink-0 text-brand"
-            aria-hidden="true"
-          />
-          <div className="flex-1">
-            <h2 className="text-sm font-semibold text-foreground-secondary lg:text-base">
-              {t("notifications.scoreChangesTitle")}
-            </h2>
-            <p className="mt-1 text-sm text-foreground-secondary">
-              {t("notifications.scoreChangesDescription")}
-            </p>
-          </div>
-          <label className="relative inline-flex cursor-pointer items-center">
-            <input
-              type="checkbox"
-              checked={scoreChanges}
-              onChange={(e) => {
-                setScoreChanges(e.target.checked);
-                setDirty(true);
-              }}
-              className="peer sr-only"
-              data-testid="score-changes-toggle"
-              aria-label={t("notifications.scoreChangesTitle")}
-            />
-            <div className="peer h-6 w-11 rounded-full bg-surface-muted after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-strong after:bg-surface after:transition-all after:content-[''] peer-checked:bg-brand peer-checked:after:translate-x-full peer-checked:after:border-surface peer-focus-visible:outline-hidden peer-focus-visible:ring-2 peer-focus-visible:ring-brand/40" />
-          </label>
-        </div>
-      </section>
-
-      {/* ─── Notification Frequency ──────────────────────────────────────── */}
-      <section className={surface.panel} data-testid="frequency-section">
-        <div className="flex items-center gap-2 mb-3">
-          <Clock
-            size={20}
-            className="shrink-0 text-brand"
-            aria-hidden="true"
-          />
-          <h2 className="text-sm font-semibold text-foreground-secondary lg:text-base">
-            {t("notifications.frequencyTitle")}
-          </h2>
-        </div>
-        <p className="mb-4 text-sm text-foreground-secondary">
-          {t("notifications.frequencyDescription")}
-        </p>
-        <div className="space-y-2">
-          {NOTIFICATION_FREQUENCY_OPTIONS.map((option) => (
-            <label
-              key={option.value}
-              className={`flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors ${
-                frequency === option.value
-                  ? "border-brand bg-brand-subtle"
-                  : "border-border hover:bg-surface-hover"
-              }`}
-              data-testid={`frequency-option-${option.value}`}
-            >
-              <input
-                type="radio"
-                name="notification-frequency"
-                value={option.value}
-                checked={frequency === option.value}
-                onChange={() => {
-                  setFrequency(option.value as NotificationFrequency);
-                  setDirty(true);
-                }}
-                className="sr-only"
-              />
-              <div
-                className={`h-4 w-4 shrink-0 rounded-full border-2 ${
-                  frequency === option.value
-                    ? "border-brand bg-brand"
-                    : "border-strong"
-                }`}
-              >
-                {frequency === option.value && (
-                  <div className="m-0.5 h-2 w-2 rounded-full bg-surface" />
-                )}
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">
-                  {t(option.labelKey)}
-                </p>
-                <p className="text-xs text-foreground-secondary">
-                  {t(option.descKey)}
-                </p>
-              </div>
-            </label>
-          ))}
-        </div>
-      </section>
-
-      {/* ─── Save button — sticky bar at bottom when dirty ─────────────── */}
-      {dirty && (
-        <div className={surface.stickyActions}>
-          <Button
-            variant="primary"
-            onClick={handleSavePreferences}
-            disabled={savingPrefs}
-            loading={savingPrefs}
-            data-testid="save-notification-prefs"
-          >
-            {savingPrefs ? t("common.loading") : t("common.save")}
-          </Button>
-        </div>
-      )}
-    </AppPage>
-  );
+  return <AppPage className={surface.appPage}>
+    <Breadcrumbs items={[{ labelKey: "nav.home", href: "/app" }, { labelKey: "nav.settings", href: "/app/settings" }, { labelKey: "notifications.title" }]} />
+    <AppPageHeader eyebrow={t("nav.settings")} title={t("notifications.title")} description={t("evidenceActivity.notificationsPaused")} />
+    <section className={surface.panel}>
+      <h2 className="font-semibold">{t("evidenceActivity.notificationsPausedTitle")}</h2>
+      <p className="mt-2 text-sm text-foreground-secondary">{t("evidenceActivity.notificationsPreserved")}</p>
+      {state === "loading" && <p role="status" className="mt-3 text-sm">{t("common.loading")}</p>}
+      {state === "error" && <div role="alert" className="mt-3 text-sm text-error-text">
+        <p>{t("evidenceActivity.subscriptionUnavailable")}</p>
+        <Button variant="secondary" className="mt-2" onClick={() => setAttempt((value) => value + 1)}>{t("common.retry")}</Button>
+      </div>}
+      {subscription && state !== "loading" && <Button className="mt-3" variant="secondary" disabled={state === "removing"} onClick={() => void removeSubscription()}>
+        {state === "removing" ? t("common.loading") : t("evidenceActivity.removeSubscription")}
+      </Button>}
+      {state === "removed" && <p role="status" className="mt-3 text-sm">{t("notifications.disabled")}</p>}
+    </section>
+  </AppPage>;
 }

@@ -465,7 +465,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 
 - **EAN coverage:** 997/1,025 (97.3%)
 - **Scoring version:** v3.2 — 9-factor weighted formula
-- **QA checks:** 786 checks across 50 suites (778 blocking) — all passing
+- **Historical QA report:** 786 checks in 50 suites, then reported as 778 blocking and all passing. This snapshot is not current release evidence; consult the current `qa.json` for executed assertions, diagnostic findings and unassessed inventories.
 - **Negative tests:** 20 injection tests — all caught
 - **Confidence threshold (CI):** ≤5% low-confidence products allowed
 - **CHECK constraints:** 24 domain constraints enforced at DB level

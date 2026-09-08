@@ -6,6 +6,26 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { observeQuery } from "./query-observer";
 import type { RpcResult } from "./types";
 
+type ValidationResult<T> = { success: true; data: T } | { success: false };
+
+/** Runtime boundary for versioned reads. Never log the rejected data payload. */
+export async function callValidatedRpc<T>(
+  supabase: SupabaseClient,
+  fnName: string,
+  schema: { safeParse(value: unknown): ValidationResult<T> | Promise<ValidationResult<T>> },
+  params?: Record<string, unknown>,
+): Promise<RpcResult<T>> {
+  const result = await callRpc<unknown>(supabase, fnName, params);
+  if (!result.ok) return result;
+  try {
+    const parsed = await schema.safeParse(result.data);
+    if (parsed.success) return { ok: true, data: parsed.data };
+  } catch {
+    // A custom refinement may throw; never expose its payload or exception.
+  }
+  return { ok: false, error: { code: "CONTRACT_MISMATCH", message: "Product information could not be validated. Please try again." } };
+}
+
 // ─── Auth error detection constants ─────────────────────────────────────────
 
 /** Error codes that indicate an auth/session issue. */

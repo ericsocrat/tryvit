@@ -7,7 +7,7 @@
 import { useTranslation } from "@/lib/i18n";
 import { useCompareStore } from "@/stores/compare-store";
 import { Scale, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export function CompareFloatingButton() {
   const { t } = useTranslation();
@@ -15,8 +15,9 @@ export function CompareFloatingButton() {
   const getIds = useCompareStore((s) => s.getIds);
   const clear = useCompareStore((s) => s.clear);
   const router = useRouter();
+  const pathname = usePathname();
 
-  if (count < 1) return null;
+  if (count < 1 || pathname === "/app/compare") return null;
 
   function handleCompare() {
     const ids = getIds();
@@ -47,8 +48,8 @@ export function CompareFloatingButton() {
         disabled={!canCompare}
         className={`flex items-center gap-2 rounded-full px-5 py-3 font-medium shadow-lg transition-transform ${
           canCompare
-            ? "bg-brand text-white hover:scale-105 hover:bg-brand-subtle active:scale-95"
-            : "bg-brand/60 text-white/80 cursor-default"
+            ? "bg-brand text-[color:var(--color-action-primary-foreground)] hover:scale-105 hover:bg-brand-hover active:scale-95 motion-reduce:transform-none"
+            : "bg-surface-muted text-foreground-secondary cursor-default"
         }`}
         aria-label={t("compare.compareCount", { count })}
       >

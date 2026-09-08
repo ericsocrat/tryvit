@@ -126,7 +126,7 @@ describe("provider route boundaries", () => {
   it("keeps backend providers behind the authenticated app layout", () => {
     expect(authenticatedSource).toContain("QueryClientProvider");
     expect(authenticatedSource).toContain("initAchievementMiddleware");
-    expect(appLayoutSource).toContain("<AuthenticatedProviders>");
+    expect(appLayoutSource).toContain("<AuthenticatedProviders key={user.id} userId={user.id}>");
   });
 
   it("keeps the dormant flag subsystem out of the authenticated startup path", () => {

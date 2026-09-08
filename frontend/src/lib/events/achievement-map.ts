@@ -17,12 +17,6 @@ export interface AchievementMapping {
   condition?: (payload: Record<string, unknown>) => boolean;
 }
 
-/* ── Condition guards ─────────────────────────────────────────────────────── */
-
-/** Product viewed with unhealthiness score ≤ 30 (i.e. unhealthy product). */
-const isLowScoreProduct = (p: Record<string, unknown>): boolean =>
-  typeof p.score === "number" && p.score <= 30;
-
 /* ── Compact mapping builder ──────────────────────────────────────────────── */
 
 type MappingTuple = [
@@ -42,7 +36,7 @@ function buildMap(entries: MappingTuple[]): AchievementMapping[] {
 
 /**
  * Canonical mapping of app events to achievement progress increments.
- * Covers all 16 client-trackable v1 achievements defined in Issue #51.
+ * Tracks ordinary app activity, never a nutritional or health outcome.
  *
  * Note: "all_exploration" and "all_health" are meta-achievements
  * that can only be detected server-side once all sub-achievements
@@ -55,9 +49,7 @@ export const ACHIEVEMENT_MAP: readonly AchievementMapping[] = buildMap([
   ["product.scanned", "scan_50"],
   ["product.searched", "first_search"],
   ["category.viewed", "explore_5_categories"],
-  // ── Health ─────────────────────────────────────────────────────────────
-  ["product.viewed", "first_low_score", isLowScoreProduct],
-  ["product.viewed", "low_score_10", isLowScoreProduct],
+  // ── Product information ───────────────────────────────────────────────
   ["product.compared", "compare_products"],
   ["product.compared", "compare_10"],
   ["filter.allergen_applied", "allergen_filter"],

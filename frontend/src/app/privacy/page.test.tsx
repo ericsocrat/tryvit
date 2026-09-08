@@ -37,6 +37,13 @@ describe("PrivacyPage", () => {
     expect(gdprElements.length).toBeGreaterThanOrEqual(1);
   });
 
+  it("describes current data use without promising health scores or medical warnings", () => {
+    render(<PrivacyPage />);
+    expect(screen.getByText(/support product search, matching against recorded allergen evidence/)).toBeInTheDocument();
+    expect(screen.getByText(/not used for personal medical warnings, health scores or current nutrition advice/)).toBeInTheDocument();
+    expect(screen.queryByText(/provide personalized food recommendations, allergen warnings, and health scores/)).not.toBeInTheDocument();
+  });
+
   it("renders contact section text", () => {
     render(<PrivacyPage />);
     expect(

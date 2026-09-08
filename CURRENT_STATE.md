@@ -1,5 +1,36 @@
 # CURRENT_STATE.md
 
+## Evidence-first rebuild checkpoint — 2026-09-08
+
+**Not yet released.** The active consumer implementation is draft PR #1361 on
+`codex/evidence-first-consumer`. At this checkpoint its published head is
+`904bd2c501584a4eca3e3b871e7b381d694c3d45`, based on main
+`1f66ab761a4d419f65745625dd0caad9c0ce77c5`. Revalidate remote refs before mutation;
+these are checkpoint identities, not a permanent current-head guarantee.
+
+The release contract is [the evidence-first rebuild](docs/implementation/EVIDENCE_FIRST_REBUILD.md).
+Use [the consumer release ledger](docs/releases/EVIDENCE_FIRST_CONSUMER.md)
+for migration/recovery receipts, actual test outcomes, open gates and deployment
+sequencing. Foundation #1359 and delegated visual-review policy #1360 are merged;
+the seven consumer migrations, intentional baseline acceptance and consumer
+production promotion remain outstanding at this checkpoint.
+
+The product presents source-linked food facts and compatible quantitative
+comparisons, not a replacement universal health score. Historical formulas and
+user-owned data remain preserved. Supabase native production Git sync is disabled
+following the recorded sequencing incident; production database changes use the
+source-bound release driver. Do not infer deployment from a local build or Preview.
+
+The primary user worktree and unrelated dashboard-preview work are preserved.
+Private-beta admission remains invitation-only; genuine production Turnstile
+first-use/replay proof remains unresolved. No blanket all-green/public-launch
+claim is made.
+
+## Archived May 2026 handoff
+
+The following material is retained historical context, **not current branch,
+PR, deployment or product authority**.
+
 > **Last updated:** 2026-05-27 by GitHub Copilot (state refresh for #1139)
 > **Purpose:** Volatile project status for AI agent context recovery. Read this FIRST at session start.
 

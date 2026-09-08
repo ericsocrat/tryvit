@@ -148,8 +148,8 @@ describe("AchievementsPage", () => {
     );
 
     const summary = await screen.findByTestId("achievements-summary");
-    expect(summary).toHaveTextContent("2 / 18");
-    expect(summary).toHaveTextContent("11%");
+    expect(summary).toHaveTextContent("1 / 2");
+    expect(summary).toHaveTextContent("50%");
   });
 
   it("renders achievement grid after loading", async () => {
@@ -231,6 +231,9 @@ describe("AchievementsPage", () => {
     await screen.findByTestId("achievement-grid");
 
     expect(screen.getByText("Exploration")).toBeInTheDocument();
-    expect(screen.getByText("Health")).toBeInTheDocument();
+    expect(screen.queryByText("Health")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("achievement-card-first_low_score")).not.toBeInTheDocument();
+    expect(screen.getByText("evidenceActivity.retiredHistory")).toBeInTheDocument();
+    expect(screen.getByText("evidenceActivity.retiredHistoryDescription")).toBeInTheDocument();
   });
 });

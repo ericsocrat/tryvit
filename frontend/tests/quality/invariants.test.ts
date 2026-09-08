@@ -353,145 +353,49 @@ describe("checkMobileInvariants", () => {
  * ═══════════════════════════════════════════════════════════════════════════ */
 
 describe("checkProductInvariants", () => {
-  it("passes when toggle-analysis clicked reveals 1 tab bar", async () => {
-    const page = createPageMock({
-      bodyText: "Product details with 3 alternatives",
+  const evidencePage = (overrides: Record<string, LocatorMockConfig> = {}, bodyText = "Recorded product facts") =>
+    createPageMock({
+      bodyText,
       locatorOverrides: {
-        "toggle-analysis": { count: 1 },
-        "tab-bar": { count: 1 },
-        "score-breakdown-panel": { count: 1 },
-        "health-warnings-card": { count: 1 },
-        "h2:visible": { allTextContents: ["Nutrition", "Scoring"] },
-        "product-thumbnail": { count: 0 },
-        "product-image": { count: 0 },
+        "evidence-summary": { count: 1 },
+        "nutrition-": { count: 1 },
+        "product-sources": { count: 1 },
+        "h2:visible": { allTextContents: ["Recorded facts", "Nutrition"] },
+        ...overrides,
       },
     });
 
-    await expect(
-      checkProductInvariants(page as never, "/app/product/1")
-    ).resolves.toBeUndefined();
+  it("requires the complete canonical evidence page", async () => {
+    await expect(checkProductInvariants(evidencePage() as never, "/app/product/1")).resolves.toBeUndefined();
   });
 
-  it("fails when toggle-analysis button is missing", async () => {
-    const page = createPageMock({
-      bodyText: "Product",
-      locatorOverrides: {
-        "toggle-analysis": { count: 0 },
-        "tab-bar": { count: 0 },
-        "score-breakdown-panel": { count: 0 },
-        "health-warnings-card": { count: 0 },
-        "h2:visible": { allTextContents: [] },
-        "product-thumbnail": { count: 0 },
-        "product-image": { count: 0 },
-      },
-    });
-
-    await expect(
-      checkProductInvariants(page as never, "/app/product/1")
-    ).rejects.toThrow();
+  it.each(["evidence-summary", "nutrition-", "product-sources"])("fails when required %s is missing", async (marker) => {
+    await expect(checkProductInvariants(evidencePage({ [marker]: { count: 0 } }) as never, "/app/product/1")).rejects.toThrow();
   });
 
-  it("passes when toggle-analysis is missing but fallback content markers are present", async () => {
-    const page = createPageMock({
-      bodyText: "Product",
-      locatorOverrides: {
-        "toggle-analysis": { count: 0 },
-        "tab-bar": { count: 1 },
-        "score-breakdown-panel": { count: 1 },
-        "health-warnings-card": { count: 0 },
-        "better-alternatives-card": { count: 0 },
-        "h2:visible": { allTextContents: ["Nutrition", "Scoring"] },
-        "product-thumbnail": { count: 0 },
-        "product-image": { count: 0 },
-      },
-    });
-
-    await expect(
-      checkProductInvariants(page as never, "/app/product/1")
-    ).resolves.toBeUndefined();
+  it.each(["evidence-summary", "nutrition-", "product-sources"])("fails when %s is duplicated", async (marker) => {
+    await expect(checkProductInvariants(evidencePage({ [marker]: { count: 2 } }) as never, "/app/product/1")).rejects.toThrow();
   });
 
-  it("skips product checks when empty-state is rendered", async () => {
-    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    const page = createPageMock({
-      bodyText: "Product not found",
-      locatorOverrides: {
-        "toggle-analysis": { count: 0 },
-        "tab-bar": { count: 0 },
-        "empty-state": { count: 1 },
-        "product-thumbnail": { count: 0 },
-        "product-image": { count: 0 },
-      },
-    });
-
-    await expect(
-      checkProductInvariants(page as never, "/app/product/1")
-    ).resolves.toBeUndefined();
-
-    expect(warnSpy).toHaveBeenCalledWith(
-      expect.stringContaining("Skipping product invariants")
-    );
-    warnSpy.mockRestore();
+  it("rejects old score controls even alongside valid evidence", async () => {
+    await expect(checkProductInvariants(evidencePage({ "toggle-analysis": { count: 1 } }) as never, "/app/product/1")).rejects.toThrow();
   });
 
-  it("fails when 2 tab bars found (duplication bug)", async () => {
-    const page = createPageMock({
-      bodyText: "Product",
-      locatorOverrides: {
-        "toggle-analysis": { count: 1 },
-        "tab-bar": { count: 2 },
-        "score-breakdown-panel": { count: 0 },
-        "health-warnings-card": { count: 0 },
-        "h2:visible": { allTextContents: [] },
-        "product-thumbnail": { count: 0 },
-        "product-image": { count: 0 },
-      },
-    });
-
-    await expect(
-      checkProductInvariants(page as never, "/app/product/1")
-    ).rejects.toThrow();
+  it("never accepts an empty state or legacy controls as readiness", async () => {
+    const page = createPageMock({ locatorOverrides: { "empty-state": { count: 1 }, "tab-bar": { count: 1 }, "score-breakdown-panel": { count: 1 } } });
+    await expect(checkProductInvariants(page as never, "/app/product/1")).rejects.toThrow();
   });
 
-  it("fails when duplicate H2 headers found", async () => {
-    const page = createPageMock({
-      bodyText: "Product with 3 alternatives",
-      locatorOverrides: {
-        "toggle-analysis": { count: 1 },
-        "tab-bar": { count: 1 },
-        "score-breakdown-panel": { count: 1 },
-        "health-warnings-card": { count: 1 },
-        "h2:visible": {
-          allTextContents: ["Nutrition", "Nutrition", "Scoring"],
-        },
-        "product-thumbnail": { count: 0 },
-        "product-image": { count: 0 },
-      },
-    });
-
-    await expect(
-      checkProductInvariants(page as never, "/app/product/1")
-    ).rejects.toThrow();
+  it("preserves duplicate heading detection", async () => {
+    await expect(checkProductInvariants(evidencePage({ "h2:visible": { allTextContents: ["Nutrition", "Nutrition"] } }) as never, "/app/product/1")).rejects.toThrow();
   });
 
-  it("fails on pluralization bug '1 ingredients'", async () => {
-    const page = createPageMock({
-      bodyText: "Contains 1 ingredients",
-      locatorOverrides: {
-        "toggle-analysis": { count: 1 },
-        "tab-bar": { count: 1 },
-        "score-breakdown-panel": { count: 0 },
-        "health-warnings-card": { count: 0 },
-        "h2:visible": { allTextContents: [] },
-        "product-thumbnail": { count: 0 },
-        "product-image": { count: 0 },
-      },
-    });
+  it("preserves pluralization checks", async () => {
+    await expect(checkProductInvariants(evidencePage({}, "Contains 1 ingredients") as never, "/app/product/1")).rejects.toThrow();
+  });
 
-    await expect(
-      checkProductInvariants(page as never, "/app/product/1")
-    ).rejects.toThrow();
+  it("preserves image alt-text checks", async () => {
+    await expect(checkProductInvariants(evidencePage({ "product-thumbnail": { count: 1, getAttribute: "image" } }) as never, "/app/product/1")).rejects.toThrow();
   });
 });
 

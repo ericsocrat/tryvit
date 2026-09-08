@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
-  title: "Data Confidence",
+  title: "Understanding product evidence",
   description:
-    "Understand what verified, estimated, and low confidence levels mean for product data in TryVit.",
+    "Distinguish source-recorded facts, unverified catalog values, missing information and the limits of freshness dates.",
 };
 
 export default function ConfidenceLayout({

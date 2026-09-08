@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "environment": "production",
+  "scope": "schema-and-catalog",
+  "method": "backup-restore",
+  "migrationManifestSha256": "19b9a9d6ad18bded6794dd01404a6152f71c9c438979a7d6c17e24c2a27fa90a",
+  "backupSha256": "61db93bffb87e7b0d529f59fc18f345343f93e2ba649086dbf0118ec4bafc6e4",
+  "restoredBackupSha256": "61db93bffb87e7b0d529f59fc18f345343f93e2ba649086dbf0118ec4bafc6e4",
+  "encryptedBackupSha256": "c2106f59eaa840178239509ffe0402b11f1389ebd56fb56748a06a1bf703b317",
+  "bootstrapSupplementSha256": "bc86cc165fc6ab32a400403d81e5587c6a505be6e8f202933788186f80f430ca",
+  "catalogSha256": "37b8b4d9576c6fe4f5fdcae50a758f89dbfbabc46d7fa8c1b1a703cc0a7c4bcd",
+  "restoredCatalogSha256": "37b8b4d9576c6fe4f5fdcae50a758f89dbfbabc46d7fa8c1b1a703cc0a7c4bcd",
+  "restoredAt": "2026-09-08T06:18:42.256Z",
+  "result": "PASS",
+  "checks": {
+    "schema": true,
+    "functions": true,
+    "grants": true,
+    "rls": true,
+    "roleAttributes": true,
+    "roleMemberships": true,
+    "extensionBootstrap": true,
+    "rowCounts": true,
+    "identityReferences": true,
+    "representativeValues": true,
+    "syntheticRoles": true
+  },
+  "exclusions": [
+    "privateUserRows",
+    "historyRows",
+    "managedAuthServices",
+    "storageObjects"
+  ],
+  "storageDisposition": "not-affected",
+  "privateProductionRowsExported": false,
+  "containerImage": "public.ecr.aws/supabase/postgres:17.6.1.075",
+  "databaseLocale": "en_US.UTF-8",
+  "catalogTableCount": 15,
+  "catalogRowCount": 96523,
+  "limitations": [
+    "No private-user/history row recovery claim",
+    "No role-password or platform-role-setting recovery claim",
+    "No managed Auth service, cloud configuration or storage-object recovery claim"
+  ],
+  "sourceFingerprints": {
+    "schema": "82324fe63044f6694577e5f208cdb85dfa78833bdb2270d3f4bfbc258008d05a",
+    "functions": "f7ffaed88c729dec01c1274abf841434371eac401426972ec34e063fb985527e",
+    "grants": "2b5ea05af6868d2533a5f57b54bc5acf7afda44c5c6364c2388f892e640e2917",
+    "rls": "d7005ac381a5caadf6909a0557be4f789d2b1b25663946608cc6fcbfba655d43"
+  },
+  "restoredFingerprints": {
+    "schema": "82324fe63044f6694577e5f208cdb85dfa78833bdb2270d3f4bfbc258008d05a",
+    "functions": "f7ffaed88c729dec01c1274abf841434371eac401426972ec34e063fb985527e",
+    "grants": "2b5ea05af6868d2533a5f57b54bc5acf7afda44c5c6364c2388f892e640e2917",
+    "rls": "d7005ac381a5caadf6909a0557be4f789d2b1b25663946608cc6fcbfba655d43"
+  }
+}

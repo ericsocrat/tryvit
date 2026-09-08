@@ -41,7 +41,7 @@ export function Providers({
         <RouteAnnouncer />
         <Toaster
           position="top-right"
-          richColors
+          richColors={false}
           closeButton
           visibleToasts={3}
           toastOptions={{

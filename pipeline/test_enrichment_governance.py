@@ -179,7 +179,12 @@ class EnrichmentGovernanceTests(unittest.TestCase):
     def test_duplicate_prevention_and_rerun_stability(self) -> None:
         duplicate = self.evidence("Water")
         self.assertEqual(len(match_ingredients([duplicate, duplicate], self.references)), 1)
-        self.assertEqual(build_report(), build_report())
+        first_report = build_report()
+        expected = copy.deepcopy(first_report)
+        first_report["allergen_provenance"]["missing_evidence_is_allergen_free"] = True
+        rerun = build_report()
+        self.assertEqual(rerun, expected)
+        self.assertIsNot(rerun["allergen_provenance"], first_report["allergen_provenance"])
 
     def test_cross_platform_report_is_canonical_lf(self) -> None:
         report = build_report()

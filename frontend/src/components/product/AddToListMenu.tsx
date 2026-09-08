@@ -47,20 +47,25 @@ interface AddToListMenuProps {
   readonly productId: number;
   /** Compact mode: just the heart icon for favorites toggle */
   readonly compact?: boolean;
+  readonly showLabel?: boolean;
 }
 
-export function AddToListMenu({ productId, compact }: AddToListMenuProps) {
+export function AddToListMenu({ productId, compact, showLabel = false }: AddToListMenuProps) {
   const [open, setOpen] = useState(false);
+  const [menuOffset, setMenuOffset] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const { t } = useTranslation();
 
-  const { data: listsResponse } = useLists();
+  const listsQuery = useLists();
+  const { data: listsResponse } = listsQuery;
   const addMutation = useAddToList();
   const removeMutation = useRemoveFromList();
 
   // Lazy load membership only when dropdown is open
-  const { data: membership } = useProductListMembership(productId, open);
+  const membershipQuery = useProductListMembership(productId, open);
+  const { data: membership } = membershipQuery;
   const memberListIds = useMemo(
     () => new Set(membership?.list_ids ?? []),
     [membership?.list_ids],
@@ -71,6 +76,16 @@ export function AddToListMenu({ productId, compact }: AddToListMenuProps) {
 
   const lists: ProductList[] = listsResponse?.lists ?? [];
   const favoritesList = lists.find((l) => l.list_type === "favorites");
+  const reading = Boolean(listsQuery.isPending || membershipQuery.isPending);
+  const unavailable = Boolean(listsQuery.isError || membershipQuery.isError ||
+    (!listsQuery.isPending && !Array.isArray(listsResponse?.lists)) ||
+    (open && !membershipQuery.isPending && !Array.isArray(membership?.list_ids)));
+
+  useEffect(() => {
+    if (!open || reading || unavailable) return;
+    const frame = requestAnimationFrame(() => menuRef.current?.querySelector<HTMLButtonElement>('[role="menuitem"]:not(:disabled)')?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [open, reading, unavailable]);
 
   // Close dropdown on click-outside
   useEffect(() => {
@@ -211,14 +226,20 @@ export function AddToListMenu({ productId, compact }: AddToListMenuProps) {
         aria-expanded={open}
         aria-haspopup="true"
         aria-describedby={mutationError ? mutationErrorId : undefined}
-        className="touch-target flex h-11 w-11 items-center justify-center rounded-full text-sm transition-colors hover:bg-surface-subtle"
+        className={`touch-target flex min-h-11 items-center justify-center gap-2 rounded-lg text-sm transition-colors hover:bg-surface-subtle ${showLabel ? "border border-strong px-3 font-medium" : "w-11"}`}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
+          if (!open && triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect();
+            const menuWidth = Math.min((Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) * 14, window.innerWidth - 32);
+            setMenuOffset(Math.min(Math.max(rect.left, 16), window.innerWidth - menuWidth - 16) - rect.left);
+          }
           setOpen((v) => !v);
         }}
       >
         <ClipboardList size={20} aria-hidden="true" />
+        {showLabel ? <span>{t("productActions.addToList")}</span> : null}
       </button>
 
       {mutationError && (
@@ -229,8 +250,19 @@ export function AddToListMenu({ productId, compact }: AddToListMenuProps) {
 
       {open && (
         <div
-          className="absolute right-0 top-full z-50 mt-1 w-56 rounded-xl border border-border bg-surface py-1 shadow-lg"
+          ref={menuRef}
+          className="absolute top-full z-50 mt-1 w-56 rounded-xl border border-border bg-surface py-1 shadow-lg"
+          style={{ left: menuOffset, maxWidth: "calc(100vw - 2rem)" }}
           role="menu"
+          onKeyDown={(event) => {
+            if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+            event.preventDefault();
+            const items = [...event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not(:disabled)')];
+            const index = items.indexOf(document.activeElement as HTMLButtonElement);
+            const next = event.key === "Home" ? 0 : event.key === "End" ? items.length - 1
+              : (index + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length;
+            items[next]?.focus();
+          }}
         >
           <p className="px-3 py-1.5 text-xs font-medium text-foreground-muted">
             {t("productActions.yourLists")}
@@ -244,7 +276,15 @@ export function AddToListMenu({ productId, compact }: AddToListMenuProps) {
             </p>
           )}
 
-          {lists.length === 0 && (
+          {reading ? <p role="status" className="px-3 py-2 text-sm">{t("common.loading")}</p> : null}
+          {unavailable && !reading ? <div className="px-3 py-2 text-sm">
+            <p role="alert">{t("lists.loadFailed")}</p>
+            <button type="button" role="menuitem" className="min-h-11 underline" onClick={() => {
+              void listsQuery.refetch();
+              void membershipQuery.refetch();
+            }}>{t("common.retry")}</button>
+          </div> : null}
+          {!reading && !unavailable && lists.length === 0 && (
             <p className="px-3 py-2 text-sm text-foreground-muted">
               {t("productActions.noLists")}
             </p>
@@ -262,7 +302,7 @@ export function AddToListMenu({ productId, compact }: AddToListMenuProps) {
                 key={list.id}
                 type="button"
                 role="menuitem"
-                disabled={isBusy}
+                disabled={isBusy || reading || unavailable}
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-surface-subtle disabled:opacity-50"
                 onClick={(e) => {
                   e.preventDefault();

@@ -99,24 +99,10 @@ describe("processEvent", () => {
     expect(mockIncrement).not.toHaveBeenCalled();
   });
 
-  it("triggers conditional mappings when condition passes", async () => {
-    // product.viewed with score 25 (≤ 30) should trigger low_score achievements
-    await processEvent({
-      type: "product.viewed",
-      payload: { productId: 42, score: 25 },
-    });
-
-    expect(mockIncrement).toHaveBeenCalledTimes(2);
-    expect(mockIncrement).toHaveBeenCalledWith(
-      mockSupabase,
-      "first_low_score",
-      1,
-    );
-    expect(mockIncrement).toHaveBeenCalledWith(
-      mockSupabase,
-      "low_score_10",
-      1,
-    );
+  it("does not authenticate or award retired score milestones for any old score", async () => {
+    await processEvent({ type: "product.viewed", payload: { productId: 42, score: 25 } });
+    expect(mockIncrement).not.toHaveBeenCalled();
+    expect(mockSupabase.auth.getUser).not.toHaveBeenCalled();
   });
 
   it("shows toast when achievement is newly unlocked", async () => {
@@ -148,6 +134,12 @@ describe("processEvent", () => {
     // Wait a tick for .then() chain
     await new Promise((r) => setTimeout(r, 10));
     expect(mockShowToast).not.toHaveBeenCalled();
+  });
+
+  it("does not reject into the event bus when authentication is unavailable", async () => {
+    mockGetUser.mockRejectedValueOnce(new Error("offline"));
+    await expect(processEvent({ type: "product.scanned", payload: { ean: "1234567890123" } })).resolves.toBeUndefined();
+    expect(mockIncrement).not.toHaveBeenCalled();
   });
 
   it("does not throw when RPC fails", async () => {

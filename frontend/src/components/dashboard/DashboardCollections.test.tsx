@@ -1,6 +1,7 @@
 import en from "@/../messages/en.json";
 import { translateFromMessages, type InterpolationParams } from "@/lib/i18n-format";
-import type { DashboardFavoritePreview } from "@/lib/types";
+import type { HomeReadModel } from "@/lib/evidence/home";
+import { evidenceProduct } from "@/components/evidence/product-evidence.fixtures";
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { DashboardCollections } from "./DashboardCollections";
@@ -12,19 +13,9 @@ vi.mock("@/lib/i18n", () => ({
   }),
 }));
 
-function favorite(id: number, overrides: Partial<DashboardFavoritePreview> = {}): DashboardFavoritePreview {
-  return {
-    product_id: id,
-    product_name: `Favorite ${id}`,
-    brand: `Brand ${id}`,
-    category: "dairy",
-    country: "PL",
-    unhealthiness_score: 25,
-    nutri_score_label: "B",
-    added_at: "2026-09-04T12:00:00.000Z",
-    image_thumb_url: null,
-    ...overrides,
-  };
+function favorite(id: number, _overrides: { unhealthiness_score?: null } = {}): HomeReadModel["favorites_preview"][number] {
+  const product = evidenceProduct(id); product.product_name = `Favorite ${id}`; product.brand = `Brand ${id}`;
+  return { product_id: id, added_at: "2026-09-04T12:00:00.000Z", product };
 }
 
 describe("DashboardCollections", () => {
@@ -46,11 +37,11 @@ describe("DashboardCollections", () => {
     expect(screen.queryByText("Favorite 2")).not.toBeInTheDocument();
   });
 
-  it("retains score meaning and missing-score distinctions in favorite previews", () => {
+  it("retains favorite identity without presenting any legacy score", () => {
     render(<DashboardCollections favorites={[favorite(1), favorite(2, { unhealthiness_score: null })]} stats={{ favorites_count: 2, lists_count: 1 }} />);
-    expect(screen.getByText("TryVit score: 75 out of 100; higher is better.")).toBeInTheDocument();
-    expect(screen.getByText("Score unavailable")).toBeInTheDocument();
-    expect(screen.getByText("TryVit score · higher is better")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Favorite 1/ })).toHaveAttribute("href", "/app/product/1");
+    expect(screen.getByRole("link", { name: /Favorite 2/ })).toHaveAttribute("href", "/app/product/2");
+    expect(screen.queryByText(/score|\/100|higher is better/i)).not.toBeInTheDocument();
   });
 
   it("explains how to save a favorite when the actual saved count is zero", () => {

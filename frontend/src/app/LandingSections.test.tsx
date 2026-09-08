@@ -5,8 +5,19 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { LandingSections } from "./LandingSections";
+import { getLandingCopy } from "./_landing-v2/copy";
 
 describe("LandingSections", () => {
+  it.each(["en", "pl", "de"] as const)("%s publishes source comparison without the retired illustrative rating", (language) => {
+    const copy = getLandingCopy(language);
+    const { container } = render(<LandingSections language={language} dataAvailable />);
+    expect(container.textContent).not.toMatch(/72\s*\/\s*100|v0\.9|Moderate confidence|Umiarkowana wiarygodność|Mittlere Datenverlässlichkeit/);
+    expect(screen.getByText(copy.derivedDetail)).toBeInTheDocument();
+    expect(screen.getByText(copy.derivedMeta)).toBeInTheDocument();
+    expect(screen.getByText(copy.contextMeta)).toBeInTheDocument();
+    expect(container.textContent).toContain(copy.synthetic);
+  });
+
   it("remains server-led without auth or browser hooks", () => {
     const source = readFileSync(join(process.cwd(), "src/app/LandingSections.tsx"), "utf8");
     expect(source).not.toMatch(/^\s*["']use client["'];/mu);
@@ -30,7 +41,7 @@ describe("LandingSections", () => {
     const headings = screen.getAllByRole("heading", { level: 3 });
     expect(headings.map((heading) => heading.textContent)).toEqual([
       "Observed facts",
-      "Derived interpretation",
+      "Comparable values",
       "Applied context",
       "Decision and next action",
     ]);

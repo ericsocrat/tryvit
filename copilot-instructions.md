@@ -1,5 +1,29 @@
 # Copilot Instructions — TryVit
 
+## Evidence-first consumer contract (September 2026)
+
+The evidence-first rebuild supersedes the legacy consumer-scoring and import
+assumptions below. Start with `docs/EVIDENCE_DATA_POLICY.md`,
+`docs/implementation/EVIDENCE_FIRST_REBUILD.md`, and the actual release status in
+`docs/releases/EVIDENCE_FIRST_CONSUMER.md`; preparation is not deployment.
+
+- Do not publish the historical aggregate as a current health/safety verdict or
+  invent a replacement universal score. Preserve historical calculations for audit.
+- Do not assume every nutrition value is per-100g, every populated field is
+  verified, or missing allergen data means absence. Use the versioned evidence
+  contract, explicit basis/units and source-observation lineage.
+- Do not replay legacy category-refresh SQL against production. Use reviewed,
+  source-owned identity-preserving ingestion and verified recovery boundaries.
+- Existing numerical/scientific claims and counts in the older reference sections
+  are historical assertions to verify, not scientific authority or current PASS.
+- Preserve user data, invitation-only admission and server-owned authorization.
+  The production Turnstile first-use/replay proof remains unresolved unless a
+  separately recorded genuine production result establishes otherwise.
+
+The remaining sections retain older implementation reference material. Where
+they conflict with the evidence-first contract, use the contract and executable
+current tests rather than restoring retired behavior.
+
 > **Last updated:** 2026-03-05
 > **Scope:** Poland (`PL`) primary + Germany (`DE`) full parity (1,222 products across 21 categories)
 > **Products:** ~2,602 active (22 PL categories + 21 DE categories), 58 deprecated
@@ -9,7 +33,7 @@
 > **Servings:** removed as separate table — all nutrition data is per-100g on nutrition_facts
 > **Ingredient analytics:** 5,340 unique ingredients (all clean ASCII English), 2,691 allergen declarations, 2,702 trace declarations
 > **Ingredient concerns:** EFSA-based 4-tier additive classification (0=none, 1=low, 2=moderate, 3=high)
-> **QA:** 786 checks across 50 suites (778 blocking) + 20 negative validation tests — all passing
+> **QA:** 50 suites + 20 negative validation tests. Read execution-derived counts and blocking/diagnostic/unassessed dispositions from the current `qa.json`; this document does not certify a passing run.
 
 ---
 
@@ -307,7 +331,7 @@ tryvit/
 │       ├── 006-append-only-migrations.md
 │       └── 007-english-canonical-ingredients.md
 ├── RUN_LOCAL.ps1                    # Pipeline runner (idempotent)
-├── RUN_QA.ps1                       # QA test runner (786 checks across 50 suites; 778 blocking)
+├── RUN_QA.ps1                       # QA test runner (50 suites; execution-derived dispositions in qa.json)
 ├── RUN_NEGATIVE_TESTS.ps1           # Negative test runner (20 injection tests)
 ├── RUN_SANITY.ps1                   # Sanity checks (16) — row counts, schema assertions
 ├── RUN_REMOTE.ps1                   # Remote deployment (requires confirmation)

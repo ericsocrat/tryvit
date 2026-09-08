@@ -12,12 +12,15 @@ const mockShowToast = vi.fn();
 let mockAddError: Error | null = null;
 let mockRemoveError: Error | null = null;
 const mockMembership =
-  vi.fn<() => { data: { list_ids: number[] } | undefined }>();
+  vi.fn<() => { data: { list_ids: number[] } | undefined; isPending?: boolean; isError?: boolean; refetch?: () => void }>();
 const mockListsData = vi.fn<
   () => {
     data:
       | { lists: Array<{ id: number; name: string; list_type: string }> }
       | undefined;
+    isPending?: boolean;
+    isError?: boolean;
+    refetch?: () => void;
   }
 >();
 
@@ -73,6 +76,43 @@ beforeEach(() => {
   mockRemoveError = null;
   mockListsData.mockReturnValue({ data: { lists: LISTS } });
   mockMembership.mockReturnValue({ data: { list_ids: [] } });
+});
+
+describe("truthful list lookup and primary actions", () => {
+  it("shows a visible label when used as the primary save action", () => {
+    render(<AddToListMenu productId={42} showLabel />, { wrapper: createWrapper() });
+    expect(screen.getByRole("button", { name: "Add to list" })).toHaveTextContent("Add to list");
+  });
+  it("does not offer a mutation before membership is known", () => {
+    mockMembership.mockReturnValue({ data: undefined, isPending: true });
+    render(<AddToListMenu productId={42} />, { wrapper: createWrapper() });
+    fireEvent.click(screen.getByRole("button", { name: "Add to list" }));
+    expect(screen.getByRole("status")).toHaveTextContent("Loading");
+    for (const item of screen.getAllByRole("menuitem")) expect(item).toBeDisabled();
+    expect(screen.queryByText("No lists yet")).not.toBeInTheDocument();
+    expect(mockAddMutate).not.toHaveBeenCalled();
+  });
+  it("distinguishes lookup failure from no lists and retries both reads", () => {
+    const retryLists = vi.fn(); const retryMembership = vi.fn();
+    mockListsData.mockReturnValue({ data: undefined, isError: true, refetch: retryLists });
+    mockMembership.mockReturnValue({ data: undefined, isError: true, refetch: retryMembership });
+    render(<AddToListMenu productId={42} />, { wrapper: createWrapper() });
+    fireEvent.click(screen.getByRole("button", { name: "Add to list" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Failed to load lists.");
+    expect(screen.queryByText("No lists yet")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("menuitem", { name: "Retry" }));
+    expect(retryLists).toHaveBeenCalledOnce(); expect(retryMembership).toHaveBeenCalledOnce();
+  });
+  it("supports arrow-key traversal after opening", async () => {
+    render(<AddToListMenu productId={42} />, { wrapper: createWrapper() });
+    fireEvent.click(screen.getByRole("button", { name: "Add to list" }));
+    const items = screen.getAllByRole("menuitem");
+    await waitFor(() => expect(items[0]).toHaveFocus());
+    fireEvent.keyDown(items[0], { key: "ArrowDown" });
+    expect(items[1]).toHaveFocus();
+    fireEvent.keyDown(items[1], { key: "End" });
+    expect(items[2]).toHaveFocus();
+  });
 });
 
 // ─── Compact mode ───────────────────────────────────────────────────────────

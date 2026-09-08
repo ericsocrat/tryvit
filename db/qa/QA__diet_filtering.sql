@@ -1,122 +1,37 @@
--- ═══════════════════════════════════════════════════════════════════════════════
--- QA Suite: Diet Filtering
--- Validates that diet preference filters work correctly across API surfaces.
--- 6 checks.
---
--- NOTE: api_search_products now reads diet_preference / strict_diet from
--- user_preferences via auth.uid().  Checks 1-3 set up a test user.
--- ═══════════════════════════════════════════════════════════════════════════════
+-- Current evidence-first QA. Synthetic fixtures and claims are transaction-local.
+-- Run only through the approved local QA workflow; ROLLBACK preserves all data.
+BEGIN;
+CREATE TEMP TABLE qa_context AS SELECT gen_random_uuid() AS uid;
+INSERT INTO auth.users(id) SELECT uid FROM qa_context;
+INSERT INTO public.user_preferences(user_id,country,diet_preference,strict_diet,strict_allergen,avoid_allergens,treat_may_contain_as_unsafe,preferred_language)
+SELECT uid,'PL','none',false,false,ARRAY[]::text[],false,'en' FROM qa_context
+ON CONFLICT(user_id) DO UPDATE SET country='PL',diet_preference='none',strict_diet=false,strict_allergen=false,avoid_allergens=ARRAY[]::text[],treat_may_contain_as_unsafe=false,preferred_language='en';
+SELECT set_config('request.jwt.claims',jsonb_build_object('sub',uid,'role','authenticated')::text,true) FROM qa_context;
+CREATE FUNCTION pg_temp.qa_ok(condition boolean) RETURNS integer LANGUAGE sql IMMUTABLE AS $$ SELECT CASE WHEN condition IS TRUE THEN 0 ELSE 1 END; $$;
+CREATE FUNCTION pg_temp.qa_retired(payload jsonb) RETURNS boolean LANGUAGE sql IMMUTABLE AS $$
+  SELECT payload = jsonb_build_object('api_version','2','policy_version','evidence-first-v1',
+    'error','refresh_required','status','refresh_required','message','Refresh TryVit to use source-backed product evidence.');
+$$;
 
--- ─── Auth setup for diet filtering (checks 1–3) ────────────────────────────
--- Use set_config to inject JWT claims so that auth.uid() returns the test UUID
--- inside SECURITY DEFINER functions (more reliable than replacing auth.uid()).
-SELECT set_config('request.jwt.claims',
-    '{"sub":"00000000-0000-0000-0000-000000000098"}', false);
-
--- Ensure test user exists in auth.users (required by FK on user_product_lists
--- which is created by the trg_create_default_lists trigger on user_preferences).
-INSERT INTO auth.users (id)
-VALUES ('00000000-0000-0000-0000-000000000098'::uuid)
-ON CONFLICT DO NOTHING;
-
-INSERT INTO user_preferences (user_id, diet_preference, strict_diet, country)
-VALUES ('00000000-0000-0000-0000-000000000098'::uuid, 'vegan', false, 'PL')
-ON CONFLICT (user_id) DO UPDATE
-    SET diet_preference = 'vegan', strict_diet = false, country = 'PL';
-
--- 1. Vegan filter excludes products with vegan_status = 'no'
-SELECT '1. vegan filter excludes non-vegan from search' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT r.val->>'product_id' AS pid
-    FROM jsonb_array_elements(
-        api_search_products('a', '{"country":"PL"}'::jsonb, 1, 100)->'results'
-    ) r(val)
-) search_results
-JOIN v_master m ON m.product_id = search_results.pid::bigint
-WHERE m.vegan_status = 'no';
-
--- Switch to vegetarian for check 2
-UPDATE user_preferences
-SET diet_preference = 'vegetarian', strict_diet = false
-WHERE user_id = '00000000-0000-0000-0000-000000000098'::uuid;
-
--- 2. Vegetarian filter excludes products with vegetarian_status = 'no'
-SELECT '2. vegetarian filter excludes non-vegetarian from search' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT r.val->>'product_id' AS pid
-    FROM jsonb_array_elements(
-        api_search_products('a', '{"country":"PL"}'::jsonb, 1, 100)->'results'
-    ) r(val)
-) search_results
-JOIN v_master m ON m.product_id = search_results.pid::bigint
-WHERE m.vegetarian_status = 'no';
-
--- Switch to strict vegan for check 3
-UPDATE user_preferences
-SET diet_preference = 'vegan', strict_diet = true
-WHERE user_id = '00000000-0000-0000-0000-000000000098'::uuid;
-
--- 3. Strict vegan mode excludes 'maybe' status
-SELECT '3. strict vegan excludes maybe-vegan from search' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT r.val->>'product_id' AS pid
-    FROM jsonb_array_elements(
-        api_search_products('a', '{"country":"PL"}'::jsonb, 1, 100)->'results'
-    ) r(val)
-) search_results
-JOIN v_master m ON m.product_id = search_results.pid::bigint
-WHERE m.vegan_status != 'yes';
-
--- ─── Teardown auth for diet checks ─────────────────────────────────────────
-DELETE FROM user_product_lists
-WHERE user_id = '00000000-0000-0000-0000-000000000098'::uuid;
-DELETE FROM user_preferences
-WHERE user_id = '00000000-0000-0000-0000-000000000098'::uuid;
-DELETE FROM auth.users
-WHERE id = '00000000-0000-0000-0000-000000000098'::uuid;
-
-SELECT set_config('request.jwt.claims', '', false);
-
--- 4. Vegan filter works on category listing
-SELECT '4. vegan filter excludes non-vegan from category listing' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT r.val->>'product_id' AS pid
-    FROM jsonb_array_elements(
-        api_category_listing('Chips', 'score', 'asc', 100, 0, 'PL', 'vegan')->'products'
-    ) r(val)
-) listing_results
-JOIN v_master m ON m.product_id = listing_results.pid::bigint
-WHERE m.vegan_status = 'no';
-
--- 5. Vegan filter works on better alternatives
-SELECT '5. vegan filter excludes non-vegan from alternatives' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT p.product_id
-    FROM products p
-    WHERE p.is_deprecated IS NOT TRUE AND p.unhealthiness_score > 20
-    LIMIT 3
-) sample
-CROSS JOIN LATERAL find_better_alternatives(
-    sample.product_id, true, 5, 'vegan'
-) AS alt
-JOIN v_master m ON m.product_id = alt.alt_product_id
-WHERE m.vegan_status = 'no';
-
--- 6. Without diet filter, non-vegan products appear in results
-SELECT '6. no diet filter includes all diet statuses' AS check_name,
-       CASE WHEN (
-           SELECT COUNT(DISTINCT m.vegan_status)
-           FROM (
-               SELECT r.val->>'product_id' AS pid
-               FROM jsonb_array_elements(
-                   api_search_products('ch', '{"country":"PL"}'::jsonb, 1, 100)->'results'
-               ) r(val)
-           ) search_results
-           JOIN v_master m ON m.product_id = search_results.pid::bigint
-       ) >= 1
-       THEN 0 ELSE 1 END AS violations;
+INSERT INTO public.products(country,brand,product_name,category)
+SELECT 'PL',uid::text,'Qadiet '||label,'Dairy' FROM qa_context CROSS JOIN (VALUES('Unknown'),('Milk'),('Meat')) p(label);
+CREATE TEMP TABLE qa_ingredients AS WITH inserted AS (
+ INSERT INTO public.ingredient_ref(name_en,vegan,vegetarian)
+ SELECT uid::text||' Milk','no','yes' FROM qa_context UNION ALL SELECT uid::text||' Meat','no','no' FROM qa_context
+ RETURNING ingredient_id,name_en) SELECT * FROM inserted;
+INSERT INTO public.product_ingredient(product_id,ingredient_id,position)
+SELECT p.product_id,i.ingredient_id,1 FROM public.products p JOIN qa_context c ON p.brand=c.uid::text
+JOIN qa_ingredients i ON right(p.product_name,4)=right(i.name_en,4);
+UPDATE public.user_preferences SET diet_preference='vegan' WHERE user_id=(SELECT uid FROM qa_context);
+CREATE TEMP TABLE qa_vegan AS SELECT public.api_find_products((SELECT uid::text FROM qa_context)) b;
+SELECT '1. non-strict vegan excludes known non-vegan but does not certify unknowns' AS check_name, pg_temp.qa_ok((SELECT b->>'api_version'='2' AND b->>'total'='1' AND b->'results'->0->>'product_name'='Qadiet Unknown' AND b->'results'->0->'suitability'->>'vegan'='unknown' FROM qa_vegan)) AS violations;
+UPDATE public.user_preferences SET diet_preference='vegetarian' WHERE user_id=(SELECT uid FROM qa_context);
+CREATE TEMP TABLE qa_vegetarian AS SELECT public.api_find_products((SELECT uid::text FROM qa_context)) b;
+SELECT '2. vegetarian preference excludes known meat' AS check_name, pg_temp.qa_ok((SELECT b->>'api_version'='2' AND b->>'total'='2' AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(b->'results') p WHERE p->>'product_name'='Qadiet Meat') FROM qa_vegetarian)) AS violations;
+UPDATE public.user_preferences SET diet_preference='vegan',strict_diet=true WHERE user_id=(SELECT uid FROM qa_context);
+SELECT '3. strict vegan withholds all unknown suitability' AS check_name, pg_temp.qa_ok(public.api_find_products((SELECT uid::text FROM qa_context))->>'total'='0') AS violations;
+SELECT '4. retired diet category route requires refresh' AS check_name, pg_temp.qa_ok(pg_temp.qa_retired(public.api_category_listing('Dairy','score','asc',10,0,'PL','vegan'))) AS violations;
+SELECT '5. retired alternatives cannot advertise dietary suitability' AS check_name, pg_temp.qa_ok(pg_temp.qa_retired(public.api_better_alternatives(-1))) AS violations;
+UPDATE public.user_preferences SET diet_preference='none',strict_diet=false WHERE user_id=(SELECT uid FROM qa_context);
+SELECT '6. no dietary preference returns all three fixtures' AS check_name, pg_temp.qa_ok(public.api_find_products((SELECT uid::text FROM qa_context))->>'total'='3') AS violations;
+ROLLBACK;

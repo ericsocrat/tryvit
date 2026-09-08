@@ -10,28 +10,12 @@
   min-inline-size: 0;
   overflow: hidden;
   border: 1px solid var(--evidence-rule);
-  border-radius: 1rem 0.25rem 1rem 1rem;
+  border-radius: 1rem;
   background: color-mix(
     in srgb,
     var(--app-paper, var(--color-surface)) 97%,
     transparent
   );
-}
-
-.panel::before,
-.error::before {
-  position: absolute;
-  inset: 0 0 auto auto;
-  inline-size: 1.2rem;
-  aspect-ratio: 1;
-  background: linear-gradient(
-    225deg,
-    var(--shell-fold, #965032) 0 48%,
-    var(--evidence-rule) 49% 52%,
-    transparent 53%
-  );
-  content: "";
-  pointer-events: none;
 }
 
 .panel {
@@ -88,7 +72,7 @@
 
 .metricLabel {
   color: var(--color-foreground-muted);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: var(--ds-type-family-sans);
   font-size: 0.62rem;
   font-weight: 750;
   letter-spacing: 0.06em;
@@ -153,10 +137,5 @@
   .loading,
   .error {
     border-color: CanvasText;
-  }
-
-  .panel::before,
-  .error::before {
-    background: Highlight;
   }
 }

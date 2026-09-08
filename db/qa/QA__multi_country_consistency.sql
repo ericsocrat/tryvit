@@ -1,3 +1,5 @@
+-- C evidence-first semantics: load contracts/evidence_data.sql in this session.
+-- Historical mathematical range/equality checks remain operator audits, not consumer validity.
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- QA Suite: Multi-Country Consistency
 -- Validates scoring equivalence, data integrity, and cross-country parity
@@ -8,7 +10,7 @@
 -- ═══════════════════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 1. Cross-country scoring equivalence: same inputs → identical score
+-- 1. cross-country scoring equivalence (same inputs = same score)
 -- ═══════════════════════════════════════════════════════════════════════════════
 SELECT '1. cross-country scoring equivalence (same inputs = same score)' AS check_name,
        CASE WHEN (
@@ -29,7 +31,7 @@ SELECT '1. cross-country scoring equivalence (same inputs = same score)' AS chec
        THEN 0 ELSE 1 END AS violations;
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 2. Both active countries have products
+-- 2. every active country has at least one product
 -- ═══════════════════════════════════════════════════════════════════════════════
 SELECT '2. every active country has at least one product' AS check_name,
        COUNT(*) AS violations
@@ -42,21 +44,13 @@ WHERE cr.is_active = true
   );
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 3. Both active countries have scored products
+-- 3. all countries publish retired null current scores
 -- ═══════════════════════════════════════════════════════════════════════════════
-SELECT '3. every active country has scored products' AS check_name,
-       COUNT(*) AS violations
-FROM country_ref cr
-WHERE cr.is_active = true
-  AND NOT EXISTS (
-      SELECT 1 FROM products p
-      WHERE p.country = cr.country_code
-        AND p.is_deprecated IS NOT TRUE
-        AND p.unhealthiness_score IS NOT NULL
-  );
+SELECT '3. all countries publish retired null current scores' AS check_name, COUNT(*) AS violations
+FROM qa_score_violations;
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 4. Score range consistency: all scores in 1-100 for every country
+-- 4. all scores in valid 1-100 range per country
 -- ═══════════════════════════════════════════════════════════════════════════════
 SELECT '4. all scores in valid 1-100 range per country' AS check_name,
        COUNT(*) AS violations
@@ -67,20 +61,13 @@ WHERE p.is_deprecated IS NOT TRUE
   AND (p.unhealthiness_score < 1 OR p.unhealthiness_score > 100);
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 5. Nutrition FK integrity: every active product has nutrition_facts
+-- 5. all countries preserve explicit missing nutrition
 -- ═══════════════════════════════════════════════════════════════════════════════
-SELECT '5. every active product in every country has nutrition_facts' AS check_name,
-       COUNT(*) AS violations
-FROM products p
-JOIN country_ref cr ON cr.country_code = p.country AND cr.is_active = true
-WHERE p.is_deprecated IS NOT TRUE
-  AND NOT EXISTS (
-      SELECT 1 FROM nutrition_facts nf
-      WHERE nf.product_id = p.product_id
-  );
+SELECT '5. all countries preserve explicit missing nutrition' AS check_name, COUNT(*) AS violations
+FROM qa_legacy_missing_violations;
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 6. country_ref integrity: PL and DE both active
+-- 6. PL and DE both active in country_ref
 -- ═══════════════════════════════════════════════════════════════════════════════
 SELECT '6. PL and DE both active in country_ref' AS check_name,
        2 - COUNT(*) AS violations
@@ -89,7 +76,7 @@ WHERE country_code IN ('PL', 'DE')
   AND is_active = true;
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 7. No orphan products: all products reference active countries
+-- 7. no products with country not in active country_ref
 -- ═══════════════════════════════════════════════════════════════════════════════
 SELECT '7. no products with country not in active country_ref' AS check_name,
        COUNT(*) AS violations
@@ -102,7 +89,7 @@ WHERE p.is_deprecated IS NOT TRUE
   );
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 8. DE only in allowed categories (28 of 29 — all except Żabka)
+-- 8. DE products only in allowed categories
 -- ═══════════════════════════════════════════════════════════════════════════════
 SELECT '8. DE products only in allowed categories' AS check_name,
        COUNT(*) AS violations
@@ -120,21 +107,14 @@ WHERE p.country = 'DE'
   );
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 9. Data completeness parity: DE avg completeness within 30pts of PL
+-- 9. selected source market matches catalog country
 -- ═══════════════════════════════════════════════════════════════════════════════
-SELECT '9. DE avg completeness within 30pts of PL avg' AS check_name,
-       CASE WHEN ABS(
-           (SELECT AVG(data_completeness_pct) FROM products
-            WHERE country = 'PL' AND is_deprecated IS NOT TRUE
-              AND data_completeness_pct IS NOT NULL) -
-           (SELECT AVG(data_completeness_pct) FROM products
-            WHERE country = 'DE' AND is_deprecated IS NOT TRUE
-              AND data_completeness_pct IS NOT NULL)
-       ) <= 30
-       THEN 0 ELSE 1 END AS violations;
+SELECT '9. selected source market matches catalog country' AS check_name, COUNT(*) AS violations
+FROM public.product_source_records r JOIN public.products p ON p.product_id=r.product_id
+WHERE r.country IS DISTINCT FROM p.country;
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 10. Recomputed scores match stored scores for BOTH countries
+-- 10. recomputed scores match stored scores across all countries
 -- ═══════════════════════════════════════════════════════════════════════════════
 SELECT '10. recomputed scores match stored scores across all countries' AS check_name,
        COUNT(*) AS violations
@@ -163,7 +143,7 @@ WHERE p.is_deprecated IS NOT TRUE
   );
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 11. product_links: no links reference deprecated products (#352)
+-- 11. product_links: no deprecated product references
 -- ═══════════════════════════════════════════════════════════════════════════════
 SELECT '11. product_links: no deprecated product references' AS check_name,
        COUNT(*) AS violations
@@ -174,7 +154,7 @@ WHERE pa.is_deprecated = true OR pb.is_deprecated = true
    OR pa.product_id IS NULL OR pb.product_id IS NULL;
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 12. product_links: all link_type values are valid (#352)
+-- 12. product_links: all link_type values valid
 -- ═══════════════════════════════════════════════════════════════════════════════
 SELECT '12. product_links: all link_type values valid' AS check_name,
        COUNT(*) AS violations
@@ -182,7 +162,7 @@ FROM product_links pl
 WHERE pl.link_type NOT IN ('identical', 'equivalent', 'variant', 'related');
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 13. product_links: ordering constraint (product_id_a < product_id_b) (#352)
+-- 13. product_links: ordering constraint valid
 -- ═══════════════════════════════════════════════════════════════════════════════
 SELECT '13. product_links: ordering constraint valid' AS check_name,
        COUNT(*) AS violations
@@ -190,7 +170,7 @@ FROM product_links pl
 WHERE pl.product_id_a >= pl.product_id_b;
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 14. Cross-country links only link products in different countries (#605)
+-- 14. cross-country links connect different countries
 -- ═══════════════════════════════════════════════════════════════════════════════
 SELECT '14. cross-country links connect different countries' AS check_name,
        COUNT(*) AS violations
@@ -201,7 +181,7 @@ WHERE pa.country = pb.country
   AND pl.confidence IN ('ean_match', 'brand_match');
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 15. EAN-match links both share the same EAN (#605)
+-- 15. ean_match links share the same EAN
 -- ═══════════════════════════════════════════════════════════════════════════════
 SELECT '15. ean_match links share the same EAN' AS check_name,
        COUNT(*) AS violations
@@ -212,7 +192,7 @@ WHERE pl.confidence = 'ean_match'
   AND (pa.ean IS NULL OR pb.ean IS NULL OR pa.ean != pb.ean);
 
 -- ═══════════════════════════════════════════════════════════════════════════════
--- 16. auto_link function is idempotent (re-run creates 0 new links) (#605)
+-- 16. auto_link_cross_country_products is idempotent
 -- ═══════════════════════════════════════════════════════════════════════════════
 SELECT '16. auto_link_cross_country_products is idempotent' AS check_name,
        CASE WHEN (

@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 1,
+  "method": "retained-production-schema-and-catalog-restore-plus-migrations",
+  "migrationManifestSha256": "4b6a2808465617361c127e65fc824ad8aed51bf3a40e690a74843a3c11c80405",
+  "checkedAt": "2026-09-08T12:21:14.792Z",
+  "remoteReads": false,
+  "remoteWrites": false,
+  "privateProductionRowsExported": false,
+  "originalRecoveryReceiptModified": false,
+  "databaseAuthorityCheckedAt": "2026-09-08T06:17:19.622Z",
+  "result": "PASS",
+  "scope": "schema-and-catalog",
+  "checks": {
+    "schema": true,
+    "functions": true,
+    "grants": true,
+    "rls": true,
+    "roleAttributes": true,
+    "roleMemberships": true,
+    "extensionBootstrap": true,
+    "rowCounts": true,
+    "identityReferences": true,
+    "representativeValues": true,
+    "syntheticRoles": true
+  },
+  "receipt": null,
+  "integration": {
+    "result": "PASS",
+    "managedRole": {
+      "name": "postgres",
+      "super": false,
+      "bypassRls": true
+    },
+    "databasePrivileges": {
+      "acl": true,
+      "owner": true
+    },
+    "databaseAuthorityCheckedAt": "2026-09-08T06:17:19.622Z",
+    "migrations": [
+      {
+        "path": "supabase/migrations/20260905121451_score_interpretation_retirement.sql",
+        "result": "PASS"
+      },
+      {
+        "path": "supabase/migrations/20260905125804_evidence_first_home.sql",
+        "result": "PASS"
+      },
+      {
+        "path": "supabase/migrations/20260905130739_evidence_first_scan.sql",
+        "result": "PASS"
+      },
+      {
+        "path": "supabase/migrations/20260905133720_evidence_first_legacy_api_retirement.sql",
+        "result": "PASS"
+      },
+      {
+        "path": "supabase/migrations/20260908030935_evidence_first_classification_image_lineage.sql",
+        "result": "PASS"
+      },
+      {
+        "path": "supabase/migrations/20260908065059_evidence_profile_validator_bonus_types.sql",
+        "result": "PASS"
+      },
+      {
+        "path": "supabase/migrations/20260908085203_evidence_compute_score_registry_correction.sql",
+        "result": "PASS"
+      }
+    ],
+    "wholeDatabaseLint": {
+      "errors": [],
+      "method": "Supabase CLI v2.111.0 equivalent whole-user-schema lint",
+      "schemas": [
+        "evidence_private",
+        "extensions",
+        "public"
+      ],
+      "warningCount": 15,
+      "checkedFunctions": 161
+    },
+    "pgTapVersion": "1.2.0",
+    "tests": [
+      {
+        "path": "supabase/tests/score_interpretation_retirement.test.sql",
+        "sha256": "f5b80969e9d29b17e38853c2984507a8e5a732b317a22ed2e6cc659d69c888b5",
+        "executedSha256": "f5b80969e9d29b17e38853c2984507a8e5a732b317a22ed2e6cc659d69c888b5",
+        "fixtureAdaptations": [],
+        "result": "PASS",
+        "expected": 39,
+        "passed": 39,
+        "failedIndices": [],
+        "exactPlan": true,
+        "noSkippedAssertions": true,
+        "exactNumbering": true
+      },
+      {
+        "path": "supabase/tests/evidence_first_home.test.sql",
+        "sha256": "49670401ef0ca06c7f02dc6d8f6df4b852e8a81b7fbc3a291ca52b04c45e645e",
+        "executedSha256": "12e801d6c34d3322caeed648eb3c24aa70979241c8cf769f6d78f43f2657349a",
+        "fixtureAdaptations": [
+          "Fixed-value local-only Home corruption helper replaces superuser-only fixture setup; assertions remain managed-role"
+        ],
+        "result": "PASS",
+        "expected": 43,
+        "passed": 43,
+        "failedIndices": [],
+        "exactPlan": true,
+        "noSkippedAssertions": true,
+        "exactNumbering": true
+      },
+      {
+        "path": "supabase/tests/evidence_first_scan.test.sql",
+        "sha256": "0ac1cdba46e645d38eea730996ad950c0e6bd5820bb52c6bfa7b2583ad5c5dc4",
+        "executedSha256": "0ac1cdba46e645d38eea730996ad950c0e6bd5820bb52c6bfa7b2583ad5c5dc4",
+        "fixtureAdaptations": [],
+        "result": "PASS",
+        "expected": 29,
+        "passed": 29,
+        "failedIndices": [],
+        "exactPlan": true,
+        "noSkippedAssertions": true,
+        "exactNumbering": true
+      },
+      {
+        "path": "supabase/tests/evidence_first_legacy_api_retirement.test.sql",
+        "sha256": "3e16248c149465ffa15cb36c18897b320d3fb79a326ced9320214ef3a4c45528",
+        "executedSha256": "3e16248c149465ffa15cb36c18897b320d3fb79a326ced9320214ef3a4c45528",
+        "fixtureAdaptations": [],
+        "result": "PASS",
+        "expected": 127,
+        "passed": 127,
+        "failedIndices": [],
+        "exactPlan": true,
+        "noSkippedAssertions": true,
+        "exactNumbering": true
+      },
+      {
+        "path": "supabase/tests/evidence_classification_image_lineage.test.sql",
+        "sha256": "17e4bd47c8027fd60ce48b2a0e539eb13ce1f935b4582ccd7caa7522e0ae9c64",
+        "executedSha256": "17e4bd47c8027fd60ce48b2a0e539eb13ce1f935b4582ccd7caa7522e0ae9c64",
+        "fixtureAdaptations": [],
+        "result": "PASS",
+        "expected": 14,
+        "passed": 14,
+        "failedIndices": [],
+        "exactPlan": true,
+        "noSkippedAssertions": true,
+        "exactNumbering": true
+      },
+      {
+        "path": "supabase/tests/evidence_profile_validator.test.sql",
+        "sha256": "982346cbf4953ff3f118d8d7c62c1e7d7561bcbe59b9ee9896c1aaac933fad62",
+        "executedSha256": "982346cbf4953ff3f118d8d7c62c1e7d7561bcbe59b9ee9896c1aaac933fad62",
+        "fixtureAdaptations": [],
+        "result": "PASS",
+        "expected": 39,
+        "passed": 39,
+        "failedIndices": [],
+        "exactPlan": true,
+        "noSkippedAssertions": true,
+        "exactNumbering": true
+      },
+      {
+        "path": "supabase/tests/evidence_compute_score_registry.test.sql",
+        "sha256": "7636847249a00ac8a2b972b8619b80a4c003f07a55a0962d478bce3b6c96bcec",
+        "executedSha256": "7636847249a00ac8a2b972b8619b80a4c003f07a55a0962d478bce3b6c96bcec",
+        "fixtureAdaptations": [],
+        "result": "PASS",
+        "expected": 5,
+        "passed": 5,
+        "failedIndices": [],
+        "exactPlan": true,
+        "noSkippedAssertions": true,
+        "exactNumbering": true
+      }
+    ],
+    "recomputedCaches": [
+      "v_product_confidence",
+      "mv_ingredient_frequency",
+      "mv_product_similarity",
+      "mv_scoring_distribution",
+      "v_data_coverage_summary"
+    ],
+    "cacheDisposition": "Derived caches recomputed from scoped restored rows, not historical cache-byte restoration",
+    "expectedAssertions": 296,
+    "passedAssertions": 296
+  }
+}

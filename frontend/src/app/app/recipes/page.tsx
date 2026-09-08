@@ -92,7 +92,7 @@ export default function RecipesBrowsePage() {
   if (error) {
     return (
       <div className="py-12 text-center">
-        <p className="mb-3 text-sm text-error">{t("recipes.loadFailed")}</p>
+        <p className="mb-3 text-sm text-error" role="alert">{t("recipes.loadFailed")}</p>
         <Button onClick={handleRetry} size="sm">
           {t("common.retry")}
         </Button>

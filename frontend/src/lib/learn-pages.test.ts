@@ -159,7 +159,10 @@ describe("Topic pages use shared components", () => {
   const routeShell = readFileSync(join(componentsDir, "LearnRouteShell.tsx"), "utf-8");
 
   for (const topic of TOPICS) {
-    const page = readFileSync(join(appDir, topic, "page.tsx"), "utf-8");
+    const route = readFileSync(join(appDir, topic, "page.tsx"), "utf-8");
+    const page = route.includes("EvidenceLearnArticle")
+      ? readFileSync(join(componentsDir, "EvidenceLearnArticle.tsx"), "utf-8")
+      : route;
 
     it(`${topic} uses LearnRouteShell`, () => {
       expect(page).toContain("LearnRouteShell");
@@ -330,12 +333,13 @@ describe("Footer includes Learn link", () => {
 /* ────────────────────── Scientific accuracy ────────────────────── */
 
 describe("Content accuracy checks", () => {
-  it("mentions EFSA in additives content", () => {
-    expect(enJson.learn.additives.whatAreText).toContain("EFSA");
+  it("attributes substance assessment rather than inventing EFSA concern tiers", () => {
+    expect(enJson.evidenceLearn.additives.meaningText).toContain("EFSA");
+    expect(enJson.evidenceLearn.additives.limitsText).toContain("does not convert");
   });
 
-  it("mentions WHO in TryVit Score content", () => {
-    expect(enJson.learn.tryvitScore.factorSalt).toContain("WHO");
+  it("distinguishes dietary guidance from validation of the retired formula", () => {
+    expect(enJson.evidenceLearn.score.limitsText).toContain("does not validate");
   });
 
   it("lists all 14 EU allergens", () => {
@@ -344,10 +348,9 @@ describe("Content accuracy checks", () => {
     }
   });
 
-  it("unhealthiness score factors sum to ~100% weight", () => {
-    // Verify the documented weights are correct: 17+17+17+10+11+7+8+8+5 = 100
-    const weights = [17, 17, 17, 10, 11, 7, 8, 8, 5];
-    expect(weights.reduce((a, b) => a + b, 0)).toBe(100);
+  it("current consumer guidance no longer publishes formula weights as validation", () => {
+    expect(enJson.learn.tryvitScore).not.toHaveProperty("factorSalt");
+    expect(enJson.evidenceLearn.score.meaningText).toContain("no longer");
   });
 
   it("disclaimer does not make medical claims", () => {

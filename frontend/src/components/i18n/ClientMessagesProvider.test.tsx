@@ -69,8 +69,8 @@ describe("ClientMessagesProvider", () => {
   });
 
   it.each([
-    ["en", "Dashboard"],
-    ["pl", "Pulpit"],
+    ["en", "Home"],
+    ["pl", "Start"],
     ["de", "Einstellungen"],
   ] as const)("renders %s synchronously", (language, expected) => {
     const { result } = renderHook(() => useClientMessages(), {
@@ -91,7 +91,7 @@ describe("ClientMessagesProvider", () => {
       }),
     });
 
-    expect(result.current.t("nav.home")).toBe("Dashboard");
+    expect(result.current.t("nav.home")).toBe("Home");
   });
 
   it("lets the latest language request win when imports resolve out of order", async () => {
@@ -148,7 +148,7 @@ describe("ClientMessagesProvider", () => {
     await expect(polish).resolves.toBe(false);
     await expect(english).resolves.toBe(true);
     await waitFor(() => expect(result.current.language).toBe("en"));
-    expect(result.current.t("nav.home")).toBe("Dashboard");
+    expect(result.current.t("nav.home")).toBe("Home");
     expect(document.documentElement.lang).toBe("en");
   });
 
@@ -167,7 +167,7 @@ describe("ClientMessagesProvider", () => {
 
     expect(activated).toBe(false);
     expect(result.current.language).toBe("en");
-    expect(result.current.t("nav.home")).toBe("Dashboard");
+    expect(result.current.t("nav.home")).toBe("Home");
     expect(document.documentElement.lang).toBe("en");
   });
 
@@ -188,6 +188,6 @@ describe("ClientMessagesProvider", () => {
 
     showToast({ type: "success", messageKey: "nav.home" });
     const { toast } = await import("sonner");
-    expect(toast.success).toHaveBeenCalledWith("Pulpit", expect.any(Object));
+    expect(toast.success).toHaveBeenCalledWith("Start", expect.any(Object));
   });
 });

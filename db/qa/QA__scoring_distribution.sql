@@ -2,6 +2,10 @@
 -- QA Suite: Scoring Band Distribution Monitoring
 -- 12 checks — verifies scoring band health at scale
 -- Non-blocking (informational) — thresholds will be calibrated at 10K scale
+-- Historical diagnostics only: consumers no longer receive an overall score.
+-- Keep all 12 findings and their thresholds visible; they do not establish
+-- consumer evidence correctness. RUN_QA separately requires the executable
+-- consumer-retirement contract suites and treats execution errors as failures.
 -- Issue: #865
 -- ═══════════════════════════════════════════════════════════════════════════
 

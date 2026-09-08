@@ -1,12 +1,8 @@
 .page {
-  --app-canvas: color-mix(
-    in srgb,
-    var(--color-brand-subtle) 18%,
-    var(--color-surface-subtle)
-  );
+  --app-canvas: var(--color-surface-subtle);
   --app-paper: var(--color-surface);
   --app-rule: var(--color-border-strong);
-  --app-rust: #965032;
+  --app-rust: var(--color-brand);
 }
 
 .items {
@@ -30,7 +26,7 @@
 
 .error {
   border: 1px solid var(--color-error-border);
-  border-radius: 0.85rem 0.2rem 0.85rem 0.85rem;
+  border-radius: 0.85rem;
   padding: 0.8rem 1rem;
   color: var(--color-error-text);
   background: var(--color-error-bg);
@@ -62,7 +58,7 @@
   aspect-ratio: 1;
   place-items: center;
   border: 1px solid var(--app-rule);
-  border-radius: 0.75rem 0.2rem 0.75rem 0.75rem;
+  border-radius: 0.75rem;
   color: var(--color-foreground-secondary);
   background: var(--color-surface);
 }
@@ -75,7 +71,7 @@
 
 .pageIndicator {
   color: var(--color-foreground-secondary);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: var(--ds-type-family-sans);
   font-size: 0.7rem;
   font-weight: 700;
 }

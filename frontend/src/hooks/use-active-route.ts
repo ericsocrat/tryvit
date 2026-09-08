@@ -25,6 +25,7 @@ const PRIMARY_ROUTES = [
   { key: "achievements", prefix: "/app/achievements" },
   { key: "recipes", prefix: "/app/recipes" },
   { key: "image-search", prefix: "/app/image-search" },
+  { key: "learn", prefix: "/learn" },
 ] as const;
 
 export type PrimaryRouteKey =
@@ -46,7 +47,7 @@ export function useActiveRoute(): PrimaryRouteKey {
 
   return useMemo(() => {
     for (const route of PRIMARY_ROUTES) {
-      if (pathname.startsWith(route.prefix)) return route.key;
+      if (pathname === route.prefix || pathname.startsWith(`${route.prefix}/`)) return route.key;
     }
     if (pathname === "/app") return "home";
     return null;

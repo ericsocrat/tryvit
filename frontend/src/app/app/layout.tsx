@@ -91,7 +91,7 @@ export default async function AppLayout({
   const isAdmin = adminEmails.includes(user.email?.toLowerCase() ?? "");
 
   return (
-    <AuthenticatedProviders>
+    <AuthenticatedProviders key={user.id} userId={user.id}>
       <div className={styles.frame} data-design-system="v2">
         <div className="no-print">
           <OfflineIndicator />

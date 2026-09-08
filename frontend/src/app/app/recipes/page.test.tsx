@@ -303,10 +303,10 @@ describe("RecipesBrowsePage", () => {
     render(<RecipesBrowsePage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getAllByText("Dashboard").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("Home").length).toBeGreaterThanOrEqual(1);
     });
 
-    const homeLink = screen.getAllByText("Dashboard")[0].closest("a");
+    const homeLink = screen.getAllByText("Home")[0].closest("a");
     expect(homeLink).toHaveAttribute("href", "/app");
   });
 

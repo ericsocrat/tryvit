@@ -3,13 +3,22 @@ import test from 'node:test';
 import { publishRiskGate } from './await-risk-checks.mjs';
 
 const head = 'a'.repeat(40);
-const goodCheck = { name: 'Unit Tests', id: 1, head_sha: head, app: { slug: 'github-actions' }, status: 'completed', conclusion: 'success' };
-function fixture({ checks = [goodCheck], heads = [head], createHead = head } = {}) {
+const goodCheck = { name: 'Unit Tests', id: 1, head_sha: head, check_suite: { id: 1 }, app: { slug: 'github-actions' }, status: 'completed', conclusion: 'success' };
+const workflow = { id: 1, path: '.github/workflows/pr-gate.yml' };
+const execution = { id: 1, workflow_id: 1, path: workflow.path, head_sha: head, event: 'pull_request', run_number: 1, run_attempt: 1, check_suite_id: 1, status: 'completed', conclusion: 'success' };
+function fixture({ checks = [goodCheck], heads = [head], labels = [[]], createHead = head } = {}) {
   const calls = [];
   let headIndex = 0;
   const api = async (route, method = 'GET', body) => {
     calls.push({ route, method, body });
-    if (route === 'pulls/42') return { head: { sha: heads[Math.min(headIndex++, heads.length - 1)] } };
+    if (route === 'pulls/42') {
+      const index = headIndex++;
+      return { head: { sha: heads[Math.min(index, heads.length - 1)] }, labels: labels[Math.min(index, labels.length - 1)] };
+    }
+    if (route === 'actions/workflows/pr-gate.yml') return workflow;
+    if (route.startsWith('actions/runs?')) return { workflow_runs: [execution] };
+    if (route.includes('/jobs?')) return { jobs: [{ id: 1, name: 'Unit Tests', head_sha: head, run_id: 1, run_attempt: 1, status: 'completed', conclusion: 'success' }] };
+    if (route === 'actions/runs/1') return execution;
     if (route === 'check-runs' && method === 'POST') return { id: 99, head_sha: createHead };
     if (route.startsWith('commits/')) return { check_runs: checks };
     if (route === 'check-runs/99' && method === 'PATCH') return { id: 99 };
@@ -48,4 +57,13 @@ test('applicable failures and timeouts explicitly complete a failure check', asy
 test('unexpected create response cannot be certified as the requested head', async () => {
   const f = fixture({ createHead: 'b'.repeat(40) });
   await assert.rejects(publishRiskGate(f.options), /created-check-head-mismatch/u);
+});
+test('label revocation between collection and publication produces failure', async () => {
+  const f = fixture({ labels: [[{ name: 'phase5a0d-intentional-redesign-approved' }], [{ name: 'phase5a0d-intentional-redesign-approved' }], []] });
+  await assert.rejects(publishRiskGate(f.options), /pr-labels-changed/u);
+  assert.equal(f.calls.at(-1).body.conclusion, 'failure');
+});
+test('unrelated labels do not cancel the risk gate', async () => {
+  const f = fixture({ labels: [[], [{ name: 'size/L' }]] });
+  assert.equal((await publishRiskGate(f.options)).conclusion, 'success');
 });

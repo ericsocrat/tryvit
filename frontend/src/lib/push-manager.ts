@@ -80,6 +80,14 @@ export async function getCurrentPushSubscription(): Promise<PushSubscription | n
   }
 }
 
+/** Read only an existing registration: absence is null, failure remains failure. */
+export async function inspectCurrentPushSubscription(): Promise<PushSubscription | null> {
+  if (typeof navigator === "undefined" || !navigator.serviceWorker) return null;
+  // Unlike ready, getRegistration does not wait indefinitely for a new worker.
+  const registration = await navigator.serviceWorker.getRegistration();
+  return registration ? registration.pushManager.getSubscription() : null;
+}
+
 /**
  * Subscribe to push notifications.
  * Requires notification permission to be "granted".

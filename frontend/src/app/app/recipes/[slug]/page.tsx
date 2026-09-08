@@ -2,18 +2,17 @@
 
 // ─── Recipe detail page — full ingredients, steps, and metadata ─────────────
 // Issue #53 — Recipes v0
-// Issue #616 — Aggregate recipe score badge
 // Issue #705 — Share, filter chips, search
 
-import { Chip } from "@/components/common";
 import { Button } from "@/components/common/Button";
 import { Icon } from "@/components/common/Icon";
 import { RecipeGridSkeleton } from "@/components/common/skeletons";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
 import surface from "@/components/layout/CustomerSurface.module.css";
-import { IngredientProductList, RecipeScoreBadge } from "@/components/recipes";
-import { getRecipeDetail, getRecipeScore } from "@/lib/api";
+import { IngredientProductList } from "@/components/recipes/IngredientProductList";
+import { getRecipeDetail } from "@/lib/api";
+import { preparationAndCookingMinutes, recipeWaitingNote } from "@/lib/evidence/recipe-presentation";
 import { useTranslation } from "@/lib/i18n";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { createClient } from "@/lib/supabase/client";
@@ -47,17 +46,6 @@ export default function RecipeDetailPage() {
       return result.data;
     },
     staleTime: staleTimes.recipe,
-    enabled: Boolean(slug),
-  });
-
-  const { data: recipeScore } = useQuery({
-    queryKey: queryKeys.recipeScore(slug),
-    queryFn: async () => {
-      const result = await getRecipeScore(supabase, slug);
-      if (!result.ok) return null;
-      return result.data;
-    },
-    staleTime: staleTimes.recipeScore,
     enabled: Boolean(slug),
   });
 
@@ -102,7 +90,8 @@ export default function RecipeDetailPage() {
     );
   }
 
-  const totalTime = recipe.prep_time_min + recipe.cook_time_min;
+  const totalTime = preparationAndCookingMinutes(recipe.prep_time_min, recipe.cook_time_min);
+  const waitingNote = recipeWaitingNote(recipe.slug);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -173,7 +162,7 @@ export default function RecipeDetailPage() {
         </span>
         <span className="inline-flex items-center gap-1">
           <Icon icon={Clock} size="sm" />
-          {t("recipes.totalTime")}: {totalTime} {t("recipes.minutes")}
+          {t("evidenceActivity.prepAndCook")}: {totalTime == null ? t("common.unknown") : `${totalTime} ${t("recipes.minutes")}`}
         </span>
         <span
           className={`inline-flex items-center gap-1 font-medium ${DIFFICULTY_STYLE[recipe.difficulty] ?? ""}`}
@@ -187,19 +176,8 @@ export default function RecipeDetailPage() {
         </span>
       </div>
 
-      {/* ── Tags ───────────────────────────────────────────────────── */}
-      {recipe.tags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {recipe.tags.map((tag) => (
-            <Chip key={tag} variant="default">
-              {tag}
-            </Chip>
-          ))}
-        </div>
-      )}
-
-      {/* ── Recipe Score (#616) ────────────────────────────────────── */}
-      <RecipeScoreBadge score={recipeScore} showNutrition />
+      {waitingNote && <p className="text-sm text-foreground-secondary">{t(waitingNote)}</p>}
+      <p className="text-sm text-foreground-secondary">{t("evidenceActivity.recipeEvidence")}</p>
 
       {/* ── Ingredients ────────────────────────────────────────────── */}
       <section className={surface.panel}>
@@ -213,7 +191,7 @@ export default function RecipeDetailPage() {
               className="text-sm text-foreground"
             >
               <div className="flex items-start gap-2">
-                <span className="mt-0.5 h-4 w-4 shrink-0 rounded border border-border" />
+                <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-foreground-secondary" />
                 <span>
                   {t(ing.name_key)}
                   {ing.optional && (

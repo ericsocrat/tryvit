@@ -7,6 +7,15 @@ import test from 'node:test';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const workflow = (name) => readFileSync(path.join(root, '.github/workflows', name), 'utf8');
 
+test('consumer source merges cannot automatically promote the frontend before database readiness', () => {
+  // The verified Vercel Root Directory is frontend; a repository-root config
+  // would not establish this guard. Other branches keep normal preview behavior.
+  const config = JSON.parse(readFileSync(path.join(root, 'frontend/vercel.json'), 'utf8'));
+  assert.equal(config.git?.deploymentEnabled?.main, false);
+  assert.equal(typeof config.git.deploymentEnabled, 'object');
+  assert.ok(!Object.hasOwn(config, 'rootDirectory'), 'rootDirectory is a project setting, not supported JSON configuration');
+});
+
 test('database password selection chooses the secret name before resolving an empty value', () => {
   const source = workflow('database-deploy-reusable.yml');
   const expression = source.match(/^\s*SUPABASE_DB_PASSWORD:\s*(.+)$/mu)?.[1];
@@ -36,17 +45,38 @@ test('required Unit Tests is an always-run fail-closed aggregate of two shards',
 });
 test('risk gate always runs and prerequisite failure is explicit', () => {
   const source = workflow('change-risk.yml');
-  assert.match(source, /name: Publish exact-head risk verdict\s+needs: policy\s+if: \$\{\{ always\(\) \}\}/u);
+  assert.match(source, /name: Publish exact-head risk verdict\s+needs: policy\s+if: \$\{\{ always\(\) && needs.policy.result != 'skipped' \}\}/u);
   assert.match(source, /checks: write/u);
   assert.ok(!source.includes('name: Change Risk Gate\n'));
   assert.ok(!source.includes('paths:'));
   assert.match(source, /test "\$POLICY_RESULT" = success/u);
   assert.match(source, /pull_request_target:/u);
+  assert.match(source, /types: \[opened, synchronize, reopened, labeled, unlabeled\]/u);
+  assert.match(source, /actions: read/u);
   assert.equal((source.match(/ref: \$\{\{ github.event.pull_request.base.sha \}\}/gu) ?? []).length, 2);
   assert.ok(!source.includes('ref: ${{ github.event.pull_request.head.sha }}'));
   assert.ok(!source.includes('npm ci'));
   assert.ok(!source.includes('node --test'));
   assert.ok(workflow('pr-gate.yml').includes('name: CI Policy Tests'));
+});
+
+test('approval workflows use current API labels and recheck current authorization before success', () => {
+  for (const file of ['phase5a0d-intentional-redesign.yml', 'phase5a0d-renderer-attestation.yml']) {
+    const source = workflow(file);
+    assert.ok(!source.includes('toJSON(github.event.pull_request.labels'));
+    assert.ok(source.includes('node .github/scripts/current-pr-state.mjs capture'));
+    assert.ok(source.includes('node .github/scripts/current-pr-state.mjs verify'));
+    assert.ok(source.includes('ref: ${{ github.event.pull_request.base.sha }}'));
+    assert.ok(!source.includes('ref: ${{ github.event.pull_request.head.sha }}'));
+  }
+});
+test('unrelated label events revalidate approval jobs without cancelling relevant runs; risk publication ignores them', () => {
+  for (const file of ['change-risk.yml', 'phase5a0d-intentional-redesign.yml', 'phase5a0d-renderer-attestation.yml']) {
+    const source = workflow(file);
+    const labelFilter = "if: ${{ (github.event.action != 'labeled' && github.event.action != 'unlabeled') || github.event.label.name == 'phase5a0d-intentional-redesign-approved' || github.event.label.name == 'phase5a0d-renderer-attestation-approved' }}";
+    assert.equal(source.includes(labelFilter), file === 'change-risk.yml');
+    assert.ok(source.includes("&& 'applicable' || github.run_id }}"));
+  }
 });
 test('only one reusable database mutation boundary exists', () => {
   const active = workflow('database-deploy-reusable.yml');

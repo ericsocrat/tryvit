@@ -14,12 +14,18 @@ describe("DashboardWorkspace", () => {
     locale.value = language;
     render(<><DashboardHeader /><DashboardStart /><DashboardGuide /></>);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(translate(language, "dashboard.home.welcome"));
-    expect(screen.getByTestId("dashboard-search-cta")).toHaveAttribute("href", "/app/search");
+    const form = screen.getByRole("search");
+    expect(form).toHaveAttribute("action", "/app/search");
+    expect(form).toHaveAttribute("method", "get");
+    const input = screen.getByRole("searchbox", { name: translate(language, "dashboard.home.searchPrompt") });
+    expect(input).toHaveAttribute("name", "q");
+    expect(input).toBeRequired();
+    expect(screen.getByRole("button", { name: translate(language, "nav.search") })).toHaveAttribute("type", "submit");
+    if (language !== "en") expect(translate(language, "nav.search")).not.toBe(translate("en", "nav.search"));
     expect(screen.getByTestId("dashboard-scan-cta")).toHaveAttribute("href", "/app/scan");
     expect(screen.getByTestId("dashboard-browse-cta")).toHaveAttribute("href", "/app/categories");
     expect(screen.getByRole("link", { name: translate(language, "dashboard.home.preferences") })).toHaveAttribute("href", "/app/settings");
     for (const link of screen.getAllByRole("link")) expect(link).toHaveAttribute("data-prefetch", "false");
-    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
     expect(document.body).not.toHaveTextContent("dashboard.home.");
   });
 
@@ -29,9 +35,18 @@ describe("DashboardWorkspace", () => {
     expect(document.querySelector("script")).toBeNull();
   });
 
-  it("gives a score limitation and links to its explanation", () => {
+  it("links to evidence guidance instead of promoting a legacy aggregate", () => {
     render(<DashboardGuide />);
-    expect(screen.getByText(/do not establish suitability for your diet or allergies/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "How to read the score" })).toHaveAttribute("href", "/learn/tryvit-score");
+    expect(screen.getByRole("link", { name: translate("en", "dashboard.home.evidenceGuide") })).toHaveAttribute("href", "/learn/confidence");
+    expect(document.querySelector('a[href="/learn/tryvit-score"]')).toBeNull();
+  });
+
+  it.each(["en", "pl", "de"] as const)("first-use comparison guidance does not promote a retired score in %s", (language) => {
+    locale.value = language;
+    render(<DashboardGuide firstUse />);
+    const guidance = translate(language, "firstUse.compareDescription");
+    expect(screen.getByText(guidance)).toBeVisible();
+    expect(guidance).not.toMatch(/\b(score|wynik)\b/i);
+    expect(guidance).not.toBe("firstUse.compareDescription");
   });
 });
