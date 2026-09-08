@@ -29,9 +29,9 @@ SELECT is((SELECT body->'items'->0->>'notes' FROM collection_response),E'Keep th
 SELECT is((SELECT (body->'items'->0->>'added_at')::timestamptz FROM collection_response),'2025-01-01T12:00:00Z'::timestamptz,'membership timestamp is retained');
 SELECT is((SELECT body->'items'->0->'product'->'score'->'value' FROM collection_response),'null'::jsonb,'no saved universal score leaks');
 SELECT is(public.api_saved_list_read_model('dddddddd-3333-4333-8333-333333333333',1,1,'en')->'items'->0->'product'->>'product_name','Collection active','next page retains explicit saved order');
-SELECT is(public.api_get_list_items('dddddddd-3333-4333-8333-333333333333')->'items'->0->>'product_name','Collection archived','safe compatibility no longer hides archived membership');
-SELECT is(public.api_get_list_items('dddddddd-3333-4333-8333-333333333333')->'items'->0->'unhealthiness_score','null'::jsonb,'compatibility score is null, never synthesized');
-SELECT is(public.api_get_list_items('dddddddd-3333-4333-8333-333333333333')->'items'->0->'calories','null'::jsonb,'compatibility does not guess nutrition basis');
+SELECT is(public.api_get_list_items('dddddddd-3333-4333-8333-333333333333')->>'error','refresh_required','legacy list client must refresh before reading evidence');
+SELECT is(public.api_get_list_items('dddddddd-3333-4333-8333-333333333333')->>'status','refresh_required','retired list endpoint has no success disposition');
+SELECT ok(NOT(public.api_get_list_items('dddddddd-3333-4333-8333-333333333333') ? 'items'),'legacy export receives no nullable score-bearing rows');
 SELECT is(public.api_saved_list_read_model('dddddddd-3333-4333-8333-333333333333',101)->>'error','Invalid collection page','unbounded collection projection is rejected');
 SELECT is(public.api_saved_list_read_model('dddddddd-9999-4999-8999-999999999999')->>'error','List not found','missing list is not misreported as empty');
 SELECT set_config('request.jwt.claims','{"sub":"dddddddd-2222-4222-8222-222222222222","role":"authenticated"}',true);

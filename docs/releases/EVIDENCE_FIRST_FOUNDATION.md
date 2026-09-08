@@ -28,7 +28,7 @@ their fixture-only adaptations are recorded below.
 The ordered five-migration set is recorded in
 [`evidence-first-foundation.migrations.json`](evidence-first-foundation.migrations.json).
 The manifest has 967 LF bytes and SHA-256
-`a6348d90b3379336a9c1d2607e480221cc4aaa489ceeb043a3745c0e9a0104a9`.
+`7c93df9aeb1c8240b87111e507df58c3616b2766714575e190b0e683776c2cbc`.
 Its `schema-and-catalog` recovery scope does not claim to restore private user
 rows, history rows, managed Auth services, or storage objects.
 
@@ -51,6 +51,10 @@ rows, history rows, managed Auth services, or storage objects.
    NOVA filtering, country boundaries, and safe multilingual/punctuation handling.
 4. **Collections:** owner-authorized lists/watchlists consume the same fact model;
    existing IDs and saved references remain intact.
+   The legacy `api_get_list_items` reader returns `refresh_required` with no
+   `items` success envelope. Older list/export clients must not convert nullable
+   historical scores into an apparent maximum grade; v2 saved-list reads retain
+   ownership checks, pagination and recorded membership.
 5. **Public shares:** token-gated v2 readers replace direct shared-table
    enumeration. PUBLIC shared-row policies are removed for anonymous and
    authenticated nonowners; owner/service access is preserved. Public payloads
@@ -95,11 +99,13 @@ source-specific license is replaced by a project-wide notice.
   Together with the previously passed ingestion/read/search/collections suites,
   the foundation now has 222 assertions, including a new suggestion-reader
   regression pending fresh B reconstruction; this is not a fresh full-suite CI result.
-- September 8 fresh production-schema/catalog reconstruction: **222/222
+- September 8 final list-refresh production-schema/catalog reconstruction: **222/222
   assertions passed**, with all five migrations applied as the original managed
-  non-superuser role. Whole-user-schema lint checked 161 functions: zero errors,
+  non-superuser role at 03:40:00.463Z. Whole-user-schema lint checked 160 functions: zero errors,
   15 warnings. This is an isolated integration result, not production deployment.
-- Final-manifest scoped QA on the same restored baseline: **21/21 rollback
+  The count is one lower because the legacy list reader is now a SQL refresh
+  response instead of a PL/pgSQL compatibility function; lint selection is unchanged.
+- Earlier September 8 scoped QA on the same restored baseline: **21/21 rollback
   regression/mutation assertions and seven previously failing QA checks passed**.
   These verify exact invoker/token grants, service-only default-deny tables, and
   usable FK indexes, including negative cases. This is not the full 778-check
@@ -143,10 +149,10 @@ receipt binds the earlier manifest, not the final manifest above, and is outside
 the release validator's 24-hour operational window as of September 8. It cannot
 authorize deployment. A fresh genuine restore and newly generated sanitized
 receipt are required; do not rewrite this historical receipt's timestamp or hash.
-The separate [September 8 final-manifest receipt](evidence-first-foundation.recovery-20260908-024658.json)
+The separate [September 8 final-manifest receipt](evidence-first-foundation.recovery-20260908-034016.json)
 now supplies that evidence: actual schema capture at 01:51:12.652Z and restoration
-at 02:46:58.799Z, bound to the final manifest. The earlier September 8 receipt is
-retained unchanged and does not authorize this revised manifest. All eleven checks passed; the fresh
+at 03:40:16.408Z, bound to the final list-refresh manifest. The earlier September 8 receipts are
+retained unchanged and do not authorize this revised manifest. All eleven checks passed; the fresh
 catalog snapshot still contains 15 tables and 96,523 matching rows. Its current
 release-validator check passes. Recheck its 24-hour window at actual deployment.
 Private production rows were not exported. Backup,

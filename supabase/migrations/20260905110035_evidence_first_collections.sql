@@ -65,21 +65,14 @@ $$;
 REVOKE ALL ON FUNCTION public.api_watched_products_read_model(integer,integer,text) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.api_watched_products_read_model(integer,integer,text) TO authenticated,service_role;
 
--- Compatibility for list previews and older clients: no invalid scores/energy
--- joins, no hidden archived membership, and no numerical grade fallback.
+-- An old list/export client can coerce a null score into 100. Return a
+-- deterministic error, never a v1 success envelope with null numeric fields.
 CREATE OR REPLACE FUNCTION public.api_get_list_items(p_list_id uuid,p_limit integer DEFAULT 50,p_offset integer DEFAULT 0)
-RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER SET search_path = '' AS $$
-DECLARE v_result jsonb; v_items jsonb;
-BEGIN
-  v_result:=evidence_private.saved_list(p_list_id,p_limit,p_offset,NULL);
-  IF v_result ? 'error' THEN RETURN v_result; END IF;
-  SELECT COALESCE(jsonb_agg((i-'product') || jsonb_build_object(
-    'product_name',i->'product'->>'product_name','brand',i->'product'->>'brand','category',i->'product'->>'category',
-    'is_deprecated',i->'product'->'is_deprecated','unhealthiness_score',NULL,'nutri_score_label',NULL,
-    'nova_classification',NULL,'calories',NULL) ORDER BY n),'[]'::jsonb) INTO v_items
-  FROM jsonb_array_elements(v_result->'items') WITH ORDINALITY AS rows(i,n);
-  RETURN (v_result-'items')||jsonb_build_object('api_version','1.0','items',v_items);
-END $$;
+RETURNS jsonb LANGUAGE sql STABLE SECURITY INVOKER SET search_path = '' AS $$
+  SELECT jsonb_build_object('api_version','2','policy_version','evidence-first-v1',
+    'error','refresh_required','status','refresh_required',
+    'message','Refresh TryVit to use source-backed product evidence.');
+$$;
 REVOKE ALL ON FUNCTION public.api_get_list_items(uuid,integer,integer) FROM PUBLIC,anon;
 GRANT EXECUTE ON FUNCTION public.api_get_list_items(uuid,integer,integer) TO authenticated,service_role;
 COMMIT;

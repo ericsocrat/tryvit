@@ -16,7 +16,7 @@
     },
     {
       "path": "supabase/migrations/20260905110035_evidence_first_collections.sql",
-      "sha256": "1d88fa83bc55e7de03782357f8a6136ac76721381f93d920235a5a90068773f5"
+      "sha256": "8597f9bb7c7a13d33ca41c61fdbed8d336e8cfac321d36312625ceaabf00fef1"
     },
     {
       "path": "supabase/migrations/20260905120236_public_share_evidence_read.sql",
