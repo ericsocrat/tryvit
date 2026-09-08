@@ -4,11 +4,10 @@ This is the backend foundation slice of the approved rebuild. It does not promot
 the redesigned frontend, certify all catalog facts, or complete private-beta
 readiness. Apply and verify this schema before promoting its v2 consumers.
 
-**Draft release HOLD:** bounded forward repairs for inherited operator/function
-errors are included, but exact-head CI reconstruction and a fresh isolated
-recovery drill for the final manifest remain required. Do not merge or deploy
-this draft while these gates are pending. The September 5 recovery receipt is
-historical evidence: it is expired and binds an earlier manifest.
+**Draft release HOLD for exact-head CI:** bounded forward repairs and the fresh
+September 8 isolated recovery/integration drill pass for the final manifest.
+Do not merge or deploy until applicable CI and staging requirements pass.
+The September 5 recovery receipt remains historical evidence, not release authority.
 Initial managed-role fixture failures were resolved without skipping assertions;
 their fixture-only adaptations are recorded below.
 
@@ -79,6 +78,10 @@ source-specific license is replaced by a project-wide notice.
   Together with the previously passed ingestion/read/search/collections suites,
   the foundation now has 222 assertions, including a new suggestion-reader
   regression pending fresh B reconstruction; this is not a fresh full-suite CI result.
+- September 8 fresh production-schema/catalog reconstruction: **222/222
+  assertions passed**, with all five migrations applied as the original managed
+  non-superuser role. Whole-user-schema lint checked 161 functions: zero errors,
+  15 warnings. This is an isolated integration result, not production deployment.
 - CI/recovery/Sonar-scope contracts: **31 tests passed**.
 - September 8 release-validator/Sonar-scope rerun: **7 tests passed**.
 - Redacted tracked-source hygiene scan: **0 findings**.
@@ -109,7 +112,7 @@ mismatches are inherited and remain explicit; this slice changes no rendering.
 
 ## Deployment and recovery sequence
 
-The actual sanitized [recovery receipt](evidence-first-foundation.recovery.json)
+The historical [recovery receipt](evidence-first-foundation.recovery.json)
 records a successful isolated restore at **2026-09-05T13:56:38.812Z**. All eleven
 producer checks passed; the fifteen catalog tables contained 96,523 rows, and
 source/restored catalog and schema/function/grant/RLS fingerprints match. The
@@ -117,12 +120,17 @@ receipt binds the earlier manifest, not the final manifest above, and is outside
 the release validator's 24-hour operational window as of September 8. It cannot
 authorize deployment. A fresh genuine restore and newly generated sanitized
 receipt are required; do not rewrite this historical receipt's timestamp or hash.
+The separate [September 8 receipt](evidence-first-foundation.recovery-20260908.json)
+now supplies that evidence: actual schema capture at 01:51:12.652Z and restoration
+at 01:51:28.922Z, bound to the final manifest. All eleven checks passed; the fresh
+catalog snapshot still contains 15 tables and 96,523 matching rows. Its current
+release-validator check passes. Recheck its 24-hour window at actual deployment.
 Private production rows were not exported. Backup,
 encrypted archive, key and bootstrap supplement remain outside the repository.
 
 1. Keep the data/API PR in draft until exact-head CI and the fresh recovery drill
    pass. Then review and normally merge; do not promote the new frontend yet.
-2. Generate a new genuine schema-and-catalog receipt for the final manifest and
+2. Use the September 8 schema-and-catalog receipt for the final manifest and
    revalidate its freshness at deployment; repeat the restore if it expires or
    relevant inputs change.
 3. Retain only the sanitized receipt in Git, never backup data, keys, identities or
