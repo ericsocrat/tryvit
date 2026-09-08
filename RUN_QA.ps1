@@ -66,8 +66,8 @@
     Write JSON output to this file path (implies -Json).
 
 .PARAMETER FailOnWarn
-    Treat informational suite warnings (Source Coverage) as failures.
-    When set, any flagged items in Suite 3 cause a non-zero exit code.
+    Treat source warnings, diagnostic findings and unassessed inventories as failures.
+    When set, an overall warning causes a non-zero exit code.
 
 .NOTES
     Prerequisites:
@@ -199,8 +199,8 @@ $suiteCatalog = @(
     @{ Num = 43; Name = "Explain Analysis"; Short = "Explain"; Id = "explain_analysis"; Checks = 10; Blocking = $false; Kind = "sql"; File = "QA__explain_analysis.sql" },
     @{ Num = 44; Name = "MV Refresh Cost"; Short = "MVRefresh"; Id = "mv_refresh_cost"; Checks = 10; Blocking = $false; Kind = "sql"; File = "QA__mv_refresh_cost.sql" },
     @{ Num = 45; Name = "Governance Drift"; Short = "GovDrift"; Id = "governance_drift"; Checks = 8; Blocking = $true; Kind = "sql"; File = "QA__governance_drift.sql" },
-    @{ Num = 46; Name = "RLS Audit"; Short = "RLSAudit"; Id = "rls_audit"; Checks = 7; Blocking = $true; Kind = "sql"; File = "QA__rls_audit.sql" },
-    @{ Num = 47; Name = "Function Security Audit"; Short = "FuncSecAudit"; Id = "function_security_audit"; Checks = 6; Blocking = $true; Kind = "sql"; File = "QA__function_security_audit.sql" },
+    @{ Num = 46; Name = "RLS Audit"; Short = "RLSAudit"; Id = "rls_audit"; Checks = 7; Blocking = $false; Kind = "sql"; File = "QA__rls_audit.sql" },
+    @{ Num = 47; Name = "Function Security Audit"; Short = "FuncSecAudit"; Id = "function_security_audit"; Checks = 6; Blocking = $false; Kind = "sql"; File = "QA__function_security_audit.sql" },
     @{ Num = 48; Name = "Recipe Integrity"; Short = "RecipeInteg"; Id = "recipe_integrity"; Checks = 6; Blocking = $true; Kind = "sql"; File = "QA__recipe_integrity.sql" },
     @{ Num = 49; Name = "Scoring Band Distribution"; Short = "ScoringDist"; Id = "scoring_distribution"; Checks = 12; Blocking = $false; Kind = "sql"; File = "QA__scoring_distribution.sql" },
     @{ Num = 50; Name = "Allergen Evidence Semantics"; Short = "AllergenEvidence"; Id = "allergen_evidence_semantics"; Checks = 7; Blocking = $true; Kind = "sql"; File = "QA__allergen_evidence_semantics.sql" }
@@ -557,16 +557,20 @@ function Invoke-SqlQASuite {
         # Server-emitted result footers count actual inventory rows/queries.
         # Inventory output contains no pass/fail predicate and is never a PASS.
         $inventoryRows = @([regex]::Matches($lines, '\((\d+) rows?\)') | ForEach-Object { [int]$_.Groups[1].Value })
-        $account.status = if ($executionCode -eq 0) { 'unassessed' } else { 'error' }
+        $account.status = Get-QaInventoryStatus -SuiteId $SuiteId -ExitCode $executionCode -QueryRowCounts $inventoryRows
         $account.declared_checks = 0; $account.total_checks = 0; $account.executed_checks = 0
         $account.passed = 0; $account.failed = 0; $account.untested_checks = 0
         $expectedChecks = 0
     }
     $violationList = @(Get-FailedCheckLines -Text $lines)
+    if ($violationChecks.Count -gt 0) {
+        $violationList += @($lines -split "`n" | Where-Object { $violationChecks -contains (($_ -split '\|')[0].Trim()) })
+    }
     $script:jsonResult.suites += @{
         name=$Name; suite_id=$SuiteId; checks=$account.total_checks; declared_checks=$account.declared_checks
         expected_checks=$expectedChecks; failed_check_ids=$account.failed_check_ids
         inventory_only=$inventoryOnly; inventory_query_row_counts=$inventoryRows
+        inventory_output=$(if ($inventoryOnly) { $lines -replace "'(?:''|[^'])*'", "'[redacted literal]'" } else { $null })
         executed_inventory_queries=$inventoryRows.Count
         declared_inventory_queries=$(if ($inventoryOnly) { $Checks } else { 0 })
         executed_checks=$account.executed_checks; passed_checks=$account.passed; failed_checks=$account.failed
@@ -615,6 +619,9 @@ Write-Host ($invOutput | Out-String).Trim() -ForegroundColor DarkGray
 # ─── Summary ────────────────────────────────────────────────────────────────
 
 foreach ($result in $jsonResult.suites) {
+    $catalogEntry = $suiteCatalog | Where-Object { $_.Id -eq $result.suite_id } | Select-Object -First 1
+    $result.blocking = [bool]$catalogEntry.Blocking
+    $result.assessment_role = if ($result.inventory_only) { 'unassessed_inventory' } elseif ($result.suite_id -eq 'scoring_distribution') { 'historical_score_diagnostic' } elseif ($result.blocking) { 'release_gate' } else { 'diagnostic' }
     if ($result.status -in @('error','incomplete') -and -not $result.ContainsKey('untested_checks')) {
         $result.declared_checks=$result.checks; $result.executed_checks=0
         $result.passed_checks=0; $result.failed_checks=0; $result.untested_checks=$result.checks
@@ -626,6 +633,9 @@ $jsonResult.summary.untested = ($jsonResult.suites | ForEach-Object { if ($_.Con
 $jsonResult.summary.execution_errors = @($jsonResult.suites | Where-Object { $_.status -eq 'error' }).Count
 $jsonResult.summary.incomplete_suites = @($jsonResult.suites | Where-Object { $_.status -eq 'incomplete' }).Count
 $jsonResult.summary.unassessed_suites = @($jsonResult.suites | Where-Object { $_.status -eq 'unassessed' }).Count
+$jsonResult.summary.blocking_failed = ($jsonResult.suites | Where-Object { $_.blocking } | ForEach-Object { if ($_.ContainsKey('failed_checks')) { $_.failed_checks } elseif ($_.status -eq 'fail') { $_.checks } else { 0 } } | Measure-Object -Sum).Sum
+$jsonResult.summary.diagnostic_failed = ($jsonResult.suites | Where-Object { -not $_.blocking } | ForEach-Object { if ($_.ContainsKey('failed_checks')) { $_.failed_checks } else { 0 } } | Measure-Object -Sum).Sum
+$jsonResult.consumer_retirement = Get-QaConsumerRetirementAssessment -Suites $jsonResult.suites
 $jsonResult.summary.informational_checks = @($jsonResult.suites | Where-Object { $_.suite_id -eq 'source_coverage' -and $_.status -in @('pass','warn') } | ForEach-Object { $_.checks } | Measure-Object -Sum)[0].Sum
 $jsonResult.summary.total_checks = $jsonResult.summary.passed + $jsonResult.summary.failed + $jsonResult.summary.untested + $jsonResult.summary.informational_checks
 
@@ -636,9 +646,11 @@ foreach ($suite in $suiteCatalog | Where-Object { $_.Blocking }) {
         break
     }
 }
-$warnFail = $FailOnWarn -and $hasWarnings
-if ($jsonResult.summary.execution_errors -gt 0 -or $jsonResult.summary.incomplete_suites -gt 0 -or $jsonResult.summary.unassessed_suites -gt 0) { $allPass = $false }
-$jsonResult.overall = if (-not $allPass) { "fail" } elseif ($warnFail) { "warn" } else { "pass" }
+$hasDiagnosticWarnings = $hasWarnings -or $jsonResult.summary.diagnostic_failed -gt 0 -or $jsonResult.summary.unassessed_suites -gt 0
+$warnFail = $FailOnWarn -and $hasDiagnosticWarnings
+if ($jsonResult.summary.execution_errors -gt 0 -or $jsonResult.summary.incomplete_suites -gt 0) { $allPass = $false }
+if ($jsonResult.consumer_retirement.status -ne 'pass') { $allPass = $false }
+$jsonResult.overall = if (-not $allPass) { "fail" } elseif ($hasDiagnosticWarnings) { "warn" } else { "pass" }
 
 # Parse inventory into JSON-friendly structure
 if ($invOutput) {
@@ -678,7 +690,7 @@ Write-Host "================================================" -ForegroundColor C
 Write-Host "  Test Summary" -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 
-if ($allPass -and -not $warnFail) {
+if ($jsonResult.overall -eq 'pass') {
     Write-Host "  ✓ ALL TESTS PASSED ($($jsonResult.summary.passed)/$($jsonResult.summary.total_checks) checks)" -ForegroundColor Green
     Write-Host ""
     exit 0
@@ -687,8 +699,8 @@ else {
     if (-not $allPass) {
         Write-Host "  ✗ SOME TESTS FAILED" -ForegroundColor Red
     }
-    elseif ($warnFail) {
-        Write-Host "  ⚠ PASSED WITH WARNINGS (-FailOnWarn is set)" -ForegroundColor DarkYellow
+    else {
+        Write-Host "  ⚠ RELEASE CHECKS PASSED WITH DIAGNOSTICS / UNASSESSED INVENTORIES" -ForegroundColor DarkYellow
     }
     foreach ($suite in $suiteCatalog | Sort-Object Num) {
         $label = "Suite $($suite.Num) ($($suite.Short))".PadRight(28)
@@ -697,7 +709,8 @@ else {
             $statusColor = if ($hasWarnings) { "DarkYellow" } else { "Green" }
         }
         else {
-            $statusText = if ($suitePass[$suite.Num]) { '✓ PASS' } else { '✗ FAIL' }
+            $observedSuite = $jsonResult.suites | Where-Object { $_.suite_id -eq $suite.Id } | Select-Object -First 1
+            $statusText = "$($observedSuite.status) ($($observedSuite.assessment_role))"
             $statusColor = if ($suitePass[$suite.Num]) { "Green" } else { "Red" }
         }
         Write-Host "    $label $statusText" -ForegroundColor $statusColor

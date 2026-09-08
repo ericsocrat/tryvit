@@ -15,15 +15,28 @@
 name: Quality Gate
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/src/lib/rpc-contract*"
+      - "frontend/src/lib/rpc-contracts/**"
+      - "frontend/src/lib/evidence/retired-public-rpc.ts"
+      - "supabase/config.toml"
+      - "supabase/migrations/**"
+      - "db/**"
+      - "scripts/ci/local-rpc-contracts*"
+      - ".github/workflows/quality-gate.yml"
   pull_request:
     branches: [main, codex/phase-5a0d-performance-visual-gates]
     paths:
       - "frontend/**"
       - "supabase/config.toml"
       - "supabase/migrations/**"
+      - "db/**"
+      - "scripts/ci/local-rpc-contracts*"
       - ".github/workflows/quality-gate.yml"
   schedule:
-    - cron: "0 4 * * *" # Nightly at 04:00 UTC (staggered from nightly 02:00 + api-contract 03:30)
+    - cron: "0 4 * * *" # Nightly local candidate verification at 04:00 UTC
   workflow_dispatch:
     inputs:
       mode:
@@ -55,6 +68,8 @@ jobs:
   quality_gate:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      rpc_contracts: ${{ steps.rpc_contracts.outcome }}
     env:
       VISUAL_SAFETY_APP_ORIGIN: http://127.0.0.1:3000
 
@@ -100,7 +115,7 @@ jobs:
       - name: Determine mode
         id: mode
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
+          if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "push" ]; then
             echo "mode=smoke" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event.inputs.mode }}" != "" ]; then
             echo "mode=${{ github.event.inputs.mode }}" >> "$GITHUB_OUTPUT"
@@ -159,6 +174,16 @@ jobs:
           VISUAL_SAFETY_MODE: local-authenticated
           BASE_URL: http://127.0.0.1:3000
 
+      # Share this candidate's local API and migrations with browser coverage.
+      # Credentials are discovered and masked only after local readiness proof.
+      - name: Validate all 31 local RPC contracts
+        id: rpc_contracts
+        run: node --experimental-strip-types scripts/ci/local-rpc-contracts.mjs
+
+      - name: Verify health endpoint contract
+        working-directory: frontend
+        run: npx vitest run api/health
+
       - name: Seed guarded local QA fixtures
         id: local_fixture_seed
         working-directory: frontend
@@ -171,6 +196,7 @@ jobs:
             echo "::error::Guarded local fixture seeding did not return deterministic IDs"
             exit 1
           fi
+
           grep -E '^QA_[A-Z_]+=[A-Za-z0-9_-]+$' "$fixture_ids" >> "$GITHUB_ENV"
           rm -f -- "$fixture_ids"
           echo "seeded=true" >> "$GITHUB_OUTPUT"
@@ -297,3 +323,14 @@ jobs:
               -d "{\"text\": \"Quality Gate nightly FAILED — https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
               || true
           fi
+
+  rpc-contracts:
+    name: RPC Contract Validation
+    needs: quality_gate
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require executed local RPC validation
+        env:
+          RPC_RESULT: ${{ needs.quality_gate.outputs.rpc_contracts }}
+        run: test "$RPC_RESULT" = success

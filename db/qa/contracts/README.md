@@ -1,5 +1,27 @@
 # Evidence foundation QA contracts
 
+## Execution, diagnostics, and inventory evidence
+
+`RUN_QA.ps1` keeps executed, failed and untested counts separate. Every SQL
+execution error or incomplete suite blocks release, including diagnostic suites.
+`blocking_failed` and `diagnostic_failed` distinguish release assertions from
+historical observations; neither category is erased from the report.
+
+The twelve scoring-distribution queries remain unchanged historical diagnostics.
+Their old band proportions do not validate the withdrawn consumer score. Existing
+API, evidence, isolation, archive and security-posture suites form the explicit
+`consumer_retirement` assessment; each must execute completely and pass.
+
+Only `rls_audit` (seven queries) and `function_security_audit` (six queries) are
+reviewed inventories. Their SQL explicitly defers pass/fail assertions to
+`QA__security_posture.sql`. They remain `unassessed`, with per-query row counts
+and inventory output retained (quoted SQL literals redacted). A missing query,
+SQL error or arbitrary suite relabeling cannot pass. Successful inventory
+execution is not a completed manual security audit. Overall status stays `warn`
+when inventories remain unassessed or diagnostic findings exist; `-FailOnWarn`
+can make that warning fatal. The executable security posture contract remains
+blocking and loads `evidence_security.sql` in the same session.
+
 `RUN_QA.ps1` loads `evidence_security.sql` into each consuming session before
 security posture, scale guardrails, lists/comparisons and the two index suites.
 The objects are temporary and never installed by a production migration. When

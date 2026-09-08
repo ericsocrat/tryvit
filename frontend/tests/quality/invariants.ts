@@ -483,117 +483,25 @@ export async function checkProductInvariants(
   page: Page,
   route: string
 ): Promise<void> {
-  // The tab bar is hidden behind a "Show full analysis" toggle (progressive
-  // disclosure). If product fixtures are unavailable, the route may render an
-  // EmptyState instead of analysis controls; in that case skip product checks
-  // with a warning so quality audits continue on other routes.
-  //
-  // During tab cycling the spec calls checkProductInvariants multiple times
-  // on the same page.  On subsequent calls the analysis is already expanded,
-  // so clicking the toggle would *collapse* it.  Guard: only click if the
-  // tab bar is not yet visible.
-  const tabBarAlreadyVisible = await waitForTestId(page, "tab-bar", 1_000);
-  let tabBarLoaded = tabBarAlreadyVisible;
+  // 21 — A fixture-backed product must render the canonical evidence summary.
+  // Empty states and retired analysis controls are failures, never readiness fallbacks.
+  const summaryReady = await waitForTestId(page, "evidence-summary", 12_000);
+  expect(summaryReady, `Canonical evidence summary missing on ${route}`).toBe(true);
+  expect(await page.locator('[data-testid="evidence-summary"]').count()).toBe(1);
 
-  const hasProductReadyFallback = async (): Promise<boolean> => {
-    const scorePanel = await waitForTestId(page, "score-breakdown-panel", 1_500);
-    if (scorePanel) return true;
+  // 22 — Nutrition and source disclosure are required even when evidence is missing.
+  const nutrition = page.locator('section[aria-labelledby^="nutrition-"]');
+  await nutrition.waitFor({ state: "visible", timeout: 5_000 });
+  expect(await nutrition.count(), `Expected one nutrition evidence section on ${route}`).toBe(1);
+  const sourcesReady = await waitForTestId(page, "product-sources", 5_000);
+  expect(sourcesReady, `Source disclosure missing on ${route}`).toBe(true);
+  expect(await page.locator('[data-testid="product-sources"]').count()).toBe(1);
 
-    const warningsCard = await waitForTestId(page, "health-warnings-card", 1_500);
-    if (warningsCard) return true;
-
-    const alternativesCard = await waitForTestId(page, "better-alternatives-card", 1_500);
-    if (alternativesCard) return true;
-
-    return false;
-  };
-
-  if (!tabBarAlreadyVisible) {
-    const toggleLoaded = await waitForTestId(page, "toggle-analysis", 12_000);
-    if (!toggleLoaded) {
-      const fallbackReady = await hasProductReadyFallback();
-      if (fallbackReady) {
-
-        console.warn(
-          `[WARN] Product controls partially ready on ${route}: toggle-analysis missing, but analysis content markers are present`
-        );
-      }
-
-      const emptyStateLoaded = await waitForTestId(page, "empty-state", 1_000);
-      if (emptyStateLoaded) {
-
-        console.warn(
-          `[WARN] Skipping product invariants on ${route}: empty-state rendered instead of product analysis controls`
-        );
-        return;
-      }
-
-      if (fallbackReady) {
-        // Invariant 21 below validates tab bar presence if needed by the route;
-        // keep executing to collect deterministic failure context instead of
-        // failing early on a timing-sensitive toggle-only wait.
-        tabBarLoaded = await waitForTestId(page, "tab-bar", 3_000);
-      } else {
-        expect(
-          toggleLoaded,
-          `Analysis toggle did not appear on ${route} within 12 s and no fallback product-ready markers were found`
-        ).toBe(true);
-      }
-
-      if (fallbackReady) {
-        // Skip toggle interaction when fallback markers indicate analysis is
-        // already present or route is partially hydrated.
-        tabBarLoaded = tabBarLoaded || (await waitForTestId(page, "tab-bar", 3_000));
-      }
-
-      if (!toggleLoaded && fallbackReady) {
-        // Continue with existing checks to provide richer failure detail.
-      } else if (!toggleLoaded) {
-        // no-op, expect() above already failed with deterministic message
-      }
-    }
-
-    if (toggleLoaded) {
-      // Expand to full analysis so the tab bar becomes visible.
-      // Use JS-level click: async product-data loading causes continuous layout
-      // shifts that prevent Playwright from considering the button "stable".
-      const toggle = page.locator('[data-testid="toggle-analysis"]');
-      await toggle.scrollIntoViewIfNeeded();
-      await toggle.evaluate((el) => (el as HTMLElement).click());
-      tabBarLoaded = await waitForTestId(page, "tab-bar", 5_000);
-    }
-  }
-
-  // 21 — Exactly 1 tab bar
-  expect(
-    tabBarLoaded,
-    `Tab bar did not appear on ${route} after expanding full analysis`
-  ).toBe(true);
-  const tabBars = await page
-    .locator('[data-testid="tab-bar"], [role="tablist"]')
-    .count();
-  expect(
-    tabBars,
-    `Expected exactly 1 tab bar on ${route}, found ${tabBars}`
-  ).toBe(1);
-
-  // 22 — At most 1 score explanation section
-  const scoreExplanations = await page
-    .locator('[data-testid="score-breakdown-panel"]')
-    .count();
-  expect(
-    scoreExplanations,
-    `Expected ≤1 score explanation on ${route}, found ${scoreExplanations}`
-  ).toBeLessThanOrEqual(1);
-
-  // 23 — At most 1 health warnings section
-  const healthWarnings = await page
-    .locator('[data-testid="health-warnings-card"]')
-    .count();
-  expect(
-    healthWarnings,
-    `Expected ≤1 health warnings on ${route}, found ${healthWarnings}`
-  ).toBeLessThanOrEqual(1);
+  // 23 — Retired aggregate controls cannot satisfy or coexist with evidence readiness.
+  const retiredControls = await page.locator(
+    '[data-testid="toggle-analysis"], [data-testid="tab-bar"], [data-testid="score-breakdown-panel"], [data-testid="health-warnings-card"], [data-testid="better-alternatives-card"]'
+  ).count();
+  expect(retiredControls, `Retired product analysis controls rendered on ${route}`).toBe(0);
 
   // 24 — No pluralization bugs ("1 ingredients", "1 alternatives")
   const bodyText = await getVisibleBodyText(page);
@@ -605,7 +513,7 @@ export async function checkProductInvariants(
     `Pluralization bug on ${route}: ${matches.join(", ")}`
   ).toHaveLength(0);
 
-  // 25 — No duplicate H2 headers in visible tab content
+  // 25 — No duplicate H2 headers in visible evidence content
   const visibleH2s = await page.locator("h2:visible").allTextContents();
   const uniqueH2s = new Set(visibleH2s.map((h) => h.trim().toLowerCase()));
   expect(
@@ -627,8 +535,8 @@ export async function checkProductInvariants(
     );
   }
 
-  // 27 — Tab navigation does not create duplicate parent sections
-  // (verified by recounting tab-bar after tab switch; handled by audit runner)
+  // 27 — Keyboard source disclosure preserves the same unique evidence sections
+  // (the audit runner opens sources and repeats these checks before closing them).
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

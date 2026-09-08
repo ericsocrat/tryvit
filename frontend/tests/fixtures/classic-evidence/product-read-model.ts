@@ -1,8 +1,7 @@
-import * as z from "zod/mini";
+import { z } from "zod";
 
 /** Facts and their lineage, not a health ranking or probability of correctness. */
-import { EVIDENCE_POLICY_VERSION } from "./policy";
-export { EVIDENCE_POLICY_VERSION } from "./policy";
+export const EVIDENCE_POLICY_VERSION = "evidence-first-v1" as const;
 export const NUTRIENT_KEYS = [
   "calories", "total_fat_g", "saturated_fat_g", "trans_fat_g", "carbs_g",
   "sugars_g", "fibre_g", "protein_g", "salt_g",
@@ -10,58 +9,54 @@ export const NUTRIENT_KEYS = [
 export type NutrientKey = (typeof NUTRIENT_KEYS)[number];
 
 const State = z.enum(["recorded", "unverified", "missing", "invalid", "conflicting"]);
-const Decimal = z.string().check(z.maxLength(256)).check(z.regex(/^\d+(?:\.\d+)?$/));
-const SourceId = z.uuid();
-const SourceUrl = z.url().check(z.refine((value) => {
-  try {
-    const url = new URL(value);
-    return url.protocol === "https:" && !url.username && !url.password;
-  } catch {
-    return false;
-  }
-}, "Evidence URLs must be credential-free HTTPS"));
+const Decimal = z.string().max(256).regex(/^\d+(?:\.\d+)?$/);
+const SourceId = z.string().uuid();
+const SourceUrl = z.url().refine((value) => {
+  const url = new URL(value);
+  return url.protocol === "https:" && !url.username && !url.password;
+}, "Evidence URLs must be credential-free HTTPS");
 
 export const NutrientObservationSchema = z.object({
-  value: z.nullable(Decimal),
+  value: Decimal.nullable(),
   unit: z.enum(["g", "kcal", "kJ"]),
   basis: z.enum(["per_100g", "per_100ml", "per_serving", "unknown"]),
   preparation_state: z.enum(["as_sold", "prepared", "unknown"]),
   state: State,
-  qualifier: z.nullable(z.enum(["eq", "lt", "lte", "gt", "gte", "approx"])),
-  observation_id: z.nullable(SourceId),
-}).check(z.superRefine((field, ctx) => {
+  qualifier: z.enum(["eq", "lt", "lte", "gt", "gte", "approx"]).nullable(),
+  observation_id: SourceId.nullable(),
+}).superRefine((field, ctx) => {
   if (field.state === "recorded" && (field.value === null || field.observation_id === null)) {
     ctx.addIssue({ code: "custom", message: "Recorded nutrition requires a value and source observation" });
   }
   if (["missing", "invalid", "conflicting"].includes(field.state) && field.value !== null) {
     ctx.addIssue({ code: "custom", message: "Unresolved nutrition cannot publish a selected value" });
   }
-}));
+});
 export type NutrientObservation = z.infer<typeof NutrientObservationSchema>;
 
 const AssertionSchema = z.object({
-  name: z.string().check(z.minLength(1)),
+  name: z.string().min(1),
   state: z.enum(["recorded", "unverified"]),
-  observation_id: z.nullable(SourceId),
-}).check(z.refine((item) => item.state !== "recorded" || item.observation_id !== null, "Recorded assertions require a source observation"));
+  observation_id: SourceId.nullable(),
+}).refine((item) => item.state !== "recorded" || item.observation_id !== null, "Recorded assertions require a source observation");
 
 export const ProductReadModelSchema = z.object({
-  product_id: z.int().check(z.positive()),
-  product_name: z.string().check(z.minLength(1)),
-  product_name_original: z.string().check(z.minLength(1)),
+  product_id: z.number().int().positive(),
+  product_name: z.string().min(1),
+  product_name_original: z.string().min(1),
   brand: z.string(),
-  country: z.string().check(z.length(2)),
+  country: z.string().length(2),
   category: z.string(),
-  ean: z.nullable(z.string()),
+  ean: z.string().nullable(),
   is_deprecated: z.boolean(),
-  image: z.nullable(z.object({ url: SourceUrl, source: z.string(), alt: z.string(), state: z.enum(["recorded", "unverified"]), observation_id: z.nullable(SourceId), source_key: z.nullable(z.string()) })),
+  image: z.object({ url: SourceUrl, source: z.string(), alt: z.string(), state: z.enum(["recorded", "unverified"]), observation_id: SourceId.nullable(), source_key: z.string().nullable() }).nullable(),
   nutrition: z.object(Object.fromEntries(NUTRIENT_KEYS.map((key) => [key, NutrientObservationSchema])) as Record<NutrientKey, typeof NutrientObservationSchema>),
   ingredients: z.object({ state: State, items: z.array(AssertionSchema) }),
   allergens: z.object({ state: State, contains: z.array(AssertionSchema), traces: z.array(AssertionSchema) }),
   suitability: z.object({ vegan: z.enum(["no", "unknown"]), vegetarian: z.enum(["no", "unknown"]) }),
   classifications: z.object({
-    nutri_score: z.object({ value: z.nullable(z.enum(["A", "B", "C", "D", "E"])), source: z.nullable(z.string()), version: z.nullable(z.string()), observation_id: z.nullable(SourceId) }),
-    nova: z.object({ value: z.nullable(z.enum(["1", "2", "3", "4"])), source: z.nullable(z.string()), observation_id: z.nullable(SourceId) }),
+    nutri_score: z.object({ value: z.enum(["A", "B", "C", "D", "E"]).nullable(), source: z.string().nullable(), version: z.string().nullable(), observation_id: SourceId.nullable() }),
+    nova: z.object({ value: z.enum(["1", "2", "3", "4"]).nullable(), source: z.string().nullable(), observation_id: SourceId.nullable() }),
   }),
   sources: z.array(z.object({
     observation_id: SourceId,
@@ -69,21 +64,21 @@ export const ProductReadModelSchema = z.object({
     source_url: SourceUrl,
     license: z.string(),
     retrieved_at: z.iso.datetime({ offset: true }),
-    source_updated_at: z.nullable(z.iso.datetime({ offset: true })),
+    source_updated_at: z.iso.datetime({ offset: true }).nullable(),
   })),
   evidence: z.object({
     state: z.enum(["recorded", "legacy_unverified", "conflicting"]),
-    recorded_fields: z.int().check(z.minimum(0)).check(z.maximum(9)),
+    recorded_fields: z.number().int().min(0).max(9),
     total_fields: z.literal(9),
     reasons: z.array(z.string()),
   }),
   score: z.object({
     status: z.literal("retired"),
     value: z.null(),
-    model_version: z.nullable(z.string()),
+    model_version: z.string().nullable(),
     reason: z.literal("unsupported_aggregate"),
   }),
-}).check(z.superRefine((product, ctx) => {
+}).superRefine((product, ctx) => {
   const sources = new Set(product.sources.map((source) => source.observation_id));
   if (sources.size !== product.sources.length) {
     ctx.addIssue({ code: "custom", message: "Source observations must be unique" });
@@ -120,13 +115,13 @@ export const ProductReadModelSchema = z.object({
       ctx.addIssue({ code: "custom", message: "Source update cannot follow its retrieval" });
     }
   }
-}));
+});
 
 export const ProductReadEnvelopeSchema = z.object({
   api_version: z.literal("2"),
   policy_version: z.literal(EVIDENCE_POLICY_VERSION),
   products: z.array(ProductReadModelSchema),
-  missing_ids: z.array(z.int().check(z.positive())),
+  missing_ids: z.array(z.number().int().positive()),
 });
 export type ProductReadModel = z.infer<typeof ProductReadModelSchema>;
 export type ProductReadEnvelope = z.infer<typeof ProductReadEnvelopeSchema>;

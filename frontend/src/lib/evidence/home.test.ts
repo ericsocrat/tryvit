@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it, vi } from "vitest";
-import { HomeReadModelSchema, getHomeReadModel, homeQueryKey } from "./home";
+import { getHomeReadModel, homeQueryKey } from "./home";
+import { HomeReadModelSchema } from "./home-schema";
 import { homeFixture } from "./home.fixtures";
 import { findPreferencesFixture } from "./search.fixtures";
 import { queryKeys } from "@/lib/query-keys";

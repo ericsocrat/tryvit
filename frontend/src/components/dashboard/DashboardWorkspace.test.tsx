@@ -20,7 +20,8 @@ describe("DashboardWorkspace", () => {
     const input = screen.getByRole("searchbox", { name: translate(language, "dashboard.home.searchPrompt") });
     expect(input).toHaveAttribute("name", "q");
     expect(input).toBeRequired();
-    expect(screen.getByRole("button", { name: translate(language, "common.search") })).toHaveAttribute("type", "submit");
+    expect(screen.getByRole("button", { name: translate(language, "nav.search") })).toHaveAttribute("type", "submit");
+    if (language !== "en") expect(translate(language, "nav.search")).not.toBe(translate("en", "nav.search"));
     expect(screen.getByTestId("dashboard-scan-cta")).toHaveAttribute("href", "/app/scan");
     expect(screen.getByTestId("dashboard-browse-cta")).toHaveAttribute("href", "/app/categories");
     expect(screen.getByRole("link", { name: translate(language, "dashboard.home.preferences") })).toHaveAttribute("href", "/app/settings");

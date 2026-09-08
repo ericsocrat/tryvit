@@ -1,23 +1,23 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import * as z from "zod/mini";
+import { z } from "zod";
 import { ALLERGEN_TAGS } from "@/lib/constants";
 import type { UserPreferences } from "@/lib/types";
 import { callValidatedRpc } from "@/lib/rpc";
 import { EVIDENCE_POLICY_VERSION, ProductReadModelSchema } from "./product-read-model";
 
-const Values = z.array(z.string().check(z.minLength(1)).check(z.maxLength(100))).check(z.maxLength(30));
-export const FindFiltersSchema = z.strictObject({
-  category: z.optional(Values), nova_group: z.optional(z.array(z.enum(["1", "2", "3", "4"])).check(z.maxLength(4))),
-  allergen_free: z.optional(Values.check(z.refine((values) => values.every((value) => ALLERGEN_TAGS.some((tag) => tag.tag === value))))),
-  country: z.optional(z.enum(["PL", "DE"])), sort_by: z.optional(z.enum(["relevance", "name"])), sort_order: z.optional(z.enum(["asc", "desc"])),
-});
+const Values = z.array(z.string().min(1).max(100)).max(30);
+export const FindFiltersSchema = z.object({
+  category: Values.optional(), nova_group: z.array(z.enum(["1", "2", "3", "4"])).max(4).optional(),
+  allergen_free: Values.refine((values) => values.every((value) => ALLERGEN_TAGS.some((tag) => tag.tag === value))).optional(),
+  country: z.enum(["PL", "DE"]).optional(), sort_by: z.enum(["relevance", "name"]).optional(), sort_order: z.enum(["asc", "desc"]).optional(),
+}).strict();
 export type FindFilters = z.infer<typeof FindFiltersSchema>;
 export interface FindRequest { q: string; filters: FindFilters; page: number; showAvoided: boolean; }
 export type FindProblem = "unsupported_filters" | "invalid_filters" | "invalid_query" | "invalid_page";
 export const FindEnvelopeSchema = z.object({
-  api_version: z.literal("2"), policy_version: z.literal(EVIDENCE_POLICY_VERSION), query: z.nullable(z.string()),
+  api_version: z.literal("2"), policy_version: z.literal(EVIDENCE_POLICY_VERSION), query: z.string().nullable(),
   country: z.enum(["PL", "DE"]), language: z.enum(["en", "pl", "de"]),
-  total: z.int().check(z.nonnegative()), page: z.int().check(z.positive()), pages: z.int().check(z.positive()), page_size: z.int().check(z.minimum(1)).check(z.maximum(50)),
+  total: z.number().int().nonnegative(), page: z.number().int().positive(), pages: z.number().int().positive(), page_size: z.number().int().min(1).max(50),
   filters_applied: FindFiltersSchema, preferences_applied: z.boolean(), results: z.array(ProductReadModelSchema),
 });
 export type FindEnvelope = z.infer<typeof FindEnvelopeSchema>;
@@ -96,7 +96,7 @@ export function findProducts(client: SupabaseClient, request: FindRequest, langu
   });
 }
 
-const FilterOptionsSchema = z.object({ api_version: z.literal("2"), country: z.enum(["PL", "DE"]), language: z.enum(["en", "pl", "de"]), categories: z.array(z.object({ value: z.string(), label: z.string(), slug: z.string().check(z.minLength(1)) })) });
+const FilterOptionsSchema = z.object({ api_version: z.literal("2"), country: z.enum(["PL", "DE"]), language: z.enum(["en", "pl", "de"]), categories: z.array(z.object({ value: z.string(), label: z.string(), slug: z.string().min(1) })) });
 export function findFilterOptions(client: SupabaseClient, country: string | null, language: string) {
   return callValidatedRpc(client, "api_find_filter_options", FilterOptionsSchema, { p_country: country, p_language: language });
 }

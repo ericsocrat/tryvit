@@ -16,6 +16,18 @@
 
 ## Quick Navigation
 
+### Evidence-first rebuild (2026-09)
+
+- [Product and data policy](EVIDENCE_DATA_POLICY.md)
+- [Implementation and acceptance ledger](implementation/EVIDENCE_FIRST_REBUILD.md)
+- [Consumer release preparation](releases/EVIDENCE_FIRST_CONSUMER.md)
+- [Ordered database/frontend promotion](releases/CONSUMER_PROMOTION.md)
+- [Foundation sequencing incident and remediation](releases/FOUNDATION_DEPLOYMENT_INCIDENT_20260908.md)
+- [Preview environment isolation](releases/PREVIEW_ISOLATION.md)
+
+Implementation, candidate approval, deployment and production verification remain
+separate states; consult the release record before treating this work as shipped.
+
 | Domain                                                   | Count | Documents                                                                                                                                                                                                                                                                             |
 | -------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Architecture & Design](#architecture--design)           | 8     | Governance blueprint, domain boundaries, feature flags, scoring engine, search architecture, CI proposal, health-goal personalization                                                                                                                                                 |

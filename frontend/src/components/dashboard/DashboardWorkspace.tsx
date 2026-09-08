@@ -33,7 +33,7 @@ export function DashboardStart({ firstUse = false }: Readonly<{ firstUse?: boole
           <Search size={20} strokeWidth={1.75} aria-hidden="true" />
           <label className="sr-only" htmlFor="dashboard-product-query">{t("dashboard.home.searchPrompt")}</label>
           <input id="dashboard-product-query" name="q" type="search" required maxLength={200} placeholder={t("dashboard.home.searchPrompt")} autoComplete="off" />
-          <button type="submit" aria-label={t("common.search")}><ArrowRight size={20} aria-hidden="true" /></button>
+          <button type="submit" aria-label={t("nav.search")}><ArrowRight size={20} aria-hidden="true" /></button>
         </form>
         <Link href="/app/categories" prefetch={false} className={styles.browseEntry} data-testid={firstUse ? "new-user-browse-cta" : "dashboard-browse-cta"}>
           {t("dashboard.newUserBrowseTitle")} <ArrowRight size={16} aria-hidden="true" />

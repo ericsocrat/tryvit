@@ -19,3 +19,27 @@ Assert-Counts (Get-QaCheckAccounting -Text "4. retained | 0" -DeclaredChecks 4 -
 Assert-Counts (Get-QaCheckAccounting -Text 'BROKEN|fixture' -DeclaredChecks 2 -ExitCode 0 -ViolationChecks @('BROKEN','MISSING')) 1 1 0 'fail'; $cases++
 Assert-Counts (Get-QaCheckAccounting -Text 'BROKEN|fixture' -DeclaredChecks 2 -ExitCode 3 -ViolationChecks @('BROKEN','MISSING')) 0 1 1 'error'; $cases++
 Write-Output "PASS: $cases QA accounting checks"
+
+$required = (Get-QaConsumerRetirementAssessment -Suites @()).required_suites
+$complete = @($required | ForEach-Object { @{ suite_id=$_; status='pass'; executed_checks=1; untested_checks=0 } })
+if ((Get-QaConsumerRetirementAssessment -Suites $complete).status -ne 'pass') { throw 'RETIREMENT_COMPLETE_REJECTED' }
+foreach ($status in @('fail','error','incomplete','unassessed','warn')) {
+    $mutated = @($complete | ForEach-Object { $_.Clone() })
+    $mutated[0].status = $status
+    if ((Get-QaConsumerRetirementAssessment -Suites $mutated).status -ne 'unproven') { throw 'RETIREMENT_NONPASS_ACCEPTED' }
+}
+if ((Get-QaConsumerRetirementAssessment -Suites $complete[1..($complete.Count-1)]).status -ne 'unproven') { throw 'RETIREMENT_MISSING_ACCEPTED' }
+if ((Get-QaConsumerRetirementAssessment -Suites ($complete + $complete[0])).status -ne 'unproven') { throw 'RETIREMENT_DUPLICATE_ACCEPTED' }
+$complete[0].executed_checks = 0
+if ((Get-QaConsumerRetirementAssessment -Suites $complete).status -ne 'unproven') { throw 'RETIREMENT_ZERO_EXECUTION_ACCEPTED' }
+Write-Output 'PASS: 9 consumer retirement assessment checks'
+
+if ((Get-QaInventoryStatus -SuiteId 'rls_audit' -ExitCode 0 -QueryRowCounts @(1,0,2,0,1,1,1)) -ne 'unassessed') { throw 'INVENTORY_MISCLASSIFIED' }
+if ((Get-QaInventoryStatus -SuiteId 'function_security_audit' -ExitCode 0 -QueryRowCounts @(1,1,1,1,1,1)) -ne 'unassessed') { throw 'INVENTORY_MISCLASSIFIED' }
+if ((Get-QaInventoryStatus -SuiteId 'rls_audit' -ExitCode 0 -QueryRowCounts @(1,1,1,1,1,1)) -ne 'incomplete') { throw 'MISSING_QUERY_ACCEPTED' }
+if ((Get-QaInventoryStatus -SuiteId 'rls_audit' -ExitCode 3 -QueryRowCounts @(1,1,1,1,1,1,1)) -ne 'error') { throw 'INVENTORY_ERROR_ACCEPTED' }
+try { Get-QaInventoryStatus -SuiteId 'security_posture' -ExitCode 0 -QueryRowCounts @(); throw 'ARBITRARY_INVENTORY_ACCEPTED' } catch { if ($_.Exception.Message -ne 'QA_UNREVIEWED_INVENTORY_SUITE') { throw } }
+$securityFailure = @($required | ForEach-Object { @{ suite_id=$_; status='pass'; executed_checks=1; untested_checks=0 } })
+($securityFailure | Where-Object suite_id -eq 'security_posture').status = 'fail'
+if ((Get-QaConsumerRetirementAssessment -Suites $securityFailure).status -ne 'unproven') { throw 'SECURITY_FAILURE_ACCEPTED' }
+Write-Output 'PASS: 6 inventory/security boundary checks'

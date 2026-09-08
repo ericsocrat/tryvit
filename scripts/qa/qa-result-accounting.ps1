@@ -43,3 +43,25 @@ function Get-QaCheckAccounting {
         failed_check_ids = @($observed.Keys | Where-Object { $observed[$_] })
     }
 }
+
+function Get-QaConsumerRetirementAssessment {
+    param([object[]]$Suites)
+    # These existing executable suites cover retired payloads, canonical evidence,
+    # country/filter isolation, and owner-only historical archive behavior.
+    $required = @('api','api_contract','views','country_isolation','diet_filtering','allergen_filtering','barcode_lookup','allergen_evidence_semantics','health_profiles','scanner_submissions','security_posture')
+    $unproven = @()
+    foreach ($id in $required) {
+        $matches = @($Suites | Where-Object { $_.suite_id -eq $id })
+        if ($matches.Count -ne 1 -or $matches[0].status -ne 'pass' -or $matches[0].executed_checks -le 0 -or $matches[0].untested_checks -ne 0) { $unproven += $id }
+    }
+    return @{ status=$(if ($unproven.Count -eq 0) { 'pass' } else { 'unproven' }); required_suites=$required; unproven_suites=$unproven }
+}
+
+function Get-QaInventoryStatus {
+    param([string]$SuiteId, [int]$ExitCode, [int[]]$QueryRowCounts)
+    $reviewed = @{ rls_audit=7; function_security_audit=6 }
+    if (-not $reviewed.ContainsKey($SuiteId)) { throw 'QA_UNREVIEWED_INVENTORY_SUITE' }
+    if ($ExitCode -ne 0) { return 'error' }
+    if ($QueryRowCounts.Count -ne $reviewed[$SuiteId]) { return 'incomplete' }
+    return 'unassessed'
+}

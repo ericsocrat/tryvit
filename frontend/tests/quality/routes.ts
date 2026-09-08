@@ -75,7 +75,6 @@ export const ROUTES: RouteEntry[] = [
     label: "product-detail",
     requiresAuth: true,
     tags: ["smoke", "full", "lighthouse"],
-    hasTabs: ["overview", "nutrition", "scoring", "alternatives"],
   },
   {
     path: "/app/settings",

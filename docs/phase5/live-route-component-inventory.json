@@ -4,7 +4,7 @@
   "provenance": {
     "baseSha": "1f66ab761a4d419f65745625dd0caad9c0ce77c5",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "bdfeb3ba3cce7e5a4202d7cd00f0d598bbad945bfadacc1f84d9e0e2e8966af8"
+    "sourceFingerprint": "d550a406b8c9ce00454870699e5afbb5db2797bf200c5a143e30a9b58a3bc85d"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -18074,9 +18074,9 @@
       "frontend/tests",
       "frontend/tooling"
     ],
-    "inspectedModuleCount": 558,
+    "inspectedModuleCount": 561,
     "violations": [],
-    "sourceFingerprint": "38d36d0292b1d60c506614e450f0490794428f13dd326b09db5e109935a42b41"
+    "sourceFingerprint": "7a52ba80bea3d94e2245604e5f0635567feb4f2f061f74fd76847f41bc6a3bb8"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",

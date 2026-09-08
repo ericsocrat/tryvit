@@ -94,6 +94,44 @@ removed after each attempt. Neither rehearsal applied production migrations.
 
 ## Release conditions and rollback
 
+### PR 1361 integration corrections
+
+The first published head `7fb0473e961f2133b9d3c40b21449aae73f3b99c`
+passed Typecheck & Lint, both unit shards, Build, CodeQL (TypeScript and Python),
+dependency audits, renderer attestation and Golden Reference admission. It did
+not pass the complete release gate: RPC validation, Python lint, hygiene,
+browser assertions, database QA, Route-JS and the old visual comparator failed.
+Those failures remain historical evidence, not waived passes.
+
+The follow-up changes move the 31 RPC assertions from the hosted-secret fallback
+workflow into Quality Gate's existing guarded local Supabase runtime, retaining
+an always-evaluated `RPC Contract Validation` context. The database CI service
+preloads real query statistics. QA reports separate blocking assertions,
+historical score diagnostics and two explicitly unassessed security inventories;
+execution errors, incomplete execution and the executable security/consumer
+contracts still block. Browser contracts now verify the evidence-first content
+and keyboard-accessible sources instead of requiring retired score controls.
+
+Home's first Route-JS capture was 322,108 B gzip versus 294,158 B on the base.
+The follow-up uses the installed Zod Mini entry point and an explicitly empty
+Home schema; nonempty responses await the full product schema before returning
+data. Differential and loading tests preserve acceptance and failure behavior.
+The original +10 KiB OR +5% regression rule is unchanged. Local measurements are
+diagnostic only; the final exact-head Linux comparison remains authoritative.
+
+The full local frontend run after these changes reported 6,286 passing tests,
+two failed expectations for the newly localized Home search label, and 31
+opt-in skips. Correcting the stale expectations passed all five affected tests;
+this is not represented as a new full-suite pass. Whole-repository Ruff and all
+six repository hygiene checks passed. Final exact-head CI is still required.
+
+The subsequent complete frontend rerun passed **6,288 tests in 418 files**, with
+31 opt-in RPC tests skipped (138.44 seconds). The unchanged CI-seeded product
+also passed the guarded mobile and desktop audits plus authentication setup
+(3/3); three generic sub-44px target warnings remain unassessed, not silently
+promoted to accessibility proof. The 53 CI-policy tests and actionlint for the
+changed workflows passed. These are local candidate checks, not deployment.
+
 Follow [Consumer promotion](CONSUMER_PROMOTION.md). Keep native Supabase
 production Git synchronization disabled and verify the Vercel main-deployment
 guard. Preview must use staging before authenticated testing. The foundation

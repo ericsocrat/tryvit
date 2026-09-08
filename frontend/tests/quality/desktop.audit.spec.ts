@@ -79,36 +79,24 @@ for (const route of routes) {
     // ── Screenshot: default state ─────────────────────────────────────────
     await takeScreenshot(page, "desktop", route.label);
 
-    // ── Tab cycling for product pages ─────────────────────────────────────
-    if (route.hasTabs?.length) {
-      for (const tabId of route.hasTabs) {
-        // Use role="tab" + aria-label to avoid strict-mode violation from
-        // the dual-span pattern (mobile shortLabel + desktop label).
-        const tabLocator = page
-          .getByTestId("tab-bar")
-          .getByRole("tab", { name: new RegExp(tabId, "i") });
-
-        // Some tabs may not exist yet (feature in progress) — skip gracefully.
-        if ((await tabLocator.count()) === 0) continue;
-
-        await tabLocator.click();
-        await waitForStable(page, 4_000);
-
-        // Re-run invariants for the new tab content
-        await runInvariantsForRoute(page, `${route.path}#tab-${tabId}`, {
-          isMobile: false,
-          isProductPage: true,
-          isRecipesPage: false,
-          isSettingsPage: false,
-          isAdminPage: false,
-        });
-
-        await takeScreenshot(
-          page,
-          "desktop",
-          `${route.label}_tab-${tabId}`
-        );
-      }
+    // Exercise the current source disclosure and rerun layout/a11y invariants.
+    if (route.path.includes("/product/")) {
+      const sources = page.getByTestId("product-sources");
+      const summary = sources.locator("summary");
+      await expect(sources).not.toHaveAttribute("open");
+      await summary.focus();
+      await page.keyboard.press("Enter");
+      await expect(sources).toHaveAttribute("open", "");
+      await runInvariantsForRoute(page, `${route.path}#sources`, {
+        isMobile: false,
+        isProductPage: true,
+        isRecipesPage: false,
+        isSettingsPage: false,
+        isAdminPage: false,
+      });
+      await takeScreenshot(page, "desktop", `${route.label}_sources`);
+      await summary.click();
+      await expect(sources).not.toHaveAttribute("open");
     }
 
     // ── Assert no errors accumulated ──────────────────────────────────────
