@@ -102,7 +102,7 @@ local implementation tests. No production authority is implied by a clone PASS.
 
 ## Implementation verification
 
-All 87 recovery unit tests pass, with no skipped tests. The artifact-dependent
+All 88 recovery unit tests pass, with no skipped tests. The artifact-dependent
 cohort/pilot tests now use synthetic injected inputs and also pass in a copied
 scripts-only tree without Git, backups or retained production evidence. No real
 cohort data was added to Git for tests.

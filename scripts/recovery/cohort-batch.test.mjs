@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import {writeReviewPlan} from './cohort-batch.mjs';
 import {remainingManifest as makeManifest,reviewSelection as select,retainedEntries as readEntries,batchFor,snapshotSql,rollbackSql,rollbackOne,applyOne,verifyBatchPostimages,targetSnapshot,checkBefore,checkAssertions,digest,NUTRIENTS} from './cohort-batch.mjs';
 import {proposedPublicAllowlist as propose,validatePublicAllowlist as validate,approvedSnapshotDumpArgs as dumpArgs} from './cohort-public-recovery.mjs';
 import {syntheticRetainedSource} from './cohort-synthetic-fixture.mjs';
@@ -10,6 +11,22 @@ const reviewSelection=(manifest,ids,sha)=>select(manifest,ids,sha,source);
 const proposedPublicAllowlist=rows=>propose(rows,input);
 const validatePublicAllowlist=(rows,manifest,sha)=>validate(rows,manifest,sha,input);
 const approvedSnapshotDumpArgs=(session,options)=>dumpArgs(session,{...options,input});
+
+test('review plan creation is exclusive and an existing plan must match exactly',()=>{
+  const manifest={sha256:'a'.repeat(64)},expected=JSON.stringify(manifest,null,2)+'\n';
+  let writes=0,stored;
+  const write=(file,bytes,options)=>{
+    assert.equal(file,'plan.json');assert.deepEqual(options,{flag:'wx'});writes++;
+    if(stored!==undefined)throw Object.assign(new Error('exists'),{code:'EEXIST'});
+    stored=bytes;
+  };
+  const io={write,read:()=>stored};
+  writeReviewPlan('plan.json',manifest,io);assert.equal(stored,expected);
+  writeReviewPlan('plan.json',manifest,io);assert.equal(writes,2);
+  stored='changed';assert.throws(()=>writeReviewPlan('plan.json',manifest,io),/existing_content_changed/);
+  assert.equal(stored,'changed');
+  assert.throws(()=>writeReviewPlan('plan.json',manifest,{write:()=>{throw Object.assign(new Error(),{code:'EACCES'});}}),/write_failed/);
+});
 
 test('synthetic retained input still checks plan, record, receipt and canonical payload hashes',()=>{
   assert.equal(readEntries(syntheticRetainedSource()).length,60);

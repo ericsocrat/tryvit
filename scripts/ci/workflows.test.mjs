@@ -33,6 +33,13 @@ test('CI explicitly registers bounded recovery suites while excluding Docker int
   assert.ok(!source.includes('scripts/recovery/staging-drain-local.test.mjs'));
 });
 
+test('historical recovery policy tests receive full ancestor history', () => {
+  const policy = workflow('pr-gate.yml').split('  ci-policy-tests:')[1]?.split('  static-checks:')[0];
+  const checkout = policy?.match(/uses: actions\/checkout@[^\n]+\n\s+with:([\s\S]*?)(?=\n\s+- uses:)/u)?.[1];
+  assert.match(checkout ?? '', /fetch-depth: 0/u);
+  assert.match(checkout ?? '', /persist-credentials: false/u);
+});
+
 test('consumer source merges cannot automatically promote the frontend before database readiness', () => {
   // The verified Vercel Root Directory is frontend; a repository-root config
   // would not establish this guard. Other branches keep normal preview behavior.

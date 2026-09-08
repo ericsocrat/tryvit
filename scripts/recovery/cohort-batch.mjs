@@ -272,12 +272,22 @@ export async function applyReviewedBatch({manifest,productIds,confirmedSha256,co
   return {result:results.length===selected.length&&!results.some(r=>r.result==='HOLD')&&peerPostimages.result==='PASS'?'PASS':'HOLD',results,peerPostimages,
     remainingNotAttempted:selected.slice(results.length).map(e=>e.productId),remoteExecutionImplemented:false};
 }
+export function writeReviewPlan(file,manifest,{write=fs.writeFileSync,read=fs.readFileSync}={}) {
+  const bytes=JSON.stringify(manifest,null,2)+'\n';
+  try {write(file,bytes,{flag:'wx'});}
+  catch(error) {
+    if(error.code!=='EEXIST')fail('review_plan_write_failed');
+    let existing;
+    try {existing=read(file,'utf8');}catch {fail('review_plan_read_failed');}
+    if(existing!==bytes)fail('review_plan_existing_content_changed');
+  }
+}
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)) {
   const manifest=remainingManifest();
   if(process.argv.includes('--write-plan')) {
     const directory=path.join(ROOT,'audit-reports/recovery');fs.mkdirSync(directory,{recursive:true});
     const file=path.join(directory,'remaining-cohort-review-'+manifest.sha256+'.json');
-    if(!fs.existsSync(file))fs.writeFileSync(file,JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
+    writeReviewPlan(file,manifest);
   }
   console.log(JSON.stringify({sha256:manifest.sha256,unchanged:manifest.entries.filter(e=>e.decision==='unchanged-candidate').length,
     renameReview:manifest.entries.filter(e=>e.decision!=='unchanged-candidate').length,held:manifest.held,pilotExcluded:178,
