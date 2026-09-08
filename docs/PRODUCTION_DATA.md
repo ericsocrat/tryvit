@@ -45,7 +45,7 @@
 
 ### 1.2 Migration Inventory
 
-**Location:** `supabase/migrations/` — **238 migration files**, append-only.
+**Location:** `supabase/migrations/` — append-only migration files. Use `supabase migration list --local` for the current set and application state.
 
 **Naming convention:** `YYYYMMDDHHMMSS_description.sql` (Supabase CLI timestamps). Files are applied in lexicographic sort order.
 
@@ -329,7 +329,7 @@ There is no standalone `init_db_structure.py` script. Database initialization fo
 
 ```
 supabase db reset
-  → Applies all 238 migrations in order (supabase/migrations/*.sql)
+  → Applies the current migration set in order (supabase/migrations/*.sql)
   → Runs seed.sql (empty — no-op)
   → Schema is ready
 
@@ -511,7 +511,7 @@ Backup = supabase/migrations/*.sql + db/pipelines/*.sql
 ```
 
 Since the database can be fully reconstructed from:
-1. 238 migration files (schema + functions + views)
+1. The complete current migration set (schema + functions + views)
 2. 25 × 4 pipeline SQL files (all product data)
 3. `ci_post_pipeline.sql` (data fixups)
 

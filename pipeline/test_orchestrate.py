@@ -106,7 +106,7 @@ class TestRunCategory:
     @mock.patch("pipeline.orchestrate.PipelineOrchestrator._execute_sql_files", return_value=6)
     @mock.patch("pipeline.orchestrate._run_psql", return_value="0")
     @mock.patch("pipeline.orchestrate.run_pipeline")
-    def test_scoring_runs_only_inside_generated_atomic_sql(
+    def test_ingestion_does_not_claim_to_rescore_historical_models(
         self,
         mock_run_pipeline: mock.MagicMock,
         mock_psql: mock.MagicMock,
@@ -117,7 +117,7 @@ class TestRunCategory:
         result = orch.run_category("Dairy")
 
         assert result["status"] == "success"
-        assert result["scored"] is True
+        assert result["scored"] is False
         mock_run_pipeline.assert_called_once()
         mock_execute.assert_called_once()
         assert mock_psql.call_count == 1
@@ -158,7 +158,7 @@ class TestRunCategory:
         )
         result = orch.run_category("Dairy")
         assert result["status"] == "error"
-        assert "API error" in result["error"]
+        assert result["error"] == "Exception: category refresh failed"
         assert len(orch._report["errors"]) == 1
 
     @mock.patch("pipeline.orchestrate._run_psql", return_value="0")

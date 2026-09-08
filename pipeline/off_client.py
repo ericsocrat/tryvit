@@ -10,7 +10,9 @@ import datetime
 import logging
 import math
 import re
+import threading
 import time
+from email.utils import parsedate_to_datetime
 from typing import Any
 
 import requests
@@ -26,9 +28,56 @@ OFF_SEARCH_URL = "https://world.openfoodfacts.org/api/v2/search"
 OFF_PRODUCT_URL = "https://world.openfoodfacts.org/api/v2/product/{ean}.json"
 USER_AGENT = "tryvit/1.0 (https://github.com/ericsocrat/tryvit)"
 PAGE_SIZE = 50
-REQUEST_DELAY = 1.0  # seconds between requests
+REQUEST_DELAY = 1.0  # Additional pacing/backoff; endpoint limiter below governs actual starts.
 REQUEST_TIMEOUT = 90  # seconds (OFF API can be slow)
 MAX_RETRIES = 3
+# Published 2026-09-05: 15 product reads/minute, 10 search reads/minute.
+# https://openfoodfacts.github.io/documentation/docs/Product-Opener/api/
+# Every retry shares the same per-process limiter. Run one importer per public
+# IP; distributed workers require a shared rate budget, not parallel bypasses.
+PRODUCT_REQUEST_INTERVAL = 4.1
+SEARCH_REQUEST_INTERVAL = 6.1
+_NEXT_REQUEST_AT: dict[str, float] = {}
+_REQUEST_LOCK = threading.Lock()
+
+
+class OffRateLimitDeferredError(RuntimeError):
+    """Provider requested a pause longer than this bounded synchronous attempt."""
+
+
+def _rate_bucket(url: str) -> str:
+    return "product" if "/product/" in url else "search"
+
+
+def _wait_for_request_slot(url: str) -> None:
+    bucket = _rate_bucket(url)
+    interval = PRODUCT_REQUEST_INTERVAL if bucket == "product" else SEARCH_REQUEST_INTERVAL
+    with _REQUEST_LOCK:
+        wait = max(0.0, _NEXT_REQUEST_AT.get(bucket, 0.0) - time.monotonic())
+        if wait > 60:
+            raise OffRateLimitDeferredError("OFF Retry-After defers this read; no request sent")
+        if wait:
+            time.sleep(wait)
+        _NEXT_REQUEST_AT[bucket] = time.monotonic() + interval
+
+
+def _respect_retry_after(url: str, value: str | None) -> None:
+    if not value:
+        return
+    try:
+        seconds = float(value)
+    except ValueError:
+        try:
+            when = parsedate_to_datetime(value)
+            seconds = (when - datetime.datetime.now(datetime.UTC)).total_seconds()
+        except (TypeError, ValueError, OverflowError):
+            return
+    if not math.isfinite(seconds) or seconds <= 0:
+        return
+    with _REQUEST_LOCK:
+        bucket = _rate_bucket(url)
+        _NEXT_REQUEST_AT[bucket] = max(_NEXT_REQUEST_AT.get(bucket, 0.0), time.monotonic() + seconds)
+
 
 # Internal metadata added only after a successful OFF response.  The extractor
 # carries it into generated pipeline records, but never mistakes it for an
@@ -84,7 +133,12 @@ def _get_json(session: requests.Session, url: str, params: dict) -> dict | None:
     """
     for attempt in range(MAX_RETRIES + 1):
         try:
+            _wait_for_request_slot(url)
             resp = session.get(url, params=params, timeout=REQUEST_TIMEOUT)
+            _respect_retry_after(url, resp.headers.get("Retry-After"))
+            if 400 <= resp.status_code < 500 and resp.status_code not in (408, 429):
+                logger.warning("OFF read rejected: HTTP %s at %s", resp.status_code, url)
+                return None
             resp.raise_for_status()
             return resp.json()
         except (ValueError, KeyError) as exc:
@@ -312,16 +366,11 @@ def fetch_product_by_ean(ean: str) -> dict | None:
 
 
 def _round1(value: Any, default: str | None = None) -> str | None:
-    """Round a finite numeric value, preserving unknown instead of inventing zero."""
-    if value is None or isinstance(value, bool):
-        return default
-    try:
-        numeric = float(value)
-    except (ValueError, TypeError):
-        return default
-    if not math.isfinite(numeric):
-        return default
-    return str(round(numeric, 1))
+    """Compatibility name: preserve precision; censored values need observations."""
+    from pipeline.observations import parse_quantity
+
+    parsed = parse_quantity(value)
+    return parsed["value"] if parsed["state"] == "recorded" and parsed["qualifier"] == "eq" else default
 
 
 def _positive_int(value: Any) -> int | None:
@@ -483,7 +532,7 @@ def polish_market_score(product: dict) -> int:
     if ean.startswith("590"):
         score += 3
 
-    name = product.get("product_name", "")
+    name = product.get("product_name") or ""
     if re.search(r"[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]", name):
         score += 2
 
@@ -529,7 +578,7 @@ def market_score(product: dict, country_code: str = "PL") -> int:
     if any(ean.startswith(prefix) for prefix in gs1_prefixes):
         score += 3
 
-    name = product.get("product_name", "")
+    name = product.get("product_name") or ""
     if re.search(diacritic_re, name):
         score += 2
 
@@ -638,8 +687,8 @@ def _resolve_brand(off_product: dict) -> str:
 def extract_product_data(off_product: dict) -> dict | None:
     """Normalise a raw OFF product dict into the tryvit schema.
 
-    Returns *None* when the product is missing essential nutrition data
-    (calories, fat, or protein).
+    Returns *None* only when identity cannot be represented. Missing nutrition
+    is retained as missing evidence; invalid fields are quarantined on apply.
 
     Parameters
     ----------
@@ -653,15 +702,12 @@ def extract_product_data(off_product: dict) -> dict | None:
     """
     nutriments = off_product.get("nutriments")
     if not isinstance(nutriments, dict):
-        return None
+        nutriments = {}
 
-    # Required fields — skip if any value is absent or not finite numeric
+    # Numeric projection is nullable; the observation keeps invalid/missing apart.
     calories = _round1(nutriments.get("energy-kcal_100g"))
     total_fat_g = _round1(nutriments.get("fat_100g"))
     protein_g = _round1(nutriments.get("proteins_100g"))
-    if calories is None or total_fat_g is None or protein_g is None:
-        return None
-
     nutrient_values = {
         "calories_100g": calories,
         "fat_100g": total_fat_g,
@@ -676,8 +722,6 @@ def extract_product_data(off_product: dict) -> dict | None:
 
     # Product name
     product_name = _resolve_product_name(off_product)
-    if not product_name:
-        return None
 
     # Brand
     brand = _resolve_brand(off_product)
@@ -685,6 +729,8 @@ def extract_product_data(off_product: dict) -> dict | None:
     # EAN
     ean_raw = off_product.get("code")
     ean = str(ean_raw).strip() if ean_raw is not None else ""
+    if not ean:
+        return None
 
     # Category resolution
     raw_categories = off_product.get("categories_tags")
@@ -692,7 +738,7 @@ def extract_product_data(off_product: dict) -> dict | None:
     category = resolve_category(categories_tags)
 
     # Prep method & controversies
-    detected_prep_method = _detect_prep_method(categories_tags, product_name)
+    detected_prep_method = _detect_prep_method(categories_tags, product_name or "")
     # ``products.prep_method`` is NOT NULL.  Retain the storage fallback while
     # withholding its provenance unless OFF data actually supported it.
     prep_method = detected_prep_method or "not-applicable"
@@ -708,33 +754,23 @@ def extract_product_data(off_product: dict) -> dict | None:
     nova = _parse_nova(off_product)
     nutriscore_raw = off_product.get("nutriscore_grade")
     nutriscore_candidate = str(nutriscore_raw).strip().upper() if nutriscore_raw else None
-    nutri_score_label = (
-        nutriscore_candidate
-        if nutriscore_candidate in {"A", "B", "C", "D", "E"}
-        else None
-    )
+    nutri_score_label = nutriscore_candidate if nutriscore_candidate in {"A", "B", "C", "D", "E"} else None
 
     additives_count = _nonnegative_int(off_product.get("additives_n"))
     image_front_raw = off_product.get("image_front_url")
     image_ingredients_raw = off_product.get("image_ingredients_url")
     image_nutrition_raw = off_product.get("image_nutrition_url")
-    image_front_url = (
-        image_front_raw.strip()
-        if isinstance(image_front_raw, str) and image_front_raw.strip()
-        else None
-    )
+    image_front_url = image_front_raw.strip() if isinstance(image_front_raw, str) and image_front_raw.strip() else None
     image_ingredients_url = (
         image_ingredients_raw.strip()
         if isinstance(image_ingredients_raw, str) and image_ingredients_raw.strip()
         else None
     )
     image_nutrition_url = (
-        image_nutrition_raw.strip()
-        if isinstance(image_nutrition_raw, str) and image_nutrition_raw.strip()
-        else None
+        image_nutrition_raw.strip() if isinstance(image_nutrition_raw, str) and image_nutrition_raw.strip() else None
     )
 
-    source_fields = {"product_name"}
+    source_fields = {"product_name"} if product_name else set()
     source_fields.update(name for name, value in nutrient_values.items() if value is not None)
     if (off_product.get("brands") or "").strip():
         source_fields.add("brand")
@@ -757,7 +793,7 @@ def extract_product_data(off_product: dict) -> dict | None:
     if isinstance(image_nutrition_url, str) and image_nutrition_url.startswith("https://"):
         source_fields.add("image_nutrition_url")
 
-    return {
+    result = {
         "product_name": product_name,
         "brand": brand,
         "ean": ean,
@@ -792,11 +828,13 @@ def extract_product_data(off_product: dict) -> dict | None:
         "_has_image": bool(off_product.get("image_url")),
         "_off_revision": _positive_int(off_product.get("rev")),
         "_fetched_at": _normalise_fetched_at(off_product.get(_OFF_FETCHED_AT_KEY)),
-        "_off_fields_present": tuple(
-            field for field in _OFF_PROVENANCE_FIELD_ORDER if field in source_fields
-        ),
+        "_off_fields_present": tuple(field for field in _OFF_PROVENANCE_FIELD_ORDER if field in source_fields),
         # Image URLs (used by sql_generator._gen_06_add_images)
         "image_front_url": image_front_url,
         "image_ingredients_url": image_ingredients_url,
         "image_nutrition_url": image_nutrition_url,
     }
+    from pipeline.observations import observation_from_off
+
+    result["_source_observation"] = observation_from_off(off_product, result)
+    return result

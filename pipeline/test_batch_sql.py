@@ -200,13 +200,13 @@ class TestBatchedMode:
 class TestBatchContent:
     """Validate SQL content in batch files."""
 
-    def test_first_batch_has_preamble(self, tmp_output: Path) -> None:
+    def test_first_batch_never_deprecates_or_releases_eans(self, tmp_output: Path) -> None:
         products = _make_products(150)
         generate_pipeline("TestCat", products, str(tmp_output), batch_size=100)
         batch1 = (tmp_output / "PIPELINE__test-cat__01_batch_001_insert_products.sql").read_text()
-        assert "0a. DEPRECATE old products" in batch1
-        assert "0b. Release EANs" in batch1
-        assert "0c. Deprecate cross-category" in batch1
+        assert "ingestion_upsert_product" in batch1
+        assert "is_deprecated" not in batch1
+        assert "ean = null" not in batch1
 
     def test_middle_batch_no_preamble(self, tmp_output: Path) -> None:
         products = _make_products(350)
@@ -216,19 +216,19 @@ class TestBatchContent:
         assert "0b. Release" not in batch2
         assert "0c. Deprecate cross-category" not in batch2
 
-    def test_last_batch_has_postscript(self, tmp_output: Path) -> None:
+    def test_last_batch_does_not_retire_absent_products(self, tmp_output: Path) -> None:
         products = _make_products(150)
         generate_pipeline("TestCat", products, str(tmp_output), batch_size=100)
         batch2 = (tmp_output / "PIPELINE__test-cat__01_batch_002_insert_products.sql").read_text()
-        assert "2. DEPRECATE removed products" in batch2
+        assert "DEPRECATE" not in batch2
 
-    def test_postscript_lists_all_products(self, tmp_output: Path) -> None:
+    def test_batch_only_mutates_its_own_products(self, tmp_output: Path) -> None:
         products = _make_products(150)
         generate_pipeline("TestCat", products, str(tmp_output), batch_size=100)
         batch2 = (tmp_output / "PIPELINE__test-cat__01_batch_002_insert_products.sql").read_text()
-        # All 150 product names should be listed in the NOT IN clause
-        for p in products:
+        for p in products[100:]:
             assert p["product_name"] in batch2
+        assert "'Product 1'" not in batch2
 
     def test_every_batch_has_on_conflict(self, tmp_output: Path) -> None:
         products = _make_products(250)
@@ -236,13 +236,13 @@ class TestBatchContent:
         for i in range(1, 4):
             path = tmp_output / f"PIPELINE__test-cat__01_batch_{i:03d}_insert_products.sql"
             content = path.read_text()
-            assert "on conflict (country, brand, product_name)" in content.lower()
+            assert "ingestion_upsert_product" in content.lower()
 
-    def test_nutrition_batch_1_has_delete(self, tmp_output: Path) -> None:
+    def test_nutrition_batch_1_preserves_unseen_nutrition(self, tmp_output: Path) -> None:
         products = _make_products(150)
         generate_pipeline("TestCat", products, str(tmp_output), batch_size=100)
         batch1 = (tmp_output / "PIPELINE__test-cat__03_batch_001_add_nutrition.sql").read_text()
-        assert "delete from nutrition_facts" in batch1.lower()
+        assert "delete from nutrition_facts" not in batch1.lower()
 
     def test_nutrition_batch_2_no_delete(self, tmp_output: Path) -> None:
         products = _make_products(150)
@@ -349,25 +349,17 @@ class TestProvenanceGeneration:
         assert "('confidence', to_jsonb(p.confidence))" not in sql
 
     def test_source_priority_conflicts_abort_before_provenance_replacement(self) -> None:
-        sql = _gen_05_source_provenance(
-            "TestCat", [dict(_PRODUCT_TEMPLATE)], "2026-09-04"
-        )
+        sql = _gen_05_source_provenance("TestCat", [dict(_PRODUCT_TEMPLATE)], "2026-09-04")
 
         assert "Pipeline refresh requires source reconciliation" in sql
         assert "p.source_type NOT IN ('off_api', 'off_search')" in sql
         assert "pf.source_type NOT IN ('off_api', 'derived_calculation')" in sql
-        assert sql.count(
-            "WHERE product_field_provenance.source_type = excluded.source_type"
-        ) == 2
+        assert sql.count("WHERE product_field_provenance.source_type = excluded.source_type") == 2
 
     def test_confidence_view_refreshes_after_source_metadata(self) -> None:
-        sql = _gen_05_source_provenance(
-            "TestCat", [dict(_PRODUCT_TEMPLATE)], "2026-09-04"
-        )
+        sql = _gen_05_source_provenance("TestCat", [dict(_PRODUCT_TEMPLATE)], "2026-09-04")
 
-        assert sql.rstrip().endswith(
-            "REFRESH MATERIALIZED VIEW CONCURRENTLY v_product_confidence;"
-        )
+        assert sql.rstrip().endswith("REFRESH MATERIALIZED VIEW CONCURRENTLY v_product_confidence;")
 
     def test_batch_header_comment(self, tmp_output: Path) -> None:
         products = _make_products(150)

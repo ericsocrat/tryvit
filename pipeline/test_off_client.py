@@ -107,8 +107,8 @@ def test_extractor_retains_revision_fetch_time_and_explicit_field_presence() -> 
     assert result["_fetched_at"] == "2026-09-04T16:02:00Z"
     assert result["additives_count"] == 0
     assert result["controversies"] == "palm oil"
-    assert result["saturated_fat_g"] == "0.0"
-    assert result["trans_fat_g"] == "0.0"
+    assert result["saturated_fat_g"] == "0"
+    assert result["trans_fat_g"] == "0"
     assert result["_off_fields_present"] == (
         "product_name",
         "brand",
@@ -187,11 +187,11 @@ def test_explicit_zero_and_explicit_no_palm_oil_remain_distinct_from_missing() -
     )
 
     assert result is not None
-    assert result["calories"] == "0.0"
-    assert result["total_fat_g"] == "0.0"
-    assert result["protein_g"] == "0.0"
-    assert result["fibre_g"] == "0.0"
-    assert result["trans_fat_g"] == "0.0"
+    assert result["calories"] == "0"
+    assert result["total_fat_g"] == "0"
+    assert result["protein_g"] == "0"
+    assert result["fibre_g"] == "0"
+    assert result["trans_fat_g"] == "0"
     assert result["additives_count"] == 0
     assert result["controversies"] == "none"
     assert "fiber_100g" in result["_off_fields_present"]
@@ -208,7 +208,7 @@ def test_invalid_or_nonpositive_revision_is_not_fabricated(revision: object) -> 
 
 
 @pytest.mark.parametrize("bad_value", ["unknown", float("nan"), float("inf"), True])
-def test_invalid_required_nutrition_rejects_product(bad_value: object) -> None:
+def test_invalid_nutrition_is_retained_as_quarantinable_observation(bad_value: object) -> None:
     product = _raw_product()
     product["nutriments"] = {
         "energy-kcal_100g": bad_value,
@@ -216,7 +216,10 @@ def test_invalid_required_nutrition_rejects_product(bad_value: object) -> None:
         "proteins_100g": 1,
     }
 
-    assert off_client.extract_product_data(product) is None
+    result = off_client.extract_product_data(product)
+    assert result is not None
+    assert result["calories"] is None
+    assert result["_source_observation"]["extracted_fields"]["calories_100g"]["state"] == "invalid"
 
 
 def test_invalid_optional_nutrition_remains_unknown_and_has_no_provenance() -> None:
@@ -240,12 +243,8 @@ def test_invalid_optional_nutrition_remains_unknown_and_has_no_provenance() -> N
 
 
 def test_untrusted_or_naive_fetch_metadata_is_not_forwarded() -> None:
-    invalid = off_client.extract_product_data(
-        _raw_product(_tryvit_fetched_at="not-a-timestamp")
-    )
-    naive = off_client.extract_product_data(
-        _raw_product(_tryvit_fetched_at="2026-09-04T16:02:00")
-    )
+    invalid = off_client.extract_product_data(_raw_product(_tryvit_fetched_at="not-a-timestamp"))
+    naive = off_client.extract_product_data(_raw_product(_tryvit_fetched_at="2026-09-04T16:02:00"))
 
     assert invalid is not None
     assert naive is not None

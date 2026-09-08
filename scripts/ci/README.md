@@ -43,6 +43,12 @@ Monday surveillance uses exact scheduled main. Both retain the existing guarded
 public/authenticated five-mobile/five-desktop method and thresholds. This trigger
 change creates no new measurement and changes no historical sample or baseline.
 
+Sonar distinguishes Python `pipeline/**/test_*.py` and the root data-quality
+test suite from production pipeline source. Insecure URL literals in negative
+fixtures remain intact: the production URL-handling rules are not disabled or
+suppressed. Both source exclusions and test inclusions are explicit, preventing
+double indexing. The blocking quality-gate wait and thresholds are unchanged.
+
 Run local contracts with `node --test scripts/ci/*.test.mjs` and actionlint on
 changed workflows. `security-hygiene.mjs` inspects tracked files and emits only
 JSON-encoded filename, line, rule, and `[REDACTED]`, never matched source text.
@@ -61,7 +67,7 @@ Dispatch from exact current main, supplying:
 - `source_sha`: exact current-main commit; execution uses the dispatch commit,
   never code selected from an arbitrary input ref.
 - `migration_manifest`: committed relative JSON path with `schemaVersion: 1`,
-  `scope: "catalog-only" | "database"`, and a nonempty sorted `migrations` array
+  `scope: "catalog-only" | "schema-and-catalog" | "database"`, and a nonempty sorted `migrations` array
   of `{ "path": "supabase/migrations/<14digits>_<name>.sql", "sha256": "<64hex>" }`.
   Hash the LF-normalized committed SQL bytes. Manifest digest is SHA-256 of the
   committed manifest bytes, including its final newline.
@@ -117,9 +123,34 @@ A committed sanitized JSON receipt must contain:
 ```
 
 Scope must match the migration manifest. `catalog-only` is appropriate only for
-catalog data changes; schema, authorization, and RLS changes require `database`
-recovery coverage. `storageDisposition` may instead be `separately-verified` when
+catalog data changes. `schema-and-catalog` covers additive schema/routine/ACL/RLS
+metadata plus bounded catalog projections when no private user/history rows are
+mutated; it is not a whole-database restoration claim. Changes to user/history
+data or destructive schema require appropriately complete `database` recovery.
+`storageDisposition` may instead be `separately-verified` when
 storage objects are affected. Database backups do not establish object recovery.
+
+For `schema-and-catalog`, the receipt additionally requires:
+
+- `encryptedBackupSha256`: integrity of the stored encrypted schema archive;
+- `catalogSha256` and identical `restoredCatalogSha256`: canonical sorted-table
+  row/count/hash fingerprint, not a hash of merely copied archive bytes;
+- `sourceFingerprints` and matching `restoredFingerprints` for schema, grants,
+  RLS and functions; `privateProductionRowsExported` must explicitly be false;
+- `checks.schema`, `checks.grants`, `checks.rls`, `checks.functions` all true only
+  after actual restoration/fingerprint/role checks;
+- `exclusions`: exactly `privateUserRows`, `historyRows`, `managedAuthServices`,
+  `storageObjects` so the partial boundary cannot be mistaken for a full restore.
+
+The existing backup/restored-backup hash pair binds plaintext schema bytes before
+encryption and after authenticated decryption. No old catalog-only proof can be
+relabeled into this scope. An isolated restore of an old policy is a recovery
+experiment, not approval to restore unsafe public-access policies in production.
+
+There is no source-SHA self-reference: create the migration manifest, perform the
+real restore bound to its digest, commit the sanitized receipt and manifest, then
+dispatch the resulting exact current-main SHA. The staging deployment receipt
+binds that final SHA plus the same manifest. No artifact redesign is necessary.
 
 Restoration must be real, successful, no more than 24 hours before deployment,
 and not dated in the future. This is an **operational release safeguard**, not a

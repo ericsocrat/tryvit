@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "scope": "schema-and-catalog",
+  "migrations": [
+    {
+      "path": "supabase/migrations/20260905085359_evidence_first_ingestion.sql",
+      "sha256": "b72f2abd1da67191e245c9701875d310be7ffa0c9bd7e16cea849cd1a21ed8b5"
+    },
+    {
+      "path": "supabase/migrations/20260905090203_evidence_first_read_model.sql",
+      "sha256": "627b5a34ca66ebdc7423e953f6dc9a10311ee9384e45891d4a0b84909ff657c2"
+    },
+    {
+      "path": "supabase/migrations/20260905095435_evidence_first_search.sql",
+      "sha256": "76986999b04c722b7830a588d4e4585872aeaea0af48e45fb88587843b223c0d"
+    },
+    {
+      "path": "supabase/migrations/20260905110035_evidence_first_collections.sql",
+      "sha256": "1d88fa83bc55e7de03782357f8a6136ac76721381f93d920235a5a90068773f5"
+    },
+    {
+      "path": "supabase/migrations/20260905120236_public_share_evidence_read.sql",
+      "sha256": "1a4662af9097fb9189c5dc5d2596e71fb1f45ee3e0461d02b406644801f2d4d0"
+    }
+  ]
+}

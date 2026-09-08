@@ -18,7 +18,7 @@ export function containedFile(root, relative) {
 }
 
 export function validateManifest(root, manifest) {
-  requireThat(manifest.schemaVersion === 1 && ['catalog-only', 'database'].includes(manifest.scope), 'invalid-migration-manifest');
+  requireThat(manifest.schemaVersion === 1 && ['catalog-only', 'schema-and-catalog', 'database'].includes(manifest.scope), 'invalid-migration-manifest');
   requireThat(Array.isArray(manifest.migrations) && manifest.migrations.length > 0, 'empty-migration-manifest');
   const paths = manifest.migrations.map((entry) => entry.path);
   requireThat(new Set(paths).size === paths.length && JSON.stringify(paths) === JSON.stringify([...paths].sort()), 'manifest-order-or-duplicates');
@@ -37,6 +37,15 @@ export function validateRecovery(receipt, manifestHash, scope, now = Date.now())
   requireThat(typeof receipt.restoredAt === 'string' && /Z$/u.test(receipt.restoredAt) && Number.isFinite(at) && at <= now && now - at <= 24 * 60 * 60 * 1000, 'recovery-outside-24h-window');
   requireThat(['rowCounts', 'identityReferences', 'representativeValues'].every((key) => receipt.checks?.[key] === true), 'recovery-verification-incomplete');
   requireThat(['not-affected', 'separately-verified'].includes(receipt.storageDisposition), 'storage-recovery-unaccounted');
+  if (scope === 'schema-and-catalog') {
+    requireThat(['schema', 'grants', 'rls', 'functions'].every((key) => receipt.checks?.[key] === true), 'schema-recovery-verification-incomplete');
+    requireThat(digest.test(receipt.encryptedBackupSha256 ?? ''), 'encrypted-backup-integrity-missing');
+    requireThat(digest.test(receipt.catalogSha256 ?? '') && receipt.restoredCatalogSha256 === receipt.catalogSha256, 'restored-catalog-content-mismatch');
+    requireThat(receipt.privateProductionRowsExported === false, 'private-row-export-outside-recovery-scope');
+    requireThat(['schema', 'grants', 'rls', 'functions'].every((key) => digest.test(receipt.sourceFingerprints?.[key] ?? '') && receipt.restoredFingerprints?.[key] === receipt.sourceFingerprints[key]), 'restored-schema-fingerprint-mismatch');
+    const excluded = ['historyRows', 'managedAuthServices', 'privateUserRows', 'storageObjects'];
+    requireThat(Array.isArray(receipt.exclusions) && JSON.stringify([...receipt.exclusions].sort()) === JSON.stringify(excluded), 'partial-recovery-exclusions-missing');
+  }
 }
 
 export function validateStaging(run, receipt, sourceSha, manifestHash) {

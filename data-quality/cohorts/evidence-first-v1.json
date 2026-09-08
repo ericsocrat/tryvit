@@ -1,0 +1,371 @@
+{
+  "schema_version": 1,
+  "cohort_id": "evidence-first-v1",
+  "frozen_at": "2026-09-05T10:12:45Z",
+  "repository": "ericsocrat/tryvit",
+  "production_project": "uskvezwftkkudvksmken",
+  "selection_rule": "Five active unambiguous country/EAN products per PL/DE x Dairy/Bread/Cereals/Drinks/Sauces/Snacks. PL Dairy includes products 628 and 2882 first; remaining members ordered by EAN then product_id. Membership frozen before OFF fetch; no failure replacements.",
+  "source_license": "Production catalog contains OFF-derived data; source-specific ODbL/DbCL obligations remain applicable.",
+  "members": [
+    {
+      "product_id": 2061,
+      "country": "DE",
+      "category": "Bread",
+      "ean": "4000186010400"
+    },
+    {
+      "product_id": 2041,
+      "country": "DE",
+      "category": "Bread",
+      "ean": "4000446001018"
+    },
+    {
+      "product_id": 2049,
+      "country": "DE",
+      "category": "Bread",
+      "ean": "4000446011376"
+    },
+    {
+      "product_id": 2062,
+      "country": "DE",
+      "category": "Bread",
+      "ean": "4000446011420"
+    },
+    {
+      "product_id": 2085,
+      "country": "DE",
+      "category": "Bread",
+      "ean": "4000446015497"
+    },
+    {
+      "product_id": 2486,
+      "country": "DE",
+      "category": "Cereals",
+      "ean": "20003166"
+    },
+    {
+      "product_id": 2488,
+      "country": "DE",
+      "category": "Cereals",
+      "ean": "3387390339499"
+    },
+    {
+      "product_id": 2467,
+      "country": "DE",
+      "category": "Cereals",
+      "ean": "4000540000108"
+    },
+    {
+      "product_id": 2470,
+      "country": "DE",
+      "category": "Cereals",
+      "ean": "4000540000306"
+    },
+    {
+      "product_id": 2473,
+      "country": "DE",
+      "category": "Cereals",
+      "ean": "4000540000641"
+    },
+    {
+      "product_id": 2950,
+      "country": "DE",
+      "category": "Dairy",
+      "ean": "4002334113032"
+    },
+    {
+      "product_id": 2892,
+      "country": "DE",
+      "category": "Dairy",
+      "ean": "4002468084017"
+    },
+    {
+      "product_id": 2946,
+      "country": "DE",
+      "category": "Dairy",
+      "ean": "4002468134361"
+    },
+    {
+      "product_id": 2902,
+      "country": "DE",
+      "category": "Dairy",
+      "ean": "4002468210454"
+    },
+    {
+      "product_id": 2903,
+      "country": "DE",
+      "category": "Dairy",
+      "ean": "4002468210478"
+    },
+    {
+      "product_id": 3160,
+      "country": "DE",
+      "category": "Drinks",
+      "ean": "3057640186158"
+    },
+    {
+      "product_id": 3137,
+      "country": "DE",
+      "category": "Drinks",
+      "ean": "4000177032695"
+    },
+    {
+      "product_id": 3085,
+      "country": "DE",
+      "category": "Drinks",
+      "ean": "4001513000620"
+    },
+    {
+      "product_id": 3151,
+      "country": "DE",
+      "category": "Drinks",
+      "ean": "4001513004161"
+    },
+    {
+      "product_id": 3091,
+      "country": "DE",
+      "category": "Drinks",
+      "ean": "4001513007704"
+    },
+    {
+      "product_id": 5831,
+      "country": "DE",
+      "category": "Sauces",
+      "ean": "20003937"
+    },
+    {
+      "product_id": 5822,
+      "country": "DE",
+      "category": "Sauces",
+      "ean": "20004125"
+    },
+    {
+      "product_id": 5832,
+      "country": "DE",
+      "category": "Sauces",
+      "ean": "20164034"
+    },
+    {
+      "product_id": 5835,
+      "country": "DE",
+      "category": "Sauces",
+      "ean": "20300623"
+    },
+    {
+      "product_id": 5823,
+      "country": "DE",
+      "category": "Sauces",
+      "ean": "20884260"
+    },
+    {
+      "product_id": 6056,
+      "country": "DE",
+      "category": "Snacks",
+      "ean": "20005702"
+    },
+    {
+      "product_id": 6057,
+      "country": "DE",
+      "category": "Snacks",
+      "ean": "20045852"
+    },
+    {
+      "product_id": 6063,
+      "country": "DE",
+      "category": "Snacks",
+      "ean": "3800205872924"
+    },
+    {
+      "product_id": 6039,
+      "country": "DE",
+      "category": "Snacks",
+      "ean": "4000381003030"
+    },
+    {
+      "product_id": 6038,
+      "country": "DE",
+      "category": "Snacks",
+      "ean": "4000522105210"
+    },
+    {
+      "product_id": 148,
+      "country": "PL",
+      "category": "Bread",
+      "ean": "5900320001303"
+    },
+    {
+      "product_id": 182,
+      "country": "PL",
+      "category": "Bread",
+      "ean": "5900320008142"
+    },
+    {
+      "product_id": 200,
+      "country": "PL",
+      "category": "Bread",
+      "ean": "5900340000294"
+    },
+    {
+      "product_id": 195,
+      "country": "PL",
+      "category": "Bread",
+      "ean": "5900340003424"
+    },
+    {
+      "product_id": 178,
+      "country": "PL",
+      "category": "Bread",
+      "ean": "5900340003615"
+    },
+    {
+      "product_id": 400,
+      "country": "PL",
+      "category": "Cereals",
+      "ean": "20061449"
+    },
+    {
+      "product_id": 398,
+      "country": "PL",
+      "category": "Cereals",
+      "ean": "20346485"
+    },
+    {
+      "product_id": 402,
+      "country": "PL",
+      "category": "Cereals",
+      "ean": "20639747"
+    },
+    {
+      "product_id": 399,
+      "country": "PL",
+      "category": "Cereals",
+      "ean": "20982119"
+    },
+    {
+      "product_id": 401,
+      "country": "PL",
+      "category": "Cereals",
+      "ean": "4056489064497"
+    },
+    {
+      "product_id": 628,
+      "country": "PL",
+      "category": "Dairy",
+      "ean": "5900531004544"
+    },
+    {
+      "product_id": 2882,
+      "country": "PL",
+      "category": "Dairy",
+      "ean": "5903767003176"
+    },
+    {
+      "product_id": 2874,
+      "country": "PL",
+      "category": "Dairy",
+      "ean": "5900001421611"
+    },
+    {
+      "product_id": 605,
+      "country": "PL",
+      "category": "Dairy",
+      "ean": "5900120005136"
+    },
+    {
+      "product_id": 634,
+      "country": "PL",
+      "category": "Dairy",
+      "ean": "5900120010277"
+    },
+    {
+      "product_id": 703,
+      "country": "PL",
+      "category": "Drinks",
+      "ean": "4056489315605"
+    },
+    {
+      "product_id": 3065,
+      "country": "PL",
+      "category": "Drinks",
+      "ean": "5900001421635"
+    },
+    {
+      "product_id": 3004,
+      "country": "PL",
+      "category": "Drinks",
+      "ean": "5900001421673"
+    },
+    {
+      "product_id": 2995,
+      "country": "PL",
+      "category": "Drinks",
+      "ean": "5900001421697"
+    },
+    {
+      "product_id": 3006,
+      "country": "PL",
+      "category": "Drinks",
+      "ean": "5900014003477"
+    },
+    {
+      "product_id": 1044,
+      "country": "PL",
+      "category": "Sauces",
+      "ean": "20026752"
+    },
+    {
+      "product_id": 1038,
+      "country": "PL",
+      "category": "Sauces",
+      "ean": "20069490"
+    },
+    {
+      "product_id": 1031,
+      "country": "PL",
+      "category": "Sauces",
+      "ean": "20164041"
+    },
+    {
+      "product_id": 1036,
+      "country": "PL",
+      "category": "Sauces",
+      "ean": "2098765745579"
+    },
+    {
+      "product_id": 1040,
+      "country": "PL",
+      "category": "Sauces",
+      "ean": "3245413808196"
+    },
+    {
+      "product_id": 6036,
+      "country": "PL",
+      "category": "Snacks",
+      "ean": "3258561400242"
+    },
+    {
+      "product_id": 1148,
+      "country": "PL",
+      "category": "Snacks",
+      "ean": "3800205871255"
+    },
+    {
+      "product_id": 6030,
+      "country": "PL",
+      "category": "Snacks",
+      "ean": "4014500513485"
+    },
+    {
+      "product_id": 6029,
+      "country": "PL",
+      "category": "Snacks",
+      "ean": "4018077632006"
+    },
+    {
+      "product_id": 943,
+      "country": "PL",
+      "category": "Snacks",
+      "ean": "4056489784050"
+    }
+  ]
+}

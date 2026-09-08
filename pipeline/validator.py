@@ -404,21 +404,8 @@ def validate_product(product: dict, category: str) -> dict:
 
     result["validation_warnings"] = warnings
 
-    # Confidence assignment
-    try:
-        completeness = float(product.get("_completeness", 0))
-    except (ValueError, TypeError):
-        completeness = 0.0
-    has_image = product.get("_has_image", False)
-
-    if anomaly_errors or len(warnings) >= 2:
-        confidence = "estimated"
-    elif completeness >= 0.5 and ean_valid:
-        confidence = "verified"
-    elif completeness < 0.5 or not has_image:
-        confidence = "estimated"
-    else:
-        confidence = "verified"
-
-    result["confidence"] = confidence
+    # Structural validation and a valid barcode do not verify a package label.
+    # Keep the legacy field compatible without claiming source verification.
+    result["confidence"] = "estimated"
+    result["validation_status"] = "rejected" if anomaly_errors else "checked"
     return result

@@ -14,6 +14,23 @@ test('genuine recovery receipt is exact, recent and complete', () => {
     assert.throws(() => validateRecovery({ ...recovery, ...patch }, manifestHash, 'database', now));
   }
 });
+test('schema-and-catalog recovery is explicit and cannot reuse a catalog-only proof', () => {
+  const receipt = { ...recovery, scope: 'schema-and-catalog', encryptedBackupSha256: 'c'.repeat(64), catalogSha256: 'd'.repeat(64), restoredCatalogSha256: 'd'.repeat(64),
+    checks: { ...recovery.checks, schema: true, grants: true, rls: true, functions: true },
+    privateProductionRowsExported: false,
+    sourceFingerprints: { schema: 'e'.repeat(64), grants: 'e'.repeat(64), rls: 'e'.repeat(64), functions: 'e'.repeat(64) },
+    restoredFingerprints: { schema: 'e'.repeat(64), grants: 'e'.repeat(64), rls: 'e'.repeat(64), functions: 'e'.repeat(64) },
+    exclusions: ['privateUserRows', 'historyRows', 'managedAuthServices', 'storageObjects'] };
+  assert.doesNotThrow(() => validateRecovery(receipt, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...recovery, scope: 'schema-and-catalog' }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...receipt, restoredCatalogSha256: 'e'.repeat(64) }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...receipt, encryptedBackupSha256: undefined }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...receipt, checks: { ...receipt.checks, rls: false } }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...receipt, exclusions: [] }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...receipt, privateProductionRowsExported: true }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...receipt, restoredFingerprints: { ...receipt.restoredFingerprints, rls: 'f'.repeat(64) } }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery(receipt, manifestHash, 'database', now));
+});
 test('staging must be successful actual deployment of same manifest and source', () => {
   const source = 'd'.repeat(40);
   const run = { path: '.github/workflows/deploy.yml', head_sha: source, event: 'workflow_dispatch', status: 'completed', conclusion: 'success' };
