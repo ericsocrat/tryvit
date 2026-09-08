@@ -48,6 +48,9 @@ CREATE TABLE public.product_source_observations (
 ALTER TABLE public.product_source_records ADD CONSTRAINT source_selected_observation_fk
   FOREIGN KEY(id,selected_observation_id) REFERENCES public.product_source_observations(source_record_id,id);
 CREATE INDEX ON public.product_source_records(product_id);
+CREATE INDEX ON public.ingestion_batches(source_key);
+CREATE INDEX ON public.ingestion_batches(country);
+CREATE INDEX ON public.product_source_records(country);
 CREATE INDEX ON public.product_source_observations(batch_id);
 CREATE INDEX ON public.product_source_observations(source_record_id,retrieved_at DESC);
 
@@ -75,6 +78,7 @@ CREATE TABLE public.product_source_assertions (
   FOREIGN KEY(source_record_id,observation_id) REFERENCES public.product_source_observations(source_record_id,id)
 );
 CREATE INDEX ON public.product_source_assertions(observation_id);
+CREATE INDEX ON public.product_source_assertions(source_record_id,observation_id);
 
 CREATE FUNCTION public.ingestion_observation_immutable() RETURNS trigger
 LANGUAGE plpgsql SET search_path = '' AS $$

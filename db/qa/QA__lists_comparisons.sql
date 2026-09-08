@@ -37,9 +37,9 @@ WHERE NOT EXISTS (
 );
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- #3  All list/comparison API functions exist and are SECURITY DEFINER
+-- #3  List/comparison API functions exist with reviewed security modes
 -- ─────────────────────────────────────────────────────────────────────────────
-SELECT '3. List/comparison api_* functions are SECURITY DEFINER' AS check_name,
+SELECT '3. List/comparison APIs exist with reviewed security modes' AS check_name,
        COUNT(*) AS violations
 FROM (
     SELECT unnest(ARRAY[
@@ -67,7 +67,8 @@ WHERE NOT EXISTS (
     JOIN pg_namespace n ON p.pronamespace = n.oid
     WHERE n.nspname = 'public'
       AND p.proname = expected.fn
-      AND p.prosecdef = true
+      AND (p.prosecdef = true OR EXISTS(SELECT 1 FROM qa_reviewed_invokers r WHERE r.oid=p.oid
+          AND NOT EXISTS(SELECT 1 FROM qa_invoker_violations v WHERE v.signature=r.signature)))
 );
 
 -- ─────────────────────────────────────────────────────────────────────────────

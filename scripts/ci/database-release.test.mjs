@@ -3,7 +3,22 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { containedFile, hash, pendingMigrations, validateManifest, validateRecovery, validateStaging } from './database-release.mjs';
+import { containedFile, hash, pendingMigrations, validateManifest, validateProjectBinding, validateRecovery, validateStaging } from './database-release.mjs';
+
+test('release environments bind to their exact distinct projects before CLI access', () => {
+  const production = 'uskvezwftkkudvksmken';
+  const staging = 'rxtaicdpnaqigowdbmsb';
+  assert.equal(validateProjectBinding('production', production, staging), production);
+  assert.equal(validateProjectBinding('staging', production, staging), staging);
+  for (const environment of ['staging', 'production']) {
+    for (const refs of [[staging, production], [production, production], [staging, staging],
+      [undefined, staging], [production, undefined], ['', staging], [production, ''],
+      ['a'.repeat(20), staging], [production, 'b'.repeat(20)]]) {
+      assert.throws(() => validateProjectBinding(environment, ...refs), /database-project-binding-mismatch/u);
+    }
+  }
+  assert.throws(() => validateProjectBinding('preview', production, staging), /invalid-release-environment/u);
+});
 
 const now = Date.parse('2026-09-05T12:00:00Z');
 const manifestHash = 'a'.repeat(64);

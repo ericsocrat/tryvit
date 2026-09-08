@@ -96,14 +96,10 @@ FROM (
 ) t
 WHERE has_table_privilege('anon', 'public.' || t.tbl, 'DELETE');
 
--- 8. All api_* functions are SECURITY DEFINER
-SELECT '8. All api_* functions are SECURITY DEFINER' AS check_name,
+-- 8. Reviewed exact-signature invokers preserve caller authority and grants.
+SELECT '8. API security mode and grants match reviewed contracts' AS check_name,
        COUNT(*) AS violations
-FROM pg_proc p
-JOIN pg_namespace n ON p.pronamespace = n.oid
-WHERE n.nspname = 'public'
-  AND p.proname LIKE 'api_%'
-  AND p.prosecdef = false;
+FROM qa_invoker_violations;
 
 -- 9. anon CANNOT EXECUTE api_* functions except approved public endpoints
 --    Allowlist: autocomplete, filter options, shared lists/comparisons,
@@ -117,11 +113,10 @@ JOIN pg_namespace n ON p.pronamespace = n.oid
 WHERE n.nspname = 'public'
   AND p.proname LIKE 'api_%'
   AND has_function_privilege('anon', p.oid, 'EXECUTE')
+  AND NOT EXISTS(SELECT 1 FROM qa_reviewed_invokers r WHERE r.oid=p.oid AND r.anonymous)
   AND p.proname NOT IN (
     'api_search_autocomplete',       -- public autocomplete
     'api_get_filter_options',        -- public filter facets
-    'api_get_shared_list',          -- shared list (public link)
-    'api_get_shared_comparison',    -- shared comparison (public link)
     'api_get_products_for_compare', -- comparison data (needed by shared links)
     'api_track_event',              -- fire-and-forget analytics (anon + auth)
     'api_get_product_profile',      -- public product lookup
@@ -360,14 +355,15 @@ WHERE n.nspname = 'public'
   AND pol.polcmd != 'r'  -- not SELECT
   AND pol.polroles @> ARRAY[(SELECT oid FROM pg_roles WHERE rolname = 'anon')]::oid[];
 
--- 27. All tables with RLS enabled have at least one policy
-SELECT '27. All RLS-enabled tables have >=1 policy' AS check_name,
-       COUNT(*) AS violations
+-- 27. Explicit service-only tables must remain default-deny; others need policies.
+SELECT '27. RLS policy or reviewed default-deny contract' AS check_name,
+       COUNT(*) + (SELECT COUNT(*) FROM qa_default_deny_violations) AS violations
 FROM pg_class c
 JOIN pg_namespace n ON c.relnamespace = n.oid
 WHERE n.nspname = 'public'
   AND c.relkind = 'r'
   AND c.relrowsecurity = true
+  AND c.oid NOT IN (SELECT oid FROM qa_default_deny_tables WHERE oid IS NOT NULL)
   AND NOT EXISTS (
     SELECT 1 FROM pg_policy pol
     WHERE pol.polrelid = c.oid

@@ -16,7 +16,7 @@ their fixture-only adaptations are recorded below.
 The ordered five-migration set is recorded in
 [`evidence-first-foundation.migrations.json`](evidence-first-foundation.migrations.json).
 The manifest has 967 LF bytes and SHA-256
-`d8b43b81d5ea348112a0a540d3ee736fb8d23283891f81c748fb287a444d78d0`.
+`a6348d90b3379336a9c1d2607e480221cc4aaa489ceeb043a3745c0e9a0104a9`.
 Its `schema-and-catalog` recovery scope does not claim to restore private user
 rows, history rows, managed Auth services, or storage objects.
 
@@ -24,12 +24,17 @@ rows, history rows, managed Auth services, or storage objects.
    idempotent source-owned projection, conflict quarantine, exact quantities and
    qualifiers. Partial refreshes cannot retire unseen products or clear another
    market's barcode. Missing input is not an empty declaration or a numeric zero.
+   Four supporting indexes cover new ingestion foreign-key lookups, with a
+   unique record-ID subset avoiding a redundant selected-observation index.
 2. **Product read model:** source-backed and unverified states are distinct;
    aggregate scores are retired in the new contract. Source observations are not
    package verification. Restores the service-only provenance-helper ACL that a
    later legacy migration accidentally broadened.
    Includes bounded repairs for inherited operator SQL and the legacy suggestion
    reader's nonexistent product identifier; existing operator ACLs are preserved.
+   The suggestion reader's original auth-only contract is explicitly restored
+   after hosted grant drift; PUBLIC/anon execution is revoked, authenticated
+   execution remains available.
 3. **Search:** evidence-first product results, explicit applied context, images,
    NOVA filtering, country boundaries, and safe multilingual/punctuation handling.
 4. **Collections:** owner-authorized lists/watchlists consume the same fact model;
@@ -82,6 +87,12 @@ source-specific license is replaced by a project-wide notice.
   assertions passed**, with all five migrations applied as the original managed
   non-superuser role. Whole-user-schema lint checked 161 functions: zero errors,
   15 warnings. This is an isolated integration result, not production deployment.
+- Final-manifest scoped QA on the same restored baseline: **21/21 rollback
+  regression/mutation assertions and seven previously failing QA checks passed**.
+  These verify exact invoker/token grants, service-only default-deny tables, and
+  usable FK indexes, including negative cases. This is not the full 778-check
+  seeded CI run; that remains an exact-head CI obligation. Existing legacy-index
+  checks remain in force and their other partial/nonleading cases are unassessed.
 - CI/recovery/Sonar-scope contracts: **31 tests passed**.
 - September 8 release-validator/Sonar-scope rerun: **7 tests passed**.
 - Redacted tracked-source hygiene scan: **0 findings**.
@@ -120,9 +131,10 @@ receipt binds the earlier manifest, not the final manifest above, and is outside
 the release validator's 24-hour operational window as of September 8. It cannot
 authorize deployment. A fresh genuine restore and newly generated sanitized
 receipt are required; do not rewrite this historical receipt's timestamp or hash.
-The separate [September 8 receipt](evidence-first-foundation.recovery-20260908.json)
+The separate [September 8 final-manifest receipt](evidence-first-foundation.recovery-20260908-024658.json)
 now supplies that evidence: actual schema capture at 01:51:12.652Z and restoration
-at 01:51:28.922Z, bound to the final manifest. All eleven checks passed; the fresh
+at 02:46:58.799Z, bound to the final manifest. The earlier September 8 receipt is
+retained unchanged and does not authorize this revised manifest. All eleven checks passed; the fresh
 catalog snapshot still contains 15 tables and 96,523 matching rows. Its current
 release-validator check passes. Recheck its 24-hour window at actual deployment.
 Private production rows were not exported. Backup,

@@ -185,12 +185,13 @@ WHERE p.is_deprecated = true;
 --     Excludes parent_ingredient_id — intentionally unindexed (PR #394 audit).
 -- ─────────────────────────────────────────────────────────────────────────────
 SELECT '19. All FK columns have supporting indexes' AS check_name,
-       COUNT(*) AS violations
+       COUNT(*) + (SELECT COUNT(*) FROM qa_missing_fk_indexes) AS violations
 FROM pg_constraint con
 JOIN pg_class c ON con.conrelid = c.oid
 JOIN pg_namespace n ON c.relnamespace = n.oid
 WHERE n.nspname = 'public'
   AND con.contype = 'f'
+  AND con.conrelid NOT IN (SELECT oid FROM qa_default_deny_tables WHERE oid IS NOT NULL)
   AND con.conname <> 'product_ingredient_parent_ingredient_id_fkey'
   AND NOT EXISTS (
       SELECT 1

@@ -151,7 +151,7 @@ SELECT '12. mv_product_similarity has unique index' AS check_name,
 --      referencing columns (prevents seq scans on JOIN operations).
 -- ─────────────────────────────────────────────────────────────────────────────
 SELECT '13. All FK columns have supporting indexes' AS check_name,
-       COUNT(*) AS violations
+       COUNT(*) + (SELECT COUNT(*) FROM qa_missing_fk_indexes) AS violations
 FROM (
     SELECT
         c.conrelid::regclass AS table_name,
@@ -161,6 +161,7 @@ FROM (
         AND a.attnum = ANY(c.conkey)
     WHERE c.contype = 'f'
       AND c.connamespace = 'public'::regnamespace
+      AND c.conrelid NOT IN (SELECT oid FROM qa_default_deny_tables WHERE oid IS NOT NULL)
     EXCEPT
     SELECT
         i.indrelid::regclass,

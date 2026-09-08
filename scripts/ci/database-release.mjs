@@ -9,6 +9,12 @@ const digest = /^[a-f0-9]{64}$/u;
 export const hash = (bytes) => createHash('sha256').update(bytes).digest('hex');
 const requireThat = (condition, code) => { if (!condition) throw new Error(code); };
 
+export function validateProjectBinding(environment, productionRef, stagingRef) {
+  requireThat(['staging', 'production'].includes(environment), 'invalid-release-environment');
+  requireThat(productionRef === 'uskvezwftkkudvksmken' && stagingRef === 'rxtaicdpnaqigowdbmsb', 'database-project-binding-mismatch');
+  return environment === 'production' ? productionRef : stagingRef;
+}
+
 export function containedFile(root, relative) {
   requireThat(typeof relative === 'string' && relative.length > 0 && !relative.includes('\\') && !path.isAbsolute(relative) && !relative.split('/').includes('..'), 'unsafe-evidence-path');
   const base = realpathSync(root);
@@ -73,6 +79,7 @@ async function main() {
   const root = process.cwd();
   const { SOURCE_SHA: sourceSha, TARGET_ENVIRONMENT: environment, MIGRATION_MANIFEST: manifestPath, GITHUB_REPOSITORY: repository, GITHUB_ACTOR: actor } = process.env;
   requireThat(sha.test(sourceSha ?? '') && ['staging', 'production'].includes(environment), 'invalid-release-inputs');
+  const projectRef = validateProjectBinding(environment, process.env.SUPABASE_PROJECT_REF, process.env.SUPABASE_STAGING_PROJECT_REF);
   requireThat(process.env.GITHUB_EVENT_NAME === 'workflow_dispatch' && process.env.GITHUB_REF === 'refs/heads/main', 'release-requires-main-dispatch');
   requireThat(/^[\w.-]+\/[\w.-]+$/u.test(repository ?? '') && /^[\w-]+$/u.test(actor ?? ''), 'invalid-repository-or-actor');
   const head = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
@@ -97,8 +104,7 @@ async function main() {
     requireThat(existsSync(receiptFile), 'staging-receipt-missing');
     validateStaging(stagingRun, JSON.parse(readFileSync(receiptFile, 'utf8')), sourceSha, manifestHash);
   }
-  const projectRef = environment === 'production' ? process.env.SUPABASE_PROJECT_REF : process.env.SUPABASE_STAGING_PROJECT_REF;
-  requireThat(/^[a-z0-9]{20}$/u.test(projectRef ?? '') && process.env.SUPABASE_DB_PASSWORD && process.env.SUPABASE_ACCESS_TOKEN, 'database-access-not-configured');
+  requireThat(process.env.SUPABASE_DB_PASSWORD && process.env.SUPABASE_ACCESS_TOKEN, 'database-access-not-configured');
   command('supabase', ['link', '--project-ref', projectRef], 'database-link-failed');
   const pending = pendingMigrations(command('supabase', ['db', 'push', '--linked', '--dry-run'], 'migration-dry-run-failed'));
   requireThat(JSON.stringify(pending) === JSON.stringify(expected), 'pending-migrations-do-not-match-manifest');

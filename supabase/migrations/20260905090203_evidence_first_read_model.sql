@@ -316,7 +316,9 @@ END;
 $operator_sql_repairs$;
 -- END BOUNDED OPERATOR SQL REPAIRS
 -- Repair the existing historical suggestion reader before its later retirement.
--- Keep its ranking and ACLs; only the nonexistent identifier is corrected.
+-- Keep its ranking; restore the original auth-only ACL contract as well as
+-- correcting the nonexistent identifier. Hosted ACL drift must not survive a
+-- CREATE OR REPLACE (20260220000100 already requires this exact revocation).
 CREATE OR REPLACE FUNCTION public.api_search_did_you_mean(
   p_query   text,
   p_country text    DEFAULT NULL,
@@ -376,4 +378,5 @@ BEGIN
   ));
 END;
 $$;
+REVOKE EXECUTE ON FUNCTION public.api_search_did_you_mean(text,text,integer) FROM PUBLIC,anon;
 COMMIT;

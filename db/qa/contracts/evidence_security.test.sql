@@ -1,0 +1,55 @@
+-- Loaded after evidence_security.sql in an isolated restored clone only.
+-- Every mutation rolls back; production execution is not authorized.
+BEGIN;
+SELECT plan(21);
+SELECT is((SELECT count(*) FROM qa_invoker_violations),0::bigint,'reviewed B API modes and grants match');
+SELECT is((SELECT count(*) FROM qa_default_deny_violations),0::bigint,'service ingestion stays default-deny');
+SELECT is((SELECT count(*) FROM qa_missing_fk_indexes),0::bigint,'new FKs have usable indexes');
+SELECT ok(NOT has_function_privilege('anon','public.api_search_did_you_mean(text,text,integer)','EXECUTE'),'suggestion reader remains auth-only after source ACL drift');
+SELECT ok(has_function_privilege('authenticated','public.api_search_did_you_mean(text,text,integer)','EXECUTE'),'authenticated suggestion reader is preserved');
+SELECT ok(NOT EXISTS(SELECT 1 FROM pg_proc p CROSS JOIN LATERAL aclexplode(p.proacl) a
+ WHERE p.oid='public.api_search_did_you_mean(text,text,integer)'::regprocedure AND a.grantee=0),'suggestion reader has no PUBLIC grant');
+SELECT ok(NOT pg_temp.qa_fk_index_support(ARRAY[1]::smallint[],ARRAY[1]::smallint[],false,false,true,true,true,true),'invalid index rejected');
+SELECT ok(NOT pg_temp.qa_fk_index_support(ARRAY[1]::smallint[],ARRAY[1]::smallint[],false,true,false,true,true,true),'unready index rejected');
+SAVEPOINT mutation;
+ALTER FUNCTION public.api_find_filter_options(text,text) SECURITY DEFINER;
+SELECT ok(EXISTS(SELECT 1 FROM qa_invoker_violations),'changing reviewed wrapper to definer is detected');
+ROLLBACK TO mutation;
+GRANT EXECUTE ON FUNCTION public.api_find_products(text,jsonb,integer,integer,boolean,text) TO anon;
+SELECT ok(EXISTS(SELECT 1 FROM qa_invoker_violations),'unexpected anonymous execution is detected');
+ROLLBACK TO mutation;
+CREATE FUNCTION public.api_unreviewed_fixture() RETURNS integer LANGUAGE sql AS 'SELECT 1';
+SELECT ok(EXISTS(SELECT 1 FROM qa_invoker_violations),'unreviewed invoker is detected');
+ROLLBACK TO mutation;
+ALTER FUNCTION public.api_find_filter_options(text,text) SET search_path=public;
+SELECT ok(EXISTS(SELECT 1 FROM qa_invoker_violations),'unsafe wrapper path is detected');
+ROLLBACK TO mutation;
+CREATE POLICY unexpected_allow ON public.ingestion_batches FOR SELECT TO authenticated USING(true);
+SELECT ok(EXISTS(SELECT 1 FROM qa_default_deny_violations),'added ingestion policy is detected');
+ROLLBACK TO mutation;
+ALTER TABLE public.ingestion_batches DISABLE ROW LEVEL SECURITY;
+SELECT ok(EXISTS(SELECT 1 FROM qa_default_deny_violations),'disabled ingestion RLS is detected');
+ROLLBACK TO mutation;
+GRANT SELECT(source_key) ON public.ingestion_batches TO authenticated;
+SELECT ok(EXISTS(SELECT 1 FROM qa_default_deny_violations),'column-only grant is detected');
+ROLLBACK TO mutation;
+DROP INDEX public.ingestion_batches_country_idx;
+CREATE INDEX qa_nonleading ON public.ingestion_batches(status,country);
+SELECT ok(EXISTS(SELECT 1 FROM qa_missing_fk_indexes WHERE conname='ingestion_batches_country_fkey'),'nonleading column does not qualify');
+ROLLBACK TO mutation;
+DROP INDEX public.ingestion_batches_country_idx;
+CREATE INDEX qa_predicate ON public.ingestion_batches(country) WHERE status='applied';
+SELECT ok(EXISTS(SELECT 1 FROM qa_missing_fk_indexes WHERE conname='ingestion_batches_country_fkey'),'unproved partial predicate does not qualify');
+ROLLBACK TO mutation;
+DROP INDEX public.ingestion_batches_country_idx;
+CREATE INDEX qa_nullable ON public.ingestion_batches(country) WHERE country IS NOT NULL;
+SELECT ok(NOT EXISTS(SELECT 1 FROM qa_missing_fk_indexes WHERE conname='ingestion_batches_country_fkey'),'FK equality implies simple nonnull predicate');
+ROLLBACK TO mutation;
+SELECT ok(NOT EXISTS(SELECT 1 FROM qa_missing_fk_indexes WHERE conname='source_selected_observation_fk'),'unique subset bounds composite FK without redundant selected-observation index');
+DROP INDEX public.product_source_assertions_source_record_id_observation_id_idx;
+SELECT ok(EXISTS(SELECT 1 FROM qa_missing_fk_indexes WHERE conrelid='public.product_source_assertions'::regclass),'nonunique subset alone does not prove composite FK support');
+ROLLBACK TO mutation;
+SELECT is((SELECT count(*) FROM qa_invoker_violations)+(SELECT count(*) FROM qa_default_deny_violations)+
+ (SELECT count(*) FROM qa_missing_fk_indexes),0::bigint,'all mutations rolled back');
+SELECT * FROM finish();
+ROLLBACK;

@@ -4,11 +4,11 @@
   "migrations": [
     {
       "path": "supabase/migrations/20260905085359_evidence_first_ingestion.sql",
-      "sha256": "b72f2abd1da67191e245c9701875d310be7ffa0c9bd7e16cea849cd1a21ed8b5"
+      "sha256": "f9e84f22e501a3b28507df72e73bf5a706c5ab3c0f337efe5400e17b689d20c3"
     },
     {
       "path": "supabase/migrations/20260905090203_evidence_first_read_model.sql",
-      "sha256": "627b5a34ca66ebdc7423e953f6dc9a10311ee9384e45891d4a0b84909ff657c2"
+      "sha256": "e9beea9c6798c5f060ef842b1538b31a7c5459e36d3045d5896c53cd0e90504d"
     },
     {
       "path": "supabase/migrations/20260905095435_evidence_first_search.sql",
