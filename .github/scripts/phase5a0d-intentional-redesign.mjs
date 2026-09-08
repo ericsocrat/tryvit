@@ -15,9 +15,12 @@ export const AUTHORIZATION_LABEL = "phase5a0d-intentional-redesign-approved";
 export const APPROVAL_MARKER = "phase5a0d-intentional-redesign-approval:v1";
 export const EQUIVALENCE_APPROVAL_MARKER =
   "phase5a0d-intentional-redesign-approval:v2";
+export const DELEGATED_APPROVAL_MARKER = "phase5a0d-intentional-redesign-approval:v3";
+export const AI_REVIEW_MARKER = "phase5a0d-independent-ai-review:v1";
 export const APPROVAL_MARKERS = Object.freeze([
   APPROVAL_MARKER,
   EQUIVALENCE_APPROVAL_MARKER,
+  DELEGATED_APPROVAL_MARKER,
 ]);
 export const MANIFEST_PATH =
   "frontend/e2e/__screenshots__/phase5a0d-manifest.json";
@@ -177,6 +180,24 @@ function parseApprovalBody(body) {
   const match = pattern.exec(body);
   assert.ok(match, "approval-comment-marker-missing");
   const approval = JSON.parse(match[1]);
+  const delegated = marker === DELEGATED_APPROVAL_MARKER;
+  if (body.includes(DELEGATED_APPROVAL_MARKER)) {
+    assert.equal(APPROVAL_MARKERS.reduce((count, token) => count + body.split(token).length - 1, 0), 1, "delegation-marker-ambiguous");
+  }
+  if (delegated) {
+    assert.equal(approval.schemaVersion, 3, "delegation-schema-invalid");
+    assert.equal(approval.approvalType, "phase5a0d-delegated-ai-review", "delegation-type-invalid");
+    exactKeys(approval.delegation, ["reviewCommentId", "reviewBodySha256", "reviewAccount", "reviewerTaskId", "implementerTaskIds"], "delegation");
+    requiredInteger(approval.delegation.reviewCommentId, "delegation-review-id");
+    assert.match(approval.delegation.reviewBodySha256 ?? "", /^[0-9a-f]{64}$/u, "delegation-review-hash-invalid");
+    requiredSafeText(approval.delegation.reviewAccount, "delegation-review-account");
+    requiredSafeText(approval.delegation.reviewerTaskId, "delegation-reviewer-task");
+    const tasks = approval.delegation.implementerTaskIds;
+    assert.ok(Array.isArray(tasks) && tasks.length > 0, "delegation-implementers-missing");
+    tasks.forEach((task) => requiredSafeText(task, "delegation-implementer-task"));
+    assert.equal(new Set(tasks).size, tasks.length, "delegation-implementers-duplicate");
+    assert.equal(tasks.includes(approval.delegation.reviewerTaskId), false, "delegation-self-review");
+  }
   if (marker === EQUIVALENCE_APPROVAL_MARKER) {
     exactKeys(
       approval,
@@ -240,13 +261,14 @@ function parseApprovalBody(body) {
       "approvedImplementation",
       "candidate",
       "authorizedPaths",
+      ...(delegated ? ["delegation"] : []),
     ],
     "approval",
   );
-  assert.equal(approval.schemaVersion, 1, "approval-schema-invalid");
+  assert.equal(approval.schemaVersion, delegated ? 3 : 1, "approval-schema-invalid");
   assert.equal(
     approval.approvalType,
-    "phase5a0d-intentional-redesign",
+    delegated ? "phase5a0d-delegated-ai-review" : "phase5a0d-intentional-redesign",
     "approval-type-invalid",
   );
   assert.match(approval.baselinePrHead ?? "", COMMIT_PATTERN, "approval-head-invalid");
@@ -257,7 +279,7 @@ function parseApprovalBody(body) {
       "approval-candidate",
       approval.approvedImplementation.headSha,
     );
-    approval._mode = "exact-head";
+    approval._mode = delegated ? "delegated-ai-review" : "exact-head";
   }
 
   assert.equal(Array.isArray(approval.authorizedPaths), true, "approval-paths-invalid");
@@ -303,6 +325,46 @@ export function selectExternalApproval({
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
   assert.equal(approvals.length > 0, true, "approval-owner-comment-missing");
   const selected = approvals[0];
+  let aiReview;
+  if (selected.approval._mode === "delegated-ai-review") {
+    assert.equal(approvals.length, 1, "delegation-authorization-ambiguous");
+    assert.equal(selected.createdAt, selected.updatedAt, "delegation-authorization-edited");
+    const delegation = selected.approval.delegation;
+    const reviews = comments.filter((comment) => comment.id === delegation.reviewCommentId);
+    assert.equal(reviews.length, 1, "delegation-review-missing-or-ambiguous");
+    const review = reviews[0];
+    assert.notEqual(review.id, selected.commentId, "delegation-review-not-separate");
+    assert.equal(review.user?.login, delegation.reviewAccount, "delegation-review-account-mismatch");
+    requiredTimestamp(review.created_at, "delegation-review-created");
+    assert.equal(review.created_at, review.updated_at, "delegation-review-edited");
+    assert.ok(review.created_at <= selected.createdAt, "delegation-review-after-authorization");
+    assert.equal(sha256(review.body), delegation.reviewBodySha256, "delegation-review-hash-mismatch");
+    const prefix = `<!-- ${AI_REVIEW_MARKER}\n`;
+    assert.ok(review.body.startsWith(prefix) && review.body.endsWith("\n-->"), "delegation-review-format-invalid");
+    aiReview = JSON.parse(review.body.slice(prefix.length, -4));
+    exactKeys(aiReview, ["schemaVersion", "reviewerKind", "model", "taskId", "independentOfImplementation", "baselineBaseSha", "baselinePrHead", "approvedImplementation", "candidate", "authorizedPaths", "caseReviews"], "ai-review");
+    assert.equal(aiReview.schemaVersion, 1, "ai-review-schema-invalid");
+    assert.equal(aiReview.reviewerKind, "AI", "ai-review-kind-invalid");
+    requiredSafeText(aiReview.model, "ai-review-model");
+    assert.equal(aiReview.taskId, delegation.reviewerTaskId, "ai-review-task-mismatch");
+    assert.equal(aiReview.independentOfImplementation, true, "ai-review-independence-missing");
+    assert.match(aiReview.baselineBaseSha ?? "", COMMIT_PATTERN, "ai-review-base-invalid");
+    for (const key of ["baselinePrHead", "approvedImplementation", "candidate"]) {
+      assert.deepEqual(aiReview[key], selected.approval[key], `ai-review-${key}-mismatch`);
+    }
+    assert.deepEqual(aiReview.authorizedPaths, selected.approval.authorizedPaths, "ai-review-paths-mismatch");
+    assert.ok(selected.approval.candidate.runCompletedAt <= review.created_at, "ai-review-before-candidate");
+    assert.ok(Array.isArray(aiReview.caseReviews) && aiReview.caseReviews.length === 7, "ai-review-seven-cases-required");
+    const paths = aiReview.caseReviews.map((entry) => {
+      exactKeys(entry, ["path", "beforeSha256", "afterSha256", "verdict", "notes"], "ai-review-case");
+      normalizeAuthorizedPath(entry.path);
+      for (const key of ["beforeSha256", "afterSha256"]) assert.match(entry[key] ?? "", /^[0-9a-f]{64}$/u, "ai-review-pixel-digest-invalid");
+      assert.equal(entry.verdict, "accept", "ai-review-case-not-accepted");
+      assert.ok(typeof entry.notes === "string" && entry.notes.trim().length > 0, "ai-review-notes-missing");
+      return entry.path;
+    });
+    assert.equal(new Set(paths).size, 7, "ai-review-duplicate-case");
+  }
 
   const labelEvents = events
     .filter(
@@ -334,6 +396,7 @@ export function selectExternalApproval({
       commentUpdatedAt: selected.updatedAt,
       labelEventId: labelEvent.eventId,
       labelCreatedAt: labelEvent.createdAt,
+      ...(aiReview ? { aiReview } : {}),
     },
   };
 }
@@ -690,6 +753,16 @@ export function validateIntentionalRedesign(options) {
   );
   const baseManifest = JSON.parse(baseManifestBytes.toString("utf8"));
   const nextManifest = JSON.parse(nextManifestBytes.toString("utf8"));
+  if (approval._mode === "delegated-ai-review") {
+    const review = externalApproval.external.aiReview;
+    assert.equal(review.baselineBaseSha, options.baseSha, "ai-review-stale-base");
+    const cases = nextManifest.cases.map((entry, index) => ({
+      path: `frontend/e2e/__screenshots__/${entry.relativeFile}`,
+      beforeSha256: baseManifest.cases[index].sha256,
+      afterSha256: entry.sha256,
+    })).sort((a, b) => a.path.localeCompare(b.path));
+    assert.deepEqual(review.caseReviews.map(({ path, beforeSha256, afterSha256 }) => ({ path, beforeSha256, afterSha256 })).sort((a, b) => a.path.localeCompare(b.path)), cases, "ai-review-case-pixels-mismatch");
+  }
   assert.equal(
     nextManifest.sourceCommit,
     reference.source.headSha,
@@ -806,6 +879,13 @@ export function validateIntentionalRedesign(options) {
 
   return {
     approvalMode: approval._mode,
+    ...(approval._mode === "delegated-ai-review" ? {
+      reviewerKind: "AI",
+      reviewerTaskId: externalApproval.external.aiReview.taskId,
+      reviewerModel: externalApproval.external.aiReview.model,
+      reviewCommentId: approval.delegation.reviewCommentId,
+      reviewBodySha256: approval.delegation.reviewBodySha256,
+    } : {}),
     approvedVisualSource: reference.source,
     synchronizedImplementation: synchronized?.source ?? reference.source,
     authorizedPaths: approval.authorizedPaths,

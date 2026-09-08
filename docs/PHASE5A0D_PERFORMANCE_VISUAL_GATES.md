@@ -155,11 +155,58 @@ change, lifecycle-script change, lockfile mismatch, or baseline-byte drift
 fails closed.
 
 An intentional future redesign first generates manual candidates and receives
-human before/after review. The current PR gate deliberately rejects baseline
+before/after review through the retained v1/v2 human-review lane or the explicit
+v3 delegated-AI lane described below. The current PR gate deliberately rejects baseline
 changes relative to its base; accepting a reviewed redesign candidate requires
 a separate, explicitly authorized baseline-update workflow change. A baseline
 update cannot be smuggled into an unrelated product PR. The 74 retained audit
 screenshots remain outside this system.
+
+### Explicit delegated AI visual review (v3)
+
+The v3 policy must land on the trusted base before a separate baseline-only PR
+can use it. It introduces no source-SHA exception and no threshold change.
+The existing owner label and acceptance-branch requirement still apply. Owner
+authorization and actual review are separate records: an owner-account comment
+with marker `phase5a0d-intentional-redesign-approval:v3` delegates acceptance of
+an independently produced AI review; it does **not** assert human visual review.
+V1/v2 retain their existing semantics and validation.
+
+The v3 JSON uses the v1 exact-source fields (`baselinePrHead`,
+`approvedImplementation`, `candidate`, `authorizedPaths`), with `schemaVersion: 3`
+and `approvalType: "phase5a0d-delegated-ai-review"`. Its additional `delegation`
+contains `reviewCommentId`, SHA-256 of the entire UTF-8 review comment body in
+`reviewBodySha256`, `reviewAccount`, `reviewerTaskId`, and nonempty unique
+`implementerTaskIds`. The reviewer task cannot be among those implementers.
+
+The separate review comment body is exactly an HTML comment with marker
+`phase5a0d-independent-ai-review:v1`, newline, JSON, newline, and closing `-->`.
+Its JSON contains `schemaVersion: 1`, `reviewerKind: "AI"`, actual `model` and
+`taskId`, `independentOfImplementation: true`, `baselineBaseSha`, and the same
+`baselinePrHead`, `approvedImplementation`, `candidate`, and sorted
+`authorizedPaths`. `caseReviews` contains all seven unique PNG repository paths,
+each with `path`, `beforeSha256`, `afterSha256`, `verdict: "accept"`, and meaningful
+`notes` describing the actual before/after inspection. Review must follow the
+completed two-pass candidate run and precede authorization; the owner label
+must follow authorization. Both comments must be unedited. Missing or duplicate
+records, multiple current authorizations, stale base/head, mismatched identities,
+or a rejected/missing case fail closed. Corrections require fresh records and
+fresh authorization, not edits to accepted evidence.
+
+The shared validator still binds the exact implementation tree, candidate and
+determinism artifact IDs/digests/sizes, successful run and attempt, complete
+two-pass ledgers, manifest, and committed PNG bytes. The seven review digests
+must match both baseline and candidate manifests. Baseline acceptance remains
+limited to the manifest and exactly authorized PNG modifications; no product or
+policy code may be included. V3 accepts only the exact reviewed source and does
+not introduce a new source-equivalence path.
+
+GitHub proves account attribution and record timestamps, not human identity,
+model execution, or truth of the independence declaration. The owner delegation
+is an explicit trust decision about that evidence. Operators must record the
+actual reviewing task/model and its implementers honestly; an agent posting
+through an owner's account must never describe itself as the owner's human
+review. This policy change alone authorizes no candidate and applies no labels.
 
 The reusable intentional-redesign lane is installed base-first and remains
 separate from product work. Its read-only `pull_request_target` workflow checks
