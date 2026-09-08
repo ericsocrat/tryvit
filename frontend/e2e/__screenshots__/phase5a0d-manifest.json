@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a0d-visual-baselines",
-  "sourceCommit": "56dd971622a90d17ce91818aee8f2d74fbb4aa53",
+  "sourceCommit": "1868b3319cbaaae83c08c895eb15b1de8ac31d71",
   "rendererClass": "ci-linux-authoritative",
   "runner": {
     "imageOS": "ubuntu24",
@@ -110,9 +110,9 @@
       "height": 900,
       "fixtureState": "local-authenticated-new-user",
       "relativeFile": "authenticated-visual.spec.ts/p5a0d-app-shell-new-user-1440x900-light-reduced.png",
-      "sha256": "6f4e8c2f47508d3133a05bcab3cecb429a9dca69f4485e5f58ca7f39c121db7f",
-      "bytes": 99912
+      "sha256": "9ad39983ece1da1176c28adec6e7cb3bd3893e5b42a474563975a7f44605a8bf",
+      "bytes": 101561
     }
   ],
-  "manifestChecksum": "1c5a43a3d682a4dc4e9b91d28207d7aa75f1d6e18d77341e395fe329a578ba2c"
+  "manifestChecksum": "c3885b8fc48160fa21ffad6b076d1beabfb6d67f3c91d40acb2fd4e9b48c43ed"
 }
