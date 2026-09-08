@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {pilotPlan,rehearsePilot,rollbackSql,preparationSql,unaffectedSql} from './cohort-pilot.mjs';
+import {pilotPlan as makePlan,rehearsePilot as rehearse,rollbackSql,preparationSql,unaffectedSql} from './cohort-pilot.mjs';
+import {syntheticPilotSource} from './cohort-synthetic-fixture.mjs';
+const source=syntheticPilotSource();
+const pilotPlan=()=>makePlan(source),rehearsePilot=options=>rehearse({...options,source});
+
+test('synthetic pilot still rejects changed SQL and observation bytes before execution',()=>{
+  assert.throws(()=>makePlan({...syntheticPilotSource(),pilotSha256:'0'.repeat(64)}),/pilot_sql_changed/);
+  assert.throws(()=>makePlan({...syntheticPilotSource(),observationSha256:'0'.repeat(64)}),/observation_changed/);
+});
 
 test('pilot defaults to a stable read-only plan and requires its exact digest to execute',async()=>{
   const plan=await rehearsePilot();

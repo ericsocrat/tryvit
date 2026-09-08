@@ -45,6 +45,7 @@ on:
       - "requirements*.in"
       - ".github/workflows/**"
       - "scripts/ci/**"
+      - "scripts/recovery/**"
   workflow_dispatch:
     inputs:
       fail_on_warn:

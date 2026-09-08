@@ -3,9 +3,35 @@ import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { classifyChanges, requiredChecks } from './change-risk.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const workflow = (name) => readFileSync(path.join(root, '.github/workflows', name), 'utf8');
+
+test('recovery source changes trigger every path-filtered classifier-required lane', () => {
+  const risk = classifyChanges(['scripts/recovery/cohort-production-operator.mjs']);
+  assert.ok(Object.values(risk).every(Boolean));
+  const required = requiredChecks(risk);
+  const lanes = {
+    'dependency-audit.yml': ['npm Audit (frontend)', 'pip Audit (Python pipeline)'],
+    'qa.yml': ['DB Integrity'],
+    'phase5a0d-visual-baselines.yml': ['Verify immutable visual baselines'],
+  };
+  for (const [file, checks] of Object.entries(lanes)) {
+    for (const check of checks) assert.ok(required.includes(check));
+    const trigger = workflow(file).match(/\n  pull_request:([\s\S]*?)(?=\n  [a-z_]+:|\n[a-z]|$)/u)?.[1];
+    assert.ok(trigger?.includes('"scripts/recovery/**"'), `${file} must trigger for recovery-only PRs`);
+  }
+});
+
+test('CI explicitly registers bounded recovery suites while excluding Docker integration', () => {
+  const source = workflow('pr-gate.yml');
+  const suites = readdirSync(path.join(root, 'scripts/recovery')).filter((name) => name.endsWith('.test.mjs') && name !== 'staging-drain-local.test.mjs');
+  assert.ok(suites.includes('cohort-production-operator.test.mjs'));
+  for (const suite of suites) assert.ok(source.includes(`scripts/recovery/${suite}`), `missing bounded recovery suite: ${suite}`);
+  assert.ok(!source.includes('scripts/recovery/*.test.mjs'));
+  assert.ok(!source.includes('scripts/recovery/staging-drain-local.test.mjs'));
+});
 
 test('consumer source merges cannot automatically promote the frontend before database readiness', () => {
   // The verified Vercel Root Directory is frontend; a repository-root config
