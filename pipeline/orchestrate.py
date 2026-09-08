@@ -315,15 +315,18 @@ class PipelineOrchestrator:
             if result["enriched"]:
                 print("  Deterministic enrichment applied")
 
-            # Step 04 scores inside the same transaction as every other file.
-            result["scored"] = True
-            self._report["products_scored"] += 1
-            print("  Scoring complete in atomic category transaction")
+            # Evidence-first imports preserve historical calculations. No
+            # composite is recomputed merely because source facts refreshed.
+            result["scored"] = False
+            print("  Source observation projection complete; historical scores unchanged")
 
         except Exception as exc:
             result["status"] = "error"
-            result["error"] = str(exc)
-            msg = f"{category}: {exc}"
+            # CalledProcessError includes command argv, which can contain the
+            # DATABASE_URL password. Never persist it in execution evidence.
+            failure = f"{type(exc).__name__}: category refresh failed"
+            result["error"] = failure
+            msg = f"{category}: {failure}"
             logger.error(msg)
             self._report["errors"].append(msg)
             print(f"  ERROR: {exc}")

@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "scope": "schema-and-catalog",
+  "migrations": [
+    {
+      "path": "supabase/migrations/20260905085359_evidence_first_ingestion.sql",
+      "sha256": "f9e84f22e501a3b28507df72e73bf5a706c5ab3c0f337efe5400e17b689d20c3"
+    },
+    {
+      "path": "supabase/migrations/20260905090203_evidence_first_read_model.sql",
+      "sha256": "e9beea9c6798c5f060ef842b1538b31a7c5459e36d3045d5896c53cd0e90504d"
+    },
+    {
+      "path": "supabase/migrations/20260905095435_evidence_first_search.sql",
+      "sha256": "76986999b04c722b7830a588d4e4585872aeaea0af48e45fb88587843b223c0d"
+    },
+    {
+      "path": "supabase/migrations/20260905110035_evidence_first_collections.sql",
+      "sha256": "8597f9bb7c7a13d33ca41c61fdbed8d336e8cfac321d36312625ceaabf00fef1"
+    },
+    {
+      "path": "supabase/migrations/20260905120236_public_share_evidence_read.sql",
+      "sha256": "1a4662af9097fb9189c5dc5d2596e71fb1f45ee3e0461d02b406644801f2d4d0"
+    }
+  ],
+  "stagingPrerequisites": [
+    {
+      "path": "supabase/migrations/20260601000000_fix_dashboard_insights_added_at.sql",
+      "sha256": "a740861fd2a5cc3be0931e29c7c96fe01dc0c3fd795a09babc7a9cc6f0991606"
+    },
+    {
+      "path": "supabase/migrations/20260601010000_harden_dashboard_insights_favorites.sql",
+      "sha256": "2a8568ca5c630fbc3ee9a9d99ae91064a8e370b84082530e48a60697927cedd7"
+    },
+    {
+      "path": "supabase/migrations/20260601173035_populate_ingredients_allergens.sql",
+      "sha256": "f50ce6fe90876211b51fe9d9eedbac0fe8a6284722bf832844a6910f08fd133b"
+    },
+    {
+      "path": "supabase/migrations/20260605223000_backfill_ingredient_concern_tiers.sql",
+      "sha256": "3b36b9f25d6ffa03434e7a2f84f5695524ec910eb53f575b8ba968eb22a22e92"
+    },
+    {
+      "path": "supabase/migrations/20260730173135_phase5_allergen_evidence_semantics.sql",
+      "sha256": "f4771b8b53b225055a0485ac0ea285f7e5d26a23a44fb34647ed770bdd4588fb"
+    },
+    {
+      "path": "supabase/migrations/20260827010801_private_beta_admin_access.sql",
+      "sha256": "3c5a101eb42ecfa57459f2b8ffa8ca922095302e936e473d0fc52e7ec3f3dba5"
+    },
+    {
+      "path": "supabase/migrations/20260904150259_fix_health_warning_evidence_truth.sql",
+      "sha256": "1293e715a13bddf753e642efec468baf09190c6cb86316b09a8b18613be115a3"
+    },
+    {
+      "path": "supabase/migrations/20260904150300_restore_region_preferred_scan_matching.sql",
+      "sha256": "1876af241a2fb1bec67d0ea44e846d90e1632829a3c3344df703f159a28666a0"
+    },
+    {
+      "path": "supabase/migrations/20260904164332_preserve_preference_partial_updates.sql",
+      "sha256": "aa14b86c6db3545e7c938267b4b7abb6e9ee30acf00fe593f17e587a71ccb347"
+    },
+    {
+      "path": "supabase/migrations/20260904172653_align_ingestion_provenance.sql",
+      "sha256": "3e1800c8e0366a349152d50177d9324e5aee788e5a267e34aa4f9e5cbdbb7015"
+    }
+  ]
+}

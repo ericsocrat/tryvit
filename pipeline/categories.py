@@ -33,6 +33,7 @@ CAT_FROZEN_VEG = "Frozen Vegetables"
 CAT_READY_MEALS = "Ready Meals"
 CAT_DESSERTS = "Desserts & Ice Cream"
 CAT_SPICES = "Spices & Seasonings"
+CATEGORY_POLICY_VERSION = "off-category-v1.1"
 
 # ---------------------------------------------------------------------------
 # OFF category tag  →  our database category
@@ -52,6 +53,8 @@ OFF_TO_DB_CATEGORY: dict[str, str] = {
     "en:cheeses": CAT_DAIRY,
     "en:butters": CAT_DAIRY,
     "en:creams": CAT_DAIRY,
+    "en:skyrs": CAT_DAIRY,
+    "en:plain-skyrs": CAT_DAIRY,
     # Bread
     "en:breads": CAT_BREAD,
     # Cereals
@@ -535,6 +538,16 @@ def resolve_category(off_categories_tags: list[str]) -> str | None:
     str | None
         The matched database category, or *None* if no mapping exists.
     """
+    # OFF gives skyr broad dessert ancestors as well as a specific dairy leaf.
+    # Resolve this proven conflict without globally changing category priority.
+    # Explicit ice cream/pudding or baby-food leaves remain their own category.
+    if any(tag in {"en:skyrs", "en:plain-skyrs"} for tag in off_categories_tags):
+        if any(OFF_TO_DB_CATEGORY.get(tag) == CAT_BABY for tag in off_categories_tags):
+            return CAT_BABY
+        if any(OFF_TO_DB_CATEGORY.get(tag) == CAT_DESSERTS and tag != "en:desserts" for tag in off_categories_tags):
+            return CAT_DESSERTS
+        return CAT_DAIRY
+
     resolved: list[str] = []
     for tag in off_categories_tags:
         cat = OFF_TO_DB_CATEGORY.get(tag)

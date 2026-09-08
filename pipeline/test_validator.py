@@ -397,7 +397,8 @@ class TestValidateProduct:
         assert result["validation_warnings"] == []
         assert result["anomaly_errors"] == []
         assert result["anomaly_warnings"] == []
-        assert result["confidence"] == "verified"
+        assert result["confidence"] == "estimated"
+        assert result["validation_status"] == "checked"
 
     def test_product_with_ean_failure_and_contradiction(self) -> None:
         product = {

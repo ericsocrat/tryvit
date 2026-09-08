@@ -493,6 +493,10 @@ function Invoke-SqlQASuite {
 
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $content = Get-Content $testFile -Raw
+    if ($SuiteId -in @('security_posture', 'scale_guardrails', 'lists_comparisons', 'index_temporal', 'index_verification')) {
+        $contract = Get-Content (Join-Path $QA_DIR 'contracts/evidence_security.sql') -Raw -ErrorAction Stop
+        $content = $contract + "`n" + $content
+    }
     $output = Invoke-Psql -InputSql $content -TuplesOnly
 
     if ($LASTEXITCODE -ne 0) {

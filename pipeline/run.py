@@ -31,14 +31,15 @@ logger = logging.getLogger(__name__)
 
 
 def _dedup(products: list[dict]) -> list[dict]:
-    """De-duplicate products by (brand, product_name), keeping first seen.
-
-    Uses lower/strip to match the DB identity_key: md5(lower(trim(brand)) || '::' || lower(trim(product_name))).
-    """
-    seen: set[tuple[str, str]] = set()
+    """De-duplicate source identities; distinct barcodes are not name aliases."""
+    seen: set[tuple[str, ...]] = set()
     unique: list[dict] = []
     for p in products:
-        key = (p["brand"].lower().strip(), p["product_name"].lower().strip())
+        key = (
+            ("ean", p["ean"])
+            if p.get("ean")
+            else ("unmapped", p["brand"].lower().strip(), p["product_name"].lower().strip())
+        )
         if key not in seen:
             seen.add(key)
             unique.append(p)
@@ -249,15 +250,8 @@ def run_pipeline(
     if warn_count:
         print(f"  Warnings: {warn_count} products outside expected ranges")
 
-    # 4b. Cross-category EAN dedup (first-writer-wins)
-    pipeline_base = project_root / "db" / "pipelines"
-    slug_base = _slug(category)
-    dir_slug = f"{slug_base}-{country.lower()}" if country != "PL" else slug_base
-    unique, ean_dropped = _cross_category_ean_dedup(unique, pipeline_base, dir_slug)
-    if ean_dropped:
-        print(f"  Cross-category EAN dedup: {len(ean_dropped)} product(s) removed (EAN already in another category)")
-        for dp in ean_dropped:
-            print(f"    ✗ {dp.get('brand', '?')} / {dp.get('product_name', '?')} (EAN {dp.get('ean', '?')})")
+    # Stored SQL file presence is not current identity or market evidence.
+    # The transactional source mapping resolves cross-category identities.
 
     # Anomaly report — blocked products with absolute cap violations
     if blocked:

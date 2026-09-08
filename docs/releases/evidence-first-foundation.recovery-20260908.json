@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "environment": "production",
+  "scope": "schema-and-catalog",
+  "method": "backup-restore",
+  "migrationManifestSha256": "d8b43b81d5ea348112a0a540d3ee736fb8d23283891f81c748fb287a444d78d0",
+  "backupSha256": "3b8d9fd8ca141a06e9eb85f1ef44be577a26daf9fb1b15c62977bee3413a5dfd",
+  "restoredBackupSha256": "3b8d9fd8ca141a06e9eb85f1ef44be577a26daf9fb1b15c62977bee3413a5dfd",
+  "encryptedBackupSha256": "7613b6c28983f93fbfea2e78756175a6b379c0d4a2b43f5137b4ed7ac3ccb0b2",
+  "bootstrapSupplementSha256": "9da7d9313967e094e7e70e2281ade38abb01fc5ae742e18f06a7c94f341f1ea5",
+  "catalogSha256": "37b8b4d9576c6fe4f5fdcae50a758f89dbfbabc46d7fa8c1b1a703cc0a7c4bcd",
+  "restoredCatalogSha256": "37b8b4d9576c6fe4f5fdcae50a758f89dbfbabc46d7fa8c1b1a703cc0a7c4bcd",
+  "restoredAt": "2026-09-08T01:51:28.922Z",
+  "result": "PASS",
+  "checks": {
+    "schema": true,
+    "functions": true,
+    "grants": true,
+    "rls": true,
+    "roleAttributes": true,
+    "roleMemberships": true,
+    "extensionBootstrap": true,
+    "rowCounts": true,
+    "identityReferences": true,
+    "representativeValues": true,
+    "syntheticRoles": true
+  },
+  "exclusions": [
+    "privateUserRows",
+    "historyRows",
+    "managedAuthServices",
+    "storageObjects"
+  ],
+  "storageDisposition": "not-affected",
+  "privateProductionRowsExported": false,
+  "containerImage": "public.ecr.aws/supabase/postgres:17.6.1.075",
+  "databaseLocale": "en_US.UTF-8",
+  "catalogTableCount": 15,
+  "catalogRowCount": 96523,
+  "limitations": [
+    "No private-user/history row recovery claim",
+    "No role-password or platform-role-setting recovery claim",
+    "No managed Auth service, cloud configuration or storage-object recovery claim"
+  ],
+  "sourceFingerprints": {
+    "schema": "0f80d1679e12ed9a98965816c633c54e34d41973461b0cf6ba031fb0f8f95b30",
+    "functions": "b236d8aecdd9280110d45cffbf1f9d203f52ae8968a1686fcd901d4befdcf48f",
+    "grants": "86c8689c8ebd017539053ca904214da1f0d7385338161acbead085a05338b01e",
+    "rls": "e239556a210a80588a6ab7a98ae409b7751afc71d25b62e2d3787aaab0e9803e"
+  },
+  "restoredFingerprints": {
+    "schema": "0f80d1679e12ed9a98965816c633c54e34d41973461b0cf6ba031fb0f8f95b30",
+    "functions": "b236d8aecdd9280110d45cffbf1f9d203f52ae8968a1686fcd901d4befdcf48f",
+    "grants": "86c8689c8ebd017539053ca904214da1f0d7385338161acbead085a05338b01e",
+    "rls": "e239556a210a80588a6ab7a98ae409b7751afc71d25b62e2d3787aaab0e9803e"
+  }
+}

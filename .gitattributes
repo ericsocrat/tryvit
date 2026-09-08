@@ -30,6 +30,12 @@ docs/assets/design-tokens.json text eol=lf
 docs/phase5/live-route-component-inventory.json text eol=lf
 frontend/src/app/dev/phase5a2/_golden/font-assay/licenses/*.txt text eol=lf
 frontend/src/app/dev/phase5a2/_golden/font-assay/licenses/*.md text eol=lf
+# Immutable audited copies have their own exact byte hashes as well.
+docs/phase5a2/checkpoint-2/evidence/font-assay/licenses/MANROPE-OFL.txt text eol=lf
+docs/phase5a2/checkpoint-2/evidence/font-assay/licenses/SOURCE-SERIF-4-OFL.md text eol=lf
+# Release manifest digests must be identical on Windows and Linux checkouts.
+docs/releases/evidence-first-foundation.migrations.json text eol=lf
+docs/releases/evidence-first-foundation.recovery.json text eol=lf
 
 # Design source files (if ever added)
 *.fig binary

@@ -135,15 +135,11 @@ SELECT '12. score_category procedure exists' AS check_name,
        ) THEN 0 ELSE 1 END AS violations;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- #13  All api_* functions remain SECURITY DEFINER after scale changes
+-- #13  API modes and grants match the shared reviewed-signature contract
 -- ─────────────────────────────────────────────────────────────────────────────
-SELECT '13. All api_* are SECURITY DEFINER' AS check_name,
+SELECT '13. API security mode and grants match reviewed contracts' AS check_name,
        COUNT(*) AS violations
-FROM pg_proc p
-JOIN pg_namespace n ON p.pronamespace = n.oid
-WHERE n.nspname = 'public'
-  AND p.proname LIKE 'api_%'
-  AND p.prosecdef = false;
+FROM qa_invoker_violations;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- #14  authenticator role has statement_timeout set

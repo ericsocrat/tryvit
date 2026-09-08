@@ -79,9 +79,7 @@ _OFF_REPLACED_PROVENANCE_FIELDS = tuple(
     )
 )
 
-_SCORING_PROVENANCE_FIELDS = (
-    "score_model_version",
-)
+_SCORING_PROVENANCE_FIELDS = ("score_model_version",)
 
 # A refresh mutates these logical fields. If another source owns one of them,
 # the atomic category transaction must stop for explicit reconciliation.
@@ -183,26 +181,15 @@ def _sql_text(value: str | None) -> str:
 
 
 def _sql_num(value: str | float | int | None) -> str:
-    """Return a bare numeric literal or a typed SQL ``null``.
+    """Emit exact finite decimals only; never silently strip qualifiers/units."""
+    from pipeline.observations import parse_quantity
 
-    Strips non-numeric characters (except ``-`` and ``.``) so values like
-    ``"12.5 g"`` become ``12.5``.
-    """
-    if value is None:
+    parsed = parse_quantity(value)
+    if parsed["state"] == "missing":
         return "null::numeric"
-    s = str(value).strip()
-    if not s:
-        return "null::numeric"
-    # Strip trailing units / whitespace
-    cleaned = ""
-    for ch in s:
-        if ch in "0123456789.-":
-            cleaned += ch
-        elif cleaned:
-            break
-    if not cleaned or cleaned in (".", "-", "-."):
-        return "null::numeric"
-    return cleaned
+    if parsed["state"] != "recorded" or parsed["qualifier"] != "eq":
+        raise ValueError("Legacy numeric input must be an exact finite non-negative decimal")
+    return parsed["value"]
 
 
 def _sql_null_or_text(value: str | None) -> str:
@@ -259,18 +246,10 @@ def _explicit_off_fields(product: dict) -> tuple[str, ...]:
     raw_fields = product.get("_off_fields_present", ())
     if raw_fields is None:
         return ()
-    if isinstance(raw_fields, (str, bytes)) or not isinstance(
-        raw_fields, (list, tuple, set, frozenset)
-    ):
+    if isinstance(raw_fields, (str, bytes)) or not isinstance(raw_fields, (list, tuple, set, frozenset)):
         raise ValueError("_off_fields_present must be a collection of field names")
     return tuple(
-        sorted(
-            {
-                field
-                for field in raw_fields
-                if isinstance(field, str) and field in _DIRECT_OFF_PROVENANCE_FIELDS
-            }
-        )
+        sorted({field for field in raw_fields if isinstance(field, str) and field in _DIRECT_OFF_PROVENANCE_FIELDS})
     )
 
 
@@ -366,90 +345,22 @@ def _extract_stores(raw: str | None, country: str = "PL") -> list[str]:
 
 
 def _gen_01_insert_products(category: str, products: list[dict], today: str, country: str = "PL") -> str:
-    """Generate file 01 — insert_products.sql."""
-    lines: list[str] = []
-
-    # Values rows
-    for i, p in enumerate(products):
-        brand = _sql_text(p["brand"])
-        name = _sql_text(p["product_name"])
-        ean = _sql_text(p.get("ean") or "")
-        product_type = _sql_text(p.get("product_type", "Grocery"))
-        prep = _sql_null_or_text(p.get("prep_method"))
-        store = _sql_null_or_text(_normalize_store(p.get("store_availability")))
-        controversies = _sql_text(p.get("controversies", "none"))
-
-        comma = "," if i < len(products) - 1 else ""
-        lines.append(
-            f"  ({_sql_text(country)}, {brand}, {product_type}, {_sql_text(category)}, "
-            f"{name}, {prep}, {store}, {controversies}, {ean}){comma}"
+    """Legacy input adapter: stable identity upsert, never category replacement."""
+    lines = [f"-- PIPELINE ({category}): safe partial upsert", f"-- Generated: {today}"]
+    for product in products:
+        values = (
+            country,
+            product.get("ean"),
+            product["brand"],
+            product["product_name"],
+            category,
+            product.get("product_type", "Grocery"),
+            product.get("prep_method") or "not-applicable",
+            product.get("store_availability"),
+            product.get("controversies"),
         )
-
-    values_block = "\n".join(lines)
-
-    # Product names for deprecation block
-    name_literals = ", ".join(_sql_text(p["product_name"]) for p in products)
-
-    # EAN list for cross-category release
-    eans_with_values = [p.get("ean", "") for p in products if p.get("ean")]
-    ean_release_block = ""
-    if eans_with_values:
-        ean_literals = ", ".join(_sql_text(e) for e in eans_with_values)
-        ean_release_block = f"""
--- 0b. Release EANs across ALL categories to prevent unique constraint conflicts
-update products set ean = null
-where ean in ({ean_literals})
-  and ean is not null;
-"""
-
-    # Identity-key list for cross-category conflict deprecation
-    identity_keys = [_identity_key(p["brand"], p["product_name"]) for p in products]
-    unique_keys = sorted(set(identity_keys))
-    key_literals = ", ".join(_sql_text(k) for k in unique_keys)
-    identity_key_block = f"""
--- 0c. Deprecate cross-category products whose identity_key collides with this batch
-update products
-set is_deprecated = true,
-    deprecated_reason = 'Reassigned to {category} by pipeline',
-    ean = null
-where country = {_sql_text(country)}
-  and category != {_sql_text(category)}
-  and identity_key in ({key_literals})
-  and is_deprecated is not true;
-"""
-
-    return f"""\
--- PIPELINE ({category}): insert products
--- Source: Open Food Facts API (automated pipeline)
--- Generated: {today}
-
--- 0a. DEPRECATE old products in this category & release their EANs
-update products
-set is_deprecated = true, deprecated_reason = 'Replaced by pipeline refresh', ean = null
-where country = {_sql_text(country)}
-  and category = {_sql_text(category)}
-  and is_deprecated is not true;
-{ean_release_block}{identity_key_block}
--- 1. INSERT products
-insert into products (country, brand, product_type, category, product_name, prep_method, store_availability, controversies, ean)
-values
-{values_block}
-on conflict (country, brand, product_name) do update set
-  category = excluded.category,
-  ean = excluded.ean,
-  product_type = excluded.product_type,
-  store_availability = excluded.store_availability,
-  controversies = excluded.controversies,
-  prep_method = excluded.prep_method,
-  is_deprecated = false;
-
--- 2. DEPRECATE removed products
-update products
-set is_deprecated = true, deprecated_reason = 'Removed from pipeline batch'
-where country = {_sql_text(country)} and category = {_sql_text(category)}
-  and is_deprecated is not true
-  and product_name not in ({name_literals});
-"""
+        lines.append("SELECT public.ingestion_upsert_product(" + ", ".join(_sql_text(v) for v in values) + ");")
+    return "\n".join(lines) + "\n"
 
 
 def _gen_03_add_nutrition(category: str, products: list[dict], country: str = "PL") -> str:
@@ -479,16 +390,7 @@ def _gen_03_add_nutrition(category: str, products: list[dict], country: str = "P
 
     return f"""\
 -- PIPELINE ({category}): add nutrition facts
--- Source: Open Food Facts verified per-100g data
-
--- 1) Remove existing
-delete from nutrition_facts
-where product_id in (
-  select p.product_id
-  from products p
-  where p.country = {_sql_text(country)} and p.category = {_sql_text(category)}
-    and p.is_deprecated is not true
-);
+-- Source: legacy input; source verification is not established here.
 
 -- 2) Insert
 insert into nutrition_facts
@@ -542,8 +444,7 @@ def _gen_04_scoring(category: str, products: list[dict], today: str, country: st
         nova = str(nova_raw) if str(nova_raw) in ("1", "2", "3", "4") else None
         comma = "," if i < len(products) - 1 else ""
         nova_lines.append(
-            f"    ({_sql_text(p['brand'])}, {_sql_text(p['product_name'])}, "
-            f"{_sql_null_or_text(nova)}){comma}"
+            f"    ({_sql_text(p['brand'])}, {_sql_text(p['product_name'])}, {_sql_null_or_text(nova)}){comma}"
         )
     nova_block = "\n".join(nova_lines)
 
@@ -581,8 +482,7 @@ from (
 ) as d(brand, product_name, nova)
 where p.country = {_sql_text(country)} and p.brand = d.brand and p.product_name = d.product_name;
 
--- 0/1/4/5. Score category (concern defaults, unhealthiness, flags, confidence)
-CALL score_category({_sql_text(category)}, 100, {_sql_text(country)});
+-- Legacy scores remain historical. Importing facts must not rescore products.
 """
 
     return scoring_sql
@@ -608,17 +508,9 @@ def _gen_05_source_provenance(category: str, products: list[dict], today: str, c
         ean = str(p.get("ean") or "")
         ean_is_explicit = "ean" in fields and bool(ean)
         source_ean = _sql_text(ean) if ean_is_explicit else "null"
-        source_url = (
-            _sql_text(f"https://world.openfoodfacts.org/product/{ean}")
-            if ean_is_explicit
-            else "null"
-        )
+        source_url = _sql_text(f"https://world.openfoodfacts.org/product/{ean}") if ean_is_explicit else "null"
         raw_fields = set(p.get("_off_fields_present") or ())
-        derived_fields = [
-            field
-            for field in ("prep_method", "controversies")
-            if field in raw_fields
-        ]
+        derived_fields = [field for field in ("prep_method", "controversies") if field in raw_fields]
         evidence_rows.append(
             "    ("
             + ", ".join(
@@ -647,9 +539,7 @@ def _gen_05_source_provenance(category: str, products: list[dict], today: str, c
 
     evidence_block = ",\n".join(evidence_rows)
     replaced_fields = _sql_text_array(_OFF_REPLACED_PROVENANCE_FIELDS)
-    derived_refresh_fields = _sql_text_array(
-        ("prep_method", "controversies", *_SCORING_PROVENANCE_FIELDS)
-    )
+    derived_refresh_fields = _sql_text_array(("prep_method", "controversies", *_SCORING_PROVENANCE_FIELDS))
     mutated_fields = _sql_text_array(_PIPELINE_MUTATED_PROVENANCE_FIELDS)
 
     return f"""\
@@ -992,95 +882,10 @@ def _gen_01_batch(
     batch_start: int,
     batch_end: int,
 ) -> str:
-    """Generate one batch file for step 01 (insert products).
-
-    Batch 1 includes preamble (deprecation, EAN release, cross-category).
-    Last batch includes postscript (deprecate removed products).
-    All batches include an INSERT with ON CONFLICT.
-    """
-    parts: list[str] = [
-        f"-- PIPELINE ({category}): insert products",
-        f"-- Batch {batch_num}/{total_batches}: products {batch_start}-{batch_end}",
-        "-- Source: Open Food Facts API (automated pipeline)",
-        f"-- Generated: {today}",
-    ]
-
-    # ── Preamble (first batch only) ──────────────────────────────────────
-    if batch_num == 1:
-        parts.append(f"""
--- 0a. DEPRECATE old products in this category & release their EANs
-update products
-set is_deprecated = true, deprecated_reason = 'Replaced by pipeline refresh', ean = null
-where country = {_sql_text(country)}
-  and category = {_sql_text(category)}
-  and is_deprecated is not true;""")
-
-        eans = [p.get("ean", "") for p in all_products if p.get("ean")]
-        if eans:
-            ean_literals = ", ".join(_sql_text(e) for e in eans)
-            parts.append(f"""
--- 0b. Release EANs across ALL categories to prevent unique constraint conflicts
-update products set ean = null
-where ean in ({ean_literals})
-  and ean is not null;""")
-
-        keys = sorted({_identity_key(p["brand"], p["product_name"]) for p in all_products})
-        key_literals = ", ".join(_sql_text(k) for k in keys)
-        parts.append(f"""
--- 0c. Deprecate cross-category products whose identity_key collides with this batch
-update products
-set is_deprecated = true,
-    deprecated_reason = 'Reassigned to {category} by pipeline',
-    ean = null
-where country = {_sql_text(country)}
-  and category != {_sql_text(category)}
-  and identity_key in ({key_literals})
-  and is_deprecated is not true;""")
-
-    # ── INSERT block ─────────────────────────────────────────────────────
-    lines: list[str] = []
-    for i, p in enumerate(batch_products):
-        brand = _sql_text(p["brand"])
-        name = _sql_text(p["product_name"])
-        ean = _sql_text(p.get("ean") or "")
-        product_type = _sql_text(p.get("product_type", "Grocery"))
-        prep = _sql_null_or_text(p.get("prep_method"))
-        store = _sql_null_or_text(_normalize_store(p.get("store_availability")))
-        controversies = _sql_text(p.get("controversies", "none"))
-        comma = "," if i < len(batch_products) - 1 else ""
-        lines.append(
-            f"  ({_sql_text(country)}, {brand}, {product_type}, {_sql_text(category)}, "
-            f"{name}, {prep}, {store}, {controversies}, {ean}){comma}"
-        )
-    values_block = "\n".join(lines)
-
-    parts.append(f"""
--- 1. INSERT products (batch {batch_num}/{total_batches})
-insert into products (country, brand, product_type, category, product_name, prep_method, store_availability, controversies, ean)
-values
-{values_block}
-on conflict (country, brand, product_name) do update set
-  category = excluded.category,
-  ean = excluded.ean,
-  product_type = excluded.product_type,
-  store_availability = excluded.store_availability,
-  controversies = excluded.controversies,
-  prep_method = excluded.prep_method,
-  is_deprecated = false;""")
-
-    # ── Postscript (last batch only) ─────────────────────────────────────
-    if batch_num == total_batches:
-        name_literals = ", ".join(_sql_text(p["product_name"]) for p in all_products)
-        parts.append(f"""
--- 2. DEPRECATE removed products
-update products
-set is_deprecated = true, deprecated_reason = 'Removed from pipeline batch'
-where country = {_sql_text(country)} and category = {_sql_text(category)}
-  and is_deprecated is not true
-  and product_name not in ({name_literals});""")
-
-    parts.append("")  # trailing newline
-    return "\n".join(parts)
+    """Every chunk is independent; omission never retires another product."""
+    return f"-- Batch {batch_num}/{total_batches}: products {batch_start}-{batch_end}\n" + _gen_01_insert_products(
+        category, batch_products, today, country
+    )
 
 
 def _gen_03_batch(
@@ -1125,17 +930,7 @@ def _gen_03_batch(
         "-- Source: Open Food Facts verified per-100g data",
     ]
 
-    # DELETE existing — only in first batch
-    if batch_num == 1:
-        parts.append(f"""
--- 1) Remove existing
-delete from nutrition_facts
-where product_id in (
-  select p.product_id
-  from products p
-  where p.country = {_sql_text(country)} and p.category = {_sql_text(category)}
-    and p.is_deprecated is not true
-);""")
+    # Partial imports never delete nutrition outside their explicit rows.
 
     parts.append(f"""
 -- 2) Insert (batch {batch_num}/{total_batches})
@@ -1216,6 +1011,31 @@ def generate_pipeline(
     files: list[Path] = []
     use_batching = batch_size > 0 and len(products) > batch_size
 
+    if any("_source_observation" in product for product in products):
+        from pipeline.observations import observation_sql
+
+        if not all("_source_observation" in product for product in products):
+            raise ValueError("Cannot mix source observations and legacy input in one import")
+        content = observation_sql(category, products, country)
+        phase_names = (
+            ("01", "insert_products"),
+            ("02", "enrichment"),
+            ("03", "add_nutrition"),
+            ("04", "scoring"),
+            ("05", "source_provenance"),
+            ("06", "add_images"),
+            ("07", "store_availability"),
+        )
+        for old in out.glob(f"PIPELINE__{slug}__0[13]_batch_*.sql"):
+            old.unlink()
+        return [
+            _write_pipeline_file(
+                relative_out / f"PIPELINE__{slug}__{phase}_{name}.sql",
+                content if phase == "01" else "-- Applied atomically by ingestion_apply_observation in step 01.\n",
+            )
+            for phase, name in phase_names
+        ]
+
     # Step 02 is intentionally limited to approved Phase 4 category scopes.  Its input
     # comes from the same normalized product payload as steps 01/03, and the
     # reference vocabulary is a committed snapshot rather than a live API.
@@ -1235,9 +1055,7 @@ def generate_pipeline(
             ingredient_evidence,
             references,
             exact_reference_names=(
-                taxonomy_backed_reference_names(load_snapshot_reference_properties())
-                if phase == "4E"
-                else references
+                taxonomy_backed_reference_names(load_snapshot_reference_properties()) if phase == "4E" else references
             ),
         )
         path02 = _write_pipeline_file(

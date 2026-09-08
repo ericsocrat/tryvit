@@ -3,7 +3,75 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { containedFile, hash, pendingMigrations, validateManifest, validateRecovery, validateStaging } from './database-release.mjs';
+import { containedFile, hash, pendingMigrations, validateDatabaseAccess, validateManifest, validatePendingMigrations, validateProjectBinding, validateRecovery, validateStaging } from './database-release.mjs';
+
+test('only staging permits PAT-only CLI credential provisioning', () => {
+  assert.doesNotThrow(() => validateDatabaseAccess('staging', undefined, 'synthetic-pat'));
+  assert.doesNotThrow(() => validateDatabaseAccess('staging', 'synthetic-password', 'synthetic-pat'));
+  assert.doesNotThrow(() => validateDatabaseAccess('production', 'synthetic-password', 'synthetic-pat'));
+  for (const password of [undefined, '', ' ']) assert.throws(() => validateDatabaseAccess('production', password, 'synthetic-pat'));
+  for (const environment of ['staging', 'production']) {
+    for (const token of [undefined, '', ' ']) assert.throws(() => validateDatabaseAccess(environment, 'synthetic-password', token));
+  }
+  assert.throws(() => validateDatabaseAccess('preview', 'synthetic-password', 'synthetic-pat'));
+});
+
+test('shared manifest selects exactly 15 staging and 5 production migrations while validating both sets', () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), 'tryvit-prerequisites-test-'));
+  try {
+    mkdirSync(path.join(root, 'supabase/migrations'), { recursive: true });
+    const createEntry = (version, suffix = 'fixture') => {
+      const file = `supabase/migrations/${version}_${suffix}.sql`;
+      const sql = `SELECT ${Number(version.slice(-2))};`;
+      writeFileSync(path.join(root, file), sql);
+      return { path: file, sha256: hash(sql) };
+    };
+    const prerequisites = Array.from({ length: 10 }, (_, i) => createEntry(`202609010000${String(i).padStart(2, '0')}`));
+    const migrations = Array.from({ length: 5 }, (_, i) => createEntry(`202609050000${String(i).padStart(2, '0')}`));
+    const manifest = { schemaVersion: 1, scope: 'schema-and-catalog', migrations, stagingPrerequisites: prerequisites };
+    const staging = validateManifest(root, manifest, 'staging');
+    const production = validateManifest(root, manifest, 'production');
+    assert.equal(staging.length, 15);
+    assert.equal(production.length, 5);
+    assert.deepEqual(staging, [...prerequisites, ...migrations].map(e => path.posix.basename(e.path)));
+    assert.deepEqual(validateManifest(root, manifest), production, 'default is production for offline B integration');
+    assert.deepEqual(validateManifest(root, { ...manifest, stagingPrerequisites: undefined }, 'staging'), production);
+    assert.deepEqual(validateManifest(root, { ...manifest, stagingPrerequisites: [] }, 'staging'), production);
+    assert.doesNotThrow(() => validatePendingMigrations(staging, staging));
+    assert.doesNotThrow(() => validatePendingMigrations(production, production));
+    for (const partial of [[], staging.slice(1), prerequisites.map(e => path.posix.basename(e.path)), production,
+      [...staging, '20260906000000_unexpected.sql'], [...staging].reverse()]) {
+      assert.throws(() => validatePendingMigrations(partial, staging));
+    }
+    assert.throws(() => validatePendingMigrations(staging, production));
+    assert.throws(() => validateManifest(root, { ...manifest, stagingPrerequisites: null }));
+    assert.throws(() => validateManifest(root, { ...manifest, stagingPrerequisites: [...prerequisites].reverse() }));
+    assert.throws(() => validateManifest(root, { ...manifest, stagingPrerequisites: [prerequisites[0], prerequisites[0]] }));
+    assert.throws(() => validateManifest(root, { ...manifest, stagingPrerequisites: [migrations[0]] }));
+    assert.throws(() => validateManifest(root, { ...manifest, stagingPrerequisites: [createEntry('20260906000000')] }));
+    assert.throws(() => validateManifest(root, { ...manifest, stagingPrerequisites: [createEntry('20260905000000', 'other')] }));
+    assert.throws(() => validateManifest(root, { ...manifest, migrations: [migrations[0], createEntry('20260905000000', 'duplicate')] }));
+    assert.throws(() => validateManifest(root, manifest, 'preview'));
+    writeFileSync(path.join(root, prerequisites[0].path), 'SELECT 999;');
+    assert.throws(() => validateManifest(root, manifest, 'staging'), /migration-digest-mismatch/u);
+    assert.throws(() => validateManifest(root, manifest, 'production'), /migration-digest-mismatch/u);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});
+
+test('release environments bind to their exact distinct projects before CLI access', () => {
+  const production = 'uskvezwftkkudvksmken';
+  const staging = 'rxtaicdpnaqigowdbmsb';
+  assert.equal(validateProjectBinding('production', production, staging), production);
+  assert.equal(validateProjectBinding('staging', production, staging), staging);
+  for (const environment of ['staging', 'production']) {
+    for (const refs of [[staging, production], [production, production], [staging, staging],
+      [undefined, staging], [production, undefined], ['', staging], [production, ''],
+      ['a'.repeat(20), staging], [production, 'b'.repeat(20)]]) {
+      assert.throws(() => validateProjectBinding(environment, ...refs), /database-project-binding-mismatch/u);
+    }
+  }
+  assert.throws(() => validateProjectBinding('preview', production, staging), /invalid-release-environment/u);
+});
 
 const now = Date.parse('2026-09-05T12:00:00Z');
 const manifestHash = 'a'.repeat(64);
@@ -13,6 +81,23 @@ test('genuine recovery receipt is exact, recent and complete', () => {
   for (const patch of [{ method: 'seed-rebuild' }, { result: 'FAIL' }, { scope: 'catalog-only' }, { migrationManifestSha256: 'c'.repeat(64) }, { restoredBackupSha256: 'c'.repeat(64) }, { restoredAt: '2026-09-05T13:00:00Z' }, { restoredAt: '2026-09-04T10:00:00Z' }, { checks: {} }, { storageDisposition: undefined }]) {
     assert.throws(() => validateRecovery({ ...recovery, ...patch }, manifestHash, 'database', now));
   }
+});
+test('schema-and-catalog recovery is explicit and cannot reuse a catalog-only proof', () => {
+  const receipt = { ...recovery, scope: 'schema-and-catalog', encryptedBackupSha256: 'c'.repeat(64), catalogSha256: 'd'.repeat(64), restoredCatalogSha256: 'd'.repeat(64),
+    checks: { ...recovery.checks, schema: true, grants: true, rls: true, functions: true },
+    privateProductionRowsExported: false,
+    sourceFingerprints: { schema: 'e'.repeat(64), grants: 'e'.repeat(64), rls: 'e'.repeat(64), functions: 'e'.repeat(64) },
+    restoredFingerprints: { schema: 'e'.repeat(64), grants: 'e'.repeat(64), rls: 'e'.repeat(64), functions: 'e'.repeat(64) },
+    exclusions: ['privateUserRows', 'historyRows', 'managedAuthServices', 'storageObjects'] };
+  assert.doesNotThrow(() => validateRecovery(receipt, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...recovery, scope: 'schema-and-catalog' }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...receipt, restoredCatalogSha256: 'e'.repeat(64) }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...receipt, encryptedBackupSha256: undefined }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...receipt, checks: { ...receipt.checks, rls: false } }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...receipt, exclusions: [] }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...receipt, privateProductionRowsExported: true }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery({ ...receipt, restoredFingerprints: { ...receipt.restoredFingerprints, rls: 'f'.repeat(64) } }, manifestHash, 'schema-and-catalog', now));
+  assert.throws(() => validateRecovery(receipt, manifestHash, 'database', now));
 });
 test('staging must be successful actual deployment of same manifest and source', () => {
   const source = 'd'.repeat(40);
