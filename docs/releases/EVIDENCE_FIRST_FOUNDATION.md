@@ -4,9 +4,21 @@ This is the backend foundation slice of the approved rebuild. It does not promot
 the redesigned frontend, certify all catalog facts, or complete private-beta
 readiness. Apply and verify this schema before promoting its v2 consumers.
 
-**Draft release HOLD for exact-head CI:** bounded forward repairs and the fresh
-September 8 isolated recovery/integration drill pass for the final manifest.
-Do not merge or deploy until applicable CI and staging requirements pass.
+**Source and database deployment are separate gates.** Bounded forward repairs
+and the fresh September 8 isolated recovery/integration drill pass for the final
+manifest. Source merge requires exact-head required CI, database QA and recovery
+verification. Staging dispatch then uses the resulting exact current main;
+production deployment additionally requires successful staging evidence. Requiring
+that current-main staging dispatch before source merge would be circular.
+
+The foundation adds no frontend source, dependency or asset changes against main
+`7a67dc9085e07c6c0b4353b42d2c006787a1c6f0` (frontend tree
+`3a637f6e8b2e4e2a4b8a68921814868e6ac79a5a`). Its immutable-render comparisons
+repeat the pre-existing public/authenticated mismatches from merged PR #1356:
+69,993 and 70,079 pixels respectively. Visual and Change Risk checks remain FAIL,
+not waived PASS. Their inherited mismatch is deferred to the separately reviewed
+intentional-redesign acceptance before the rebuilt frontend is promoted. This
+disposition does not disable a check, change a baseline or authorize deployment.
 The September 5 recovery receipt remains historical evidence, not release authority.
 Initial managed-role fixture failures were resolved without skipping assertions;
 their fixture-only adaptations are recorded below.
