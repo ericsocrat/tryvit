@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as z from "zod/mini";
+import { EvidenceInteger } from "./integer";
 import { callValidatedRpc } from "@/lib/rpc";
 import { EVIDENCE_POLICY_VERSION, ProductReadModelSchema } from "./product-read-model";
 
@@ -21,11 +22,11 @@ export function recordEvidenceScan(client: SupabaseClient, ean: string, country?
 
 export const ScanHistoryEvidenceSchema = z.object({
   api_version: z.literal("2"), policy_version: z.literal(EVIDENCE_POLICY_VERSION),
-  total: z.int().check(z.nonnegative()), page: z.int().check(z.positive()), pages: z.int().check(z.positive()),
-  page_size: z.int().check(z.minimum(1)).check(z.maximum(50)), filter: z.enum(["all", "found", "not_found"]),
+  total: EvidenceInteger.check(z.nonnegative()), page: EvidenceInteger.check(z.positive()), pages: EvidenceInteger.check(z.positive()),
+  page_size: EvidenceInteger.check(z.minimum(1)).check(z.maximum(50)), filter: z.enum(["all", "found", "not_found"]),
   scans: z.array(z.object({
     scan_id: z.uuid(), ean: z.string(), found: z.boolean(), scanned_at: z.iso.datetime({ offset: true }),
-    product_id: z.nullable(z.int().check(z.positive())), product_name: z.nullable(z.string()),
+    product_id: z.nullable(EvidenceInteger.check(z.positive())), product_name: z.nullable(z.string()),
     brand: z.nullable(z.string()), category: z.nullable(z.string()), submission_status: z.nullable(z.string()),
   })).check(z.maxLength(50)),
 }).check(z.refine((data) => data.scans.length <= data.page_size && data.scans.length <= data.total, "Invalid history count"));

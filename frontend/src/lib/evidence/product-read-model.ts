@@ -1,4 +1,5 @@
 import * as z from "zod/mini";
+import { EvidenceInteger } from "./integer";
 
 /** Facts and their lineage, not a health ranking or probability of correctness. */
 import { EVIDENCE_POLICY_VERSION } from "./policy";
@@ -46,7 +47,7 @@ const AssertionSchema = z.object({
 }).check(z.refine((item) => item.state !== "recorded" || item.observation_id !== null, "Recorded assertions require a source observation"));
 
 export const ProductReadModelSchema = z.object({
-  product_id: z.int().check(z.positive()),
+  product_id: EvidenceInteger.check(z.positive()),
   product_name: z.string().check(z.minLength(1)),
   product_name_original: z.string().check(z.minLength(1)),
   brand: z.string(),
@@ -73,7 +74,7 @@ export const ProductReadModelSchema = z.object({
   })),
   evidence: z.object({
     state: z.enum(["recorded", "legacy_unverified", "conflicting"]),
-    recorded_fields: z.int().check(z.minimum(0)).check(z.maximum(9)),
+    recorded_fields: EvidenceInteger.check(z.minimum(0)).check(z.maximum(9)),
     total_fields: z.literal(9),
     reasons: z.array(z.string()),
   }),
@@ -126,7 +127,7 @@ export const ProductReadEnvelopeSchema = z.object({
   api_version: z.literal("2"),
   policy_version: z.literal(EVIDENCE_POLICY_VERSION),
   products: z.array(ProductReadModelSchema),
-  missing_ids: z.array(z.int().check(z.positive())),
+  missing_ids: z.array(EvidenceInteger.check(z.positive())),
 });
 export type ProductReadModel = z.infer<typeof ProductReadModelSchema>;
 export type ProductReadEnvelope = z.infer<typeof ProductReadEnvelopeSchema>;

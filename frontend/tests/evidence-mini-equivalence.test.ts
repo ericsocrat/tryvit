@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { z as classicZod } from "zod";
+import { EvidenceInteger } from "@/lib/evidence/integer";
 import * as product from "@/lib/evidence/product-read-model";
 import * as home from "@/lib/evidence/home-schema";
 import { EmptyHomeReadModelSchema } from "@/lib/evidence/home-common";
@@ -76,6 +78,24 @@ function* mutations(value: unknown): Generator<unknown> {
 }
 
 describe("Zod Mini preserves the classic evidence contract", () => {
+  it("preserves signed safe integers independently of field-specific ranges", () => {
+    const classic = classicZod.int();
+    for (const value of [Number.MIN_SAFE_INTEGER - 1, Number.MIN_SAFE_INTEGER, -1, -0, 0, 1, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER + 1, 0.1, NaN, Infinity, -Infinity, "1", null, undefined, true, 1n, Object(1)]) {
+      const expected = classic.safeParse(value), actual = EvidenceInteger.safeParse(value);
+      expect(actual.success).toBe(expected.success);
+      if (actual.success && expected.success) expect(actual.data).toBe(expected.data);
+    }
+  });
+  it.each([0, -0, 1, Number.MAX_SAFE_INTEGER])("preserves the safe count boundary for %s", (count) => {
+    const value = emptyHomeFixture();
+    value.stats.total_scanned = count;
+    expect(EmptyHomeReadModelSchema.parse(value)).toEqual(classicHome.HomeReadModelSchema.parse(value));
+  });
+  it.each([false, true, "1", null, undefined, -1, 1.1, NaN, Infinity, -Infinity, Number.MAX_SAFE_INTEGER + 1, Number.MIN_VALUE, Number.MAX_VALUE, 1n, Object(1)])("rejects invalid count %s through both Zod contracts", (count) => {
+    const value = { ...emptyHomeFixture(), stats: { ...emptyHomeFixture().stats, total_scanned: count } };
+    expect(EmptyHomeReadModelSchema.safeParse(value).success).toBe(false);
+    expect(classicHome.HomeReadModelSchema.safeParse(value).success).toBe(false);
+  });
   it("never accepts product-bearing Home payloads through the empty subset", () => {
     expect(EmptyHomeReadModelSchema.safeParse(homeFixture()).success).toBe(false);
     for (const field of ["recently_viewed", "favorites_preview"] as const) {

@@ -132,6 +132,36 @@ also passed the guarded mobile and desktop audits plus authentication setup
 promoted to accessibility proof. The 53 CI-policy tests and actionlint for the
 changed workflows passed. These are local candidate checks, not deployment.
 
+At published follow-up `904bd2c501584a4eca3e3b871e7b381d694c3d45`, PR Gate
+and Quality Gate both passed. The Linux Home comparison still exceeded +10 KiB;
+product detail decreased by 18.7 KiB. Database CI then exposed duplicate scoring
+dispatch: a hardcoded category pass followed by a whole-catalog DO statement,
+whose cumulative work hit the unchanged 30-second statement limit. The next
+revision dispatches distinct active market/category calls once through psql
+`\gexec`; formula, transaction and per-statement timeout remain unchanged. An
+actual temporary-table/procedure test verified four separate calls, both markets,
+quoted literals, deprecated exclusion and a retained one-second test limit.
+
+The next revision also combines mobile/desktop into one guarded browser launch
+per backend mode, preserving all eight project selections, isolation, assertions
+and cleanup. Seventy-one portable CI/operator tests pass with no skips, and QA
+accounting's 26 cases pass; both are wired into PR Gate. Stale documentation
+counts now refer to actual run reports rather than a blanket current PASS.
+
+All evidence integer fields retain Zod validation and safe-integer/range
+semantics through a shared minimal schema; 129 focused tests, type-check and
+lint passed. A final Windows capture recorded Home 304,110 B and product
+315,793 B, but its launcher failed during Node shutdown (`UV_HANDLE_CLOSING`).
+Browser cases finished; the overall run is retained as FAIL, not release proof.
+The next exact-head Linux comparison remains required.
+
+CodeQL annotation 37 flags a local token read reaching an Authorization header.
+Independent inspection identified intended PAT authentication to the fixed
+Supabase Management API recipient, not demonstrated exfiltration. The helper
+now explicitly rejects redirects; 13 tests cover recipient/header binding and
+sanitized failure. No real redirect or credential leak was observed, and this
+assessment does not imply the annotation has already been closed by GitHub.
+
 Follow [Consumer promotion](CONSUMER_PROMOTION.md). Keep native Supabase
 production Git synchronization disabled and verify the Vercel main-deployment
 guard. Preview must use staging before authenticated testing. The foundation

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import * as z from "zod/mini";
+import { EvidenceInteger } from "./integer";
 import { ALLERGEN_TAGS } from "@/lib/constants";
 import type { UserPreferences } from "@/lib/types";
 import { callValidatedRpc } from "@/lib/rpc";
@@ -17,7 +18,7 @@ export type FindProblem = "unsupported_filters" | "invalid_filters" | "invalid_q
 export const FindEnvelopeSchema = z.object({
   api_version: z.literal("2"), policy_version: z.literal(EVIDENCE_POLICY_VERSION), query: z.nullable(z.string()),
   country: z.enum(["PL", "DE"]), language: z.enum(["en", "pl", "de"]),
-  total: z.int().check(z.nonnegative()), page: z.int().check(z.positive()), pages: z.int().check(z.positive()), page_size: z.int().check(z.minimum(1)).check(z.maximum(50)),
+  total: EvidenceInteger.check(z.nonnegative()), page: EvidenceInteger.check(z.positive()), pages: EvidenceInteger.check(z.positive()), page_size: EvidenceInteger.check(z.minimum(1)).check(z.maximum(50)),
   filters_applied: FindFiltersSchema, preferences_applied: z.boolean(), results: z.array(ProductReadModelSchema),
 });
 export type FindEnvelope = z.infer<typeof FindEnvelopeSchema>;

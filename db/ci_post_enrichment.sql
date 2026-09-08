@@ -362,66 +362,16 @@ WHERE palm.product_id = p.product_id
 -- Step 3: Re-score all categories (propagates concern scores into unhealthiness)
 -- ═══════════════════════════════════════════════════════════════
 
-CALL score_category('Alcohol');
-CALL score_category('Baby');
-CALL score_category('Bread');
-CALL score_category('Breakfast & Grain-Based');
-CALL score_category('Canned Goods');
-CALL score_category('Cereals');
-CALL score_category('Chips');
-CALL score_category('Condiments');
-CALL score_category('Dairy');
-CALL score_category('Drinks');
-CALL score_category('Frozen & Prepared');
-CALL score_category('Instant & Frozen');
-CALL score_category('Meat');
-CALL score_category('Nuts, Seeds & Legumes');
-CALL score_category('Plant-Based & Alternatives');
-CALL score_category('Sauces');
-CALL score_category('Seafood & Fish');
-CALL score_category('Snacks');
-CALL score_category('Sweets');
-CALL score_category('Żabka');
-
--- DE categories (all 19)
-CALL score_category('Alcohol',                  p_country := 'DE');
-CALL score_category('Baby',                     p_country := 'DE');
-CALL score_category('Bread',                    p_country := 'DE');
-CALL score_category('Breakfast & Grain-Based',  p_country := 'DE');
-CALL score_category('Canned Goods',             p_country := 'DE');
-CALL score_category('Cereals',                  p_country := 'DE');
-CALL score_category('Chips',                    p_country := 'DE');
-CALL score_category('Condiments',               p_country := 'DE');
-CALL score_category('Dairy',                    p_country := 'DE');
-CALL score_category('Drinks',                   p_country := 'DE');
-CALL score_category('Frozen & Prepared',        p_country := 'DE');
-CALL score_category('Instant & Frozen',         p_country := 'DE');
-CALL score_category('Meat',                     p_country := 'DE');
-CALL score_category('Nuts, Seeds & Legumes',    p_country := 'DE');
-CALL score_category('Plant-Based & Alternatives', p_country := 'DE');
-CALL score_category('Sauces',                   p_country := 'DE');
-CALL score_category('Seafood & Fish',           p_country := 'DE');
-CALL score_category('Snacks',                   p_country := 'DE');
-CALL score_category('Sweets',                   p_country := 'DE');
-
--- Reconcile every active category-country pair, including pipeline-specific
--- categories (for example Frozen Vegetables, Soups, Ready Meals, and
--- Desserts & Ice Cream) that are not represented in the legacy call list.
--- This keeps enrichment changes and stored v3.3 scores in parity.
-DO $reconcile_scores$
-DECLARE
-  scope record;
-BEGIN
-  FOR scope IN
-    SELECT DISTINCT country, category
-    FROM products
-    WHERE is_deprecated IS NOT TRUE
-    ORDER BY country, category
-  LOOP
-    CALL score_category(scope.category, 100, scope.country);
-  END LOOP;
-END
-$reconcile_scores$;
+-- Reconcile every active market/category exactly once, including categories
+-- absent from the old hardcoded list. Each CALL remains a separate statement:
+-- a DO loop incorrectly shares one 30-second timeout across the entire catalog.
+-- Keep the existing per-statement timeout and transaction; do not alter scoring.
+-- psql format(%L) quotes catalog values as literals, including apostrophes.
+SELECT format('CALL public.score_category(%L, 100, %L);', category, country)
+FROM (SELECT DISTINCT country, category FROM public.products
+      WHERE is_deprecated IS NOT TRUE) AS scope
+ORDER BY country, category
+\gexec
 
 COMMIT;
 

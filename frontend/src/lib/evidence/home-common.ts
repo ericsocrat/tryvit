@@ -1,8 +1,9 @@
 import * as z from "zod/mini";
 import { EVIDENCE_POLICY_VERSION } from "./policy";
+import { EvidenceInteger } from "./integer";
 
 /** Shared by full and empty Home contracts so their checks cannot diverge. */
-const Count = z.int().check(z.nonnegative());
+const Count = EvidenceInteger.check(z.nonnegative());
 export const homeFields = {
   api_version: z.literal("2"), policy_version: z.literal(EVIDENCE_POLICY_VERSION),
   language: z.enum(["en", "pl", "de"]), country: z.nullable(z.enum(["PL", "DE"])),

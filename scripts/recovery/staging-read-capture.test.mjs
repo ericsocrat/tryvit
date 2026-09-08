@@ -54,6 +54,18 @@ test('management errors identify phase/status without response bodies or credent
   assert.equal(error.code,'staging_cleanup_drop_http_503');
   assert.ok(!error.message.includes('synthetic-token'));
 });
+test('management authentication and SQL remain bound to the fixed recipient without redirects',async()=>{
+  let calls=0;
+  await assert.rejects(managementSql('synthetic-token','SELECT 1','metadata',async(url,options)=>{
+    calls++;
+    assert.equal(url,'https://api.supabase.com/v1/projects/rxtaicdpnaqigowdbmsb/database/query');
+    assert.equal(options.redirect,'error');
+    assert.equal(options.headers.Authorization,'Bearer synthetic-token');
+    assert.deepEqual(JSON.parse(options.body),{query:'SELECT 1'});
+    throw new TypeError('synthetic redirect failure');
+  }),error=>error.code==='staging_metadata_network_failed'&&!error.message.includes('synthetic-token'));
+  assert.equal(calls,1);
+});
 test('cleanup failure cannot replace original capture failure',async()=>{
   const primary=new RecoveryError('staging_schema_dump_failed');
   const sql=async(text,phase)=>{

@@ -32,3 +32,13 @@ test('historical dispersion remains twelve visible diagnostics and errors stay b
   for(const match of required.matchAll(/'([^']+)'/g)) assert.ok(ids.has(match[1]),`unknown required suite ${match[1]}`);
   assert.match(read('.github/workflows/qa.yml'),/execution errors; \$\(\$qa.summary.untested\) untested checks/);
 });
+
+test('CI historical scoring dispatches every active market/category once with unchanged statement limits',()=>{
+  const sql=read('db/ci_post_enrichment.sql');
+  assert.match(sql,/SELECT format\('CALL public\.score_category\(%L, 100, %L\);', category, country\)/);
+  assert.match(sql,/SELECT DISTINCT country, category FROM public\.products\s+WHERE is_deprecated IS NOT TRUE/);
+  assert.match(sql,/ORDER BY country, category\s+\\gexec/);
+  assert.equal((sql.match(/CALL public\.score_category/g)??[]).length,1);
+  assert.doesNotMatch(sql,/DO \$reconcile_scores\$|CALL score_category\(|SET\s+(?:LOCAL\s+)?statement_timeout/i);
+  assert.ok(sql.indexOf('\\gexec')<sql.indexOf('COMMIT;'));
+});

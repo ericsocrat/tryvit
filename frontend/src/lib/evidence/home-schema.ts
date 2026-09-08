@@ -1,8 +1,9 @@
 import * as z from "zod/mini";
+import { EvidenceInteger } from "./integer";
 import { ProductReadModelSchema } from "./product-read-model";
 import { homeFields, savedAllergenFields, validHomeCounts, validSavedAllergenCounts } from "./home-common";
 
-const ProductId = z.int().check(z.positive());
+const ProductId = EvidenceInteger.check(z.positive());
 const HomeProduct = z.object({ product_id: ProductId, product: z.nullable(ProductReadModelSchema) }).check(z.refine((entry) => !entry.product || entry.product_id === entry.product.product_id, "Home product identity mismatch"));
 const Recent = z.safeExtend(HomeProduct, { viewed_at: z.iso.datetime({ offset: true }) });
 const Favorite = z.safeExtend(HomeProduct, { added_at: z.iso.datetime({ offset: true }) });

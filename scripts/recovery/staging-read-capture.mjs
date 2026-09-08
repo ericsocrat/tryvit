@@ -180,7 +180,7 @@ export async function managementSql(token,query,phase='metadata',request=fetch) 
   check(/^[a-z_]+$/u.test(phase),'invalid_management_phase');
   let response;
   try {response=await request(`https://api.supabase.com/v1/projects/${PROJECT}/database/query`,{
-    method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({query}),signal:AbortSignal.timeout(90000)});
+    method:'POST',redirect:'error',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({query}),signal:AbortSignal.timeout(90000)});
   } catch {throw new RecoveryError('staging_'+phase+'_network_failed');}
   check(response.ok,'staging_'+phase+'_http_'+response.status);
   try {return await response.json();} catch {throw new RecoveryError('staging_'+phase+'_invalid_json');}

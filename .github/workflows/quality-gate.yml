@@ -132,17 +132,9 @@ jobs:
           VISUAL_SAFETY_MODE: public
           BASE_URL: http://127.0.0.1:3000
 
-      - name: Run public Mobile Audit
+      - name: Run public Mobile and Desktop Audits
         working-directory: frontend
-        run: npm run visual-safety:public -- --project=quality-mobile --reporter=html,list
-        env:
-          VISUAL_SAFETY_MODE: public
-          QA_MODE_LEVEL: ${{ steps.mode.outputs.mode }}
-          BASE_URL: http://127.0.0.1:3000
-
-      - name: Run public Desktop Audit
-        working-directory: frontend
-        run: npm run visual-safety:public -- --project=quality-desktop --reporter=html,list
+        run: npm run visual-safety:public -- --project=quality-mobile --project=quality-desktop --reporter=html,list
         env:
           VISUAL_SAFETY_MODE: public
           QA_MODE_LEVEL: ${{ steps.mode.outputs.mode }}
@@ -201,18 +193,10 @@ jobs:
           rm -f -- "$fixture_ids"
           echo "seeded=true" >> "$GITHUB_OUTPUT"
 
-      - name: Run local-authenticated Mobile Audit
-        working-directory: frontend
-        run: npm run visual-safety:local-authenticated -- --project=quality-mobile --reporter=html,list
-        env:
-          VISUAL_SAFETY_MODE: local-authenticated
-          QA_MODE_LEVEL: ${{ steps.mode.outputs.mode }}
-          BASE_URL: http://127.0.0.1:3000
-
-      - name: Run local-authenticated Desktop Audit
+      - name: Run local-authenticated Mobile and Desktop Audits
         id: local_desktop_audit
         working-directory: frontend
-        run: npm run visual-safety:local-authenticated -- --project=quality-desktop --project=private-pwa-cache --project=phase5a1-catalog --project=phase5a2-primitives-firefox --project=phase5a2-primitives-webkit --reporter=html,list
+        run: npm run visual-safety:local-authenticated -- --project=quality-mobile --project=quality-desktop --project=private-pwa-cache --project=phase5a1-catalog --project=phase5a2-primitives-firefox --project=phase5a2-primitives-webkit --reporter=html,list
         env:
           VISUAL_SAFETY_MODE: local-authenticated
           QA_MODE_LEVEL: ${{ steps.mode.outputs.mode }}
