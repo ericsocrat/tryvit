@@ -83,6 +83,14 @@ Every comparison prints the manifest and actual image versions and records them
 in the Actions summary. OS, architecture, pinned versions, deterministic
 settings, and pixel equality remain blocking.
 
+Intentional-redesign manifest transitions follow the same distinction: a changed
+hosted `imageVersion` observation is retained in the newly reviewed manifest,
+not rewritten to the older value. OS, architecture, pinned runtime/browser
+versions, fixtures, settings and unauthorized image changes still fail closed.
+Both original manifest checksums and the exact candidate/two-pass provenance
+remain validated. This permits only the existing observation field to differ;
+it is not permission to substitute a renderer or accept unreviewed pixels.
+
 The existing Open Graph image modules request a fixed Inter font URL while
 Next.js builds those routes. Phase 5A.0d pins that exact response as a test-only
 font fixture (`344,068` bytes; SHA-256
