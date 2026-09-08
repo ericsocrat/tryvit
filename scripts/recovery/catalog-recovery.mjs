@@ -17,6 +17,7 @@ export const SCOPE_PROFILES = Object.freeze({
   'catalog-v1': TABLES,
   'consumer-v1': CONSUMER_TABLES,
   'observations-v1': Object.freeze([...CONSUMER_TABLES,...OBSERVATION_TABLES]),
+  'observations-public-cohort-v1': Object.freeze([...CONSUMER_TABLES,...OBSERVATION_TABLES]),
 });
 export function scopeTables(scopeProfile='catalog-v1') {
   if(!Object.hasOwn(SCOPE_PROFILES,scopeProfile)) throw new RecoveryError('unknown_catalog_scope_profile');
@@ -31,6 +32,10 @@ export function validateScopeMetadata(source,scopeProfile='catalog-v1') {
     OBSERVATION_TABLES.some(t=>source.fingerprints[t].count!==0 ||
       source.fingerprints[t].rowSha256!==createHash('sha256').update('').digest('hex'))))
     throw new RecoveryError('populated_observation_capture_not_approved');
+  if(scopeProfile==='observations-public-cohort-v1' &&
+    (source.observationDisposition!=='exact-reviewed-public-cohort-in-export-snapshot' ||
+      !/^[a-f0-9]{64}$/.test(source.publicAllowlistSha256??'')))
+    throw new RecoveryError('public_cohort_review_required');
   return tables;
 }
 export async function assertEmptyObservations(session) {
@@ -98,7 +103,8 @@ export function command(executable,args,options={}) {
 export class SqlSession {
   constructor(executable,args,env) {
     this.child=spawn(executable,args,{env,stdio:['pipe','pipe','pipe']});
-    this.pending=null; this.error='';
+    this.pending=null; this.error='';this.terminalCode=null;
+    this.child.stdin.on('error',()=>this.fail('sql_session_stdin_failed'));
     readline.createInterface({input:this.child.stdout}).on('line',line=>{
       if(!this.pending) return;
       if(line===this.pending.marker) {const p=this.pending;this.pending=null;clearTimeout(p.timer);p.resolve(p.lines.join('\n'));}
@@ -110,16 +116,21 @@ export class SqlSession {
       /password authentication failed/i.test(this.error)?'database_authentication_failed':
       `sql_session_failed_${this.error.match(/(?:ERROR|FATAL):\s+([A-Z0-9]{5})\b/)?.[1]||'unknown'}`));
   }
-  fail(code) {if(this.pending){clearTimeout(this.pending.timer);this.pending.reject(new RecoveryError(code));this.pending=null;}}
+  fail(code) {this.terminalCode??=code;if(this.pending){clearTimeout(this.pending.timer);this.pending.reject(new RecoveryError(this.terminalCode));this.pending=null;}}
   query(sql) {
     if(this.pending) throw new RecoveryError('concurrent_snapshot_query');
+    if(this.terminalCode)return Promise.reject(new RecoveryError(this.terminalCode));
     return new Promise((resolve,reject)=>{
       const marker='recovery_'+randomBytes(12).toString('hex');
       this.pending={marker,resolve,reject,lines:[],timer:setTimeout(()=>{this.fail('sql_timeout');this.child.kill();},120000)};
-      this.child.stdin.write(sql+';\n\\echo '+marker+'\n');
+      try {this.child.stdin.write(sql+';\n\\echo '+marker+'\n',error=>{if(error)this.fail('sql_session_stdin_failed');});}
+      catch {this.fail('sql_session_stdin_failed');}
     });
   }
-  async close() {if(this.child.exitCode===null){await this.query('ROLLBACK');this.child.stdin.end('\\q\n');}}
+  async close() {
+    if(this.child.exitCode===null&&this.terminalCode){this.child.stdin.destroy();this.child.kill();return;}
+    if(this.child.exitCode===null){await this.query('ROLLBACK');this.child.stdin.end('\\q\n');}
+  }
 }
 export function fingerprintQuery(table,scopeProfile='catalog-v1') {
   if(!scopeTables(scopeProfile).includes(table)) throw new RecoveryError('table_outside_catalog_scope');
@@ -160,7 +171,7 @@ export function privateDirectory(directory) {
       '*S-1-5-18:(OI)(CI)F','*S-1-5-32-544:(OI)(CI)F']);
   }
 }
-export async function sourceMetadata(session,scopeProfile='catalog-v1') {
+export async function sourceMetadata(session,scopeProfile='catalog-v1',publicReview=null) {
   const tables=scopeTables(scopeProfile);
   const names=tables.map(t=>`'${t}'`).join(',');
   const columns=JSON.parse(await session.query(columnMetadataQuery(scopeProfile)));
@@ -169,6 +180,11 @@ export async function sourceMetadata(session,scopeProfile='catalog-v1') {
   // Same exported repeatable-read snapshot, before any row dump. No stored
   // payload is inspected or exported until a populated policy is approved.
   if(scopeProfile==='observations-v1')await assertEmptyObservations(session);
+  if(scopeProfile==='observations-public-cohort-v1') {
+    const {validatePublicAllowlist,publicSnapshotSql}=await import('./cohort-public-recovery.mjs');
+    if(!publicReview)throw new RecoveryError('public_cohort_review_required');
+    validatePublicAllowlist(JSON.parse(await session.query(publicSnapshotSql)),publicReview.manifest,publicReview.reviewedSha256);
+  }
   const constraints=JSON.parse(await session.query(`SELECT COALESCE(jsonb_agg(jsonb_build_object('table',r.relname,'name',c.conname,
     'kind',c.contype,'definition',pg_get_constraintdef(c.oid),'reference_schema',fn.nspname,'reference_table',fr.relname)
     ORDER BY r.relname,c.conname),'[]'::jsonb) FROM pg_constraint c JOIN pg_class r ON r.oid=c.conrelid
@@ -198,6 +214,8 @@ export async function sourceMetadata(session,scopeProfile='catalog-v1') {
   const view=await session.query("SELECT encode(sha256(convert_to(pg_get_viewdef('public.v_master'::regclass,true),'UTF8')),'hex')");
   return {...(scopeProfile==='catalog-v1'?{}:{scopeProfile}),
     ...(scopeProfile==='observations-v1'?{observationDisposition:'empty-in-export-snapshot'}:{}),
+    ...(scopeProfile==='observations-public-cohort-v1'?{
+      observationDisposition:'exact-reviewed-public-cohort-in-export-snapshot',publicAllowlistSha256:publicReview.reviewedSha256}:{}),
     columns,constraints,external,rpc,masterViewSha256:view};
 }
 

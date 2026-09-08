@@ -139,15 +139,17 @@ SELECT jsonb_build_object('priorProductProjection',true,'priorNutritionProjectio
   'updatedAtDisposition','Operational reversal updates product and nutrition modification times',
   'retainedMappingDisposition','New source mapping remains with original product ID and no selected observation');`;
 
-export function pilotPlan() {
-  const original=fs.readFileSync(path.join(ROOT,PILOT));
-  if(hash(original)!==PIN)throw new RecoveryError('retained_pilot_sql_changed');
-  const recordBytes=fs.readFileSync(path.join(ROOT,OBSERVATION));
+export function pilotPlan({readFile=file=>fs.readFileSync(path.join(ROOT,file)),pilotSha256=PIN,
+  observationSha256='76d3b5ffb8e99db631a88b323869a976d56006a6fdb784f4cce246796bcec7b2',
+  validateMigrationManifest=manifest=>validateManifest(ROOT,manifest)}={}) {
+  const original=readFile(PILOT);
+  if(hash(original)!==pilotSha256)throw new RecoveryError('retained_pilot_sql_changed');
+  const recordBytes=readFile(OBSERVATION);
   const observation=JSON.parse(recordBytes);
-  if(hash(recordBytes)!=='76d3b5ffb8e99db631a88b323869a976d56006a6fdb784f4cce246796bcec7b2')
+  if(hash(recordBytes)!==observationSha256)
     throw new RecoveryError('retained_observation_changed');
-  const manifestBytes=fs.readFileSync(path.join(ROOT,MANIFEST)),manifest=JSON.parse(manifestBytes);
-  validateManifest(ROOT,manifest);
+  const manifestBytes=readFile(MANIFEST),manifest=JSON.parse(manifestBytes);
+  validateMigrationManifest(manifest);
   if(manifest.recoveryProfile!=='consumer-v1'||manifest.migrations.length!==7)throw new RecoveryError('pilot_manifest_scope_changed');
   const mutation=original.toString('utf8').replace('-- DRY PLAN ONLY: requires a fresh 19-table recovery proof and isolated import/reversal rehearsal.',
     '-- MUTATION ARTIFACT: imports retained product 178 and COMMITS. Only execute through reviewed clone rehearsal or a separately approved production workflow.');
@@ -157,8 +159,8 @@ export function pilotPlan() {
   return {digest,sql,digests,manifest,manifestSha256:hash(manifestBytes)};
 }
 
-export async function rehearsePilot({catalogDirectory,schemaDirectory,databaseAuthorityPath,execute=false,confirmDigest=null}={}) {
-  const plan=pilotPlan();
+export async function rehearsePilot({catalogDirectory,schemaDirectory,databaseAuthorityPath,execute=false,confirmDigest=null,source}={}) {
+  const plan=pilotPlan(source);
   if(!execute)return {result:'PLAN',planSha256:plan.digest,sqlSha256:plan.digests,migrationManifestSha256:plan.manifestSha256,
     productId:178,remoteReads:false,remoteWrites:false,localWrites:false};
   if(confirmDigest!==plan.digest)throw new RecoveryError('pilot_exact_digest_confirmation_required');

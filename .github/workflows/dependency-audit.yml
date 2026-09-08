@@ -31,6 +31,7 @@ on:
       - "requirements*.txt"
       - "pyproject.toml"
       - "scripts/ci/**"
+      - "scripts/recovery/**"
       - ".github/workflows/**"
   # Weekly scan catches newly disclosed CVEs against existing lockfile
   schedule:

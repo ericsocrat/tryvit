@@ -10,12 +10,13 @@ const ROOT=path.resolve(HERE,'../..');
 // Match the production pg_graphql1.5.11 dependency. Later image1.165 bundles
 // only1.6.1 and cannot reconstruct the extension-owned source wrapper.
 export const IMAGE='public.ecr.aws/supabase/postgres:17.6.1.075';
-export function containmentArgs(name,{database=false,bootstrapUser='postgres',locale='C.UTF-8'}={}) {
+export function containmentArgs(name,{database=false,bootstrapUser='postgres',locale='C.UTF-8',lifetimeSeconds=300}={}) {
   if(!/^tryvit_recovery_probe_[a-f0-9]{12}$/.test(name)) throw new Error('UNSAFE_CONTAINER_NAME');
   if(!['postgres','tryvit_recovery_operator'].includes(bootstrapUser)||!['C.UTF-8','en_US.UTF-8'].includes(locale))
     throw new Error('UNSAFE_BOOTSTRAP_SETTING');
+  if(![300,1200].includes(lifetimeSeconds)||(!database&&lifetimeSeconds!==300))throw new Error('UNSAFE_CONTAINMENT_LIFETIME');
   const script=database ?
-    `initdb -D /var/lib/postgresql/data --locale=${locale} --encoding=UTF8 -A trust -U ${bootstrapUser} >/dev/null 2>&1 && exec timeout 300 postgres -D /var/lib/postgresql/data -c listen_addresses= -c unix_socket_directories=/tmp -c shared_preload_libraries=pg_cron,pg_stat_statements -c cron.launch_active_jobs=off -c log_min_messages=panic -c log_min_error_statement=panic -c logging_collector=off -c log_statement=none -c jit=off` : 'sleep 300';
+    `initdb -D /var/lib/postgresql/data --locale=${locale} --encoding=UTF8 -A trust -U ${bootstrapUser} >/dev/null 2>&1 && exec timeout ${lifetimeSeconds} postgres -D /var/lib/postgresql/data -c listen_addresses= -c unix_socket_directories=/tmp -c shared_preload_libraries=pg_cron,pg_stat_statements -c cron.launch_active_jobs=off -c log_min_messages=panic -c log_min_error_statement=panic -c logging_collector=off -c log_statement=none -c jit=off` : 'sleep 300';
   return ['run','--detach','--name',name,'--label','tryvit.recovery.scope=containment-probe',
     '--network','none','--read-only','--cap-drop','ALL','--security-opt','no-new-privileges',
     '--user','100:101','--cpus','1','--memory','1g','--memory-swap','1g','--pids-limit','128',

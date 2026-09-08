@@ -13,13 +13,13 @@ const hash=value=>createHash('sha256').update(value).digest('hex');
 const quote=value=>'"'+value.replaceAll('"','""')+'"';
 const literal=value=>"'"+value.replaceAll("'","''")+"'";
 const OPERATOR='tryvit_recovery_operator';
-const rolesQuery=`SELECT jsonb_agg(jsonb_build_object('name',rolname,'super',rolsuper,'inherit',rolinherit,
+export const rolesQuery=`SELECT jsonb_agg(jsonb_build_object('name',rolname,'super',rolsuper,'inherit',rolinherit,
   'createRole',rolcreaterole,'createDb',rolcreatedb,'login',rolcanlogin,'replication',rolreplication,'bypassRls',rolbypassrls)
   ORDER BY rolname) FROM pg_roles WHERE left(rolname,3)<>'pg_' AND rolname<>'${OPERATOR}'`;
-const membershipsQuery=`SELECT COALESCE(jsonb_agg(jsonb_build_object('role',r.rolname,'member',m.rolname,
+export const membershipsQuery=`SELECT COALESCE(jsonb_agg(jsonb_build_object('role',r.rolname,'member',m.rolname,
   'admin',a.admin_option,'inherit',a.inherit_option,'set',a.set_option) ORDER BY r.rolname,m.rolname),'[]'::jsonb)
   FROM pg_auth_members a JOIN pg_roles r ON r.oid=a.roleid JOIN pg_roles m ON m.oid=a.member`;
-const supplementQuery=`SELECT jsonb_build_object('definition',pg_get_functiondef(p.oid),
+export const supplementQuery=`SELECT jsonb_build_object('definition',pg_get_functiondef(p.oid),
   'arguments',pg_get_function_identity_arguments(p.oid),'owner',pg_get_userbyid(p.proowner),'acl',p.proacl::text,
   'extension',e.extname,'extensionVersion',e.extversion,
   'schemas',(SELECT jsonb_agg(jsonb_build_object('name',nspname,'owner',pg_get_userbyid(nspowner),'acl',nspacl::text) ORDER BY nspname)
@@ -211,19 +211,27 @@ export function validateCatalogReceipts(receipts,source,archiveHash,scopeProfile
   return receipts[0];
 }
 export async function schemaCatalogRecovery({envFile,sourceCa,catalogDirectory,manifestSha256,execute=false,schemaDirectory=null,captureOnly=false,
-  onVerifiedRestore=null,writeReceipt=true,scopeProfile='catalog-v1'}) {
+  onVerifiedRestore=null,writeReceipt=true,scopeProfile='catalog-v1',cloneLifetimeSeconds=300,combinedCapture=null}) {
   const tables=scopeTables(scopeProfile);
   if(!captureOnly&&!/^[a-f0-9]{64}$/.test(manifestSha256||''))throw new RecoveryError('migration_manifest_digest_required');
   const catalog=path.resolve(catalogDirectory||'');
   if(!catalog.startsWith(path.join(ROOT,'backups')+path.sep))throw new RecoveryError('catalog_archive_not_private');
   if(fs.realpathSync(catalog)!==catalog)throw new RecoveryError('catalog_archive_redirected');
-  const old=JSON.parse(fs.readFileSync(path.join(catalog,'source-metadata.json'),'utf8'));
-  const archive=fs.readFileSync(path.join(catalog,'catalog.dump'));
+  let combined=null;
+  if(combinedCapture) {
+    if(scopeProfile!=='observations-public-cohort-v1'||!schemaDirectory||path.resolve(schemaDirectory)!==catalog)
+      throw new RecoveryError('combined_capture_scope_mismatch');
+    const {loadCombinedPublicRecovery}=await import('./combined-public-recovery.mjs');
+    combined=loadCombinedPublicRecovery(catalog,{expectedBinding:combinedCapture.binding,requireRestored:false});
+  } else if(scopeProfile==='observations-public-cohort-v1')throw new RecoveryError('combined_capture_required');
+  const old=combined?.sourceMetadata??JSON.parse(fs.readFileSync(path.join(catalog,'source-metadata.json'),'utf8'));
+  const archive=combined?.catalogArchive??fs.readFileSync(path.join(catalog,'catalog.dump'));
   // Prefer current producer output; legacy-only directories remain supported.
   // Every present receipt must pass: never select around failed or weaker proof.
   const receipts=['receipt.json','verification-v2.json'].filter(f=>fs.existsSync(path.join(catalog,f)))
     .map(f=>JSON.parse(fs.readFileSync(path.join(catalog,f),'utf8')));
-  validateCatalogReceipts(receipts,old,hash(archive),scopeProfile);
+  if(!combined)validateCatalogReceipts(receipts,old,hash(archive),scopeProfile);
+  else validateScopeMetadata(old,scopeProfile);
   if(!execute)return {result:'PREPARED',scope:'schema-and-catalog',scopeProfile,privateProductionRowsExported:false};
   const directory=schemaDirectory?path.resolve(schemaDirectory):path.join(ROOT,'backups','schema_catalog_'+Date.now()+'_'+randomBytes(3).toString('hex'));
   if(schemaDirectory&&(!directory.startsWith(path.join(ROOT,'backups','schema_catalog_'))||fs.realpathSync(directory)!==directory))
@@ -270,7 +278,7 @@ export async function schemaCatalogRecovery({envFile,sourceCa,catalogDirectory,m
     privateProductionRowsExported:false,encryptedBackupSha256:hash(sealed),archiveDirectory:path.relative(ROOT,directory)};}
   const name='tryvit_recovery_probe_'+randomBytes(6).toString('hex');let created=false;let receipt;let plain,unwrapped,integration;
   try {
-    docker(containmentArgs(name,{database:true,bootstrapUser:OPERATOR,locale:'en_US.UTF-8'}));created=true;await waitForDatabase(name);
+    docker(containmentArgs(name,{database:true,bootstrapUser:OPERATOR,locale:'en_US.UTF-8',lifetimeSeconds:cloneLifetimeSeconds}));created=true;await waitForDatabase(name);
     assertContained(JSON.parse(docker(['inspect',name]))[0]);
     // Roles are structural metadata only, never password hashes or rolconfig.
     if(roles.some(r=>r.name===OPERATOR))throw new RecoveryError('recovery_operator_name_collision');
@@ -320,7 +328,9 @@ export async function schemaCatalogRecovery({envFile,sourceCa,catalogDirectory,m
     const behavior=localSql(name,syntheticRoleSql()).trim().split(/\r?\n/).filter(Boolean).map(v=>JSON.parse(v));
     checks.syntheticRoles=behavior.length===3&&behavior.every(v=>Object.values(v).every(x=>x===true));
     receipt={schemaVersion:scopeProfile==='catalog-v1'?1:2,...(scopeProfile==='catalog-v1'?{}:{scopeProfile,catalogTables:tables}),
-      ...(scopeProfile==='observations-v1'?{observationDisposition:'empty-in-export-snapshot'}:{}),environment:'production',scope:'schema-and-catalog',method:'backup-restore',migrationManifestSha256:manifestSha256,
+      ...(scopeProfile==='observations-v1'?{observationDisposition:'empty-in-export-snapshot'}:{}),
+      ...(combined?{binding:combined.binding,observationDisposition:old.observationDisposition,publicAllowlistSha256:old.publicAllowlistSha256}:{}),
+      environment:combined?.binding.environment??'production',scope:'schema-and-catalog',method:'backup-restore',migrationManifestSha256:manifestSha256,
       backupSha256:plainHash,restoredBackupSha256:restoredHash,encryptedBackupSha256:hash(sealed),
       bootstrapSupplementSha256:hash(bootstrapBytes),
       catalogSha256:hash(JSON.stringify(old.fingerprints)),restoredCatalogSha256:hash(JSON.stringify(rows)),

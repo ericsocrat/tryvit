@@ -40,12 +40,28 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # Historical recovery fixtures verify exact ancestor migration bytes.
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "22.21.1"
       - name: Test candidate policy without production secrets
-        run: node --test scripts/ci/*.test.mjs .github/scripts/*.test.mjs scripts/qa/ci-statistics-runtime.test.mjs scripts/qa/quality-launch-consolidation.test.mjs scripts/recovery/staging-read-capture.test.mjs
+        run: >-
+          node --test scripts/ci/*.test.mjs .github/scripts/*.test.mjs
+          scripts/qa/ci-statistics-runtime.test.mjs scripts/qa/quality-launch-consolidation.test.mjs
+          scripts/recovery/catalog-recovery.test.mjs
+          scripts/recovery/cohort-batch.test.mjs
+          scripts/recovery/cohort-pilot.test.mjs
+          scripts/recovery/cohort-pilot-operator.test.mjs
+          scripts/recovery/cohort-production-operator.test.mjs
+          scripts/recovery/cohort-runtime.test.mjs
+          scripts/recovery/combined-public-recovery.test.mjs
+          scripts/recovery/migration-integration.test.mjs
+          scripts/recovery/opaque-containment.test.mjs
+          scripts/recovery/schema-catalog-recovery.test.mjs
+          scripts/recovery/staging-catchup-plan.test.mjs
+          scripts/recovery/staging-read-capture.test.mjs
 
       - name: Verify QA result accounting
         shell: pwsh
