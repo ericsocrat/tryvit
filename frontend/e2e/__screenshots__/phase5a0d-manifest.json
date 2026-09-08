@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "kind": "phase5a0d-visual-baselines",
-  "sourceCommit": "69c22d43d40b61827019514ac28d62e0d69d41eb",
+  "sourceCommit": "56dd971622a90d17ce91818aee8f2d74fbb4aa53",
   "rendererClass": "ci-linux-authoritative",
   "runner": {
     "imageOS": "ubuntu24",
-    "imageVersion": "20260823.283.1",
+    "imageVersion": "20260831.293.1",
     "arch": "x64"
   },
   "versions": {
@@ -38,8 +38,8 @@
       "height": 844,
       "fixtureState": "public-static",
       "relativeFile": "smoke-visual.spec.ts/p5a0d-landing-390x844-light-reduced.png",
-      "sha256": "110b1fc6f950911720cd3559fb5cf29dc1bbe561793caf699751d2c913d597e2",
-      "bytes": 68692
+      "sha256": "0bc3970af529a6a6419895137ee820bad2d84914ab6a33e3a51f1733c38d6f4a",
+      "bytes": 83781
     },
     {
       "id": "landing-768x1024",
@@ -50,8 +50,8 @@
       "height": 1024,
       "fixtureState": "public-static",
       "relativeFile": "smoke-visual.spec.ts/p5a0d-landing-768x1024-light-reduced.png",
-      "sha256": "424f4ba12c297cd837195a5fd2be00148b8486e5edec950d3c500240b77bebc9",
-      "bytes": 105498
+      "sha256": "3829f130de7c7a53727c72853ded2bdf8af2afbfb63031b1a1044a58a7fde532",
+      "bytes": 115201
     },
     {
       "id": "landing-1440x900",
@@ -62,8 +62,8 @@
       "height": 900,
       "fixtureState": "public-static",
       "relativeFile": "smoke-visual.spec.ts/p5a0d-landing-1440x900-light-reduced.png",
-      "sha256": "755eed6c523116bab8764c00b8486783c1361c0283929af589d5167b05e9d6de",
-      "bytes": 103619
+      "sha256": "b310b1047ceae4206b8144aece510b174eef4f203249ed4aaa48fa39c54f20ba",
+      "bytes": 152752
     },
     {
       "id": "login-390x844",
@@ -74,8 +74,8 @@
       "height": 844,
       "fixtureState": "public-static",
       "relativeFile": "smoke-visual.spec.ts/p5a0d-login-390x844-light-reduced.png",
-      "sha256": "80862791f68577982143277ef2cf036e131f38c9c9ef2149882aeca87ab36ab9",
-      "bytes": 101143
+      "sha256": "83e5eef8674ab8b09aca2295e9c683914ecf4d6a3614c6c01cd37b6bf12a692f",
+      "bytes": 101658
     },
     {
       "id": "login-1440x900",
@@ -86,8 +86,8 @@
       "height": 900,
       "fixtureState": "public-static",
       "relativeFile": "smoke-visual.spec.ts/p5a0d-login-1440x900-light-reduced.png",
-      "sha256": "a0fc219340ef8d17fa89ee43154a31207f7061d2dcb4d297d73be243c608c2fd",
-      "bytes": 274628
+      "sha256": "31804b592d83cb7f1da8b86f03d6d16394ff35c4ce6e9475e66b761b7806595a",
+      "bytes": 274384
     },
     {
       "id": "app-shell-new-user-390x844",
@@ -98,8 +98,8 @@
       "height": 844,
       "fixtureState": "local-authenticated-new-user",
       "relativeFile": "authenticated-visual.spec.ts/p5a0d-app-shell-new-user-390x844-light-reduced.png",
-      "sha256": "ee638001d3f542ea1659e553f46360bca783bb708aac6454ed4e21204425e2a3",
-      "bytes": 51820
+      "sha256": "642b5424a8b5f3b2fa6822afa502d645c37515a4ae731407253d6a84e820a523",
+      "bytes": 59558
     },
     {
       "id": "app-shell-new-user-1440x900",
@@ -110,9 +110,9 @@
       "height": 900,
       "fixtureState": "local-authenticated-new-user",
       "relativeFile": "authenticated-visual.spec.ts/p5a0d-app-shell-new-user-1440x900-light-reduced.png",
-      "sha256": "736da29674196790d045e3f8daecea4e0311fe96a940bcc2e932116174e9f0f8",
-      "bytes": 84255
+      "sha256": "6f4e8c2f47508d3133a05bcab3cecb429a9dca69f4485e5f58ca7f39c121db7f",
+      "bytes": 99912
     }
   ],
-  "manifestChecksum": "9a05843d1b708fa25f17d48ea574a02ef1cbb532b218a27f990c41ccabdc702d"
+  "manifestChecksum": "1c5a43a3d682a4dc4e9b91d28207d7aa75f1d6e18d77341e395fe329a578ba2c"
 }
