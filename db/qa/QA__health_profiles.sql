@@ -104,24 +104,24 @@ FROM (
 ) x;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 7. All CRUD RPCs are SECURITY DEFINER
+-- 7. Owner CRUD remains SECURITY DEFINER; the retired warning shim is INVOKER
 -- ═══════════════════════════════════════════════════════════════════════════
-SELECT '7. health profile RPCs are SECURITY DEFINER' AS check_name,
-       COUNT(*) AS violations
-FROM (VALUES
-    ('api_list_health_profiles'),
-    ('api_get_active_health_profile'),
-    ('api_create_health_profile'),
-    ('api_update_health_profile'),
-    ('api_delete_health_profile'),
-    ('api_product_health_warnings')
-) AS expected(fn)
-WHERE NOT EXISTS (
-    SELECT 1 FROM information_schema.routines r
-    WHERE r.routine_schema = 'public'
-      AND r.routine_name = expected.fn
-      AND r.security_type = 'DEFINER'
-);
+WITH expected(fn,definer) AS (VALUES
+ ('api_list_health_profiles',true),('api_get_active_health_profile',true),
+ ('api_create_health_profile',true),('api_update_health_profile',true),
+ ('api_delete_health_profile',true),('api_product_health_warnings',false))
+SELECT '7. owner CRUD stays privileged and retired warnings are refresh-only' AS check_name,
+ (SELECT COUNT(*) FROM expected e WHERE NOT EXISTS(
+   SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='public' AND p.proname=e.fn AND p.prosecdef=e.definer
+     AND has_function_privilege('authenticated',p.oid,'EXECUTE')
+     AND NOT has_function_privilege('anon',p.oid,'EXECUTE')))
+ + CASE WHEN public.api_product_health_warnings(-1) =
+   jsonb_build_object('api_version','2','policy_version','evidence-first-v1',
+     'error','refresh_required','status','refresh_required',
+     'message','Refresh TryVit to use source-backed product evidence.')
+   AND NOT has_function_privilege('authenticated','public.compute_health_warnings(bigint,uuid)','EXECUTE')
+   THEN 0 ELSE 1 END AS violations;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- 8. CHECK constraint on health_conditions exists

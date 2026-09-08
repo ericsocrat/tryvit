@@ -1,9 +1,19 @@
 import { describe, it, expect } from "vitest";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { QueryClient } from "@tanstack/react-query";
 
 // ─── queryKeys ──────────────────────────────────────────────────────────────
 
 describe("queryKeys", () => {
+  it("invalidates all paginated v2 watchlists through a true prefix", async () => {
+    const client = new QueryClient();
+    const first = [...queryKeys.watchlist(1), { contract: "v2", language: "en" }];
+    const second = [...queryKeys.watchlist(2), { contract: "v2", language: "de" }];
+    client.setQueryData(first, []); client.setQueryData(second, []);
+    await client.invalidateQueries({ queryKey: queryKeys.watchlist() });
+    expect(client.getQueryState(first)?.isInvalidated).toBe(true);
+    expect(client.getQueryState(second)?.isInvalidated).toBe(true);
+  });
   it("preferences is a static tuple", () => {
     expect(queryKeys.preferences).toEqual(["preferences"]);
   });

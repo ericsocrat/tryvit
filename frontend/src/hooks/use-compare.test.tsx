@@ -1,9 +1,7 @@
 import {
-    useCompareProducts,
     useDeleteComparison,
     useSaveComparison,
     useSavedComparisons,
-    useSharedComparison,
 } from "@/hooks/use-compare";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
@@ -11,9 +9,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ─── Mocks ──────────────────────────────────────────────────────────────────
 
-const mockGetProductsForCompare = vi.fn();
 const mockGetSavedComparisons = vi.fn();
-const mockGetSharedComparison = vi.fn();
 const mockSaveComparison = vi.fn();
 const mockDeleteComparison = vi.fn();
 
@@ -22,10 +18,7 @@ vi.mock("@/lib/supabase/client", () => ({
 }));
 
 vi.mock("@/lib/api", () => ({
-  getProductsForCompare: (...args: unknown[]) =>
-    mockGetProductsForCompare(...args),
   getSavedComparisons: (...args: unknown[]) => mockGetSavedComparisons(...args),
-  getSharedComparison: (...args: unknown[]) => mockGetSharedComparison(...args),
   saveComparison: (...args: unknown[]) => mockSaveComparison(...args),
   deleteComparison: (...args: unknown[]) => mockDeleteComparison(...args),
 }));
@@ -44,83 +37,6 @@ function createWrapper() {
 }
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
-
-describe("useCompareProducts", () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it("fetches product data when 2-4 IDs provided", async () => {
-    const data = { products: [{ id: 1 }, { id: 2 }] };
-    mockGetProductsForCompare.mockResolvedValue({ ok: true, data });
-
-    const { result } = renderHook(() => useCompareProducts([1, 2]), {
-      wrapper: createWrapper(),
-    });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(data);
-    // Should call with sorted IDs in queryKey but original IDs in API call
-    expect(mockGetProductsForCompare).toHaveBeenCalledWith(
-      expect.anything(),
-      [1, 2],
-    );
-  });
-
-  it("does not fetch when fewer than 2 IDs", () => {
-    const { result } = renderHook(() => useCompareProducts([1]), {
-      wrapper: createWrapper(),
-    });
-    expect(result.current.fetchStatus).toBe("idle");
-    expect(mockGetProductsForCompare).not.toHaveBeenCalled();
-  });
-
-  it("does not fetch when more than 4 IDs", () => {
-    const { result } = renderHook(() => useCompareProducts([1, 2, 3, 4, 5]), {
-      wrapper: createWrapper(),
-    });
-    expect(result.current.fetchStatus).toBe("idle");
-    expect(mockGetProductsForCompare).not.toHaveBeenCalled();
-  });
-
-  it("does not fetch when array is empty", () => {
-    const { result } = renderHook(() => useCompareProducts([]), {
-      wrapper: createWrapper(),
-    });
-    expect(result.current.fetchStatus).toBe("idle");
-    expect(mockGetProductsForCompare).not.toHaveBeenCalled();
-  });
-
-  it("fetches when exactly 4 IDs provided (max boundary)", async () => {
-    const data = { products: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }] };
-    mockGetProductsForCompare.mockResolvedValue({ ok: true, data });
-
-    const { result } = renderHook(
-      () => useCompareProducts([4, 3, 2, 1]),
-      { wrapper: createWrapper() },
-    );
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(data);
-    // API receives original order, but queryKey uses sorted IDs
-    expect(mockGetProductsForCompare).toHaveBeenCalledWith(
-      expect.anything(),
-      [4, 3, 2, 1],
-    );
-  });
-
-  it("throws on error result", async () => {
-    mockGetProductsForCompare.mockResolvedValue({
-      ok: false,
-      error: { code: "ERR", message: "not found" },
-    });
-
-    const { result } = renderHook(() => useCompareProducts([1, 2]), {
-      wrapper: createWrapper(),
-    });
-
-    await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(result.current.error?.message).toBe("not found");
-  });
-});
 
 describe("useSavedComparisons", () => {
   beforeEach(() => vi.clearAllMocks());
@@ -165,29 +81,6 @@ describe("useSavedComparisons", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.error?.message).toBe("unauthorized");
-  });
-});
-
-describe("useSharedComparison", () => {
-  beforeEach(() => vi.clearAllMocks());
-
-  it("fetches shared comparison by token", async () => {
-    const data = { products: [], title: "Chips vs Lays" };
-    mockGetSharedComparison.mockResolvedValue({ ok: true, data });
-
-    const { result } = renderHook(() => useSharedComparison("tok-abc"), {
-      wrapper: createWrapper(),
-    });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(data);
-  });
-
-  it("does not fetch when token is empty", () => {
-    const { result } = renderHook(() => useSharedComparison(""), {
-      wrapper: createWrapper(),
-    });
-    expect(result.current.fetchStatus).toBe("idle");
   });
 });
 

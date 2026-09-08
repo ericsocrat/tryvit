@@ -1,8 +1,16 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { Button } from "./Button";
+import { Button, ButtonLink, buttonClasses } from "./Button";
 
 describe("Button", () => {
+  it("uses the action's paired foreground in light and dark themes, including links", () => {
+    const colorClass = "text-[color:var(--color-action-primary-foreground,var(--color-text-inverse))]";
+    const { rerender } = render(<Button>Continue</Button>);
+    expect(screen.getByRole("button")).toHaveClass(colorClass);
+    expect(buttonClasses("primary")).toContain(colorClass);
+    rerender(<ButtonLink href="/app/search">Find</ButtonLink>);
+    expect(screen.getByRole("link")).toHaveClass(colorClass);
+  });
   it("renders children", () => {
     render(<Button>Click me</Button>);
     expect(screen.getByRole("button", { name: "Click me" })).toBeTruthy();
@@ -31,7 +39,8 @@ describe("Button", () => {
   it("applies danger variant", () => {
     render(<Button variant="danger">Delete</Button>);
     const btn = screen.getByRole("button");
-    expect(btn.className).toContain("bg-error");
+    expect(btn).toHaveClass("bg-error-text", "text-foreground-inverse");
+    expect(btn).not.toHaveClass("bg-error");
   });
 
   it("applies size classes", () => {

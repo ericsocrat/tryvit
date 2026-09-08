@@ -36,7 +36,9 @@ describe("opengraph-image", () => {
     expect(alt).toBe("Product evidence card");
     expect(source).toContain("product.ogEvidenceSummary");
     expect(source).toContain("product.ogEvidenceAvailability");
-    expect(source).toContain("p_language: language");
+    expect(source).toContain("fetchProductEvidence(id, language)");
+    expect(source).not.toContain("api_get_product_profile");
+    expect(source).not.toContain("SUPABASE_ANON_KEY");
     expect(source).not.toContain("unhealthiness_score");
     expect(source).not.toContain("profile.warnings");
     expect(source).not.toContain("/100");

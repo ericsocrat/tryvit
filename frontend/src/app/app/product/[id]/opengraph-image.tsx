@@ -5,6 +5,7 @@
 import { translate } from "@/lib/i18n-core";
 import { getServerLocale } from "@/lib/server-locale";
 import { ImageResponse } from "next/og";
+import { fetchProductEvidence } from "./product-read.server";
 
 /* ---------- route configuration ---------- */
 export const runtime = "nodejs";
@@ -75,32 +76,10 @@ export default async function OGImage({
     getServerLocale(),
     getInterBoldFont(),
   ]);
-  const productId = Number.parseInt(id, 10);
   const t = (key: string) => translate(language, key);
-
-  /* ---- fetch product data (anon key — public read) ---- */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let profile: any;
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/rpc/api_get_product_profile`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""}`,
-        },
-        body: JSON.stringify({
-          p_product_id: productId,
-          p_language: language,
-        }),
-        next: { revalidate: 3600 },
-      },
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    profile = await res.json();
-  } catch {
+  const envelope = await fetchProductEvidence(id, language);
+  const product = envelope?.products.find((item) => item.product_id === Number(id));
+  if (!product) {
     return new ImageResponse(<FallbackCard label={t("product.ogEvidenceUnavailable")} />, {
       ...size,
       fonts: [
@@ -115,15 +94,10 @@ export default async function OGImage({
   }
 
   /* ---- extract fields ---- */
-  const name = truncate(
-    profile.product?.product_name_display ??
-      profile.product?.product_name ??
-      "Unknown",
-    60,
-  );
-  const brand = truncate(profile.product?.brand ?? "", 40);
-  const heroUrl: string | undefined = profile.images?.primary?.url;
-  const categoryIcon: string = profile.product?.category_icon ?? "🍽️";
+  const name = truncate(product.product_name, 60);
+  const brand = truncate(product.brand, 40);
+  const heroUrl = product.image?.url;
+  const categoryIcon = product.product_name.match(/[\p{L}\p{N}]/u)?.[0].toLocaleUpperCase() ?? "·";
 
   /* ---- render card ---- */
   return new ImageResponse(

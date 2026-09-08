@@ -81,13 +81,14 @@ describe("NovaGroupsPage", () => {
     }
   });
 
-  it("applies correct color styling to group cards", () => {
+  it("does not style processing groups as success or health-risk errors", () => {
     render(<NovaGroupsPage />);
     const group1 = screen.getByText("learn.novaGroups.group1Title").closest("div.rounded-lg");
-    expect(group1?.className).toContain("bg-success-bg");
+    expect(group1?.className).toContain("bg-surface");
 
     const group4 = screen.getByText("learn.novaGroups.group4Title").closest("div.rounded-lg");
-    expect(group4?.className).toContain("bg-error-bg");
+    expect(group4?.className).toContain("bg-surface");
+    expect(group4?.className).not.toContain("error");
   });
 
   it("renders whyItMatters section", () => {

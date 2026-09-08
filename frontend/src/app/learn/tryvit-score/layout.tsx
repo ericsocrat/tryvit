@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 export const metadata: Metadata = {
-  title: "TryVit Score",
+  title: "Why the TryVit score is retired",
   description:
-    "Learn how the 9-factor TryVit Score works, what the bands mean, and why it goes beyond Nutri-Score.",
+    "Understand why TryVit uses recorded facts and their limitations instead of an unsupported overall health grade.",
 };
 
 export default function TryVitScoreLayout({

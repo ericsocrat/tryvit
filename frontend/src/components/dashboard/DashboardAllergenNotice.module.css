@@ -2,14 +2,14 @@
   display: flex;
   align-items: flex-start;
   gap: 0.8rem;
-  border: 1px solid var(--color-border-strong);
-  border-inline-start: 3px solid #975235;
-  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+  border-inline-start: 3px solid var(--color-warning, #946200);
+  border-radius: 0.75rem;
   padding: 1rem 1.15rem;
   background: var(--color-surface);
 }
 
-.icon { flex: 0 0 auto; margin-top: 0.1rem; color: #975235; }
+.icon { flex: 0 0 auto; margin-top: 0.1rem; color: var(--color-warning, #946200); }
 .content { min-width: 0; }
 .title { margin: 0 0 0.35rem; color: var(--color-text-primary); font-size: 0.9rem; font-weight: 700; line-height: 1.4; }
 .message { margin: 0; color: var(--color-text-primary); font-size: 0.84rem; line-height: 1.6; overflow-wrap: anywhere; }
@@ -34,3 +34,9 @@
   .action { color: LinkText; }
   .action:focus-visible { outline-color: Highlight; }
 }
+.details { margin-block: 0.65rem; font-size: 0.8125rem; }
+.details summary { cursor: pointer; min-height: 2.75rem; display: flex; align-items: center; text-decoration: underline; text-underline-offset: 0.2em; }
+.details summary:focus-visible { outline: 3px solid var(--color-border-focus); outline-offset: 3px; }
+.matchList { margin: 0; padding-left: 1rem; }
+.matchList li { margin-block: 0.35rem; }
+.matchList li > span { display: block; }

@@ -4,10 +4,11 @@
 // Displays recipe title, category, difficulty, time, servings, and tags.
 // Issue #53 — Recipes v0
 
-import { Card, Chip } from "@/components/common";
+import { Card } from "@/components/common/Card";
 import { Icon } from "@/components/common/Icon";
 import { useTranslation } from "@/lib/i18n";
 import type { RecipeSummary } from "@/lib/types";
+import { preparationAndCookingMinutes, recipeWaitingNote } from "@/lib/evidence/recipe-presentation";
 import { ChefHat, Clock, Users } from "lucide-react";
 import Link from "next/link";
 
@@ -40,6 +41,8 @@ interface RecipeCardProps {
 export function RecipeCard({ recipe }: RecipeCardProps) {
   const { t } = useTranslation();
   const diff = DIFFICULTY_STYLE[recipe.difficulty] ?? DIFFICULTY_STYLE.easy;
+  const minutes = preparationAndCookingMinutes(recipe.prep_time_min, recipe.cook_time_min);
+  const waitingNote = recipeWaitingNote(recipe.slug);
 
   return (
     <Link href={`/app/recipes/${recipe.slug}`} className="block">
@@ -63,7 +66,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           <div className="flex flex-wrap items-center gap-3 text-xs text-foreground-secondary">
             <span className="inline-flex items-center gap-1">
               <Icon icon={Clock} size="sm" />
-              {recipe.total_time} {t("recipes.minutes")}
+              {t("evidenceActivity.prepAndCook")}: {minutes == null ? t("common.unknown") : `${minutes} ${t("recipes.minutes")}`}
             </span>
             <span className={`inline-flex items-center gap-1 font-medium ${diff.className}`}>
               <Icon icon={ChefHat} size="sm" />
@@ -75,16 +78,7 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
             </span>
           </div>
 
-          {/* Tags */}
-          {recipe.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {recipe.tags.slice(0, 3).map((tag) => (
-                <Chip key={tag} variant="default" className="text-xxs! px-1.5! py-0!">
-                  {tag}
-                </Chip>
-              ))}
-            </div>
-          )}
+          {waitingNote && <p className="text-xs text-foreground-secondary">{t(waitingNote)}</p>}
         </div>
       </Card>
     </Link>

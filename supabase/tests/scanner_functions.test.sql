@@ -1,5 +1,8 @@
 -- ─── pgTAP: Scanner function tests ──────────────────────────────────────────
--- Tests api_record_scan and api_get_scan_history against the real database.
+-- Tests the private historical scan transaction and current v2 history API.
+-- Raw historical score fields below are private implementation compatibility,
+-- never consumer output. evidence_first_scan.test.sql proves the public v2
+-- boundary strips those values and the retired public API cannot write history.
 -- Run via: supabase test db
 --
 -- Self-contained: inserts own fixture data so tests work on an empty DB.
@@ -39,12 +42,12 @@ INSERT INTO public.products (
 -- ─── 1. api_record_scan — valid EAN-13 returns found=true ───────────────────
 
 SELECT lives_ok(
-  $$SELECT public.api_record_scan('5901234123457')$$,
+  $$SELECT evidence_private.record_scan_transaction('5901234123457')$$,
   'api_record_scan does not throw for a known EAN-13'
 );
 
 SELECT is(
-  (public.api_record_scan('5901234123457'))->>'found',
+  (evidence_private.record_scan_transaction('5901234123457'))->>'found',
   'true',
   'api_record_scan returns found=true for a known EAN-13'
 );
@@ -52,89 +55,89 @@ SELECT is(
 -- ─── 2. Response contains ALL required keys (found=true branch) ─────────────
 
 SELECT ok(
-  (public.api_record_scan('5901234123457')) ? 'api_version',
+  (evidence_private.record_scan_transaction('5901234123457')) ? 'api_version',
   'found response contains api_version key'
 );
 
 SELECT ok(
-  (public.api_record_scan('5901234123457')) ? 'found',
+  (evidence_private.record_scan_transaction('5901234123457')) ? 'found',
   'found response contains found key'
 );
 
 SELECT ok(
-  (public.api_record_scan('5901234123457')) ? 'product_id',
+  (evidence_private.record_scan_transaction('5901234123457')) ? 'product_id',
   'found response contains product_id key'
 );
 
 SELECT ok(
-  (public.api_record_scan('5901234123457')) ? 'product_name',
+  (evidence_private.record_scan_transaction('5901234123457')) ? 'product_name',
   'found response contains product_name key'
 );
 
 SELECT ok(
-  (public.api_record_scan('5901234123457')) ? 'brand',
+  (evidence_private.record_scan_transaction('5901234123457')) ? 'brand',
   'found response contains brand key'
 );
 
 SELECT ok(
-  (public.api_record_scan('5901234123457')) ? 'category',
+  (evidence_private.record_scan_transaction('5901234123457')) ? 'category',
   'found response contains category key'
 );
 
 SELECT ok(
-  (public.api_record_scan('5901234123457')) ? 'unhealthiness_score',
+  (evidence_private.record_scan_transaction('5901234123457')) ? 'unhealthiness_score',
   'found response contains unhealthiness_score key'
 );
 
 SELECT ok(
-  (public.api_record_scan('5901234123457')) ? 'nutri_score',
+  (evidence_private.record_scan_transaction('5901234123457')) ? 'nutri_score',
   'found response contains nutri_score key (mapped from nutri_score_label)'
 );
 
 SELECT ok(
-  (public.api_record_scan('5901234123457')) ? 'scan_country',
+  (evidence_private.record_scan_transaction('5901234123457')) ? 'scan_country',
   'found response contains scan_country key (#923)'
 );
 
 SELECT ok(
-  (public.api_record_scan('5901234123457')) ? 'product_country',
+  (evidence_private.record_scan_transaction('5901234123457')) ? 'product_country',
   'found response contains product_country key (#923)'
 );
 
 -- ─── 3. Returned values match fixture data ──────────────────────────────────
 
 SELECT is(
-  ((public.api_record_scan('5901234123457'))->>'product_id')::bigint,
+  ((evidence_private.record_scan_transaction('5901234123457'))->>'product_id')::bigint,
   999999::bigint,
   'returned product_id matches the expected product'
 );
 
 SELECT is(
-  (public.api_record_scan('5901234123457'))->>'product_name',
+  (evidence_private.record_scan_transaction('5901234123457'))->>'product_name',
   'pgTAP Test Product',
   'returned product_name matches fixture'
 );
 
 SELECT is(
-  (public.api_record_scan('5901234123457'))->>'brand',
+  (evidence_private.record_scan_transaction('5901234123457'))->>'brand',
   'Test Brand',
   'returned brand matches fixture'
 );
 
 SELECT is(
-  (public.api_record_scan('5901234123457'))->>'category',
+  (evidence_private.record_scan_transaction('5901234123457'))->>'category',
   'pgtap-test-cat',
   'returned category matches fixture'
 );
 
 SELECT is(
-  ((public.api_record_scan('5901234123457'))->>'unhealthiness_score')::int,
+  ((evidence_private.record_scan_transaction('5901234123457'))->>'unhealthiness_score')::int,
   42,
   'returned unhealthiness_score matches fixture value'
 );
 
 SELECT is(
-  (public.api_record_scan('5901234123457'))->>'nutri_score',
+  (evidence_private.record_scan_transaction('5901234123457'))->>'nutri_score',
   'B',
   'returned nutri_score matches fixture nutri_score_label'
 );
@@ -142,7 +145,7 @@ SELECT is(
 -- ─── 4. EAN-8 support ──────────────────────────────────────────────────────
 
 SELECT is(
-  (public.api_record_scan('59012341'))->>'found',
+  (evidence_private.record_scan_transaction('59012341'))->>'found',
   'true',
   'api_record_scan finds product by EAN-8'
 );
@@ -150,45 +153,45 @@ SELECT is(
 -- ─── 5. Unknown EAN returns found=false with correct keys ───────────────────
 
 SELECT is(
-  (public.api_record_scan('0000000000000'))->>'found',
+  (evidence_private.record_scan_transaction('0000000000000'))->>'found',
   'false',
   'api_record_scan returns found=false for unknown EAN'
 );
 
 SELECT ok(
-  (public.api_record_scan('0000000000000')) ? 'ean',
+  (evidence_private.record_scan_transaction('0000000000000')) ? 'ean',
   'not-found response contains ean key'
 );
 
 SELECT ok(
-  (public.api_record_scan('0000000000000')) ? 'has_pending_submission',
+  (evidence_private.record_scan_transaction('0000000000000')) ? 'has_pending_submission',
   'not-found response contains has_pending_submission key'
 );
 
 SELECT ok(
-  (public.api_record_scan('0000000000000')) ? 'scan_country',
+  (evidence_private.record_scan_transaction('0000000000000')) ? 'scan_country',
   'not-found response contains scan_country key (#923)'
 );
 
 -- ─── 6. Invalid EAN returns error ───────────────────────────────────────────
 
 SELECT ok(
-  (public.api_record_scan('123')) ? 'error',
+  (evidence_private.record_scan_transaction('123')) ? 'error',
   'api_record_scan returns error for invalid EAN (too short)'
 );
 
 SELECT ok(
-  (public.api_record_scan(NULL)) ? 'error',
+  (evidence_private.record_scan_transaction(NULL)) ? 'error',
   'api_record_scan returns error for NULL EAN'
 );
 
 SELECT ok(
-  (public.api_record_scan('')) ? 'error',
+  (evidence_private.record_scan_transaction('')) ? 'error',
   'api_record_scan returns error for empty string EAN'
 );
 
 SELECT ok(
-  (public.api_record_scan('12345')) ? 'error',
+  (evidence_private.record_scan_transaction('12345')) ? 'error',
   'api_record_scan returns error for 5-digit EAN (neither 8 nor 13)'
 );
 
@@ -197,19 +200,19 @@ SELECT ok(
 -- ─── 6b. Explicit scan_country parameter (#923) ───────────────────────────
 
 SELECT is(
-  (public.api_record_scan('5901234123457', 'PL'))->>'scan_country',
+  (evidence_private.record_scan_transaction('5901234123457', 'PL'))->>'scan_country',
   'PL',
   'explicit p_scan_country=PL is returned in response (#923)'
 );
 
 SELECT is(
-  (public.api_record_scan('5901234123457', 'PL'))->>'product_country',
+  (evidence_private.record_scan_transaction('5901234123457', 'PL'))->>'product_country',
   'XX',
   'product_country reflects fixture product country XX (#923)'
 );
 
 SELECT is(
-  (public.api_record_scan('5901234123457'))->>'scan_country',
+  (evidence_private.record_scan_transaction('5901234123457'))->>'scan_country',
   NULL,
   'scan_country is NULL when no param and no auth (#923)'
 );
@@ -217,7 +220,7 @@ SELECT is(
 -- ─── 7 (cont). Whitespace trimming ────────────────────────────────────────
 
 SELECT is(
-  (public.api_record_scan('  5901234123457  '))->>'found',
+  (evidence_private.record_scan_transaction('  5901234123457  '))->>'found',
   'true',
   'api_record_scan trims leading/trailing whitespace from EAN'
 );
@@ -226,18 +229,18 @@ SELECT is(
 -- Without auth.uid() it should return an error, not crash.
 
 SELECT lives_ok(
-  $$SELECT public.api_get_scan_history()$$,
+  $$SELECT public.api_get_scan_history_v2()$$,
   'api_get_scan_history does not throw without auth'
 );
 
 SELECT ok(
-  (public.api_get_scan_history()) ? 'error',
+  (public.api_get_scan_history_v2()) ? 'error',
   'api_get_scan_history returns error without auth context'
 );
 
 SELECT is(
-  (public.api_get_scan_history())->>'api_version',
-  '1.0',
+  (public.api_get_scan_history_v2())->>'api_version',
+  '2',
   'api_get_scan_history error includes api_version'
 );
 
@@ -379,11 +382,13 @@ SELECT ok(
   '_score_submission_quality returns all expected JSONB keys'
 );
 
+-- Isolate baseline moderation quality from the separate known-EAN bonus.
+-- These operational submission signals are not food-health scores.
 -- Normal submission (no account in auth.users, no prior submissions) gets baseline score = 50
 SELECT is(
   ((_score_submission_quality(
     '00000000-0000-0000-0000-000000000099'::uuid,
-    '5901234123457', 'Test Brand', 'Test Product Name', NULL
+    NULL, 'Test Brand', 'Test Product Name', NULL
   ))->>'quality_score')::int,
   50,
   '_score_submission_quality returns 50 for normal clean submission'
@@ -393,7 +398,7 @@ SELECT is(
 SELECT is(
   (_score_submission_quality(
     '00000000-0000-0000-0000-000000000099'::uuid,
-    '5901234123457', 'Test Brand', 'Test Product Name', NULL
+    NULL, 'Test Brand', 'Test Product Name', NULL
   ))->>'recommended_action',
   'manual_review',
   '_score_submission_quality recommends manual_review for normal submission'
@@ -403,7 +408,7 @@ SELECT is(
 SELECT is(
   ((_score_submission_quality(
     '00000000-0000-0000-0000-000000000099'::uuid,
-    '5901234123457', 'Test Brand', 'Test Product Name', 'https://example.com/photo.jpg'
+    NULL, 'Test Brand', 'Test Product Name', 'https://example.com/photo.jpg'
   ))->>'quality_score')::int,
   60,
   '_score_submission_quality gives +10 bonus for photo'
@@ -413,7 +418,7 @@ SELECT is(
 SELECT is(
   ((_score_submission_quality(
     '00000000-0000-0000-0000-000000000099'::uuid,
-    '5901234123457', 'X', 'Test Product Name', NULL
+    NULL, 'X', 'Test Product Name', NULL
   ))->>'quality_score')::int,
   25,
   '_score_submission_quality penalizes suspicious brand name'
@@ -475,10 +480,10 @@ SELECT lives_ok(
   'api_admin_get_submissions lives_ok with country filter'
 );
 
--- api_admin_submission_velocity returns expected keys
-SELECT ok(
-  public.api_admin_submission_velocity() ?& ARRAY['api_version', 'last_24h', 'last_7d', 'pending_count', 'status_breakdown', 'top_submitters'],
-  'api_admin_submission_velocity returns all expected keys'
+-- No session must not expose contributor identities through an admin report.
+SELECT is(
+  public.api_admin_submission_velocity()->>'error','authentication_required',
+  'api_admin_submission_velocity withholds private aggregate detail without auth'
 );
 
 -- api_admin_batch_reject_user returns auth error for anon
@@ -574,27 +579,27 @@ WHERE user_id = '00000000-0000-0000-0000-000000000099'::uuid;
 
 -- Response contains is_cross_country key
 SELECT ok(
-  (public.api_record_scan('5901234123457', 'PL')) ? 'is_cross_country',
+  (evidence_private.record_scan_transaction('5901234123457', 'PL')) ? 'is_cross_country',
   'found response contains is_cross_country key (#926)'
 );
 
 -- is_cross_country = true when scan_country differs from product_country
 SELECT is(
-  (public.api_record_scan('5901234123457', 'PL'))->>'is_cross_country',
+  (evidence_private.record_scan_transaction('5901234123457', 'PL'))->>'is_cross_country',
   'true',
   'is_cross_country=true when scan_country=PL but product_country=XX (#926)'
 );
 
 -- is_cross_country = false when scan_country matches product_country
 SELECT is(
-  (public.api_record_scan('5901234123457', 'XX'))->>'is_cross_country',
+  (evidence_private.record_scan_transaction('5901234123457', 'XX'))->>'is_cross_country',
   'false',
   'is_cross_country=false when scan_country matches product_country (#926)'
 );
 
 -- is_cross_country = false when no scan_country (NULL)
 SELECT is(
-  (public.api_record_scan('5901234123457'))->>'is_cross_country',
+  (evidence_private.record_scan_transaction('5901234123457'))->>'is_cross_country',
   'false',
   'is_cross_country=false when scan_country is NULL (#926)'
 );
@@ -619,35 +624,35 @@ INSERT INTO public.products (
 
 -- DE user gets DE product (region-preferred)
 SELECT is(
-  ((public.api_record_scan('4015000969604', 'DE'))->>'product_id')::bigint,
+  ((evidence_private.record_scan_transaction('4015000969604', 'DE'))->>'product_id')::bigint,
   999991::bigint,
   'DE user gets DE product when same EAN exists in PL + DE (#926)'
 );
 
 -- PL user gets PL product (region-preferred)
 SELECT is(
-  ((public.api_record_scan('4015000969604', 'PL'))->>'product_id')::bigint,
+  ((evidence_private.record_scan_transaction('4015000969604', 'PL'))->>'product_id')::bigint,
   999990::bigint,
   'PL user gets PL product when same EAN exists in PL + DE (#926)'
 );
 
 -- Matching a same-country duplicate is explicitly not cross-country.
 SELECT is(
-  (public.api_record_scan('4015000969604', 'DE'))->>'is_cross_country',
+  (evidence_private.record_scan_transaction('4015000969604', 'DE'))->>'is_cross_country',
   'false',
   'region-preferred duplicate reports is_cross_country=false'
 );
 
 -- An unscoped duplicate lookup is deterministic by product_id.
 SELECT is(
-  ((public.api_record_scan('4015000969604'))->>'product_id')::bigint,
+  ((evidence_private.record_scan_transaction('4015000969604'))->>'product_id')::bigint,
   999990::bigint,
   'unscoped duplicate EAN lookup uses deterministic product_id ordering'
 );
 
 -- Cross-country fallback: user in XX scans PL-only EAN
 SELECT is(
-  (public.api_record_scan('5901234123457', 'PL'))->>'found',
+  (evidence_private.record_scan_transaction('5901234123457', 'PL'))->>'found',
   'true',
   'cross-country fallback: PL user still finds XX-only product (#926)'
 );
@@ -662,13 +667,13 @@ INSERT INTO public.products (
 ) ON CONFLICT (product_id) DO NOTHING;
 
 SELECT is(
-  (public.api_record_scan('4015000969611'))->>'found',
+  (evidence_private.record_scan_transaction('4015000969611'))->>'found',
   'false',
   'deprecated product excluded from scan lookup (#926)'
 );
 
 SELECT is(
-  (public.api_record_scan('4015000969611')) ? 'product_id',
+  (evidence_private.record_scan_transaction('4015000969611')) ? 'product_id',
   false,
   'deprecated-only EAN never exposes a product payload'
 );
@@ -692,13 +697,13 @@ INSERT INTO public.products (
 ) ON CONFLICT (product_id) DO NOTHING;
 
 SELECT is(
-  ((public.api_record_scan('4015000969628', 'PL'))->>'product_id')::bigint,
+  ((evidence_private.record_scan_transaction('4015000969628', 'PL'))->>'product_id')::bigint,
   999988::bigint,
   'active product wins when a lower-id deprecated row shares its EAN'
 );
 
 SELECT is(
-  (public.api_record_scan('4015000969628', 'PL'))->>'is_cross_country',
+  (evidence_private.record_scan_transaction('4015000969628', 'PL'))->>'is_cross_country',
   'true',
   'active cross-country fallback retains is_cross_country=true'
 );
@@ -854,21 +859,21 @@ VALUES ('4006381333931', 'pgTAP 930 Scan PL', 'pending', 'PL');
 
 -- 5. Scan with PL country → has_pending_submission = true
 SELECT is(
-  (public.api_record_scan('4006381333931', 'PL'))->>'has_pending_submission',
+  (evidence_private.record_scan_transaction('4006381333931', 'PL'))->>'has_pending_submission',
   'true',
   'api_record_scan: has_pending_submission true for PL where PL pending exists (#930)'
 );
 
 -- 6. Scan with DE country → has_pending_submission = false (only PL is pending)
 SELECT is(
-  (public.api_record_scan('4006381333931', 'DE'))->>'has_pending_submission',
+  (evidence_private.record_scan_transaction('4006381333931', 'DE'))->>'has_pending_submission',
   'false',
   'api_record_scan: has_pending_submission false for DE when only PL pending (#930)'
 );
 
 -- 7. Scan with NULL country → has_pending_submission = true (global fallback finds PL pending)
 SELECT is(
-  (public.api_record_scan('4006381333931'))->>'has_pending_submission',
+  (evidence_private.record_scan_transaction('4006381333931'))->>'has_pending_submission',
   'true',
   'api_record_scan: has_pending_submission true for NULL country — global fallback (#930)'
 );

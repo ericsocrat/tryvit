@@ -85,15 +85,14 @@ export default function NutriScorePage() {
             <LearnSectionCard title={t("learn.sourcesTitle")}>
               <SourceCitation
                 author="Santé Publique France"
-                title="Nutri-Score algorithm update 2024"
-                year={2024}
-                url="https://www.santepubliquefrance.fr/en/nutri-score"
+                title="Nutri-Score — official scheme and algorithm documentation"
+                url="https://www.santepubliquefrance.fr/nutri-score"
               />
               <SourceCitation
-                author="EFSA"
-                title="Scientific opinion on dietary reference values for fats"
-                year={2010}
-                url="https://www.efsa.europa.eu/en/efsajournal/pub/1461"
+                author="Santé publique France"
+                title="Nutri-Score: Eat Better at a Glance"
+                year={2025}
+                url="https://www.santepubliquefrance.fr/index.php/en/nutrition-and-physical-activity/brochure/nutri-score-eat-better-a-glance"
               />
             </LearnSectionCard>
 

@@ -51,7 +51,7 @@ vi.mock("@/components/common/skeletons", () => ({
   ),
 }));
 
-vi.mock("@/components/recipes", () => ({
+vi.mock("@/components/recipes/IngredientProductList", () => ({
   IngredientProductList: ({ products }: { products: unknown[] }) => (
     <div data-testid="ingredient-product-list">{products.length} products</div>
   ),
@@ -181,7 +181,7 @@ describe("RecipeDetailPage", () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          "Creamy overnight oats topped with fresh berries and a drizzle of honey.",
+          "Creamy overnight oats with optional fresh berries.",
         ),
       ).toBeInTheDocument();
     });
@@ -223,7 +223,7 @@ describe("RecipeDetailPage", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Top with fresh berries and a drizzle of honey before serving.",
+        "Top with fresh berries, if using, before serving.",
       ),
     ).toBeInTheDocument();
   });
@@ -258,9 +258,11 @@ describe("RecipeDetailPage", () => {
     render(<RecipeDetailPage />, { wrapper: createWrapper() });
 
     await waitFor(() => {
-      expect(screen.getByText("quick")).toBeInTheDocument();
+      expect(screen.getByText(/Cooking instructions, not a nutritional assessment/)).toBeInTheDocument();
     });
-    expect(screen.getByText("healthy")).toBeInTheDocument();
+    expect(screen.queryByText("healthy")).not.toBeInTheDocument();
+    expect(mockGetRecipeScore).not.toHaveBeenCalled();
+    expect(screen.getByText(/at least 4 hours of refrigeration/)).toBeInTheDocument();
   });
 
   it("shows not-found without retry when the recipe is absent", async () => {

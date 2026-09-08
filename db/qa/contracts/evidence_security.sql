@@ -2,7 +2,7 @@
 -- consuming QA suite. Exact signatures prevent newly added overloads inheriting
 -- an exception. Behavior is covered by the evidence-first/public-share pgTAP.
 CREATE TEMP VIEW qa_reviewed_invokers AS
-SELECT signature, anonymous, to_regprocedure('public.' || signature) AS oid
+SELECT signature, anonymous, true AS authenticated, to_regprocedure('public.' || signature) AS oid
 FROM (VALUES
  ('api_find_filter_options(text,text)',false),
  ('api_find_products(text,jsonb,integer,integer,boolean,text)',false),
@@ -13,20 +13,101 @@ FROM (VALUES
  ('api_get_shared_comparison(text)',true),
  ('api_get_shared_comparison_v2(text,text)',true),
  ('api_get_shared_list(text,integer,integer)',true),
- ('api_get_shared_list_v2(text,text,integer,integer)',true)
-) reviewed(signature,anonymous);
+ ('api_get_shared_list_v2(text,text,integer,integer)',true),
+ ('api_better_alternatives(bigint,boolean,integer,text,text[],boolean,boolean,boolean)',false),
+ ('api_better_alternatives_v2(bigint,boolean,integer,text,text[],boolean,boolean,boolean,boolean,uuid,boolean,integer)',false),
+ ('api_category_listing(text,text,text,integer,integer,text,text,text[],boolean,boolean,boolean,text)',false),
+ ('api_category_overview(text,text)',false),
+ ('api_dashboard_insights()',false),
+ ('api_data_confidence(bigint)',false),
+ ('api_get_cross_country_links(bigint)',false),
+ ('api_get_dashboard_data()',false),
+ ('api_get_filter_options(text)',false),
+ ('api_get_ingredient_profile(bigint,text)',false),
+ ('api_get_product_profile(bigint,text)',false),
+ ('api_get_product_profile_by_ean(text,text)',false),
+ ('api_get_products_for_compare(bigint[])',false),
+ ('api_get_recently_viewed(integer)',false),
+ ('api_get_recipe_detail(text)',false),
+ ('api_get_recipe_nutrition(text)',false),
+ ('api_get_recipe_score(text)',false),
+ ('api_get_scan_history(integer,integer,text)',false),
+ ('api_get_score_history(bigint,integer)',false),
+ ('api_get_watchlist(integer,integer)',false),
+ ('api_product_detail(bigint)',false),
+ ('api_product_detail_by_ean(text,text)',false),
+ ('api_product_health_warnings(bigint,uuid)',false),
+ ('api_product_provenance(bigint)',false),
+ ('api_record_scan(text,text)',false),
+ ('api_score_explanation(bigint)',false),
+ ('api_score_history(bigint,integer)',false),
+ ('api_search_autocomplete(text,integer)',false),
+ ('api_search_did_you_mean(text,text,integer)',false),
+ ('api_search_products(text,jsonb,integer,integer,boolean)',false),
+ ('api_store_products(text,text,integer,integer)',false)
+) reviewed(signature,anonymous)
+UNION ALL SELECT 'api_get_pending_notifications(integer)',false,false,
+ to_regprocedure('public.api_get_pending_notifications(integer)');
+
+CREATE TEMP VIEW qa_reviewed_definers AS
+SELECT signature,to_regprocedure('public.'||signature) AS oid FROM (VALUES
+ ('api_home_read_model(text)'),('api_record_scan_v2(text,text)'),
+ ('api_get_scan_history_v2(integer,integer,text)')) t(signature);
+
+CREATE TEMP VIEW qa_retained_private AS
+SELECT signature,to_regprocedure('evidence_private.'||signature) AS oid FROM (
+ SELECT signature FROM qa_reviewed_invokers WHERE split_part(signature,'(',1) IN (
+  'api_product_detail','api_product_detail_by_ean','api_get_product_profile','api_get_product_profile_by_ean',
+  'api_search_products','api_search_autocomplete','api_search_did_you_mean','api_get_filter_options',
+  'api_category_listing','api_category_overview','api_get_products_for_compare','api_better_alternatives',
+  'api_better_alternatives_v2','api_score_explanation','api_data_confidence','api_product_provenance',
+  'api_get_score_history','api_score_history','api_get_recently_viewed','api_get_watchlist',
+  'api_dashboard_insights','api_get_cross_country_links','api_store_products','api_product_health_warnings')
+ UNION ALL SELECT signature FROM (VALUES ('legacy_recipe_score_v1(text)'),
+  ('legacy_recipe_nutrition_v1(text)'),('record_scan_transaction(text,text)')) t(signature)
+) retained;
+
+CREATE TEMP VIEW qa_retained_math AS
+SELECT signature,to_regprocedure('public.'||signature) AS oid FROM (VALUES
+ ('assign_confidence(numeric,text)'),('compute_data_completeness(bigint)'),
+ ('compute_unhealthiness_v32(numeric,numeric,numeric,numeric,numeric,numeric,text,text,numeric)'),
+ ('compute_unhealthiness_v33(numeric,numeric,numeric,numeric,numeric,numeric,text,text,numeric,numeric,numeric)'),
+ ('explain_score_v32(numeric,numeric,numeric,numeric,numeric,numeric,text,text,numeric)'),
+ ('explain_score_v33(numeric,numeric,numeric,numeric,numeric,numeric,text,text,numeric,numeric,numeric)'),
+ ('compute_nutri_score_label(numeric,numeric,numeric,numeric,numeric,numeric,boolean)')) t(signature);
 
 CREATE TEMP VIEW qa_invoker_violations AS
 SELECT signature FROM qa_reviewed_invokers r LEFT JOIN pg_proc p ON p.oid=r.oid
 WHERE p.oid IS NULL OR p.prosecdef OR p.proconfig IS DISTINCT FROM ARRAY['search_path=""']::text[]
  OR has_function_privilege('anon',p.oid,'EXECUTE') IS DISTINCT FROM r.anonymous
- OR NOT has_function_privilege('authenticated',p.oid,'EXECUTE')
+ OR has_function_privilege('authenticated',p.oid,'EXECUTE') IS DISTINCT FROM r.authenticated
+ OR NOT has_function_privilege('service_role',p.oid,'EXECUTE')
  OR EXISTS (SELECT 1 FROM aclexplode(COALESCE(p.proacl,acldefault('f',p.proowner))) a
             WHERE a.grantee=0 AND a.privilege_type='EXECUTE')
 UNION ALL
 SELECT p.oid::regprocedure::text FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
 WHERE n.nspname='public' AND p.proname LIKE 'api_%' AND NOT p.prosecdef
- AND NOT EXISTS(SELECT 1 FROM qa_reviewed_invokers r WHERE r.oid=p.oid);
+ AND NOT EXISTS(SELECT 1 FROM qa_reviewed_invokers r WHERE r.oid=p.oid)
+UNION ALL
+SELECT r.signature FROM qa_reviewed_definers r LEFT JOIN pg_proc p ON p.oid=r.oid
+WHERE p.oid IS NULL OR NOT p.prosecdef OR pg_get_userbyid(p.proowner)<>'postgres'
+ OR p.proconfig IS DISTINCT FROM ARRAY['search_path=""']::text[]
+ OR has_function_privilege('anon',p.oid,'EXECUTE')
+ OR NOT has_function_privilege('authenticated',p.oid,'EXECUTE')
+ OR NOT has_function_privilege('service_role',p.oid,'EXECUTE')
+ OR EXISTS(SELECT 1 FROM aclexplode(COALESCE(p.proacl,acldefault('f',p.proowner))) a WHERE a.grantee=0)
+UNION ALL
+SELECT 'evidence_private.'||r.signature FROM qa_retained_private r LEFT JOIN pg_proc p ON p.oid=r.oid
+WHERE p.oid IS NULL OR has_function_privilege('anon',p.oid,'EXECUTE')
+ OR has_function_privilege('authenticated',p.oid,'EXECUTE')
+ OR NOT has_function_privilege('service_role',p.oid,'EXECUTE')
+ OR EXISTS(SELECT 1 FROM aclexplode(COALESCE(p.proacl,acldefault('f',p.proowner))) a WHERE a.grantee=0)
+UNION ALL
+SELECT 'public.'||r.signature FROM qa_retained_math r LEFT JOIN pg_proc p ON p.oid=r.oid
+WHERE p.oid IS NULL OR has_function_privilege('anon',p.oid,'EXECUTE')
+ OR has_function_privilege('authenticated',p.oid,'EXECUTE')
+ OR NOT has_function_privilege('service_role',p.oid,'EXECUTE')
+ OR EXISTS(SELECT 1 FROM aclexplode(COALESCE(p.proacl,acldefault('f',p.proowner))) a WHERE a.grantee=0);
 
 CREATE TEMP VIEW qa_default_deny_tables AS
 SELECT name,to_regclass('public.'||name) AS oid FROM (VALUES

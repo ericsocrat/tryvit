@@ -1,7 +1,12 @@
-# Scoring Engine Architecture
+# Legacy scoring engine architecture
+
+> Retained for historical replay and audit, not current consumer recommendations.
+> Implementation correctness did not validate the health construct or weights.
+> The [evidence-first policy](EVIDENCE_DATA_POLICY.md) supersedes consumer use;
+> the [release ledger](implementation/EVIDENCE_FIRST_REBUILD.md) tracks deployment.
 
 > **Issue:** #189 — Canonical Scoring Engine  
-> **Status:** Active  
+> **Status:** Historical specification; consumer aggregate retired by the evidence-first release
 > **Last updated:** 2026-03-15
 
 ---

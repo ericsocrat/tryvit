@@ -1,186 +1,39 @@
--- ============================================================
--- QA: API Surface Validation
--- Ensures all API views and functions return correct results
--- with no fan-out, null gaps, or structural issues.
--- Updated: scores merged into products.
--- ============================================================
+-- Current evidence-first QA. Synthetic fixtures and claims are transaction-local.
+-- Run only through the approved local QA workflow; ROLLBACK preserves all data.
+BEGIN;
+CREATE TEMP TABLE qa_context AS SELECT gen_random_uuid() AS uid;
+INSERT INTO auth.users(id) SELECT uid FROM qa_context;
+INSERT INTO public.user_preferences(user_id,country,diet_preference,strict_diet,strict_allergen,avoid_allergens,treat_may_contain_as_unsafe,preferred_language)
+SELECT uid,'PL','none',false,false,ARRAY[]::text[],false,'en' FROM qa_context
+ON CONFLICT(user_id) DO UPDATE SET country='PL',diet_preference='none',strict_diet=false,strict_allergen=false,avoid_allergens=ARRAY[]::text[],treat_may_contain_as_unsafe=false,preferred_language='en';
+SELECT set_config('request.jwt.claims',jsonb_build_object('sub',uid,'role','authenticated')::text,true) FROM qa_context;
+CREATE FUNCTION pg_temp.qa_ok(condition boolean) RETURNS integer LANGUAGE sql IMMUTABLE AS $$ SELECT CASE WHEN condition IS TRUE THEN 0 ELSE 1 END; $$;
+CREATE FUNCTION pg_temp.qa_retired(payload jsonb) RETURNS boolean LANGUAGE sql IMMUTABLE AS $$
+  SELECT payload = jsonb_build_object('api_version','2','policy_version','evidence-first-v1',
+    'error','refresh_required','status','refresh_required','message','Refresh TryVit to use source-backed product evidence.');
+$$;
+INSERT INTO public.products(country,brand,product_name,category)
+SELECT 'PL',uid::text,'Qaapi Alpha','Dairy' FROM qa_context;
+CREATE TEMP TABLE qa_products AS SELECT p.product_id,p.country,p.product_name FROM public.products p JOIN qa_context c ON p.brand=c.uid::text;
 
--- 1. Category overview: row count = active categories (20)
-SELECT '1. v_api_category_overview row count matches category_ref' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT (SELECT COUNT(*) FROM v_api_category_overview) AS api_count,
-           (SELECT COUNT(*) FROM category_ref WHERE is_active = true) AS ref_count
-) sub
-WHERE api_count != ref_count;
-
--- 2. Category overview: product_count sums to total active products
-SELECT '2. v_api_category_overview product sums match v_master' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT (SELECT SUM(product_count) FROM v_api_category_overview) AS api_sum,
-           (SELECT COUNT(*) FROM v_master) AS master_count
-) sub
-WHERE api_sum != master_count;
-
--- 3. Category overview: no NULL stats for populated categories
-SELECT '3. v_api_category_overview no null stats' AS check_name,
-       COUNT(*) AS violations
-FROM v_api_category_overview
-WHERE product_count > 0
-  AND (avg_score IS NULL OR min_score IS NULL OR max_score IS NULL);
-
--- 4. api_product_detail returns non-null for all active products
-SELECT '4. api_product_detail covers all products' AS check_name,
-       COUNT(*) AS violations
-FROM v_master m
-WHERE api_product_detail(m.product_id) IS NULL;
-
--- 5. api_product_detail JSON has required top-level keys
-SELECT '5. api_product_detail has required keys' AS check_name,
-       COUNT(*) AS violations
-FROM v_master m
-CROSS JOIN LATERAL api_product_detail(m.product_id) AS detail
-WHERE NOT (
-    detail ? 'product_id'
-    AND detail ? 'scores'
-    AND detail ? 'nutrition_per_100g'
-    AND detail ? 'trust'
-    AND detail ? 'ingredients'
-    AND detail ? 'allergens'
-    AND detail ? 'flags'
-);
-
--- 6. api_score_explanation returns non-null for all scored products
-SELECT '6. api_score_explanation covers all products' AS check_name,
-       COUNT(*) AS violations
-FROM v_master m
-WHERE m.unhealthiness_score IS NOT NULL
-  AND api_score_explanation(m.product_id) IS NULL;
-
--- 7. api_search_products returns valid JSON for basic query
-SELECT '7. api_search_products returns valid structure' AS check_name,
-       CASE WHEN result ? 'results' AND result ? 'total' AND result ? 'query'
-            THEN 0 ELSE 1 END AS violations
-FROM api_search_products('test') AS result;
-
--- 8. api_category_listing returns valid JSON with pagination
-SELECT '8. api_category_listing returns valid structure' AS check_name,
-       CASE WHEN result ? 'products' AND result ? 'total_count'
-                 AND result ? 'limit' AND result ? 'offset'
-            THEN 0 ELSE 1 END AS violations
-FROM api_category_listing('Chips', 'score', 'asc', 5, 0) AS result;
-
--- 9. find_similar_products returns results for products with shared ingredients
-SELECT '9. find_similar_products returns results' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT DISTINCT ms.product_id_a AS product_id
-    FROM mv_product_similarity ms
-    JOIN products p ON p.product_id = ms.product_id_a
-    WHERE p.is_deprecated IS NOT TRUE
-    LIMIT 5
-) sample
-WHERE NOT EXISTS (
-    SELECT 1 FROM find_similar_products(sample.product_id, 1)
-);
-
--- 10. find_better_alternatives returns only lower-scoring products
-SELECT '10. find_better_alternatives scores are lower' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT p.product_id, p.unhealthiness_score AS source_score
-    FROM products p
-    WHERE p.is_deprecated IS NOT TRUE AND p.unhealthiness_score > 15
-    LIMIT 5
-) sample
-CROSS JOIN LATERAL find_better_alternatives(sample.product_id, true, 3) AS alt
-WHERE alt.unhealthiness_score >= sample.source_score;
-
--- 11. api_better_alternatives has required JSON keys
---     Guarded: returns 0 when no active products exist (empty DB).
-SELECT '11. api_better_alternatives has required keys' AS check_name,
-       COALESCE((
-           SELECT CASE WHEN result ? 'source_product' AND result ? 'alternatives'
-                            AND result ? 'alternatives_count' AND result ? 'search_scope'
-                       THEN 0 ELSE 1 END
-           FROM (SELECT product_id FROM products WHERE is_deprecated IS NOT TRUE ORDER BY product_id LIMIT 1) p,
-                LATERAL api_better_alternatives(p.product_id) AS result
-       ), 0) AS violations;
-
--- 12. api_better_alternatives alternatives_count matches array length
---     Guarded: returns 0 when no active products exist (empty DB).
-SELECT '12. api_better_alternatives count matches array' AS check_name,
-       COALESCE((
-           SELECT CASE WHEN (result->>'alternatives_count')::int = jsonb_array_length(result->'alternatives')
-                       THEN 0 ELSE 1 END
-           FROM (SELECT product_id FROM products WHERE is_deprecated IS NOT TRUE ORDER BY product_id LIMIT 1) p,
-                LATERAL api_better_alternatives(p.product_id) AS result
-       ), 0) AS violations;
-
--- 13. api_data_confidence returns non-null for all active products
-SELECT '13. api_data_confidence covers all products' AS check_name,
-       COUNT(*) AS violations
-FROM products p
-WHERE p.is_deprecated IS NOT TRUE
-  AND api_data_confidence(p.product_id) IS NULL;
-
--- 14. api_data_confidence has required JSON keys
-SELECT '14. api_data_confidence has required keys' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT api_data_confidence(product_id) AS detail
-    FROM products
-    WHERE is_deprecated IS NOT TRUE
-    LIMIT 5
-) sample
-WHERE NOT (
-    sample.detail ? 'confidence_score'
-    AND sample.detail ? 'confidence_band'
-    AND sample.detail ? 'components'
-    AND sample.detail ? 'data_completeness_profile'
-);
-
--- 15. v_api_category_overview_by_country: all-country sum matches global overview
-SELECT '15. overview_by_country totals match global overview' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT (SELECT SUM(product_count) FROM v_api_category_overview_by_country) AS by_country_sum,
-           (SELECT SUM(product_count) FROM v_api_category_overview) AS global_sum
-) sub
-WHERE by_country_sum != global_sum;
-
--- 16. find_better_alternatives: alternatives are same country as source
-SELECT '16. find_better_alternatives same-country isolation' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT p.product_id, p.country AS source_country
-    FROM products p
-    WHERE p.is_deprecated IS NOT TRUE AND p.unhealthiness_score > 15
-    LIMIT 5
-) sample
-CROSS JOIN LATERAL find_better_alternatives(sample.product_id, true, 3) AS alt
-JOIN products p_alt ON p_alt.product_id = alt.alt_product_id
-WHERE p_alt.country != sample.source_country;
-
--- 17. find_similar_products: similar products are same country as source
-SELECT '17. find_similar_products same-country isolation' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT DISTINCT pi.product_id
-    FROM product_ingredient pi
-    JOIN products p ON p.product_id = pi.product_id
-    WHERE p.is_deprecated IS NOT TRUE
-    LIMIT 5
-) sample
-CROSS JOIN LATERAL find_similar_products(sample.product_id, 3) AS sim
-JOIN products p_sim ON p_sim.product_id = sim.similar_product_id
-WHERE p_sim.country != (SELECT country FROM products WHERE product_id = sample.product_id);
-
--- 18. No non-deprecated products for inactive countries (activation gating)
-SELECT '18. no products for inactive countries' AS check_name,
-       COUNT(*) AS violations
-FROM products p
-JOIN country_ref cr ON cr.country_code = p.country
-WHERE p.is_deprecated IS NOT TRUE
-  AND cr.is_active = false;
+CREATE TEMP TABLE qa_model AS SELECT public.api_product_read_model(ARRAY[product_id],'en') body FROM qa_products;
+CREATE TEMP TABLE qa_find AS SELECT public.api_find_products((SELECT uid::text FROM qa_context),'{"country":"PL"}',1,20,false,'en') body;
+SELECT '1. retired detail requires refresh' AS check_name, pg_temp.qa_ok(pg_temp.qa_retired(public.api_product_detail(-1))) AS violations;
+SELECT '2. retired search requires refresh' AS check_name, pg_temp.qa_ok(pg_temp.qa_retired(public.api_search_products('test'))) AS violations;
+SELECT '3. retired score explanation has no score' AS check_name, pg_temp.qa_ok(pg_temp.qa_retired(public.api_score_explanation(-1))) AS violations;
+SELECT '4. retired confidence has no percentage' AS check_name, pg_temp.qa_ok(pg_temp.qa_retired(public.api_data_confidence(-1))) AS violations;
+SELECT '5. retired category listing has no ranked products' AS check_name, pg_temp.qa_ok(pg_temp.qa_retired(public.api_category_listing('Dairy','score','asc',5,0))) AS violations;
+SELECT '6. retired alternatives has no winner' AS check_name, pg_temp.qa_ok(pg_temp.qa_retired(public.api_better_alternatives(-1))) AS violations;
+SELECT '7. raw ranking helpers are not consumer APIs' AS check_name, pg_temp.qa_ok(NOT has_function_privilege('authenticated','public.find_similar_products(bigint,integer,text,text[],boolean,boolean,boolean)','EXECUTE') AND NOT has_function_privilege('authenticated','public.find_better_alternatives(bigint,boolean,integer,text,text[],boolean,boolean,boolean)','EXECUTE')) AS violations;
+SELECT '8. canonical product API has explicit version and policy' AS check_name, pg_temp.qa_ok((SELECT body->>'api_version'='2' AND body->>'policy_version'='evidence-first-v1' FROM qa_model)) AS violations;
+SELECT '9. requested fixture is present exactly once' AS check_name, pg_temp.qa_ok((SELECT jsonb_array_length(body->'products')=1 AND body->'products'->0->>'product_id'=(SELECT product_id::text FROM qa_products) AND body->'missing_ids'='[]'::jsonb FROM qa_model)) AS violations;
+SELECT '10. canonical product contains all evidence sections' AS check_name, pg_temp.qa_ok((SELECT body->'products'->0 ?& ARRAY['nutrition','ingredients','allergens','sources','classifications','evidence','score'] FROM qa_model)) AS violations;
+SELECT '11. nutrition has all nine explicit field states' AS check_name, pg_temp.qa_ok((SELECT (SELECT count(*) FROM jsonb_each(body->'products'->0->'nutrition'))=9 AND NOT EXISTS(SELECT 1 FROM jsonb_each(body->'products'->0->'nutrition') f WHERE f.value->>'state' IS DISTINCT FROM 'missing' OR f.value->'value' IS DISTINCT FROM 'null'::jsonb) FROM qa_model)) AS violations;
+SELECT '12. unsupported product aggregate is explicitly retired' AS check_name, pg_temp.qa_ok((SELECT body->'products'->0->'score'->>'status'='retired' AND body->'products'->0->'score'->'value'='null'::jsonb FROM qa_model)) AS violations;
+SELECT '13. unobserved fixture invents no source observations' AS check_name, pg_temp.qa_ok((SELECT body->'products'->0->'sources'='[]'::jsonb AND body->'products'->0->'evidence'->>'state'='legacy_unverified' FROM qa_model)) AS violations;
+SELECT '14. unobserved fixture invents no source classifications' AS check_name, pg_temp.qa_ok((SELECT body->'products'->0->'classifications'->'nutri_score'->'value'='null'::jsonb AND body->'products'->0->'classifications'->'nova'->'value'='null'::jsonb FROM qa_model)) AS violations;
+SELECT '15. canonical search returns the controlled fixture and pagination' AS check_name, pg_temp.qa_ok((SELECT body->>'api_version'='2' AND body->>'total'='1' AND jsonb_array_length(body->'results')=1 AND body ?& ARRAY['page','pages','page_size','filters_applied'] FROM qa_find)) AS violations;
+SELECT '16. canonical search preserves requested country' AS check_name, pg_temp.qa_ok((SELECT body->>'country'='PL' AND body->'results'->0->>'country'='PL' FROM qa_find)) AS violations;
+SELECT '17. retired list API cannot return nullable score rows' AS check_name, pg_temp.qa_ok(pg_temp.qa_retired(public.api_get_list_items((SELECT uid FROM qa_context)))) AS violations;
+SELECT '18. no products for inactive countries' AS check_name,COUNT(*) AS violations FROM public.products p JOIN public.country_ref c ON c.country_code=p.country WHERE p.is_deprecated IS NOT TRUE AND c.is_active=false;
+ROLLBACK;

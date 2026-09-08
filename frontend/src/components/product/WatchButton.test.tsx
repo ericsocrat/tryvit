@@ -208,7 +208,7 @@ describe("WatchButton", () => {
         ok: true,
         data: { watching: false },
       });
-      mockWatchProduct.mockResolvedValue({ ok: true });
+      mockWatchProduct.mockResolvedValue({ ok: true, data: { success: true, watching: true } });
     });
 
     it("calls watchProduct on click when not watching", async () => {
@@ -222,7 +222,7 @@ describe("WatchButton", () => {
       expect(mockWatchProduct).toHaveBeenCalledOnce();
     });
 
-    it("shows notification prompt after successful watch", async () => {
+    it("does not prompt for retired score alerts after successful watch", async () => {
       const user = userEvent.setup();
       render(<WatchButton productId={42} />, { wrapper: createWrapper() });
       await waitFor(() => {
@@ -232,9 +232,19 @@ describe("WatchButton", () => {
       await user.click(screen.getByTestId("watch-button"));
       await waitFor(() => {
         expect(
-          screen.getByTestId("notification-prompt"),
-        ).toBeInTheDocument();
+          screen.queryByTestId("notification-prompt"),
+        ).not.toBeInTheDocument();
       });
+    });
+
+    it("rolls back when an outer success contains a rejected watch", async () => {
+      mockWatchProduct.mockResolvedValue({ ok: true, data: { success: false, watching: false } });
+      render(<WatchButton productId={42} />, { wrapper: createWrapper() });
+      const button = await screen.findByTestId("watch-button");
+      await userEvent.click(button);
+      expect(await screen.findByRole("alert")).toHaveTextContent("watchlist.updateFailed");
+      expect(button).toHaveAttribute("aria-pressed", "false");
+      expect(screen.queryByTestId("notification-prompt")).not.toBeInTheDocument();
     });
 
     it("rolls back and reports an application-level failure", async () => {
@@ -282,7 +292,7 @@ describe("WatchButton", () => {
         ok: true,
         data: { watching: true },
       });
-      mockUnwatchProduct.mockResolvedValue({ ok: true });
+      mockUnwatchProduct.mockResolvedValue({ ok: true, data: { success: true, watching: false } });
     });
 
     it("calls unwatchProduct on click when watching", async () => {

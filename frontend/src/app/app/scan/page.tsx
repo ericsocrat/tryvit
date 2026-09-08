@@ -21,15 +21,13 @@ import {
 } from "@/components/scan/ScanResultView";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useBarcodeScanner } from "@/hooks/use-barcode-scanner";
-import { recordScan } from "@/lib/api";
-import { NUTRI_COLORS } from "@/lib/constants";
+import { recordEvidenceScan as recordScan, type EvidenceScanFound } from "@/lib/evidence/scan";
 import { eventBus } from "@/lib/events";
 import { useTranslation } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
 import type {
     FormSubmitEvent,
-    RecordScanFoundResponse,
     RecordScanNotFoundResponse,
 } from "@/lib/types";
 import { isValidEan, isValidEanChecksum, stripNonDigits } from "@/lib/validation";
@@ -68,13 +66,13 @@ export default function ScanPage() {
   const [manualEan, setManualEan] = useState("");
   const [mode, setMode] = useState<"camera" | "manual">("camera");
   const [scanState, setScanState] = useState<ScanState>("idle");
-  const [scanResult, setScanResult] = useState<RecordScanFoundResponse | { found: false; has_pending_submission: boolean } | null>(null);
+  const [scanResult, setScanResult] = useState<EvidenceScanFound | { found: false; has_pending_submission: boolean } | null>(null);
   const [batchMode, setBatchMode] = useState(false);
-  const [batchResults, setBatchResults] = useState<RecordScanFoundResponse[]>(
+  const [batchResults, setBatchResults] = useState<EvidenceScanFound[]>(
     [],
   );
   const [scanTimeout, setScanTimeout] = useState(false);
-  const [foundProduct, setFoundProduct] = useState<RecordScanFoundResponse | null>(null);
+  const [foundProduct, setFoundProduct] = useState<EvidenceScanFound | null>(null);
   const [checksumWarn, setChecksumWarn] = useState(false);
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -530,14 +528,6 @@ export default function ScanPage() {
                 key={`${p.product_id}-${i}`}
                 className={surface.record}
               >
-                <span
-                  className={`inline-flex h-5 w-5 items-center justify-center rounded text-xs font-bold text-white ${
-                    (p.nutri_score && NUTRI_COLORS[p.nutri_score]) ??
-                    "bg-foreground-muted"
-                  }`}
-                >
-                  {p.nutri_score}
-                </span>
                 <button
                   onClick={() => router.push(`/app/product/${p.product_id}`)}
                   className="min-w-0 flex-1 truncate text-left text-sm text-foreground hover:text-brand"

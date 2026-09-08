@@ -39,40 +39,40 @@ describe("DesktopHeaderNav", () => {
   describe("primary inline links", () => {
     it("renders all primary nav items", () => {
       render(<DesktopHeaderNav />);
-      expect(screen.getByText("Dashboard")).toBeInTheDocument();
-      expect(screen.getByText("Search")).toBeInTheDocument();
+      expect(screen.getByText("Home")).toBeInTheDocument();
+      expect(screen.getByText("Find")).toBeInTheDocument();
       expect(screen.getByText("Scan")).toBeInTheDocument();
-      expect(screen.getByText("Lists")).toBeInTheDocument();
-      expect(screen.getByText("Categories")).toBeInTheDocument();
+      expect(screen.getByText("Saved")).toBeInTheDocument();
+      expect(screen.getByText("Compare")).toBeInTheDocument();
     });
 
     it("has correct hrefs for primary items", () => {
       render(<DesktopHeaderNav />);
-      expect(screen.getByText("Dashboard").closest("a")).toHaveAttribute(
+      expect(screen.getByText("Home").closest("a")).toHaveAttribute(
         "href",
         "/app",
       );
-      expect(screen.getByText("Search").closest("a")).toHaveAttribute(
+      expect(screen.getByText("Find").closest("a")).toHaveAttribute(
         "href",
         "/app/search",
       );
-      expect(screen.getByText("Categories").closest("a")).toHaveAttribute(
+      expect(screen.getByText("Compare").closest("a")).toHaveAttribute(
         "href",
-        "/app/categories",
+        "/app/compare",
       );
     });
 
     it("marks active item with aria-current=page", () => {
       mockPathname.mockReturnValue("/app/search");
       render(<DesktopHeaderNav />);
-      const searchLink = screen.getByText("Search").closest("a");
+      const searchLink = screen.getByText("Find").closest("a");
       expect(searchLink).toHaveAttribute("aria-current", "page");
     });
 
     it("does not mark inactive items", () => {
       mockPathname.mockReturnValue("/app/search");
       render(<DesktopHeaderNav />);
-      const homeLink = screen.getByText("Dashboard").closest("a");
+      const homeLink = screen.getByText("Home").closest("a");
       expect(homeLink).not.toHaveAttribute("aria-current");
     });
   });

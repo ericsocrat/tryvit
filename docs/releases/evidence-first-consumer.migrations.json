@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "scope": "schema-and-catalog",
+  "recoveryProfile": "consumer-v1",
+  "migrations": [
+    {
+      "path": "supabase/migrations/20260905121451_score_interpretation_retirement.sql",
+      "sha256": "05eed9f6ec85c4a04688dd7882541717f672e5aac874b192fc256992392bf4a7"
+    },
+    {
+      "path": "supabase/migrations/20260905125804_evidence_first_home.sql",
+      "sha256": "e98094530bfc2894248a4fbd12c78ee2236ffae32a839d8e35e3a5193c12c6bf"
+    },
+    {
+      "path": "supabase/migrations/20260905130739_evidence_first_scan.sql",
+      "sha256": "c93edc4056984b4371d8297659aeca81f0f164bc6b0b177f895064987c6e6908"
+    },
+    {
+      "path": "supabase/migrations/20260905133720_evidence_first_legacy_api_retirement.sql",
+      "sha256": "e288c6c90a9a92b7444c0c6f8e4bd4ce153436a8aa97f4f046dca3af5bc64fef"
+    },
+    {
+      "path": "supabase/migrations/20260908030935_evidence_first_classification_image_lineage.sql",
+      "sha256": "21b8afd4595dad8926f116f420403dfea288c19c88ba4da62a6a2813b71dbe37"
+    },
+    {
+      "path": "supabase/migrations/20260908065059_evidence_profile_validator_bonus_types.sql",
+      "sha256": "cf138105ac1733baa5be10ec59ab4a257999d1fd6de41fa1e391f31fed09862b"
+    },
+    {
+      "path": "supabase/migrations/20260908085203_evidence_compute_score_registry_correction.sql",
+      "sha256": "823c39d59e553165f43118188cb8a12b2db10c8c86db7cf674600ffea38ef2d1"
+    }
+  ]
+}

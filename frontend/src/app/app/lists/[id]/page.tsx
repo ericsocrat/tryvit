@@ -1,44 +1,54 @@
 "use client";
 
 // ─── List detail page ───────────────────────────────────────────────────────
-// Shows all products in a list with health scores, supports removing items,
-// and has share toggle for custom/favorites lists.
+// Shows owner-scoped saved membership with evidence, including archived records.
+// Editing/removal and revocation remain available; new public sharing is paused.
 
 import { Button } from "@/components/common/Button";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { EmptyState } from "@/components/common/EmptyState";
 import { EmptyStateIllustration } from "@/components/common/EmptyStateIllustration";
 import { ListDetailSkeleton } from "@/components/common/skeletons";
-import { ExportButton } from "@/components/export/ExportButton";
 import { AppPage } from "@/components/layout/AppPage";
 import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
-import { NutriScoreBadge } from "@/components/common/NutriScoreBadge";
 import { ProductRegisterCard } from "@/components/product/ProductRegisterCard";
 import {
-  useListItems,
-  useLists,
   useRemoveFromList,
   useRevokeShare,
   useToggleShare,
   useUpdateList,
 } from "@/hooks/use-lists";
-import { scoreBandFromScore } from "@/lib/constants";
-import type { ExportableProduct } from "@/lib/export";
 import { useTranslation } from "@/lib/i18n";
-import type { FormSubmitEvent, ListItem } from "@/lib/types";
+import type { FormSubmitEvent } from "@/lib/types";
+import { collectionQueryKeys, getSavedList, type SavedListEnvelope } from "@/lib/evidence/collections";
+import { createClient } from "@/lib/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 import { Ban, Heart, Link2, Pencil, X } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import styles from "@/app/app/lists/lists.module.css";
 
 export default function ListDetailPage() {
-  const { t } = useTranslation();
   const params = useParams();
   const listId = String(params.id ?? "");
+  return <ListDetailWorkspace key={listId} listId={listId} />;
+}
 
-  const { data: listsData } = useLists();
-  const { data: itemsData, isLoading, error, refetch } = useListItems(listId);
+function ListDetailWorkspace({ listId }: Readonly<{ listId: string }>) {
+  const { t, language } = useTranslation();
+
+  const [offset, setOffset] = useState(0);
+  const validId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(listId);
+  const { data: itemsData, isPending: isLoading, error, refetch } = useQuery({
+    queryKey: collectionQueryKeys.list(listId, offset, language),
+    queryFn: async () => {
+      const result = await getSavedList(createClient(), listId, offset, language);
+      if (!result.ok) throw new Error(result.error.message);
+      return result.data;
+    },
+    enabled: validId,
+  });
   const removeMutation = useRemoveFromList();
   const updateMutation = useUpdateList();
   const toggleShareMutation = useToggleShare();
@@ -55,31 +65,15 @@ export default function ListDetailPage() {
   const [editName, setEditName] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [showSharePanel, setShowSharePanel] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [showRevokeConfirm, setShowRevokeConfirm] = useState(false);
 
-  const list = listsData?.lists?.find((l) => l.id === listId);
-  const items: ListItem[] = itemsData?.items ?? [];
+  const list = itemsData ? { id: itemsData.list_id, name: itemsData.list_name, description: itemsData.description, list_type: itemsData.list_type, item_count: itemsData.total_count, share_enabled: itemsData.share_enabled, share_token: itemsData.share_token } : undefined;
+  const items = itemsData?.items ?? [];
   const mutationError =
     removeMutation.error ??
     updateMutation.error ??
     toggleShareMutation.error ??
     revokeShareMutation.error;
-
-  const exportableProducts: ExportableProduct[] = useMemo(
-    () =>
-      items.map((item) => ({
-        product_name: item.product_name,
-        brand: item.brand,
-        category: item.category,
-        unhealthiness_score: item.unhealthiness_score,
-        nutri_score_label: item.nutri_score_label,
-        nova_group: item.nova_classification,
-        calories_kcal: item.calories ?? undefined,
-      })),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [itemsData?.items],
-  );
 
   function handleSaveEdit(e: FormSubmitEvent) {
     e.preventDefault();
@@ -89,17 +83,17 @@ export default function ListDetailPage() {
       {
         listId,
         name: editName.trim(),
-        description: editDesc.trim() || undefined,
+        description: editDesc.trim(),
       },
       {
-        onSuccess: () => setEditing(false),
+        onSuccess: () => { setEditing(false); void refetch(); },
       },
     );
   }
 
   function handleShare(enabled: boolean) {
     resetMutationErrors();
-    toggleShareMutation.mutate({ listId, enabled });
+    toggleShareMutation.mutate({ listId, enabled }, { onSuccess: () => void refetch() });
   }
 
   function handleRemove(productId: number) {
@@ -113,18 +107,11 @@ export default function ListDetailPage() {
 
   function handleRevokeShare() {
     resetMutationErrors();
-    revokeShareMutation.mutate(listId);
+    revokeShareMutation.mutate(listId, { onSuccess: () => void refetch() });
     setShowRevokeConfirm(false);
   }
 
-  function handleCopyLink() {
-    if (!list?.share_token) return;
-    const url = `${globalThis.location.origin}/lists/shared/${list.share_token}`;
-    navigator.clipboard.writeText(url).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }
+  if (!validId) return <AppPage><EmptyState variant="error" titleKey="lists.loadListFailed" action={{ labelKey: "nav.saved", href: "/app/lists" }} /></AppPage>;
 
   if (isLoading) {
     return <ListDetailSkeleton />;
@@ -181,6 +168,7 @@ export default function ListDetailPage() {
                 className="input-field"
                 maxLength={100}
                 required
+                aria-label={t("lists.nameLabel")}
                 autoFocus
               />
               <input
@@ -189,6 +177,7 @@ export default function ListDetailPage() {
                 onChange={(e) => setEditDesc(e.target.value)}
                 className="input-field"
                 placeholder={t("lists.descriptionPlaceholder")}
+                aria-label={t("lists.descriptionLabel")}
                 maxLength={500}
               />
               <div className={styles.formActions}>
@@ -253,11 +242,6 @@ export default function ListDetailPage() {
                     <Link2 size={14} aria-hidden="true" />
                   </button>
                 ) : null}
-                {/* Export button */}
-                <ExportButton
-                  products={exportableProducts}
-                  filename={`list-${list.name.toLowerCase().replaceAll(/\s+/g, "-")}`}
-                />
               </div>
             </>
           )}
@@ -266,6 +250,7 @@ export default function ListDetailPage() {
           {showSharePanel && list.list_type !== "avoid" ? (
             <div className={styles.sharePanel}>
               <p className={styles.shareTitle}>{t("lists.sharing")}</p>
+              <p>{t("evidenceUi.sharingPaused")}</p>
               <div className={styles.shareActions}>
                 <button
                   type="button"
@@ -275,15 +260,12 @@ export default function ListDetailPage() {
                       : "bg-surface-muted text-foreground-secondary"
                   }`}
                   onClick={() => handleShare(!list.share_enabled)}
-                  disabled={toggleShareMutation.isPending}
+                  disabled={toggleShareMutation.isPending || !list.share_enabled}
                 >
                   {list.share_enabled ? t("lists.on") : t("lists.off")}
                 </button>
                 {list.share_enabled && list.share_token ? (
                   <>
-                    <Button variant="secondary" size="sm" onClick={handleCopyLink}>
-                      {copied ? t("lists.copied") : t("lists.copyLink")}
-                    </Button>
                     <button
                       type="button"
                       className="text-xs text-error hover:text-error/80"
@@ -303,8 +285,8 @@ export default function ListDetailPage() {
       {items.length === 0 ? (
         <EmptyStateIllustration
           type="no-lists"
-          titleKey="lists.emptyList"
-          action={{ labelKey: "lists.searchProducts", href: "/app/search" }}
+          titleKey={itemsData && itemsData.total_count > 0 ? "findUi.emptyPage" : "lists.emptyList"}
+          action={itemsData && itemsData.total_count > 0 ? { labelKey: "findUi.firstPage", onClick: () => setOffset(0) } : { labelKey: "lists.searchProducts", href: "/app/search" }}
         />
       ) : null}
 
@@ -321,6 +303,8 @@ export default function ListDetailPage() {
           ))}
         </ul>
       ) : null}
+
+      {itemsData && itemsData.total_count > itemsData.limit ? <nav className={styles.formActions} aria-label={t("evidenceUi.savedPagination")}><Button variant="secondary" disabled={offset === 0} onClick={() => setOffset((value) => Math.max(0, value - 20))}>{t("common.prev")}</Button><span>{t("findUi.page", { page: Math.floor(offset / 20) + 1, pages: Math.ceil(itemsData.total_count / 20) })}</span><Button variant="secondary" disabled={offset + 20 >= itemsData.total_count} onClick={() => setOffset((value) => value + 20)}>{t("common.next")}</Button></nav> : null}
 
       <ConfirmDialog
         open={showRevokeConfirm}
@@ -342,29 +326,30 @@ function ListItemRow({
   onRemove,
   isRemoving,
 }: Readonly<{
-  item: ListItem;
+  item: SavedListEnvelope["items"][number];
   onRemove: () => void;
   isRemoving: boolean;
 }>) {
   const { t } = useTranslation();
+  const product = item.product;
+  const name = product?.product_name ?? t("evidenceUi.productReference", { id: item.product_id });
   return (
     <ProductRegisterCard
       productId={item.product_id}
       href={`/app/product/${item.product_id}`}
-      name={item.product_name}
-      brand={item.brand}
-      category={item.category}
-      score={item.unhealthiness_score}
-      scoreBand={scoreBandFromScore(item.unhealthiness_score)}
+      name={name}
+      brand={product?.brand}
+      category={product?.category}
+      readModel={product ?? undefined}
+      highlight={product ? (product.is_deprecated ? t("evidenceUi.archivedProduct") : undefined) : t("evidenceUi.collectionUnavailable")}
       detail={item.notes ?? undefined}
       variant="list"
       muted
-      badges={<NutriScoreBadge grade={item.nutri_score_label} size="sm" />}
       actions={
         <button
           type="button"
           title={t("lists.removeFromList")}
-          aria-label={`${t("lists.removeFromList")} ${item.product_name}`}
+          aria-label={`${t("lists.removeFromList")} ${name}`}
           disabled={isRemoving}
           className={styles.removeAction}
           onClick={onRemove}

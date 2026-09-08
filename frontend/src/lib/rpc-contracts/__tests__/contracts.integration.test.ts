@@ -1,360 +1,96 @@
-// ═══════════════════════════════════════════════════════════════════════════════
-// RPC Contract Integration Tests — Zod-validated response shapes
-// Issue #179 — Schema-to-UI Contract Validation (Quality Gate 9/9)
-// ═══════════════════════════════════════════════════════════════════════════════
-//
-// Run:  cd frontend && INTEGRATION=1 npx vitest run rpc-contracts
-// CI:   api-contract.yml (runs automatically on migration/contract changes)
-//
-// Public RPCs are validated directly. Auth-required RPCs handle permission
-// errors gracefully (skip if no user context, validate if data returns).
-// ═══════════════════════════════════════════════════════════════════════════════
-
+/**
+ * Local RPC integration checks. Retired public APIs must explicitly fail closed;
+ * historical payload schemas remain unit-tested as historical contracts only.
+ * Protected-user endpoints distinguish an observed auth boundary from a real
+ * payload validation. Guarded authenticated E2E/pgTAP prove their user behavior.
+ */
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { beforeAll, describe, expect, it } from "vitest";
 import type { z } from "zod";
-
-import {
-    BetterAlternativesContract,
-    CategoryListingContract,
-    CategoryOverviewContract,
-    CompareContract,
-    DashboardDataContract,
-    DataConfidenceContract,
-    FilterOptionsContract,
-    HealthProfileActiveContract,
-    HealthProfileListContract,
-    HealthWarningsContract,
-    ListsContract,
-    ProductDetailContract,
-    RecentlyViewedContract,
-    SavedSearchesContract,
-    ScanHistoryContract,
-    ScoreExplanationContract,
-    SearchAutocompleteContract,
-    SearchProductsContract,
-    UserPreferencesContract,
-} from "@/lib/rpc-contracts/index";
-
-// ─── Environment & guards ───────────────────────────────────────────────────
+import { RetiredPublicRpcSchema } from "@/lib/evidence/retired-public-rpc";
+import { HealthProfileActiveContract, HealthProfileListContract, ListsContract, SavedSearchesContract, UserPreferencesContract } from "@/lib/rpc-contracts/index";
 
 const INTEGRATION = process.env.INTEGRATION === "1";
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
-const SUPABASE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY;
-const QA_PRODUCT_ID = Number(process.env.QA_PRODUCT_ID ?? 1);
-
 const describeIntegration = INTEGRATION ? describe : describe.skip;
-
-// ─── Supabase client setup ──────────────────────────────────────────────────
-
+const QA_PRODUCT_ID = Number(process.env.QA_PRODUCT_ID ?? 1);
 let supabase: SupabaseClient;
-
 beforeAll(() => {
   if (!INTEGRATION) return;
-  supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false },
+  const endpoint = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "");
+  if (!["localhost", "127.0.0.1", "[::1]"].includes(endpoint.hostname)) throw new Error("RPC integration checks require an explicit local Supabase runtime.");
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+  if (!key) throw new Error("Local RPC integration credential is unavailable.");
+  supabase = createClient(endpoint.toString(), key, { auth: { autoRefreshToken: false, persistSession: false } });
+});
+
+const RETIRED_RPCS: Array<{ name: string; params: Record<string, unknown> }> = [
+  { name: "api_product_detail", params: { p_product_id: QA_PRODUCT_ID } },
+  { name: "api_product_detail_by_ean", params: { p_ean: "9910000000990", p_country: "PL" } },
+  { name: "api_get_product_profile", params: { p_product_id: QA_PRODUCT_ID } },
+  { name: "api_get_product_profile_by_ean", params: { p_ean: "9910000000990" } },
+  { name: "api_search_products", params: { p_query: "fixture" } },
+  { name: "api_search_autocomplete", params: { p_query: "fixture" } },
+  { name: "api_search_did_you_mean", params: { p_query: "fixture" } },
+  { name: "api_get_filter_options", params: { p_country: "PL" } },
+  { name: "api_category_listing", params: { p_category: "Dairy" } },
+  { name: "api_category_overview", params: { p_country: "PL" } },
+  { name: "api_get_products_for_compare", params: { p_product_ids: [QA_PRODUCT_ID] } },
+  { name: "api_better_alternatives", params: { p_product_id: QA_PRODUCT_ID } },
+  { name: "api_better_alternatives_v2", params: { p_product_id: QA_PRODUCT_ID } },
+  { name: "api_score_explanation", params: { p_product_id: QA_PRODUCT_ID } },
+  { name: "api_data_confidence", params: { p_product_id: QA_PRODUCT_ID } },
+  { name: "api_product_provenance", params: { p_product_id: QA_PRODUCT_ID } },
+  { name: "api_get_score_history", params: { p_product_id: QA_PRODUCT_ID } },
+  { name: "api_score_history", params: { p_product_id: QA_PRODUCT_ID } },
+  { name: "api_get_recently_viewed", params: { p_limit: 5 } },
+  { name: "api_get_watchlist", params: { p_page: 1, p_page_size: 5 } },
+  { name: "api_dashboard_insights", params: {} },
+  { name: "api_get_cross_country_links", params: { p_product_id: QA_PRODUCT_ID } },
+  { name: "api_store_products", params: { p_store_slug: "fixture", p_country: "PL" } },
+  { name: "api_product_health_warnings", params: { p_product_id: QA_PRODUCT_ID } },
+];
+
+describeIntegration("Retired consumer RPC boundaries", () => {
+  it.each(RETIRED_RPCS)("$name returns only an explicit refresh-required contract", async ({ name, params }) => {
+    const { data, error } = await supabase.rpc(name, params);
+    expect(error).toBeNull();
+    expect(RetiredPublicRpcSchema.safeParse(data).success).toBe(true);
+  });
+  it("legacy Home has no success-shaped statistics", async () => {
+    const { data, error } = await supabase.rpc("api_get_dashboard_data");
+    expect(error).toBeNull();
+    expect(data).toMatchObject({ status: "refresh_required" });
+    expect(data).not.toHaveProperty("stats");
+  });
+  it("legacy scan history requires refresh and returns no graded history", async () => {
+    const { data, error } = await supabase.rpc("api_get_scan_history", { p_page: 1, p_page_size: 5, p_filter: "all" });
+    expect(error).toBeNull();
+    expect(data).toMatchObject({ error: "refresh_required" });
+    expect(data).not.toHaveProperty("items");
   });
 });
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-/**
- * Validate RPC response against a Zod contract.
- * Logs detailed violations on failure for CI debugging.
- *
- * If the response is null/undefined, or all errors are "received undefined",
- * the RPC returned no meaningful data (e.g. auth-required without user context
- * or product not found). In that case we skip validation rather than fail.
- */
-function assertContract<T>(
-  rpcName: string,
-  data: unknown,
-  contract: z.ZodType<T>,
-): void {
-  if (data === null || data === undefined) return;
-  const result = contract.safeParse(data);
-  if (!result.success) {
-    // If ALL errors are "received undefined/null", this is a no-data response
-    // (auth context missing or product not found) — skip, not a contract drift.
-    const allMissing = result.error.issues.every(
-      (i) =>
-        i.message.includes("received undefined") ||
-        i.message.includes("received null"),
-    );
-    if (allMissing) return;
-
-    // Real contract violation — log and fail
-     
-    console.error(
-      `\n❌ Contract violation [${rpcName}]:\n`,
-      JSON.stringify(result.error.issues, null, 2),
-    );
+function assertProtectedResponse<T>(data: unknown, contract: z.ZodType<T>) {
+  // An observed unauthenticated refusal is a boundary assertion, not a claim
+  // that a user's data contract was exercised or that absent data passed.
+  if (data && typeof data === "object" && "error" in data) {
+    expect(data.error).toMatch(/^Authentication required\.?$/);
+    return;
   }
-  expect(result.success).toBe(true);
+  expect(data).not.toBeNull();
+  expect(contract.safeParse(data).success).toBe(true);
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// P0 — Core Product RPCs
-// ═══════════════════════════════════════════════════════════════════════════════
-
-describeIntegration("P0 Contract: api_product_detail", () => {
-  it("returns valid product detail shape", async () => {
-    const { data, error } = await supabase.rpc("api_product_detail", {
-      p_product_id: QA_PRODUCT_ID,
-    });
+describeIntegration("Unchanged protected RPC payload or auth-refusal boundary", () => {
+  it.each([
+    { name: "api_get_saved_searches", contract: SavedSearchesContract },
+    { name: "api_get_lists", contract: ListsContract },
+    { name: "api_list_health_profiles", contract: HealthProfileListContract },
+    { name: "api_get_active_health_profile", contract: HealthProfileActiveContract },
+    { name: "api_get_user_preferences", contract: UserPreferencesContract },
+  ])("$name does not silently accept null, malformed data or transport failure", async ({ name, contract }) => {
+    const { data, error } = await supabase.rpc(name);
     expect(error).toBeNull();
-    assertContract("api_product_detail", data, ProductDetailContract);
-  });
-});
-
-describeIntegration("P0 Contract: api_better_alternatives", () => {
-  it("returns valid alternatives shape", async () => {
-    const { data, error } = await supabase.rpc("api_better_alternatives", {
-      p_product_id: QA_PRODUCT_ID,
-    });
-    expect(error).toBeNull();
-    assertContract("api_better_alternatives", data, BetterAlternativesContract);
-  });
-});
-
-describeIntegration("P0 Contract: api_score_explanation", () => {
-  it("returns valid score explanation shape", async () => {
-    const { data, error } = await supabase.rpc("api_score_explanation", {
-      p_product_id: QA_PRODUCT_ID,
-    });
-    expect(error).toBeNull();
-    assertContract("api_score_explanation", data, ScoreExplanationContract);
-  });
-});
-
-describeIntegration("P0 Contract: api_data_confidence", () => {
-  it("returns valid data confidence shape", async () => {
-    const { data, error } = await supabase.rpc("api_data_confidence", {
-      p_product_id: QA_PRODUCT_ID,
-    });
-    expect(error).toBeNull();
-    assertContract("api_data_confidence", data, DataConfidenceContract);
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// P0 — Search RPCs
-// ═══════════════════════════════════════════════════════════════════════════════
-
-describeIntegration("P0 Contract: api_search_products", () => {
-  it("returns valid search response shape", async () => {
-    const { data, error } = await supabase.rpc("api_search_products", {
-      p_query: "milk",
-    });
-    expect(error).toBeNull();
-    assertContract("api_search_products", data, SearchProductsContract);
-  });
-});
-
-describeIntegration("P0 Contract: api_search_autocomplete", () => {
-  it("returns valid autocomplete shape", async () => {
-    const { data, error } = await supabase.rpc("api_search_autocomplete", {
-      p_query: "chi",
-    });
-    expect(error).toBeNull();
-    assertContract("api_search_autocomplete", data, SearchAutocompleteContract);
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// P0 — Category RPCs
-// ═══════════════════════════════════════════════════════════════════════════════
-
-describeIntegration("P0 Contract: api_category_overview", () => {
-  it("returns valid category overview shape", async () => {
-    const { data, error } = await supabase.rpc("api_category_overview", {
-      p_country: "PL",
-    });
-    expect(error).toBeNull();
-    assertContract("api_category_overview", data, CategoryOverviewContract);
-  });
-});
-
-describeIntegration("P0 Contract: api_category_listing", () => {
-  it("returns valid category listing shape", async () => {
-    // Resolve a real slug from overview
-    const { data: overview } = await supabase.rpc("api_category_overview", {
-      p_country: "PL",
-    });
-    const slug = overview?.categories?.[0]?.slug ?? "dairy";
-
-    const { data, error } = await supabase.rpc("api_category_listing", {
-      p_category: slug,
-    });
-    expect(error).toBeNull();
-    assertContract("api_category_listing", data, CategoryListingContract);
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// P0 — Dashboard & Health Warnings
-// ═══════════════════════════════════════════════════════════════════════════════
-
-describeIntegration("P0 Contract: api_get_dashboard_data", () => {
-  it("returns valid dashboard shape (auth-required)", async () => {
-    const { data, error } = await supabase.rpc("api_get_dashboard_data");
-    // Service-role key bypasses RLS; if RPC itself checks auth.uid(), skip
-    if (error) return;
-    assertContract("api_get_dashboard_data", data, DashboardDataContract);
-  });
-});
-
-describeIntegration("P0 Contract: api_product_health_warnings", () => {
-  it("returns valid health warnings shape", async () => {
-    const { data, error } = await supabase.rpc(
-      "api_product_health_warnings",
-      { p_product_id: QA_PRODUCT_ID },
-    );
-    expect(error).toBeNull();
-    // The integration client uses a service-role key without a user JWT.
-    // This RPC intentionally resolves auth through auth.uid(), so its
-    // fail-closed business response is expected in that context.
-    if (
-      data &&
-      typeof data === "object" &&
-      "error" in data &&
-      data.error === "Authentication required"
-    ) {
-      return;
-    }
-    assertContract(
-      "api_product_health_warnings",
-      data,
-      HealthWarningsContract,
-    );
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// P1 — Search Supplemental
-// ═══════════════════════════════════════════════════════════════════════════════
-
-describeIntegration("P1 Contract: api_get_filter_options", () => {
-  it("returns valid filter options shape", async () => {
-    const { data, error } = await supabase.rpc("api_get_filter_options", {
-      p_country: "PL",
-    });
-    expect(error).toBeNull();
-    assertContract("api_get_filter_options", data, FilterOptionsContract);
-  });
-});
-
-describeIntegration("P1 Contract: api_get_saved_searches", () => {
-  it("returns valid saved searches shape (auth-required)", async () => {
-    const { data, error } = await supabase.rpc("api_get_saved_searches");
-    if (error) return;
-    assertContract("api_get_saved_searches", data, SavedSearchesContract);
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// P1 — Lists
-// ═══════════════════════════════════════════════════════════════════════════════
-
-describeIntegration("P1 Contract: api_get_lists", () => {
-  it("returns valid lists shape (auth-required)", async () => {
-    const { data, error } = await supabase.rpc("api_get_lists");
-    if (error) return;
-    assertContract("api_get_lists", data, ListsContract);
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// P1 — Compare
-// ═══════════════════════════════════════════════════════════════════════════════
-
-describeIntegration("P1 Contract: api_get_products_for_compare", () => {
-  it("returns valid compare shape", async () => {
-    const { data, error } = await supabase.rpc(
-      "api_get_products_for_compare",
-      { p_product_ids: [QA_PRODUCT_ID] },
-    );
-    expect(error).toBeNull();
-    assertContract(
-      "api_get_products_for_compare",
-      data,
-      CompareContract,
-    );
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// P1 — Health Profiles
-// ═══════════════════════════════════════════════════════════════════════════════
-
-describeIntegration("P1 Contract: api_list_health_profiles", () => {
-  it("returns valid health profiles list (auth-required)", async () => {
-    const { data, error } = await supabase.rpc("api_list_health_profiles");
-    if (error) return;
-    assertContract(
-      "api_list_health_profiles",
-      data,
-      HealthProfileListContract,
-    );
-  });
-});
-
-describeIntegration("P1 Contract: api_get_active_health_profile", () => {
-  it("returns valid active profile shape (auth-required)", async () => {
-    const { data, error } = await supabase.rpc(
-      "api_get_active_health_profile",
-    );
-    if (error) return;
-    assertContract(
-      "api_get_active_health_profile",
-      data,
-      HealthProfileActiveContract,
-    );
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// P1 — User Preferences
-// ═══════════════════════════════════════════════════════════════════════════════
-
-describeIntegration("P1 Contract: api_get_user_preferences", () => {
-  it("returns valid preferences shape (auth-required)", async () => {
-    const { data, error } = await supabase.rpc("api_get_user_preferences");
-    if (error) return;
-    assertContract(
-      "api_get_user_preferences",
-      data,
-      UserPreferencesContract,
-    );
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// P1 — Scan History
-// ═══════════════════════════════════════════════════════════════════════════════
-
-describeIntegration("P1 Contract: api_get_scan_history", () => {
-  it("returns valid scan history shape (auth-required)", async () => {
-    const { data, error } = await supabase.rpc("api_get_scan_history", {
-      p_page: 1,
-      p_page_size: 5,
-      p_filter: "all",
-    });
-    if (error) return;
-    assertContract("api_get_scan_history", data, ScanHistoryContract);
-  });
-});
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// P1 — Recently Viewed
-// ═══════════════════════════════════════════════════════════════════════════════
-
-describeIntegration("P1 Contract: api_get_recently_viewed", () => {
-  it("returns valid recently viewed shape (auth-required)", async () => {
-    const { data, error } = await supabase.rpc("api_get_recently_viewed");
-    if (error) return;
-    assertContract("api_get_recently_viewed", data, RecentlyViewedContract);
+    assertProtectedResponse(data, contract);
   });
 });

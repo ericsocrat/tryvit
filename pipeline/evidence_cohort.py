@@ -11,6 +11,7 @@ import argparse
 import hashlib
 import json
 import logging
+import re
 import sys
 import time
 from collections import Counter
@@ -24,7 +25,8 @@ from pipeline import off_client
 from pipeline.observations import NUTRIENTS, observation_sql, seal_observation
 
 ROOT = Path(__file__).resolve().parent.parent
-COHORT_PATH = ROOT / "data-quality/cohorts/evidence-first-v1.json"
+COHORT_ROOT = ROOT / "data-quality/cohorts"
+COHORT_PATH = COHORT_ROOT / "evidence-first-v1.json"
 REPORT_ROOT = ROOT / "audit-reports/evidence-cohort"
 GROUPS = {
     (market, category)
@@ -33,10 +35,53 @@ GROUPS = {
 }
 
 
+def _confined_path(path: Path, root: Path, *, must_exist: bool = False) -> Path:
+    """Validate lexical and resolved containment before opening any artifact."""
+    path = Path(path)
+    boundary = Path(root).absolute()
+    candidate = path.absolute()
+    if ".." in path.parts or candidate == boundary or not candidate.is_relative_to(boundary):
+        raise ValueError("Path must remain within its intended artifact root")
+    # Checking every existing component rejects both outside-pointing links and
+    # aliases within the root; Windows directory junctions are links too.
+    for component in (candidate, *candidate.parents):
+        if component.is_symlink() or getattr(component, "is_junction", lambda: False)():
+            raise ValueError("Symbolic links and junctions are not permitted for artifacts")
+    resolved = candidate.resolve(strict=must_exist)
+    if resolved == boundary.resolve() or not resolved.is_relative_to(boundary.resolve()):
+        raise ValueError("Resolved path escaped its intended artifact root")
+    return resolved
+
+
+def _observation_name(member: dict) -> str:
+    product_id = member["product_id"]
+    if type(product_id) is not int or not 0 < product_id <= 9223372036854775807:
+        raise ValueError("Frozen product_id must be a positive PostgreSQL bigint")
+    if member["country"] not in ("PL", "DE"):
+        raise ValueError("Invalid frozen market")
+    ean = member["ean"]
+    if not isinstance(ean, str) or re.fullmatch(r"(?:[0-9]{8}|[0-9]{12,14})", ean) is None:
+        raise ValueError("Invalid frozen barcode")
+    market = "PL" if member["country"] == "PL" else "DE"
+    return f"{market}-{int(product_id)}-{ean}.observation.json"
+
+
+def _artifact_path(output: Path, filename: str, *, must_exist: bool = False) -> Path:
+    if not isinstance(filename, str) or (
+        filename not in ("receipt.json", "dry-run.sql")
+        and re.fullmatch(r"(?:PL|DE)-[1-9][0-9]*-(?:[0-9]{8}|[0-9]{12,14})\.observation\.json", filename) is None
+    ):
+        raise ValueError("Artifact filename must be a single approved basename")
+    return _confined_path(output / filename, REPORT_ROOT, must_exist=must_exist)
+
+
 def load_cohort(path: Path) -> tuple[dict, str]:
+    path = _confined_path(path, COHORT_ROOT, must_exist=True)
     content = path.read_bytes()
     cohort = json.loads(content)
     members = cohort["members"]
+    for member in members:
+        _observation_name(member)
     counts = Counter((member["country"], member["category"]) for member in members)
     identities = {(member["country"], member["ean"]) for member in members}
     ids = {member["product_id"] for member in members}
@@ -50,10 +95,6 @@ def load_cohort(path: Path) -> tuple[dict, str]:
         raise ValueError("Cohort must retain sixty unique members, five in every fixed stratum")
     if not {628, 2882}.issubset(ids):
         raise ValueError("Audited skyr records must remain in the fixed cohort")
-    for member in members:
-        ean = member["ean"]
-        if not isinstance(ean, str) or not ean.isascii() or not ean.isdigit() or len(ean) not in (8, 12, 13, 14):
-            raise ValueError("Invalid frozen barcode")
     return cohort, hashlib.sha256(content).hexdigest()
 
 
@@ -192,14 +233,15 @@ def reconcile(member: dict, reference: dict, product: dict) -> dict:
 
 
 def _write_json(path: Path, value: dict) -> None:
+    path = _confined_path(path, REPORT_ROOT)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
 
 
 def verify_saved_run(output: Path, cohort_path: Path = COHORT_PATH) -> dict:
     """Recheck retained bytes and envelope identity without another source read."""
     manifest, digest = load_cohort(cohort_path)
-    output = output.resolve()
-    receipt = json.loads((output / "receipt.json").read_text(encoding="utf-8"))
+    output = _confined_path(output, REPORT_ROOT, must_exist=True)
+    receipt = json.loads(_artifact_path(output, "receipt.json", must_exist=True).read_text(encoding="utf-8"))
     keys = ("product_id", "country", "category", "ean")
     if receipt["cohort_sha256"] != digest or [tuple(m[key] for key in keys) for m in receipt["members"]] != [
         tuple(m[key] for key in keys) for m in manifest["members"]
@@ -213,9 +255,9 @@ def verify_saved_run(output: Path, cohort_path: Path = COHORT_PATH) -> dict:
             if member["status"] == "fetched":
                 raise ValueError("Fetched outcome has no retained observation")
             continue
-        path = (output / member["observation_file"]).resolve()
-        if not path.is_relative_to(output):
-            raise ValueError("Observation file escaped run directory")
+        if member["observation_file"] != _observation_name(member):
+            raise ValueError("Observation filename differs from frozen member")
+        path = _artifact_path(output, member["observation_file"], must_exist=True)
         data = path.read_bytes()
         if hashlib.sha256(data).hexdigest() != member["observation_sha256"]:
             raise ValueError("Observation file hash mismatch")
@@ -244,10 +286,10 @@ def verify_saved_run(output: Path, cohort_path: Path = COHORT_PATH) -> dict:
 
 
 def run_cohort(cohort_path: Path, reference_path: Path, output: Path) -> dict:
+    cohort_path = _confined_path(cohort_path, COHORT_ROOT, must_exist=True)
     cohort, cohort_hash = load_cohort(cohort_path)
-    output = output.resolve()
-    if not output.is_relative_to(REPORT_ROOT.resolve()) or output == REPORT_ROOT.resolve():
-        raise ValueError("Run output must be a new child directory under audit-reports/evidence-cohort")
+    output = _confined_path(output, REPORT_ROOT)
+    reference_path = _confined_path(reference_path, REPORT_ROOT, must_exist=True)
     reference_document = json.loads(reference_path.read_text(encoding="utf-8"))
     references = {row["product_id"]: row for row in reference_document["members"]}
     if set(references) != {m["product_id"] for m in cohort["members"]}:
@@ -305,14 +347,15 @@ def run_cohort(cohort_path: Path, reference_path: Path, output: Path) -> dict:
                     source = product["_source_observation"]
                     source["identity"] = {**source["identity"], "category": member["category"]}
                     product["_source_observation"] = seal_observation(source)
-                    name = f"{member['country']}-{member['product_id']}-{member['ean']}.observation.json"
-                    _write_json(output / name, product["_source_observation"])
+                    name = _observation_name(member)
+                    _write_json(_artifact_path(output, name), product["_source_observation"])
                     outcome["observation_file"] = name
-                    outcome["observation_sha256"] = hashlib.sha256((output / name).read_bytes()).hexdigest()
+                    retained = _artifact_path(output, name, must_exist=True).read_bytes()
+                    outcome["observation_sha256"] = hashlib.sha256(retained).hexdigest()
                     receipt["reconciliation"].append(reconcile(member, references[member["product_id"]], product))
                     if outcome["status"] == "fetched":
                         statements.append(observation_sql(member["category"], [product], member["country"]))
-                _write_json(output / "receipt.json", receipt)
+                _write_json(_artifact_path(output, "receipt.json"), receipt)
                 sys.stdout.write(
                     f"{len(receipt['members'])}/60 {member['country']} {member['product_id']}: {outcome['status']}\n"
                 )
@@ -327,10 +370,11 @@ def run_cohort(cohort_path: Path, reference_path: Path, output: Path) -> dict:
     receipt["unknown_basis_fields"] = sum(
         field["source_basis"] == "unknown" for row in receipt["reconciliation"] for field in row["nutrition"]
     )
-    if hashlib.sha256(cohort_path.read_bytes()).hexdigest() != cohort_hash:
+    final_cohort = _confined_path(cohort_path, COHORT_ROOT, must_exist=True).read_bytes()
+    if hashlib.sha256(final_cohort).hexdigest() != cohort_hash:
         raise ValueError("Cohort changed during collection")
-    _write_json(output / "receipt.json", receipt)
-    (output / "dry-run.sql").write_text("\n".join(statements), encoding="utf-8")
+    _write_json(_artifact_path(output, "receipt.json"), receipt)
+    _artifact_path(output, "dry-run.sql").write_text("\n".join(statements), encoding="utf-8")
     return receipt
 
 

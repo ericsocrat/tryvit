@@ -3,8 +3,24 @@
 // Returns { ok, data?, error? } — never throws.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { ZodType } from "zod";
 import { observeQuery } from "./query-observer";
 import type { RpcResult } from "./types";
+
+/** Runtime boundary for versioned reads. Never log the rejected data payload. */
+export async function callValidatedRpc<T>(
+  supabase: SupabaseClient,
+  fnName: string,
+  schema: ZodType<T>,
+  params?: Record<string, unknown>,
+): Promise<RpcResult<T>> {
+  const result = await callRpc<unknown>(supabase, fnName, params);
+  if (!result.ok) return result;
+  const parsed = schema.safeParse(result.data);
+  return parsed.success
+    ? { ok: true, data: parsed.data }
+    : { ok: false, error: { code: "CONTRACT_MISMATCH", message: "Product information could not be validated. Please try again." } };
+}
 
 // ─── Auth error detection constants ─────────────────────────────────────────
 

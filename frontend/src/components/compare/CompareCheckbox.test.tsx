@@ -37,6 +37,11 @@ describe("CompareCheckbox", () => {
     expect(screen.getByLabelText("Remove from comparison")).toBeTruthy();
   });
 
+  it("includes the visible label in the accessible name for a labelled toggle", () => {
+    render(<CompareCheckbox productId={42} showLabel />);
+    expect(screen.getByRole("button", { name: "Compare: Add to comparison" })).toHaveTextContent("Compare");
+  });
+
   it("calls toggle on click when not disabled", () => {
     render(<CompareCheckbox productId={42} />);
     fireEvent.click(screen.getByRole("button"));

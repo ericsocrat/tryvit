@@ -53,7 +53,7 @@ describe("RecipeCard", () => {
     render(<RecipeCard recipe={baseRecipe} />);
     expect(
       screen.getByText(
-        "Creamy overnight oats topped with fresh berries and a drizzle of honey.",
+        "Creamy overnight oats with optional fresh berries.",
       ),
     ).toBeInTheDocument();
   });
@@ -81,23 +81,16 @@ describe("RecipeCard", () => {
     expect(screen.getByText("1")).toBeInTheDocument();
   });
 
-  it("renders tags as chips", () => {
+  it("withholds unverified tags even when a legacy response contains them", () => {
     render(<RecipeCard recipe={baseRecipe} />);
-    expect(screen.getByText("quick")).toBeInTheDocument();
-    expect(screen.getByText("healthy")).toBeInTheDocument();
+    expect(screen.queryByText("quick")).not.toBeInTheDocument();
+    expect(screen.queryByText("healthy")).not.toBeInTheDocument();
   });
 
-  it("limits visible tags to 3", () => {
-    const manyTags: RecipeSummary = {
-      ...baseRecipe,
-      tags: ["a", "b", "c", "d", "e"],
-    };
-    render(<RecipeCard recipe={manyTags} />);
-    expect(screen.getByText("a")).toBeInTheDocument();
-    expect(screen.getByText("b")).toBeInTheDocument();
-    expect(screen.getByText("c")).toBeInTheDocument();
-    expect(screen.queryByText("d")).not.toBeInTheDocument();
-    expect(screen.queryByText("e")).not.toBeInTheDocument();
+  it("states waiting time separately from prep and cook time", () => {
+    render(<RecipeCard recipe={baseRecipe} />);
+    expect(screen.getByText("Prep + cook: 5 min")).toBeInTheDocument();
+    expect(screen.getByText(/at least 4 hours/)).toBeInTheDocument();
   });
 
   it("does not render tags section when empty", () => {

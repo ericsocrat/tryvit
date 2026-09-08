@@ -1,43 +1,44 @@
-# Edge Function: send-push-notification
+# send-push-notification — retired dispatcher
 
-> **Runtime:** Deno + TypeScript (Supabase Edge Functions)
-> **Auth:** Requires `service_role` key (`Authorization: Bearer <service_role_key>`)
+This endpoint is deliberately inert under `evidence-first-v1`. The unsupported
+aggregate score is no longer a basis for better/worse health notifications.
 
-## Purpose
+A POST request must match the existing server-owned service authority exactly.
+Missing/incorrect authorization returns 401; unavailable service authority returns
+503. Authorized requests return only:
 
-Processes the `notification_queue` table and sends Web Push notifications to users with active push subscriptions via the VAPID protocol.
-
-## Trigger
-
-- Cron job (scheduled)
-- Database webhook
-- Manual invocation
-
-## Request Shape
-
-```jsonc
-// POST /functions/v1/send-push-notification
-{
-  "user_id": "uuid",
-  "title": "Notification title",
-  "body": "Notification body text",
-  "url": "/app/product/123"  // optional deep-link
-}
+```json
+{"processed":0,"status":"retired","reason":"unsupported_aggregate"}
 ```
 
-## Deploy
+There are no queue reads, Web Push calls, subscription writes, VAPID operations,
+logs or request-body parsing. Credentials never enter response bodies. This is
+not a claim that historical push delivery worked.
 
-```bash
-supabase functions deploy send-push-notification --no-verify-jwt
+Migration `20260905121451_score_interpretation_retirement.sql` also makes the score
+notification trigger inert and pending notification RPC return no deliverable
+items. Existing watches, preferences, subscriptions, score history and queued
+rows remain intact. The browser stops accepting old score payloads and stops
+renewing subscriptions. An explicit user action can remove an existing browser
+subscription through the normal owner-scoped API.
+
+The endpoint keeps its existing legacy service-key authentication convention;
+it does not change deployment authentication settings, rotate keys, or enable
+public access. Supabase distinguishes signed-in user JWTs from backend API
+authority: [official authorization headers](https://supabase.com/docs/guides/functions/auth-headers)
+and [API-key guidance](https://supabase.com/docs/guides/getting-started/api-keys).
+A future authenticated notification service needs a separately specified
+evidence-backed event contract and correctly implemented Web Push encryption.
+Do not restore the historical plaintext payload implementation.
+
+Verification (synthetic credentials only):
+
+```sh
+node --experimental-strip-types --test supabase/functions/send-push-notification/retired-handler.test.ts
 ```
 
-## Secrets Required
-
-| Secret              | Description                                       |
-| ------------------- | ------------------------------------------------- |
-| `VAPID_PUBLIC_KEY`  | VAPID public key for Web Push identification      |
-| `VAPID_PRIVATE_KEY` | VAPID private key for JWT signing (P-256 ECDSA)   |
-
-```bash
-supabase secrets set VAPID_PUBLIC_KEY=<key> VAPID_PRIVATE_KEY=<key>
-```
+Release order: deploy this inert endpoint before or with the database retirement,
+then deploy the frontend. Test locally first. Do not replay old pending queue
+rows. Historical rows are preserved for audit, not automatic future delivery.
+Restoring dispatch requires an explicit validated replacement; rolling back
+unrelated product UI must not re-enable unsupported health notifications.

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -90,6 +90,9 @@ describe("ImageCapture", () => {
   });
 
   afterEach(() => {
+    // Unmount and flush effect cleanup before restoring media prototypes.
+    // Otherwise a pending React effect can call jsdom's unimplemented play().
+    cleanup();
     // Restore original prototypes
     HTMLCanvasElement.prototype.getContext = origGetContext;
     HTMLCanvasElement.prototype.toBlob = origToBlob;
@@ -106,13 +109,13 @@ describe("ImageCapture", () => {
   it("renders instructions text", () => {
     render(<ImageCapture onCapture={vi.fn()} processing={false} />);
     expect(
-      screen.getByText("imageSearch.instructions"),
+      screen.getByText("imageSearch.capture.instructions"),
     ).toBeInTheDocument();
   });
 
   it("renders tips text", () => {
     render(<ImageCapture onCapture={vi.fn()} processing={false} />);
-    expect(screen.getByText("imageSearch.tips")).toBeInTheDocument();
+    expect(screen.getByText("imageSearch.capture.tips")).toBeInTheDocument();
   });
 
   it("has a hidden file input with correct attributes", () => {
@@ -211,6 +214,8 @@ describe("ImageCapture", () => {
         video: { facingMode: "environment" },
       });
       expect(screen.getByTestId("camera-preview")).toBeInTheDocument();
+      expect((screen.getByTestId("camera-preview") as HTMLVideoElement).srcObject).toBe(mockStream);
+      expect(HTMLVideoElement.prototype.play).toHaveBeenCalled();
       expect(screen.getByTestId("capture-btn")).toBeInTheDocument();
       expect(screen.getByLabelText("common.cancel")).toBeInTheDocument();
 
@@ -230,11 +235,44 @@ describe("ImageCapture", () => {
 
       await waitFor(() => {
         expect(screen.getByRole("alert")).toHaveTextContent(
-          "imageSearch.cameraError",
+          "imageSearch.capture.cameraError",
         );
       });
 
       // Camera preview should NOT be shown
+      expect(screen.queryByTestId("camera-preview")).not.toBeInTheDocument();
+    });
+
+    it("stops a camera stream that resolves after the page unmounts", async () => {
+      let resolveStream!: (stream: MediaStream) => void;
+      mockGetUserMedia.mockReturnValueOnce(new Promise<MediaStream>((resolve) => { resolveStream = resolve; }));
+      const { unmount } = render(<ImageCapture onCapture={vi.fn()} processing={false} />);
+      fireEvent.click(screen.getByTestId("open-camera-btn"));
+      expect(screen.getByTestId("open-camera-btn")).toBeDisabled();
+      unmount();
+      resolveStream(mockStream as unknown as MediaStream);
+      await waitFor(() => expect(mockStop).toHaveBeenCalled());
+    });
+
+    it("lets the user cancel a pending permission request and stops its late stream", async () => {
+      let resolveStream!: (stream: MediaStream) => void;
+      mockGetUserMedia.mockReturnValueOnce(new Promise<MediaStream>((resolve) => { resolveStream = resolve; }));
+      render(<ImageCapture onCapture={vi.fn()} processing={false} />);
+      fireEvent.click(screen.getByTestId("open-camera-btn"));
+      fireEvent.click(screen.getByRole("button", { name: "common.cancel" }));
+      expect(screen.getByTestId("upload-btn")).toBeEnabled();
+      resolveStream(mockStream as unknown as MediaStream);
+      await waitFor(() => expect(mockStop).toHaveBeenCalled());
+      expect(screen.queryByTestId("camera-preview")).not.toBeInTheDocument();
+    });
+
+    it("stops the stream and offers recovery if preview playback fails", async () => {
+      vi.mocked(HTMLVideoElement.prototype.play).mockRejectedValueOnce(new Error("Playback blocked"));
+      render(<ImageCapture onCapture={vi.fn()} processing={false} />);
+      fireEvent.click(screen.getByTestId("open-camera-btn"));
+      await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("imageSearch.capture.cameraError"));
+      expect(mockStop).toHaveBeenCalled();
+      expect(screen.getByTestId("upload-btn")).toBeEnabled();
       expect(screen.queryByTestId("camera-preview")).not.toBeInTheDocument();
     });
 

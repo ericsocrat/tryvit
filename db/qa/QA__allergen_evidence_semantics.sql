@@ -1,9 +1,20 @@
--- ═══════════════════════════════════════════════════════════════════════════════
--- QA Suite: Phase 5 allergen evidence semantics
--- Positive rows have explicit provenance; missing rows remain unknown.
--- 7 checks.
--- ═══════════════════════════════════════════════════════════════════════════════
-
+-- Current evidence-first QA. Synthetic fixtures and claims are transaction-local.
+-- Run only through the approved local QA workflow; ROLLBACK preserves all data.
+BEGIN;
+CREATE TEMP TABLE qa_context AS SELECT gen_random_uuid() AS uid;
+INSERT INTO auth.users(id) SELECT uid FROM qa_context;
+INSERT INTO public.user_preferences(user_id,country,diet_preference,strict_diet,strict_allergen,avoid_allergens,treat_may_contain_as_unsafe,preferred_language)
+SELECT uid,'PL','none',false,false,ARRAY[]::text[],false,'en' FROM qa_context
+ON CONFLICT(user_id) DO UPDATE SET country='PL',diet_preference='none',strict_diet=false,strict_allergen=false,avoid_allergens=ARRAY[]::text[],treat_may_contain_as_unsafe=false,preferred_language='en';
+SELECT set_config('request.jwt.claims',jsonb_build_object('sub',uid,'role','authenticated')::text,true) FROM qa_context;
+CREATE FUNCTION pg_temp.qa_ok(condition boolean) RETURNS integer LANGUAGE sql IMMUTABLE AS $$ SELECT CASE WHEN condition IS TRUE THEN 0 ELSE 1 END; $$;
+CREATE FUNCTION pg_temp.qa_retired(payload jsonb) RETURNS boolean LANGUAGE sql IMMUTABLE AS $$
+  SELECT payload = jsonb_build_object('api_version','2','policy_version','evidence-first-v1',
+    'error','refresh_required','status','refresh_required','message','Refresh TryVit to use source-backed product evidence.');
+$$;
+INSERT INTO public.products(country,brand,product_name,category)
+SELECT 'PL',uid::text,'Qasemantics Alpha','Dairy' FROM qa_context;
+CREATE TEMP TABLE qa_products AS SELECT p.product_id,p.country,p.product_name FROM public.products p JOIN qa_context c ON p.brand=c.uid::text;
 -- 1. Every positive evidence row has a supported non-null basis.
 SELECT '1. allergen evidence basis is valid' AS check_name,
        COUNT(*) AS violations
@@ -29,85 +40,14 @@ FROM product_allergen_info
 WHERE evidence_basis = 'ingredient_derived'
   AND type <> 'contains';
 
--- 4. A representative product with no positive rows reports unknown.
-WITH sample AS (
-    SELECT p.product_id
-    FROM products p
-    WHERE p.is_deprecated IS NOT TRUE
-      AND NOT EXISTS (
-          SELECT 1
-          FROM product_allergen_info ai
-          WHERE ai.product_id = p.product_id
-      )
-    ORDER BY p.product_id
-    LIMIT 1
-)
-SELECT '4. no evidence reports unknown in product profile' AS check_name,
-       COUNT(*) AS violations
-FROM sample
-WHERE api_get_product_profile(sample.product_id)
-          ->'allergens'->>'evidence_status' <> 'unknown';
 
--- 5. Product profiles never synthesize assessed absence in this contract.
-WITH samples AS (
-    SELECT p.product_id
-    FROM products p
-    WHERE p.is_deprecated IS NOT TRUE
-    ORDER BY p.product_id
-    LIMIT 25
-)
-SELECT '5. product profiles do not synthesize assessed absence' AS check_name,
-       COUNT(*) AS violations
-FROM samples
-WHERE api_get_product_profile(samples.product_id)
-          ->'allergens'->>'absence_assessment' <> 'not_assessed'
-   OR jsonb_array_length(
-          api_get_product_profile(samples.product_id)
-              ->'allergens'->'assessed_absent'
-      ) <> 0;
-
--- 6. The batch API returns explicit unknown payloads for requested products.
-WITH sample AS (
-    SELECT p.product_id
-    FROM products p
-    WHERE p.is_deprecated IS NOT TRUE
-      AND NOT EXISTS (
-          SELECT 1
-          FROM product_allergen_info ai
-          WHERE ai.product_id = p.product_id
-      )
-    ORDER BY p.product_id
-    LIMIT 1
-), response AS (
-    SELECT sample.product_id,
-           api_get_product_allergens(ARRAY[sample.product_id]) AS payload
-    FROM sample
-)
-SELECT '6. batch allergen API names missing evidence unknown' AS check_name,
-       COUNT(*) AS violations
-FROM response
-WHERE payload->(product_id::text)->>'evidence_status' <> 'unknown'
-   OR jsonb_array_length(payload->(product_id::text)->'evidence') <> 0;
-
--- 7. The retained wire key is documented as exclusion, not absence proof.
-SELECT '7. legacy search key has truthful semantic contract' AS check_name,
-       CASE
-           WHEN COALESCE(
-               obj_description(
-                   'public.api_search_products(text,jsonb,integer,integer,boolean)'
-                       ::regprocedure,
-                   'pg_proc'
-               ),
-               ''
-           ) ILIKE '%exclude products with matching contains evidence%'
-            AND COALESCE(
-               obj_description(
-                   'public.api_search_products(text,jsonb,integer,integer,boolean)'
-                       ::regprocedure,
-                   'pg_proc'
-               ),
-               ''
-           ) ILIKE '%does not prove allergen absence%'
-           THEN 0
-           ELSE 1
-       END AS violations;
+CREATE TEMP TABLE qa_model AS SELECT public.api_product_read_model(ARRAY[product_id],'en') b FROM qa_products;
+SELECT '4. no positive evidence is explicitly missing not absent' AS check_name, pg_temp.qa_ok((SELECT b->'products'->0->'allergens'='{"state":"missing","contains":[],"traces":[]}'::jsonb FROM qa_model)) AS violations;
+SELECT '5. canonical product allergens never assert assessed absence' AS check_name,COUNT(*) AS violations
+FROM public.products p CROSS JOIN LATERAL evidence_private.product_one(p.product_id,'en') m
+WHERE p.is_deprecated IS NOT TRUE AND (m->'allergens' ?| ARRAY['assessed_absent','allergen_free','absence_assessment']
+ OR jsonb_typeof(m->'allergens'->'contains') IS DISTINCT FROM 'array' OR jsonb_typeof(m->'allergens'->'traces') IS DISTINCT FROM 'array');
+SELECT '6. canonical batch retains requested unknown fixture and identity' AS check_name, pg_temp.qa_ok((SELECT jsonb_array_length(b->'products')=1 AND b->'products'->0->>'product_id'=(SELECT product_id::text FROM qa_products) AND b->'missing_ids'='[]'::jsonb FROM qa_model)) AS violations;
+UPDATE public.user_preferences SET avoid_allergens=ARRAY['milk'],strict_allergen=true WHERE user_id=(SELECT uid FROM qa_context);
+SELECT '7. strict allergen preference withholds unknowns not certifies absence' AS check_name, pg_temp.qa_ok(public.api_find_products((SELECT uid::text FROM qa_context))->>'total'='0') AS violations;
+ROLLBACK;

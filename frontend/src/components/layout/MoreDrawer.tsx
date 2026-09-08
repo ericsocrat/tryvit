@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./AppShell.module.css";
 import { ThemeToggle } from "./ThemeToggle";
-import { ADMIN_ENTRY_ITEM, DRAWER_SECTIONS, type AppNavItem } from "./app-navigation";
+import { ADMIN_ENTRY_ITEM, DRAWER_SECTIONS, isNavigationItemActive, type AppNavItem } from "./app-navigation";
 
 interface MoreDrawerProps {
   readonly open: boolean;
@@ -155,7 +155,7 @@ export function MoreDrawer({ open, onClose }: Readonly<MoreDrawerProps>) {
                   <DrawerLink
                     key={item.href}
                     item={item}
-                    active={activeRoute === item.routeKey}
+                    active={isNavigationItemActive(item, activeRoute)}
                     onClose={onClose}
                   />
                 ))}
@@ -196,7 +196,7 @@ function DrawerLink({
         className={`${styles.drawerLink} ${active ? styles.drawerLinkActive : ""}`}
         data-touch-target="true"
       >
-        <Icon icon={item.icon} size="md" />
+        <Icon icon={item.icon} size="md" strokeWidth={1.75} />
         <span>{t(item.labelKey)}</span>
       </Link>
     </li>

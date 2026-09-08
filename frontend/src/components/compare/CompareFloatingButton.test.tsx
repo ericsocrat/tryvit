@@ -8,6 +8,7 @@ const mockCount = vi.fn();
 const mockGetIds = vi.fn();
 const mockClear = vi.fn();
 const mockPush = vi.fn();
+const mockPathname = vi.fn();
 
 vi.mock("@/stores/compare-store", () => ({
   useCompareStore: (selector: (state: Record<string, unknown>) => unknown) =>
@@ -20,6 +21,7 @@ vi.mock("@/stores/compare-store", () => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
+  usePathname: () => mockPathname(),
 }));
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
@@ -27,6 +29,7 @@ vi.mock("next/navigation", () => ({
 describe("CompareFloatingButton", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPathname.mockReturnValue("/app/search");
     mockGetIds.mockReturnValue([1, 2, 3]);
   });
 
@@ -34,6 +37,14 @@ describe("CompareFloatingButton", () => {
     mockCount.mockReturnValue(0);
     const { container } = render(<CompareFloatingButton />);
     expect(container.innerHTML).toBe("");
+  });
+
+  it("does not duplicate canonical comparison controls or clear the selection", () => {
+    mockCount.mockReturnValue(2);
+    mockPathname.mockReturnValue("/app/compare");
+    const { container } = render(<CompareFloatingButton />);
+    expect(container).toBeEmptyDOMElement();
+    expect(mockClear).not.toHaveBeenCalled();
   });
 
   it("renders disabled button when 1 selected", () => {

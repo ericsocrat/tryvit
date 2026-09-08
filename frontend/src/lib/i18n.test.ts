@@ -45,7 +45,7 @@ afterEach(() => {
 describe("translate", () => {
   describe("English (default)", () => {
     it("resolves a top-level key", () => {
-      expect(translate("en", "nav.home")).toBe("Dashboard");
+      expect(translate("en", "nav.home")).toBe("Home");
     });
 
     it("resolves a nested key", () => {
@@ -71,7 +71,7 @@ describe("translate", () => {
 
   describe("Polish", () => {
     it("resolves a Polish translation", () => {
-      expect(translate("pl", "nav.home")).toBe("Pulpit");
+      expect(translate("pl", "nav.home")).toBe("Start");
     });
 
     it("resolves nested Polish keys", () => {
@@ -86,7 +86,7 @@ describe("translate", () => {
   describe("fallback chain", () => {
     it("falls back to English for unsupported language code", () => {
       // "fr" has no dictionary — should fall through to English
-      expect(translate("fr" as "en", "nav.home")).toBe("Dashboard");
+      expect(translate("fr" as "en", "nav.home")).toBe("Home");
     });
 
     it("falls back to English when key missing in Polish", () => {
@@ -314,7 +314,7 @@ describe("translate", () => {
       const { result } = renderHook(() => useTranslation(), {
         wrapper: createI18nWrapper("en"),
       });
-      expect(result.current.t("nav.home")).toBe("Dashboard");
+      expect(result.current.t("nav.home")).toBe("Home");
     });
 
     it("t() returns humanized fallback for missing keys", () => {

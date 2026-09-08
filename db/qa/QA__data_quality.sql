@@ -1,5 +1,7 @@
+-- C evidence-first semantics: load contracts/evidence_data.sql in this session.
+-- Historical mathematical range/equality checks remain operator audits, not consumer validity.
 -- ============================================================
--- QA: Data Quality & Plausibility Checks (40 checks)
+-- QA: Data Quality & Plausibility Checks (31 blocking checks)
 -- Validates data hygiene, plausibility bounds, cross-field
 -- consistency, and coverage regression thresholds.
 -- All checks are BLOCKING unless marked informational.
@@ -9,43 +11,41 @@
 -- ============================================================
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 1. Trans fat must not exceed total fat
+-- 1. trans_fat <= total_fat
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '1. trans_fat <= total_fat' AS check_name,
        COUNT(*) AS violations
-FROM nutrition_facts nf
+FROM qa_proven_nutrition nf
 JOIN products p  ON p.product_id  = nf.product_id
-WHERE p.is_deprecated IS NOT TRUE
+WHERE pg_temp.qa_fields_comparable(nf.model,ARRAY['trans_fat_g','total_fat_g'],NULL)
+  AND p.is_deprecated IS NOT TRUE
   AND nf.trans_fat_g IS NOT NULL
   AND nf.total_fat_g IS NOT NULL
   AND nf.trans_fat_g > nf.total_fat_g;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 2. Total macros per 100g must not exceed 105g
+-- 2. total macros <= 105g per 100g
 --    (pure oils like coconut oil can reach ~101g; 105g adds safety margin)
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '2. total macros <= 105g per 100g' AS check_name,
        COUNT(*) AS violations
-FROM nutrition_facts nf
+FROM qa_proven_nutrition nf
 JOIN products p  ON p.product_id  = nf.product_id
-WHERE p.is_deprecated IS NOT TRUE
+WHERE pg_temp.qa_fields_comparable(nf.model,ARRAY['total_fat_g','carbs_g','protein_g'])
+  AND p.is_deprecated IS NOT TRUE
   AND (COALESCE(nf.total_fat_g, 0) + COALESCE(nf.carbs_g, 0)
      + COALESCE(nf.protein_g, 0)) > 105;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 3. Individual macro upper bounds per 100g
+-- 3. proven per100g mass fields do not exceed100g
 --    fat/carbs/protein ≤ 100g each, salt ≤ 40g
 -- ═══════════════════════════════════════════════════════════════════════════
-SELECT '3. individual macro bounds' AS check_name,
-       COUNT(*) AS violations
-FROM nutrition_facts nf
-JOIN products p  ON p.product_id  = nf.product_id
-WHERE p.is_deprecated IS NOT TRUE
-  AND (nf.total_fat_g > 100 OR nf.carbs_g > 100 OR nf.protein_g > 100
-    OR nf.salt_g > 40 OR nf.fibre_g > 100);
+SELECT '3. proven per100g mass fields do not exceed100g' AS check_name, COUNT(*) AS violations
+FROM qa_evidence_products p CROSS JOIN LATERAL jsonb_each(p.model->'nutrition') f
+WHERE f.key IN ('total_fat_g','carbs_g','protein_g','salt_g','fibre_g') AND pg_temp.qa_fields_comparable(p.model,ARRAY[f.key]) AND (f.value->>'value')::numeric>100;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 4. No empty strings where NULL is expected (ean, brand)
+-- 4. no empty strings in key fields
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '4. no empty strings in key fields' AS check_name,
        COUNT(*) AS violations
@@ -56,7 +56,7 @@ FROM (
 ) q;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 5. No leading/trailing whitespace in product names and brands
+-- 5. no untrimmed names/brands
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '5. no untrimmed names/brands' AS check_name,
        COUNT(*) AS violations
@@ -65,7 +65,7 @@ WHERE product_name != TRIM(product_name)
    OR brand != TRIM(brand);
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 6. EAN format: must be exactly 8 or 13 digits (when present)
+-- 6. EAN format (8 or 13 digits)
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '6. EAN format (8 or 13 digits)' AS check_name,
        COUNT(*) AS violations
@@ -79,7 +79,7 @@ WHERE ean IS NOT NULL
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 8. Deprecated products should have deprecated_reason (when column exists)
+-- 8. deprecated products flagged correctly
 --    For now: deprecated products should have is_deprecated = true explicitly
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '8. deprecated products flagged correctly' AS check_name,
@@ -93,13 +93,11 @@ WHERE is_deprecated = true
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 10. NOVA classification not null for active products
+-- 10. NOVA is absent or backed by selected source evidence
 -- ═══════════════════════════════════════════════════════════════════════════
-SELECT '10. NOVA not null for active products' AS check_name,
-       COUNT(*) AS violations
-FROM products p
-WHERE p.is_deprecated IS NOT TRUE
-  AND p.nova_classification IS NULL;
+SELECT '10. NOVA is absent or backed by selected source evidence' AS check_name, COUNT(*) AS violations
+FROM qa_classification_violations
+WHERE key='nova';
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- 11. (removed — processing_risk column dropped; now derived in v_master)
@@ -110,22 +108,24 @@ WHERE p.is_deprecated IS NOT TRUE
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 13. Sat fat ≤ total fat across ALL nutrition rows (not just per-100g)
+-- 13. sat_fat <= total_fat (all nutrition)
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '13. sat_fat <= total_fat (all nutrition)' AS check_name,
        COUNT(*) AS violations
-FROM nutrition_facts nf
-WHERE nf.saturated_fat_g IS NOT NULL
+FROM qa_proven_nutrition nf
+WHERE pg_temp.qa_fields_comparable(nf.model,ARRAY['saturated_fat_g','total_fat_g'],NULL)
+  AND nf.saturated_fat_g IS NOT NULL
   AND nf.total_fat_g IS NOT NULL
   AND nf.saturated_fat_g > nf.total_fat_g;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 14. Sugars ≤ carbs across ALL nutrition rows
+-- 14. sugars <= carbs (all nutrition)
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '14. sugars <= carbs (all nutrition)' AS check_name,
        COUNT(*) AS violations
-FROM nutrition_facts nf
-WHERE nf.sugars_g IS NOT NULL
+FROM qa_proven_nutrition nf
+WHERE pg_temp.qa_fields_comparable(nf.model,ARRAY['sugars_g','carbs_g'],NULL)
+  AND nf.sugars_g IS NOT NULL
   AND nf.carbs_g IS NOT NULL
   AND nf.sugars_g > nf.carbs_g;
 
@@ -134,7 +134,7 @@ WHERE nf.sugars_g IS NOT NULL
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 16. score_breakdown.final_score must match unhealthiness_score
+-- 16. score_breakdown final_score matches stored score
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '16. score_breakdown final_score matches stored score' AS check_name,
        COUNT(*) AS violations
@@ -147,7 +147,7 @@ WHERE score_breakdown IS NOT NULL
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 18. MV staleness: v_master and v_product_confidence must be fresh
+-- 18. materialized views not stale
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '18. materialized views not stale' AS check_name,
        COUNT(*) AS violations
@@ -157,24 +157,17 @@ FROM (
 WHERE (s.staleness->>'is_stale')::boolean = true;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 19. No products with score but without nutrition facts
+-- 19. missing historical nutrition stays explicit
 -- ═══════════════════════════════════════════════════════════════════════════
-SELECT '19. scored products have nutrition' AS check_name,
-       COUNT(*) AS violations
-FROM products p
-WHERE p.is_deprecated IS NOT TRUE
-  AND p.unhealthiness_score IS NOT NULL
-  AND NOT EXISTS (
-      SELECT 1 FROM nutrition_facts nf
-      WHERE nf.product_id = p.product_id
-  );
+SELECT '19. missing historical nutrition stays explicit' AS check_name, COUNT(*) AS violations
+FROM qa_legacy_missing_violations;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- 20. (removed — product_sources table merged into products in consolidation)
 -- ═══════════════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 21. data_completeness_pct in [0, 100] (redundant with CHECK but belt-and-suspenders)
+-- 21. data_completeness_pct in valid range
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '21. data_completeness_pct in valid range' AS check_name,
        COUNT(*) AS violations
@@ -183,7 +176,7 @@ WHERE data_completeness_pct IS NOT NULL
   AND (data_completeness_pct < 0 OR data_completeness_pct > 100);
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 22. ingredient_data_quality in v_master must be valid enum
+-- 22. ingredient_data_quality valid enum
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '22. ingredient_data_quality valid enum' AS check_name,
        COUNT(*) AS violations
@@ -191,7 +184,7 @@ FROM v_master
 WHERE ingredient_data_quality NOT IN ('complete', 'partial', 'missing');
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 23. nutrition_data_quality in v_master must be valid enum
+-- 23. nutrition_data_quality valid enum
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '23. nutrition_data_quality valid enum' AS check_name,
        COUNT(*) AS violations
@@ -199,16 +192,14 @@ FROM v_master
 WHERE nutrition_data_quality NOT IN ('clean', 'suspect');
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 24. Active products must have prep_method set (not NULL)
+-- 24. nutrition preparation state is explicit
 -- ═══════════════════════════════════════════════════════════════════════════
-SELECT '24. prep_method not null for active products' AS check_name,
-       COUNT(*) AS violations
-FROM products
-WHERE is_deprecated IS NOT TRUE
-  AND prep_method IS NULL;
+SELECT '24. nutrition preparation state is explicit' AS check_name, COUNT(*) AS violations
+FROM qa_evidence_fields
+WHERE body->>'preparation_state' IS NULL OR body->>'preparation_state' NOT IN ('as_sold','prepared','unknown');
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 25. No orphan product_ingredient rows (ingredient_id must exist in ingredient_ref)
+-- 25. product_ingredient FK to ingredient_ref
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '25. product_ingredient FK to ingredient_ref' AS check_name,
        COUNT(*) AS violations
@@ -230,7 +221,7 @@ WHERE is_deprecated IS NOT TRUE
   AND product_type IS NULL;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 28. concern_reason populated for all tier 1-3 ingredients
+-- 28. concern_reason populated for tier 1-3 ingredients
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '28. concern_reason populated for tier 1-3 ingredients' AS check_name,
        COUNT(*) AS violations
@@ -239,7 +230,7 @@ WHERE concern_tier >= 1
   AND (concern_reason IS NULL OR concern_reason = '');
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 29. daily_value_ref has complete EU RI data (9 nutrients)
+-- 29. daily_value_ref EU RI completeness
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '29. daily_value_ref EU RI completeness' AS check_name,
        9 - COUNT(*) AS violations
@@ -247,7 +238,7 @@ FROM daily_value_ref
 WHERE regulation = 'eu_ri';
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 30. daily_value_ref has no zero or negative values
+-- 30. daily_value_ref positive values
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '30. daily_value_ref positive values' AS check_name,
        COUNT(*) AS violations
@@ -255,7 +246,7 @@ FROM daily_value_ref
 WHERE daily_value <= 0;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 31. product_images URLs must be HTTPS
+-- 31. product_images HTTPS URLs
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '31. product_images HTTPS URLs' AS check_name,
        COUNT(*) AS violations
@@ -264,7 +255,7 @@ WHERE url IS NOT NULL
   AND url NOT LIKE 'https://%';
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 32. v_master image_thumb_url is NULL or HTTPS
+-- 32. v_master image_thumb_url HTTPS
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '32. v_master image_thumb_url HTTPS' AS check_name,
        COUNT(*) AS violations
@@ -273,7 +264,7 @@ WHERE image_thumb_url IS NOT NULL
   AND image_thumb_url NOT LIKE 'https://%';
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 33. product_images primary uniqueness (max 1 per product)
+-- 33. product_images single primary per product
 -- ═══════════════════════════════════════════════════════════════════════════
 SELECT '33. product_images single primary per product' AS check_name,
        COUNT(*) AS violations
@@ -286,84 +277,44 @@ FROM (
 ) dups;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 34. Ingredient coverage regression (per country)
+-- 34. recorded ingredient assertions link to accepted product observations
 --     Thresholds: PL ≥ 12%, DE ≥ 2% (aligned to OFF API data availability at 10K scale)
 -- ═══════════════════════════════════════════════════════════════════════════
-SELECT '34. Ingredient coverage regression (' || country || ')' AS check_name,
-       ingredient_pct || '% < threshold ' || threshold || '%' AS detail
-FROM (
-  SELECT p.country,
-         ROUND(100.0 * COUNT(CASE WHEN EXISTS (
-           SELECT 1 FROM product_ingredient pi WHERE pi.product_id = p.product_id
-         ) THEN 1 END) / COUNT(*), 1) AS ingredient_pct,
-         CASE p.country WHEN 'PL' THEN 12 WHEN 'DE' THEN 2 ELSE 12 END AS threshold
-  FROM products p
-  WHERE p.is_deprecated IS NOT TRUE
-  GROUP BY p.country
-) sub
-WHERE ingredient_pct < threshold;
+SELECT '34. recorded ingredient assertions link to accepted product observations' AS check_name, COUNT(*) AS violations
+FROM qa_evidence_products p CROSS JOIN LATERAL jsonb_array_elements(p.model->'ingredients'->'items') a
+WHERE a->>'state'='recorded' AND NOT EXISTS(SELECT 1 FROM public.product_source_records r JOIN public.product_source_observations o ON o.id=r.selected_observation_id WHERE r.product_id=p.product_id AND o.status='accepted' AND o.id::text=a->>'observation_id');
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 35. Allergen coverage regression (per country)
+-- 35. recorded allergen assertions link to accepted product observations
 --     Thresholds: PL ≥ 8%, DE ≥ 2% (aligned to OFF API data availability at 10K scale)
 -- ═══════════════════════════════════════════════════════════════════════════
-SELECT '35. Allergen coverage regression (' || country || ')' AS check_name,
-       allergen_pct || '% < threshold ' || threshold || '%' AS detail
-FROM (
-  SELECT p.country,
-         ROUND(100.0 * COUNT(CASE WHEN EXISTS (
-           SELECT 1 FROM product_allergen_info pai WHERE pai.product_id = p.product_id
-         ) THEN 1 END) / COUNT(*), 1) AS allergen_pct,
-         CASE p.country WHEN 'PL' THEN 8 WHEN 'DE' THEN 2 ELSE 8 END AS threshold
-  FROM products p
-  WHERE p.is_deprecated IS NOT TRUE
-  GROUP BY p.country
-) sub
-WHERE allergen_pct < threshold;
+SELECT '35. recorded allergen assertions link to accepted product observations' AS check_name, COUNT(*) AS violations
+FROM qa_evidence_products p CROSS JOIN LATERAL jsonb_array_elements((p.model->'allergens'->'contains')||(p.model->'allergens'->'traces')) a
+WHERE a->>'state'='recorded' AND NOT EXISTS(SELECT 1 FROM public.product_source_records r JOIN public.product_source_observations o ON o.id=r.selected_observation_id WHERE r.product_id=p.product_id AND o.status='accepted' AND o.id::text=a->>'observation_id');
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 36. EAN coverage regression (per country)
+-- 36. projection preserves known and missing EAN without fabrication
 --     Threshold: ≥ 99% for all countries
 -- ═══════════════════════════════════════════════════════════════════════════
-SELECT '36. EAN coverage regression (' || country || ')' AS check_name,
-       ean_pct || '% < threshold 99%' AS detail
-FROM (
-  SELECT p.country,
-         ROUND(100.0 * COUNT(CASE WHEN p.ean IS NOT NULL THEN 1 END) / COUNT(*), 1) AS ean_pct
-  FROM products p
-  WHERE p.is_deprecated IS NOT TRUE
-  GROUP BY p.country
-) sub
-WHERE ean_pct < 99;
+SELECT '36. projection preserves known and missing EAN without fabrication' AS check_name, COUNT(*) AS violations
+FROM qa_evidence_products q JOIN public.products p USING(product_id)
+WHERE q.model->>'ean' IS DISTINCT FROM p.ean;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 37. Average data completeness regression (per country)
+-- 37. recorded field count equals actual published evidence
 --     Threshold: PL ≥ 80%, DE ≥ 75% (relaxed for 10K expansion — pre-enrichment)
 -- ═══════════════════════════════════════════════════════════════════════════
-SELECT '37. Avg completeness regression (' || country || ')' AS check_name,
-       avg_completeness || '% < threshold ' || threshold || '%' AS detail
-FROM (
-  SELECT p.country,
-         ROUND(AVG(p.data_completeness_pct), 1) AS avg_completeness,
-         CASE p.country WHEN 'PL' THEN 80 WHEN 'DE' THEN 75 ELSE 75 END AS threshold
-  FROM products p
-  WHERE p.is_deprecated IS NOT TRUE
-  GROUP BY p.country
-) sub
-WHERE avg_completeness < threshold;
+SELECT '37. recorded field count equals actual published evidence' AS check_name, COUNT(*) AS violations
+FROM qa_evidence_count_violations;
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 38. Cross-category EAN duplicates
+-- 38. same-country cross-category EAN duplicates
 --     The same EAN must not appear in more than one active product.
 --     (Detects cross-category collisions that the pipeline should prevent.)
 -- ═══════════════════════════════════════════════════════════════════════════
-SELECT '38. Cross-category EAN duplicate' AS check_name,
-       p.ean || ' appears in ' || string_agg(DISTINCT p.category, ', ' ORDER BY p.category) AS detail
-FROM products p
-WHERE p.ean IS NOT NULL
-  AND p.is_deprecated IS NOT TRUE
-GROUP BY p.ean
-HAVING COUNT(DISTINCT p.category) > 1;
+SELECT '38. same-country cross-category EAN duplicates' AS check_name, COUNT(*) AS violations
+FROM (SELECT country,ean FROM products WHERE ean IS NOT NULL AND is_deprecated IS NOT TRUE
+GROUP BY country,ean HAVING COUNT(DISTINCT category)>1) duplicates;
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- 39. Fuzzy brand variants (normalize_brand collision)
@@ -371,16 +322,10 @@ HAVING COUNT(DISTINCT p.category) > 1;
 --     spelling indicate data-entry inconsistencies (e.g. "Dr.Oetker" vs
 --     "Dr. Oetker").  Informational — helps drive brand_alias curation.
 -- ═══════════════════════════════════════════════════════════════════════════
-SELECT '39. Fuzzy brand variants' AS check_name,
-       normalize_brand(p.brand) || ': ' || string_agg(DISTINCT p.brand, ', ' ORDER BY p.brand) AS detail
-FROM products p
-WHERE p.is_deprecated IS NOT TRUE
-  AND p.brand IS NOT NULL
-GROUP BY normalize_brand(p.brand)
-HAVING COUNT(DISTINCT p.brand) > 1;
+-- Fuzzy brand variants are informational in contracts/evidence_coverage.sql.
 
 -- ═══════════════════════════════════════════════════════════════════════════
--- 40. No active QA fixture products in the live catalog
+-- 40. no active QA fixture products
 --     QA fixtures (brand = 'QA Test Brand') are synthetic Dairy products
 --     seeded by frontend/tests/quality/seed-fixtures.mjs for Playwright
 --     quality-gate runs. They must ONLY exist on a staging/test instance.
@@ -394,4 +339,3 @@ SELECT '40. no active QA fixture products' AS check_name,
 FROM products p
 WHERE p.brand = 'QA Test Brand'
   AND p.is_deprecated IS NOT TRUE;
-

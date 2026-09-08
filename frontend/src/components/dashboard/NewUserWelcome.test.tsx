@@ -38,7 +38,7 @@ describe("NewUserWelcome", () => {
   it("renders welcome title and subtitle", () => {
     render(<NewUserWelcome />);
     expect(screen.getByText("Welcome to TryVit")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { level: 1, name: "Start with what you eat." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: translate("en", "dashboard.home.firstTitle") })).toBeInTheDocument();
   });
 
   it("renders scan CTA linking to /app/scan", () => {
@@ -60,8 +60,8 @@ describe("NewUserWelcome", () => {
 
     expect(screen.getByTestId("new-user-scan-cta")).toHaveAttribute("data-prefetch", "false");
     expect(screen.getByTestId("new-user-browse-cta")).toHaveAttribute("data-prefetch", "false");
-    expect(screen.getByTestId("new-user-search-cta")).toHaveAttribute("data-prefetch", "false");
-    expect(screen.getByTestId("new-user-search-cta")).toHaveAttribute("href", "/app/search");
+    expect(screen.getByTestId("new-user-search-cta")).toHaveAttribute("method", "get");
+    expect(screen.getByTestId("new-user-search-cta")).toHaveAttribute("action", "/app/search");
   });
 
   it("explains label, evidence and comparison without invented product claims", () => {
@@ -73,7 +73,7 @@ describe("NewUserWelcome", () => {
 
   it("names the welcome section with its main heading", () => {
     render(<NewUserWelcome />);
-    expect(screen.getByRole("region", { name: "Start with what you eat." })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: translate("en", "dashboard.home.firstTitle") })).toBeInTheDocument();
   });
 
   it("has data-testid on container", () => {

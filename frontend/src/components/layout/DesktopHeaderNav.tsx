@@ -13,6 +13,7 @@ import {
   ADMIN_ENTRY_ITEM,
   HEADER_MORE_ITEMS,
   HEADER_PRIMARY_ITEMS,
+  isNavigationItemActive,
 } from "./app-navigation";
 
 export function DesktopHeaderNav() {
@@ -49,7 +50,7 @@ export function DesktopHeaderNav() {
     ? [...HEADER_MORE_ITEMS, ADMIN_ENTRY_ITEM]
     : HEADER_MORE_ITEMS;
   const isDropdownItemActive = menuItems.some(
-    (item) => item.routeKey !== null && activeRoute === item.routeKey,
+    (item) => isNavigationItemActive(item, activeRoute),
   );
 
   return (
@@ -59,7 +60,7 @@ export function DesktopHeaderNav() {
       data-testid="desktop-header-navigation"
     >
       {HEADER_PRIMARY_ITEMS.map((item) => {
-        const isActive = activeRoute === item.routeKey;
+        const isActive = isNavigationItemActive(item, activeRoute);
         return (
           <Link
             key={item.href}
@@ -104,7 +105,7 @@ export function DesktopHeaderNav() {
           >
             <div>
               {menuItems.map((item) => {
-                const isActive = activeRoute === item.routeKey;
+                const isActive = isNavigationItemActive(item, activeRoute);
                 return (
                   <Link
                     key={item.href}
@@ -115,7 +116,7 @@ export function DesktopHeaderNav() {
                       isActive ? styles.headerMenuLinkActive : ""
                     }`}
                   >
-                    <Icon icon={item.icon} size="md" />
+                    <Icon icon={item.icon} size="md" strokeWidth={1.75} />
                     <span>{t(item.labelKey)}</span>
                   </Link>
                 );

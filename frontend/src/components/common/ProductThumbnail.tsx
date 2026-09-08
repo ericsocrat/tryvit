@@ -1,11 +1,8 @@
 "use client";
 
-import {
-    CategoryIcon,
-    hasCategoryIcon,
-} from "@/components/common/CategoryIcon";
 import Image from "next/image";
 import { useState } from "react";
+import { useTranslation } from "@/lib/i18n";
 
 // ─── Size presets for different contexts ────────────────────────────────────
 
@@ -21,7 +18,7 @@ const SIZE_PRESETS = {
 type ThumbnailSize = keyof typeof SIZE_PRESETS;
 
 interface ProductThumbnailProps {
-  /** Primary product image URL (nullable — falls back to category icon) */
+  /** Primary product image URL (nullable — falls back to a neutral monogram) */
   readonly imageUrl: string | null | undefined;
   /** Product name (used for alt text) */
   readonly productName: string;
@@ -36,29 +33,24 @@ interface ProductThumbnailProps {
 /**
  * Compact product image thumbnail for cards and list rows.
  *
- * Fallback chain: image → category Lucide icon → category emoji → generic icon.
+ * Missing or broken photos use a neutral monogram, not a fabricated product image.
  * Uses Next.js Image for optimization (lazy loading, WebP, srcset).
  */
 export function ProductThumbnail({
   imageUrl,
   productName,
-  categorySlug,
-  categoryIcon,
   size = "sm",
 }: ProductThumbnailProps) {
-  const [error, setError] = useState(false);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const { t } = useTranslation();
   const preset = SIZE_PRESETS[size];
-  const normalizedCategorySlug = categorySlug
-    ?.trim()
-    .toLocaleLowerCase()
-    .replaceAll(/[^a-z0-9]+/g, "-")
-    .replaceAll(/^-|-$/g, "");
+  const monogram = productName.match(/[\p{L}\p{N}]/u)?.[0]?.toLocaleUpperCase() ?? "?";
 
-  const showImage = imageUrl && !error;
+  const showImage = imageUrl && imageUrl !== failedSrc;
 
   return (
     <div
-      className={`relative shrink-0 overflow-hidden rounded-xl border border-default bg-surface-muted/95 shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,background-color] motion-reduce:transition-none ${preset.container}`}
+      className={`relative shrink-0 overflow-hidden rounded-lg bg-surface-muted ${preset.container}`}
       data-testid="product-thumbnail"
     >
       {showImage ? (
@@ -69,23 +61,15 @@ export function ProductThumbnail({
           height={preset.px}
           className="h-full w-full object-cover"
           sizes={`${preset.px}px`}
-          onError={() => setError(true)}
+          onError={() => setFailedSrc(imageUrl)}
         />
       ) : (
         <span
           className="flex h-full w-full items-center justify-center text-foreground-muted"
-          aria-label={`${productName} — no image available`}
+          role="img"
+          aria-label={`${productName} — ${t("evidenceUi.photoUnavailable")}`}
         >
-          {normalizedCategorySlug && hasCategoryIcon(normalizedCategorySlug) ? (
-            <CategoryIcon
-              slug={normalizedCategorySlug}
-              size={size === "sm" ? "md" : "lg"}
-            />
-          ) : (
-            <span className="select-none text-lg" aria-hidden="true">
-              {categoryIcon ?? "📦"}
-            </span>
-          )}
+          <span className="select-none text-lg" aria-hidden="true">{monogram}</span>
         </span>
       )}
     </div>

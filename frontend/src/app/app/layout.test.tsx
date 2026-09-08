@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { AuthenticatedProviders } from "@/components/AuthenticatedProviders";
 
 const mocks = vi.hoisted(() => ({
   getUser: vi.fn(),
@@ -33,7 +34,7 @@ describe("AppLayout transient preference failure", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.getUser.mockResolvedValue({
-      data: { user: { email: "private-beta@test.tryvit.local" } },
+      data: { user: { id: "server-verified-A", email: "private-beta@test.tryvit.local" } },
     });
     mocks.rpc.mockResolvedValue({
       data: null,
@@ -47,5 +48,14 @@ describe("AppLayout transient preference failure", () => {
     const retry = screen.getByRole("link", { name: "Try again" });
     expect(retry).toHaveAttribute("href", "/app/search");
     expect(screen.queryByTestId("client-navigation-link")).not.toBeInTheDocument();
+  });
+
+  it("keys private providers with the server-verified user ID", async () => {
+    mocks.rpc.mockResolvedValue({ data: { onboarding_complete: true, country: "PL", preferred_language: "en" }, error: null });
+    const layout = await AppLayout({ children: <div>Protected content</div> });
+    expect(mocks.getUser).toHaveBeenCalledOnce();
+    expect(layout.type).toBe(AuthenticatedProviders);
+    expect(layout.key).toBe("server-verified-A");
+    expect(layout.props.userId).toBe("server-verified-A");
   });
 });

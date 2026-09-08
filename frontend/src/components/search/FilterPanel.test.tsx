@@ -1,543 +1,86 @@
-import type { SearchFilters } from "@/lib/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { useState } from "react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useState } from "react";
 import { FilterPanel } from "./FilterPanel";
+import type { FindFilters } from "@/lib/evidence/search";
+import type * as SearchApi from "@/lib/evidence/search";
+import { auditComponentA11y } from "@/utils/test/a11y";
 
-// ─── Mocks ──────────────────────────────────────────────────────────────────
-
-vi.mock("@/lib/supabase/client", () => ({
-  createClient: () => ({}),
-}));
-
-const mockFilterOptions = {
-  api_version: "1",
-  country: "PL",
-  categories: [
-    {
-      category: "chips",
-      display_name: "Chips",
-      icon_emoji: "🍟",
-      count: 42,
-    },
-    {
-      category: "drinks",
-      display_name: "Drinks",
-      icon_emoji: "🥤",
-      count: 18,
-    },
-  ],
-  nutri_scores: [
-    { label: "A", count: 5 },
-    { label: "B", count: 10 },
-    { label: "C", count: 8 },
-    { label: "D", count: 4 },
-    { label: "E", count: 2 },
-    { label: "UNKNOWN", count: 51 },
-    { label: "NOT-APPLICABLE", count: 3 },
-  ],
-  nova_groups: [
-    { group: "1", count: 12 },
-    { group: "4", count: 25 },
-  ],
-  allergens: [
-    { tag: "gluten", count: 30 },
-    { tag: "milk", count: 15 },
-  ],
-};
-
-const mockGetFilterOptions = vi.fn();
-vi.mock("@/lib/api", () => ({
-  getFilterOptions: (...args: unknown[]) => mockGetFilterOptions(...args),
-}));
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-function Wrapper({ children }: Readonly<{ children: React.ReactNode }>) {
-  const [client] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: { queries: { retry: false, staleTime: 0 } },
-      }),
-  );
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
-}
-
-function createWrapper() {
-  return Wrapper;
-}
-
-interface RenderProps {
-  filters?: SearchFilters;
-  onChange?: (f: SearchFilters) => void;
-  show?: boolean;
-  onClose?: () => void;
-}
-
-function renderPanel(props: RenderProps = {}) {
-  const defaultOnChange = vi.fn();
-  const defaultOnClose = vi.fn();
-  const mergedProps = {
-    filters: props.filters ?? {},
-    onChange: props.onChange ?? defaultOnChange,
-    show: props.show ?? true,
-    onClose: props.onClose ?? defaultOnClose,
-  };
-
-  const result = render(<FilterPanel {...mergedProps} />, {
-    wrapper: createWrapper(),
-  });
-
-  return { ...result, ...mergedProps };
-}
-
+const mocks = vi.hoisted(() => ({ options: vi.fn(), changed: vi.fn() }));
+vi.mock("@/lib/evidence/search", async (original) => ({ ...await original<typeof SearchApi>(), findFilterOptions: mocks.options }));
+vi.mock("@/lib/supabase/client", () => ({ createClient: () => ({}) }));
 beforeEach(() => {
   vi.clearAllMocks();
-  mockGetFilterOptions.mockResolvedValue({
-    ok: true,
-    data: mockFilterOptions,
-  });
+  mocks.options.mockResolvedValue({ ok: true, data: { api_version: "2", country: "PL", language: "en", categories: [{ value: "Dairy", label: "Dairy" }] } });
 });
+function mount(initial: FindFilters = {}) {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  function Harness() {
+    const [open, setOpen] = useState(false);
+    const [filters, setFilters] = useState(initial);
+    return <QueryClientProvider client={client}><button onClick={() => setOpen(true)}>Open filters</button><FilterPanel filters={filters} onChange={(next) => { mocks.changed(next); setFilters(next); }} show={open} onClose={() => setOpen(false)} country="PL" userId="fixture-user" /></QueryClientProvider>;
+  }
+  return render(<Harness />);
+}
 
-// Both desktop sidebar and mobile bottom sheet render the same filterContent,
-// so we use getAllBy* and target the first match throughout.
-
-describe("FilterPanel", () => {
-  it("shows loading state initially", () => {
-    mockGetFilterOptions.mockReturnValue(new Promise(() => {}));
-    renderPanel();
-    // Loading state renders a skeleton placeholder instead of a spinner
-    const skeletons = screen.getAllByTestId("filter-skeleton");
-    expect(skeletons.length).toBeGreaterThanOrEqual(1);
+describe("accessible evidence-first filter disclosure", () => {
+  it("does not render or fetch filters until explicitly opened", () => {
+    const { container } = mount();
+    expect(container.querySelector("dialog")).toBeNull();
+    expect(mocks.options).not.toHaveBeenCalled();
   });
 
-  it("renders sort options after loading", async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.getAllByText("Relevance").length).toBeGreaterThanOrEqual(1);
-    });
-    expect(screen.getAllByText("Name").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("TryVit Score").length).toBeGreaterThanOrEqual(
-      1,
-    );
-    expect(screen.getAllByText("Calories").length).toBeGreaterThanOrEqual(1);
+  it("opens a named modal and restores focus after Escape", async () => {
+    mount();
+    const trigger = screen.getByRole("button", { name: "Open filters" });
+    trigger.focus(); fireEvent.click(trigger);
+    const dialog = screen.getByRole("dialog", { name: "Refine your search" });
+    expect(dialog).toHaveAttribute("open");
+    await screen.findByText("Dairy");
+    expect(screen.getByRole("button", { name: "Close" })).toHaveFocus();
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+    expect(trigger).toHaveFocus();
   });
 
-  it("renders category checkboxes from API data", async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.getAllByText(/Chips/).length).toBeGreaterThanOrEqual(1);
-    });
-    expect(screen.getAllByText(/Drinks/).length).toBeGreaterThanOrEqual(1);
+  it("keeps Tab within the modal and provides a named close control", async () => {
+    mount(); fireEvent.click(screen.getByText("Open filters")); await screen.findByText("Dairy");
+    const last = screen.getByRole("button", { name: "Show Results" });
+    last.focus();
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "Tab" });
+    expect(screen.getByRole("button", { name: "Close" })).toHaveFocus();
   });
 
-  it("shows category counts", async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.getAllByText("42").length).toBeGreaterThanOrEqual(1);
-    });
-    expect(screen.getAllByText("18").length).toBeGreaterThanOrEqual(1);
+  it("offers source NOVA and contains exclusions, never legacy score filters", async () => {
+    mount(); fireEvent.click(screen.getByText("Open filters")); await screen.findByText("Dairy");
+    fireEvent.click(screen.getByRole("checkbox", { name: "NOVA 4" }));
+    expect(mocks.changed).toHaveBeenLastCalledWith({ nova_group: ["4"] });
+    fireEvent.click(screen.getByRole("checkbox", { name: "Milk" }));
+    expect(mocks.changed).toHaveBeenLastCalledWith({ nova_group: ["4"], allergen_free: ["milk"] });
+    expect(screen.getByText(/Remaining products are not established as allergen-free/)).toBeInTheDocument();
+    expect(screen.queryByRole("slider")).not.toBeInTheDocument();
+    expect(screen.queryByText("Health Score")).not.toBeInTheDocument();
   });
 
-  it("renders nutri-score filter buttons", async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.getAllByText("A").length).toBeGreaterThanOrEqual(1);
-    });
-    expect(screen.getAllByText("B").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("C").length).toBeGreaterThanOrEqual(1);
+  it("retains categories and loads market-scoped options", async () => {
+    mount(); fireEvent.click(screen.getByText("Open filters")); await screen.findByText("Dairy");
+    fireEvent.click(screen.getByRole("checkbox", { name: "Dairy" }));
+    expect(mocks.changed).toHaveBeenLastCalledWith({ category: ["Dairy"] });
+    expect(mocks.options).toHaveBeenCalledWith({}, "PL", "en");
   });
 
-  it("renders Nutri-Score bands with named contrast-safe text", async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.getAllByText("B").length).toBeGreaterThanOrEqual(1);
-    });
-
-    for (const grade of ["A", "B", "C", "D", "E"]) {
-      const buttons = screen
-        .getAllByText(grade)
-        .map((label) => label.closest("button"));
-      expect(buttons.length).toBeGreaterThanOrEqual(1);
-      expect(
-        buttons.every((button) =>
-          button?.className.includes(`text-nutri-${grade}-foreground`),
-        ),
-      ).toBe(true);
-    }
+  it("makes unavailable category evidence retryable instead of silently empty", async () => {
+    mocks.options.mockResolvedValueOnce({ ok: false, error: { message: "Unavailable" } });
+    mount(); fireEvent.click(screen.getByText("Open filters"));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Category choices couldn’t load");
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+    expect(await screen.findByText("Dairy")).toBeInTheDocument();
   });
 
-  it('renders "Exempt" for NOT-APPLICABLE nutri-score', async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.getAllByText("Exempt").length).toBeGreaterThanOrEqual(1);
-    });
-    // Raw DB value must NOT appear
-    expect(screen.queryAllByText(/NOT.APPLICABLE/i)).toHaveLength(0);
-  });
-
-  it('renders "Unknown" for UNKNOWN nutri-score', async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.getAllByText("Unknown").length).toBeGreaterThanOrEqual(1);
-    });
-    // Raw DB value must NOT appear
-    expect(screen.queryAllByText(/^UNKNOWN$/)).toHaveLength(0);
-  });
-
-  it("renders truthful allergen-evidence exclusion checkboxes", async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(
-        screen.getAllByText(
-          "Exclude products with Gluten contains evidence",
-        ).length,
-      ).toBeGreaterThanOrEqual(1);
-    });
-    expect(
-      screen.getAllByText("Exclude products with Milk contains evidence")
-        .length,
-    ).toBeGreaterThanOrEqual(1);
-    expect(
-      screen.getAllByText(/Missing evidence is not treated as allergen-free/)
-        .length,
-    ).toBeGreaterThanOrEqual(1);
-  });
-
-  it("calls onChange when selecting a category", async () => {
-    const onChange = vi.fn();
-    renderPanel({ onChange });
-    const user = userEvent.setup();
-
-    await waitFor(() => {
-      expect(screen.getAllByText(/Chips/).length).toBeGreaterThanOrEqual(1);
-    });
-
-    // Target the first category checkbox
-    const checkboxes = screen.getAllByRole("checkbox");
-    const chipsCheckbox = checkboxes[0];
-    await user.click(chipsCheckbox);
-
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ category: ["chips"] }),
-    );
-  });
-
-  it("calls onChange when selecting a nutri-score", async () => {
-    const onChange = vi.fn();
-    renderPanel({ onChange });
-    const user = userEvent.setup();
-
-    await waitFor(() => {
-      expect(screen.getAllByText("A").length).toBeGreaterThanOrEqual(1);
-    });
-
-    // Click the first "A" button
-    await user.click(screen.getAllByText("A")[0]);
-
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ nutri_score: ["A"] }),
-    );
-  });
-
-  it("keeps the named foreground contract on a selected Nutri-Score", async () => {
-    renderPanel({ filters: { nutri_score: ["B"] } });
-    await waitFor(() => {
-      expect(screen.getAllByText("B").length).toBeGreaterThanOrEqual(1);
-    });
-
-    const selected = screen.getAllByText("B")[0].closest("button");
-    expect(selected?.className).toContain("text-nutri-B-foreground");
-    expect(selected?.className).toContain("ring-2");
-  });
-
-  it("calls onChange when selecting a sort option", async () => {
-    const onChange = vi.fn();
-    renderPanel({ onChange });
-    const user = userEvent.setup();
-
-    await waitFor(() => {
-      expect(screen.getAllByText("Name").length).toBeGreaterThanOrEqual(1);
-    });
-
-    await user.click(screen.getAllByText("Name")[0]);
-
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ sort_by: "name" }),
-    );
-  });
-
-  it("shows sort order buttons when non-relevance sort selected", async () => {
-    renderPanel({ filters: { sort_by: "name" } });
-    await waitFor(() => {
-      expect(screen.getAllByText("↑ Asc").length).toBeGreaterThanOrEqual(1);
-    });
-    expect(screen.getAllByText("↓ Desc").length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("does not show sort order buttons for relevance sort", async () => {
-    renderPanel({ filters: { sort_by: "relevance" } });
-    await waitFor(() => {
-      expect(screen.getAllByText("Relevance").length).toBeGreaterThanOrEqual(1);
-    });
-    expect(screen.queryAllByText("↑ Asc")).toHaveLength(0);
-  });
-
-  it("shows direction arrow on active sort button", async () => {
-    renderPanel({ filters: { sort_by: "name", sort_order: "asc" } });
-    await waitFor(() => {
-      const nameButtons = screen.getAllByText(/^Name/);
-      expect(nameButtons.length).toBeGreaterThanOrEqual(1);
-      expect(nameButtons[0].textContent).toContain("↑");
-    });
-  });
-
-  it("shows descending arrow on active sort button", async () => {
-    renderPanel({ filters: { sort_by: "calories", sort_order: "desc" } });
-    await waitFor(() => {
-      const calButtons = screen.getAllByText(/^Calories/);
-      expect(calButtons.length).toBeGreaterThanOrEqual(1);
-      expect(calButtons[0].textContent).toContain("↓");
-    });
-  });
-
-  it("does not show direction arrow on relevance sort button", async () => {
-    renderPanel({ filters: { sort_by: "relevance" } });
-    await waitFor(() => {
-      const relButtons = screen.getAllByText("Relevance");
-      expect(relButtons.length).toBeGreaterThanOrEqual(1);
-      expect(relButtons[0].textContent).not.toContain("↑");
-      expect(relButtons[0].textContent).not.toContain("↓");
-    });
-  });
-
-  it("applies ring styling to active sort button", async () => {
-    renderPanel({ filters: { sort_by: "name" } });
-    await waitFor(() => {
-      const nameButtons = screen.getAllByText(/^Name/);
-      expect(nameButtons.length).toBeGreaterThanOrEqual(1);
-      expect(nameButtons[0].className).toContain("ring-2");
-    });
-  });
-
-  it("calls onChange with sort order", async () => {
-    const onChange = vi.fn();
-    renderPanel({ filters: { sort_by: "name" }, onChange });
-    const user = userEvent.setup();
-
-    await waitFor(() => {
-      expect(screen.getAllByText("↓ Desc").length).toBeGreaterThanOrEqual(1);
-    });
-
-    await user.click(screen.getAllByText("↓ Desc")[0]);
-
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ sort_order: "desc" }),
-    );
-  });
-
-  it("shows clear all button when filters are active", async () => {
-    renderPanel({ filters: { category: ["chips"] } });
-    await waitFor(() => {
-      expect(screen.getAllByText("Clear all").length).toBeGreaterThanOrEqual(1);
-    });
-  });
-
-  it("does not show clear all button when no filters", async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.getAllByText("Relevance").length).toBeGreaterThanOrEqual(1);
-    });
-    expect(screen.queryAllByText("Clear all")).toHaveLength(0);
-  });
-
-  it("calls onChange with empty object on clear all", async () => {
-    const onChange = vi.fn();
-    renderPanel({ filters: { category: ["chips"] }, onChange });
-    const user = userEvent.setup();
-
-    await waitFor(() => {
-      expect(screen.getAllByText("Clear all").length).toBeGreaterThanOrEqual(1);
-    });
-
-    await user.click(screen.getAllByText("Clear all")[0]);
-
-    expect(onChange).toHaveBeenCalledWith({});
-  });
-
-  it("renders min health score slider", async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(
-        screen.getAllByText("Min TryVit Score").length,
-      ).toBeGreaterThanOrEqual(1);
-    });
-    expect(screen.getAllByText("Any").length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("shows current min score value when set", async () => {
-    renderPanel({ filters: { max_unhealthiness: 50 } });
-    await waitFor(() => {
-      expect(screen.getAllByText("≥ 50").length).toBeGreaterThanOrEqual(1);
-    });
-  });
-
-  it("renders mobile close button when shown", async () => {
-    renderPanel({ show: true });
-    await waitFor(() => {
-      expect(screen.getByText("Show Results")).toBeInTheDocument();
-    });
-  });
-
-  it("calls onClose when mobile close button clicked", async () => {
-    const onClose = vi.fn();
-    renderPanel({ show: true, onClose });
-    const user = userEvent.setup();
-
-    await waitFor(() => {
-      expect(screen.getByText("Show Results")).toBeInTheDocument();
-    });
-
-    await user.click(screen.getByText("Show Results"));
-
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  it("calls onClose when backdrop clicked", async () => {
-    const onClose = vi.fn();
-    renderPanel({ show: true, onClose });
-    const user = userEvent.setup();
-
-    await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "Close filters" }),
-      ).toBeInTheDocument();
-    });
-
-    await user.click(screen.getByRole("button", { name: "Close filters" }));
-
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  it("does not render mobile sheet when show is false", () => {
-    mockGetFilterOptions.mockReturnValue(new Promise(() => {}));
-    renderPanel({ show: false });
-    expect(screen.queryByText("Show Results")).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "Close filters" }),
-    ).not.toBeInTheDocument();
-  });
-
-  it("deselects a category when toggling off", async () => {
-    const onChange = vi.fn();
-    renderPanel({ filters: { category: ["chips"] }, onChange });
-    const user = userEvent.setup();
-
-    await waitFor(() => {
-      expect(screen.getAllByText(/Chips/).length).toBeGreaterThanOrEqual(1);
-    });
-
-    // First checked checkbox is the chips one
-    const checkboxes = screen.getAllByRole("checkbox");
-    const chipsCheckbox = checkboxes[0];
-    await user.click(chipsCheckbox);
-
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ category: undefined }),
-    );
-  });
-
-  // ─── NOVA Group Filter ──────────────────────────────────────────────────
-
-  it("renders NOVA group filter buttons with counts", async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.getAllByText(/Unprocessed/).length).toBeGreaterThanOrEqual(
-        1,
-      );
-    });
-    expect(
-      screen.getAllByText(/Ultra-processed/).length,
-    ).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("(12)").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getAllByText("(25)").length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("renders NOVA Group section heading", async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.getAllByText("NOVA Group").length).toBeGreaterThanOrEqual(
-        1,
-      );
-    });
-  });
-
-  it("calls onChange when selecting a NOVA group", async () => {
-    const onChange = vi.fn();
-    renderPanel({ onChange });
-    const user = userEvent.setup();
-
-    await waitFor(() => {
-      expect(screen.getAllByText(/Unprocessed/).length).toBeGreaterThanOrEqual(
-        1,
-      );
-    });
-
-    // Click the first NOVA "1 — Unprocessed" button
-    await user.click(screen.getAllByText(/Unprocessed/)[0]);
-
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ nova_group: ["1"] }),
-    );
-  });
-
-  it("deselects a NOVA group when toggling off", async () => {
-    const onChange = vi.fn();
-    renderPanel({ filters: { nova_group: ["1"] }, onChange });
-    const user = userEvent.setup();
-
-    await waitFor(() => {
-      expect(screen.getAllByText(/Unprocessed/).length).toBeGreaterThanOrEqual(
-        1,
-      );
-    });
-
-    await user.click(screen.getAllByText(/Unprocessed/)[0]);
-
-    expect(onChange).toHaveBeenCalledWith(
-      expect.objectContaining({ nova_group: undefined }),
-    );
-  });
-
-  it("shows clear all when NOVA group filter is active", async () => {
-    renderPanel({ filters: { nova_group: ["4"] } });
-    await waitFor(() => {
-      expect(screen.getAllByText("Clear all").length).toBeGreaterThanOrEqual(1);
-    });
-  });
-
-  // ─── Section Dividers ─────────────────────────────────────────────────────
-
-  it("renders section dividers between filter groups", async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.getAllByText("Relevance").length).toBeGreaterThanOrEqual(1);
-    });
-    const separators = document.querySelectorAll("hr");
-    expect(separators.length).toBeGreaterThanOrEqual(5);
-  });
-
-  // ─── Sort Layout (col-span-2 on last odd button) ─────────────────────────
-
-  it("adds col-span-2 to last sort button when odd count", async () => {
-    renderPanel();
-    await waitFor(() => {
-      expect(screen.getAllByText("Calories").length).toBeGreaterThanOrEqual(1);
-    });
-    // "Calories" is the 5th (odd-last) sort button
-    const caloriesBtn = screen.getAllByText("Calories")[0].closest("button");
-    expect(caloriesBtn?.className).toContain("col-span-2");
+  it("passes the component accessibility checks with the modal open", async () => {
+    const { container } = mount(); fireEvent.click(screen.getByText("Open filters")); await screen.findByText("Dairy");
+    const result = await auditComponentA11y(container);
+    expect(result.violations).toEqual([]);
   });
 });

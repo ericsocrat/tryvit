@@ -1,5 +1,8 @@
+import { translate } from "@/lib/i18n-core";
 import { queryKeys } from "@/lib/query-keys";
-import type { DashboardData, DashboardInsights } from "@/lib/types";
+import { homeFixture, emptyHomeFixture } from "@/lib/evidence/home.fixtures";
+import { homeQueryKey } from "@/lib/evidence/home";
+import { findPreferencesFixture } from "@/lib/evidence/search.fixtures";
 import { useLanguageStore } from "@/stores/language-store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
@@ -12,6 +15,8 @@ const mockGetCategoryOverview = vi.fn();
 const mockGetDashboardInsights = vi.fn();
 const mockGetUser = vi.fn();
 const mockUseAlternativesV2 = vi.fn();
+const mockPreferencesRefetch = vi.fn();
+let preferenceState: { data: typeof findPreferencesFixture | undefined; error: Error | null; isPending: boolean };
 
 vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({ auth: { getUser: mockGetUser } }),
@@ -30,32 +35,15 @@ vi.mock("@/hooks/use-alternatives-v2", () => ({
   useAlternativesV2: (...args: unknown[]) => mockUseAlternativesV2(...args),
 }));
 
-const mockDashboard: DashboardData = {
-  api_version: "1.0",
-  recently_viewed: [
-    { product_id: 1, product_name: "Lay's Classic", brand: "Lay's", category: "chips", country: "PL",
-      unhealthiness_score: 65, nutri_score_label: "D", viewed_at: "2026-09-03T12:00:00.000Z", image_thumb_url: null },
-    { product_id: 2, product_name: "Pepsi Max", brand: "Pepsi", category: "drinks", country: "PL",
-      unhealthiness_score: 30, nutri_score_label: "B", viewed_at: "2026-09-02T12:00:00.000Z", image_thumb_url: null },
-  ],
-  favorites_preview: [
-    { product_id: 3, product_name: "Activia Natural", brand: "Danone", category: "dairy", country: "PL",
-      unhealthiness_score: 15, nutri_score_label: "A", added_at: "2026-09-01T12:00:00.000Z", image_thumb_url: null },
-  ],
-  new_products: [],
-  stats: { total_scanned: 42, total_viewed: 15, lists_count: 3, favorites_count: 7, most_viewed_category: "chips" },
-};
-
-function emptyDashboard(): DashboardData {
-  return {
-    api_version: "1.0", recently_viewed: [], favorites_preview: [], new_products: [],
-    stats: { total_scanned: 0, total_viewed: 0, lists_count: 2, favorites_count: 0, most_viewed_category: null },
-  };
-}
-const mockInsights: DashboardInsights = {
-  api_version: "1.0", avg_score: 0, score_trend: "stable", nova_distribution: {},
-  category_diversity: { explored: 0, total: 20 }, allergen_alerts: { count: 0, products: [] }, recent_comparisons: [],
-};
+const mockDashboard = homeFixture();
+const emptyDashboard = emptyHomeFixture;
+vi.mock("@/lib/evidence/home", async (importOriginal) => ({
+  ...await importOriginal<Record<string, unknown>>(),
+  getHomeReadModel: (...args: unknown[]) => mockGetDashboardData(...args),
+}));
+vi.mock("@/hooks/use-user-preferences-query", () => ({
+  useUserPreferencesQuery: () => ({ ...preferenceState, refetch: mockPreferencesRefetch }),
+}));
 
 import DashboardPage from "./page";
 
@@ -71,9 +59,9 @@ describe("DashboardPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useLanguageStore.getState().reset();
+    preferenceState = { data: findPreferencesFixture, error: null, isPending: false };
     mockGetDashboardData.mockResolvedValue({ ok: true, data: mockDashboard });
     mockGetCategoryOverview.mockResolvedValue({ ok: true, data: [] });
-    mockGetDashboardInsights.mockResolvedValue({ ok: true, data: mockInsights });
     mockGetUser.mockResolvedValue({ data: { user: { user_metadata: { full_name: "Jan Kowalski" } } } });
     mockUseAlternativesV2.mockReturnValue({ data: { alternatives: [] }, isLoading: false });
   });
@@ -115,7 +103,7 @@ describe("DashboardPage", () => {
     mockGetDashboardData.mockResolvedValue({ ok: true, data: dashboard });
     renderDashboard();
     await screen.findByTestId("new-user-welcome");
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Start with what you eat.");
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(translate("en", "dashboard.home.firstTitle"));
     expect(mockGetUser).not.toHaveBeenCalled();
     expect(mockGetCategoryOverview).not.toHaveBeenCalled();
     expect(mockGetDashboardInsights).not.toHaveBeenCalled();
@@ -125,7 +113,7 @@ describe("DashboardPage", () => {
     mockGetDashboardData.mockResolvedValue({ ok: true, data: emptyDashboard() });
     renderDashboard();
     await screen.findByTestId("new-user-welcome");
-    expect(screen.getByTestId("new-user-search-cta")).toHaveAttribute("href", "/app/search");
+    expect(screen.getByTestId("new-user-search-cta")).toHaveAttribute("action", "/app/search");
     expect(screen.getByTestId("new-user-scan-cta")).toHaveAttribute("href", "/app/scan");
     expect(screen.getByTestId("new-user-browse-cta")).toHaveAttribute("href", "/app/categories");
     expect(screen.getByRole("link", { name: "Explore the guides" })).toHaveAttribute("href", "/learn");
@@ -176,6 +164,7 @@ describe("DashboardPage", () => {
   it("shows collections for a custom-list account with no other history", async () => {
     const dashboard = emptyDashboard();
     dashboard.stats.lists_count = 3;
+    dashboard.stats.custom_lists_count = 1;
     mockGetDashboardData.mockResolvedValue({ ok: true, data: dashboard });
     renderDashboard();
     await screen.findByTestId("returning-dashboard");
@@ -205,8 +194,9 @@ describe("DashboardPage", () => {
     expect(screen.getByRole("link", { name: /Activia Natural/ })).toHaveAttribute("href", "/app/product/3");
     expect(screen.getByRole("link", { name: "Compare products" })).toHaveAttribute("href", "/app/compare");
     expect(screen.getByRole("link", { name: "Saved comparisons" })).toHaveAttribute("href", "/app/compare/saved");
-    expect(screen.getByRole("link", { name: "How to read the score" })).toHaveAttribute("href", "/learn/tryvit-score");
-    expect(screen.getByTestId("dashboard-search-cta")).toHaveAttribute("href", "/app/search");
+    expect(screen.queryByRole("link", { name: "How to read the score" })).not.toBeInTheDocument();
+    expect(screen.queryByText("/100")).not.toBeInTheDocument();
+    expect(screen.getByTestId("dashboard-search-cta")).toHaveAttribute("action", "/app/search");
     expect(screen.getByTestId("dashboard-scan-cta")).toHaveAttribute("href", "/app/scan");
     expect(screen.getByTestId("dashboard-browse-cta")).toHaveAttribute("href", "/app/categories");
     expect(screen.queryByRole("link", { name: "View history" })).not.toBeInTheDocument();
@@ -218,7 +208,7 @@ describe("DashboardPage", () => {
       .mockResolvedValueOnce({ ok: true, data: mockDashboard });
     renderDashboard();
     expect(await screen.findByRole("alert")).toHaveTextContent("Your dashboard couldn’t load.");
-    expect(screen.getByTestId("dashboard-search-cta")).toHaveAttribute("href", "/app/search");
+    expect(screen.getByTestId("dashboard-search-cta")).toHaveAttribute("action", "/app/search");
     expect(screen.getByTestId("dashboard-scan-cta")).toHaveAttribute("href", "/app/scan");
     expect(screen.getByTestId("dashboard-browse-cta")).toHaveAttribute("href", "/app/categories");
     expect(mockGetUser).not.toHaveBeenCalled();
@@ -238,26 +228,22 @@ describe("DashboardPage", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent("The last loaded information is still shown.");
     expect(screen.getByRole("link", { name: /Lay's Classic/ })).toBeVisible();
     expect(screen.getByTestId("dashboard-collections")).toBeVisible();
-    expect(queryClient.getQueryData(queryKeys.dashboard)).toEqual(mockDashboard);
+    expect(queryClient.getQueryData(homeQueryKey(findPreferencesFixture, "en"))).toEqual(mockDashboard);
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
     await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
     expect(screen.getByTestId("returning-dashboard")).toBeVisible();
     expect(mockGetDashboardData).toHaveBeenCalledTimes(3);
   });
 
-  it("keeps category failure local and retries only the category request", async () => {
-    mockGetCategoryOverview
-      .mockResolvedValueOnce({ ok: false, error: { message: "Categories unavailable" } })
-      .mockResolvedValueOnce({ ok: true, data: [{ category: "Dairy", slug: "dairy", display_name: "Dairy" }] });
+  it("does not fetch an unrequested category wall on the returning dashboard", async () => {
+    mockGetCategoryOverview.mockRejectedValue(new Error("Categories unavailable"));
     renderDashboard();
     await screen.findByTestId("returning-dashboard");
-    const categories = screen.getByRole("region", { name: "Categories" });
-    expect(await within(categories).findByText(/Categories couldn’t load/)).toBeVisible();
+    expect(screen.queryByRole("region", { name: "Categories" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Lay's Classic/ })).toBeVisible();
     expect(screen.getByTestId("dashboard-collections")).toBeVisible();
-    await userEvent.click(within(categories).getByRole("button", { name: "Retry" }));
-    expect(await within(categories).findByRole("link", { name: "Dairy" })).toHaveAttribute("href", "/app/categories/dairy");
-    expect(mockGetCategoryOverview).toHaveBeenCalledTimes(2);
+    expect(screen.getByTestId("dashboard-browse-cta")).toHaveAttribute("href", "/app/categories");
+    expect(mockGetCategoryOverview).not.toHaveBeenCalled();
     expect(mockGetDashboardData).toHaveBeenCalledTimes(1);
   });
 
@@ -272,8 +258,8 @@ describe("DashboardPage", () => {
     });
     expect(await screen.findByRole("alert")).toHaveTextContent("The last loaded information is still shown.");
     expect(screen.getByTestId("new-user-welcome")).toBeVisible();
-    expect(screen.getByTestId("new-user-search-cta")).toHaveAttribute("href", "/app/search");
-    expect(queryClient.getQueryData(queryKeys.dashboard)).toEqual(empty);
+    expect(screen.getByTestId("new-user-search-cta")).toHaveAttribute("action", "/app/search");
+    expect(queryClient.getQueryData(homeQueryKey(findPreferencesFixture, "en"))).toEqual(empty);
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
     await waitFor(() => expect(screen.queryByRole("alert")).not.toBeInTheDocument());
     expect(screen.getByTestId("new-user-welcome")).toBeVisible();
@@ -282,19 +268,43 @@ describe("DashboardPage", () => {
   });
 
   it("keeps allergen-check failure separate from the loaded dashboard", async () => {
-    mockGetDashboardInsights.mockRejectedValue(new Error("Saved evidence unavailable"));
+    mockGetDashboardData.mockResolvedValue({ ok: true, data: { ...mockDashboard, saved_allergen_matches: { state: "preferences_unavailable", count: null, products: [], includes_traces: false } } });
     renderDashboard();
     await screen.findByTestId("returning-dashboard");
-    expect(await screen.findByText(/We couldn’t check your saved allergen matches/)).toBeVisible();
+    expect(await screen.findByText(/Saved allergen matches could not be refreshed/)).toBeVisible();
     expect(screen.getByRole("link", { name: /Lay's Classic/ })).toBeVisible();
     expect(screen.getByTestId("dashboard-start")).toBeVisible();
     expect(screen.queryByTestId("dashboard-error")).not.toBeInTheDocument();
   });
 
+  it("does not fetch Home under an unknown preference context", () => {
+    preferenceState = { data: undefined, error: null, isPending: true };
+    renderDashboard();
+    expect(screen.getByTestId("dashboard-loading")).toBeInTheDocument();
+    expect(mockGetDashboardData).not.toHaveBeenCalled();
+  });
+
+  it("offers recovery when preference context cannot be loaded", async () => {
+    preferenceState = { data: undefined, error: new Error("Preferences unavailable"), isPending: false };
+    renderDashboard();
+    expect(screen.getByTestId("dashboard-error")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(mockPreferencesRefetch).toHaveBeenCalledOnce();
+    expect(mockGetDashboardData).not.toHaveBeenCalled();
+  });
+
+  it("selects a fresh Home cache entry when the language context rerenders", async () => {
+    const { rerender, queryClient } = renderDashboard(); await screen.findByTestId("returning-dashboard");
+    await act(async () => useLanguageStore.getState().setLanguage("de"));
+    // The shared unit-test fallback dictionary is not a reactive provider.
+    rerender(<QueryClientProvider client={queryClient}><DashboardPage /></QueryClientProvider>);
+    await waitFor(() => expect(mockGetDashboardData).toHaveBeenCalledWith(expect.anything(), "de"));
+  });
+
   it("does not mount swap suggestions or replaced health and nutrition panels", async () => {
     renderDashboard();
     await screen.findByTestId("returning-dashboard");
-    await waitFor(() => expect(mockGetDashboardInsights).toHaveBeenCalledTimes(1));
+    expect(mockGetDashboardInsights).not.toHaveBeenCalled();
     expect(mockUseAlternativesV2).not.toHaveBeenCalled();
     expect(screen.queryByTestId("quick-win-card")).not.toBeInTheDocument();
     expect(screen.queryByTestId("health-summary")).not.toBeInTheDocument();

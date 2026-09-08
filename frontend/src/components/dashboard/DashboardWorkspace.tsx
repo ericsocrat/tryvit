@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslation } from "@/lib/i18n";
-import { ArrowRight, Barcode, BookOpen, Camera, Grid2X2, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, BookOpen, Camera, Search, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import styles from "./DashboardWorkspace.module.css";
 
@@ -21,7 +21,7 @@ export function DashboardHeader({ displayName, firstUse = false }: Readonly<{ di
   );
 }
 
-/** Real route entries; searching and camera permissions stay in their existing flows. */
+/** Native GET search works before hydration; camera permission stays in its own flow. */
 export function DashboardStart({ firstUse = false }: Readonly<{ firstUse?: boolean }>) {
   const { t } = useTranslation();
   return (
@@ -29,18 +29,21 @@ export function DashboardStart({ firstUse = false }: Readonly<{ firstUse?: boole
       <div className={styles.find}>
         <p className={styles.eyebrow}>{t("dashboard.home.findLabel")}</p>
         <h2>{t("dashboard.home.findTitle")}</h2>
-        <Link href="/app/search" prefetch={false} className={styles.searchEntry} data-testid={firstUse ? "new-user-search-cta" : "dashboard-search-cta"}>
-          <Search size={21} aria-hidden="true" /><span>{t("dashboard.home.searchPrompt")}</span><ArrowRight size={19} aria-hidden="true" />
-        </Link>
+        <form action="/app/search" method="get" role="search" className={styles.searchEntry} data-testid={firstUse ? "new-user-search-cta" : "dashboard-search-cta"}>
+          <Search size={20} strokeWidth={1.75} aria-hidden="true" />
+          <label className="sr-only" htmlFor="dashboard-product-query">{t("dashboard.home.searchPrompt")}</label>
+          <input id="dashboard-product-query" name="q" type="search" required maxLength={200} placeholder={t("dashboard.home.searchPrompt")} autoComplete="off" />
+          <button type="submit" aria-label={t("common.search")}><ArrowRight size={20} aria-hidden="true" /></button>
+        </form>
         <Link href="/app/categories" prefetch={false} className={styles.browseEntry} data-testid={firstUse ? "new-user-browse-cta" : "dashboard-browse-cta"}>
-          <Grid2X2 size={17} aria-hidden="true" /> {t("dashboard.newUserBrowseTitle")} <ArrowRight size={16} aria-hidden="true" />
+          {t("dashboard.newUserBrowseTitle")} <ArrowRight size={16} aria-hidden="true" />
         </Link>
       </div>
       <Link href="/app/scan" prefetch={false} className={styles.scan} data-testid={firstUse ? "new-user-scan-cta" : "dashboard-scan-cta"}>
-        <div className={styles.scanTop}><span className={styles.scanLabel}>{t("dashboard.home.scanLabel")}</span><Barcode size={42} strokeWidth={1.15} aria-hidden="true" /></div>
+        <div className={styles.scanTop}><Camera size={24} strokeWidth={1.75} aria-hidden="true" /></div>
         <h2>{t("dashboard.newUserScanTitle")}</h2>
         <p>{t("dashboard.home.scanDescription")}</p>
-        <span className={styles.scanBottom}><Camera size={19} aria-hidden="true" /> {t("dashboard.home.openScanner")} <ArrowRight size={20} aria-hidden="true" /></span>
+        <span className={styles.scanBottom}>{t("dashboard.home.openScanner")} <ArrowRight size={18} aria-hidden="true" /></span>
       </Link>
     </section>
   );
@@ -64,7 +67,7 @@ export function DashboardGuide({ firstUse = false }: Readonly<{ firstUse?: boole
       ) : (
         <div className={styles.guideNote}>
           <h3>{t("dashboard.home.evidenceTitle")}</h3><p>{t("dashboard.home.evidenceDescription")}</p>
-          <Link href="/learn/tryvit-score" prefetch={false} className={styles.textLink}>{t("dashboard.home.scoreGuide")} <ArrowRight size={16} aria-hidden="true" /></Link>
+          <Link href="/learn/confidence" prefetch={false} className={styles.textLink}>{t("dashboard.home.evidenceGuide")} <ArrowRight size={16} aria-hidden="true" /></Link>
         </div>
       )}
     </section>

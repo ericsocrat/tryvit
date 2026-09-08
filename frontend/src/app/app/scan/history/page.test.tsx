@@ -36,8 +36,8 @@ vi.mock("next/link", () => ({
 }));
 
 const mockGetScanHistory = vi.fn();
-vi.mock("@/lib/api", () => ({
-  getScanHistory: (...args: unknown[]) => mockGetScanHistory(...args),
+vi.mock("@/lib/evidence/scan", () => ({
+  getEvidenceScanHistory: (...args: unknown[]) => mockGetScanHistory(...args),
 }));
 
 vi.mock("@/components/common/skeletons", () => ({
@@ -224,11 +224,14 @@ describe("ScanHistoryPage", () => {
     expect(screen.getByText("5901234123457")).toBeInTheDocument();
   });
 
-  it("shows nutri-score badge for found scans", async () => {
+  it("retains the timestamp and barcode without a legacy grade", async () => {
     render(<ScanHistoryPage />, { wrapper: createWrapper() });
     await waitFor(() => {
-      expect(screen.getByText("D")).toBeInTheDocument();
+      expect(screen.getByText("Lay's Classic")).toBeInTheDocument();
     });
+    expect(screen.queryByText("D")).not.toBeInTheDocument();
+    expect(screen.queryByText("28")).not.toBeInTheDocument();
+    expect(document.querySelector('time[datetime="2025-02-01T14:30:00Z"]')).not.toBeNull();
   });
 
   it("renders not-found scan rows with EAN", async () => {

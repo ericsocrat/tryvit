@@ -115,24 +115,10 @@ WHERE n.nspname = 'public'
   AND has_function_privilege('anon', p.oid, 'EXECUTE')
   AND NOT EXISTS(SELECT 1 FROM qa_reviewed_invokers r WHERE r.oid=p.oid AND r.anonymous)
   AND p.proname NOT IN (
-    'api_search_autocomplete',       -- public autocomplete
-    'api_get_filter_options',        -- public filter facets
-    'api_get_products_for_compare', -- comparison data (needed by shared links)
     'api_track_event',              -- fire-and-forget analytics (anon + auth)
-    'api_get_product_profile',      -- public product lookup
-    'api_get_product_profile_by_ean', -- public EAN lookup
-    'api_get_ingredient_profile',   -- public ingredient lookup
-    'api_get_score_history',        -- public score history
     'api_get_product_allergens',     -- public allergen batch lookup
-    'api_product_provenance',         -- public product provenance/trust score (#193)
     'api_validate_event_schema',       -- public schema validation (#190)
-    'api_completeness_gap_analysis',   -- public completeness diagnostic (#376)
-    'api_get_cross_country_links',     -- public cross-country links (#352)
-    'api_get_recipes',                 -- public recipe browsing (#364)
-    'api_get_recipe_detail',           -- public recipe detail (#364)
-    'api_get_recipe_nutrition',        -- public recipe nutrition (#364)
-    'api_better_alternatives_v2',      -- public alternatives v2 (#356)
-    'api_get_recipe_score'             -- public recipe score (#364)
+    'api_completeness_gap_analysis'   -- public completeness diagnostic (#376)
   );
 
 -- 10. anon cannot EXECUTE internal computation functions
@@ -406,14 +392,17 @@ SELECT '31. rate limit index exists (idx_ps_user_created)' AS check_name,
              AND indexname = 'idx_ps_user_created'
        ) THEN 0 ELSE 1 END AS violations;
 
--- 32. api_record_scan source contains rate limit check
-SELECT '32. api_record_scan includes rate limit check' AS check_name,
+-- 32. The v2 scanner delegates to the retained rate-limited transaction.
+SELECT '32. v2 scanner retains its rate limit dependency' AS check_name,
        CASE WHEN EXISTS (
            SELECT 1 FROM pg_proc p
            JOIN pg_namespace n ON p.pronamespace = n.oid
-           WHERE n.nspname = 'public'
-             AND p.proname = 'api_record_scan'
+           WHERE p.oid = to_regprocedure('evidence_private.record_scan_transaction(text,text)')
+             AND p.prosecdef
              AND p.prosrc LIKE '%check_scan_rate_limit%'
+             AND EXISTS(SELECT 1 FROM pg_proc v2
+               WHERE v2.oid=to_regprocedure('public.api_record_scan_v2(text,text)')
+                 AND v2.prosecdef AND v2.prosrc LIKE '%evidence_private.record_scan_transaction(%')
        ) THEN 0 ELSE 1 END AS violations;
 
 -- 33. check_api_rate_limit is SECURITY DEFINER

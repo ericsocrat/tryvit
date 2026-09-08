@@ -201,7 +201,7 @@ export function ScanLookingUpView({ ean }: ScanLookingUpProps) {
 // ─── Found state ────────────────────────────────────────────────────────────
 
 interface ScanFoundProps {
-  product: RecordScanFoundResponse;
+  product: Pick<RecordScanFoundResponse, "product_name" | "product_name_display" | "brand" | "is_cross_country" | "product_country">;
   onViewDetails: () => void;
   onReset: () => void;
 }

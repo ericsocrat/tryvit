@@ -14,12 +14,17 @@ describe("DashboardWorkspace", () => {
     locale.value = language;
     render(<><DashboardHeader /><DashboardStart /><DashboardGuide /></>);
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(translate(language, "dashboard.home.welcome"));
-    expect(screen.getByTestId("dashboard-search-cta")).toHaveAttribute("href", "/app/search");
+    const form = screen.getByRole("search");
+    expect(form).toHaveAttribute("action", "/app/search");
+    expect(form).toHaveAttribute("method", "get");
+    const input = screen.getByRole("searchbox", { name: translate(language, "dashboard.home.searchPrompt") });
+    expect(input).toHaveAttribute("name", "q");
+    expect(input).toBeRequired();
+    expect(screen.getByRole("button", { name: translate(language, "common.search") })).toHaveAttribute("type", "submit");
     expect(screen.getByTestId("dashboard-scan-cta")).toHaveAttribute("href", "/app/scan");
     expect(screen.getByTestId("dashboard-browse-cta")).toHaveAttribute("href", "/app/categories");
     expect(screen.getByRole("link", { name: translate(language, "dashboard.home.preferences") })).toHaveAttribute("href", "/app/settings");
     for (const link of screen.getAllByRole("link")) expect(link).toHaveAttribute("data-prefetch", "false");
-    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
     expect(document.body).not.toHaveTextContent("dashboard.home.");
   });
 
@@ -29,9 +34,9 @@ describe("DashboardWorkspace", () => {
     expect(document.querySelector("script")).toBeNull();
   });
 
-  it("gives a score limitation and links to its explanation", () => {
+  it("links to evidence guidance instead of promoting a legacy aggregate", () => {
     render(<DashboardGuide />);
-    expect(screen.getByText(/do not establish suitability for your diet or allergies/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "How to read the score" })).toHaveAttribute("href", "/learn/tryvit-score");
+    expect(screen.getByRole("link", { name: translate("en", "dashboard.home.evidenceGuide") })).toHaveAttribute("href", "/learn/confidence");
+    expect(document.querySelector('a[href="/learn/tryvit-score"]')).toBeNull();
   });
 });

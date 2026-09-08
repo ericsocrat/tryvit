@@ -8,12 +8,13 @@ import { Button } from "@/components/common/Button";
 import { useTranslation } from "@/lib/i18n";
 import { useCompareStore } from "@/stores/compare-store";
 import { ChevronDown, ChevronUp, Scale, X } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 
 export function ComparisonTray() {
   const { t } = useTranslation();
   const router = useRouter();
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
   const count = useCompareStore((s) => s.count());
@@ -28,7 +29,7 @@ export function ComparisonTray() {
   }, [getIds, router]);
 
   // Don't render if no products selected
-  if (count === 0) return null;
+  if (count === 0 || pathname === "/app/compare") return null;
 
   const ids = getIds();
 
@@ -44,7 +45,7 @@ export function ComparisonTray() {
           <span className="text-sm font-semibold text-foreground">
             {t("comparisonTray.title")}
           </span>
-          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1.5 text-xs font-bold text-white">
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1.5 text-xs font-bold text-[color:var(--color-action-primary-foreground)]">
             {count}
           </span>
         </div>

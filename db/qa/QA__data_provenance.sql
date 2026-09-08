@@ -1,3 +1,9 @@
+-- Current source lineage plus retained operator metadata. Legacy policy scores are not correctness probabilities.
+BEGIN;
+CREATE TEMP TABLE qa_provenance_fixture AS WITH added AS (
+ INSERT INTO public.products(country,brand,product_name,category)
+ VALUES('PL','QA provenance '||gen_random_uuid()::text,'Synthetic provenance fixture','Dairy')
+ RETURNING product_id) SELECT product_id FROM added;
 -- QA: Data Provenance & Freshness Governance (Issue #193, #357)
 -- 28 tests covering all layers of the provenance framework.
 
@@ -25,14 +31,12 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- T03: lab_test has confidence = 1.0 (highest)
+-- T03: laboratory source registry is preserved, not interpreted as certainty
 -- ============================================================================
 DO $$
-DECLARE v NUMERIC;
 BEGIN
-    SELECT base_confidence INTO v FROM data_sources WHERE source_key = 'lab_test';
-    ASSERT v = 1.0, 'T03 FAIL: lab_test confidence = ' || COALESCE(v::TEXT, 'NULL');
-    RAISE NOTICE 'T03 PASS — lab_test confidence = 1.0';
+ ASSERT EXISTS(SELECT 1 FROM public.data_sources WHERE source_key='lab_test'), 'T03 FAIL: laboratory source registry missing';
+ RAISE NOTICE 'T03 PASS - laboratory source registry preserved without declaring certainty';
 END $$;
 
 -- ============================================================================
@@ -67,7 +71,7 @@ DECLARE
     v_pid BIGINT;
     v_conf NUMERIC;
 BEGIN
-    SELECT product_id INTO v_pid FROM products LIMIT 1;
+    SELECT product_id INTO v_pid FROM qa_provenance_fixture;
     IF v_pid IS NULL THEN
         RAISE NOTICE 'T05 SKIP — no products in table';
         RETURN;
@@ -89,7 +93,7 @@ DECLARE
     v_pid BIGINT;
     v_cnt INT;
 BEGIN
-    SELECT product_id INTO v_pid FROM products LIMIT 1;
+    SELECT product_id INTO v_pid FROM qa_provenance_fixture;
     IF v_pid IS NULL THEN
         RAISE NOTICE 'T06 SKIP — no products in table';
         RETURN;
@@ -234,28 +238,16 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- T17: compute_provenance_confidence returns valid structure
+-- T17: canonical evidence has explicit missingness and a retired aggregate
 -- ============================================================================
 DO $$
-DECLARE
-    v_pid BIGINT;
-    v_conf RECORD;
+DECLARE v_pid bigint; v_result jsonb;
 BEGIN
-    SELECT product_id INTO v_pid FROM products LIMIT 1;
-    IF v_pid IS NULL THEN
-        RAISE NOTICE 'T17 SKIP — no products';
-        RETURN;
-    END IF;
-
-    -- Ensure at least one provenance row exists
-    PERFORM record_field_provenance(v_pid, 'product_name', 'off_api', 0.60);
-
-    SELECT * INTO v_conf FROM compute_provenance_confidence(v_pid);
-    ASSERT v_conf.overall_confidence IS NOT NULL,
-        'T17 FAIL: overall_confidence is NULL';
-    ASSERT v_conf.staleness_risk IN ('fresh','aging','stale','expired'),
-        'T17 FAIL: invalid staleness_risk = ' || v_conf.staleness_risk;
-    RAISE NOTICE 'T17 PASS — confidence=%, staleness=%', v_conf.overall_confidence, v_conf.staleness_risk;
+ SELECT product_id INTO v_pid FROM qa_provenance_fixture;
+ v_result:=evidence_private.product_one(v_pid,'en');
+ ASSERT v_result ?& ARRAY['sources','evidence','nutrition','score'], 'T17 FAIL: canonical evidence sections missing';
+ ASSERT v_result->'score'->>'status'='retired' AND v_result->'score'->'value'='null'::jsonb, 'T17 FAIL: retired aggregate escaped';
+ RAISE NOTICE 'T17 PASS - canonical facts retain missingness and no aggregate';
 END $$;
 
 -- ============================================================================
@@ -266,7 +258,7 @@ DECLARE
     v_pid BIGINT;
     v_result JSONB;
 BEGIN
-    SELECT product_id INTO v_pid FROM products LIMIT 1;
+    SELECT product_id INTO v_pid FROM qa_provenance_fixture;
     IF v_pid IS NULL THEN
         RAISE NOTICE 'T18 SKIP — no products';
         RETURN;
@@ -281,24 +273,14 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- T19: api_product_provenance returns valid JSONB
+-- T19: retired provenance returns an explicit refresh boundary
 -- ============================================================================
 DO $$
-DECLARE
-    v_pid BIGINT;
-    v_result JSONB;
+DECLARE v_result jsonb;
 BEGIN
-    SELECT product_id INTO v_pid FROM products LIMIT 1;
-    IF v_pid IS NULL THEN
-        RAISE NOTICE 'T19 SKIP — no products';
-        RETURN;
-    END IF;
-
-    v_result := api_product_provenance(v_pid);
-    ASSERT v_result ? 'api_version',         'T19 FAIL: missing api_version';
-    ASSERT v_result ? 'overall_trust_score',  'T19 FAIL: missing overall_trust_score';
-    ASSERT v_result ? 'trust_explanation',    'T19 FAIL: missing trust_explanation';
-    RAISE NOTICE 'T19 PASS — api_product_provenance returns valid JSONB';
+ v_result:=public.api_product_provenance((SELECT product_id FROM qa_provenance_fixture));
+ ASSERT v_result=jsonb_build_object('api_version','2','policy_version','evidence-first-v1','error','refresh_required','status','refresh_required','message','Refresh TryVit to use source-backed product evidence.'), 'T19 FAIL: retired provenance must require refresh without a trust score';
+ RAISE NOTICE 'T19 PASS - retired provenance is refresh-only';
 END $$;
 
 -- ============================================================================
@@ -341,15 +323,13 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- T23: Security — anon CAN call api_product_provenance
+-- T23: Security - historical confidence is not consumer-callable
 -- ============================================================================
 DO $$
-DECLARE v BOOLEAN;
 BEGIN
-    SELECT has_function_privilege('anon', 'api_product_provenance(bigint)', 'EXECUTE')
-    INTO v;
-    ASSERT v = true, 'T23 FAIL: anon should be able to call api_product_provenance';
-    RAISE NOTICE 'T23 PASS — anon can call api_product_provenance';
+ ASSERT NOT has_function_privilege('anon','public.api_product_provenance(bigint)','EXECUTE'), 'T23 FAIL: anonymous retired provenance access';
+ ASSERT NOT has_function_privilege('authenticated','public.compute_provenance_confidence(bigint)','EXECUTE'), 'T23 FAIL: client can call historical confidence helper';
+ RAISE NOTICE 'T23 PASS - historical trust interpretation remains operator-only';
 END $$;
 
 -- ============================================================================
@@ -381,17 +361,14 @@ BEGIN
 END $$;
 
 -- ============================================================================
--- T26: products.last_fetched_at backfilled for all active products
+-- T26: legacy provenance does not fabricate observation dates
 -- ============================================================================
 DO $$
-DECLARE v INT;
+DECLARE v_result jsonb;
 BEGIN
-    SELECT COUNT(*) INTO v
-    FROM products
-    WHERE is_deprecated IS NOT TRUE
-      AND last_fetched_at IS NULL;
-    ASSERT v = 0, 'T26 FAIL: ' || v || ' active products have NULL last_fetched_at';
-    RAISE NOTICE 'T26 PASS — all active products have last_fetched_at';
+ v_result:=evidence_private.product_one((SELECT product_id FROM qa_provenance_fixture),'en');
+ ASSERT v_result->'sources'='[]'::jsonb AND v_result->'evidence'->>'state'='legacy_unverified', 'T26 FAIL: legacy metadata invented a dated observation';
+ RAISE NOTICE 'T26 PASS - missing observation dates remain unknown';
 END $$;
 
 -- ============================================================================
@@ -420,3 +397,5 @@ BEGIN
         ' rows but ' || v_cats || ' active categories exist';
     RAISE NOTICE 'T28 PASS — v_data_freshness_summary covers % categories', v;
 END $$;
+
+ROLLBACK;

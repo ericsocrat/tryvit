@@ -117,6 +117,7 @@ function Write-Host {
 $jsonResult = @{
     timestamp = (Get-Date -Format "o")
     version   = "2.0"
+    check_profile = "evidence-first-v2"
     suites    = @()
     summary   = @{ total_checks = 0; passed = 0; failed = 0; warnings = 0 }
     inventory = @{}
@@ -132,25 +133,43 @@ $DB_NAME = "postgres"
 $SCRIPT_ROOT = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
 $QA_DIR = Join-Path (Join-Path $SCRIPT_ROOT "db") "qa"
 
+# QA now includes rollback fixture/DDL tests. Never route them to hosted data.
+. (Join-Path $SCRIPT_ROOT 'scripts/qa/qa-local-target.ps1')
+. (Join-Path $SCRIPT_ROOT 'scripts/qa/qa-result-accounting.ps1')
+$qaTargetMode = Assert-QaLocalEnvironment @{
+    PGHOST=$env:PGHOST; PGHOSTADDR=$env:PGHOSTADDR; PGDATABASE=$env:PGDATABASE
+    PGSERVICE=$env:PGSERVICE; PGSERVICEFILE=$env:PGSERVICEFILE; DOCKER_HOST=$env:DOCKER_HOST; DOCKER_CONTEXT=$env:DOCKER_CONTEXT
+}
+if ($qaTargetMode -eq 'docker') {
+    if ($env:DOCKER_HOST) { $qaDockerEndpoint = $env:DOCKER_HOST } else {
+        $qaDockerEndpoint = docker context inspect --format '{{.Endpoints.docker.Host}}'
+        if ($LASTEXITCODE -ne 0) { throw 'QA_DOCKER_CONTEXT_UNPROVEN' }
+    }
+    Assert-QaLocalDockerEndpoint (($qaDockerEndpoint | Out-String).Trim())
+    $qaDockerProject = docker inspect --format '{{ index .Config.Labels "com.supabase.cli.project" }}' $CONTAINER
+    if ($LASTEXITCODE -ne 0) { throw 'QA_DOCKER_OWNERSHIP_UNPROVEN' }
+    Assert-QaOwnedDockerProject (($qaDockerProject | Out-String).Trim())
+}
+
 # Single source of truth for suite metadata (names, counts, blocking behavior)
 $suiteCatalog = @(
-    @{ Num = 1; Name = "Data Integrity"; Short = "Integrity"; Id = "integrity"; Checks = 29; Blocking = $true; Kind = "sql-special"; File = "QA__null_checks.sql" },
+    @{ Num = 1; Name = "Data Integrity"; Short = "Integrity"; Id = "integrity"; Checks = 25; Blocking = $true; Kind = "sql-special"; File = "QA__null_checks.sql" },
     @{ Num = 2; Name = "Scoring Formula"; Short = "Scoring"; Id = "scoring"; Checks = 40; Blocking = $true; Kind = "sql-special"; File = "QA__scoring_formula_tests.sql" },
     @{ Num = 3; Name = "Source Coverage"; Short = "Source"; Id = "source_coverage"; Checks = 8; Blocking = $false; Kind = "sql-special"; File = "QA__source_coverage.sql" },
     @{ Num = 4; Name = "EAN Checksum Validation"; Short = "EAN"; Id = "ean"; Checks = 1; Blocking = $true; Kind = "python"; File = "validate_eans.py" },
     @{ Num = 5; Name = "API Surface Validation"; Short = "API"; Id = "api"; Checks = 18; Blocking = $true; Kind = "sql"; File = "QA__api_surfaces.sql" },
     @{ Num = 6; Name = "Confidence Scoring"; Short = "Confidence"; Id = "confidence"; Checks = 14; Blocking = $true; Kind = "sql"; File = "QA__confidence_scoring.sql" },
-    @{ Num = 7; Name = "Data Quality & Plausibility"; Short = "DataQuality"; Id = "data_quality"; Checks = 30; Blocking = $true; Kind = "sql"; File = "QA__data_quality.sql" },
+    @{ Num = 7; Name = "Data Quality & Plausibility"; Short = "DataQuality"; Id = "data_quality"; Checks = 31; Blocking = $true; Kind = "sql"; File = "QA__data_quality.sql" },
     @{ Num = 8; Name = "Referential Integrity"; Short = "RefInteg"; Id = "referential"; Checks = 18; Blocking = $true; Kind = "sql"; File = "QA__referential_integrity.sql" },
-    @{ Num = 9; Name = "View & Function Consistency"; Short = "Views"; Id = "views"; Checks = 13; Blocking = $true; Kind = "sql"; File = "QA__view_consistency.sql" },
+    @{ Num = 9; Name = "View & Function Consistency"; Short = "Views"; Id = "views"; Checks = 16; Blocking = $true; Kind = "sql"; File = "QA__view_consistency.sql" },
     @{ Num = 10; Name = "Naming Conventions"; Short = "Naming"; Id = "naming"; Checks = 12; Blocking = $true; Kind = "sql"; File = "QA__naming_conventions.sql" },
-    @{ Num = 11; Name = "Nutrition Ranges & Plausibility"; Short = "NutriRange"; Id = "nutrition_ranges"; Checks = 20; Blocking = $true; Kind = "sql"; File = "QA__nutrition_ranges.sql" },
-    @{ Num = 12; Name = "Data Consistency"; Short = "DataConsist"; Id = "data_consistency"; Checks = 26; Blocking = $true; Kind = "sql"; File = "QA__data_consistency.sql" },
+    @{ Num = 11; Name = "Nutrition Ranges & Plausibility"; Short = "NutriRange"; Id = "nutrition_ranges"; Checks = 13; Blocking = $true; Kind = "sql"; File = "QA__nutrition_ranges.sql" },
+    @{ Num = 12; Name = "Data Consistency"; Short = "DataConsist"; Id = "data_consistency"; Checks = 24; Blocking = $true; Kind = "sql"; File = "QA__data_consistency.sql" },
     @{ Num = 13; Name = "Allergen & Trace Integrity"; Short = "Allergen"; Id = "allergen_integrity"; Checks = 15; Blocking = $true; Kind = "sql"; File = "QA__allergen_integrity.sql" },
     @{ Num = 14; Name = "Serving & Source Validation"; Short = "ServSource"; Id = "serving_source"; Checks = 16; Blocking = $true; Kind = "sql"; File = "QA__serving_source_validation.sql" },
     @{ Num = 15; Name = "Ingredient Data Quality"; Short = "IngredQual"; Id = "ingredient_quality"; Checks = 17; Blocking = $true; Kind = "sql"; File = "QA__ingredient_quality.sql" },
     @{ Num = 16; Name = "Security Posture"; Short = "Security"; Id = "security_posture"; Checks = 43; Blocking = $true; Kind = "sql"; File = "QA__security_posture.sql" },
-    @{ Num = 17; Name = "API Contract"; Short = "Contract"; Id = "api_contract"; Checks = 33; Blocking = $true; Kind = "sql"; File = "QA__api_contract.sql" },
+    @{ Num = 17; Name = "API Contract"; Short = "Contract"; Id = "api_contract"; Checks = 36; Blocking = $true; Kind = "sql"; File = "QA__api_contract.sql" },
     @{ Num = 18; Name = "Scale Guardrails"; Short = "Scale"; Id = "scale_guardrails"; Checks = 23; Blocking = $true; Kind = "sql"; File = "QA__scale_guardrails.sql" },
     @{ Num = 19; Name = "Country Isolation"; Short = "Country"; Id = "country_isolation"; Checks = 11; Blocking = $true; Kind = "sql"; File = "QA__country_isolation.sql" },
     @{ Num = 20; Name = "Diet Filtering"; Short = "Diet"; Id = "diet_filtering"; Checks = 6; Blocking = $true; Kind = "sql"; File = "QA__diet_filtering.sql" },
@@ -203,16 +222,23 @@ function Invoke-Psql {
         [switch]$TuplesOnly
     )
     if ($env:PGHOST) {
-        $psqlArgs = @()
+        $psqlArgs = @('-X', '--set=ON_ERROR_STOP=1')
         if ($TuplesOnly) { $psqlArgs += "--tuples-only" }
         return ($InputSql | psql @psqlArgs 2>&1)
     }
     else {
-        $psqlArgs = @("-U", $DB_USER, "-d", $DB_NAME)
+        $psqlArgs = @('-X', '--set=ON_ERROR_STOP=1', "-U", $DB_USER, "-d", $DB_NAME)
         if ($TuplesOnly) { $psqlArgs += "--tuples-only" }
         return ($InputSql | docker exec -i $CONTAINER psql @psqlArgs 2>&1)
     }
 }
+
+# Coverage is reported separately and cannot create a blocking verification quota.
+$qaCoverageSql = (Get-Content (Join-Path $QA_DIR 'contracts/evidence_data.sql') -Raw -ErrorAction Stop) +
+    "`n" + (Get-Content (Join-Path $QA_DIR 'contracts/evidence_coverage.sql') -Raw -ErrorAction Stop)
+$qaCoverageOutput = Invoke-Psql -InputSql $qaCoverageSql -TuplesOnly
+if ($LASTEXITCODE -ne 0) { throw 'QA_EVIDENCE_COVERAGE_FAILED' }
+$jsonResult.evidence_coverage = (($qaCoverageOutput | Out-String).Trim() | ConvertFrom-Json)
 
 function Get-NonEmptyLines {
     param([string]$Text)
@@ -265,9 +291,10 @@ Write-Host "Running Test Suite 1: Data Integrity ($suite1Checks checks)..." -For
 
 $sw1 = [System.Diagnostics.Stopwatch]::StartNew()
 
-# Strip final summary query to avoid false-positive
+# Informational summaries are separate; execute all25 violation queries, including image guards.
 $test1Content = Get-Content $test1File -Raw
-$test1ChecksOnly = ($test1Content -split '-- 36\. v_master column coverage')[0]
+$test1ChecksOnly = $test1Content
+$test1ChecksOnly = "\set QUIET on`nBEGIN;`n" + (Get-Content (Join-Path $QA_DIR 'contracts/evidence_data.sql') -Raw -ErrorAction Stop) + "`n" + $test1ChecksOnly + "`n\set QUIET on`nROLLBACK;"
 
 $test1Output = Invoke-Psql -InputSql $test1ChecksOnly -TuplesOnly
 
@@ -278,7 +305,11 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 $test1Lines = ($test1Output | Out-String).Trim()
-if ($test1Lines -eq "" -or $test1Lines -match '^\s*$') {
+$test1Rows = @(Get-NonEmptyLines -Text $test1Lines)
+$test1CountRows = @($test1Rows | Where-Object { $_ -match '^\s*\d+\.\s+.+\|\s*\d+\s*$' })
+$test1DistinctChecks = @($test1CountRows | ForEach-Object { ($_ -split '\|')[0].Trim() } | Select-Object -Unique)
+if ($test1Rows.Count -eq $suite1Checks -and $test1CountRows.Count -eq $suite1Checks -and
+    $test1DistinctChecks.Count -eq $suite1Checks -and @(Get-FailedCheckLines -Text $test1Lines).Count -eq 0) {
     $sw1.Stop()
     Write-Host "  ✓ PASS ($suite1Checks/$suite1Checks — zero violations) [$([math]::Round($sw1.Elapsed.TotalMilliseconds))ms]" -ForegroundColor Green
     $test1Pass = $true
@@ -435,7 +466,8 @@ $suite4Checks = $suiteByNum[4].Checks
 $validatorScript = Join-Path $SCRIPT_ROOT "validate_eans.py"
 if (-not (Test-Path $validatorScript)) {
     Write-Host "  ⚠ SKIPPED (validate_eans.py not found)" -ForegroundColor DarkYellow
-    $test4Pass = $true  # Non-blocking if validator doesn't exist
+    $test4Pass = $false
+    $jsonResult.suites += @{ name=$suiteByNum[4].Name; suite_id='ean'; checks=$suite4Checks; status='error'; diagnostic_code='validator_missing'; violations=@(); runtime_ms=0 }
 }
 else {
     # Run validator and capture output
@@ -485,7 +517,9 @@ function Invoke-SqlQASuite {
     if (-not (Test-Path $testFile)) {
         Write-Host ""
         Write-Host "  ⚠ SKIPPED Test Suite ${SuiteNum}: $Name (file not found)" -ForegroundColor DarkYellow
-        return $true
+        $script:jsonResult.suites += @{ name=$Name; suite_id=$SuiteId; checks=$Checks; declared_checks=$Checks; executed_checks=0; untested_checks=$Checks; passed_checks=0; failed_checks=0; status='error'; execution_error=$true; diagnostic_code='suite_file_missing'; violations=@(); runtime_ms=0 }
+        $script:jsonResult.summary.total_checks += $Checks
+        return $false
     }
 
     Write-Host ""
@@ -493,46 +527,64 @@ function Invoke-SqlQASuite {
 
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $content = Get-Content $testFile -Raw
+    $inventoryOnly = $SuiteId -in @('rls_audit','function_security_audit')
+    # Explicit named assertions are the current source count; removed legacy
+    # checks do not become phantom passes or untested checks from a stale catalog.
+    $namedCheckCount = ([regex]::Matches($content, '(?i)\bAS\s+check_name\b')).Count
+    $expectedChecks = if ($namedCheckCount -gt 0) { $namedCheckCount } else { $Checks }
+    $violationChecks = @()
+    if ($SuiteId -in @('event_intelligence','scoring_distribution')) {
+        $violationChecks = @([regex]::Matches($content, "'([^']+)'\s+AS\s+issue\b", 'IgnoreCase') | ForEach-Object { $_.Groups[1].Value } | Select-Object -Unique)
+        $expectedChecks = $violationChecks.Count
+        if ($expectedChecks -eq 0) { throw 'QA_VIOLATION_QUERY_CONTRACT_MISSING' }
+    }
     if ($SuiteId -in @('security_posture', 'scale_guardrails', 'lists_comparisons', 'index_temporal', 'index_verification')) {
         $contract = Get-Content (Join-Path $QA_DIR 'contracts/evidence_security.sql') -Raw -ErrorAction Stop
         $content = $contract + "`n" + $content
     }
-    $output = Invoke-Psql -InputSql $content -TuplesOnly
-
-    if ($LASTEXITCODE -ne 0) {
-        $sw.Stop()
-        Write-Host "  ✗ FAILED TO EXECUTE" -ForegroundColor Red
-        Write-Host "  $output" -ForegroundColor DarkRed
-        $script:jsonResult.suites += @{ name = $Name; suite_id = $SuiteId; checks = $Checks; status = "error"; violations = @(); runtime_ms = [math]::Round($sw.Elapsed.TotalMilliseconds) }
-        return $false
+    if ($SuiteId -in @('data_consistency', 'data_quality', 'confidence', 'nutrition_ranges', 'multi_country_consistency')) {
+        $contract = Get-Content (Join-Path $QA_DIR 'contracts/evidence_data.sql') -Raw -ErrorAction Stop
+        $content = "\set QUIET on`nBEGIN;`n" + $contract + "`n" + $content + "`n\set QUIET on`nROLLBACK;"
     }
-
+    if ($inventoryOnly) { $content = "\t off`n\pset footer on`n" + $content }
+    $output = Invoke-Psql -InputSql $content -TuplesOnly
+    $executionCode = $LASTEXITCODE
     $sw.Stop()
     $lines = ($output | Out-String).Trim()
-    $violations = ($lines -split "`n" | Where-Object { $_ -match '\|\s*[1-9]' })
-    if ($violations.Count -eq 0) {
-        Write-Host "  ✓ PASS ($Checks/$Checks — zero violations) [$([math]::Round($sw.Elapsed.TotalMilliseconds))ms]" -ForegroundColor Green
-        $script:jsonResult.suites += @{ name = $Name; suite_id = $SuiteId; checks = $Checks; status = "pass"; violations = @(); runtime_ms = [math]::Round($sw.Elapsed.TotalMilliseconds) }
-        $script:jsonResult.summary.total_checks += $Checks; $script:jsonResult.summary.passed += $Checks
+    $account = Get-QaCheckAccounting -Text $lines -DeclaredChecks $Checks -ExpectedChecks $expectedChecks -ViolationChecks $violationChecks -ExitCode $executionCode
+    $inventoryRows = @()
+    if ($inventoryOnly) {
+        # Server-emitted result footers count actual inventory rows/queries.
+        # Inventory output contains no pass/fail predicate and is never a PASS.
+        $inventoryRows = @([regex]::Matches($lines, '\((\d+) rows?\)') | ForEach-Object { [int]$_.Groups[1].Value })
+        $account.status = if ($executionCode -eq 0) { 'unassessed' } else { 'error' }
+        $account.declared_checks = 0; $account.total_checks = 0; $account.executed_checks = 0
+        $account.passed = 0; $account.failed = 0; $account.untested_checks = 0
+        $expectedChecks = 0
+    }
+    $violationList = @(Get-FailedCheckLines -Text $lines)
+    $script:jsonResult.suites += @{
+        name=$Name; suite_id=$SuiteId; checks=$account.total_checks; declared_checks=$account.declared_checks
+        expected_checks=$expectedChecks; failed_check_ids=$account.failed_check_ids
+        inventory_only=$inventoryOnly; inventory_query_row_counts=$inventoryRows
+        executed_inventory_queries=$inventoryRows.Count
+        declared_inventory_queries=$(if ($inventoryOnly) { $Checks } else { 0 })
+        executed_checks=$account.executed_checks; passed_checks=$account.passed; failed_checks=$account.failed
+        untested_checks=$account.untested_checks; count_matches_declaration=$account.count_matches_declaration
+        status=$account.status; execution_error=$account.execution_error; exit_code=$executionCode
+        violations=$violationList; runtime_ms=[math]::Round($sw.Elapsed.TotalMilliseconds)
+    }
+    $script:jsonResult.summary.total_checks += $account.total_checks
+    $script:jsonResult.summary.passed += $account.passed
+    $script:jsonResult.summary.failed += $account.failed
+    if ($account.status -eq 'pass') {
+        Write-Host "  ✓ PASS ($($account.passed) observed checks; $Checks declared)" -ForegroundColor Green
         return $true
     }
-    else {
-        Write-Host "  ✗ FAILED — violations detected:" -ForegroundColor Red
-        $allLineItems = @(Get-NonEmptyLines -Text $lines)
-        $violationList = @($violations | ForEach-Object { $_.Trim() })
-        if ($violationList.Count -gt 0) {
-            Write-Host ($violationList -join "`n") -ForegroundColor DarkRed
-            if ($allLineItems.Count -gt $violationList.Count) {
-                Write-Host "  ... ($($allLineItems.Count - $violationList.Count) zero-violation rows omitted)" -ForegroundColor DarkGray
-            }
-        }
-        else {
-            Write-TrimmedViolationOutput -Text $lines
-        }
-        $script:jsonResult.suites += @{ name = $Name; suite_id = $SuiteId; checks = $Checks; status = "fail"; violations = @($violationList); runtime_ms = [math]::Round($sw.Elapsed.TotalMilliseconds) }
-        $script:jsonResult.summary.total_checks += $Checks; $script:jsonResult.summary.failed += $violationList.Count; $script:jsonResult.summary.passed += ($Checks - $violationList.Count)
-        return $false
-    }
+    Write-Host "  ✗ $($account.status): $($account.failed) failed, $($account.untested_checks) untested" -ForegroundColor Red
+    if ($executionCode -ne 0) { Write-Host "  $output" -ForegroundColor DarkRed }
+    elseif ($violationList.Count -gt 0) { Write-Host ($violationList -join "`n") -ForegroundColor DarkRed }
+    return $false
 }
 
 $sqlSuites = $suiteCatalog | Where-Object { $_.Kind -eq 'sql' } | Sort-Object Num
@@ -562,6 +614,21 @@ Write-Host ($invOutput | Out-String).Trim() -ForegroundColor DarkGray
 
 # ─── Summary ────────────────────────────────────────────────────────────────
 
+foreach ($result in $jsonResult.suites) {
+    if ($result.status -in @('error','incomplete') -and -not $result.ContainsKey('untested_checks')) {
+        $result.declared_checks=$result.checks; $result.executed_checks=0
+        $result.passed_checks=0; $result.failed_checks=0; $result.untested_checks=$result.checks
+    }
+}
+$jsonResult.summary.declared_checks = ($jsonResult.suites | ForEach-Object { if ($_.ContainsKey('declared_checks')) { $_.declared_checks } else { $_.checks } } | Measure-Object -Sum).Sum
+$jsonResult.summary.executed_checks = ($jsonResult.suites | ForEach-Object { if ($_.ContainsKey('executed_checks')) { $_.executed_checks } elseif ($_.status -notin @('error','incomplete')) { $_.checks } else { 0 } } | Measure-Object -Sum).Sum
+$jsonResult.summary.untested = ($jsonResult.suites | ForEach-Object { if ($_.ContainsKey('untested_checks')) { $_.untested_checks } else { 0 } } | Measure-Object -Sum).Sum
+$jsonResult.summary.execution_errors = @($jsonResult.suites | Where-Object { $_.status -eq 'error' }).Count
+$jsonResult.summary.incomplete_suites = @($jsonResult.suites | Where-Object { $_.status -eq 'incomplete' }).Count
+$jsonResult.summary.unassessed_suites = @($jsonResult.suites | Where-Object { $_.status -eq 'unassessed' }).Count
+$jsonResult.summary.informational_checks = @($jsonResult.suites | Where-Object { $_.suite_id -eq 'source_coverage' -and $_.status -in @('pass','warn') } | ForEach-Object { $_.checks } | Measure-Object -Sum)[0].Sum
+$jsonResult.summary.total_checks = $jsonResult.summary.passed + $jsonResult.summary.failed + $jsonResult.summary.untested + $jsonResult.summary.informational_checks
+
 $allPass = $true
 foreach ($suite in $suiteCatalog | Where-Object { $_.Blocking }) {
     if (-not $suitePass[$suite.Num]) {
@@ -570,6 +637,7 @@ foreach ($suite in $suiteCatalog | Where-Object { $_.Blocking }) {
     }
 }
 $warnFail = $FailOnWarn -and $hasWarnings
+if ($jsonResult.summary.execution_errors -gt 0 -or $jsonResult.summary.incomplete_suites -gt 0 -or $jsonResult.summary.unassessed_suites -gt 0) { $allPass = $false }
 $jsonResult.overall = if (-not $allPass) { "fail" } elseif ($warnFail) { "warn" } else { "pass" }
 
 # Parse inventory into JSON-friendly structure

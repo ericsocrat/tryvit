@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Recipes",
   description:
-    "Browse curated healthy recipes. Filter by category, difficulty, and cooking time.",
+    "Browse recipe instructions and ingredients. Filter by category and difficulty.",
 };
 
 export default function RecipesLayout({

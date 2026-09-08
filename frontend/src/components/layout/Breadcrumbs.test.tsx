@@ -112,8 +112,8 @@ describe("Breadcrumbs", () => {
         ]}
       />,
     );
-    // "Dashboard" appears in both mobile compact link and desktop trail
-    expect(screen.getAllByText("Dashboard").length).toBeGreaterThanOrEqual(1);
+    // "Home" appears in both mobile compact link and desktop trail
+    expect(screen.getAllByText("Home").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Search")).toBeInTheDocument();
   });
 

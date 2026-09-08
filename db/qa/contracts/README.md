@@ -5,15 +5,26 @@ security posture, scale guardrails, lists/comparisons and the two index suites.
 The objects are temporary and never installed by a production migration. When
 running one of these suites manually, prepend this file in the same psql session.
 
-Ten exact public function signatures are reviewed invoker wrappers. The contract
-requires their presence, invoker mode, empty search path, authenticated access,
-the specified anonymous access and no PUBLIC execution. Additional unreviewed
+Forty-two exact public function signatures are reviewed invoker wrappers. The contract
+requires their presence, invoker mode, empty search path,
+the specified anonymous/authenticated access, service access and no PUBLIC execution. Additional unreviewed
 invokers fail. Four token readers (legacy and v2 list/comparison) have explicit
 anonymous capability access; this is not a general anonymous table grant.
 The public-share pgTAP suite separately tests token isolation, malformed tokens,
 revocation and omission of private IDs/notes. Ingestion tables must retain RLS,
 zero policies, no anonymous/authenticated table or column grants, and service
 read/write privileges. Other tables retain the policy-presence requirement.
+
+C adds 31 authenticated retirement/read wrappers and one service-only pending
+notification wrapper to the B set of ten. Pending notifications must never gain
+authenticated execution. Three new Home/Scan definers require owner `postgres`,
+empty search path, authenticated/service execution and no PUBLIC/anon execution.
+The 27 moved historical implementations in `evidence_private` remain service-only;
+this restriction does not apply to the separately reviewed live private helpers
+that invoker wrappers need to call. Retired anonymous endpoint names are removed
+from the legacy allowlist. B's committed ten-signature contract remains historical.
+Seven public historical score/confidence formulas also retain service-only
+execution; browser denial does not change their mathematical bodies or types.
 
 The four new ingestion tables use constraint-aware index checks: valid, ready
 B-tree key columns must lead with the complete FK column set, or a unique key
@@ -45,3 +56,8 @@ Require the exact `1..21` plan and 21 `ok` results, with no failed/skipped/TODO
 assertions; psql's exit code alone does not interpret pgTAP assertion failures.
 The seven previously failing checks also run through their regular QA suites.
 Never run these mutation tests against production or a shared database.
+
+For applied C, use the same psql prelude with `evidence_security_c.test.sql` for
+13 exact-security/rollback assertions. The existing B index regressions separately
+require the final B supporting indexes. A passing C security suite does not
+certify the full database QA suite or migration ordering.

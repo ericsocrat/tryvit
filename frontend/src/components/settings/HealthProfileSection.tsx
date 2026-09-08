@@ -1,473 +1,93 @@
 "use client";
 
-// ─── Health profile management section for Settings page ────────────────────
-
 import { Button } from "@/components/common/Button";
+import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import surface from "@/components/layout/CustomerSurface.module.css";
-import {
-    createHealthProfile,
-    deleteHealthProfile,
-    listHealthProfiles,
-    updateHealthProfile,
-} from "@/lib/api";
+import { deleteHealthProfile, listHealthProfiles } from "@/lib/api";
 import { HEALTH_CONDITIONS } from "@/lib/constants";
 import { useTranslation } from "@/lib/i18n";
 import { queryKeys, staleTimes } from "@/lib/query-keys";
 import { createClient } from "@/lib/supabase/client";
 import { showToast } from "@/lib/toast";
-import type {
-    FormSubmitEvent,
-    HealthCondition,
-    HealthProfile,
-} from "@/lib/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pause, Pencil, Play, Trash2 } from "lucide-react";
 import { useState } from "react";
 
-// ─── Sub-component: Create/Edit form ────────────────────────────────────────
-
-function ProfileForm({
-  initial,
-  onSave,
-  onCancel,
-}: Readonly<{
-  initial?: HealthProfile;
-  onSave: () => void;
-  onCancel: () => void;
-}>) {
-  const supabase = createClient();
-  const { t } = useTranslation();
-  const [name, setName] = useState(initial?.profile_name ?? "");
-  const [conditions, setConditions] = useState<HealthCondition[]>(
-    initial?.health_conditions ?? [],
-  );
-  const [isActive, setIsActive] = useState(initial?.is_active ?? false);
-  const [maxSugar, setMaxSugar] = useState(
-    initial?.max_sugar_g?.toString() ?? "",
-  );
-  const [maxSalt, setMaxSalt] = useState(initial?.max_salt_g?.toString() ?? "");
-  const [maxSatFat, setMaxSatFat] = useState(
-    initial?.max_saturated_fat_g?.toString() ?? "",
-  );
-  const [maxCal, setMaxCal] = useState(
-    initial?.max_calories_kcal?.toString() ?? "",
-  );
-  const [notes, setNotes] = useState(initial?.notes ?? "");
-  const [saving, setSaving] = useState(false);
-
-  function toggleCondition(c: HealthCondition) {
-    setConditions((prev) =>
-      prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c],
-    );
-  }
-
-  async function handleSubmit(e: FormSubmitEvent) {
-    e.preventDefault();
-    if (!name.trim()) {
-      showToast({ type: "error", messageKey: "healthProfile.nameRequired" });
-      return;
-    }
-    setSaving(true);
-
-    const params = {
-      p_profile_name: name.trim(),
-      p_health_conditions: conditions,
-      p_is_active: isActive,
-      p_max_sugar_g: maxSugar ? Number(maxSugar) : undefined,
-      p_max_salt_g: maxSalt ? Number(maxSalt) : undefined,
-      p_max_saturated_fat_g: maxSatFat ? Number(maxSatFat) : undefined,
-      p_max_calories_kcal: maxCal ? Number(maxCal) : undefined,
-      p_notes: notes.trim() || undefined,
-    };
-
-    const result = initial
-      ? await updateHealthProfile(supabase, {
-          p_profile_id: initial.profile_id,
-          ...params,
-          // Send clear flags when editing: if the field was set before but is
-          // now empty, explicitly clear it to NULL in the database.
-          p_clear_max_sugar: !maxSugar && initial.max_sugar_g != null,
-          p_clear_max_salt: !maxSalt && initial.max_salt_g != null,
-          p_clear_max_sat_fat:
-            !maxSatFat && initial.max_saturated_fat_g != null,
-          p_clear_max_calories: !maxCal && initial.max_calories_kcal != null,
-        })
-      : await createHealthProfile(supabase, params);
-
-    setSaving(false);
-
-    if (!result.ok) {
-      showToast({ type: "error", message: result.error.message });
-      return;
-    }
-
-    showToast({
-      type: "success",
-      messageKey: initial
-        ? "healthProfile.profileUpdated"
-        : "healthProfile.profileCreated",
-    });
-    onSave();
-  }
-
-  let submitLabel = t("healthProfile.create");
-  if (saving) submitLabel = `${t("common.saving")}`;
-  else if (initial) submitLabel = t("healthProfile.update");
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Name */}
-      <div>
-        <label
-          htmlFor="hp-name"
-          className="mb-1 block text-sm font-medium text-foreground-secondary"
-        >
-          {t("healthProfile.profileName")}
-        </label>
-        <input
-          id="hp-name"
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={t("healthProfile.namePlaceholder")}
-          className="w-full rounded-lg border border-strong px-3 py-2 text-sm focus-visible:border-brand focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-brand"
-          maxLength={50}
-        />
-      </div>
-
-      {/* Conditions */}
-      <div>
-        <p className="mb-2 block text-sm font-medium text-foreground-secondary">
-          {t("healthProfile.healthConditions")}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {HEALTH_CONDITIONS.map((c) => (
-            <button
-              key={c.value}
-              type="button"
-              onClick={() => toggleCondition(c.value)}
-              className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                conditions.includes(c.value)
-                  ? "border-brand bg-brand-subtle text-brand"
-                  : "border text-foreground-secondary hover:border-strong"
-              }`}
-            >
-              {c.icon} {t(c.labelKey)}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Nutrient limits */}
-      <div>
-        <p className="mb-2 block text-sm font-medium text-foreground-secondary">
-          {t("healthProfile.nutrientLimits")}
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label
-              htmlFor="hp-max-sugar"
-              className="mb-1 block text-xs text-foreground-secondary"
-            >
-              {t("healthProfile.maxSugar")}
-            </label>
-            <input
-              id="hp-max-sugar"
-              type="number"
-              min="0"
-              step="0.1"
-              value={maxSugar}
-              onChange={(e) => setMaxSugar(e.target.value)}
-              className="w-full rounded border border-strong px-2 py-1.5 text-sm"
-              placeholder="—"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="hp-max-salt"
-              className="mb-1 block text-xs text-foreground-secondary"
-            >
-              {t("healthProfile.maxSalt")}
-            </label>
-            <input
-              id="hp-max-salt"
-              type="number"
-              min="0"
-              step="0.01"
-              value={maxSalt}
-              onChange={(e) => setMaxSalt(e.target.value)}
-              className="w-full rounded border border-strong px-2 py-1.5 text-sm"
-              placeholder="—"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="hp-max-sat-fat"
-              className="mb-1 block text-xs text-foreground-secondary"
-            >
-              {t("healthProfile.maxSatFat")}
-            </label>
-            <input
-              id="hp-max-sat-fat"
-              type="number"
-              min="0"
-              step="0.1"
-              value={maxSatFat}
-              onChange={(e) => setMaxSatFat(e.target.value)}
-              className="w-full rounded border border-strong px-2 py-1.5 text-sm"
-              placeholder="—"
-            />
-          </div>
-          <div>
-            <label
-              htmlFor="hp-max-cal"
-              className="mb-1 block text-xs text-foreground-secondary"
-            >
-              {t("healthProfile.maxCalories")}
-            </label>
-            <input
-              id="hp-max-cal"
-              type="number"
-              min="0"
-              step="1"
-              value={maxCal}
-              onChange={(e) => setMaxCal(e.target.value)}
-              className="w-full rounded border border-strong px-2 py-1.5 text-sm"
-              placeholder="—"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Notes */}
-      <div>
-        <label
-          htmlFor="hp-notes"
-          className="mb-1 block text-sm font-medium text-foreground-secondary"
-        >
-          {t("healthProfile.notesOptional")}
-        </label>
-        <textarea
-          id="hp-notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          rows={2}
-          maxLength={200}
-          className="w-full rounded-lg border border-strong px-3 py-2 text-sm focus-visible:border-brand focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-brand"
-          placeholder={t("healthProfile.notesPlaceholder")}
-        />
-      </div>
-
-      {/* Active toggle */}
-      <label className="flex cursor-pointer items-center gap-3">
-        <input
-          type="checkbox"
-          checked={isActive}
-          onChange={(e) => setIsActive(e.target.checked)}
-          className="h-4 w-4 rounded border-strong text-brand focus-visible:ring-brand"
-        />
-        <span className="text-sm text-foreground-secondary">
-          {t("healthProfile.setActive")}
-        </span>
-      </label>
-
-      {/* Actions */}
-      <div className="flex gap-2">
-        <Button type="submit" disabled={saving} className="flex-1">
-          {submitLabel}
-        </Button>
-        <button
-          type="button"
-          onClick={onCancel}
-          className="flex-1 rounded-lg border border-border px-4 py-2 text-sm text-foreground-secondary hover:bg-surface-subtle"
-        >
-          {t("common.cancel")}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-// ─── Main section ───────────────────────────────────────────────────────────
-
+/** Preserved owner records only; these settings no longer drive health warnings. */
 export function HealthProfileSection() {
   const supabase = createClient();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
-  const [editingProfile, setEditingProfile] = useState<
-    HealthProfile | "new" | null
-  >(null);
-
-  const { data, isLoading } = useQuery({
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [deleteFailed, setDeleteFailed] = useState(false);
+  const [confirmation, setConfirmation] = useState<{ id: string; name: string } | null>(null);
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.healthProfiles,
     queryFn: async () => {
       const result = await listHealthProfiles(supabase);
-      if (!result.ok) throw new Error(result.error.message);
+      if (!result.ok || !Array.isArray(result.data.profiles)) throw new Error("Profile archive unavailable");
       return result.data;
     },
     staleTime: staleTimes.healthProfiles,
   });
-
   const profiles = data?.profiles ?? [];
 
   async function handleDelete(profileId: string) {
-    const result = await deleteHealthProfile(supabase, profileId);
-    if (!result.ok) {
-      showToast({ type: "error", message: result.error.message });
-      return;
+    if (deleting !== null) return;
+    setDeleting(profileId);
+    setDeleteFailed(false);
+    try {
+      const result = await deleteHealthProfile(supabase, profileId);
+      if (!result.ok || result.data.deleted !== true || result.data.profile_id !== profileId) {
+        setDeleteFailed(true);
+        return;
+      }
+      showToast({ type: "success", messageKey: "healthProfile.profileDeleted" });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.healthProfiles });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.activeHealthProfile });
+    } catch {
+      setDeleteFailed(true);
+    } finally {
+      setDeleting(null);
     }
-    showToast({ type: "success", messageKey: "healthProfile.profileDeleted" });
-    await queryClient.invalidateQueries({
-      queryKey: queryKeys.healthProfiles,
-    });
-    await queryClient.invalidateQueries({
-      queryKey: queryKeys.activeHealthProfile,
-    });
   }
 
-  async function handleToggleActive(profile: HealthProfile) {
-    const result = await updateHealthProfile(supabase, {
-      p_profile_id: profile.profile_id,
-      p_is_active: !profile.is_active,
-    });
-    if (!result.ok) {
-      showToast({ type: "error", message: result.error.message });
-      return;
-    }
-    showToast({
-      type: "success",
-      messageKey: profile.is_active
-        ? "healthProfile.profileDeactivated"
-        : "healthProfile.profileActivated",
-    });
-    await queryClient.invalidateQueries({
-      queryKey: queryKeys.healthProfiles,
-    });
-    await queryClient.invalidateQueries({
-      queryKey: queryKeys.activeHealthProfile,
-    });
-  }
-
-  function handleSaved() {
-    setEditingProfile(null);
-    queryClient.invalidateQueries({ queryKey: queryKeys.healthProfiles });
-    queryClient.invalidateQueries({
-      queryKey: queryKeys.activeHealthProfile,
-    });
-  }
-
-  if (isLoading) {
-    return (
-      <section className={surface.panel} data-testid="health-profile-section">
-        <h2 className="mb-3 text-sm font-semibold text-foreground-secondary">
-          {t("healthProfile.title")}
-        </h2>
-        <p className="text-sm text-foreground-muted">{t("common.loading")}</p>
-      </section>
-    );
-  }
-
-  return (
-    <section className={surface.panel} data-testid="health-profile-section">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground-secondary">
-          {t("healthProfile.title")}
-        </h2>
-        {!editingProfile && profiles.length < 5 && (
-          <button
-            onClick={() => setEditingProfile("new")}
-            className="touch-target rounded-lg border border-brand px-3 py-2 text-sm font-medium text-brand hover:bg-brand-subtle"
-          >
-            {t("healthProfile.newProfile")}
-          </button>
-        )}
-      </div>
-
-      {/* Empty state */}
-      {profiles.length === 0 && !editingProfile && (
-        <p className="text-sm text-foreground-muted">
-          {t("healthProfile.emptyState")}
-        </p>
-      )}
-
-      {/* Profile list */}
-      {profiles.length > 0 && !editingProfile && (
-        <div className="space-y-2">
-          {profiles.map((profile) => (
-            <div
-              key={profile.profile_id}
-              className={`rounded-lg border p-3 ${
-                profile.is_active ? "border-brand bg-brand-subtle" : "border"
-              }`}
-            >
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-foreground">
-                      {profile.profile_name}
-                    </span>
-                    {profile.is_active && (
-                      <span className="rounded-full bg-brand-subtle px-2 py-0.5 text-xs font-medium text-brand">
-                        {t("healthProfile.active")}
-                      </span>
-                    )}
-                  </div>
-                  {profile.health_conditions.length > 0 && (
-                    <p className="mt-1 text-xs text-foreground-secondary">
-                      {profile.health_conditions
-                        .map((c) => {
-                          const hc = HEALTH_CONDITIONS.find((h) => h.value === c);
-                          return hc ? t(hc.labelKey) : c;
-                        })
-                        .join(", ")}
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => handleToggleActive(profile)}
-                    className="touch-target rounded px-2 py-2 text-sm text-foreground-secondary hover:bg-surface-muted"
-                    title={
-                      profile.is_active
-                        ? t("healthProfile.deactivate")
-                        : t("healthProfile.setActive")
-                    }
-                  >
-                    {profile.is_active ? (
-                      <Pause size={16} aria-hidden="true" />
-                    ) : (
-                      <Play size={16} aria-hidden="true" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setEditingProfile(profile)}
-                    className="touch-target rounded px-2 py-2 text-sm text-foreground-secondary hover:bg-surface-muted"
-                    aria-label={t("common.edit")}
-                  >
-                    <Pencil size={16} aria-hidden="true" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(profile.profile_id)}
-                    className="touch-target rounded px-2 py-2 text-sm text-error hover:bg-error-bg"
-                    aria-label={t("common.delete")}
-                  >
-                    <Trash2 size={16} aria-hidden="true" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Form (create or edit) */}
-      {editingProfile && (
-        <ProfileForm
-          initial={editingProfile === "new" ? undefined : editingProfile}
-          onSave={handleSaved}
-          onCancel={() => setEditingProfile(null)}
-        />
-      )}
-    </section>
-  );
+  return <section className={surface.panel} data-testid="health-profile-section" aria-labelledby="health-profile-archive-title">
+    <h2 id="health-profile-archive-title" className="text-sm font-semibold text-foreground">{t("healthProfile.title")}</h2>
+    <p className="mt-2 text-sm text-foreground-secondary">{t("healthProfile.archiveDescription")}</p>
+    <p className="mt-2 text-sm text-foreground-secondary">{t("healthProfile.allergenPreferencesNotice")}</p>
+    {isLoading ? <p className="mt-3 text-sm" role="status">{t("common.loading")}</p> : null}
+    {error ? <div className="mt-3" role="alert">
+      <p>{t("healthProfile.archiveLoadFailed")}</p>
+      <Button variant="secondary" onClick={() => void refetch()}>{t("common.retry")}</Button>
+    </div> : null}
+    {!isLoading && !error && profiles.length === 0 ? <p className="mt-3 text-sm text-foreground-muted">{t("healthProfile.emptyState")}</p> : null}
+    {deleteFailed ? <p role="alert" className="mt-3 text-sm text-error-text">{t("healthProfile.archiveDeleteFailed")}</p> : null}
+    {profiles.length > 0 ? <ul className="mt-3 space-y-3">
+      {profiles.map((profile) => <li key={profile.profile_id} className="rounded-lg border p-3">
+        <details>
+          <summary className="min-h-11 cursor-pointer py-2 text-sm font-medium text-foreground">{profile.profile_name}</summary>
+          <p className="mt-2 text-xs text-foreground-secondary">{t("healthProfile.storedActiveFlag")}: {t(profile.is_active ? "healthProfile.flagYes" : "healthProfile.flagNo")}</p>
+          {profile.health_conditions.length > 0 ? <p className="mt-2 text-sm">{t("healthProfile.healthConditions")}: {profile.health_conditions.map((condition) => {
+            const known = HEALTH_CONDITIONS.find((item) => item.value === condition);
+            return known ? t(known.labelKey) : condition;
+          }).join(", ")}</p> : null}
+          <h3 className="mt-3 text-sm font-medium">{t("healthProfile.storedLimits")}</h3>
+          <dl className="mt-2 grid grid-cols-2 gap-2 text-sm">
+            <dt>{t("healthProfile.maxSugar")}</dt><dd>{profile.max_sugar_g ?? "—"}</dd>
+            <dt>{t("healthProfile.maxSalt")}</dt><dd>{profile.max_salt_g ?? "—"}</dd>
+            <dt>{t("healthProfile.maxSatFat")}</dt><dd>{profile.max_saturated_fat_g ?? "—"}</dd>
+            <dt>{t("healthProfile.maxCalories")}</dt><dd>{profile.max_calories_kcal ?? "—"}</dd>
+          </dl>
+          {profile.notes ? <p className="mt-3 whitespace-pre-wrap text-sm">{profile.notes}</p> : null}
+        </details>
+        <Button variant="secondary" size="sm" disabled={deleting !== null} aria-label={`${t("common.delete")} ${profile.profile_name}`} onClick={() => setConfirmation({ id: profile.profile_id, name: profile.profile_name })}>{t("common.delete")}</Button>
+      </li>)}
+    </ul> : null}
+    <ConfirmDialog open={confirmation !== null} title={t("healthProfile.archiveDeleteConfirm", { name: confirmation?.name ?? "" })} description={t("healthProfile.archiveDeleteConfirmDescription")} confirmLabel={t("common.delete")} variant="danger" onCancel={() => setConfirmation(null)} onConfirm={() => {
+      if (!confirmation) return;
+      const id = confirmation.id;
+      setConfirmation(null);
+      void handleDelete(id);
+    }} />
+  </section>;
 }

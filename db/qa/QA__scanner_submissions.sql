@@ -19,27 +19,25 @@ WHERE n.nspname = 'public'
   AND c.relrowsecurity = false;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- #2  All scanner/submission API functions exist and are SECURITY DEFINER
+-- #2  Current v2/submission functions are DEFINER; retired scan shims are INVOKER
 -- ─────────────────────────────────────────────────────────────────────────────
-SELECT '2. Scanner/submission API functions are SECURITY DEFINER' AS check_name,
-       COUNT(*) AS violations
-FROM (
-    SELECT unnest(ARRAY[
-        'api_record_scan',
-        'api_get_scan_history',
-        'api_submit_product',
-        'api_get_my_submissions',
-        'api_admin_get_submissions',
-        'api_admin_review_submission'
-    ]) AS fn
-) expected
-WHERE NOT EXISTS (
-    SELECT 1 FROM pg_proc p
-    JOIN pg_namespace n ON p.pronamespace = n.oid
-    WHERE n.nspname = 'public'
-      AND p.proname = expected.fn
-      AND p.prosecdef = true
-);
+WITH expected(fn,definer,client_execute) AS (VALUES
+ ('api_record_scan_v2',true,true),('api_get_scan_history_v2',true,true),
+ ('api_submit_product',true,true),('api_get_my_submissions',true,true),
+ ('api_admin_get_submissions',true,false),('api_admin_review_submission',true,false),
+ ('api_record_scan',false,true),('api_get_scan_history',false,true))
+SELECT '2. v2 scanner and submission security with fail-closed legacy shims' AS check_name,
+ (SELECT COUNT(*) FROM expected e WHERE NOT EXISTS(
+   SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+   WHERE n.nspname='public' AND p.proname=e.fn AND p.prosecdef=e.definer
+     AND has_function_privilege('authenticated',p.oid,'EXECUTE')=e.client_execute
+     AND NOT has_function_privilege('anon',p.oid,'EXECUTE')))
+ + CASE WHEN public.api_record_scan('9910000000706','PL') =
+     jsonb_build_object('error','refresh_required','message','Refresh TryVit to use the evidence-first scanner.')
+   AND public.api_get_scan_history() =
+     jsonb_build_object('api_version','2','error','refresh_required','message','Refresh TryVit to read scan history without retired grades.')
+   AND NOT has_function_privilege('authenticated','evidence_private.record_scan_transaction(text,text)','EXECUTE')
+   THEN 0 ELSE 1 END AS violations;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- #3  product_submissions.status CHECK constraint exists

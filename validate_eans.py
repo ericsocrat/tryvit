@@ -70,7 +70,7 @@ def main() -> int:
     # Build psql command — CI mode (PGHOST set) uses psql directly,
     # local mode uses docker exec into the Supabase container
     if os.environ.get("PGHOST"):
-        cmd = ["psql", "-t", "-A", "-F", "|", "-c", QUERY]
+        cmd = ["psql", "-X", "-t", "-A", "-F", "|", "-c", QUERY]
     else:
         cmd = [
             "docker",
@@ -78,6 +78,7 @@ def main() -> int:
             "-i",
             DB_CONTAINER,
             "psql",
+            "-X",
             "-U",
             DB_USER,
             "-d",

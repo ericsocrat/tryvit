@@ -1,102 +1,39 @@
--- ═══════════════════════════════════════════════════════════════════════════════
--- QA Suite: Performance Regression
--- Validates that key API functions complete within generous CI thresholds.
--- These are NOT the production P95 targets (search <150ms, autocomplete <50ms);
--- they are smoke-level bounds that catch catastrophic regressions (hangs,
--- sequential scans) in Docker-based CI environments.
---
--- Production P95 targets are documented in docs/PERFORMANCE_GUARDRAILS.md
--- and enforced via scheduled monitoring (not per-PR CI).
---
--- NON-BLOCKING — timing varies by environment; failures are informational.
--- 6 checks.
--- ═══════════════════════════════════════════════════════════════════════════════
+-- Local canonical-API smoke bounds, not production p95 or a retired-shim benchmark.
+-- The fixture contains 100 distinct products; all results are consumed before timing ends.
+BEGIN;
+CREATE TEMP TABLE qa_identity AS SELECT gen_random_uuid() uid;
+INSERT INTO auth.users(id) SELECT uid FROM qa_identity;
+SELECT set_config('request.jwt.claims',jsonb_build_object('sub',uid,'role','authenticated')::text,true) FROM qa_identity;
 
--- ═══════════════════════════════════════════════════════════════════════════════
--- 1. Search: api_search_products completes in < 5s
--- Production target: < 150ms P95
--- ═══════════════════════════════════════════════════════════════════════════════
-SELECT '1. search completes in < 5s (production target: 150ms)' AS check_name,
-       CASE WHEN extract(epoch FROM clock_timestamp() - t.s) < 5
-            THEN 0 ELSE 1 END AS violations
-FROM (SELECT clock_timestamp() AS s) t,
-LATERAL (SELECT api_search_products('mleko', NULL, 20, 0, 'PL')) q(r);
-
--- ═══════════════════════════════════════════════════════════════════════════════
--- 2. Autocomplete: api_search_autocomplete completes in < 3s
--- Production target: < 50ms P95
--- ═══════════════════════════════════════════════════════════════════════════════
-SELECT '2. autocomplete completes in < 3s (production target: 50ms)' AS check_name,
-       CASE WHEN extract(epoch FROM clock_timestamp() - t.s) < 3
-            THEN 0 ELSE 1 END AS violations
-FROM (SELECT clock_timestamp() AS s) t,
-LATERAL (SELECT api_search_autocomplete('mle', 5)) q(r);
-
--- ═══════════════════════════════════════════════════════════════════════════════
--- 3. Category listing: api_category_listing completes in < 5s
--- Production target: < 200ms P95
--- ═══════════════════════════════════════════════════════════════════════════════
-SELECT '3. category listing completes in < 5s (production target: 200ms)' AS check_name,
-       CASE WHEN extract(epoch FROM clock_timestamp() - t.s) < 5
-            THEN 0 ELSE 1 END AS violations
-FROM (SELECT clock_timestamp() AS s) t,
-LATERAL (SELECT api_category_listing('Chips', 'score', 'asc', 50, 0, 'PL')) q(r);
-
--- ═══════════════════════════════════════════════════════════════════════════════
--- 4. Product detail: api_product_detail completes in < 2s
--- Production target: < 100ms P95
--- ═══════════════════════════════════════════════════════════════════════════════
-SELECT '4. product detail completes in < 2s (production target: 100ms)' AS check_name,
-       CASE WHEN extract(epoch FROM clock_timestamp() - t.s) < 2
-            THEN 0 ELSE 1 END AS violations
-FROM (SELECT clock_timestamp() AS s) t,
-LATERAL (
-    SELECT api_product_detail(
-        (SELECT product_id FROM products WHERE is_deprecated IS NOT TRUE LIMIT 1)
-    )
-) q(r);
-
--- ═══════════════════════════════════════════════════════════════════════════════
--- 5. Score computation: 100 products scored in < 5s
--- Production target: < 50ms per product
--- ═══════════════════════════════════════════════════════════════════════════════
-SELECT '5. 100 score computations in < 5s (production target: 50ms/ea)' AS check_name,
-       CASE WHEN extract(epoch FROM clock_timestamp() - t.s) < 5
-            THEN 0 ELSE 1 END AS violations
-FROM (SELECT clock_timestamp() AS s) t,
-LATERAL (
-    SELECT COUNT(*) AS cnt
-    FROM (
-        SELECT compute_unhealthiness_v32(
-            p_saturated_fat      := nf.saturated_fat,
-            p_sugars             := nf.sugars,
-            p_salt               := nf.salt,
-            p_calories           := nf.calories,
-            p_trans_fat          := nf.trans_fat,
-            p_additive_count     := COALESCE(p.additive_count, 0),
-            p_prep_method        := p.prep_method,
-            p_controversies      := p.controversies,
-            p_ingredient_concern := COALESCE(p.ingredient_concern_score, 0)
-        ) AS score
-        FROM products p
-        JOIN nutrition_facts nf ON nf.product_id = p.product_id
-        WHERE p.is_deprecated IS NOT TRUE
-        LIMIT 100
-    ) scored
-) q(cnt);
-
--- ═══════════════════════════════════════════════════════════════════════════════
--- 6. Better alternatives: api_better_alternatives completes in < 5s
--- Production target: < 300ms P95
--- ═══════════════════════════════════════════════════════════════════════════════
-SELECT '6. better alternatives completes in < 5s (production target: 300ms)' AS check_name,
-       CASE WHEN extract(epoch FROM clock_timestamp() - t.s) < 5
-            THEN 0 ELSE 1 END AS violations
-FROM (SELECT clock_timestamp() AS s) t,
-LATERAL (
-    SELECT api_better_alternatives(
-        (SELECT product_id FROM products
-         WHERE is_deprecated IS NOT TRUE AND unhealthiness_score > 30
-         LIMIT 1)
-    )
-) q(r);
+INSERT INTO public.user_preferences(user_id,country,diet_preference,preferred_language)
+SELECT uid,'PL','none','en' FROM qa_identity ON CONFLICT(user_id) DO UPDATE SET country='PL',diet_preference='none',preferred_language='en';
+CREATE TEMP TABLE qa_perf_products AS WITH added AS (
+ INSERT INTO public.products(country,brand,product_name,category)
+ SELECT 'PL',uid::text,'QA performance '||g,'Dairy' FROM qa_identity CROSS JOIN generate_series(1,100) g
+ RETURNING product_id) SELECT product_id FROM added;
+CREATE TEMP TABLE qa_timings(n integer PRIMARY KEY,elapsed interval,payload jsonb);
+DO $measure$
+DECLARE started timestamptz; result jsonb; ids bigint[]; label text;
+BEGIN
+ SELECT array_agg(product_id ORDER BY product_id) INTO ids FROM qa_perf_products;
+ SELECT uid::text INTO label FROM qa_identity;
+ started:=clock_timestamp(); result:=public.api_find_products(label,'{}',1,20,false,'en');
+ INSERT INTO qa_timings VALUES(1,clock_timestamp()-started,result);
+ started:=clock_timestamp(); result:=public.api_find_filter_options('PL','en');
+ INSERT INTO qa_timings VALUES(2,clock_timestamp()-started,result);
+ started:=clock_timestamp(); result:=public.api_find_products(label,'{"category":["Dairy"],"country":"PL"}',1,20,false,'en');
+ INSERT INTO qa_timings VALUES(3,clock_timestamp()-started,result);
+ started:=clock_timestamp(); result:=public.api_product_read_model(ids[1:1],'en');
+ INSERT INTO qa_timings VALUES(4,clock_timestamp()-started,result);
+ started:=clock_timestamp(); result:=public.api_product_read_model(ids,'en');
+ INSERT INTO qa_timings VALUES(5,clock_timestamp()-started,result);
+ started:=clock_timestamp(); result:=public.api_product_read_model(ids[1:4],'en');
+ INSERT INTO qa_timings VALUES(6,clock_timestamp()-started,result);
+END $measure$;
+SELECT '1. canonical search completes with real results in under 5s' AS check_name,CASE WHEN elapsed<interval '5 seconds' AND payload->>'api_version'='2' AND payload->>'total'='100' AND jsonb_array_length(payload->'results')=20 THEN 0 ELSE 1 END AS violations FROM qa_timings WHERE n=1;
+SELECT '2. current filter options complete in under 3s' AS check_name,CASE WHEN elapsed<interval '3 seconds' AND payload->>'api_version'='2' AND jsonb_typeof(payload->'categories')='array' THEN 0 ELSE 1 END AS violations FROM qa_timings WHERE n=2;
+SELECT '3. canonical category search completes in under 5s' AS check_name,CASE WHEN elapsed<interval '5 seconds' AND payload->>'api_version'='2' AND payload->>'total'='100' THEN 0 ELSE 1 END AS violations FROM qa_timings WHERE n=3;
+SELECT '4. canonical detail completes in under 2s' AS check_name,CASE WHEN elapsed<interval '2 seconds' AND payload->>'api_version'='2' AND jsonb_array_length(payload->'products')=1 THEN 0 ELSE 1 END AS violations FROM qa_timings WHERE n=4;
+SELECT '5. 100 distinct canonical products read in under 5s' AS check_name,CASE WHEN elapsed<interval '5 seconds' AND payload->>'api_version'='2' AND jsonb_array_length(payload->'products')=100 THEN 0 ELSE 1 END AS violations FROM qa_timings WHERE n=5;
+SELECT '6. four-product comparison input completes in under 5s' AS check_name,CASE WHEN elapsed<interval '5 seconds' AND payload->>'api_version'='2' AND jsonb_array_length(payload->'products')=4 THEN 0 ELSE 1 END AS violations FROM qa_timings WHERE n=6;
+ROLLBACK;

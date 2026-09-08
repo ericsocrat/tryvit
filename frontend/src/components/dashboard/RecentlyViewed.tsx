@@ -1,9 +1,7 @@
 "use client";
 
-import { CategoryIcon } from "@/components/common/CategoryIcon";
 import { useTranslation } from "@/lib/i18n";
-import { toTryVitScore } from "@/lib/score-utils";
-import type { RecentlyViewedProduct } from "@/lib/types";
+import type { HomeReadModel, HomeProductEntry } from "@/lib/evidence/home";
 import { ArrowRight, History } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,7 +11,7 @@ import styles from "./DashboardProducts.module.css";
 const MAX_ITEMS = 5;
 
 interface RecentlyViewedProps {
-  products: RecentlyViewedProduct[];
+  products: HomeReadModel["recently_viewed"];
 }
 
 /** Retained for consumers of the compact relative-time helper. */
@@ -32,25 +30,18 @@ export function relativeTimeAgo(isoDate: string): string {
   return `${weeks}w`;
 }
 
-type DashboardProduct = Pick<
-  RecentlyViewedProduct,
-  "product_id" | "product_name" | "brand" | "category" | "unhealthiness_score" | "image_thumb_url"
->;
-
 /** Shared row keeps saved and recently opened products equally inspectable. */
 export function DashboardProductRow({
   product,
   detail,
   testId,
-}: Readonly<{ product: DashboardProduct; detail?: ReactNode; testId: string }>) {
+}: Readonly<{ product: HomeProductEntry; detail?: ReactNode; testId: string }>) {
   const { t } = useTranslation();
+  const model = product.product;
+  const name = model?.product_name ?? t("homeEvidence.productUnavailable", { id: product.product_id });
   const [failedImage, setFailedImage] = useState<string | null>(null);
-  const rawScore = product.unhealthiness_score;
-  const score = rawScore !== null && Number.isFinite(rawScore) && rawScore >= 1 && rawScore <= 100
-    ? toTryVitScore(rawScore)
-    : null;
-  const imageUrl = product.image_thumb_url !== failedImage ? product.image_thumb_url : null;
-  const categorySlug = product.category.trim().toLowerCase().replaceAll(/[^a-z0-9]+/g, "-").replaceAll(/^-|-$/g, "");
+  const imageUrl = model?.image?.url !== failedImage ? model?.image?.url : null;
+  const monogram = name.match(/[\p{L}\p{N}]/u)?.[0].toLocaleUpperCase() ?? "·";
 
   return (
     <Link href={`/app/product/${product.product_id}`} prefetch={false} className={styles.productRow} data-testid={testId}>
@@ -65,24 +56,16 @@ export function DashboardProductRow({
             loading="lazy"
             onError={() => setFailedImage(imageUrl)}
           />
-        ) : <CategoryIcon slug={categorySlug} size="lg" />}
+        ) : <span className={styles.monogram}>{monogram}</span>}
       </span>
       <span className={styles.productCopy}>
-        <span className={styles.productName}>{product.product_name}</span>
+        <span className={styles.productName}>{name}</span>
         <span className={styles.productMeta}>
-          {product.brand ? <span>{product.brand}</span> : null}
+          {model?.brand ? <span>{model.brand}</span> : null}
           {detail}
         </span>
-      </span>
-      <span className={styles.productScore}>
-        {score === null ? (
-          <span className={styles.unavailable}>{t("dashboard.home.scoreUnavailable")}</span>
-        ) : (
-          <>
-            <span className="sr-only">{t("dashboard.home.productScore", { score })}</span>
-            <span aria-hidden="true" className={styles.scoreValue}>{score}<span>/100</span></span>
-          </>
-        )}
+        <span className={styles.rowEvidence}>{model ? t(`evidenceUi.summary.${model.evidence.state}`) : t("homeEvidence.recordUnavailable")}</span>
+        {model?.is_deprecated ? <span className={styles.rowEvidence}>{t("homeEvidence.archived")}</span> : null}
       </span>
       <ArrowRight size={15} aria-hidden="true" className={styles.rowArrow} />
     </Link>
@@ -91,6 +74,7 @@ export function DashboardProductRow({
 
 export function RecentlyViewed({ products }: Readonly<RecentlyViewedProps>) {
   const { t, language } = useTranslation();
+  const [observedAt] = useState(() => Date.now());
   const items = products.slice(0, MAX_ITEMS);
   const dateFormatter = new Intl.DateTimeFormat(language, { day: "numeric", month: "short", year: "numeric" });
 
@@ -108,11 +92,10 @@ export function RecentlyViewed({ products }: Readonly<RecentlyViewedProps>) {
 
       {items.length > 0 ? (
         <>
-          <p className={styles.scoreCaption}>{t("dashboard.home.productScoreCaption")}</p>
           <ul className={styles.productList}>
             {items.map((product) => {
               const date = new Date(product.viewed_at);
-              const dateLabel = Number.isNaN(date.getTime()) ? null : dateFormatter.format(date);
+              const dateLabel = Number.isNaN(date.getTime()) || date.getTime() > observedAt ? null : dateFormatter.format(date);
               return (
                 <li key={product.product_id}>
                   <DashboardProductRow

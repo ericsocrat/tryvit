@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 2,
+  "scopeProfile": "consumer-v1",
+  "catalogTables": [
+    "allergen_ref",
+    "category_ref",
+    "concern_tier_ref",
+    "country_ref",
+    "data_sources",
+    "freshness_policies",
+    "ingredient_ref",
+    "language_ref",
+    "nutri_score_ref",
+    "nutrition_facts",
+    "product_allergen_info",
+    "product_field_provenance",
+    "product_images",
+    "product_ingredient",
+    "products",
+    "formula_source_hashes",
+    "scoring_model_versions"
+  ],
+  "environment": "production",
+  "scope": "schema-and-catalog",
+  "method": "backup-restore",
+  "migrationManifestSha256": "a7028bca6b57b5f5324194484975b1710d652a39593e4f0cc74f09d701675ab4",
+  "backupSha256": "60d4a8bc52bcf38b0fdb88d184af125d429cdde49b74cb0f61ca8b06fd8951be",
+  "restoredBackupSha256": "60d4a8bc52bcf38b0fdb88d184af125d429cdde49b74cb0f61ca8b06fd8951be",
+  "encryptedBackupSha256": "3d323df6ddc1799a70f2a882782e7bb3273579ecc7561943230df278fb62c03e",
+  "bootstrapSupplementSha256": "100ce0d078359a37c87812ddb2b471afb23f70316f98c529f4dc40694e805f2f",
+  "catalogSha256": "1e6836ac3de29a7290f3edf07677cb303d5fa025be62066e67244d23303b0de5",
+  "restoredCatalogSha256": "1e6836ac3de29a7290f3edf07677cb303d5fa025be62066e67244d23303b0de5",
+  "restoredAt": "2026-09-08T09:18:48.854Z",
+  "result": "PASS",
+  "checks": {
+    "schema": true,
+    "functions": true,
+    "grants": true,
+    "rls": true,
+    "roleAttributes": true,
+    "roleMemberships": true,
+    "extensionBootstrap": true,
+    "rowCounts": true,
+    "identityReferences": true,
+    "representativeValues": true,
+    "syntheticRoles": true
+  },
+  "exclusions": [
+    "privateUserRows",
+    "historyRows",
+    "managedAuthServices",
+    "storageObjects"
+  ],
+  "storageDisposition": "not-affected",
+  "privateProductionRowsExported": false,
+  "containerImage": "public.ecr.aws/supabase/postgres:17.6.1.075",
+  "databaseLocale": "en_US.UTF-8",
+  "catalogTableCount": 17,
+  "catalogRowCount": 96533,
+  "limitations": [
+    "No private-user/history row recovery claim",
+    "No role-password or platform-role-setting recovery claim",
+    "No managed Auth service, cloud configuration or storage-object recovery claim"
+  ],
+  "sourceFingerprints": {
+    "schema": "82324fe63044f6694577e5f208cdb85dfa78833bdb2270d3f4bfbc258008d05a",
+    "functions": "f7ffaed88c729dec01c1274abf841434371eac401426972ec34e063fb985527e",
+    "grants": "2b5ea05af6868d2533a5f57b54bc5acf7afda44c5c6364c2388f892e640e2917",
+    "rls": "d7005ac381a5caadf6909a0557be4f789d2b1b25663946608cc6fcbfba655d43"
+  },
+  "restoredFingerprints": {
+    "schema": "82324fe63044f6694577e5f208cdb85dfa78833bdb2270d3f4bfbc258008d05a",
+    "functions": "f7ffaed88c729dec01c1274abf841434371eac401426972ec34e063fb985527e",
+    "grants": "2b5ea05af6868d2533a5f57b54bc5acf7afda44c5c6364c2388f892e640e2917",
+    "rls": "d7005ac381a5caadf6909a0557be4f789d2b1b25663946608cc6fcbfba655d43"
+  }
+}

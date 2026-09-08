@@ -133,7 +133,7 @@ export const queryKeys = {
 
   /** Watchlist (Issue #38) */
   watchlist: (page?: number) =>
-    ["watchlist", { page }] as const,
+    page === undefined ? ["watchlist"] as const : ["watchlist", { page }] as const,
 
   /** Is user watching a specific product (Issue #38) */
   isWatching: (productId: number) =>

@@ -28,16 +28,10 @@ export default function NovaGroupsPage() {
             <LearnSectionCard title={t("learn.novaGroups.groupsTitle")}>
               <div className="grid gap-3 md:grid-cols-2">
                 {(["1", "2", "3", "4"] as const).map((n) => {
-                  const colorMap: Record<string, string> = {
-                    "1": "border-success-border bg-success-bg",
-                    "2": "border-info-border bg-info-bg",
-                    "3": "border-warning-border bg-warning-bg",
-                    "4": "border-error-border bg-error-bg",
-                  };
                   return (
                     <div
                       key={n}
-                      className={`rounded-lg border p-4 ${colorMap[n]}`}
+                      className="rounded-lg border border-border bg-surface p-4"
                     >
                       <p className="text-sm font-semibold text-foreground">
                         {t(`learn.novaGroups.group${n}Title`)}

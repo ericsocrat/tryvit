@@ -65,6 +65,7 @@ export default function AchievementsPage() {
         description={t("achievements.subtitle")}
         actions={<Icon icon={Trophy} size="lg" className="text-brand" />}
       />
+      <p className="text-sm text-foreground-secondary">{t("evidenceActivity.milestonesMeaning")}</p>
 
       {/* Loading state */}
       {isLoading && (
@@ -121,6 +122,22 @@ export default function AchievementsPage() {
           {/* Grid */}
           <AchievementGrid achievements={data.achievements} />
         </>
+      )}
+      {!isLoading && !error && !!data?.retired_achievements?.length && (
+        <details className={surface.panel}>
+          <summary className="cursor-pointer font-medium">{t("evidenceActivity.retiredHistory")}</summary>
+          <p className="mt-2 text-sm text-foreground-secondary">{t("evidenceActivity.retiredHistoryDescription")}</p>
+          <ul className="mt-3 space-y-2 text-sm">
+            {data.retired_achievements.map((entry) => (
+              <li key={entry.id}>
+                {t("evidenceActivity.retiredMilestone")}: {entry.progress}
+                {entry.unlocked_at && Number.isFinite(Date.parse(entry.unlocked_at)) && (
+                  <> · <time dateTime={entry.unlocked_at}>{new Date(entry.unlocked_at).toLocaleDateString()}</time></>
+                )}
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
       </AppPage>
     </PullToRefresh>

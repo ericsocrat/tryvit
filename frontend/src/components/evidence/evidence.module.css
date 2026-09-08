@@ -1,0 +1,111 @@
+.productHeader { display: grid; grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr); gap: 2rem; align-items: start; }
+.loadingRows { display: grid; gap: 1rem; margin-top: 1.5rem; }
+.productIdentity { min-width: 0; }
+.productHeader > .photo { grid-column: 1; grid-row: 1 / span 3; }
+.productHeader > .productIdentity, .productHeader > .actions, .productHeader > .evidenceSummary { grid-column: 2; }
+.productHeader > .actions, .productHeader > .evidenceSummary { margin-block: 0; }
+.productIdentity h1 { margin: 0.5rem 0; font-size: clamp(1.75rem, 3vw, 2.5rem); font-weight: 650; line-height: 1.2; letter-spacing: -0.035em; overflow-wrap: anywhere; }
+.kicker, .metadata { margin: 0.4rem 0; color: var(--color-text-secondary); font-size: 0.8125rem; line-height: 1.5; }
+.brand { margin: 0.5rem 0; color: var(--color-text-secondary); font-size: 1.125rem; }
+.photo { margin: 0; padding: 1rem; border: 1px solid var(--color-border); border-radius: 1rem; background: var(--color-surface); }
+.photoImage { width: 100%; height: 13rem; object-fit: contain; }
+.photo figcaption { margin-top: 0.75rem; color: var(--color-text-secondary); font-size: 0.75rem; line-height: 1.5; overflow-wrap: anywhere; }
+.photoDetails > summary { min-height: 2.75rem; padding-block: 0.5rem; cursor: pointer; color: var(--color-brand); }
+.photoDetails > summary:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; border-radius: 0.25rem; }
+.photoPlaceholder { display: grid; min-height: 12rem; align-content: center; justify-items: center; gap: 0.75rem; color: var(--color-text-secondary); }
+.photoPlaceholder > span { font-size: 3rem; font-weight: 600; }
+.photoPlaceholder p { margin: 0; font-size: 0.8125rem; text-align: center; }
+.actions { display: flex; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-block: 1rem; }
+.textLink { display: inline-flex; align-items: center; min-height: 2.75rem; color: var(--color-brand); font-size: 0.875rem; font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; }
+.detailColumns { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: start; gap: 1.5rem; }
+.detailStack { display: grid; gap: 1.5rem; min-width: 0; }
+.panel, .state { min-width: 0; border: 1px solid var(--color-border); border-radius: 1rem; padding: 1.5rem; background: var(--color-surface); }
+.panel h2, .sources summary, .evidenceSummary h2, .state h2 { margin: 0; color: var(--color-text-primary); font-size: 1.125rem; font-weight: 650; line-height: 1.4; letter-spacing: -0.015em; }
+.panel h3 { margin: 1.1rem 0 0.5rem; font-size: 0.9375rem; font-weight: 600; }
+.intro, .state p { margin: 0.6rem 0 1rem; color: var(--color-text-secondary); font-size: 0.875rem; line-height: 1.65; }
+.state h1 { font-size: 1.75rem; line-height: 1.3; }
+.evidenceSummary { margin-top: 1rem; padding: 1rem 1.1rem; border-radius: 0.75rem; background: var(--color-surface-muted); }
+.evidenceSummary h2 { font-size: 0.9375rem; }
+.evidenceSummary p { margin: 0.45rem 0 0; color: var(--color-text-secondary); font-size: 0.8125rem; line-height: 1.6; }
+.headerAllergens { grid-column: 2; padding: 0.8rem 1rem; border-inline-start: 3px solid var(--color-warning, #946200); background: var(--color-surface); border-radius: 0.5rem; font-size: 0.8125rem; }
+.headerAllergens h2 { margin: 0 0 0.5rem; font-size: 0.9375rem; line-height: 1.5; font-weight: 650; }
+.headerAllergens h2 a { display: inline-block; padding-block: 0.15rem; color: var(--color-text-primary); text-decoration: underline; text-underline-offset: 0.2em; }
+.headerAllergens h2 a:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; }
+.headerAllergens > div { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); align-items: start; gap: 0.5rem 0.75rem; }
+.headerAllergens > div > strong { padding-block: 0.3rem; line-height: 1.5; }
+.headerAllergens .assertions { margin: 0; }
+.headerAllergens .assertions:last-child { margin-bottom: 0; }
+.headerAllergens .assertions li { padding: 0.25rem 0.5rem; }
+.nutrients { margin: 0; }
+.nutritionContext { margin: 0 0 1rem; color: var(--color-text-secondary); font-size: 0.8125rem; line-height: 1.6; }
+.nutritionContext a, .nutrientSource { color: var(--color-brand); text-decoration: underline; text-underline-offset: 0.15em; }
+.nutrientSource { display: inline-block; margin-top: 0.25rem; font-size: 0.75rem; }
+.nutrientRow { display: grid; grid-template-columns: minmax(7rem, 0.8fr) minmax(0, 1fr); gap: 0.75rem; padding: 1rem 0; border-top: 1px solid var(--color-border); }
+.nutrientRow dt { color: var(--color-text-primary); font-size: 0.9375rem; font-weight: 500; }
+.nutrientRow dd { min-width: 0; margin: 0; }
+.factValue { display: grid; gap: 0.25rem; }
+.quantity { color: var(--color-text-primary); font-size: 1rem; font-weight: 650; line-height: 1.4; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.quantity > span { font-size: 0.8125rem; font-weight: 500; }
+.factState, .basis { color: var(--color-text-secondary); font-size: 0.75rem; line-height: 1.5; }
+.factState { font-weight: 600; }
+.caution { display: block; margin: 0.65rem 0; padding-left: 0.75rem; border-left: 3px solid var(--color-warning, #946200); color: var(--color-text-primary); font-size: 0.875rem; line-height: 1.65; }
+.allergenWarning { border-inline-start: 3px solid var(--color-warning, #946200); }
+.assertions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.75rem 0; padding: 0; list-style: none; }
+.assertions li { display: grid; gap: 0.1rem; border: 1px solid var(--color-border); border-radius: 0.5rem; padding: 0.4rem 0.6rem; font-size: 0.875rem; overflow-wrap: anywhere; }
+.assertions small { color: var(--color-text-secondary); font-size: 0.6875rem; }
+.assertionLink { display: grid; gap: 0.1rem; color: inherit; }
+.assertionLink > span { text-decoration: underline; text-underline-offset: 0.15em; }
+.assertionLink:focus-visible, .nutrientSource:focus-visible, .nutritionContext a:focus-visible { outline: 2px solid var(--color-brand); outline-offset: 3px; border-radius: 0.15rem; }
+.suitability { display: grid; gap: 0.65rem; margin: 1rem 0 0; border-top: 1px solid var(--color-border); padding-top: 1rem; font-size: 0.8125rem; }
+.suitability > div { display: grid; grid-template-columns: 1fr 1.5fr; gap: 1rem; }
+.suitability dd { margin: 0; color: var(--color-text-secondary); }
+.classifications { display: grid; gap: 1rem; margin: 0; }
+.classifications dt { font-size: 0.9375rem; font-weight: 600; }
+.classifications dd { margin: 0.35rem 0 0; font-size: 0.8125rem; color: var(--color-text-secondary); }
+.sources { border: 1px solid var(--color-border); border-radius: 1rem; background: var(--color-surface); }
+.sources summary { min-height: 3.5rem; padding: 1rem 1.25rem; cursor: pointer; }
+.sourceContent { padding: 0 1.25rem 1.25rem; }
+.sourceContent ol { display: grid; gap: 1rem; margin: 1rem 0 0; padding-left: 1.25rem; }
+.sourceContent li { padding-left: 0.25rem; }
+.sourceContent h3 { margin: 0 0 0.5rem; font-size: 0.9375rem; font-weight: 600; overflow-wrap: anywhere; }
+.sourceContent a, .comparisonTable a, .comparisonEvidence h2 a { color: var(--color-brand); text-decoration: underline; text-underline-offset: 0.2em; }
+.sourceContent dl { display: grid; gap: 0.6rem; margin: 0; font-size: 0.8125rem; line-height: 1.5; }
+.sourceContent dl > div { display: grid; grid-template-columns: minmax(6rem, 0.7fr) minmax(0, 1fr); gap: 0.75rem; }
+.sourceContent dd { margin: 0; color: var(--color-text-secondary); overflow-wrap: anywhere; }
+.comparisonScroll { max-width: 100%; overflow-x: auto; border: 1px solid var(--color-border); border-radius: 1rem; background: var(--color-surface); }
+.comparisonHint { display: none; margin: 0; color: var(--color-text-secondary); font-size: 0.8125rem; line-height: 1.5; }
+.comparisonTable { width: 100%; border-collapse: collapse; text-align: left; }
+.comparisonTable th, .comparisonTable td { min-width: 12.5rem; padding: 1rem; border-bottom: 1px solid var(--color-border); vertical-align: top; }
+.comparisonTable th:first-child { min-width: 9rem; position: sticky; inset-inline-start: 0; z-index: 1; background: var(--color-surface); box-shadow: 1px 0 0 var(--color-border); }
+.comparisonTable thead th:first-child { z-index: 2; background: var(--color-surface-muted); }
+.comparisonTable th { font-size: 0.875rem; font-weight: 600; }
+.comparisonTable thead th { background: var(--color-surface-muted); }
+.comparisonTable thead span { display: block; margin-top: 0.5rem; color: var(--color-text-secondary); font-size: 0.8125rem; font-weight: 400; }
+.comparisonTable tr:last-child td, .comparisonTable tr:last-child th { border-bottom: 0; }
+.relation { margin: 0.65rem 0 0; color: var(--color-text-secondary); font-size: 0.75rem; line-height: 1.5; }
+.comparisonEvidence { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.comparisonEvidence .sources { margin-top: 1rem; }
+@media print {
+  .comparisonHint { display: none; }
+  .comparisonTable th:first-child { position: static; box-shadow: none; }
+  .sources::details-content { content-visibility: visible !important; display: block !important; }
+  .sources > .sourceContent { display: block !important; }
+  .comparisonScroll { overflow: visible; }
+  .comparisonTable th, .comparisonTable td, .comparisonTable th:first-child { min-width: 0; padding: 0.5rem; }
+  .sources, .panel { break-inside: avoid; }
+}
+@media (max-width: 47.99rem) {
+  .comparisonHint { display: block; }
+  .productHeader > .headerAllergens { grid-column: 1 / -1; }
+  .productHeader { grid-template-columns: 5.5rem minmax(0, 1fr); gap: 1rem; }
+  .productHeader > .photo { grid-row: 1; padding: 0.5rem; }
+  .productHeader > .actions, .productHeader > .evidenceSummary { grid-column: 1 / -1; }
+  .photoImage { height: 5rem; }
+  .photoPlaceholder { min-height: 5rem; gap: 0.4rem; }
+  .photoPlaceholder > span { font-size: 1.8rem; }
+  .photoPlaceholder p { font-size: 0.6875rem; line-height: 1.4; }
+  .photo figcaption { font-size: 0.6875rem; }
+  .detailColumns, .comparisonEvidence { grid-template-columns: 1fr; }
+  .panel, .state { padding: 1.25rem; }
+  .nutrientRow { grid-template-columns: minmax(6.5rem, 0.8fr) minmax(0, 1fr); }
+}

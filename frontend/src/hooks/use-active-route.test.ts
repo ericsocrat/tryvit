@@ -8,6 +8,15 @@ const mockPathname = vi.fn<() => string>().mockReturnValue("/app");
 vi.mock("next/navigation", () => ({ usePathname: () => mockPathname() }));
 
 describe("useActiveRoute", () => {
+  it.each(["/app/searching", "/app/liststuff", "/learning"])("does not activate a route from a partial prefix: %s", (pathname) => {
+    mockPathname.mockReturnValue(pathname);
+    expect(renderHook(() => useActiveRoute()).result.current).toBeNull();
+  });
+
+  it.each(["/learn", "/learn/confidence"])("matches the actual Learn route: %s", (pathname) => {
+    mockPathname.mockReturnValue(pathname);
+    expect(renderHook(() => useActiveRoute()).result.current).toBe("learn");
+  });
   it("returns 'home' for /app", () => {
     mockPathname.mockReturnValue("/app");
     const { result } = renderHook(() => useActiveRoute());

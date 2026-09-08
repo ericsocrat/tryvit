@@ -1,153 +1,62 @@
 "use client";
 
-/**
- * WatchlistPage — /app/watchlist
- * Lists all products the user is watching, with trend sparklines,
- * score deltas, and reformulation badges.
- */
-
+import { Button } from "@/components/common/Button";
 import { EmptyStateIllustration } from "@/components/common/EmptyStateIllustration";
-import { Icon } from "@/components/common/Icon";
-import { NovaBadge } from "@/components/common/NovaBadge";
-import { NutriScoreBadge } from "@/components/common/NutriScoreBadge";
 import { WatchlistSkeleton } from "@/components/common/skeletons";
 import { AppPage, AppPageHeader } from "@/components/layout/AppPage";
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
 import { ProductRegisterCard } from "@/components/product/ProductRegisterCard";
-import { ReformulationBadge } from "@/components/product/ReformulationBadge";
-import { ScoreChangeIndicator } from "@/components/product/ScoreChangeIndicator";
-import { ScoreTrendChart } from "@/components/product/ScoreTrendChart";
-import { getWatchlist } from "@/lib/api";
+import { unwatchProduct } from "@/lib/api";
+import { collectionQueryKeys, getWatchedProducts } from "@/lib/evidence/collections";
 import { useTranslation } from "@/lib/i18n";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
+import { queryKeys } from "@/lib/query-keys";
 import { createClient } from "@/lib/supabase/client";
-import type { WatchlistItem } from "@/lib/types";
-import { useQuery } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-
 import styles from "./watchlist.module.css";
 
-function WatchlistCard({ item }: Readonly<{ item: WatchlistItem }>) {
-  return (
-    <ProductRegisterCard
-      productId={item.product_id}
-      href={`/app/product/${item.product_id}`}
-      name={item.product_name}
-      brand={item.brand}
-      category={item.category}
-      score={item.current_score}
-      scoreBand={item.score_band}
-      variant="list"
-      muted
-      badges={
-        <>
-          <NutriScoreBadge grade={item.nutri_score} size="sm" />
-          {item.nova_group ? <NovaBadge group={Number(item.nova_group)} size="sm" /> : null}
-        </>
-      }
-      meta={
-        <div className={styles.trend}>
-          <ScoreChangeIndicator delta={item.last_delta} />
-          <ReformulationBadge detected={item.reformulation_detected} />
-          <span className={styles.chart}>
-            <ScoreTrendChart history={item.sparkline} trend={item.trend} width={100} height={32} />
-          </span>
-        </div>
-      }
-    />
-  );
-}
-
 export default function WatchlistPage() {
-  const { t } = useTranslation();
-  const supabase = createClient();
+  const { t, language } = useTranslation();
   const [page, setPage] = useState(1);
-
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: queryKeys.watchlist(page),
+  const client = useQueryClient();
+  const query = useQuery({
+    queryKey: collectionQueryKeys.watched(page, language),
     queryFn: async () => {
-      const result = await getWatchlist(supabase, page, 20);
+      const result = await getWatchedProducts(createClient(), page, language);
       if (!result.ok) throw new Error(result.error.message);
       return result.data;
     },
-    staleTime: staleTimes.watchlist,
   });
+  const removal = useMutation({
+    mutationFn: async (productId: number) => {
+      const result = await unwatchProduct(createClient(), productId);
+      if (!result.ok) throw new Error(result.error.message);
+      if (result.data.success !== true || result.data.watching !== false) throw new Error("Watch removal was not confirmed");
+      return result.data;
+    },
+    onSuccess: (_data, productId) => {
+      void client.invalidateQueries({ queryKey: queryKeys.watchlist() });
+      void client.invalidateQueries({ queryKey: queryKeys.isWatching(productId) });
+    },
+  });
+  const formatter = new Intl.DateTimeFormat(language, { dateStyle: "medium", timeZone: "UTC" });
 
-  const items = data?.items ?? [];
-  const totalPages = data?.total_pages ?? 1;
-
-  return (
-    <AppPage className={styles.page}>
-      <Breadcrumbs
-        items={[{ labelKey: "nav.home", href: "/app" }, { labelKey: "watchlist.title" }]}
-      />
-
-      <AppPageHeader
-        eyebrow={t("nav.watchlist")}
-        title={t("watchlist.title")}
-        description={t("watchlist.subtitle")}
-      />
-
-      {isLoading ? (
-        <div data-testid="watchlist-loading">
-          <WatchlistSkeleton />
-        </div>
-      ) : null}
-
-      {error ? (
-        <div className={styles.error} role="alert" data-testid="watchlist-error">
-          {t("watchlist.loadError")}
-          <button type="button" className={styles.retry} onClick={() => void refetch()}>
-            {t("common.retry")}
-          </button>
-        </div>
-      ) : null}
-
-      {!isLoading && !error && items.length === 0 ? (
-        <EmptyStateIllustration
-          type="no-favorites"
-          titleKey="watchlist.emptyTitle"
-          descriptionKey="watchlist.emptyDescription"
-          action={{ labelKey: "watchlist.browseProducts", href: "/app/search" }}
-        />
-      ) : null}
-
-      {items.length > 0 ? (
-        <ul className={styles.items}>
-          {items.map((item) => (
-            <WatchlistCard key={item.watch_id} item={item} />
-          ))}
-        </ul>
-      ) : null}
-
-      {/* Pagination */}
-      {totalPages > 1 ? (
-        <div className={styles.pagination}>
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page <= 1}
-            className={styles.pageButton}
-            aria-label={t("watchlist.prevPage")}
-          >
-            <Icon icon={ChevronLeft} size="sm" />
-          </button>
-          <span className={styles.pageIndicator}>
-            {t("watchlist.pageIndicator", {
-              page: String(page),
-              total: String(totalPages),
-            })}
-          </span>
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={page >= totalPages}
-            className={styles.pageButton}
-            aria-label={t("watchlist.nextPage")}
-          >
-            <Icon icon={ChevronRight} size="sm" />
-          </button>
-        </div>
-      ) : null}
-    </AppPage>
-  );
+  return <AppPage className={styles.page}>
+    <AppPageHeader eyebrow={t("nav.saved")} title={t("evidenceUi.monitoringTitle")} description={t("evidenceUi.monitoringDescription")} />
+    {query.isPending ? <div data-testid="watchlist-loading"><WatchlistSkeleton /></div> : null}
+    {query.isError ? <section role="alert" className={styles.error} data-testid="watchlist-error"><p>{t("watchlist.loadError")}</p><Button variant="secondary" onClick={() => void query.refetch()}>{t("common.retry")}</Button></section> : null}
+    {removal.isError ? <p role="alert" className={styles.error}>{t("evidenceUi.watchRemovalFailed")}</p> : null}
+    {query.data && !query.isError ? <>
+      {query.data.items.length === 0 ? <EmptyStateIllustration type="no-favorites" titleKey={query.data.total > 0 ? "findUi.emptyPage" : "watchlist.emptyTitle"} descriptionKey="evidenceUi.monitoringDescription" action={query.data.total > 0 ? { labelKey: "findUi.firstPage", onClick: () => setPage(1) } : { labelKey: "nav.find", href: "/app/search" }} /> : <ul className={styles.items}>
+        {query.data.items.map((item) => {
+          const product = item.product;
+          const date = new Date(item.watched_since);
+          const watched = Number.isNaN(date.getTime()) ? t("evidenceUi.dateUnavailable") : formatter.format(date);
+          const name = product?.product_name ?? t("evidenceUi.productReference", { id: item.product_id });
+          return <ProductRegisterCard key={item.watch_id} productId={item.product_id} href={`/app/product/${item.product_id}`} name={name} brand={product?.brand} category={product?.category} readModel={product ?? undefined} detail={t("evidenceUi.watchedSince", { date: watched })} highlight={product ? (product.is_deprecated ? t("evidenceUi.archivedProduct") : undefined) : t("evidenceUi.collectionUnavailable")}
+            actions={<Button variant="ghost" disabled={removal.isPending} onClick={() => removal.mutate(item.product_id)} aria-label={`${t("watchlist.unwatchButton")} ${name}`}>{t("watchlist.unwatchButton")}</Button>} />;
+        })}
+      </ul>}
+      {query.data.total_pages > 1 ? <nav className={styles.pagination} aria-label={t("evidenceUi.savedPagination")}><Button variant="secondary" disabled={page <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>{t("common.prev")}</Button><span>{t("findUi.page", { page, pages: query.data.total_pages })}</span><Button variant="secondary" disabled={page >= query.data.total_pages} onClick={() => setPage((value) => value + 1)}>{t("common.next")}</Button></nav> : null}
+    </> : null}
+  </AppPage>;
 }

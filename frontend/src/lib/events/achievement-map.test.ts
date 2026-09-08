@@ -15,8 +15,6 @@ const V1_CLIENT_SLUGS = [
   "scan_50",
   "first_search",
   "explore_5_categories",
-  "first_low_score",
-  "low_score_10",
   "compare_products",
   "compare_10",
   "allergen_filter",
@@ -67,25 +65,10 @@ describe("ACHIEVEMENT_MAP", () => {
     }
   });
 
-  it("product.viewed condition filters by low score (≤ 30)", () => {
-    const lowScoreMappings = ACHIEVEMENT_MAP.filter(
-      (m) => m.event === "product.viewed" && m.condition,
-    );
-
-    expect(lowScoreMappings.length).toBe(2);
-
-    for (const m of lowScoreMappings) {
-      // Score 25 → should pass
-      expect(m.condition!({ score: 25 })).toBe(true);
-      // Score 30 → boundary → should pass
-      expect(m.condition!({ score: 30 })).toBe(true);
-      // Score 31 → should fail
-      expect(m.condition!({ score: 31 })).toBe(false);
-      // Score 80 → should fail
-      expect(m.condition!({ score: 80 })).toBe(false);
-      // Missing score → should fail gracefully
-      expect(m.condition!({ score: undefined })).toBe(false);
-    }
+  it("never awards health claims for product views", () => {
+    expect(ACHIEVEMENT_MAP.filter((m) => m.event === "product.viewed")).toEqual([]);
+    expect(MAPPED_SLUGS).not.toContain("first_low_score");
+    expect(MAPPED_SLUGS).not.toContain("low_score_10");
   });
 
   it("product.scanned maps to three scan achievements", () => {

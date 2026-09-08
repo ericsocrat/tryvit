@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "method": "retained-production-schema-and-catalog-restore-plus-migrations",
+  "migrationManifestSha256": "19b9a9d6ad18bded6794dd01404a6152f71c9c438979a7d6c17e24c2a27fa90a",
+  "checkedAt": "2026-09-08T06:26:24.742Z",
+  "remoteReads": false,
+  "remoteWrites": false,
+  "privateProductionRowsExported": false,
+  "originalRecoveryReceiptModified": false,
+  "databaseAuthorityCheckedAt": "2026-09-08T06:17:19.622Z",
+  "result": "FAIL",
+  "scope": "schema-and-catalog",
+  "checks": {
+    "schema": true,
+    "functions": true,
+    "grants": true,
+    "rls": true,
+    "roleAttributes": true,
+    "roleMemberships": true,
+    "extensionBootstrap": true,
+    "rowCounts": true,
+    "identityReferences": true,
+    "representativeValues": true,
+    "syntheticRoles": true
+  },
+  "receipt": null,
+  "integration": {
+    "result": "FAIL",
+    "managedRole": {
+      "name": "postgres",
+      "super": false,
+      "bypassRls": true
+    },
+    "databasePrivileges": {
+      "acl": true,
+      "owner": true
+    },
+    "databaseAuthorityCheckedAt": "2026-09-08T06:17:19.622Z",
+    "migrations": [
+      {
+        "path": "supabase/migrations/20260905121451_score_interpretation_retirement.sql",
+        "result": "PASS"
+      },
+      {
+        "path": "supabase/migrations/20260905125804_evidence_first_home.sql",
+        "result": "PASS"
+      },
+      {
+        "path": "supabase/migrations/20260905130739_evidence_first_scan.sql",
+        "result": "PASS"
+      },
+      {
+        "path": "supabase/migrations/20260905133720_evidence_first_legacy_api_retirement.sql",
+        "result": "PASS"
+      },
+      {
+        "path": "supabase/migrations/20260908030935_evidence_first_classification_image_lineage.sql",
+        "result": "PASS"
+      }
+    ],
+    "wholeDatabaseLint": {
+      "errors": [],
+      "method": "Supabase CLI v2.111.0 equivalent whole-user-schema lint",
+      "schemas": [
+        "evidence_private",
+        "extensions",
+        "public"
+      ],
+      "warningCount": 14,
+      "checkedFunctions": 161
+    },
+    "pgTapVersion": "1.2.0",
+    "tests": [
+      {
+        "path": "supabase/tests/score_interpretation_retirement.test.sql",
+        "sha256": "eecafaa2bb97304033e75eaaa1bfc14dc20a8d974747d27bfea99e110e544fb4",
+        "executedSha256": "eecafaa2bb97304033e75eaaa1bfc14dc20a8d974747d27bfea99e110e544fb4",
+        "fixtureAdaptations": [],
+        "result": "FAIL",
+        "expected": 39,
+        "passed": 34,
+        "failedIndices": [
+          14,
+          15,
+          18,
+          19,
+          20
+        ],
+        "exactPlan": true,
+        "noSkippedAssertions": true,
+        "exactNumbering": false
+      },
+      {
+        "path": "supabase/tests/evidence_first_home.test.sql",
+        "sha256": "49670401ef0ca06c7f02dc6d8f6df4b852e8a81b7fbc3a291ca52b04c45e645e",
+        "executedSha256": "49670401ef0ca06c7f02dc6d8f6df4b852e8a81b7fbc3a291ca52b04c45e645e",
+        "fixtureAdaptations": [],
+        "result": "FAIL",
+        "expected": 43,
+        "code": "local_test_evidence_first_home.test_42501"
+      },
+      {
+        "path": "supabase/tests/evidence_first_scan.test.sql",
+        "sha256": "0ac1cdba46e645d38eea730996ad950c0e6bd5820bb52c6bfa7b2583ad5c5dc4",
+        "executedSha256": "0ac1cdba46e645d38eea730996ad950c0e6bd5820bb52c6bfa7b2583ad5c5dc4",
+        "fixtureAdaptations": [],
+        "result": "PASS",
+        "expected": 29,
+        "passed": 29,
+        "failedIndices": [],
+        "exactPlan": true,
+        "noSkippedAssertions": true,
+        "exactNumbering": true
+      },
+      {
+        "path": "supabase/tests/evidence_first_legacy_api_retirement.test.sql",
+        "sha256": "3e16248c149465ffa15cb36c18897b320d3fb79a326ced9320214ef3a4c45528",
+        "executedSha256": "3e16248c149465ffa15cb36c18897b320d3fb79a326ced9320214ef3a4c45528",
+        "fixtureAdaptations": [],
+        "result": "FAIL",
+        "expected": 127,
+        "code": "local_test_evidence_first_legacy_api_retirement.test_55000"
+      },
+      {
+        "path": "supabase/tests/evidence_classification_image_lineage.test.sql",
+        "sha256": "17e4bd47c8027fd60ce48b2a0e539eb13ce1f935b4582ccd7caa7522e0ae9c64",
+        "executedSha256": "17e4bd47c8027fd60ce48b2a0e539eb13ce1f935b4582ccd7caa7522e0ae9c64",
+        "fixtureAdaptations": [],
+        "result": "PASS",
+        "expected": 14,
+        "passed": 14,
+        "failedIndices": [],
+        "exactPlan": true,
+        "noSkippedAssertions": true,
+        "exactNumbering": true
+      }
+    ],
+    "expectedAssertions": 252,
+    "passedAssertions": 77
+  }
+}

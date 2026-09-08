@@ -10,7 +10,7 @@ import { MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { lazy, Suspense, useCallback, useState } from "react";
 import styles from "./AppShell.module.css";
-import { MOBILE_PRIMARY_ITEMS, MORE_ROUTE_KEYS } from "./app-navigation";
+import { MOBILE_PRIMARY_ITEMS, MORE_ROUTE_KEYS, isNavigationItemActive } from "./app-navigation";
 
 const MoreDrawer = lazy(() =>
   import("@/components/layout/MoreDrawer").then((module) => ({
@@ -43,7 +43,7 @@ export function Navigation() {
       >
         <div className={styles.bottomNavInner}>
           {MOBILE_PRIMARY_ITEMS.map((item) => {
-            const isActive = activeRoute === item.routeKey;
+            const isActive = isNavigationItemActive(item, activeRoute);
             const badge = item.routeKey === "lists" ? listCount : 0;
             return (
               <Link
@@ -57,7 +57,7 @@ export function Navigation() {
                 data-prominent={item.prominent ? "true" : undefined}
               >
                 <span className="relative">
-                  <Icon icon={item.icon} size="md" />
+                  <Icon icon={item.icon} size="md" strokeWidth={1.75} />
                   {badge > 0 ? (
                     <span
                       className={styles.badge}

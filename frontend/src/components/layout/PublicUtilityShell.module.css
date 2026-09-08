@@ -1,18 +1,9 @@
 .shell {
   --public-rule: color-mix(in srgb, var(--color-border-strong) 72%, transparent);
-  --public-fold: #a64b2a;
   display: flex;
   min-block-size: 100vh;
   flex-direction: column;
-  background:
-    linear-gradient(color-mix(in srgb, var(--public-rule) 20%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--public-rule) 20%, transparent) 1px, transparent 1px),
-    var(--color-background);
-  background-size: 3rem 3rem;
-}
-
-:global(html[data-theme="dark"]) .shell {
-  --public-fold: #f2a271;
+  background: var(--color-background);
 }
 
 .main {
@@ -27,7 +18,7 @@
   position: relative;
   overflow: hidden;
   border: 1px solid var(--public-rule);
-  border-radius: 1.15rem 0.25rem 1.15rem 1.15rem;
+  border-radius: 1.15rem;
   background: color-mix(in srgb, var(--color-surface) 97%, transparent);
 }
 
@@ -35,21 +26,10 @@
   padding: clamp(1.4rem, 4vw, 3rem);
 }
 
-.hero::before,
-.panel::before {
-  position: absolute;
-  inset: 0 0 auto auto;
-  inline-size: 1.5rem;
-  aspect-ratio: 1;
-  background: linear-gradient(225deg, var(--public-fold) 0 48%, var(--public-rule) 49% 52%, transparent 53%);
-  content: "";
-  pointer-events: none;
-}
-
 .eyebrow {
   margin: 0;
-  color: var(--public-fold);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  color: var(--color-brand);
+  font-family: var(--ds-type-family-sans);
   font-size: 0.68rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -87,7 +67,7 @@
   min-inline-size: 8rem;
   padding: 0.55rem 0.8rem;
   color: var(--color-foreground-secondary);
-  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-family: var(--ds-type-family-sans);
   font-size: 0.68rem;
   font-weight: 700;
 }
@@ -116,7 +96,7 @@
 
 .content > section {
   border: 1px solid var(--public-rule);
-  border-radius: 1rem 0.25rem 1rem 1rem;
+  border-radius: 1rem;
   background: color-mix(in srgb, var(--color-surface) 97%, transparent);
 }
 
@@ -157,10 +137,5 @@
   .panel,
   .content > section {
     border-color: CanvasText;
-  }
-
-  .hero::before,
-  .panel::before {
-    background: Highlight;
   }
 }

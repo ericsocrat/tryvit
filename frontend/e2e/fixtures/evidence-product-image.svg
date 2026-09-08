@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220" viewBox="0 0 220 220">
+  <rect width="220" height="220" fill="#f2f5f7"/>
+  <rect x="65" y="28" width="90" height="142" rx="6" fill="#ffffff" stroke="#536779" stroke-width="2"/>
+  <path d="M65 55h90M65 142h90" stroke="#536779"/>
+  <text x="110" y="94" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#173e34">LOCAL</text>
+  <text x="110" y="113" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#173e34">TEST IMAGE</text>
+  <text x="110" y="195" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#536779">Not a product photograph</text>
+</svg>

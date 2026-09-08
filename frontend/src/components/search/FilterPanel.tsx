@@ -1,469 +1,76 @@
 "use client";
 
-// ─── FilterPanel — sidebar (desktop) / bottom sheet (mobile) ────────────────
-
 import { Button } from "@/components/common/Button";
-import { CategoryIcon } from "@/components/common/CategoryIcon";
-import { getFilterOptions } from "@/lib/api";
-import { ALLERGEN_TAGS, NUTRI_COLORS } from "@/lib/constants";
+import { ALLERGEN_TAGS } from "@/lib/constants";
+import { findFilterOptions, findQueryKeys, type FindFilters } from "@/lib/evidence/search";
 import { useTranslation } from "@/lib/i18n";
-import { nutriScoreLabel } from "@/lib/nutri-label";
-import { queryKeys, staleTimes } from "@/lib/query-keys";
-import { toTryVitScore } from "@/lib/score-utils";
 import { createClient } from "@/lib/supabase/client";
-import type { SearchFilters } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { X } from "lucide-react";
+import { useEffect, useRef } from "react";
+import styles from "./FilterPanel.module.css";
 
 interface FilterPanelProps {
-  filters: SearchFilters;
-  onChange: (filters: SearchFilters) => void;
-  show: boolean;
-  onClose: () => void;
+  filters: FindFilters; onChange: (filters: FindFilters) => void;
+  show: boolean; onClose: () => void; country: string; userId: string;
 }
-
-export function FilterPanel({
-  filters,
-  onChange,
-  show,
-  onClose,
-}: Readonly<FilterPanelProps>) {
-  const { t } = useTranslation();
-  const supabase = createClient();
-
-  const { data, isLoading } = useQuery({
-    queryKey: queryKeys.filterOptions,
+export function FilterPanel(props: Readonly<FilterPanelProps>) {
+  return props.show ? <FilterDialog {...props} /> : null;
+}
+function FilterDialog({ filters, onChange, onClose, country, userId }: Readonly<FilterPanelProps>) {
+  const { t, language } = useTranslation();
+  const dialog = useRef<HTMLDialogElement>(null);
+  const closeButton = useRef<HTMLButtonElement>(null);
+  const options = useQuery({
+    queryKey: findQueryKeys.filters(country, language, userId),
     queryFn: async () => {
-      const result = await getFilterOptions(supabase);
+      const result = await findFilterOptions(createClient(), country, language);
       if (!result.ok) throw new Error(result.error.message);
       return result.data;
     },
-    staleTime: staleTimes.filterOptions,
+    staleTime: 10 * 60_000,
   });
+  useEffect(() => {
+    const element = dialog.current;
+    const previous = document.activeElement as HTMLElement | null;
+    if (element && !element.open) {
+      if (typeof element.showModal === "function") element.showModal();
+      else element.setAttribute("open", "");
+    }
+    closeButton.current?.focus();
+    return () => {
+      if (element?.open && typeof element.close === "function") element.close();
+      previous?.focus();
+    };
+  }, []);
+  function toggle(key: "category" | "nova_group" | "allergen_free", value: string) {
+    const current = filters[key] ?? [];
+    const next = current.some((item) => item === value) ? current.filter((item) => item !== value) : [...current, value];
+    onChange({ ...filters, [key]: next.length ? next : undefined });
+  }
 
-  const toggleArrayFilter = useCallback(
-    (
-      key: "category" | "nutri_score" | "nova_group" | "allergen_free",
-      value: string,
-    ) => {
-      const current = filters[key] ?? [];
-      const next = current.includes(value)
-        ? current.filter((v) => v !== value)
-        : [...current, value];
-      onChange({ ...filters, [key]: next.length > 0 ? next : undefined });
-    },
-    [filters, onChange],
-  );
-
-  const setMaxScore = useCallback(
-    (value: number | undefined) => {
-      onChange({ ...filters, max_unhealthiness: value });
-    },
-    [filters, onChange],
-  );
-
-  const setSortBy = useCallback(
-    (value: SearchFilters["sort_by"]) => {
-      onChange({
-        ...filters,
-        sort_by: value,
-        sort_order: value === "relevance" ? undefined : filters.sort_order,
-      });
-    },
-    [filters, onChange],
-  );
-
-  const setSortOrder = useCallback(
-    (value: SearchFilters["sort_order"]) => {
-      onChange({ ...filters, sort_order: value });
-    },
-    [filters, onChange],
-  );
-
-  const clearAll = useCallback(() => {
-    onChange({});
-  }, [onChange]);
-
-  const hasFilters =
-    (filters.category?.length ?? 0) > 0 ||
-    (filters.nutri_score?.length ?? 0) > 0 ||
-    (filters.nova_group?.length ?? 0) > 0 ||
-    (filters.allergen_free?.length ?? 0) > 0 ||
-    filters.max_unhealthiness !== undefined ||
-    (filters.sort_by !== undefined && filters.sort_by !== "relevance");
-
-  // Filter content (shared between desktop sidebar and mobile bottom sheet)
-  const filterContent = (
-    <div className="space-y-5">
-      {isLoading ? (
-        <div className="animate-pulse space-y-5" data-testid="filter-skeleton">
-          {[1, 2, 3].map((section) => (
-            <div key={section}>
-              <div className="mb-2 h-3 w-20 rounded bg-surface-muted" />
-              <div className="grid grid-cols-2 gap-1.5">
-                {[1, 2, 3, 4].map((item) => (
-                  <div
-                    key={item}
-                    className="h-9 rounded-lg bg-surface-muted"
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <>
-          {/* Sort */}
-          <div>
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground-secondary">
-              {t("filters.sortBy")}
-            </h3>
-            <div className="grid grid-cols-2 gap-1.5">
-              {[
-                { value: "relevance" as const, label: t("filters.relevance") },
-                { value: "name" as const, label: t("filters.name") },
-                {
-                  value: "unhealthiness" as const,
-                  label: t("filters.healthScore"),
-                },
-                {
-                  value: "nutri_score" as const,
-                  label: t("filters.nutriScore"),
-                },
-                { value: "calories" as const, label: t("filters.calories") },
-              ].map((opt, idx, arr) => {
-                const isActive = (filters.sort_by ?? "relevance") === opt.value;
-                const isLastOdd = arr.length % 2 === 1 && idx === arr.length - 1;
-                return (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => setSortBy(opt.value)}
-                    className={`rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-                      isLastOdd ? "col-span-2" : ""
-                    } ${
-                      isActive
-                        ? "bg-brand-subtle text-brand ring-2 ring-brand/30"
-                        : "bg-surface-muted text-foreground-secondary hover:bg-surface-subtle"
-                    }`}
-                  >
-                    {opt.label}
-                    {isActive &&
-                      opt.value !== "relevance" &&
-                      (filters.sort_order === "desc" ? " ↓" : " ↑")}
-                  </button>
-                );
-              })}
-            </div>
-            {filters.sort_by && filters.sort_by !== "relevance" && (
-              <div className="mt-2 flex gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => setSortOrder("asc")}
-                  className={`rounded-md px-3 py-2 text-xs ${
-                    (filters.sort_order ?? "asc") === "asc"
-                      ? "bg-brand-subtle text-brand"
-                      : "bg-surface-muted text-foreground-muted"
-                  }`}
-                >
-                  {t("filters.asc")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setSortOrder("desc")}
-                  className={`rounded-md px-3 py-2 text-xs ${
-                    filters.sort_order === "desc"
-                      ? "bg-brand-subtle text-brand"
-                      : "bg-surface-muted text-foreground-muted"
-                  }`}
-                >
-                  {t("filters.desc")}
-                </button>
-              </div>
-            )}
-          </div>
-
-          <hr className="border-t border-border/40" />
-
-          {/* Categories */}
-          {data && (data.categories?.length ?? 0) > 0 && (
-            <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground-secondary">
-                {t("filters.category")}
-              </h3>
-              <div className="space-y-1 max-h-48 overflow-y-auto">
-                {data.categories.map((cat) => {
-                  const selected = (filters.category ?? []).includes(
-                    cat.category,
-                  );
-                  return (
-                    <label
-                      key={cat.category}
-                      className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2.5 transition-colors hover:bg-surface-subtle"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selected}
-                        onChange={() =>
-                          toggleArrayFilter("category", cat.category)
-                        }
-                        className="h-5 w-5 rounded border-strong text-brand focus-visible:ring-brand"
-                      />
-                      <span className="flex items-center gap-1.5 text-sm">
-                        <CategoryIcon slug={cat.category} size="sm" />
-                        {cat.display_name}
-                      </span>
-                      <span className="ml-auto text-xs text-foreground-muted">
-                        {cat.count}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <hr className="border-t border-border/40" />
-
-          {/* Nutri-Score */}
-          {data && (data.nutri_scores?.length ?? 0) > 0 && (
-            <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground-secondary">
-                {t("filters.nutriScore")}
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {data.nutri_scores.map((ns) => {
-                  const selected = (filters.nutri_score ?? []).includes(
-                    ns.label,
-                  );
-                  const nutriClass =
-                    NUTRI_COLORS[ns.label] ?? "bg-surface-muted";
-                  return (
-                    <button
-                      key={ns.label}
-                      type="button"
-                      onClick={() => toggleArrayFilter("nutri_score", ns.label)}
-                      className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold transition-all ${
-                        selected
-                          ? `${nutriClass} ring-2 ring-offset-1 ring-brand`
-                          : `${nutriClass} hover:ring-2 hover:ring-offset-1 hover:ring-brand/50`
-                      }`}
-                    >
-                      {nutriScoreLabel(ns.label, t("filters.unknown"), t("filters.notApplicable"))}
-                      <span className="text-xs font-normal">
-                        ({ns.count})
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <hr className="border-t border-border/40" />
-
-          {/* NOVA Group */}
-          {data && (data.nova_groups?.length ?? 0) > 0 && (
-            <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground-secondary">
-                {t("filters.novaGroup")}
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {data.nova_groups.map((ng) => {
-                  const selected = (filters.nova_group ?? []).includes(
-                    ng.group,
-                  );
-                  const novaLabel = t(`filters.nova${ng.group}`);
-                  return (
-                    <button
-                      key={ng.group}
-                      type="button"
-                      onClick={() => toggleArrayFilter("nova_group", ng.group)}
-                      className={`flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold transition-all ${
-                        selected
-                          ? "bg-brand-subtle ring-2 ring-offset-1 ring-brand text-brand"
-                          : "bg-surface-muted text-foreground-secondary hover:ring-2 hover:ring-offset-1 hover:ring-brand/50"
-                      }`}
-                    >
-                      {novaLabel}
-                      <span className="text-xs font-normal">
-                        ({ng.count})
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <hr className="border-t border-border/40" />
-
-          {/* Allergen evidence exclusion (legacy wire key: allergen_free) */}
-          {data && (data.allergens?.length ?? 0) > 0 && (
-            <div>
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground-secondary">
-                {t("filters.excludeAllergenEvidence")}
-              </h3>
-              <p className="mb-2 text-xs leading-relaxed text-foreground-muted">
-                {t("filters.excludeAllergenEvidenceHint")}
-              </p>
-              <div className="space-y-1 max-h-40 overflow-y-auto">
-                {data.allergens.map((al) => {
-                  const labelInfo = ALLERGEN_TAGS.find((a) => a.tag === al.tag);
-                  // Tags are bare canonical IDs; strip legacy en: prefix as fallback
-                  const label = labelInfo ? t(labelInfo.labelKey) : al.tag.replace(/^en:/, "");
-                  const selected = (filters.allergen_free ?? []).includes(
-                    al.tag,
-                  );
-                  return (
-                    <label
-                      key={al.tag}
-                      className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2.5 transition-colors hover:bg-surface-subtle"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={selected}
-                        onChange={() =>
-                          toggleArrayFilter("allergen_free", al.tag)
-                        }
-                        className="h-5 w-5 rounded border-strong text-brand focus-visible:ring-brand"
-                      />
-                      <span className="text-sm">
-                        {t("chips.excludeAllergenEvidence", { label })}
-                      </span>
-                      <span className="ml-auto text-xs text-foreground-muted">
-                        {al.count}
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          <hr className="border-t border-border/40" />
-
-          {/* Min TryVit Score Slider */}
-          <div>
-            <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-foreground-secondary">
-              {t("filters.minHealthScore")}
-            </h3>
-            <div className="px-1">
-              <input
-                type="range"
-                min={0}
-                max={100}
-                step={5}
-                value={
-                  filters.max_unhealthiness !== undefined
-                    ? 100 - filters.max_unhealthiness
-                    : 0
-                }
-                onChange={(e) => {
-                  const val = Number.parseInt(e.target.value);
-                  setMaxScore(val <= 0 ? undefined : 100 - val);
-                }}
-                aria-label={t("filters.minHealthScore")}
-                className="w-full accent-brand"
-              />
-              <div className="flex justify-between text-xs text-foreground-muted">
-                <span>0</span>
-                <span className="font-medium text-foreground-secondary">
-                  {filters.max_unhealthiness === undefined
-                    ? t("filters.any")
-                    : `≥ ${toTryVitScore(filters.max_unhealthiness)}`}
-                </span>
-                <span>100</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Clear filters */}
-          {hasFilters && (
-            <button
-              type="button"
-              onClick={clearAll}
-              className="w-full rounded-lg border border-border py-2 text-sm text-foreground-secondary transition-colors hover:bg-surface-subtle"
-            >
-              {t("filters.clearAll")}
-            </button>
-          )}
-        </>
-      )}
+  return <dialog ref={dialog} aria-labelledby="find-filter-title" className={styles.dialog}
+    onCancel={(event) => { event.preventDefault(); onClose(); }}
+    onKeyDown={(event) => {
+      if (event.key === "Escape") { event.preventDefault(); onClose(); }
+      if (event.key !== "Tab") return;
+      const elements = [...(dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), a[href]') ?? [])];
+      const first = elements[0]; const last = elements.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+    }}
+    onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <header className={styles.header}><h2 id="find-filter-title">{t("findUi.filtersTitle")}</h2><button type="button" ref={closeButton} onClick={onClose} aria-label={t("common.close")}><X size={20} aria-hidden="true" /></button></header>
+    <div className={styles.body}>
+      <label className={styles.label}>{t("findUi.market")}<select value={filters.country ?? country} onChange={(event) => onChange({ ...filters, country: event.target.value as "PL" | "DE", category: undefined })}><option value="PL">{t("findUi.poland")}</option><option value="DE">{t("findUi.germany")}</option></select></label>
+      <fieldset><legend>{t("findUi.categories")}</legend>
+        {options.isPending ? <p role="status">{t("common.loading")}</p> : options.isError ? <div role="alert"><p>{t("findUi.filtersUnavailable")}</p><Button variant="secondary" onClick={() => void options.refetch()}>{t("common.retry")}</Button></div> : (
+          <div className={styles.options}>{options.data?.categories.map((category) => <label key={category.value}><input type="checkbox" checked={filters.category?.includes(category.value) ?? false} onChange={() => toggle("category", category.value)} />{category.label}</label>)}</div>
+        )}
+      </fieldset>
+      <fieldset><legend>{t("findUi.nova")}</legend><p className={styles.hint}>{t("findUi.novaExplanation")}</p><div className={styles.options}>{(["1", "2", "3", "4"] as const).map((value) => <label key={value}><input type="checkbox" checked={filters.nova_group?.includes(value) ?? false} onChange={() => toggle("nova_group", value)} />NOVA {value}</label>)}</div></fieldset>
+      <fieldset><legend>{t("findUi.excludeContains")}</legend><p className={styles.hint}>{t("findUi.allergenExplanation")}</p><div className={styles.options}>{ALLERGEN_TAGS.map((allergen) => <label key={allergen.tag}><input type="checkbox" checked={filters.allergen_free?.includes(allergen.tag) ?? false} onChange={() => toggle("allergen_free", allergen.tag)} />{t(allergen.labelKey)}</label>)}</div></fieldset>
     </div>
-  );
-
-  return (
-    <>
-      {/* Desktop sidebar */}
-      <div className="hidden lg:block">
-        <div className="sticky top-20 w-64 rounded-xl border border-border bg-surface p-4 xl:w-72">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-foreground">
-              {t("search.filters")}
-            </h2>
-            {hasFilters && (
-              <button
-                type="button"
-                onClick={clearAll}
-                className="text-xs text-brand hover:text-brand-hover"
-              >
-                {t("common.clear")}
-              </button>
-            )}
-          </div>
-          {filterContent}
-        </div>
-      </div>
-
-      {/* Mobile bottom sheet */}
-      {show && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop */}
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/30"
-            onClick={onClose}
-            aria-label={t("filters.closeFilters")}
-          />
-          {/* Sheet */}
-          <div className="animate-slide-up-sheet absolute bottom-0 left-0 right-0 max-h-[85vh] overflow-y-auto rounded-t-2xl bg-surface px-4 pb-8 pt-3 shadow-2xl">
-            {/* Handle */}
-            <div className="mx-auto mb-4 h-1 w-10 rounded-full bg-surface-muted" />
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-base font-semibold text-foreground">
-                {t("search.filters")}
-              </h2>
-              <button
-                type="button"
-                onClick={onClose}
-                className="touch-target rounded-full p-2 text-foreground-muted hover:bg-surface-muted hover:text-foreground-secondary"
-              >
-                <svg
-                  className="h-5 w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </div>
-            {filterContent}
-            <div className="mt-4">
-              <Button
-                onClick={onClose}
-                fullWidth
-              >
-                {t("filters.showResults")}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
+    <footer className={styles.footer}><Button variant="secondary" onClick={() => onChange({})}>{t("filters.clearAll")}</Button><Button onClick={onClose}>{t("filters.showResults")}</Button></footer>
+  </dialog>;
 }

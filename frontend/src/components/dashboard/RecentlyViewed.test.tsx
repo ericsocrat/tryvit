@@ -2,7 +2,8 @@ import en from "@/../messages/en.json";
 import pl from "@/../messages/pl.json";
 import de from "@/../messages/de.json";
 import { translateFromMessages, type InterpolationParams } from "@/lib/i18n-format";
-import type { RecentlyViewedProduct } from "@/lib/types";
+import type { HomeReadModel } from "@/lib/evidence/home";
+import { evidenceProduct, legacyProduct } from "@/components/evidence/product-evidence.fixtures";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RecentlyViewed, relativeTimeAgo } from "./RecentlyViewed";
@@ -22,19 +23,13 @@ vi.mock("next/image", () => ({
 }));
 
 const VIEWED_AT = "2026-09-04T12:00:00.000Z";
-function makeProduct(id: number, overrides: Partial<RecentlyViewedProduct> = {}): RecentlyViewedProduct {
-  return {
-    product_id: id,
-    product_name: `Product ${id}`,
-    brand: `Brand ${id}`,
-    category: "chips",
-    country: "PL",
-    unhealthiness_score: 40,
-    nutri_score_label: "C",
-    viewed_at: VIEWED_AT,
-    image_thumb_url: null,
-    ...overrides,
-  };
+type TestOverrides = { product_name?: string; brand?: string | null; unhealthiness_score?: number | null; image_thumb_url?: string | null; viewed_at?: string };
+function makeProduct(id: number, overrides: TestOverrides = {}): HomeReadModel["recently_viewed"][number] {
+  const product = evidenceProduct(id);
+  product.product_name = overrides.product_name ?? `Product ${id}`;
+  product.brand = overrides.brand === null ? "" : overrides.brand ?? `Brand ${id}`;
+  product.image = overrides.image_thumb_url ? { url: overrides.image_thumb_url, alt: "", source: "Fixture source" } : null;
+  return { product_id: id, viewed_at: overrides.viewed_at ?? VIEWED_AT, product };
 }
 
 beforeEach(() => { mockLocale.language = "en"; });
@@ -75,53 +70,42 @@ describe("RecentlyViewed", () => {
     expect(products).toHaveLength(8);
   });
 
-  it("presents the existing score conversion with explicit units and direction", () => {
-    render(<RecentlyViewed products={[makeProduct(42)]} />);
-    expect(screen.getByRole("link", { name: /Product 42.*TryVit score: 60 out of 100; higher is better/ })).toHaveAttribute("href", "/app/product/42");
-    expect(screen.getByText("TryVit score · higher is better")).toBeInTheDocument();
-    expect(screen.getByText("/100")).toBeInTheDocument();
-  });
+  it.each([null, Number.NaN, -1, 0, 1, 40, 100, 101, Number.POSITIVE_INFINITY])(
+    "does not surface legacy score %s in a product identity row", (score) => {
+      render(<RecentlyViewed products={[makeProduct(42, { unhealthiness_score: score })]} />);
+      expect(screen.getByRole("link", { name: /Product 42.*Brand 42/ })).toHaveAttribute("href", "/app/product/42");
+      expect(screen.queryByText(/TryVit score|Score unavailable|higher is better/i)).not.toBeInTheDocument();
+      expect(screen.queryByText("/100")).not.toBeInTheDocument();
+      expect(screen.queryByRole("meter")).not.toBeInTheDocument();
+    },
+  );
 
-  it.each([null, Number.NaN, -1, 0, 101, Number.POSITIVE_INFINITY])("labels an unusable raw score %s as unavailable", (score) => {
-    render(<RecentlyViewed products={[makeProduct(1, { unhealthiness_score: score })]} />);
-    expect(screen.getByText("Score unavailable")).toBeInTheDocument();
-    expect(screen.queryByText("/100")).not.toBeInTheDocument();
-  });
-
-  it.each([[100, 0], [1, 99]])("preserves boundary conversion %i to %i", (rawScore, score) => {
-    render(<RecentlyViewed products={[makeProduct(1, { unhealthiness_score: rawScore })]} />);
-    expect(screen.getByText(`TryVit score: ${score} out of 100; higher is better.`)).toBeInTheDocument();
-  });
-
-  it("keeps product identification when brand and score are missing", () => {
+  it("keeps product identification when brand is missing", () => {
     render(<RecentlyViewed products={[makeProduct(1, { brand: null, unhealthiness_score: null })]} />);
-    expect(screen.getByRole("link", { name: /Product 1.*Score unavailable/ })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Product 1/ })).toBeInTheDocument();
     expect(screen.queryByText("Brand 1")).not.toBeInTheDocument();
   });
 
-  it("uses a decorative category icon when no product photo is available", () => {
-    render(<RecentlyViewed products={[makeProduct(1)]} />);
-    const row = screen.getByTestId("recently-viewed-item");
-    expect(row.querySelector("img")).not.toBeInTheDocument();
-    expect(row.querySelector('svg[viewBox="0 0 24 24"]')).toBeInTheDocument();
-  });
+  it.each([["Łaciate", "Ł"], ["  Skyr", "S"], ["🥛 Milk", "M"], ["123 cereal", "1"]])(
+    "uses a decorative identity monogram for %s when no photo exists", (name, initial) => {
+      render(<RecentlyViewed products={[makeProduct(1, { product_name: name })]} />);
+      const row = screen.getByTestId("recently-viewed-item");
+      expect(row.querySelector("img")).not.toBeInTheDocument();
+      expect(within(row).getByText(initial)).toHaveAttribute("class");
+      expect(within(row).getByText(initial).closest('[aria-hidden="true"]')).not.toBeNull();
+    },
+  );
 
-  it.each([" Dairy ", "Seafood & Fish", "Chips-PL"])("normalizes database category %s to its dedicated icon", (category) => {
-    render(<RecentlyViewed products={[makeProduct(1, { category })]} />);
-    // Dedicated category illustrations use grouped paths; the generic utensils fallback does not.
-    expect(screen.getByTestId("recently-viewed-item").querySelector("svg g")).toBeInTheDocument();
-  });
-
-  it("shows a supplied product photo and falls back to a category icon after an image error", () => {
+  it("shows a supplied photo and keeps identity after an image error", () => {
     render(<RecentlyViewed products={[makeProduct(1, { image_thumb_url: "https://images.openfoodfacts.org/images/products/test.jpg" })]} />);
     const row = screen.getByTestId("recently-viewed-item");
     const image = row.querySelector("img");
     expect(image).toHaveAttribute("alt", "");
     expect(image).toHaveAttribute("src", "https://images.openfoodfacts.org/images/products/test.jpg");
-    expect(image).not.toBeNull();
     if (image) fireEvent.error(image);
     expect(row.querySelector("img")).not.toBeInTheDocument();
-    expect(row.querySelector('svg[viewBox="0 0 24 24"]')).toBeInTheDocument();
+    expect(within(row).getByText("P")).toBeInTheDocument();
+    expect(row).toHaveAttribute("href", "/app/product/1");
   });
 
   it.each(["en", "pl", "de"] as const)("renders an accessible date in %s", (language) => {
@@ -140,9 +124,23 @@ describe("RecentlyViewed", () => {
     expect(screen.getByTestId("recently-viewed-item").querySelector("time")).not.toBeInTheDocument();
   });
 
+  it("retains a missing current product reference without inventing its identity", () => {
+    render(<RecentlyViewed products={[{ product_id: 47, product: null, viewed_at: VIEWED_AT }]} />);
+    expect(screen.getByRole("link", { name: /Product 47 — record unavailable/ })).toHaveAttribute("href", "/app/product/47");
+    expect(screen.getByText("Saved reference retained; current product evidence unavailable.")).toBeInTheDocument();
+  });
+
+  it("shows unverified and archived state rather than a current score", () => {
+    const product = legacyProduct(47); product.is_deprecated = true;
+    render(<RecentlyViewed products={[{ product_id: 47, product, viewed_at: VIEWED_AT }]} />);
+    expect(screen.getByText("Legacy information — sources not established")).toBeInTheDocument();
+    expect(screen.getByText("Archived catalogue product")).toBeInTheDocument();
+    expect(screen.queryByRole("meter")).not.toBeInTheDocument();
+  });
+
   it("directs users to inspect available evidence without claiming verified or personalized results", () => {
     render(<RecentlyViewed products={[makeProduct(1)]} />);
-    expect(screen.getByText("Open a product to check ingredients, allergens and available sources.")).toBeInTheDocument();
+    expect(screen.getByText(translateFromMessages(en, undefined, "dashboard.home.productEvidenceNote"))).toBeInTheDocument();
     expect(screen.queryByText(/verified|recommended for you|allergen-free/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /View history/i })).not.toBeInTheDocument();
   });

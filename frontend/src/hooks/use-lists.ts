@@ -29,10 +29,18 @@ import { useAvoidStore } from "@/stores/avoid-store";
 import { useFavoritesStore } from "@/stores/favorites-store";
 import { useAnalytics } from "@/hooks/use-analytics";
 import { useEffect } from "react";
+import { capturePrivateAccountEpoch, isCurrentPrivateAccountEpoch } from "@/lib/private-client-state";
 
 async function requireMutationSuccess<T>(request: Promise<RpcResult<T>>): Promise<T> {
   const result = await request;
   if (!result.ok) throw new Error(result.error.message);
+  const payload = result.data;
+  if (payload && typeof payload === "object" && (
+    ("ok" in payload && payload.ok === false) ||
+    ("success" in payload && payload.success === false)
+  )) {
+    throw new Error("The list change was not confirmed. Please try again.");
+  }
   return result.data;
 }
 
@@ -183,6 +191,7 @@ export function useCreateList() {
   const { track } = useAnalytics();
 
   return useMutation({
+    onMutate: capturePrivateAccountEpoch,
     mutationFn: (params: {
       name: string;
       description?: string;
@@ -191,7 +200,8 @@ export function useCreateList() {
       requireMutationSuccess(
         createList(supabase, params.name, params.description, params.listType),
       ),
-    onSuccess: (_data, variables) => {
+    onSuccess: (_data, variables, epoch) => {
+      if (!isCurrentPrivateAccountEpoch(epoch)) return;
       track("list_created", { name: variables.name, list_type: variables.listType });
       void eventBus.emit({ type: "list.created", payload: {} });
       queryClient.invalidateQueries({ queryKey: queryKeys.lists });
@@ -205,6 +215,7 @@ export function useUpdateList() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    onMutate: capturePrivateAccountEpoch,
     mutationFn: (params: {
       listId: string;
       name?: string;
@@ -213,7 +224,8 @@ export function useUpdateList() {
       requireMutationSuccess(
         updateList(supabase, params.listId, params.name, params.description),
       ),
-    onSuccess: () => {
+    onSuccess: (_data, _variables, epoch) => {
+      if (!isCurrentPrivateAccountEpoch(epoch)) return;
       queryClient.invalidateQueries({ queryKey: queryKeys.lists });
     },
   });
@@ -225,9 +237,11 @@ export function useDeleteList() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    onMutate: capturePrivateAccountEpoch,
     mutationFn: (listId: string) =>
       requireMutationSuccess(deleteList(supabase, listId)),
-    onSuccess: () => {
+    onSuccess: (_data, _variables, epoch) => {
+      if (!isCurrentPrivateAccountEpoch(epoch)) return;
       queryClient.invalidateQueries({ queryKey: queryKeys.lists });
     },
   });
@@ -242,6 +256,7 @@ export function useAddToList() {
   const { track } = useAnalytics();
 
   return useMutation({
+    onMutate: capturePrivateAccountEpoch,
     mutationFn: (params: {
       listId: string;
       productId: number;
@@ -251,7 +266,8 @@ export function useAddToList() {
       requireMutationSuccess(
         addToList(supabase, params.listId, params.productId, params.notes),
       ),
-    onSuccess: (result, variables) => {
+    onSuccess: (result, variables, epoch) => {
+      if (!isCurrentPrivateAccountEpoch(epoch)) return;
       queryClient.invalidateQueries({
         queryKey: queryKeys.listItems(variables.listId),
       });
@@ -293,6 +309,7 @@ export function useRemoveFromList() {
   const removeFavorite = useFavoritesStore((s) => s.removeFavorite);
 
   return useMutation({
+    onMutate: capturePrivateAccountEpoch,
     mutationFn: (params: {
       listId: string;
       productId: number;
@@ -301,7 +318,8 @@ export function useRemoveFromList() {
       requireMutationSuccess(
         removeFromList(supabase, params.listId, params.productId),
       ),
-    onSuccess: (_, variables) => {
+    onSuccess: (_, variables, epoch) => {
+      if (!isCurrentPrivateAccountEpoch(epoch)) return;
       queryClient.invalidateQueries({
         queryKey: queryKeys.listItems(variables.listId),
       });
@@ -334,9 +352,11 @@ export function useReorderList() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    onMutate: capturePrivateAccountEpoch,
     mutationFn: (params: { listId: string; productIds: number[] }) =>
       requireMutationSuccess(reorderList(supabase, params.listId, params.productIds)),
-    onSuccess: (_, variables) => {
+    onSuccess: (_, variables, epoch) => {
+      if (!isCurrentPrivateAccountEpoch(epoch)) return;
       queryClient.invalidateQueries({
         queryKey: queryKeys.listItems(variables.listId),
       });
@@ -350,9 +370,11 @@ export function useToggleShare() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    onMutate: capturePrivateAccountEpoch,
     mutationFn: (params: { listId: string; enabled: boolean }) =>
       requireMutationSuccess(toggleShare(supabase, params.listId, params.enabled)),
-    onSuccess: () => {
+    onSuccess: (_data, _variables, epoch) => {
+      if (!isCurrentPrivateAccountEpoch(epoch)) return;
       queryClient.invalidateQueries({ queryKey: queryKeys.lists });
     },
   });
@@ -364,9 +386,11 @@ export function useRevokeShare() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    onMutate: capturePrivateAccountEpoch,
     mutationFn: (listId: string) =>
       requireMutationSuccess(revokeShare(supabase, listId)),
-    onSuccess: () => {
+    onSuccess: (_data, _variables, epoch) => {
+      if (!isCurrentPrivateAccountEpoch(epoch)) return;
       queryClient.invalidateQueries({ queryKey: queryKeys.lists });
     },
   });

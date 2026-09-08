@@ -7,6 +7,15 @@ import test from 'node:test';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const workflow = (name) => readFileSync(path.join(root, '.github/workflows', name), 'utf8');
 
+test('consumer source merges cannot automatically promote the frontend before database readiness', () => {
+  // The verified Vercel Root Directory is frontend; a repository-root config
+  // would not establish this guard. Other branches keep normal preview behavior.
+  const config = JSON.parse(readFileSync(path.join(root, 'frontend/vercel.json'), 'utf8'));
+  assert.equal(config.git?.deploymentEnabled?.main, false);
+  assert.equal(typeof config.git.deploymentEnabled, 'object');
+  assert.ok(!Object.hasOwn(config, 'rootDirectory'), 'rootDirectory is a project setting, not supported JSON configuration');
+});
+
 test('database password selection chooses the secret name before resolving an empty value', () => {
   const source = workflow('database-deploy-reusable.yml');
   const expression = source.match(/^\s*SUPABASE_DB_PASSWORD:\s*(.+)$/mu)?.[1];

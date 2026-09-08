@@ -10,6 +10,7 @@ const mockGetName = vi.fn();
 const mockRemove = vi.fn();
 const mockClear = vi.fn();
 const mockPush = vi.fn();
+const mockPathname = vi.fn();
 
 vi.mock("@/stores/compare-store", () => ({
   useCompareStore: (selector: (state: Record<string, unknown>) => unknown) =>
@@ -24,6 +25,7 @@ vi.mock("@/stores/compare-store", () => ({
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
+  usePathname: () => mockPathname(),
 }));
 
 // ─── Tests ──────────────────────────────────────────────────────────────────
@@ -31,6 +33,7 @@ vi.mock("next/navigation", () => ({
 describe("ComparisonTray", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPathname.mockReturnValue("/app/search");
     mockGetIds.mockReturnValue([1, 2]);
     mockGetName.mockImplementation((id: number) => `Product #${id}`);
   });
@@ -39,6 +42,14 @@ describe("ComparisonTray", () => {
     mockCount.mockReturnValue(0);
     const { container } = render(<ComparisonTray />);
     expect(container.innerHTML).toBe("");
+  });
+
+  it("does not duplicate canonical comparison controls or clear saved selection", () => {
+    mockCount.mockReturnValue(2);
+    mockPathname.mockReturnValue("/app/compare");
+    const { container } = render(<ComparisonTray />);
+    expect(container).toBeEmptyDOMElement();
+    expect(mockClear).not.toHaveBeenCalled();
   });
 
   it("renders tray when products are selected", () => {

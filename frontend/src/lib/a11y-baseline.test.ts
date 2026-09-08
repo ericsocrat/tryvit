@@ -54,56 +54,17 @@ describe("Focus management — AddToListMenu", () => {
 
 /* ────────────────── ARIA combobox on SearchAutocomplete ────────────────── */
 
-describe("SearchAutocomplete ARIA combobox", () => {
-  const autocompletePath = join(
-    SRC,
-    "components/search/SearchAutocomplete.tsx",
-  );
-  const searchPagePath = join(SRC, "app/app/search/page.tsx");
-
-  it("dropdown has role=listbox", () => {
-    const src = readFileSync(autocompletePath, "utf-8");
-    expect(src).toContain('role="listbox"');
+describe("Find form accessibility", () => {
+  const src = readFileSync(join(SRC, "app/app/search/page.tsx"), "utf-8");
+  it("uses a native labelled search form without a phantom combobox", () => {
+    expect(src).toContain('role="search"');
+    expect(src).toContain('type="search"');
+    expect(src).not.toContain('role="combobox"');
+    expect(src).not.toContain("search-autocomplete-listbox");
   });
-
-  it("dropdown has stable id", () => {
-    const src = readFileSync(autocompletePath, "utf-8");
-    expect(src).toContain('id="search-autocomplete-listbox"');
-  });
-
-  it("items have role=option", () => {
-    const src = readFileSync(autocompletePath, "utf-8");
-    expect(src).toContain('role="option"');
-  });
-
-  it("items have aria-selected", () => {
-    const src = readFileSync(autocompletePath, "utf-8");
-    expect(src).toContain("aria-selected");
-  });
-
-  it("reports active ID for aria-activedescendant", () => {
-    const src = readFileSync(autocompletePath, "utf-8");
-    expect(src).toContain("onActiveIdChange");
-  });
-
-  it("search input has role=combobox", () => {
-    const src = readFileSync(searchPagePath, "utf-8");
-    expect(src).toContain('role="combobox"');
-  });
-
-  it("search input has aria-controls pointing to listbox", () => {
-    const src = readFileSync(searchPagePath, "utf-8");
-    expect(src).toContain('aria-controls="search-autocomplete-listbox"');
-  });
-
-  it("search input has aria-autocomplete", () => {
-    const src = readFileSync(searchPagePath, "utf-8");
-    expect(src).toContain('aria-autocomplete="list"');
-  });
-
-  it("search input has aria-activedescendant", () => {
-    const src = readFileSync(searchPagePath, "utf-8");
-    expect(src).toContain("aria-activedescendant");
+  it("provides result and error announcements", () => {
+    expect(src).toContain('role="status"');
+    expect(src).toContain('role="alert"');
   });
 });
 
