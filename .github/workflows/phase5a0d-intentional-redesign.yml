@@ -12,7 +12,7 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: phase5a0d-intentional-redesign-${{ github.event.pull_request.number }}
+  group: phase5a0d-intentional-redesign-${{ github.event.pull_request.number }}-${{ ((github.event.action != 'labeled' && github.event.action != 'unlabeled') || github.event.label.name == 'phase5a0d-intentional-redesign-approved' || github.event.label.name == 'phase5a0d-renderer-attestation-approved') && 'applicable' || github.run_id }}
   cancel-in-progress: true
 
 jobs:
@@ -20,6 +20,12 @@ jobs:
     name: Validate intentional baseline acceptance
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_REF: ${{ github.event.pull_request.head.ref }}
     steps:
       - name: Checkout the exact trusted PR base
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -27,6 +33,9 @@ jobs:
           ref: ${{ github.event.pull_request.base.sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Capture current PR head and labels from GitHub
+        run: node .github/scripts/current-pr-state.mjs capture
 
       - name: Fetch the untrusted head as data only
         shell: bash
@@ -73,7 +82,6 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
-          LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
         run: |
           set -euo pipefail
           gh api --paginate "repos/$REPOSITORY/issues/$PR_NUMBER/comments?per_page=100" \
@@ -243,6 +251,9 @@ jobs:
           fi
           node .github/scripts/phase5a0d-intentional-redesign.mjs validate "${validation_args[@]}"
           test "$(git rev-parse HEAD)" = "$BASE_SHA"
+
+      - name: Recheck current PR authorization before success
+        run: node .github/scripts/current-pr-state.mjs verify
 
       - name: Record the bounded disposition
         if: always()

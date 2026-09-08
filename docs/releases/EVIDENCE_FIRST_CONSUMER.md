@@ -6,7 +6,7 @@ review, staging application or production promotion.
 ## Source and migration contract
 
 The implementation integrates current main
-`1f66ab761a4d419f65745625dd0caad9c0ce77c5` on
+`cc27aeca69968063e8704c5781c2c48653b1f32e` on
 `codex/evidence-first-consumer`. The seven consumer migrations are bound by
 [`evidence-first-consumer.migrations.json`](evidence-first-consumer.migrations.json),
 SHA-256 `f2f164f0e669f310fcf480eae89b4f6d09ead69fa8d0ee2e3acfe27b2bdcf048`.
@@ -117,6 +117,32 @@ removed after each attempt. Neither rehearsal applied production migrations.
   binding detection. Required remote CI and exact final candidate review remain.
 
 ## Release conditions and rollback
+
+### Accepted baseline and current-state CI
+
+Baseline-only PR #1362 merged normally as
+`cc27aeca69968063e8704c5781c2c48653b1f32e`, tree
+`5f0d4dae031dd79540d1e8bfb25c060c5e9c8de3`, after the base-owned observation
+correction #1363 (`f949387cddde390d488cc07f0f7e8713224ceb88`). Its seven images
+come from exact consumer source `1868b3319cbaaae83c08c895eb15b1de8ac31d71`,
+successful two-pass Linux run `34230564190`. The independent AI review and
+separate delegated authorization are GitHub comments `5586155129` and
+`5586161777`; neither asserts personal human visual review. Earlier candidate,
+review and failed acceptance records remain preserved.
+
+All required checks and the fresh base-owned acceptance/renderer checks passed
+before that normal merge. The advisory risk rollup still rejected superseded
+label-missing suites; that failure was disclosed, not bypassed or rewritten.
+The consumer integration corrects selection using verified workflow identity,
+newest execution and per-job attempts, preserving partial reruns and rejecting
+newer failures, unexpected skips, invalid IDs and spoofed contexts. Approval
+workflows capture/recheck live head/base/authorization labels rather than stale
+event labels. The context remains advisory until the base-owned hosted rollout
+has been verified; local tests and historical API replay are not that rollout.
+
+The consumer branch normally merged this exact main without modifying the
+accepted PNGs. Production import tools remain separate uncommitted work and are
+not included in this consumer release.
 
 ### PR 1361 integration corrections
 

@@ -45,17 +45,38 @@ test('required Unit Tests is an always-run fail-closed aggregate of two shards',
 });
 test('risk gate always runs and prerequisite failure is explicit', () => {
   const source = workflow('change-risk.yml');
-  assert.match(source, /name: Publish exact-head risk verdict\s+needs: policy\s+if: \$\{\{ always\(\) \}\}/u);
+  assert.match(source, /name: Publish exact-head risk verdict\s+needs: policy\s+if: \$\{\{ always\(\) && needs.policy.result != 'skipped' \}\}/u);
   assert.match(source, /checks: write/u);
   assert.ok(!source.includes('name: Change Risk Gate\n'));
   assert.ok(!source.includes('paths:'));
   assert.match(source, /test "\$POLICY_RESULT" = success/u);
   assert.match(source, /pull_request_target:/u);
+  assert.match(source, /types: \[opened, synchronize, reopened, labeled, unlabeled\]/u);
+  assert.match(source, /actions: read/u);
   assert.equal((source.match(/ref: \$\{\{ github.event.pull_request.base.sha \}\}/gu) ?? []).length, 2);
   assert.ok(!source.includes('ref: ${{ github.event.pull_request.head.sha }}'));
   assert.ok(!source.includes('npm ci'));
   assert.ok(!source.includes('node --test'));
   assert.ok(workflow('pr-gate.yml').includes('name: CI Policy Tests'));
+});
+
+test('approval workflows use current API labels and recheck current authorization before success', () => {
+  for (const file of ['phase5a0d-intentional-redesign.yml', 'phase5a0d-renderer-attestation.yml']) {
+    const source = workflow(file);
+    assert.ok(!source.includes('toJSON(github.event.pull_request.labels'));
+    assert.ok(source.includes('node .github/scripts/current-pr-state.mjs capture'));
+    assert.ok(source.includes('node .github/scripts/current-pr-state.mjs verify'));
+    assert.ok(source.includes('ref: ${{ github.event.pull_request.base.sha }}'));
+    assert.ok(!source.includes('ref: ${{ github.event.pull_request.head.sha }}'));
+  }
+});
+test('unrelated label events revalidate approval jobs without cancelling relevant runs; risk publication ignores them', () => {
+  for (const file of ['change-risk.yml', 'phase5a0d-intentional-redesign.yml', 'phase5a0d-renderer-attestation.yml']) {
+    const source = workflow(file);
+    const labelFilter = "if: ${{ (github.event.action != 'labeled' && github.event.action != 'unlabeled') || github.event.label.name == 'phase5a0d-intentional-redesign-approved' || github.event.label.name == 'phase5a0d-renderer-attestation-approved' }}";
+    assert.equal(source.includes(labelFilter), file === 'change-risk.yml');
+    assert.ok(source.includes("&& 'applicable' || github.run_id }}"));
+  }
 });
 test('only one reusable database mutation boundary exists', () => {
   const active = workflow('database-deploy-reusable.yml');

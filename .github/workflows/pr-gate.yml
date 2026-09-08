@@ -45,7 +45,7 @@ jobs:
         with:
           node-version: "22.21.1"
       - name: Test candidate policy without production secrets
-        run: node --test scripts/ci/*.test.mjs scripts/qa/ci-statistics-runtime.test.mjs scripts/qa/quality-launch-consolidation.test.mjs scripts/recovery/staging-read-capture.test.mjs
+        run: node --test scripts/ci/*.test.mjs .github/scripts/*.test.mjs scripts/qa/ci-statistics-runtime.test.mjs scripts/qa/quality-launch-consolidation.test.mjs scripts/recovery/staging-read-capture.test.mjs
 
       - name: Verify QA result accounting
         shell: pwsh
