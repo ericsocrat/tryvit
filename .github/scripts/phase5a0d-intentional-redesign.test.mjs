@@ -18,6 +18,8 @@ import test from "node:test";
 
 import {
   APPROVAL_MARKER,
+  DELEGATED_APPROVAL_MARKER,
+  AI_REVIEW_MARKER,
   EQUIVALENCE_APPROVAL_MARKER,
   AUTHORIZATION_LABEL,
   MANIFEST_PATH,
@@ -152,6 +154,74 @@ function select(overrides = {}) {
     ...overrides,
   });
 }
+
+function delegatedComments() {
+  const value = approval();
+  value.authorizedPaths.sort();
+  const manifest = JSON.parse(readFileSync(new URL(`../../${MANIFEST_PATH}`, import.meta.url), "utf8"));
+  const review = {
+    schemaVersion: 1, reviewerKind: "AI", model: "test-model", taskId: "independent-review-task",
+    independentOfImplementation: true, baselineBaseSha: VISUAL_SOURCE,
+    baselinePrHead: HEAD, approvedImplementation: value.approvedImplementation,
+    candidate: value.candidate, authorizedPaths: value.authorizedPaths,
+    caseReviews: manifest.cases.map((entry) => ({ path: `frontend/e2e/__screenshots__/${entry.relativeFile}`, beforeSha256: entry.sha256, afterSha256: entry.sha256, verdict: "accept", notes: "Synthetic policy test; not real visual review." })),
+  };
+  const reviewComment = { ...approvalComment(), id: 101, body: `<!-- ${AI_REVIEW_MARKER}\n${JSON.stringify(review)}\n-->` };
+  value.schemaVersion = 3;
+  value.approvalType = "phase5a0d-delegated-ai-review";
+  value.delegation = { reviewCommentId: 101, reviewBodySha256: sha256(reviewComment.body), reviewAccount: OWNER, reviewerTaskId: review.taskId, implementerTaskIds: ["implementation-task"] };
+  const authorization = { ...approvalComment(), body: `<!-- ${DELEGATED_APPROVAL_MARKER}\n${JSON.stringify(value)}\n-->` };
+  return [authorization, reviewComment];
+}
+
+test("v3 records delegated AI review separately and preserves human lanes", () => {
+  const result = select({ comments: delegatedComments() });
+  assert.equal(result.approval._mode, "delegated-ai-review");
+  assert.equal(result.external.aiReview.reviewerKind, "AI");
+  assert.equal(result.external.aiReview.caseReviews.length, 7);
+  assert.equal(select().approval._mode, "exact-head");
+});
+
+test("v3 rejects missing, ambiguous, edited, stale and self review records", () => {
+  const original = delegatedComments();
+  assert.throws(() => select({ comments: [original[0]] }), /review-missing-or-ambiguous/u);
+  assert.throws(() => select({ comments: [...original, original[1]] }), /review-missing-or-ambiguous/u);
+  assert.throws(() => select({ comments: [...original, original[0]] }), /authorization-ambiguous/u);
+  for (const index of [0, 1]) {
+    const comments = structuredClone(original);
+    comments[index].updated_at = LABEL_CREATED;
+    assert.throws(() => select({ comments }), /edited/u);
+  }
+  const edited = structuredClone(original);
+  edited[1].body += " ";
+  assert.throws(() => select({ comments: edited }), /hash-mismatch/u);
+  const self = structuredClone(original);
+  self[0].body = self[0].body.replace('"implementerTaskIds":["implementation-task"]', '"implementerTaskIds":["independent-review-task"]');
+  assert.throws(() => select({ comments: self }), /self-review/u);
+  assert.throws(() => select({ comments: original, headSha: VISUAL_SOURCE }), /owner-comment-missing/u);
+  assert.throws(() => select({ comments: original, labels: [] }), /label-missing/u);
+});
+
+test("v3 rejects mismatched review evidence even when its new body hash is authorized", () => {
+  for (const mutate of [
+    (review) => { review.baselinePrHead = VISUAL_SOURCE; },
+    (review) => { review.candidate.artifactId += 1; },
+    (review) => { review.approvedImplementation.tree = VISUAL_TREE; },
+    (review) => { review.independentOfImplementation = false; },
+    (review) => { review.taskId = "someone-else"; },
+    (review) => { review.caseReviews.pop(); },
+    (review) => { review.caseReviews[0].verdict = "reject"; },
+  ]) {
+    const comments = delegatedComments();
+    const review = JSON.parse(comments[1].body.split("\n")[1]);
+    mutate(review);
+    comments[1].body = `<!-- ${AI_REVIEW_MARKER}\n${JSON.stringify(review)}\n-->`;
+    const authorization = JSON.parse(comments[0].body.split("\n")[1]);
+    authorization.delegation.reviewBodySha256 = sha256(comments[1].body);
+    comments[0].body = `<!-- ${DELEGATED_APPROVAL_MARKER}\n${JSON.stringify(authorization)}\n-->`;
+    assert.throws(() => select({ comments }), /ai-review/u);
+  }
+});
 
 test("accepts a fresh owner authorization bound to the exact head", () => {
   const result = select();
@@ -790,6 +860,41 @@ function sourceEquivalenceFixture() {
   });
   return fixture;
 }
+
+test("v3 shares full artifact validation and rejects stale base or reviewed pixel mismatch", () => {
+  const fixture = integrationFixture();
+  try {
+    const external = JSON.parse(readFileSync(fixture.options.approvalFile, "utf8"));
+    const base = JSON.parse(git(fixture.root, ["show", `${fixture.options.baseSha}:${MANIFEST_PATH}`]));
+    const next = JSON.parse(readFileSync(path.join(fixture.options.candidateRoot, "phase5a0d-manifest.json"), "utf8"));
+    const comments = delegatedComments();
+    const review = JSON.parse(comments[1].body.split("\n")[1]);
+    Object.assign(review, { baselineBaseSha: fixture.options.baseSha, baselinePrHead: fixture.options.headSha, approvedImplementation: external.approval.approvedImplementation, candidate: external.approval.candidate, authorizedPaths: [...external.approval.authorizedPaths].sort(), caseReviews: next.cases.map((entry, index) => ({ path: `frontend/e2e/__screenshots__/${entry.relativeFile}`, beforeSha256: base.cases[index].sha256, afterSha256: entry.sha256, verdict: "accept", notes: "Synthetic test fixture." })) });
+    comments[1].body = `<!-- ${AI_REVIEW_MARKER}\n${JSON.stringify(review)}\n-->`;
+    const delegation = JSON.parse(comments[0].body.split("\n")[1]).delegation;
+    delegation.reviewBodySha256 = sha256(comments[1].body);
+    comments[0].body = `<!-- ${DELEGATED_APPROVAL_MARKER}\n${JSON.stringify({ ...external.approval, authorizedPaths: review.authorizedPaths, schemaVersion: 3, approvalType: "phase5a0d-delegated-ai-review", delegation })}\n-->`;
+    const selected = select({ comments, headSha: fixture.options.headSha });
+    writeFileSync(fixture.options.approvalFile, JSON.stringify(selected));
+    assert.equal(validateIntentionalRedesign(fixture.options).approvalMode, "delegated-ai-review");
+    for (const mutate of [
+      (record) => { record.external.aiReview.baselineBaseSha = HEAD; },
+      (record) => { record.external.aiReview.caseReviews[0].afterSha256 = "0".repeat(64); },
+    ]) {
+      const record = structuredClone(selected);
+      mutate(record);
+      writeFileSync(fixture.options.approvalFile, JSON.stringify(record));
+      assert.throws(() => validateIntentionalRedesign(fixture.options), /ai-review-(stale-base|case-pixels-mismatch)/u);
+    }
+    writeFileSync(fixture.options.approvalFile, JSON.stringify(selected));
+    const artifacts = JSON.parse(readFileSync(fixture.options.artifactsFile, "utf8"));
+    artifacts.artifacts[0].digest = "0".repeat(64);
+    writeFileSync(fixture.options.artifactsFile, JSON.stringify(artifacts));
+    assert.throws(() => validateIntentionalRedesign(fixture.options), /candidate-artifact-invalid/u);
+  } finally {
+    rmSync(fixture.root, { recursive: true, force: true });
+  }
+});
 
 test("accepts one exactly authorized intentional-redesign fixture", () => {
   const fixture = integrationFixture();
