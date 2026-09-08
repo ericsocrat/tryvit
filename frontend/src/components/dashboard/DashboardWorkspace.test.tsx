@@ -40,4 +40,13 @@ describe("DashboardWorkspace", () => {
     expect(screen.getByRole("link", { name: translate("en", "dashboard.home.evidenceGuide") })).toHaveAttribute("href", "/learn/confidence");
     expect(document.querySelector('a[href="/learn/tryvit-score"]')).toBeNull();
   });
+
+  it.each(["en", "pl", "de"] as const)("first-use comparison guidance does not promote a retired score in %s", (language) => {
+    locale.value = language;
+    render(<DashboardGuide firstUse />);
+    const guidance = translate(language, "firstUse.compareDescription");
+    expect(screen.getByText(guidance)).toBeVisible();
+    expect(guidance).not.toMatch(/\b(score|wynik)\b/i);
+    expect(guidance).not.toBe("firstUse.compareDescription");
+  });
 });

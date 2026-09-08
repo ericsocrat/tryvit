@@ -92,7 +92,7 @@
     "evidenceTitle": "Datenlücken erkennen",
     "evidenceDescription": "Achte auf Quellen und fehlende Angaben. Ein unbekannter Wert bedeutet nicht null.",
     "compareTitle": "Ähnliches vergleichen",
-    "compareDescription": "Wähle ähnliche Produkte und prüfe ihre Unterschiede. Ein Score ist ein Ausgangspunkt, kein Urteil."
+    "compareDescription": "Vergleiche Werte mit denselben Einheiten und derselben Bezugsmenge. Ein niedrigerer Wert bedeutet nicht automatisch ein gesünderes Produkt."
   },
   "nav": {
     "home": "Startseite",

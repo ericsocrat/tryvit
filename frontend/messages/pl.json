@@ -92,7 +92,7 @@
     "evidenceTitle": "Zauważ brakujące informacje",
     "evidenceDescription": "Sprawdź źródło i luki w danych. Nieznana wartość nie oznacza zera.",
     "compareTitle": "Porównuj podobne produkty",
-    "compareDescription": "Wybierz podobne produkty i sprawdź różnice. Wynik jest punktem wyjścia, a nie werdyktem."
+    "compareDescription": "Porównuj wartości w tych samych jednostkach i dla tej samej ilości produktu. Niższa wartość nie oznacza automatycznie zdrowszego produktu."
   },
   "nav": {
     "home": "Start",
