@@ -418,6 +418,11 @@ export function assertManifestTransition(baseManifest, nextManifest, authorizedP
   assert.match(nextManifest.sourceCommit ?? "", COMMIT_PATTERN, "manifest-source-invalid");
   normalizedBase.sourceCommit = normalizedNext.sourceCommit;
   normalizedBase.manifestChecksum = normalizedNext.manifestChecksum;
+  // Hosted fleet build IDs are observations, not the pinned renderer identity.
+  // Keep both originals and their checksums; only this field may differ here.
+  requiredSafeText(baseManifest.runner?.imageVersion, "manifest-base-image-version-observation");
+  requiredSafeText(nextManifest.runner?.imageVersion, "manifest-next-image-version-observation");
+  normalizedBase.runner.imageVersion = normalizedNext.runner.imageVersion;
   assert.equal(
     Array.isArray(baseManifest.cases) && Array.isArray(nextManifest.cases),
     true,
