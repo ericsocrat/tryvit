@@ -64,5 +64,9 @@ SELECT is(public.validate_product_for_country((SELECT product_id FROM operator_p
 SET LOCAL ROLE service_role;
 SELECT lives_ok('SELECT public.admin_scoring_versions()','service role can execute the repaired report through its actual permission boundary');
 RESET ROLE;
+-- Exercises the old suggestion query before consumer retirement; after retirement
+-- the same public contract must safely return its explicit refresh disposition.
+SELECT lives_ok('SELECT public.api_search_did_you_mean(''synthetic operator fixture'')',
+  'suggestion reader never references the nonexistent products.id column');
 SELECT * FROM finish();
 ROLLBACK;

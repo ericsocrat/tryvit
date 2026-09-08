@@ -77,7 +77,8 @@ source-specific license is replaced by a project-wide notice.
   operator-repair assertions passed**. The corrected legacy suggestion function
   was created and invoked inside a rolled-back transaction and returned an object.
   Together with the previously passed ingestion/read/search/collections suites,
-  the foundation now has 221 assertions; this is not a fresh full-suite CI result.
+  the foundation now has 222 assertions, including a new suggestion-reader
+  regression pending fresh B reconstruction; this is not a fresh full-suite CI result.
 - CI/recovery/Sonar-scope contracts: **31 tests passed**.
 - September 8 release-validator/Sonar-scope rerun: **7 tests passed**.
 - Redacted tracked-source hygiene scan: **0 findings**.
