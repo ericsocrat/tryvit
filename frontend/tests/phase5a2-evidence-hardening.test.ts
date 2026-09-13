@@ -48,10 +48,14 @@ function nextEnvContents(
   const routeTypes = mode === "development"
     ? ".next/dev/types/routes.d.ts"
     : ".next/types/routes.d.ts";
+  const rootParamsTypes = mode === "development"
+    ? ".next/dev/types/root-params.d.ts"
+    : ".next/types/root-params.d.ts";
   return [
     '/// <reference types="next" />',
     '/// <reference types="next/image-types/global" />',
     `import "./${routeTypes}";`,
+    `import "./${rootParamsTypes}";`,
     "",
     "// NOTE: This file should not be edited",
     "// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.",
@@ -309,8 +313,8 @@ describe("Phase 5A.2 generated Next source restoration", () => {
     const filename = path.join(root, "next-env.d.ts");
     const original = Buffer.from(
       nextEnvContents("development", "\r\n").replace(
-        'import "./.next/dev/types/routes.d.ts";\r\n\r\n',
-        'import "./.next/dev/types/routes.d.ts";\n\r\n',
+        'import "./.next/dev/types/routes.d.ts";\r\nimport "./.next/dev/types/root-params.d.ts";',
+        'import "./.next/dev/types/routes.d.ts";\nimport "./.next/dev/types/root-params.d.ts";',
       ),
       "utf8",
     );
@@ -412,7 +416,12 @@ describe("Phase 5A.2 generated Next source restoration", () => {
   it("rejects missing, duplicate, and non-regular generated source contracts", () => {
     for (const contents of [
       "// route import missing\n",
+      nextEnvContents("development").replace(
+        'import "./.next/dev/types/root-params.d.ts";\n',
+        "",
+      ),
       `${nextEnvContents("development")}import "./.next/dev/types/routes.d.ts";\n`,
+      `${nextEnvContents("development")}import "./.next/dev/types/root-params.d.ts";\n`,
     ]) {
       const root = temporaryDirectory();
       writeFileSync(path.join(root, "next-env.d.ts"), contents, "utf8");
