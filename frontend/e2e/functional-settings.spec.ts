@@ -94,17 +94,15 @@ test.describe("Settings: preference changes", () => {
     const plBtn = page.getByRole("button", { name: /Polska/i });
 
     // To reliably toggle, check which is currently active and click the other
-    const deVisible = await deBtn.isVisible().catch(() => false);
+    await expect(deBtn).toBeVisible({ timeout: 10_000 });
+    await deBtn.click();
+    await expect(deBtn).toHaveAttribute("aria-pressed", "true");
+    await expect(saveBtn).toBeVisible({ timeout: 5_000 });
 
-    if (deVisible) {
-      await deBtn.click();
-      // Save button should now appear
-      await expect(saveBtn).toBeVisible({ timeout: 5_000 });
-
-      // Switch back to PL so test user state remains consistent
-      await expect(plBtn).toBeVisible();
-      await plBtn.click();
-    }
+    // Return the unsaved form to its original country. This test never writes.
+    await expect(plBtn).toBeVisible();
+    await plBtn.click();
+    await expect(plBtn).toHaveAttribute("aria-pressed", "true");
   });
 
   test("saving preferences shows success toast", async ({ page }) => {
@@ -123,26 +121,24 @@ test.describe("Settings: preference changes", () => {
     await expect(saveBtn).toBeVisible({ timeout: 5_000 });
     await saveBtn.click();
 
-    // Dirty-state save bar should collapse after successful save.
+    await expect(
+      page.getByText(/Preferences saved!|Preferencje zapisane!|Einstellungen gespeichert!/i),
+    ).toBeVisible({ timeout: 10_000 });
     await expect(saveBtn).not.toBeVisible({ timeout: 10_000 });
 
     // Restore original setting — switch back to PL
     const plBtn = page.getByRole("button", { name: /Polska/i });
-    const plVisible = await plBtn.isVisible({ timeout: 3_000 }).catch(() => false);
-    if (plVisible) {
-      await plBtn.click();
-      await page.getByRole("button", { name: "English", exact: true }).click();
-      const saveBtnAgain = page.getByRole("button", {
-        name: /Save changes|Zapisz zmiany/i,
-      });
-      const saveVisible = await saveBtnAgain
-        .isVisible({ timeout: 3_000 })
-        .catch(() => false);
-      if (saveVisible) {
-        await saveBtnAgain.click();
-        await page.waitForTimeout(2_000);
-      }
-    }
+    await expect(plBtn).toBeVisible({ timeout: 5_000 });
+    await plBtn.click();
+    const englishBtn = page.getByRole("button", { name: "English", exact: true });
+    await expect(englishBtn).toBeVisible();
+    await englishBtn.click();
+    const saveBtnAgain = page.getByRole("button", {
+      name: /Save changes|Zapisz zmiany/i,
+    });
+    await expect(saveBtnAgain).toBeVisible({ timeout: 5_000 });
+    await saveBtnAgain.click();
+    await expect(saveBtnAgain).not.toBeVisible({ timeout: 10_000 });
   });
 
   test("preferences persist after page reload", async ({ page }) => {
@@ -150,18 +146,18 @@ test.describe("Settings: preference changes", () => {
     await page.waitForLoadState("domcontentloaded");
 
     // Verify the page loads with preferences set (country visible)
-    await expect(page.getByRole("button", { name: /Polska/i })).toBeVisible({
-      timeout: 10_000,
-    });
+    const poland = page.getByRole("button", { name: /Polska/i });
+    const english = page.getByRole("button", { name: "English", exact: true });
+    await expect(poland).toHaveAttribute("aria-pressed", "true", { timeout: 10_000 });
+    await expect(english).toHaveAttribute("aria-pressed", "true");
 
     // Reload the page
     await page.reload();
     await page.waitForLoadState("domcontentloaded");
 
     // Country selector should still be visible — preferences persisted
-    await expect(page.getByRole("button", { name: /Polska/i })).toBeVisible({
-      timeout: 10_000,
-    });
+    await expect(poland).toHaveAttribute("aria-pressed", "true", { timeout: 10_000 });
+    await expect(english).toHaveAttribute("aria-pressed", "true");
 
     // No error state
     await expect(page.locator("body")).not.toContainText(/error|failed/i);

@@ -1,10 +1,11 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# Nightly Suite — Comprehensive test coverage + data integrity
-# CI Architecture Redesign — absorbs data-audit.yml into nightly schedule
+# Nightly Suite — comprehensive current-product verification
 # ═══════════════════════════════════════════════════════════════════════════════
 # Runs explicit public and local-emulator-authenticated Playwright suites,
-# full unit test coverage, and a separate data integrity audit. Authenticated
-# browser coverage fails closed when the verified local emulator is unavailable.
+# full unit coverage and explicit current behavior checks. Authenticated browser
+# coverage fails closed when the verified local emulator is unavailable. This
+# workflow has no hosted-data credentials; production data surveillance is
+# isolated in its schedule-only workflow.
 #
 # Target runtime: < 30 minutes for the browser job (jobs run in parallel)
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -20,12 +21,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: nightly
-  cancel-in-progress: true # Only latest nightly matters
+  group: nightly-${{ github.ref }}
+  cancel-in-progress: true # Supersede only this ref, never a scheduled main run from a branch dispatch.
 
 env:
   BASELINE_COMPREHENSIVE: 900
-  BASELINE_DATA_AUDIT: 300
   PHASE5A1_CATALOG: "1"
   PHASE5A2_CROSS_BROWSER: "true"
   PHASE5A1_CATALOG_SOURCE_SHA: ${{ github.sha }}
@@ -60,6 +60,7 @@ jobs:
         with:
           # Preserve report-introduction history for provenance verification.
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -155,6 +156,8 @@ jobs:
       - name: Seed guarded local QA fixtures
         id: local_fixture_seed
         shell: bash
+        env:
+          NIGHTLY_CURRENT_BEHAVIOR: "true"
         run: |
           fixture_ids="$RUNNER_TEMP/tryvit-qa-fixture-ids.env"
           npm run --silent visual-safety:fixtures-seed > "$fixture_ids"
@@ -164,6 +167,12 @@ jobs:
             exit 1
           fi
           grep -E '^QA_[A-Z_]+=[A-Za-z0-9_-]+$' "$fixture_ids" >> "$GITHUB_ENV"
+          if ! grep -Eq '^EVIDENCE_UI_PRODUCT_IDS=[0-9]+,[0-9]+$' "$fixture_ids"; then
+            rm -f -- "$fixture_ids"
+            echo "::error::Guarded evidence fixtures did not return one recorded and one legacy product"
+            exit 1
+          fi
+          grep -E '^EVIDENCE_UI_PRODUCT_IDS=[0-9]+,[0-9]+$' "$fixture_ids" >> "$GITHUB_ENV"
           rm -f -- "$fixture_ids"
           echo "seeded=true" >> "$GITHUB_OUTPUT"
 
@@ -171,15 +180,15 @@ jobs:
         id: local_authenticated_suite
         run: |
           set -o pipefail
-          npm run visual-safety:local-authenticated -- --project=quality-mobile --project=quality-desktop --project=private-pwa-cache --project=phase5a1-catalog --project=phase5a2-primitives-firefox --project=phase5a2-primitives-webkit --retries=0 --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
+          npm run visual-safety:local-authenticated -- --project=quality-mobile --project=quality-desktop --project=nightly-authenticated-current --project=nightly-functional-current --project=private-pwa-cache --project=phase5a1-catalog --project=phase5a2-primitives-firefox --project=phase5a2-primitives-webkit --retries=0 --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
         timeout-minutes: 20
         env:
           VISUAL_SAFETY_MODE: local-authenticated
           BASE_URL: http://127.0.0.1:3000
           NEXT_PUBLIC_QA_MODE: "1"
-          # Nightly retains broad scheduled value through the current route
-          # manifest and invariant engine. The broad authenticated/functional
-          # selectors still include pre-rebuild navigation and score UI contracts.
+          NIGHTLY_CURRENT_BEHAVIOR: "true"
+          # Route-level invariants and explicit behavior allowlists are
+          # complementary. Retired score/navigation specs are not silently run.
           QA_MODE_LEVEL: full
 
       - name: Verify Phase 5A.1 catalog candidate manifest
@@ -238,18 +247,6 @@ jobs:
           retention-days: 30
           if-no-files-found: ignore
 
-      - name: Alert on comprehensive failure
-        if: failure()
-        env:
-          ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
-        run: |
-          if [ -n "$ALERT_WEBHOOK_URL" ]; then
-            curl -sf -X POST "$ALERT_WEBHOOK_URL" \
-              -H 'Content-Type: application/json' \
-              -d '{"text": "Nightly comprehensive tests FAILED \u2014 https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
-          fi
-        working-directory: .
-
       - name: CI runtime summary
         if: ${{ !cancelled() }}
         working-directory: .
@@ -259,102 +256,13 @@ jobs:
           pct=0; [ "$BASELINE_COMPREHENSIVE" -gt 0 ] && pct=$(( (d-BASELINE_COMPREHENSIVE)*100/BASELINE_COMPREHENSIVE ))
           [ "$pct" -gt 30 ] && echo "::warning::Nightly comprehensive regression: ${d}s (+${pct}% vs ${BASELINE_COMPREHENSIVE}s)"
           mkdir -p ci-timings
-          echo '{"job":"comprehensive","duration_seconds":'$d',"baseline_seconds":'$BASELINE_COMPREHENSIVE',"delta_pct":'$pct'}' > ci-timings/comprehensive.json
+          printf '{"job":"comprehensive","duration_seconds":%s,"baseline_seconds":%s,"delta_pct":%s}\n' \
+            "$d" "$BASELINE_COMPREHENSIVE" "$pct" > ci-timings/comprehensive.json
 
       - name: Upload CI timings
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: ci-timings-comprehensive
-          path: ci-timings/
-          retention-days: 30
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # Job 2: Data Integrity Audit (runs in parallel with comprehensive)
-  # Absorbed from the former data-audit.yml
-  # ─────────────────────────────────────────────────────────────────────────
-  data-audit:
-    name: Data Integrity Audit
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    timeout-minutes: 15
-
-    steps:
-      - name: Record job start
-        id: timer
-        run: echo "start=$(date +%s)" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: "3.12"
-          cache: "pip"
-
-      - run: pip install -r requirements.txt
-
-      - name: Run Data Integrity Audit
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL || secrets.SUPABASE_URL_STAGING || secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY_STAGING || secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: |
-          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_KEY" ]; then
-            echo "::warning::Data integrity audit skipped — SUPABASE_URL or SUPABASE_SERVICE_KEY secret not configured"
-            exit 0
-          fi
-          python run_data_audit.py
-
-      - name: Upload Audit Report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
-        with:
-          name: data-audit-report
-          path: audit-reports/
-          retention-days: 90
-
-      - name: Post Summary
-        if: always()
-        run: |
-          REPORT=$(cat audit-reports/audit_*.json 2>/dev/null || echo '{}')
-          CRITICAL=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('critical',0))" 2>/dev/null || echo "?")
-          WARNINGS=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('warnings',0))" 2>/dev/null || echo "?")
-          INFO=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('info',0))" 2>/dev/null || echo "?")
-          TOTAL=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('total_findings',0))" 2>/dev/null || echo "?")
-          echo "## Data Integrity Audit" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Severity | Count |" >> $GITHUB_STEP_SUMMARY
-          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔴 Critical | $CRITICAL |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🟠 Warning | $WARNINGS |" >> $GITHUB_STEP_SUMMARY
-          echo "| 🔵 Info | $INFO |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Total** | **$TOTAL** |" >> $GITHUB_STEP_SUMMARY
-
-      - name: Alert on Critical Findings
-        if: failure()
-        env:
-          ALERT_WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
-        run: |
-          if [ -n "$ALERT_WEBHOOK_URL" ]; then
-            curl -sf -X POST "$ALERT_WEBHOOK_URL" \
-              -H 'Content-Type: application/json' \
-              -d '{"text": "Nightly audit: CRITICAL issues — https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}'
-          fi
-
-      - name: CI runtime summary
-        if: ${{ !cancelled() }}
-        run: |
-          end=$(date +%s); start=${{ steps.timer.outputs.start }}; d=$((end-start))
-          echo "## Data Audit: $((d/60))m $((d%60))s" >> "$GITHUB_STEP_SUMMARY"
-          pct=0; [ "$BASELINE_DATA_AUDIT" -gt 0 ] && pct=$(( (d-BASELINE_DATA_AUDIT)*100/BASELINE_DATA_AUDIT ))
-          [ "$pct" -gt 30 ] && echo "::warning::Data audit regression: ${d}s (+${pct}% vs ${BASELINE_DATA_AUDIT}s)"
-          mkdir -p ci-timings
-          echo '{"job":"data-audit","duration_seconds":'$d',"baseline_seconds":'$BASELINE_DATA_AUDIT',"delta_pct":'$pct'}' > ci-timings/data-audit.json
-
-      - name: Upload CI timings
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: ci-timings-data-audit
           path: ci-timings/
           retention-days: 30

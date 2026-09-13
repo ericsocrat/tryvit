@@ -46,10 +46,10 @@
 }
 .mainColumn { display: flex; min-height: 100svh; min-width: 0; max-width: 100%; flex: 1; flex-direction: column; padding-bottom: calc(4.5rem + env(safe-area-inset-bottom)); }
 .appHeader { position: sticky; top: 0; z-index: 40; border-bottom: 1px solid var(--shell-rule); padding-top: env(safe-area-inset-top); background: var(--color-surface); }
-.headerInner { display: flex; min-height: 4rem; width: 100%; max-width: 84rem; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.5rem 1rem; }
+.headerInner { box-sizing: border-box; display: flex; min-height: 4rem; width: 100%; max-width: 84rem; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.5rem 1rem; }
 .headerIdentity { color: var(--shell-ink); }
 .headerUtilities { display: flex; min-width: max-content; align-items: center; gap: 0.35rem; }
-.mainContent { width: 100%; max-width: 84rem; flex: 1; margin-inline: 0; padding: 1.5rem 1rem 2.5rem; }
+.mainContent { box-sizing: border-box; width: 100%; max-width: 84rem; flex: 1; margin-inline: 0; padding: 1.5rem 1rem 2.5rem; }
 .sidebar { position: fixed; inset: 0 auto 0 0; z-index: 30; display: none; width: 14rem; flex-direction: column; border-right: 1px solid var(--shell-rule); background: var(--color-surface); }
 .sidebarBrand { display: flex; min-height: 5.75rem; align-items: center; padding: 1.25rem 1.5rem; color: var(--shell-ink); }
 .sidebarBody { flex: 1; overflow-y: auto; padding: 0 0.75rem 1rem; }

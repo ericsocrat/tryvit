@@ -16,11 +16,12 @@ import { VISUAL_FIXTURE_CONTRACT } from "../../tooling/phase5a0d-contract.ts";
 
 export const TEST_EMAIL = "e2e-playwright-auth@test.tryvit.local";
 export const FUNCTIONAL_TEST_EMAIL = "e2e-playwright-functional@test.tryvit.local";
+export const NIGHTLY_FUNCTIONAL_TEST_EMAIL = "e2e-playwright-nightly-functional@test.tryvit.local";
 export const REVOCATION_TEST_EMAIL = "e2e-playwright-revocation@test.tryvit.local";
 export const TEST_PASSWORD = "PlaywrightTest123!";
 const WebSocketImplementation = WebSocket as unknown as WebSocketLikeConstructor;
 
-export type TestUserScope = "authenticated" | "functional";
+export type TestUserScope = "authenticated" | "functional" | "nightly-functional";
 
 export type ScopedTestSession = Readonly<{
   accessToken: string;
@@ -29,7 +30,9 @@ export type ScopedTestSession = Readonly<{
 }>;
 
 function getScopeEmail(scope: TestUserScope): string {
-  return scope === "functional" ? FUNCTIONAL_TEST_EMAIL : TEST_EMAIL;
+  if (scope === "functional") return FUNCTIONAL_TEST_EMAIL;
+  if (scope === "nightly-functional") return NIGHTLY_FUNCTIONAL_TEST_EMAIL;
+  return TEST_EMAIL;
 }
 
 export function getGuardedFixtureRequest(): {

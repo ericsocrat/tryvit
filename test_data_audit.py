@@ -290,8 +290,8 @@ class TestRunAudit(unittest.TestCase):
             "SUPABASE_SERVICE_KEY": "test-service-key",
         },
     )
-    def test_store_failure_does_not_crash(self, mock_requests):
-        """Storage failure logs warning but doesn't crash the audit."""
+    def test_store_failure_fails_closed(self, mock_requests):
+        """Storage failure cannot produce a green audit without durable findings."""
         mock_rpc_resp = MagicMock()
         mock_rpc_resp.status_code = 200
         mock_rpc_resp.json.return_value = [
@@ -310,8 +310,7 @@ class TestRunAudit(unittest.TestCase):
 
         with self.assertRaises(SystemExit) as ctx:
             run_data_audit.run_audit()
-        # Should still exit 0 (no critical findings), not crash
-        self.assertEqual(ctx.exception.code, 0)
+        self.assertEqual(ctx.exception.code, 2)
 
 
 class TestRunAuditHelpers(unittest.TestCase):

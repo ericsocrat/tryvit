@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { contrastRatio } from "@/design-system/tokens/contrast";
 
 const css = readFileSync(path.resolve("src/components/layout/AppShell.module.css"), "utf8");
+const pageCss = readFileSync(path.resolve("src/components/layout/AppPage.module.css"), "utf8");
 const light = css.match(/\.frame\s*\{([^}]+)\}/)?.[1] ?? "";
 const dark = css.match(/:global\(\[data-theme="dark"\]\) \.frame\s*\{([^}]+)\}/)?.[1] ?? "";
 function color(block: string, token: string): string {
@@ -30,6 +31,9 @@ describe("shared neutral application shell", () => {
     expect(css).not.toContain("Arial");
     expect(css).not.toContain("linear-gradient");
     expect(css).toMatch(/\.mainContent\s*\{[^}]*margin-inline:\s*0/);
+    expect(css).toMatch(/\.mainContent\s*\{[^}]*box-sizing:\s*border-box/);
+    expect(css).toMatch(/\.headerInner\s*\{[^}]*box-sizing:\s*border-box/);
+    expect(pageCss).toMatch(/\.page\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\)/);
     expect(css).toContain("padding-left: 14rem");
     expect(css).toContain("@media (forced-colors: active)");
     expect(css).toContain(":global(:root:not([data-theme])) .frame");

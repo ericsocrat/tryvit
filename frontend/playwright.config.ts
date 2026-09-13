@@ -77,6 +77,7 @@ const HAS_PHASE5A2_DIRECTION_REVIEW = enabled("PHASE5A2_DIRECTION_REVIEW");
 const HAS_PHASE5A2_DIRECTION_BEHAVIOR = enabled("PHASE5A2_DIRECTION_BEHAVIOR");
 const HAS_PHASE5A2_GOLDEN = enabled("PHASE5A2_GOLDEN");
 const HAS_PHASE5A3_LANDING = enabled("PHASE5A3_LANDING_REVIEW");
+const HAS_NIGHTLY_CURRENT_BEHAVIOR = enabled("NIGHTLY_CURRENT_BEHAVIOR");
 
 const proxyServer = process.env.VISUAL_SAFETY_PROXY
   ? canonicalizeLoopbackOrigin(process.env.VISUAL_SAFETY_PROXY).origin
@@ -218,6 +219,12 @@ const functionalAuthSetupProject = {
   use: { ...devices["Desktop Chrome"] },
 };
 
+const nightlyFunctionalAuthSetupProject = {
+  name: "nightly-functional-auth-setup",
+  testMatch: /(?:^|[\\/])nightly-functional\.auth\.setup\.ts$/u,
+  use: { ...devices["Desktop Chrome"] },
+};
+
 const authenticatedProject = {
   name: "authenticated",
   testMatch: /authenticated(?!.*visual).*\.spec\.ts/,
@@ -235,6 +242,33 @@ const functionalProject = {
   use: {
     ...devices["Desktop Chrome"],
     storageState: authStatePath("functional-user.json"),
+  },
+};
+
+const nightlyAuthenticatedCurrentProject = {
+  name: "nightly-authenticated-current",
+  testMatch:
+    /(?:^|[\\/])authenticated-(?:a11y|anonymous-landing-copy|evidence-first|health-profile-archive|landing|server-logout)\.spec\.ts$/u,
+  dependencies: ["auth-setup"],
+  fullyParallel: false,
+  workers: 1,
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    storageState: authStatePath("user.json"),
+  },
+};
+
+const nightlyFunctionalCurrentProject = {
+  name: "nightly-functional-current",
+  testMatch: /(?:^|[\\/])functional-(?:error-states|lists-crud|onboarding|settings)\.spec\.ts$/u,
+  dependencies: ["nightly-functional-auth-setup"],
+  fullyParallel: false,
+  workers: 1,
+  retries: 0,
+  use: {
+    ...devices["Desktop Chrome"],
+    storageState: authStatePath("nightly-functional-user.json"),
   },
 };
 
@@ -291,6 +325,8 @@ const qualityMobileProject = {
   testDir: "./tests/quality",
   testMatch: /mobile\.audit\.spec\.ts/,
   dependencies: LOCAL_AUTHENTICATED ? ["auth-setup"] : [],
+  fullyParallel: false,
+  workers: 1,
   use: {
     ...devices["iPhone 14"],
     browserName: "chromium" as const,
@@ -303,6 +339,8 @@ const qualityDesktopProject = {
   testDir: "./tests/quality",
   testMatch: /desktop\.audit\.spec\.ts/,
   dependencies: LOCAL_AUTHENTICATED ? ["auth-setup"] : [],
+  fullyParallel: false,
+  workers: 1,
   use: {
     ...devices["Desktop Chrome"],
     viewport: { width: 1280, height: 800 },
@@ -745,8 +783,14 @@ const phase5a3LandingWebkitNoJavaScriptProject = {
 
 const projects = [
   ...(LOCAL_AUTHENTICATED ? [authSetupProject, functionalAuthSetupProject] : []),
+  ...(HAS_NIGHTLY_CURRENT_BEHAVIOR && LOCAL_AUTHENTICATED
+    ? [nightlyFunctionalAuthSetupProject]
+    : []),
   smokeProject,
   ...(LOCAL_AUTHENTICATED ? [authenticatedProject, functionalProject] : []),
+  ...(HAS_NIGHTLY_CURRENT_BEHAVIOR && LOCAL_AUTHENTICATED
+    ? [nightlyAuthenticatedCurrentProject, nightlyFunctionalCurrentProject]
+    : []),
   ...(LOCAL_AUTHENTICATED ? [privatePwaCacheProject] : []),
   ...(HAS_VISUAL ? [visualSmokeProject] : []),
   ...(HAS_VISUAL && LOCAL_AUTHENTICATED ? [visualAuthenticatedProject] : []),
@@ -808,7 +852,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI || HAS_NIGHTLY_CURRENT_BEHAVIOR ? 1 : undefined,
   reporter: process.env.CI
     ? [
         ["list"],

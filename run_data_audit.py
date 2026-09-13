@@ -88,9 +88,10 @@ def run_audit() -> None:
         store_resp = requests.post(insert_url, headers=headers, json=rows, timeout=60)
         if store_resp.status_code not in (200, 201):
             print(
-                f"WARNING: Failed to store results (status {store_resp.status_code})",
+                f"ERROR: Failed to store results (status {store_resp.status_code})",
                 file=sys.stderr,
             )
+            sys.exit(2)
 
     # ── Generate JSON report ──────────────────────────────────────────────
     report = {

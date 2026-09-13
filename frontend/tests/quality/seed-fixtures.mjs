@@ -21,21 +21,24 @@
  * @see https://github.com/ericsocrat/tryvit/issues/553
  */
 
+import { createHash, randomUUID } from "node:crypto";
+
 import { createClient } from "@supabase/supabase-js";
 import ws from "ws";
 
 // Node's type-stripping loader is provided by the visual-safety launcher.
 // @ts-expect-error TS source is intentionally imported by this guarded test tool.
 // eslint-disable-next-line no-restricted-imports -- guarded tool imports the safety core outside src
-import {
-  canonicalizeLoopbackOrigin,
-  createGuardedFetch,
-} from "../../e2e/helpers/visual-safety.ts";
+import { canonicalizeLoopbackOrigin, createGuardedFetch } from "../../e2e/helpers/visual-safety.ts";
 
 /* ── Environment ─────────────────────────────────────────────────────────── */
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const NIGHTLY_CURRENT_BEHAVIOR = process.env.NIGHTLY_CURRENT_BEHAVIOR === "true";
+const SEED_EPHEMERAL_EVIDENCE =
+  NIGHTLY_CURRENT_BEHAVIOR && process.env.GITHUB_ACTIONS === "true";
 
 // Canonical brand used by all QA fixtures. Centralised so the teardown path
 // and any future tooling reference a single source of truth.
@@ -48,9 +51,16 @@ const QA_FIXTURE_BRAND = "QA Test Brand";
 // regardless of how the URL was resolved.
 const PRODUCTION_PROJECT_REF = "uskvezwftkkudvksmken";
 
-if (!SUPABASE_URL || !SERVICE_KEY) {
+if (NIGHTLY_CURRENT_BEHAVIOR && !SEED_EPHEMERAL_EVIDENCE) {
   console.error(
-    "❌ Missing guarded local fixture credentials. Use the visual-safety fixture launcher."
+    "❌ Immutable evidence fixtures are restricted to the GitHub-hosted ephemeral Nightly database.",
+  );
+  process.exit(1);
+}
+
+if (!SUPABASE_URL || !SERVICE_KEY || (SEED_EPHEMERAL_EVIDENCE && !ANON_KEY)) {
+  console.error(
+    "❌ Missing guarded local fixture credentials. Use the visual-safety fixture launcher.",
   );
   process.exit(1);
 }
@@ -59,11 +69,11 @@ if (SUPABASE_URL.includes(PRODUCTION_PROJECT_REF)) {
   console.error(
     `❌ Refusing to seed QA fixtures against the production project ` +
       `(${PRODUCTION_PROJECT_REF}). QA fixtures must only target a ` +
-      `verified local Supabase instance.`
+      `verified local Supabase instance.`,
   );
   console.error(
     "    Resolved NEXT_PUBLIC_SUPABASE_URL points at production. " +
-      "Use the guarded local fixture launcher instead."
+      "Use the guarded local fixture launcher instead.",
   );
   process.exit(1);
 }
@@ -77,9 +87,7 @@ let requestedOrigin;
 let configuredOrigin;
 try {
   requestedOrigin = canonicalizeLoopbackOrigin(SUPABASE_URL).origin;
-  configuredOrigin = canonicalizeLoopbackOrigin(
-    process.env.VISUAL_SAFETY_SUPABASE_ORIGIN,
-  ).origin;
+  configuredOrigin = canonicalizeLoopbackOrigin(process.env.VISUAL_SAFETY_SUPABASE_ORIGIN).origin;
 } catch {
   console.error("❌ QA fixture target is not the configured canonical loopback runtime.");
   process.exit(1);
@@ -96,8 +104,8 @@ const guardedFetch = createGuardedFetch({
   maxRedirects: 0,
 });
 
-// The seeder only performs REST queries (upsert/select) — it never opens a
-// realtime channel. However, @supabase/supabase-js still constructs a
+// The seeder performs guarded REST, Auth, and Postgres RPC requests, but never
+// opens a realtime channel. However, @supabase/supabase-js still constructs a
 // RealtimeClient eagerly, and on Node 20 (no native global WebSocket) that
 // throws "Node.js 20 detected without native WebSocket support". Passing the
 // `ws` package as the realtime transport satisfies the constructor without
@@ -132,25 +140,19 @@ async function upsertProduct(product) {
     if (!error) return data.product_id;
 
     // Handle missing column: strip it and retry
-    const match = error.message.match(
-      /Could not find the '(\w+)' column/
-    );
+    const match = error.message.match(/Could not find the '(\w+)' column/);
     if (match) {
       const col = match[1];
-      console.warn(
-        `  ⚠️  Column '${col}' not in remote schema — removing from payload`
-      );
+      console.warn(`  ⚠️  Column '${col}' not in remote schema — removing from payload`);
       delete payload[col];
       continue;
     }
 
-    throw new Error(
-      `Failed to upsert product "${product.product_name}": ${error.message}`
-    );
+    throw new Error(`Failed to upsert product "${product.product_name}": ${error.message}`);
   }
 
   throw new Error(
-    `Failed to upsert product "${product.product_name}" after ${MAX_RETRIES} retries`
+    `Failed to upsert product "${product.product_name}" after ${MAX_RETRIES} retries`,
   );
 }
 
@@ -169,20 +171,16 @@ async function upsertNutrition(nutrition) {
 
     if (!error) return;
 
-    const match = error.message.match(
-      /Could not find the '(\w+)' column/
-    );
+    const match = error.message.match(/Could not find the '(\w+)' column/);
     if (match) {
       const col = match[1];
-      console.warn(
-        `  ⚠️  Column '${col}' not in nutrition_facts — removing from payload`
-      );
+      console.warn(`  ⚠️  Column '${col}' not in nutrition_facts — removing from payload`);
       delete payload[col];
       continue;
     }
 
     throw new Error(
-      `Failed to upsert nutrition for product ${nutrition.product_id}: ${error.message}`
+      `Failed to upsert nutrition for product ${nutrition.product_id}: ${error.message}`,
     );
   }
 }
@@ -197,7 +195,7 @@ async function upsertAllergen(allergen) {
 
   if (error) {
     throw new Error(
-      `Failed to upsert allergen for product ${allergen.product_id}: ${error.message}`
+      `Failed to upsert allergen for product ${allergen.product_id}: ${error.message}`,
     );
   }
 }
@@ -227,7 +225,7 @@ async function upsertIngredient(row) {
   if (error) {
     // Non-fatal — ingredient data is nice-to-have for QA
     console.warn(
-      `⚠️  Failed to upsert ingredient (pos ${row.position}) for product ${row.product_id}: ${error.message}`
+      `⚠️  Failed to upsert ingredient (pos ${row.position}) for product ${row.product_id}: ${error.message}`,
     );
   }
 }
@@ -498,6 +496,311 @@ const NUTRITION_SUPPORT = {
   salt_g: 0.8,
 };
 
+/**
+ * Evidence UI pair: one immutable source observation plus one source-free
+ * legacy projection. The observed side must enter through the production
+ * ingestion boundary; direct inserts into evidence tables are forbidden.
+ */
+const EVIDENCE_OBSERVED_EAN = "9910000000997";
+const EVIDENCE_OBSERVED_IDENTITY = {
+  ean: EVIDENCE_OBSERVED_EAN,
+  brand: QA_FIXTURE_BRAND,
+  product_name: "QA Evidence Source-Observed Milk",
+  category: "Dairy",
+};
+const EVIDENCE_OBSERVED_SOURCE_URL = `https://world.openfoodfacts.org/product/${EVIDENCE_OBSERVED_EAN}`;
+const EVIDENCE_OBSERVED_RETRIEVED_AT = "2026-09-09T12:00:00.000Z";
+const EVIDENCE_OBSERVED_UPDATED_AT = "2026-09-08T12:00:00.000Z";
+
+const EVIDENCE_RAW_NUTRIENTS = {
+  "energy-kcal_100g": "80",
+  fat_100g: "1.25",
+  "saturated-fat_100g": "0.75",
+  "trans-fat_100g": "0",
+  carbohydrates_100g: "8",
+  sugars_100g: "6",
+  fiber_100g: "0",
+  proteins_100g: "4",
+  salt_100g: "0.2",
+};
+
+function recordedNutrient(value, unit, sourceField) {
+  return {
+    value,
+    state: "recorded",
+    unit,
+    basis: "per_100g",
+    preparation_state: "as_sold",
+    qualifier: "eq",
+    source_field: sourceField,
+    transformation: "off_normalized_value",
+  };
+}
+
+const EVIDENCE_EXTRACTED_FIELDS = {
+  calories_100g: recordedNutrient("80", "kcal", "energy-kcal_100g"),
+  fat_100g: recordedNutrient("1.25", "g", "fat_100g"),
+  saturated_fat_100g: recordedNutrient("0.75", "g", "saturated-fat_100g"),
+  trans_fat_100g: recordedNutrient("0", "g", "trans-fat_100g"),
+  carbs_100g: recordedNutrient("8", "g", "carbohydrates_100g"),
+  sugars_100g: recordedNutrient("6", "g", "sugars_100g"),
+  fiber_100g: recordedNutrient("0", "g", "fiber_100g"),
+  protein_100g: recordedNutrient("4", "g", "proteins_100g"),
+  salt_100g: recordedNutrient("0.2", "g", "salt_100g"),
+  nutri_score_label: {
+    value: "A",
+    state: "recorded",
+    version: "2023",
+    source_field: "nutriscore_grade",
+    transformation: "uppercase_source_grade",
+  },
+  nova_classification: {
+    value: "1",
+    state: "recorded",
+    source_field: "nova_group",
+    transformation: "source_integer",
+  },
+  brand: {
+    value: EVIDENCE_OBSERVED_IDENTITY.brand,
+    state: "recorded",
+    source_field: "brands",
+    transformation: "off_primary_brand_v1",
+  },
+  product_name: {
+    value: EVIDENCE_OBSERVED_IDENTITY.product_name,
+    state: "recorded",
+    source_field: "product_name",
+    transformation: "off_product_name_v1",
+  },
+};
+const EVIDENCE_INGREDIENTS = [{ id: "en:milk", text: "Milk" }];
+const EVIDENCE_ALLERGENS = [{ tag: "milk", type: "contains" }];
+const EVIDENCE_BATCH = {
+  source_key: "off_api",
+  country: "PL",
+  extractor_version: "off-observations-v1",
+  idempotency_key: "qa-evidence-ui-current-v1",
+  scope: { kind: "synthetic", purpose: "nightly-evidence-ui-current" },
+};
+
+function createEvidenceObservation() {
+  const observationMetadata = {
+    source_revision: 1,
+    source_url: EVIDENCE_OBSERVED_SOURCE_URL,
+    license: "synthetic-fixture-only",
+    retrieved_at: EVIDENCE_OBSERVED_RETRIEVED_AT,
+    source_updated_at: EVIDENCE_OBSERVED_UPDATED_AT,
+    validation_findings: [],
+  };
+  const sanitizedPayload = {
+    code: EVIDENCE_OBSERVED_EAN,
+    rev: 1,
+    brands: EVIDENCE_OBSERVED_IDENTITY.brand,
+    product_name: EVIDENCE_OBSERVED_IDENTITY.product_name,
+    nutrition_data_per: "100g",
+    nutrition_data_unit: "g",
+    nutriscore_grade: "a",
+    nutriscore_version: "2023",
+    nova_group: 1,
+    nutriments: EVIDENCE_RAW_NUTRIENTS,
+    ingredients: EVIDENCE_INGREDIENTS,
+    allergens_tags: ["en:milk"],
+    traces_tags: [],
+    extractor_version: EVIDENCE_BATCH.extractor_version,
+    extraction: EVIDENCE_EXTRACTED_FIELDS,
+    projected_identity: EVIDENCE_OBSERVED_IDENTITY,
+    ingredient_assertions: EVIDENCE_INGREDIENTS,
+    allergen_assertions: EVIDENCE_ALLERGENS,
+    set_states: {
+      ingredients_state: "reported",
+      allergens_state: "reported",
+    },
+    observation_metadata: observationMetadata,
+  };
+  const payloadCanonical = JSON.stringify(sanitizedPayload);
+
+  return {
+    external_id: EVIDENCE_OBSERVED_EAN,
+    identity: EVIDENCE_OBSERVED_IDENTITY,
+    source_revision: observationMetadata.source_revision,
+    sanitized_payload: sanitizedPayload,
+    payload_canonical: payloadCanonical,
+    payload_hash: createHash("sha256").update(payloadCanonical, "utf8").digest("hex"),
+    extracted_fields: EVIDENCE_EXTRACTED_FIELDS,
+    source_url: observationMetadata.source_url,
+    license: observationMetadata.license,
+    retrieved_at: observationMetadata.retrieved_at,
+    source_updated_at: observationMetadata.source_updated_at,
+    validation_findings: observationMetadata.validation_findings,
+    ingredients_state: "reported",
+    ingredients: EVIDENCE_INGREDIENTS,
+    allergens_state: "reported",
+    allergen_assertions: EVIDENCE_ALLERGENS,
+  };
+}
+
+async function seedEvidenceObservation() {
+  const { data, error } = await supabase.rpc("ingestion_apply_observation", {
+    p_batch: EVIDENCE_BATCH,
+    p_record: createEvidenceObservation(),
+  });
+
+  if (error) {
+    throw new Error(`Evidence observation ingestion failed: ${error.message}`);
+  }
+  if (
+    !data ||
+    !["accepted", "duplicate"].includes(data.status) ||
+    !Number.isSafeInteger(Number(data.product_id)) ||
+    Number(data.product_id) <= 0 ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu.test(
+      data.observation_id ?? "",
+    )
+  ) {
+    throw new Error("Evidence observation ingestion returned an invalid result");
+  }
+
+  const productId = Number(data.product_id);
+  const { error: reactivateError } = await supabase
+    .from("products")
+    .update({ is_deprecated: false })
+    .eq("product_id", productId);
+  if (reactivateError) {
+    throw new Error("Could not reactivate the source-observed local fixture");
+  }
+
+  return {
+    productId,
+    observationId: data.observation_id,
+  };
+}
+
+async function assertSourceFreeLegacyProduct(productId) {
+  for (const [table, column] of [
+    ["product_source_records", "id"],
+    ["product_field_provenance", "product_id"],
+  ]) {
+    const { count, error } = await supabase
+      .from(table)
+      .select(column, { count: "exact", head: true })
+      .eq("product_id", productId);
+
+    if (error || count !== 0) {
+      throw new Error("Legacy evidence fixture is not source-free");
+    }
+  }
+}
+
+async function verifyEvidenceReadModel(observed, legacyProductId) {
+  if (!ANON_KEY) {
+    throw new Error("Missing guarded local anon key for evidence verification");
+  }
+
+  const email = `qa-evidence-reader-${randomUUID()}@test.tryvit.local`;
+  const password = `Qa!9-${randomUUID()}`;
+  const { data: created, error: createError } = await supabase.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+  });
+  const userId = created.user?.id;
+  if (createError || !userId) {
+    throw new Error("Could not create the disposable evidence reader");
+  }
+
+  let reader;
+  let readerSignedIn = false;
+  try {
+    reader = createClient(SUPABASE_URL, ANON_KEY, {
+      auth: { autoRefreshToken: false, persistSession: false },
+      global: { fetch: guardedFetch },
+      realtime: { transport: ws },
+    });
+    const { data: signedIn, error: signInError } = await reader.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (signInError || !signedIn.session?.access_token) {
+      throw new Error("Could not authenticate the disposable evidence reader");
+    }
+    readerSignedIn = true;
+
+    const { data: envelope, error: readError } = await reader.rpc("api_product_read_model", {
+      p_product_ids: [observed.productId, legacyProductId],
+      p_language: "en",
+    });
+    if (
+      readError ||
+      !envelope ||
+      envelope.error ||
+      envelope.api_version !== "2" ||
+      envelope.policy_version !== "evidence-first-v1" ||
+      !Array.isArray(envelope.products) ||
+      envelope.products.length !== 2 ||
+      !Array.isArray(envelope.missing_ids) ||
+      envelope.missing_ids.length !== 0
+    ) {
+      throw new Error("Evidence read-model verification failed");
+    }
+
+    const observedModel = envelope.products.find(
+      (product) => Number(product.product_id) === observed.productId,
+    );
+    const legacyModel = envelope.products.find(
+      (product) => Number(product.product_id) === legacyProductId,
+    );
+    if (
+      observedModel?.is_deprecated !== false ||
+      observedModel?.evidence?.state !== "recorded" ||
+      observedModel.evidence.recorded_fields !== 9 ||
+      observedModel.evidence.total_fields !== 9 ||
+      observedModel.sources?.length !== 1 ||
+      !observedModel.sources?.some((source) => source.observation_id === observed.observationId) ||
+      observedModel.nutrition?.salt_g?.state !== "recorded" ||
+      observedModel.classifications?.nutri_score?.observation_id !== observed.observationId ||
+      observedModel.ingredients?.state !== "recorded"
+    ) {
+      throw new Error("Observed evidence fixture did not resolve as recorded");
+    }
+    if (
+      legacyModel?.is_deprecated !== false ||
+      legacyModel?.evidence?.state !== "legacy_unverified" ||
+      legacyModel.evidence.recorded_fields !== 0 ||
+      legacyModel.evidence.total_fields !== 9 ||
+      !Array.isArray(legacyModel.sources) ||
+      legacyModel.sources.length !== 0 ||
+      !Object.values(legacyModel.nutrition ?? {}).some(
+        (field) =>
+          field?.state === "unverified" &&
+          field.basis === "unknown" &&
+          field.observation_id === null,
+      )
+    ) {
+      throw new Error("Legacy evidence fixture did not resolve as source-free");
+    }
+  } finally {
+    let signOutFailed = false;
+    if (reader && readerSignedIn) {
+      try {
+        const { error: signOutError } = await reader.auth.signOut({ scope: "global" });
+        signOutFailed = Boolean(signOutError);
+      } catch {
+        signOutFailed = true;
+      }
+    }
+    let deleteFailed = false;
+    try {
+      const { error: cleanupError } = await supabase.auth.admin.deleteUser(userId);
+      deleteFailed = Boolean(cleanupError);
+    } catch {
+      deleteFailed = true;
+    }
+    if (signOutFailed || deleteFailed) {
+      throw new Error("Could not revoke and delete the disposable evidence reader");
+    }
+  }
+}
+
 /* ── Main ────────────────────────────────────────────────────────────────── */
 
 async function main() {
@@ -511,9 +814,7 @@ async function main() {
     .maybeSingle();
 
   if (!categoryCheck) {
-    console.error(
-      "❌ category_ref does not contain 'Dairy'. Run reference data seeds first."
-    );
+    console.error("❌ category_ref does not contain 'Dairy'. Run reference data seeds first.");
     process.exit(1);
   }
 
@@ -533,6 +834,16 @@ async function main() {
   console.error(`  ✅ Product (no-ns):      ID ${productNoNsId}`);
   console.error(`  ✅ Nightly support catalog: ${supportProductIds.length} products`);
 
+  // Immutable evidence rows are Nightly-only because ordinary fixture teardown
+  // cannot delete their append-only provenance. The hosted Nightly destroys its
+  // complete local volume after the run.
+  const observedEvidence = SEED_EPHEMERAL_EVIDENCE
+    ? await seedEvidenceObservation()
+    : undefined;
+  if (observedEvidence) {
+    console.error(`  ✅ Source-observed evidence product: ID ${observedEvidence.productId}`);
+  }
+
   // ── Upsert nutrition ───────────────────────────────────────────────────
   await upsertNutrition({ product_id: productFullId, ...NUTRITION_FULL });
   await upsertNutrition({ product_id: productNoAltId, ...NUTRITION_NO_ALT });
@@ -544,9 +855,7 @@ async function main() {
   for (const productId of supportProductIds) {
     await upsertNutrition({ product_id: productId, ...NUTRITION_SUPPORT });
   }
-  console.error(
-    `  ✅ Nutrition facts seeded for ${4 + supportProductIds.length} products`,
-  );
+  console.error(`  ✅ Nutrition facts seeded for ${4 + supportProductIds.length} products`);
 
   // ── Upsert allergens for product 3 ─────────────────────────────────────
   const allergens = [
@@ -562,9 +871,7 @@ async function main() {
   console.error(`  ✅ Allergens seeded (${allergens.length} entries)`);
 
   // ── Also add allergens to product 1 (QA_PRODUCT_WITH_ALLERGENS = full) ─
-  const fullAllergens = [
-    { product_id: productFullId, tag: "milk", type: "contains" },
-  ];
+  const fullAllergens = [{ product_id: productFullId, tag: "milk", type: "contains" }];
   for (const allergen of fullAllergens) {
     await upsertAllergen(allergen);
   }
@@ -591,12 +898,10 @@ async function main() {
         is_sub_ingredient: false,
       });
     }
-    console.error(
-      `  ✅ Ingredients seeded (${foundCount} linked to full product)`
-    );
+    console.error(`  ✅ Ingredients seeded (${foundCount} linked to full product)`);
   } else {
     console.warn(
-      `  ⚠️  Only ${foundCount} ingredients found in ingredient_ref — skipping ingredient seeding`
+      `  ⚠️  Only ${foundCount} ingredients found in ingredient_ref — skipping ingredient seeding`,
     );
   }
 
@@ -608,6 +913,12 @@ async function main() {
     ingredientIdForFixture = String(Object.values(ingredientIds)[0]);
   }
 
+  if (observedEvidence) {
+    await assertSourceFreeLegacyProduct(productFullId);
+    await verifyEvidenceReadModel(observedEvidence, productFullId);
+    console.error("  ✅ Evidence read model verified (recorded + legacy_unverified)");
+  }
+
   // ── Output fixture IDs (stdout only — CI captures via >> $GITHUB_ENV) ──
   console.log(`QA_PRODUCT_ID=${productFullId}`);
   console.log(`QA_PRODUCT_WITH_ALT=${productFullId}`);
@@ -616,6 +927,9 @@ async function main() {
   console.log(`QA_PRODUCT_MISSING_NS=${productNoNsId}`);
   console.log(`QA_CATEGORY_SLUG=dairy`);
   console.log(`QA_INGREDIENT_ID=${ingredientIdForFixture}`);
+  if (observedEvidence) {
+    console.log(`EVIDENCE_UI_PRODUCT_IDS=${observedEvidence.productId},${productFullId}`);
+  }
 
   console.error("\n🎉 QA fixture seeding complete!\n");
 }
@@ -629,14 +943,15 @@ async function main() {
  * project's "deprecate, never DELETE" data policy. v_master and the public
  * API filter out is_deprecated rows, so deprecated fixtures stop appearing in
  * any user-facing surface while remaining auditable in the table.
+ * Source observations are immutable and deliberately untouched. The guarded
+ * Nightly owner removes the whole local Supabase volume without backup after
+ * this soft teardown, which is the only cleanup boundary for those rows.
  *
  * Invoke through the guarded launcher only:
  *   npm run visual-safety:fixtures-teardown
  */
 async function teardown() {
-  console.error(
-    `🧹 Soft-deprecating QA fixture products (brand="${QA_FIXTURE_BRAND}")...\n`
-  );
+  console.error(`🧹 Soft-deprecating QA fixture products (brand="${QA_FIXTURE_BRAND}")...\n`);
 
   const { data, error } = await supabase
     .from("products")
@@ -653,16 +968,12 @@ async function teardown() {
   }
 
   const count = data?.length ?? 0;
-  console.error(
-    `  ✅ Soft-deprecated ${count} QA fixture product(s) (reversible)\n`
-  );
+  console.error(`  ✅ Soft-deprecated ${count} QA fixture product(s) (reversible)\n`);
 }
 
 /* ── Entry point ─────────────────────────────────────────────────────────── */
 
-const isTeardown =
-  process.argv.includes("--teardown") ||
-  process.env.QA_FIXTURE_TEARDOWN === "1";
+const isTeardown = process.argv.includes("--teardown") || process.env.QA_FIXTURE_TEARDOWN === "1";
 
 const run = isTeardown ? teardown : main;
 

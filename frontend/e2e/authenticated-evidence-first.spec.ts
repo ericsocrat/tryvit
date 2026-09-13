@@ -27,7 +27,11 @@ async function setFixtureLanguage(language: Language) {
 }
 
 async function assertFits(page: Page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const layout = await page.evaluate(() => ({
+    viewport: innerWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.viewport);
   await expect(page.locator("[data-nextjs-dialog], .vite-error-overlay")).toHaveCount(0);
 }
 

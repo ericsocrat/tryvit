@@ -75,6 +75,7 @@ const workflowSources = {
   bundleSize: readWorkflow("bundle-size.yml"),
   codeql: readWorkflow("codeql.yml"),
   dependencyAudit: readWorkflow("dependency-audit.yml"),
+  dataAudit: readWorkflow("data-audit.yml"),
   phase5Visual: readWorkflow("phase5a0d-visual-baselines.yml"),
   prScreenshots: readWorkflow("pr-screenshots.yml"),
   prGate: readWorkflow("pr-gate.yml"),
@@ -1034,13 +1035,19 @@ describe("browser workflow visual-safety contract", () => {
     expect(nightlyUnitStep).toContain("timeout-minutes: 7");
     expect(nightlyPublicSuite).toContain('NEXT_PUBLIC_QA_MODE: "1"');
     expect(nightlyAuthenticatedSuite).toContain('NEXT_PUBLIC_QA_MODE: "1"');
+    expect(nightlyAuthenticatedSuite).toContain('NIGHTLY_CURRENT_BEHAVIOR: "true"');
     expect(nightlyAuthenticatedSuite).toContain("QA_MODE_LEVEL: full");
     expect(nightlyAuthenticatedSuite).toContain("--project=quality-mobile");
     expect(nightlyAuthenticatedSuite).toContain("--project=quality-desktop");
+    expect(nightlyAuthenticatedSuite).toContain("--project=nightly-authenticated-current");
+    expect(nightlyAuthenticatedSuite).toContain("--project=nightly-functional-current");
     expect(nightlyAuthenticatedSuite).not.toContain("--project=authenticated");
     expect(nightlyAuthenticatedSuite).not.toContain("--project=functional");
     expect(browserJobs.nightly).toMatch(
       /Install pinned Supabase CLI[\s\S]*version: 2\.111\.0/u,
+    );
+    expect(browserJobs.nightly).toContain(
+      "^EVIDENCE_UI_PRODUCT_IDS=[0-9]+,[0-9]+$",
     );
     expect(browserJobs.nightly.match(/NEXT_PUBLIC_QA_MODE: "1"/gu)).toHaveLength(2);
     expect(nightlyPublicSuite).toContain("--retries=0");
@@ -1103,6 +1110,8 @@ describe("browser workflow visual-safety contract", () => {
     expect(triggerSection).toContain("workflow_dispatch:");
     expect(triggerSection).not.toContain("pull_request:");
     expect(triggerSection).not.toContain("push:");
+    expect(workflowSources.nightly).toContain("group: nightly-${{ github.ref }}");
+    expect(workflowSources.nightly).not.toContain("secrets.");
   });
 
   it("scans every browser artifact family before workflow upload", () => {
@@ -1127,11 +1136,30 @@ describe("browser workflow visual-safety contract", () => {
     }
   });
 
-  it("keeps the separate Nightly hosted data audit outside browser hardening", () => {
-    const dataAudit = jobSection(workflowSources.nightly, "data-audit");
+  it("isolates hosted production auditing in a schedule-only fixed-target workflow", () => {
+    const dataAudit = jobSection(workflowSources.dataAudit, "audit");
+    const auditStep = dataAudit.indexOf("- name: Run production data-integrity audit");
+    const triggers = workflowSources.dataAudit.slice(
+      workflowSources.dataAudit.indexOf("on:"),
+      workflowSources.dataAudit.indexOf("permissions:"),
+    );
     expect(dataAudit).toContain("python run_data_audit.py");
-    expect(dataAudit).toContain("SUPABASE_URL:");
-    expect(dataAudit).toContain("SUPABASE_SERVICE_KEY:");
+    expect(dataAudit).toContain("secrets.NEXT_PUBLIC_SUPABASE_URL");
+    expect(dataAudit).toContain("secrets.SUPABASE_SERVICE_ROLE_KEY");
+    expect(dataAudit).toContain("uskvezwftkkudvksmken.supabase.co");
+    expect(auditStep).toBeGreaterThanOrEqual(0);
+    expect(dataAudit.slice(0, auditStep)).not.toContain("secrets.");
+    expect(dataAudit).toContain("python run_data_audit.py > data-audit.private.log 2>&1");
+    expect(dataAudit).toContain("path: audit-summary/");
+    expect(dataAudit).toContain("rm -f -- data-audit.private.log audit-reports/audit_*.json");
+    expect(dataAudit).not.toContain("path: audit-reports/");
+    expect(workflowSources.dataAudit).toContain("cancel-in-progress: false");
+    expect(workflowSources.dataAudit).toContain("persist-credentials: false");
+    expect(triggers).toContain("schedule:");
+    expect(triggers).not.toContain("workflow_dispatch:");
+    expect(triggers).not.toContain("pull_request:");
+    expect(triggers).not.toContain("push:");
+    expect(workflowSources.nightly).not.toContain("data-audit:");
     for (const key of ["SUPABASE_URL:", "SUPABASE_SERVICE_KEY:"]) {
       expect(browserJobs.nightly).not.toContain(key);
     }
