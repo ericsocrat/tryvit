@@ -799,6 +799,8 @@ describe("browser workflow visual-safety contract", () => {
     expect(bundle).toContain("Next lock resolution must match its exact package manifest");
     expect(bundle).toContain('lock.packages?.["node_modules/next"]?.version !== version');
     expect(bundle).toContain('execFileSync("git", ["show", `${sha}:${file}`]');
+    expect(bundle).toContain('gitJson(sha, "frontend/package.json")');
+    expect(bundle).toContain('gitJson(sha, "frontend/package-lock.json")');
     expect(bundle).toContain("+10 KiB OR +5% fails; reductions pass");
     expect(bundle).not.toContain("build-manifest.json");
     expect(bundle).not.toContain("totalBytes");
