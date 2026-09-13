@@ -254,6 +254,27 @@ reachability disposition, not a claim that the advisory is fixed. Reassess when 
 adopts a Lighthouse/Puppeteer chain that removes `extract-zip` or an upstream patched
 release becomes available.
 
+### 2026-09-13 dependency follow-up
+
+This is a dated dependency addendum, not a rerun or replacement of the
+2026-02-23 RLS, function-security, header, or secret findings above.
+
+- PR `#1370` updated `next` and `eslint-config-next` to `16.3.5`, beyond the
+  then-current critical advisory floor. Its HIGH/CRITICAL production-dependency
+  audit passed.
+- PR `#1352` subsequently updated `@sentry/nextjs` to `10.74.0`; its same
+  production-dependency audit also passed.
+- Dependabot alerts `#94` (`GHSA-jmr9-qjv8-65gv`, symlink path traversal) and
+  `#102` (`GHSA-7pqw-9j4j-h8q3`, arbitrary file writes through symlink archive
+  entries) are both open, high-severity, development-only findings against the
+  same transitive `extract-zip@2.0.1` installation. Neither advisory has a
+  patched release.
+- Both alerts share the previously documented
+  `@lhci/cli -> lighthouse -> puppeteer-core -> @puppeteer/browsers -> extract-zip`
+  chain. The guarded Lighthouse workflow continues to use pinned Playwright
+  Chromium through `CHROME_PATH` rather than Puppeteer's archive-extraction
+  path. This remains a bounded reachability disposition, not remediation.
+
 ### Automated Monitoring
 
 | Check                       | Status | Configuration                                            |

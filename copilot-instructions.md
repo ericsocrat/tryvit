@@ -407,8 +407,8 @@ tryvit/
 │   ├── main-gate.yml                # Build → Unit tests + coverage → SonarCloud
 │   ├── qa.yml                       # Schema → Pipelines → QA (777) → Sanity
 │   ├── nightly.yml                  # Full Playwright (all projects) + Data Integrity Audit
-│   ├── deploy.yml                   # Manual trigger → Schema diff → Approval → db push
-│   ├── sync-cloud-db.yml            # Remote DB sync
+│   ├── deploy.yml                   # Manual exact-main, manifest-bound DB deployment
+│   ├── sync-cloud-db.yml            # Retired fail-closed compatibility notice
 │   ├── api-contract.yml             # API contract validation
 │   ├── bundle-size.yml              # Frontend bundle size guard
 │   ├── codeql.yml                   # CodeQL security analysis
@@ -940,8 +940,8 @@ E2E tests are the **only** exception — they run against a live dev server but 
   - **`main-gate.yml`**: Typecheck → Lint → Build → Unit tests with coverage → Playwright smoke E2E → SonarCloud scan + BLOCKING Quality Gate → Sentry sourcemap upload
   - **`nightly.yml`**: Full Playwright (all projects incl. visual regression) + Data Integrity Audit (parallel)
   - **`qa.yml`**: Pipeline structure guard → Schema migrations → Schema drift detection → Pipelines → QA (786 checks; 778 blocking) → Sanity (17 checks) → Confidence threshold
-  - **`deploy.yml`**: Manual trigger → Schema diff → Approval gate (production) → Pre-deploy backup → `supabase db push` → Post-deploy sanity
-  - **`sync-cloud-db.yml`**: Auto-sync migrations to production on merge to `main`
+  - **`deploy.yml`**: Manual exact-main dispatch → manifest/target/native-binding validation → staging and recovery evidence gate for production → exact migration apply → lint + sanitized receipt
+  - **`sync-cloud-db.yml`**: Retired compatibility notice; manual invocation always fails without database mutation
 - **Required (merge-blocking) checks:** `Unit Tests`, `Playwright Smoke`, `Typecheck & Lint`, `Build`. These four must pass before a PR can merge.
 - **Non-blocking checks:** `quality_gate`, `DB Integrity`, `Lighthouse`, `verify`, `Vercel`. Failures on these do not block merging but should be investigated.
 - **ESLint `consistent-type-imports`:** Use `import type { X }` for type-only imports — `import { X }` for a type will fail the lint gate.

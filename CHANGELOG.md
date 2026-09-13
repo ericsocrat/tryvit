@@ -105,8 +105,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
   route was removed after neither Codex browser nor foreground Edge initialized the
   widget; no token, backend verification, signup, or data mutation occurred.
 - Resolve both vulnerable development-only `js-yaml` lockfile branches with compatible
-  patched releases, and record the still-open no-patch `extract-zip` alert as an
-  unreachable browser-download path under TryVit's pinned Playwright/LHCI launcher.
+  patched releases, and record both still-open no-patch `extract-zip` alerts
+  (`#94` / `GHSA-jmr9-qjv8-65gv` and `#102` / `GHSA-7pqw-9j4j-h8q3`) as the
+  same non-invoked browser-download path under TryVit's pinned Playwright/LHCI launcher.
 - Restrict 84 privileged administration/operations routines and 21 operational
   relations to `service_role`, with final-schema pgTAP and blocking QA checks
   covering anonymous and ordinary authenticated callers.

@@ -2,6 +2,7 @@
 
 > **Last broadly verified:** 2026-02-22
 > **Phase 5A.0a browser-safety section updated:** 2026-08-01
+> **Deployment controls verified:** 2026-09-13
 > **Status:** Active
 > **Owner issue:** #13
 
@@ -22,7 +23,8 @@ We maintain two Supabase cloud projects:
    expected dataset.
 3. Sanity checks + guardrails so CI / scripts cannot accidentally mutate or
    wipe the cloud DB.
-4. Staging receives migrations first (via `sync-cloud-db.yml`) before production.
+4. Staging receives the exact manifest first through the manually dispatched
+   `deploy.yml`; production requires matching staging and recovery evidence.
 
 ### 8.1 — Staging Supabase Project (Active)
 
@@ -41,14 +43,15 @@ We maintain two Supabase cloud projects:
 | 3   | CI / E2E uses least-privileged keys and cannot perform destructive operations                               | ✅      |
 | 4   | All schema changes remain migrations-only — no dashboard drift allowed                                      | ✅      |
 | 5   | `RUN_REMOTE.ps1` requires mandatory `-Env staging` or `-Env production` (no default)                        | ✅      |
-| 6   | `sync-cloud-db.yml` pushes migrations to staging first, then production                                     | ✅      |
+| 6   | `deploy.yml` enforces an exact-main, manifest-bound staging run before production                           | ✅      |
 
 **Acceptance criteria:**
 
 - Running seed / sanity is safe and repeatable against both cloud projects.
 - No script / CI job can reset / drop / truncate production without an
   explicit override (`-Force` + `YES` confirmation + branch check).
-- Staging receives migrations before production in automated workflows.
+- Staging receives the exact reviewed manifest before production; no merge or
+  push automatically mutates either cloud database.
 
 ---
 
@@ -114,7 +117,7 @@ This document defines the three-environment strategy for `tryvit`:
 | Supabase project | `tryvit-staging` (ref via `SUPABASE_STAGING_PROJECT_REF`) |
 | DB host          | `db.<staging-ref>.supabase.co:5432`                       |
 | API URL          | `https://<staging-ref>.supabase.co`                       |
-| Schema source    | `supabase link --project-ref <ref> && supabase db push`   |
+| Schema source    | Exact-main manifest applied through `deploy.yml`          |
 | Data load        | `RUN_SEED.ps1 -Env staging`                               |
 
 **Data contents:** Will mirror production — full PL dataset + DE micro-pilot.
@@ -128,7 +131,7 @@ This document defines the three-environment strategy for `tryvit`:
 | Supabase project | `uskvezwftkkudvksmken`                                                 |
 | DB host          | `db.uskvezwftkkudvksmken.supabase.co:5432`                             |
 | API URL          | `https://uskvezwftkkudvksmken.supabase.co`                             |
-| Schema source    | `supabase link --project-ref uskvezwftkkudvksmken && supabase db push` |
+| Schema source    | Matching exact-main manifest applied through `deploy.yml`                 |
 | Data load        | `RUN_SEED.ps1 -Env production` or `RUN_REMOTE.ps1` (both guarded)      |
 
 **Data contents:** Full PL dataset + DE micro-pilot. Production IDs are persistent. User-generated data (`user_preferences`, `user_health_profiles`) exists only here and is **not reproducible** from the pipeline.
@@ -180,7 +183,8 @@ supabase/migrations/*.sql  →  THE schema definition
 **Do:**
 - Add a new `.sql` file under `supabase/migrations/` with the naming convention `YYYYMMDDHHMMSS_description.sql`
 - Apply locally via `supabase db reset`
-- Apply to staging/production via `supabase db push`
+- Apply to staging/production only through the manifest-bound `deploy.yml`
+  workflow, which invokes `supabase db push` after validating the exact pending set
 
 ### Verification
 
@@ -211,7 +215,7 @@ scripts/
 
 ### Seed Execution Order
 
-1. **Schema** — `supabase db push` (or migrations applied manually)
+1. **Schema** — exact manifest applied through the guarded deployment workflow
 2. **Reference data** — `supabase/seed/001_reference_data.sql`
 3. **Product pipelines** — `db/pipelines/*/PIPELINE__*.sql` (all 21 categories)
 4. **Post-pipeline fixup** — `db/ci_post_pipeline.sql`
@@ -236,13 +240,17 @@ mutated or wiped:
 
 - Browser-facing workflows and `qa.yml` do not connect to a hosted Supabase project; `qa.yml` uses an ephemeral PG17 container. Non-browser deployment and data-integrity workflows retain their separately governed hosted contracts.
 - Browser-facing PR, main, quality, nightly, screenshot, and Lighthouse jobs receive no hosted Supabase configuration. Phase 5A.0c public runs are Supabase-independent and pass no Supabase URL, key, adapter, or adapter allowlist. Quality and Nightly create a reduced job-owned emulator for authenticated coverage, derive its port from checked-in configuration, seed through the guarded local fixture launcher, and remove its volumes without backup.
-- Browser-facing and QA jobs never run `supabase db push`, `supabase db reset`, or cloud DDL. The separately governed `sync-cloud-db.yml` deployment workflow remains the cloud schema path.
+- Browser-facing and QA jobs never run `supabase db push`, `supabase db reset`,
+  or cloud DDL. The manually dispatched, manifest-bound `deploy.yml` workflow is
+  the sole cloud schema mutation path; `sync-cloud-db.yml` is a retired notice
+  that always fails without mutation.
 - Sanity checks (`RUN_SANITY.ps1`) are **read-only** `SELECT` queries
 
 #### Schema drift prevention
 
 - All schema changes go through `supabase/migrations/*.sql` files
-- `supabase db push` is the only mechanism to apply schema to cloud
+- The manifest-bound driver is the only authorized cloud schema path; it invokes
+  `supabase db push` only after validating the exact pending set
 - Dashboard edits are prohibited — run `supabase db diff` periodically to detect drift
 
 ---
@@ -265,6 +273,12 @@ In the Vercel project settings, set environment variables **per environment**:
 2. **Preview environment:** Set the same variables to staging values.
 3. **Development environment:** Not applicable (developers use `.env.local` pointing to local Docker).
 
+Provider environment records and an existing deployment's build-time bindings
+are separate evidence. Verify records by direct provider readback and verify a
+fresh deployment's effective public project reference before hosted testing.
+Do not use `vercel env run` as remote-value proof because local dotenv and
+process values can overlay the selected remote environment.
+
 ### Auth Redirect URLs
 
 In both Staging and Production Supabase projects, configure:
@@ -280,15 +294,13 @@ In both Staging and Production Supabase projects, configure:
 
 ### GitHub Repository Secrets
 
-| Secret                              | Purpose                     | Used In       |
-| ----------------------------------- | --------------------------- | ------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`          | Production Supabase URL     | `ci.yml`      |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`     | Production anon key         | `ci.yml`      |
-| `SUPABASE_SERVICE_ROLE_KEY`         | Production service role key | `ci.yml`      |
-| `SUPABASE_URL_STAGING`              | Staging Supabase URL        | Future CI/E2E |
-| `SUPABASE_ANON_KEY_STAGING`         | Staging anon key            | Future CI/E2E |
-| `SUPABASE_SERVICE_ROLE_KEY_STAGING` | Staging service role key    | Future CI/E2E |
-| `SONAR_TOKEN`                       | SonarCloud authentication   | `build.yml`   |
+The workflow files are authoritative for secret names and scopes. The database
+driver consumes `SUPABASE_ACCESS_TOKEN`, distinct production/staging project
+references, `SUPABASE_DB_PASSWORD` for production, and
+`SUPABASE_STAGING_DB_PASSWORD` for staging through inherited GitHub secrets.
+Browser-facing workflows receive no hosted Supabase URL, anon key, or
+service-role key. Other non-browser jobs, including the Nightly data-integrity
+audit, retain their separately governed hosted contracts.
 
 ### Local `.env` File
 
@@ -312,20 +324,12 @@ SUPABASE_STAGING_DB_PASSWORD=
 
 ### Current CI Architecture
 
-| Workflow            | Backend                           | Purpose                                | Cloud mutation risk                    |
-| ------------------- | --------------------------------- | -------------------------------------- | -------------------------------------- |
-| `qa.yml`            | Ephemeral PostgreSQL 17 container | Schema + pipeline + 784 QA + 16 sanity | **None** — container only              |
-| Browser-facing gates | Supabase-independent public contract or verified local emulator | Build, Playwright, screenshots and Lighthouse | **None** — hosted browser configuration is rejected |
-| `build.yml`         | N/A (build only) + SonarCloud     | Build, unit tests, coverage            | **None**                               |
-| `sync-cloud-db.yml` | Staging then Production           | Auto-apply migrations on merge to main | **Schema only** — `supabase db push`   |
-
-### Target CI Architecture (§ issue #141)
-
-| Workflow    | Backend                             | Change                        |
-| ----------- | ----------------------------------- | ----------------------------- |
-| `qa.yml`    | Ephemeral PostgreSQL 17 container   | No change — fast CI remains   |
-| Browser-facing gates | Verified local emulator for authenticated Playwright E2E | Preserve coverage without hosted fallback |
-| `build.yml` | N/A                                 | No change                     |
+| Workflow | Backend | Purpose | Hosted mutation boundary |
+| -------- | ------- | ------- | ------------------------ |
+| `qa.yml` | Ephemeral PostgreSQL container | Schema, pipeline, QA, and sanity verification | Container only |
+| Browser-facing gates | Supabase-independent public contract or guarded local emulator | Build, Playwright, screenshots, and Lighthouse | Hosted browser configuration is rejected |
+| `deploy.yml` | Explicit staging or production Supabase project | Manual exact-main, manifest-bound migrations | Sole cloud schema mutation path |
+| `sync-cloud-db.yml` | None | Retired compatibility notice | Always fails without mutation |
 
 ### E2E Safety Rules
 
@@ -335,12 +339,9 @@ SUPABASE_STAGING_DB_PASSWORD=
 4. **Read-only sanity checks** — Only `SELECT`-based sanity checks may run against production from CI.
 5. **No hosted fallback** — missing local emulator tooling or credentials blocks authenticated browser coverage instead of switching to staging or production.
 
-The current Quality Gate and Nightly definitions do not start a local Supabase
-emulator. Their authenticated browser preflights therefore block on standard
-hosted runners by design; public runs are not reported as authenticated
-equivalents. Authenticated Lighthouse is separately blocked until a dedicated
-guarded local fixture exists. These are open infrastructure prerequisites, not
-permission to restore hosted browser credentials or weaken the checks.
+Quality Gate and Nightly start and tear down the guarded local emulator for their
+authenticated browser coverage. Missing local tooling, an invalid loopback
+origin, or failed readiness remains a blocker; no hosted fallback is permitted.
 
 See [PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md](PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md) for the executable browser/fixture contract. Phase 5A.0c makes the public path Supabase-independent; local-authenticated coverage continues to use only the guarded job-owned emulator.
 
@@ -348,28 +349,18 @@ See [PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md](PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.m
 
 ## 9. Deployment Checklists
 
-### New Migration Deployment (current workflow)
+### New Migration Deployment
 
 ```
-1. ☐ Develop migration locally (supabase db reset to test)
-2. ☐ Run RUN_QA.ps1 locally — all 784 checks pass
-3. ☐ Push to branch → CI green (qa.yml + ci.yml + build.yml)
-4. ☐ Merge to main → sync-cloud-db.yml applies to staging (if enabled), then production
-5. ☐ Run RUN_SANITY.ps1 -Env staging — all checks pass
-6. ☐ Run RUN_SANITY.ps1 -Env production — all checks pass
-```
-
-### New Migration Deployment (with manual staging-first gate)
-
-```
-1. ☐ Develop migration locally (supabase db reset to test)
-2. ☐ Run RUN_QA.ps1 locally — all 784 checks pass
-3. ☐ Push to branch → CI green (qa.yml + ci.yml + build.yml)
-4. ☐ Merge to main
-5. ☐ Apply to staging: supabase link --project-ref <staging-ref> && supabase db push
-6. ☐ Run RUN_SANITY.ps1 -Env staging — all checks pass
-7. ☐ Apply to production: supabase link --project-ref uskvezwftkkudvksmken && supabase db push
-8. ☐ Run RUN_SANITY.ps1 -Env production — all checks pass
+1. ☐ Develop and verify the migration locally with the current QA entrypoints
+2. ☐ Commit an ordered manifest with exact migration SHA-256 digests
+3. ☐ Merge reviewed source only after required CI passes
+4. ☐ Record the exact current-main SHA from a clean checkout
+5. ☐ Dispatch deploy.yml dry-run for staging with that SHA and manifest
+6. ☐ Dispatch the actual staging run and preserve its successful receipt
+7. ☐ Produce a fresh committed recovery receipt for the same manifest/profile
+8. ☐ Dispatch production with the matching source, manifest, staging run, and recovery receipt
+9. ☐ Verify the resulting production database before staging/promoting the frontend artifact
 ```
 
 ### Data Pipeline Update
@@ -389,8 +380,8 @@ See [PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md](PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.m
 
 ```
 1. ☐ Create Supabase project in dashboard
-2. ☐ supabase link --project-ref <new-ref>
-3. ☐ supabase db push (applies all migrations)
+2. ☐ Configure the reviewed project binding and required provider secrets
+3. ☐ Commit a manifest for the exact expected migration set and use deploy.yml
 4. ☐ RUN_SEED.ps1 -Env <target> (loads reference data + full dataset)
 5. ☐ RUN_SANITY.ps1 -Env <target> (validates everything)
 6. ☐ Configure auth redirect URLs in Supabase dashboard
@@ -404,16 +395,25 @@ See [PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.md](PHASE5A0A_LOCAL_VISUAL_TEST_SAFETY.m
 
 ### 10.1 PITR (Point-in-Time Recovery)
 
-Supabase **Free** and **Pro** tiers below the PITR add-on do **not** include point-in-time recovery. Current mitigation:
+The plan/PITR snapshot last checked in 2026-02 is not current authority. Verify
+the production project's current entitlement in the provider before relying on
+managed recovery. Repository-controlled mitigations are:
 
-- `deploy.yml` creates a pre-deploy backup artifact (retained 30 days).
+- An actual production `deploy.yml` run requires a committed, validated
+  backup-restore receipt for the same migration manifest and recovery profile.
+- The workflow artifact is a sanitized deployment receipt, not a database dump.
 - `BACKUP.ps1` provides manual backup capability.
 
-**Recommendation:** When the project moves to a paid Supabase plan, enable PITR for the production project (`uskvezwftkkudvksmken`). Until then, the CI-generated backup artifacts and manual backups are the recovery safety net.
+**Recommendation:** Reverify the current hosted backup/PITR entitlement before
+relying on it. Retain tested recovery evidence and separately protected database
+backups appropriate to the release risk.
 
 ### 10.2 Staging Data Freshness
 
-`sync-cloud-db.yml` automatically pushes **schema migrations** to production on merge to `main`, but does **not** sync product data to staging. The staging environment (`rxtaicdpnaqigowdbmsb`) has reference data (countries, categories, nutri-score labels, concern tiers) but no product data unless manually seeded.
+`sync-cloud-db.yml` is retired and performs no synchronization. The manual
+manifest-bound schema workflow also does not copy product data between projects.
+Verify staging data fitness for the intended test instead of assuming parity
+from schema deployment.
 
 **To seed staging with product data:**
 
@@ -437,7 +437,9 @@ This provides an additional review gate beyond the existing CI checks.
 
 ### 10.4 Backup Archival & Long-Term Retention
 
-CI-generated backup artifacts are retained for **30 days** (GitHub Actions default). For long-term compliance or disaster recovery beyond 30 days:
+Sanitized deployment receipts are retained by the workflow for 30 days. Database
+dumps are not generated by `deploy.yml`. For long-term compliance or disaster
+recovery:
 
 - Consider quarterly archival of database dumps to external storage (e.g., S3, GCS, or Azure Blob).
 - Document retention requirements in `docs/PRIVACY_CHECKLIST.md` if GDPR mandates specific data retention periods for backups.
