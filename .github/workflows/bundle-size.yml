@@ -430,17 +430,27 @@ jobs:
           const { readFileSync } = require("node:fs");
           const exactSha = /^[a-f0-9]{40}$/;
           const exactVersion = /^\d+\.\d+\.\d+$/;
-          const manifestVersion = (sha) => {
+          const gitJson = (sha, file) => {
             if (!exactSha.test(sha ?? "")) throw new Error("invalid comparison source SHA");
-            const manifest = JSON.parse(execFileSync("git", ["show", `${sha}:frontend/package.json`], { encoding: "utf8" }));
+            return JSON.parse(execFileSync("git", ["show", `${sha}:${file}`], { encoding: "utf8" }));
+          };
+          const manifestVersion = (sha) => {
+            const manifest = gitJson(sha, "frontend/package.json");
             const version = manifest.dependencies?.next;
             if (!exactVersion.test(version ?? "")) throw new Error("Next dependency must be an exact version");
+            const lock = gitJson(sha, "frontend/package-lock.json");
+            if (lock.lockfileVersion !== 3 || lock.packages?.[""]?.dependencies?.next !== version || lock.packages?.["node_modules/next"]?.version !== version) {
+              throw new Error("Next lock resolution must match its exact package manifest");
+            }
             return version;
           };
           const base = manifestVersion(process.env.BASE_SHA);
           const head = manifestVersion(process.env.HEAD_SHA);
           const baseReport = JSON.parse(readFileSync("performance-reports/route-js/base-route-js.json", "utf8"));
           const headReport = JSON.parse(readFileSync("performance-reports/route-js/head-route-js.json", "utf8"));
+          if (baseReport.sourceCommit !== process.env.BASE_SHA || headReport.sourceCommit !== process.env.HEAD_SHA) {
+            throw new Error("Route report source does not match the exact comparison commit");
+          }
           if (baseReport.nextVersion !== base || headReport.nextVersion !== head) {
             throw new Error("Measured Next version does not match its exact package manifest");
           }

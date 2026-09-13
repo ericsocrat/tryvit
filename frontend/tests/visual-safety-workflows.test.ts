@@ -795,7 +795,10 @@ describe("browser workflow visual-safety contract", () => {
     expect(bundle).toContain("--current=performance-reports/route-js/head-route-js.json");
     expect(bundle).toContain("--next-version-transition=$next_transition");
     expect(bundle).toContain("Measured Next version does not match its exact package manifest");
-    expect(bundle).toContain('git", ["show", `${sha}:frontend/package.json`]');
+    expect(bundle).toContain("Route report source does not match the exact comparison commit");
+    expect(bundle).toContain("Next lock resolution must match its exact package manifest");
+    expect(bundle).toContain('lock.packages?.["node_modules/next"]?.version !== version');
+    expect(bundle).toContain('execFileSync("git", ["show", `${sha}:${file}`]');
     expect(bundle).toContain("+10 KiB OR +5% fails; reductions pass");
     expect(bundle).not.toContain("build-manifest.json");
     expect(bundle).not.toContain("totalBytes");
