@@ -193,6 +193,15 @@ export interface RouteJsReport {
   readonly reportChecksum: string;
 }
 
+export interface NextVersionTransition {
+  readonly baseline: string;
+  readonly current: string;
+}
+
+export interface RouteJsComparisonOptions {
+  readonly nextVersionTransition?: NextVersionTransition;
+}
+
 function fail(code: string): never {
   throw new Error(`[P5_BUNDLE] ${code}`);
 }
@@ -1414,8 +1423,10 @@ export function validateRouteJsReport(value: unknown): asserts value is RouteJsR
 export function compareRouteJsReports(
   baselineValue: unknown,
   currentValue: unknown,
+  options: RouteJsComparisonOptions = {},
 ): {
   readonly failed: boolean;
+  readonly nextVersionTransition: NextVersionTransition | null;
   readonly routes: readonly {
     readonly id: string;
     readonly baselineGzipBytes: number;
@@ -1426,12 +1437,29 @@ export function compareRouteJsReports(
 } {
   validateRouteJsReport(baselineValue);
   validateRouteJsReport(currentValue);
+  const transition = options.nextVersionTransition;
+  const versionPattern = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)$/u;
+  const versionChanged = baselineValue.nextVersion !== currentValue.nextVersion;
+  if (versionChanged) {
+    if (
+      !transition ||
+      Object.keys(transition).sort().join(",") !== "baseline,current" ||
+      !versionPattern.test(transition.baseline) ||
+      !versionPattern.test(transition.current) ||
+      transition.baseline === transition.current ||
+      transition.baseline !== baselineValue.nextVersion ||
+      transition.current !== currentValue.nextVersion
+    ) {
+      fail("comparison-environment-mismatch:nextVersion");
+    }
+  } else if (transition !== undefined) {
+    fail("comparison-next-version-transition-unneeded");
+  }
   for (const field of [
     "environmentClass",
     "platform",
     "nodeVersion",
     "zlibVersion",
-    "nextVersion",
     "chromiumVersion",
     "compression",
     "sourceOfTruth",
@@ -1472,6 +1500,7 @@ export function compareRouteJsReports(
   });
   return Object.freeze({
     failed: routes.some((route) => route.regression.failed),
+    nextVersionTransition: transition ? Object.freeze({ ...transition }) : null,
     routes: Object.freeze(routes),
   });
 }
@@ -1524,6 +1553,7 @@ export function compareRouteJsModeReports(
   });
   return Object.freeze({
     failed: routes.some((route) => route.regression.failed),
+    nextVersionTransition: null,
     routes: Object.freeze(routes),
   });
 }
@@ -1555,5 +1585,11 @@ export function formatRouteJsComparisonMarkdown(
     "",
     "Regression enforcement fails when either +10 KiB or +5% is exceeded. Existing target debt remains visible and is not redefined as a passing target.",
   );
+  if (comparison.nextVersionTransition) {
+    lines.push(
+      "",
+      `Framework transition: Next.js ${comparison.nextVersionTransition.baseline} → ${comparison.nextVersionTransition.current}. The transition is bound to the measured reports; every other environment field must match and the same size thresholds remain enforced.`,
+    );
+  }
   return `${lines.join("\n")}\n`;
 }
