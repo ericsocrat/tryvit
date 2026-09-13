@@ -320,6 +320,8 @@ describe("browser workflow visual-safety contract", () => {
     );
     expect(localRuntimeSource).not.toContain("--exclude realtime");
     expect(localRuntimeSource).toContain('>"$output_file" 2>&1');
+    expect(localRuntimeSource).toContain('cause="$(node "$failure_classifier" "$output_file"');
+    expect(localRuntimeSource).toContain("cause=%s; credential-bearing CLI output withheld");
     expect(localRuntimeSource).toContain("credential-bearing CLI output withheld");
     expect(localRuntimeSource).not.toMatch(/\b(?:login|link|db push)\b/u);
     expect(localRuntimeSource).not.toContain("55001");
@@ -1032,6 +1034,14 @@ describe("browser workflow visual-safety contract", () => {
     expect(nightlyUnitStep).toContain("timeout-minutes: 7");
     expect(nightlyPublicSuite).toContain('NEXT_PUBLIC_QA_MODE: "1"');
     expect(nightlyAuthenticatedSuite).toContain('NEXT_PUBLIC_QA_MODE: "1"');
+    expect(nightlyAuthenticatedSuite).toContain("QA_MODE_LEVEL: full");
+    expect(nightlyAuthenticatedSuite).toContain("--project=quality-mobile");
+    expect(nightlyAuthenticatedSuite).toContain("--project=quality-desktop");
+    expect(nightlyAuthenticatedSuite).not.toContain("--project=authenticated");
+    expect(nightlyAuthenticatedSuite).not.toContain("--project=functional");
+    expect(browserJobs.nightly).toMatch(
+      /Install pinned Supabase CLI[\s\S]*version: 2\.111\.0/u,
+    );
     expect(browserJobs.nightly.match(/NEXT_PUBLIC_QA_MODE: "1"/gu)).toHaveLength(2);
     expect(nightlyPublicSuite).toContain("--retries=0");
     expect(nightlyAuthenticatedSuite).toContain("--retries=0");
@@ -1082,6 +1092,17 @@ describe("browser workflow visual-safety contract", () => {
     expect(config).toContain("globalTimeout: 900_000");
     expect(workflowSources.nightly).toContain("BASELINE_COMPREHENSIVE: 900");
     expect(browserJobs.nightly).toContain("timeout-minutes: 20");
+  });
+
+  it("keeps Nightly scheduled and manually dispatchable without making it a PR gate", () => {
+    const triggerSection = workflowSources.nightly.slice(
+      workflowSources.nightly.indexOf("on:"),
+      workflowSources.nightly.indexOf("permissions:"),
+    );
+    expect(triggerSection).toContain("schedule:");
+    expect(triggerSection).toContain("workflow_dispatch:");
+    expect(triggerSection).not.toContain("pull_request:");
+    expect(triggerSection).not.toContain("push:");
   });
 
   it("scans every browser artifact family before workflow upload", () => {

@@ -109,6 +109,10 @@ jobs:
 
       - name: Install pinned Supabase CLI
         uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
+        with:
+          # Match the already-green scheduled Quality Gate instead of letting
+          # Nightly silently move to an unreviewed local-runtime contract.
+          version: 2.111.0
 
       - name: Public visual-safety preflight
         run: npm run visual-safety:preflight
@@ -167,12 +171,16 @@ jobs:
         id: local_authenticated_suite
         run: |
           set -o pipefail
-          npm run visual-safety:local-authenticated -- --project=authenticated --project=functional --project=private-pwa-cache --project=phase5a1-catalog --project=phase5a2-primitives-firefox --project=phase5a2-primitives-webkit --retries=0 --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
+          npm run visual-safety:local-authenticated -- --project=quality-mobile --project=quality-desktop --project=private-pwa-cache --project=phase5a1-catalog --project=phase5a2-primitives-firefox --project=phase5a2-primitives-webkit --retries=0 --reporter=list 2>&1 | tee ../playwright-authenticated-stdout.log
         timeout-minutes: 20
         env:
           VISUAL_SAFETY_MODE: local-authenticated
           BASE_URL: http://127.0.0.1:3000
           NEXT_PUBLIC_QA_MODE: "1"
+          # Nightly retains broad scheduled value through the current route
+          # manifest and invariant engine. The broad authenticated/functional
+          # selectors still include pre-rebuild navigation and score UI contracts.
+          QA_MODE_LEVEL: full
 
       - name: Verify Phase 5A.1 catalog candidate manifest
         id: catalog_candidates

@@ -11,6 +11,10 @@ action="${1:-}"
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 repository_root="$(cd -- "${script_dir}/../../.." && pwd -P)"
 temporary_root="${RUNNER_TEMP:-${TMPDIR:-/tmp}}"
+failure_classifier="${script_dir}/local-supabase-failure.mjs"
+
+# Keep captured CLI output private even outside GitHub-hosted runners.
+umask 077
 
 # Local lifecycle commands never need hosted-project authority. Strip any
 # accidentally inherited cloud controls before invoking the CLI.
@@ -32,8 +36,15 @@ run_without_output() {
 
   if ! "$@" >"$output_file" 2>&1; then
     # Supabase CLI output can contain local JWTs. Never replay it into Actions
-    # logs or retain it as an artifact, even on failure.
-    printf '[VS_LOCAL_RUNTIME] %s-failed; credential-bearing CLI output withheld\n' "$label" >&2
+    # logs or retain it as an artifact, even on failure. The classifier returns
+    # one reviewed constant and never echoes captured text.
+    local cause
+    cause="$(node "$failure_classifier" "$output_file" 2>/dev/null || printf 'unclassified')"
+    case "$cause" in
+      configuration-invalid|container-image-unavailable|docker-daemon-unavailable|migration-failed|network-failure|port-conflict|runner-resource-exhausted|service-health-failed|unclassified) ;;
+      *) cause="unclassified" ;;
+    esac
+    printf '[VS_LOCAL_RUNTIME] %s-failed; cause=%s; credential-bearing CLI output withheld\n' "$label" "$cause" >&2
     rm -f -- "$output_file"
     trap - HUP INT TERM
     return 1
