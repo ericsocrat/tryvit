@@ -793,6 +793,9 @@ describe("browser workflow visual-safety contract", () => {
     expect(bundle).toContain("--mode=local-authenticated");
     expect(bundle).toContain("--baseline=performance-reports/route-js/base-route-js.json");
     expect(bundle).toContain("--current=performance-reports/route-js/head-route-js.json");
+    expect(bundle).toContain("--next-version-transition=$next_transition");
+    expect(bundle).toContain("Measured Next version does not match its exact package manifest");
+    expect(bundle).toContain('git", ["show", `${sha}:frontend/package.json`]');
     expect(bundle).toContain("+10 KiB OR +5% fails; reductions pass");
     expect(bundle).not.toContain("build-manifest.json");
     expect(bundle).not.toContain("totalBytes");

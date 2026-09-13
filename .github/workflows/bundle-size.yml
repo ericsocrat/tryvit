@@ -420,9 +420,39 @@ jobs:
       - name: Compare route JavaScript (+10 KiB OR +5% fails; reductions pass)
         id: route_compare
         shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
+          set -euo pipefail
+          next_transition="$(node <<'NODE'
+          const { execFileSync } = require("node:child_process");
+          const { readFileSync } = require("node:fs");
+          const exactSha = /^[a-f0-9]{40}$/;
+          const exactVersion = /^\d+\.\d+\.\d+$/;
+          const manifestVersion = (sha) => {
+            if (!exactSha.test(sha ?? "")) throw new Error("invalid comparison source SHA");
+            const manifest = JSON.parse(execFileSync("git", ["show", `${sha}:frontend/package.json`], { encoding: "utf8" }));
+            const version = manifest.dependencies?.next;
+            if (!exactVersion.test(version ?? "")) throw new Error("Next dependency must be an exact version");
+            return version;
+          };
+          const base = manifestVersion(process.env.BASE_SHA);
+          const head = manifestVersion(process.env.HEAD_SHA);
+          const baseReport = JSON.parse(readFileSync("performance-reports/route-js/base-route-js.json", "utf8"));
+          const headReport = JSON.parse(readFileSync("performance-reports/route-js/head-route-js.json", "utf8"));
+          if (baseReport.nextVersion !== base || headReport.nextVersion !== head) {
+            throw new Error("Measured Next version does not match its exact package manifest");
+          }
+          if (base !== head) process.stdout.write(`${base}:${head}`);
+          NODE
+          )"
+          compare_args=()
+          if [ -n "$next_transition" ]; then
+            compare_args+=("--next-version-transition=$next_transition")
+          fi
           set +e
-          npm run phase5:route-js -- compare --baseline=performance-reports/route-js/base-route-js.json --current=performance-reports/route-js/head-route-js.json --markdown=performance-reports/route-js/route-js-comparison.md
+          npm run phase5:route-js -- compare --baseline=performance-reports/route-js/base-route-js.json --current=performance-reports/route-js/head-route-js.json --markdown=performance-reports/route-js/route-js-comparison.md "${compare_args[@]}"
           comparison_exit=$?
           set -e
           echo "exit_code=$comparison_exit" >> "$GITHUB_OUTPUT"
