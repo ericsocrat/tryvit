@@ -95,12 +95,17 @@ describe("Nightly current behavior projects", () => {
     const settings = readSpec("functional-settings.spec.ts");
 
     expect(errors).toContain('getByRole("heading", { name: "Product not found" })');
+    expect(errors).toContain(
+      'heading.locator("..").getByRole("link", { name: "Find", exact: true })',
+    );
     expect(errors).toContain('getByText("No saved searches yet")');
     expect(errors).toContain('getByText("No saved comparisons yet")');
     expect(lists).toContain('test.describe.configure({ mode: "serial" })');
     expect(lists).not.toMatch(/\.isVisible\([^)]*\)\s*\.catch\(\(\) => false\)/u);
     expect(lists).toContain("not.toBeVisible({ timeout: 10_000 })");
     expect(settings).not.toMatch(/\.isVisible\([^)]*\)\s*\.catch\(\(\) => false\)/u);
+    expect(settings).toContain('test.describe.configure({ mode: "serial" })');
+    expect(settings).toContain("Änderungen speichern");
     expect(settings).toContain("Preferences saved!");
     expect(settings).toContain('toHaveAttribute("aria-pressed", "true")');
   });

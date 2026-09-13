@@ -8,6 +8,9 @@
 
 import { expect, test } from "./fixtures/safe-test";
 
+const SAVE_BUTTON_NAME = /Save changes|Zapisz zmiany|Änderungen speichern/i;
+test.describe.configure({ mode: "serial" });
+
 // ─── Settings navigation ────────────────────────────────────────────────────
 
 test.describe("Settings: tab navigation", () => {
@@ -16,9 +19,7 @@ test.describe("Settings: tab navigation", () => {
     await page.waitForLoadState("domcontentloaded");
 
     // Profile tab should be active on the base settings route.
-    const profileTab = page
-      .locator('a[href="/app/settings"][aria-current="page"]')
-      .first();
+    const profileTab = page.locator('a[href="/app/settings"][aria-current="page"]').first();
     await expect(profileTab).toBeVisible();
 
     // Profile page should render its heading.
@@ -50,9 +51,7 @@ test.describe("Settings: tab navigation", () => {
     await page.waitForURL(/\/app\/settings\/account/);
 
     // Account page should render a stable destructive action.
-    await expect(
-      page.getByTestId("delete-account-button"),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByTestId("delete-account-button")).toBeVisible({ timeout: 10_000 });
   });
 });
 
@@ -64,18 +63,14 @@ test.describe("Settings: preference changes", () => {
     await page.waitForLoadState("domcontentloaded");
 
     // Country section heading
-    await expect(
-      page.getByText(/Country|Kraj/i).first(),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/Country|Kraj/i).first()).toBeVisible({ timeout: 10_000 });
 
     // Language section heading
     await expect(page.getByText(/Language|Język/i).first()).toBeVisible();
 
     // Country buttons should be visible.
     await expect(page.getByRole("button", { name: /Polska/i })).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /Deutschland/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /Deutschland/i })).toBeVisible();
   });
 
   test("changing country shows save button", async ({ page }) => {
@@ -84,7 +79,7 @@ test.describe("Settings: preference changes", () => {
 
     // Save button should not be visible initially (form not dirty)
     const saveBtn = page.getByRole("button", {
-      name: /Save changes|Zapisz zmiany/i,
+      name: SAVE_BUTTON_NAME,
     });
     await expect(saveBtn).not.toBeVisible({ timeout: 3_000 });
 
@@ -116,7 +111,7 @@ test.describe("Settings: preference changes", () => {
 
     // Save button should appear
     const saveBtn = page.getByRole("button", {
-      name: /Save changes|Zapisz zmiany/i,
+      name: SAVE_BUTTON_NAME,
     });
     await expect(saveBtn).toBeVisible({ timeout: 5_000 });
     await saveBtn.click();
@@ -134,7 +129,7 @@ test.describe("Settings: preference changes", () => {
     await expect(englishBtn).toBeVisible();
     await englishBtn.click();
     const saveBtnAgain = page.getByRole("button", {
-      name: /Save changes|Zapisz zmiany/i,
+      name: SAVE_BUTTON_NAME,
     });
     await expect(saveBtnAgain).toBeVisible({ timeout: 5_000 });
     await saveBtnAgain.click();
@@ -163,4 +158,3 @@ test.describe("Settings: preference changes", () => {
     await expect(page.locator("body")).not.toContainText(/error|failed/i);
   });
 });
-

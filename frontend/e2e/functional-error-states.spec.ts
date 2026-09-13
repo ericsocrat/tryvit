@@ -11,9 +11,7 @@ import { test, expect } from "./fixtures/safe-test";
 // ─── Invalid Routes ────────────────────────────────────────────────────────
 
 test.describe("Error states: invalid routes", () => {
-  test("non-existent category shows error or empty state", async ({
-    page,
-  }) => {
+  test("non-existent category shows error or empty state", async ({ page }) => {
     await page.goto("/app/categories/nonexistent-fake-category-xyz");
     await page.waitForLoadState("domcontentloaded");
 
@@ -37,13 +35,13 @@ test.describe("Error states: invalid routes", () => {
     await page.waitForLoadState("domcontentloaded");
 
     expect(page.url()).not.toMatch(/\/auth\/login/);
-    await expect(page.getByRole("heading", { name: "Product not found" })).toBeVisible({
+    const heading = page.getByRole("heading", { name: "Product not found" });
+    await expect(heading).toBeVisible({
       timeout: 10_000,
     });
-    await expect(page.getByRole("link", { name: /Find/i })).toHaveAttribute(
-      "href",
-      "/app/search",
-    );
+    await expect(
+      heading.locator("..").getByRole("link", { name: "Find", exact: true }),
+    ).toHaveAttribute("href", "/app/search");
   });
 
   test("negative product ID shows error state", async ({ page }) => {
@@ -51,18 +49,16 @@ test.describe("Error states: invalid routes", () => {
     await page.waitForLoadState("domcontentloaded");
 
     expect(page.url()).not.toMatch(/\/auth\/login/);
-    await expect(page.getByRole("heading", { name: "Product not found" })).toBeVisible({
+    const heading = page.getByRole("heading", { name: "Product not found" });
+    await expect(heading).toBeVisible({
       timeout: 10_000,
     });
-    await expect(page.getByRole("link", { name: /Find/i })).toHaveAttribute(
-      "href",
-      "/app/search",
-    );
+    await expect(
+      heading.locator("..").getByRole("link", { name: "Find", exact: true }),
+    ).toHaveAttribute("href", "/app/search");
   });
 
-  test("extremely large product ID shows not-found state", async ({
-    page,
-  }) => {
+  test("extremely large product ID shows not-found state", async ({ page }) => {
     await page.goto("/app/product/99999999");
     await page.waitForLoadState("domcontentloaded");
 
@@ -71,11 +67,7 @@ test.describe("Error states: invalid routes", () => {
 
     // Should show not-found or error message
     await expect(
-      page
-        .getByText(
-          /not found|nie znaleziono|failed|nie udało się|does not exist/i,
-        )
-        .first(),
+      page.getByText(/not found|nie znaleziono|failed|nie udało się|does not exist/i).first(),
     ).toBeVisible({ timeout: 10_000 });
   });
 });
@@ -87,9 +79,7 @@ test.describe("Error states: empty states", () => {
     await page.goto("/app/scan/history");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(
-      page.getByText(/no scans|brak skanów/i).first(),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText(/no scans|brak skanów/i).first()).toBeVisible({ timeout: 10_000 });
   });
 
   test("saved searches shows empty state for fresh user", async ({ page }) => {
@@ -103,9 +93,7 @@ test.describe("Error states: empty states", () => {
     await expect(page.getByText("No saved searches yet")).toBeVisible();
   });
 
-  test("saved comparisons shows empty state for fresh user", async ({
-    page,
-  }) => {
+  test("saved comparisons shows empty state for fresh user", async ({ page }) => {
     await page.goto("/app/compare/saved");
     await page.waitForLoadState("domcontentloaded");
 
@@ -116,15 +104,12 @@ test.describe("Error states: empty states", () => {
     await expect(page.getByText("No saved comparisons yet")).toBeVisible();
   });
 
-  test("submissions page shows empty state for fresh user", async ({
-    page,
-  }) => {
+  test("submissions page shows empty state for fresh user", async ({ page }) => {
     await page.goto("/app/scan/submissions");
     await page.waitForLoadState("domcontentloaded");
 
-    await expect(
-      page.getByRole("heading", { name: /My Submissions/i }),
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("heading", { name: /My Submissions/i })).toBeVisible({
+      timeout: 10_000,
+    });
   });
 });
-
