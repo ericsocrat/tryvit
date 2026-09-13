@@ -27,9 +27,17 @@ export function transportEnvironment({password,caPath,readOnly=false,environment
 }
 
 export async function verifySession(session,{readOnly=false}={}) {
-  const state=JSON.parse(await session.query("SELECT jsonb_build_object('strings',current_setting('standard_conforming_strings'),'database',current_database(),'user',session_user,'readOnly',current_setting('default_transaction_read_only'))"));
-  if(state.strings!=='on'||state.database!=='postgres'||state.user!=='postgres'||(readOnly&&state.readOnly!=='on'))
+  const state=JSON.parse(await session.query("SELECT jsonb_build_object('strings',current_setting('standard_conforming_strings'),'database',current_database(),'user',session_user,'readOnly',current_setting('default_transaction_read_only'),'transactionReadOnly',current_setting('transaction_read_only'))"));
+  if(state.strings!=='on'||state.database!=='postgres'||state.user!=='postgres'||(readOnly&&(state.readOnly!=='on'||state.transactionReadOnly!=='on')))
     fail('production_session_binding_or_sql_settings_failed');
+}
+
+export async function initializeSession(session,{readOnly=false}={}) {
+  // Session poolers may ignore startup PGOPTIONS. Establish settings on this
+  // connection explicitly, then verify before any inspection or mutation.
+  await session.query('SET SESSION standard_conforming_strings = on');
+  if(readOnly)await session.query('SET SESSION default_transaction_read_only = on');
+  await verifySession(session,{readOnly});
 }
 
 function localAuthority() {
@@ -161,9 +169,9 @@ export function validateDumpArguments(args) {
     fail('production_dump_scope_incomplete');
 }
 
-function productionCaptureTransport(options) {
+export function productionCaptureTransport(options,connect=connectProduction) {
   return {identity:async()=>({environment:'production',project:TARGET}),
-    openSession:async()=>{const s=await connectProduction(options,true);try{await verifySession(s,{readOnly:true});return s;}catch(e){await s.close().catch(()=>{});throw e;}},
+    openSession:async()=>{const s=await connect(options,true);try{await initializeSession(s,{readOnly:true});return s;}catch(e){await s.close().catch(()=>{});throw e;}},
     pgDump:async args=>{
       const env=transportEnvironment({password:readPassword(options.envFile),caPath:path.resolve(options.sourceCa),readOnly:true,environment:process.env});
       return executeScopedDump(args,env);
@@ -174,7 +182,9 @@ export function executeScopedDump(args,env,spawn=spawnSync) {
   validateDumpArguments(args);
   let result;
   try {
-    result=spawn('pg_dump',args,{env:{...env,PGOPTIONS:(env.PGOPTIONS??'')+' -c statement_timeout=120000'},
+    // pg_dump resets server statement_timeout; the external process bound is
+    // authoritative. Its own snapshot transaction is explicitly READ ONLY.
+    result=spawn('pg_dump',args,{env,
       encoding:null,maxBuffer:64*1024*1024,timeout:120000,windowsHide:true,shell:false});
   } catch {fail('production_scoped_dump_failed');}
   if(result.error||result.status!==0||!Buffer.isBuffer(result.stdout)) {
@@ -194,7 +204,7 @@ async function runProductionBatch(options,plan,dependencies) {
   const proof=plan.input.populatedProof,stores=[];
   const connect=async()=>{
     const session=await (dependencies.connect??connectProduction)(options,false);
-    try{await verifySession(session);return session;}catch(error){await session.close().catch(()=>{});throw error;}
+    try{await initializeSession(session);return session;}catch(error){await session.close().catch(()=>{});throw error;}
   };
   const executionPlan={planSha256:plan.summary.planSha256,sourceHead:plan.summary.sourceHead,executionEnvironment:'production'};
   let result;
@@ -248,7 +258,7 @@ export async function productionOperate(options={},dependencies={}) {
   let store;
   try {
     // Injected test transports must meet the same SQL session contract.
-    await verifySession(session,{readOnly});
+    await initializeSession(session,{readOnly});
     const original=plan.input.pilot;
     let result;
     if(action==='inspect-sources') {

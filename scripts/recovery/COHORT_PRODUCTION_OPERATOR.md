@@ -27,6 +27,30 @@ operator environment or `--source-env-file`. Passwords never enter argv or
 reports. `--source-ca` is a reviewed certificate path, not a TLS-disable switch.
 No role, public route, cloud configuration or dependency is provisioned.
 
+### Session initialization and dump boundaries
+
+The fixed production session pooler was observed to ignore startup `PGOPTIONS`
+for `default_transaction_read_only`. The operator therefore explicitly executes
+`SET SESSION standard_conforming_strings = on`, and for capture/inspection
+`SET SESSION default_transaction_read_only = on`, on each newly opened SQL
+connection. It then verifies the database, session user, string mode and both
+default/current transaction read-only settings on that same connection. A failed
+SET or verification closes the connection before snapshots, envelopes or imports.
+These are session-only settings; no role defaults or cloud configuration change.
+Write operations do not reset read-only settings to off and retain their existing
+transaction and recovery boundaries.
+
+The separate `pg_dump` process does not inherit those established SQL sessions.
+Its read-only transaction boundary comes from the PostgreSQL 18.1 implementation:
+it begins a repeatable-read, explicitly read-only transaction before importing the
+exported snapshot. Its startup options are not evidence of an enforced query
+timeout: `pg_dump` itself resets server statement timeouts. The wrapper enforces
+a 120-second external process timeout, retains scoped snapshot arguments, and
+clears failed partial output buffers. See the
+[PostgreSQL 18.1 pg_dump source](https://github.com/postgres/postgres/blob/REL_18_1/src/bin/pg_dump/pg_dump.c).
+Unit tests are not a production capture certificate; the corrected transport
+still requires an actual source-bound capture and isolated restore.
+
 ## Bounded sequence (not executed by implementation)
 
 Every command is first run without `--execute`; review its returned SHA before
@@ -102,7 +126,8 @@ local implementation tests. No production authority is implied by a clone PASS.
 
 ## Implementation verification
 
-All 88 recovery unit tests pass, with no skipped tests. The artifact-dependent
+The pre-session-fix operator passed 88 recovery unit tests with no skips. The
+session-initialization follow-up passed 93, including 19 wrapper tests. The artifact-dependent
 cohort/pilot tests now use synthetic injected inputs and also pass in a copied
 scripts-only tree without Git, backups or retained production evidence. No real
 cohort data was added to Git for tests.

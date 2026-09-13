@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import path from 'node:path';
-import {buildProductionPlan,productionOperate,assertExecutionBindings,transportEnvironment,verifySession,parseOptions,validateDumpArguments,executeScopedDump,operatorExitCode} from './cohort-production-operator.mjs';
+import {buildProductionPlan,productionOperate,assertExecutionBindings,transportEnvironment,verifySession,initializeSession,productionCaptureTransport,parseOptions,validateDumpArguments,executeScopedDump,operatorExitCode} from './cohort-production-operator.mjs';
 import {TARGET,rollbackInSession,inspectOutcome} from './cohort-pilot-operator.mjs';
 import {RecoveryError} from './catalog-recovery.mjs';
 import {scopeTables} from './catalog-recovery.mjs';
@@ -63,6 +63,79 @@ test('SQL string mode failure is rejected before creating envelopes or applying'
     query:async()=>JSON.stringify({strings:'off',database:'postgres',user:'postgres',readOnly:'off'}),close:async()=>{}})}),/sql_settings/);
   assert.equal(counts.store+counts.apply,0);
   await assert.rejects(verifySession({query:async()=>JSON.stringify({strings:'on',database:'postgres',user:'postgres',readOnly:'off'})},{readOnly:true}));
+});
+
+function pooledSession({rejectSet=false,ignoreSet=false,transactionOff=false}={}) {
+  const state={strings:'off',database:'postgres',user:'postgres',readOnly:'off',transactionReadOnly:'off'};
+  const calls=[];let closed=0;
+  return {calls,get closed(){return closed;},close:async()=>{closed++;},query:async sql=>{
+    calls.push(sql);
+    if(sql.startsWith('SET SESSION ')) {
+      if(rejectSet)throw new RecoveryError('synthetic_session_set_rejected');
+      if(!ignoreSet) {
+        if(sql==='SET SESSION standard_conforming_strings = on')state.strings='on';
+        else if(sql==='SET SESSION default_transaction_read_only = on') {
+          state.readOnly='on';state.transactionReadOnly=transactionOff?'off':'on';
+        } else assert.fail('Unexpected session setting');
+      }
+      return '';
+    }
+    assert.match(sql,/^SELECT jsonb_build_object\('strings'/);
+    return JSON.stringify(state);
+  }};
+}
+
+test('capture initializes and verifies the same connection when startup options were ignored',async()=>{
+  const session=pooledSession();let connections=0;
+  const transport=productionCaptureTransport({},async(_options,readOnly)=>{connections++;assert.equal(readOnly,true);return session;});
+  assert.equal(await transport.openSession(),session);
+  assert.equal(connections,1);assert.equal(session.closed,0);
+  assert.deepEqual(session.calls.slice(0,2),[
+    'SET SESSION standard_conforming_strings = on','SET SESSION default_transaction_read_only = on']);
+  assert.match(session.calls[2],/transaction_read_only/);
+  await session.close();
+});
+
+test('capture initialization fails closed and closes before snapshots or dumps',async()=>{
+  for(const failure of [{rejectSet:true},{ignoreSet:true},{transactionOff:true}]) {
+    const session=pooledSession(failure);
+    const transport=productionCaptureTransport({},async()=>session);
+    await assert.rejects(transport.openSession());
+    assert.equal(session.closed,1);
+    assert.ok(session.calls.every(sql=>sql.startsWith('SET SESSION ')||sql.startsWith("SELECT jsonb_build_object('strings'")));
+  }
+});
+
+test('pilot and inspection initialization failure closes before capture, envelopes or import',async()=>{
+  for(const action of ['pilot','inspect-sources'])for(const failure of [{rejectSet:true},{ignoreSet:true}]) {
+    const f=fixture(),session=pooledSession(failure);
+    const options={...f.options,action};
+    f.deps.connect=async()=>session;
+    options.confirmDigest=buildProductionPlan(options,f.deps).summary.planSha256;
+    await assert.rejects(productionOperate({...options,execute:true},f.deps));
+    assert.equal(session.closed,1);assert.equal(f.counts.store+f.counts.apply+f.counts.receipt,0);
+    assert.ok(session.calls.every(sql=>sql.startsWith('SET SESSION ')||sql.startsWith("SELECT jsonb_build_object('strings'")));
+  }
+});
+
+test('write initialization does not change mutation transaction policy',async()=>{
+  const session=pooledSession();
+  await initializeSession(session);
+  assert.equal(session.calls.length,2);
+  assert.equal(session.calls[0],'SET SESSION standard_conforming_strings = on');
+  assert.ok(!session.calls.some(sql=>sql.startsWith('SET SESSION default_transaction_read_only')));
+});
+
+test('batch initialization failure closes before member envelopes or import',async()=>{
+  const f=fixture(),session=pooledSession({rejectSet:true});
+  f.deps.inputs=()=>({manifest:{sha256:'d'.repeat(64)},entries:[{productId:1}],populatedProducerReady:true,
+    populatedProof:{receiptSha256:'e'.repeat(64)}});
+  f.deps.connect=async()=>session;
+  f.deps.applyBatch=async args=>{await args.connect();assert.fail('Uninitialized connection returned');};
+  const options={...f.options,action:'batch'};
+  options.confirmDigest=buildProductionPlan(options,f.deps).summary.planSha256;
+  await assert.rejects(productionOperate({...options,execute:true},f.deps));
+  assert.equal(session.closed,1);assert.equal(f.counts.store+f.counts.apply+f.counts.receipt,0);
 });
 
 test('acknowledged apply succeeds once; uncertain commit is never retried',async()=>{
@@ -159,7 +232,7 @@ test('batch read-only inspection distinguishes reversed target and changed sourc
   assert.equal(inspectBatchOutcome({before,after},{...restored,source:{...restored.source,country:'DE'}}),'DRIFT_REQUIRES_REVIEW');
 });
 
-test('pg_dump bounds process/query time, hides its window and clears failed partial buffers',()=>{
+test('pg_dump bounds process time, hides its window and clears failed partial buffers',()=>{
   const args=['--format=custom','--schema-only','--no-large-objects','--snapshot=0001-0002-1'];
   for(const failure of [{status:1},{status:null,error:Object.assign(new Error('synthetic private diagnostic'),{code:'ETIMEDOUT'})}]) {
     const stdout=Buffer.from('synthetic partial archive'),stderr=Buffer.from('synthetic private diagnostic'),extra=Buffer.from('partial output copy');
@@ -167,7 +240,7 @@ test('pg_dump bounds process/query time, hides its window and clears failed part
     assert.throws(()=>executeScopedDump(args,{PGOPTIONS:'-c standard_conforming_strings=on'},(executable,actualArgs,options)=>{
       calls++;assert.equal(executable,'pg_dump');assert.deepEqual(actualArgs,args);
       assert.equal(options.timeout,120000);assert.equal(options.windowsHide,true);assert.equal(options.shell,false);
-      assert.match(options.env.PGOPTIONS,/standard_conforming_strings=on/);assert.match(options.env.PGOPTIONS,/statement_timeout=120000/);
+      assert.equal(options.env.PGOPTIONS,'-c standard_conforming_strings=on');
       return {...failure,stdout,stderr,output:[null,stdout,stderr,extra]};
     }),error=>error.code==='production_scoped_dump_failed'&&!error.message.includes('private'));
     assert.equal(calls,1);assert.ok(stdout.every(v=>v===0));assert.ok(stderr.every(v=>v===0));assert.ok(extra.every(v=>v===0));
