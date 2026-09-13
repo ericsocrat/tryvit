@@ -47,9 +47,9 @@ with a fresh exact-allowlist capture and actual isolated restore before every
 batch. Every member and peer-postimage check passed; no uncertain result or retry
 occurred.
 
-Final production verification is exactly 55 batches, source records and accepted
-selected observations, 502 assertions, 55 recorded consumer models and 55 retired
-null scores. The final canonical allowlist digest is
+Final production verification is exactly 55 ingestion-batch rows, source records
+and accepted selected observations, 502 assertions, 55 recorded consumer models
+and 55 retired null scores. The final canonical allowlist digest is
 `93d0d8c40517e719a56d9640c498cc246805f622df9f1b2215b77aacdf937bd1`;
 the final completed-state recovery receipt is
 `93682219142784e5946b6f035d48312b9f16e01b1c8d8d2722bf6efd924e7c5b`.

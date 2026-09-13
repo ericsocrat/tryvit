@@ -54,7 +54,7 @@ clears failed partial output buffers. See the
 Unit tests are not a production capture certificate; the corrected transport
 still requires an actual source-bound capture and isolated restore.
 
-## Bounded sequence (not executed by implementation)
+## Bounded sequence for any future authorized execution
 
 Every command is first run without `--execute`; review its returned SHA before
 adding `--execute --confirm-sha256 <sha>` and exact source/main/project flags.
