@@ -573,6 +573,60 @@ describe("cold-browser route JavaScript evidence", () => {
     ).toThrow("comparison-environment-mismatch:chromiumVersion");
   });
 
+  it("keeps the OR regression threshold blocking during a valid Next transition", () => {
+    const changedCapture = (
+      id: string,
+      mode: RouteJsCapture["mode"],
+      version: string,
+      routeOwnedGzipBytes: number,
+    ): RouteJsCapture => {
+      const original = capture(id, mode);
+      const { captureChecksum: _checksum, ...payload } = original;
+      const assets = payload.assets.map((asset, index) =>
+        index === 0
+          ? asset
+          : {
+              ...asset,
+              rawBytes: routeOwnedGzipBytes + 30,
+              gzipBytes: routeOwnedGzipBytes,
+              encodedBodyBytes: routeOwnedGzipBytes,
+              decodedBodyBytes: routeOwnedGzipBytes + 30,
+            },
+      );
+      const changed = { ...payload, nextVersion: version, assets };
+      return { ...changed, captureChecksum: checksum(changed) };
+    };
+    const report = (version: string, landingRouteBytes: number) =>
+      combineModeReports(
+        (["public", "local-authenticated"] as const).map((mode) =>
+          compileModeReport(
+            MEASUREMENT_ROUTES.filter(
+              (route) => route.requiresLocalFixture === (mode === "local-authenticated"),
+            ).map((route) =>
+              changedCapture(
+                route.id,
+                mode,
+                version,
+                route.id === "landing" ? landingRouteBytes : 50,
+              ),
+            ),
+            mode,
+          ),
+        ),
+      );
+    const baseline = report("16.2.12", 50);
+    const current = report("16.3.5", 60);
+    const comparison = compareRouteJsReports(baseline, current, {
+      nextVersionTransition: { baseline: "16.2.12", current: "16.3.5" },
+    });
+    expect(comparison.failed).toBe(true);
+    expect(comparison.routes.find((route) => route.id === "landing")?.regression).toMatchObject({
+      failed: true,
+      exceedsAbsoluteLimit: false,
+      exceedsPercentLimit: true,
+    });
+  });
+
   it("derives shared accounting from measured paths and validates all totals", () => {
     const captures = [
       capture("landing", "public"),

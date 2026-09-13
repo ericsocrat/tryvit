@@ -91,6 +91,16 @@ Both original manifest checksums and the exact candidate/two-pass provenance
 remain validated. This permits only the existing observation field to differ;
 it is not permission to substitute a renderer or accept unreviewed pixels.
 
+Route-JS supports one separately declared framework transition when a dependency
+or security release changes Next.js itself. The base-owned workflow derives both
+versions from the exact base/head package manifests, requires their lockfile root
+and installed resolution to agree, and binds each measured report to its exact
+commit. Only `nextVersion` may differ; every other runtime, browser, fixture and
+containment field remains identical. The actual old/new release bytes are still
+compared under the unchanged +10 KiB OR +5% blocking rule, and the transition is
+printed in the evidence. This does not relabel cross-version measurement as a
+same-environment performance experiment.
+
 The existing Open Graph image modules request a fixed Inter font URL while
 Next.js builds those routes. Phase 5A.0d pins that exact response as a test-only
 font fixture (`344,068` bytes; SHA-256
