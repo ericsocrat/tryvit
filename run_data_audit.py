@@ -55,7 +55,13 @@ def run_audit() -> None:
     # ── Execute master audit via RPC ──────────────────────────────────────
     print(f"Connecting to {url.split('//')[1].split('.')[0]}...")
     rpc_url = f"{url}/rest/v1/rpc/run_full_data_audit"
-    resp = requests.post(rpc_url, headers=headers, json={}, timeout=120)
+    resp = requests.post(
+        rpc_url,
+        headers=headers,
+        json={},
+        timeout=120,
+        allow_redirects=False,
+    )
 
     if resp.status_code != 200:
         print(f"ERROR: RPC call failed with status {resp.status_code}", file=sys.stderr)
@@ -85,7 +91,13 @@ def run_audit() -> None:
             }
             for f in findings
         ]
-        store_resp = requests.post(insert_url, headers=headers, json=rows, timeout=60)
+        store_resp = requests.post(
+            insert_url,
+            headers=headers,
+            json=rows,
+            timeout=60,
+            allow_redirects=False,
+        )
         if store_resp.status_code not in (200, 201):
             print(
                 f"ERROR: Failed to store results (status {store_resp.status_code})",

@@ -208,11 +208,11 @@ LIMIT 30;
 | ---------------------- | -------- | ------- | ----------------------------------- |
 | `SUPABASE_URL`         | Yes      | Runner  | Supabase project URL                |
 | `SUPABASE_SERVICE_KEY` | Yes      | Runner  | Service role key (bypasses RLS)     |
-| `ALERT_WEBHOOK_URL`    | No       | CI      | Webhook for critical finding alerts |
 
 ## Security Considerations
 
 - **Service key required**: Audit uses `SUPABASE_SERVICE_KEY` to bypass RLS. The workflow exposes it only to the fixed-target audit step; it must never appear in logs or reports.
+- **No redirect forwarding**: Both credential-bearing HTTP requests disable redirects; every 3xx response fails closed before a key can reach another origin.
 - **SECURITY DEFINER**: All audit functions use `SECURITY DEFINER` with `SET search_path = public` to prevent path injection.
 - **No user data in findings**: Detailed records may contain product IDs and EANs but must never join with user tables.
 - **Public repository boundary**: Raw findings are not CI artifacts. Only validated aggregate counts are uploaded; authorized investigation uses the protected `audit_results` table.
@@ -223,6 +223,10 @@ LIMIT 30;
 1. **Check the Production Data Integrity Audit** in GitHub Actions → look at Step Summary
 2. **Review the count-only artifact**, then use authorized database access for details
 3. **Critical findings**: Create a remediation issue without copying sensitive or unnecessarily identifying details into the public repository
+
+No custom webhook is configured. Operational notification currently relies on
+GitHub Actions failure notifications; that boundary must not be described as a
+separate paging guarantee.
 4. **Mark resolved**: Update `audit_results` with `resolved_at` and `resolved_by`
 
 ```sql

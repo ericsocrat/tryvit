@@ -1151,6 +1151,10 @@ describe("browser workflow visual-safety contract", () => {
     expect(dataAudit.slice(0, auditStep)).not.toContain("secrets.");
     expect(dataAudit).toContain("python run_data_audit.py > data-audit.private.log 2>&1");
     expect(dataAudit).toContain("path: audit-summary/");
+    expect(dataAudit).toContain('reports=(audit-reports/audit_*.json)');
+    expect(dataAudit).toContain('if [ "${#reports[@]}" -eq 1 ]');
+    expect(dataAudit).toContain("if [ ! -s audit-summary/summary.json ]");
+    expect(dataAudit).toContain("if-no-files-found: error");
     expect(dataAudit).toContain("rm -f -- data-audit.private.log audit-reports/audit_*.json");
     expect(dataAudit).not.toContain("path: audit-reports/");
     expect(workflowSources.dataAudit).toContain("cancel-in-progress: false");

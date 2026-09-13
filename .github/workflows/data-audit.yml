@@ -67,7 +67,9 @@ jobs:
           fi
           set -e
 
-          if ls audit-reports/audit_*.json >/dev/null 2>&1; then
+          shopt -s nullglob
+          reports=(audit-reports/audit_*.json)
+          if [ "${#reports[@]}" -eq 1 ]; then
             python - <<'PY'
           import glob
           import json
@@ -93,6 +95,13 @@ jobs:
           output.parent.mkdir(parents=True, exist_ok=True)
           output.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
           PY
+          else
+            echo "::error::Production data-integrity audit did not produce exactly one private report"
+            audit_status=2
+          fi
+          if [ ! -s audit-summary/summary.json ]; then
+            echo "::error::Production data-integrity audit did not produce its count-only summary"
+            audit_status=2
           fi
 
           cleanup_private
@@ -109,16 +118,16 @@ jobs:
           name: production-data-audit-summary
           path: audit-summary/
           retention-days: 90
-          if-no-files-found: warn
+          if-no-files-found: error
 
       - name: Summarize findings
         if: always()
         run: |
           REPORT=$(cat audit-summary/summary.json 2>/dev/null || echo '{}')
-          CRITICAL=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('critical',0))" 2>/dev/null || echo "?")
-          WARNINGS=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('warnings',0))" 2>/dev/null || echo "?")
-          INFO=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('info',0))" 2>/dev/null || echo "?")
-          TOTAL=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('total_findings',0))" 2>/dev/null || echo "?")
+          CRITICAL=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('critical','?'))" 2>/dev/null || echo "?")
+          WARNINGS=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('warnings','?'))" 2>/dev/null || echo "?")
+          INFO=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('info','?'))" 2>/dev/null || echo "?")
+          TOTAL=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('total_findings','?'))" 2>/dev/null || echo "?")
           {
             echo "## Production Data Integrity Audit"
             echo ""
