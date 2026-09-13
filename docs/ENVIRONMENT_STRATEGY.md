@@ -299,8 +299,8 @@ driver consumes `SUPABASE_ACCESS_TOKEN`, distinct production/staging project
 references, `SUPABASE_DB_PASSWORD` for production, and
 `SUPABASE_STAGING_DB_PASSWORD` for staging through inherited GitHub secrets.
 Browser-facing workflows receive no hosted Supabase URL, anon key, or
-service-role key. Other non-browser jobs, including the Nightly data-integrity
-audit, retain their separately governed hosted contracts.
+service-role key. The separate schedule-only `Production Data Integrity Audit`
+retains its independently governed hosted contract.
 
 ### Local `.env` File
 

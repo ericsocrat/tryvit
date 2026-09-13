@@ -406,7 +406,8 @@ tryvit/
 │   ├── pr-title-lint.yml            # PR title conventional-commit validation (all PRs)
 │   ├── main-gate.yml                # Build → Unit tests + coverage → SonarCloud
 │   ├── qa.yml                       # Schema → Pipelines → QA (777) → Sanity
-│   ├── nightly.yml                  # Full Playwright (all projects) + Data Integrity Audit
+│   ├── nightly.yml                  # Secret-free public + guarded local current-product verification
+│   ├── data-audit.yml               # Schedule-only Production Data Integrity Audit
 │   ├── deploy.yml                   # Manual exact-main, manifest-bound DB deployment
 │   ├── sync-cloud-db.yml            # Retired fail-closed compatibility notice
 │   ├── api-contract.yml             # API contract validation
@@ -433,7 +434,7 @@ tryvit/
 ├── .env.example
 ├── BACKUP.ps1                       # Pre-push database backup script
 ├── RUN_DR_DRILL.ps1                 # Disaster recovery drill runner
-├── run_data_audit.py                # Nightly data integrity audit (used by nightly.yml)
+├── run_data_audit.py                # Runner used by the schedule-only Production Data Integrity Audit
 ├── test_data_audit.py               # Unit tests for data audit module
 └── README.md
 ```
@@ -938,7 +939,8 @@ E2E tests are the **only** exception — they run against a live dev server but 
   - **`pr-gate.yml`**: Static checks (typecheck + lint) → Unit tests + Build (parallel) → Playwright smoke E2E
   - **`pr-title-lint.yml`**: PR title conventional-commit validation (all PRs)
   - **`main-gate.yml`**: Typecheck → Lint → Build → Unit tests with coverage → Playwright smoke E2E → SonarCloud scan + BLOCKING Quality Gate → Sentry sourcemap upload
-  - **`nightly.yml`**: Full Playwright (all projects incl. visual regression) + Data Integrity Audit (parallel)
+  - **`nightly.yml`**: Secret-free public and guarded local-emulator current-product verification
+  - **`data-audit.yml`**: Separate schedule-only `Production Data Integrity Audit` against the fixed production target
   - **`qa.yml`**: Pipeline structure guard → Schema migrations → Schema drift detection → Pipelines → QA (786 checks; 778 blocking) → Sanity (17 checks) → Confidence threshold
   - **`deploy.yml`**: Manual exact-main dispatch → manifest/target/native-binding validation → staging and recovery evidence gate for production → exact migration apply → lint + sanitized receipt
   - **`sync-cloud-db.yml`**: Retired compatibility notice; manual invocation always fails without database mutation
@@ -2227,7 +2229,7 @@ Then execute §19 (Canonical Execution Discipline Protocol v2) in full.
 | ------------------------------- | -------------------------------------------------------------------- | ------------------------------------------ |
 | `docs/DATA_SOURCES.md`          | Source hierarchy, OFF API reliability tiers, validation workflow     | Pipeline changes, sourcing decisions       |
 | `docs/DATA_PROVENANCE.md`       | Data freshness governance, update cycles, source provenance tracking | Adding provenance columns, staleness logic |
-| `docs/DATA_INTEGRITY_AUDITS.md` | Nightly audit framework, check catalog, alert thresholds             | Adding data quality checks                 |
+| `docs/DATA_INTEGRITY_AUDITS.md` | Schedule-only Production Data Integrity Audit framework and thresholds | Adding data quality checks               |
 | `docs/EAN_VALIDATION_STATUS.md` | 1,024/1,026 (99.8%) EAN coverage, known gaps, validation rules       | EAN changes, barcode work                  |
 | `docs/RESEARCH_WORKFLOW.md`     | Data collection lifecycle — manual curation + automated OFF pipeline | Adding new products, categories, countries |
 

@@ -5,7 +5,7 @@ same weights and scoring anchors. This is a single-reviewer heuristic assessment
 not a repeated production user study, measured conversion result or claim of a
 28% usability improvement.
 
-| Dimension | Weight | Original | Current | Weighted contribution |
+| Dimension | Weight | Original | 2026-09-13 assessed | Weighted contribution |
 | --- | ---: | ---: | ---: | ---: |
 | Core tasks | 25% | 6/10 | 6/10 | 15.0 |
 | Getting started | 15% | 5/10 | 6/10 | 9.0 |
@@ -52,11 +52,14 @@ exercised in this reassessment.
 ## Evidence limits
 
 The reviewer inspected the accepted exact-candidate Home, landing and login images,
-plus earlier guarded Find/detail/comparison evidence and current implementation
-contracts. The broader guarded receipt reports 25 passing checks but belongs to an
-earlier local source snapshot with synthetic accounts and substituted image bytes;
-it is supporting evidence, not exact-release production proof. Demo-mode landing
-and unavailable-provider login fixtures do not describe current production state.
+plus earlier guarded Find/detail/comparison evidence and implementation contracts at
+the reassessment checkpoint. The broader guarded receipt reports 25 passing checks
+but belongs to an earlier local source snapshot with synthetic accounts and
+substituted image bytes; it is supporting evidence, not exact-release production
+proof. Demo-mode landing and unavailable-provider login fixtures do not describe
+current production state.
+PR #1369's later AppShell/AppPage containment and settings accessibility changes
+were not part of this assessment.
 
 The released public landing and health endpoint were checked after deployment, but
 no new production account, saved item, preference or scan history was created for

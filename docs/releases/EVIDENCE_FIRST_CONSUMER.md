@@ -129,7 +129,8 @@ removed after each attempt. Neither rehearsal applied production migrations.
   RPC integration tests separately passed against the explicit local runtime.
   Auth refusals in that suite are boundary proof, not authenticated user payload
   proof; guarded browser and role tests cover those separately.
-- Final guarded Chromium suite: **25/25 passed** after a production build,
+- Released consumer-source guarded Chromium suite: **25/25 passed** after a
+  production build,
   covering EN/PL/DE, light/dark, 390/1440/2560 px, facts and missing evidence,
   source links, comparison navigation, saved/history reads, failed save/retry,
   manual barcode entry, private comparisons and archived profile deletion.
@@ -151,12 +152,13 @@ removed after each attempt. Neither rehearsal applied production migrations.
   Historical mathematical helpers and SQL remain. A camera test teardown race
   was corrected by unmounting before restoring media prototypes; the failed run
   is not counted as passing.
-- CI-policy tests currently pass, including fail-closed native production Git
-  binding detection. Required remote CI and exact final candidate review remain.
+- At the consumer-release checkpoint, CI-policy tests passed, including fail-closed
+  native production Git binding detection. Required remote CI and exact final
+  candidate review remained.
 
 ## Release conditions and rollback
 
-### Accepted baseline and current-state CI
+### Accepted baseline and release-source CI
 
 Baseline-only PR #1362 merged normally as
 `cc27aeca69968063e8704c5781c2c48653b1f32e`, tree
@@ -271,8 +273,31 @@ frontend rollback can reintroduce unsafe score interpretation; rollback must use
 a compatible evidence-first build or a truthful unavailable/refresh boundary.
 No destructive schema contraction or deletion of user-owned history is planned.
 
-Source-cohort reconciliation, bounded import, intentional baseline review,
-remote CI/Sonar closure and exact deployment certification are complete for this
-release. A focused Next.js security update is required before another frontend
-promotion or wider beta. The production Turnstile first-use/replay proof remains
-unresolved and is not made passing by this release.
+For the released consumer source recorded above, source-cohort reconciliation,
+bounded import, intentional baseline review, remote CI/Sonar closure and exact
+deployment certification are complete. Later Nightly, AppShell/AppPage
+containment, and settings accessibility changes in PR #1369 are outside that
+certification. The production Turnstile first-use/replay proof remains unresolved
+and is not made passing by this release.
+
+## 2026-09-13 post-release dependency and runtime follow-up
+
+Security PR #1370 merged as `2782bce59a21e3401c8497fa59a6910e93c7a507`,
+pinning Next.js and `eslint-config-next` to 16.3.5 above the patched floors for
+`GHSA-p293-qw3h-jr36` and `GHSA-2xp9-vwfh-vxw4`. Dependabot PR #1352 then
+merged Sentry 10.74.0 as `ef14fe841ea36d733b7b92bf8e952e2a0d83b9e5`;
+Route-JS governance PR #1371 merged as
+`e5000bd2dbcf2c254b4bdf8cd7ad685e3bc04d61`, tree
+`6cb59b0beba0113a272c6465f796512869e0fae2`.
+
+Exact Production-target deployment `dpl_Aae8Uj73dW4Xhc97c9HEmf7Gm2s9` was
+protected-smoked, verified to contain the production rather than staging client
+binding, promoted unchanged, and public-smoked under run `34738671744`. Main
+Gate run `34738365769` passed. The production dependency audit reports zero
+HIGH/CRITICAL vulnerabilities. Two unpatched high-severity `extract-zip`
+advisories remain open through development-only Lighthouse/Puppeteer tooling;
+their bounded reachability disposition is not a claim that they are fixed.
+This deployment certifies source
+`e5000bd2dbcf2c254b4bdf8cd7ad685e3bc04d61` only; it does not certify PR
+#1369's later Nightly/UI source or a scheduled Nightly outcome. This follow-up
+neither approves wider beta nor resolves the Turnstile proof.

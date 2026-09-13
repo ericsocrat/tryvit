@@ -247,9 +247,10 @@ staging or production.
 
 Non-browser workflows have separate contracts. In particular, `deploy.yml`
 inherits the Supabase project and database credentials required by the
-manifest-bound driver, while Nightly's data-integrity job may use configured
-hosted audit credentials. A green browser job therefore says nothing about a
-hosted database target.
+manifest-bound driver. The separate schedule-only
+`Production Data Integrity Audit` alone receives the fixed production audit
+credentials. A green browser job therefore says nothing about a hosted database
+target.
 
 Treat the `${{ secrets.* }}` expressions in the current workflow files as the
 name/scope authority. Never copy values into documentation, logs, artifacts, or
@@ -261,7 +262,8 @@ The CI workflows use a tiered architecture:
 
 - **PR Gate** (`.github/workflows/pr-gate.yml`): Typecheck + Lint → Unit tests + Build (parallel) → Playwright smoke E2E
 - **Main Gate** (`.github/workflows/main-gate.yml`): Full build + tests + coverage → Full Playwright E2E → SonarCloud (blocking) → Sentry sourcemaps
-- **Nightly** (`.github/workflows/nightly.yml`): Full Playwright (all projects incl. visual) + Data Integrity Audit
+- **Nightly** (`.github/workflows/nightly.yml`): Secret-free public and guarded local-emulator current-product verification
+- **Production Data Integrity Audit** (`.github/workflows/data-audit.yml`): Separate schedule-only fixed-production-target audit
 
 ### Preview → Staging Wiring
 

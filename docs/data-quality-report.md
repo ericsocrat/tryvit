@@ -6,8 +6,8 @@
 
 `data_quality_report.py` is the canonical evidence-producing data gate for the
 deterministic PostgreSQL fixture used by `.github/workflows/qa.yml`. It is
-separate from `run_data_audit.py`, whose existing purpose is a credentialed,
-nightly Supabase integrity audit.
+separate from `run_data_audit.py`, the credentialed runner used by the
+schedule-only `Production Data Integrity Audit` workflow.
 
 ## Grain and semantics
 

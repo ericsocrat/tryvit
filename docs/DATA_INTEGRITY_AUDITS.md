@@ -1,33 +1,42 @@
-# Data Integrity Audits
+# Production Data Integrity Audit
 
-> **Last updated:** 2026-05-25
-> **Status:** Active
+> **Last updated:** 2026-09-13
+> **Status:** Configured in PR #1369; first separate scheduled run unproven
 > **Owner issue:** [#184](https://github.com/ericsocrat/tryvit/issues/184)
 
-> Automated nightly audits to detect data quality issues, contradictions, and integrity violations across 2,500+ products.
+> A production audit whose GitHub Actions workflow is schedule-only. It detects
+> data quality issues, contradictions, and integrity violations across the
+> production catalog.
 
 ## Overview
 
-The Data Integrity Audit system runs 8 categories of SQL-based checks against the Supabase database, classifies findings by severity, stores them for historical tracking, and generates reports as CI artifacts.
+The Production Data Integrity Audit runner implements 8 categories of SQL-based
+checks against the fixed production Supabase database, classifies findings by
+severity, stores full findings in the protected database for historical tracking,
+and publishes only a count-only CI summary. Raw production findings and runner
+output are removed before artifact upload. PR #1369 configures it separately from the secret-free Nightly browser
+workflow; no separate scheduled outcome is claimed here.
 
 ## Architecture
 
 ```
 ┌──────────────────────────────────────┐
-│  GitHub Actions (Nightly 02:00 UTC)  │
+│  GitHub Actions (schedule only)      │
+│  Daily at 03:30 UTC                  │
 │  ┌────────────────────────────────┐  │
 │  │  run_data_audit.py             │  │
 │  │  ├─ Calls run_full_data_audit  │  │
 │  │  ├─ Stores in audit_results    │  │
-│  │  └─ Generates JSON report      │  │
+│  │  └─ Generates private report   │  │
 │  └────────────────────────────────┘  │
 │           │                          │
 │           ▼                          │
-│  audit-reports/                      │
-│  └── audit_2026-03-01.json           │
+│  exact count-only redaction          │
+│  └── summary.json                    │
 │           │                          │
 │           ▼                          │
-│  CI Artifact (90-day retention)      │
+│  Public-safe CI summary artifact     │
+│  (90-day retention)                  │
 └──────────────────────────────────────┘
             │
             ▼
@@ -124,20 +133,27 @@ export SUPABASE_SERVICE_KEY="your-service-role-key"
 python run_data_audit.py
 ```
 
-### Manual (CI)
+Schedule-only describes the GitHub Actions trigger; local runner use requires
+separate explicit production authority.
 
-Go to **Actions → Nightly Data Integrity Audit → Run workflow** on GitHub.
+### GitHub Actions schedule
 
-### Scheduled
+No GitHub Actions manual trigger exists by design. Once present on the default
+branch, `.github/workflows/data-audit.yml` is configured to run daily at
+**03:30 UTC** from default-branch source. No separate scheduled outcome is
+claimed here.
 
-Runs automatically at **02:00 UTC daily** via `.github/workflows/data-audit.yml`.
+## Local report format
 
-## Report Format
+Direct, separately authorized local execution produces the detailed format
+below. The hosted workflow never uploads it: it retains full findings in the
+protected `audit_results` table, validates an exact four-count summary contract,
+deletes the raw report and captured output, and uploads only that summary.
 
 ```json
 {
   "run_id": "550e8400-e29b-41d4-a716-446655440000",
-  "timestamp": "2026-03-01T02:00:05.123456+00:00",
+  "timestamp": "2026-03-01T03:30:05.123456+00:00",
   "summary": {
     "total_findings": 12,
     "critical": 2,
@@ -196,17 +212,17 @@ LIMIT 30;
 
 ## Security Considerations
 
-- **Service key required**: Audit uses `SUPABASE_SERVICE_KEY` to bypass RLS — this key must NEVER appear in logs or reports.
+- **Service key required**: Audit uses `SUPABASE_SERVICE_KEY` to bypass RLS. The workflow exposes it only to the fixed-target audit step; it must never appear in logs or reports.
 - **SECURITY DEFINER**: All audit functions use `SECURITY DEFINER` with `SET search_path = public` to prevent path injection.
-- **No PII in reports**: Reports contain product IDs and EANs but never user data. The `audit_results` table must not join with user tables.
-- **Report access**: CI artifacts are only accessible to repo collaborators.
+- **No user data in findings**: Detailed records may contain product IDs and EANs but must never join with user tables.
+- **Public repository boundary**: Raw findings are not CI artifacts. Only validated aggregate counts are uploaded; authorized investigation uses the protected `audit_results` table.
 - **Service role only**: All audit functions have `REVOKE EXECUTE ... FROM PUBLIC` — only `service_role` can call them.
 
 ## Remediation Workflow
 
-1. **Check nightly audit** in GitHub Actions → look at Step Summary
-2. **Download report** from Artifacts tab for details
-3. **Critical findings**: Create a remediation issue, reference the `run_id`
+1. **Check the Production Data Integrity Audit** in GitHub Actions → look at Step Summary
+2. **Review the count-only artifact**, then use authorized database access for details
+3. **Critical findings**: Create a remediation issue without copying sensitive or unnecessarily identifying details into the public repository
 4. **Mark resolved**: Update `audit_results` with `resolved_at` and `resolved_by`
 
 ```sql
@@ -230,6 +246,6 @@ WHERE run_id = 'run-id-here'
 | -------------------------------------------------------------- | -------- | ------------------------------------------------------- |
 | `supabase/migrations/20260222030000_data_integrity_audits.sql` | New      | 8 audit functions + master runner + audit_results table |
 | `run_data_audit.py`                                            | New      | Python audit runner script                              |
-| `.github/workflows/data-audit.yml`                             | New      | Nightly CI workflow                                     |
+| `.github/workflows/data-audit.yml`                             | New      | Schedule-only Production Data Integrity Audit workflow  |
 | `.gitignore`                                                   | Modified | Added `audit-reports/`                                  |
 | `docs/DATA_INTEGRITY_AUDITS.md`                                | New      | This documentation                                      |

@@ -8,7 +8,7 @@
 > **Phase 5A.3 landing PR 1 draft evidence added:** 2026-08-25
 > **Phase 5A.3 landing-governance prerequisite added:** 2026-08-25
 > **Phase 5A.3 landing PR 1 bounded revision packet added:** 2026-08-25
-> **Security, deployment, and inventory counts verified:** 2026-09-13
+> **Security, deployment controls, and inventory counts verified:** 2026-09-13
 > **Status:** Active — update when adding, renaming, or archiving docs
 > **Tracked inventory:** 75 top-level Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 8 generated/supporting artifacts in `docs/phase5/`; 45 Checkpoint 1 files and 132 Checkpoint 2 files in `docs/phase5a2/`; 49 Phase 5A.3 landing packet Markdown documents in `docs/phase5a3/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
@@ -29,8 +29,10 @@
 - [Preview environment isolation](releases/PREVIEW_ISOLATION.md)
 
 Implementation, candidate approval, deployment and production verification remain
-separate evidence states. This release completed all four; consult the production
-record before reusing that conclusion for a later source or deployment.
+separate evidence states. The recorded evidence-first consumer/cohort release
+completed all four for its exact recorded sources only. Later Nightly changes
+require separate scheduled-run evidence; later UI changes require exact-head
+visual verification and deployment evidence.
 
 | Domain                                                   | Count | Documents                                                                                                                                                                                                                                                                             |
 | -------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -169,7 +171,7 @@ record before reusing that conclusion for a later source or deployment.
 | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------------ |
 | [DATA_SOURCES.md](DATA_SOURCES.md)                                             | Source hierarchy & validation workflow — OFF API, manual entry                                                      | [#193](https://github.com/ericsocrat/tryvit/issues/193) | 2026-02-12   |
 | [DATA_PROVENANCE.md](DATA_PROVENANCE.md)                                       | Data provenance & freshness governance — lineage tracking, staleness detection                                      | [#193](https://github.com/ericsocrat/tryvit/issues/193) | 2026-02-24   |
-| [DATA_INTEGRITY_AUDITS.md](DATA_INTEGRITY_AUDITS.md)                           | Ongoing data integrity audit framework — nightly checks, contradiction detection                                    | [#184](https://github.com/ericsocrat/tryvit/issues/184) | 2026-05-25   |
+| [DATA_INTEGRITY_AUDITS.md](DATA_INTEGRITY_AUDITS.md)                           | Schedule-only Production Data Integrity Audit — fixed production target, contradiction detection                    | [#184](https://github.com/ericsocrat/tryvit/issues/184) | 2026-09-13   |
 | [data-quality-report.md](data-quality-report.md)                               | Deterministic PostgreSQL data-quality report, baseline, and CI gate                                                 | Phase 3 audit                                           | 2026-07-28   |
 | [PHASE4A_ENRICHMENT_PILOT.md](PHASE4A_ENRICHMENT_PILOT.md)                     | Deterministic ingredient/allergen enrichment pilot, semantics, metrics, and expansion gate                          | Phase 4A audit                                          | 2026-07-28   |
 | [PHASE4B_CATEGORY_ENRICHMENT.md](PHASE4B_CATEGORY_ENRICHMENT.md)               | Controlled category ranking, enrichment results, determinism, and rollout gate                                      | Phase 4B audit                                          | 2026-07-28   |

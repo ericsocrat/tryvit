@@ -8,10 +8,17 @@ the linked production receipts remain the evidence authority.
 Foundation PR #1359, consumer PR #1361, production operator PR #1364 and
 pooler-session fix PR #1365 are merged. Production import executed from exact
 main `82ff6ab47f60c310d7a7684e548599958d7be836`; later repository refs must be
-revalidated. The released consumer tree
-`d1943585bc00c0fae81c8518fd8c12cebd52da18` is live on deployment
-`dpl_BVtpSwsedvRm5cc5bSgDRwtpVATt`. Earlier checkpoints below retain their
-original time-specific results and are not current authority.
+revalidated. The original released consumer tree
+`d1943585bc00c0fae81c8518fd8c12cebd52da18` was promoted on deployment
+`dpl_BVtpSwsedvRm5cc5bSgDRwtpVATt`. The most recently certified production
+application source at this checkpoint is
+`e5000bd2dbcf2c254b4bdf8cd7ad685e3bc04d61`, tree
+`6cb59b0beba0113a272c6465f796512869e0fae2`, on deployment
+`dpl_Aae8Uj73dW4Xhc97c9HEmf7Gm2s9`; protected verification and public smoke
+run `34738671744` passed. PR #1369's later Nightly, AppShell/AppPage containment,
+and settings accessibility candidate is outside that deployment certification.
+Earlier checkpoints below retain their original time-specific results and are not
+current authority.
 
 Delegated-review policy PR #1360 subsequently merged normally to
 `1f66ab761a4d419f65745625dd0caad9c0ce77c5`, tree
@@ -57,6 +64,10 @@ IDs, saved references, current logo, and invitation-only authorization.
 
 ## Acceptance ledger
 
+These statuses apply only to the released consumer source and its accepted visual
+evidence. They do not certify PR #1369's later Nightly, AppShell/AppPage, or
+settings accessibility changes.
+
 | ID | Requirement | Evidence required | Status |
 | --- | --- | --- | --- |
 | A1 | Partial ingestion cannot retire or clear unrelated identities | Python and live local SQL regression including 30-of-100 and PL/DE | Complete |
@@ -72,7 +83,7 @@ IDs, saved references, current logo, and invitation-only authorization.
 | C4 | Fail-closed suitability and mutations | Unknown evidence and rollback tests | Complete |
 | D1 | Shared neutral shell and task navigation | Actual 390/1440/2560 renders, locales, themes, keyboard review | Complete with guarded evidence |
 | D2 | Simplified core screens and copy | Core journey browser tests and exact candidate review | Complete through delegated AI lane |
-| E1 | Risk-based, non-duplicative CI | Classifier/rollup negative tests, completed exact-head checks | Complete; stale Nightly excluded from launch evidence |
+| E1 | Risk-based, non-duplicative CI | Classifier/rollup negative tests, completed exact-head checks | Complete for released consumer source; that checkpoint excluded its then-stale Nightly |
 | E2 | Intentional visual baseline acceptance | Truthful reviewer identity, candidate hashes, comparator | Complete; no claim of Eric's personal review |
 | E3 | Normal merge and exact production release | PR/main tree, deployment, smoke and runtime evidence | Complete |
 | E4 | Final evidence and documentation | Updated API/data/scoring docs, original-weight usability review | Complete; heuristic, not user study |
@@ -259,7 +270,7 @@ These entries are additive working evidence, not final-head release certificatio
   Those focused detail/comparison tests passed **26/26** with scoped lint passing.
 - Shared routine-panel folded decoration was removed. A subsequent visual check
   exposed a separate list-header fold; its stylesheet was corrected afterward,
-  so the earlier 16-test browser result does not certify that final CSS revision.
+  so the earlier 16-test browser result does not certify that later CSS revision.
 - Foundation PR #1359 remains unmerged. Its four required PR Gate contexts and
   CodeQL passed on `14efaeb4af871e5c1d96e17ded3bce5258bd46b8`, but applicable database
   QA reported seven failures. Real index gaps and outdated blanket security
@@ -271,8 +282,13 @@ These entries are additive working evidence, not final-head release certificatio
 
 The preceding checkpoint notes describe work that was pending when recorded.
 The evidence-first product release and bounded 55-product source import have now
-completed under the current production receipts. They do not constitute public-
-beta approval or production Turnstile first-use/replay PASS. Critical Next.js
-advisories discovered after release must be resolved before another frontend
-promotion or wider beta, and the obsolete authenticated Nightly assertions must
-be replaced before that scheduled suite is treated as launch evidence.
+completed under the recorded production receipts. They do not constitute public-
+beta approval or production Turnstile first-use/replay PASS. Post-release PR
+#1370 moved Next.js and `eslint-config-next` to 16.3.5 above both critical
+advisory floors, PR #1352 moved Sentry to 10.74.0, and PR #1371 made future
+framework transitions source/lock/report bound without changing Route-JS
+thresholds. The production HIGH/CRITICAL audit is clean; two no-patch
+high-severity `extract-zip` alerts remain development-only and open. The closeout
+source adds explicit current-behavior and exact route-destination contracts; no
+scheduled Nightly result is claimed here. Hosted production surveillance is
+isolated in the separate schedule-only `Production Data Integrity Audit`.
