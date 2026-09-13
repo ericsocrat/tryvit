@@ -254,7 +254,9 @@ class TestRunAudit(unittest.TestCase):
         with self.assertRaises(SystemExit):
             run_data_audit.run_audit()
 
-        report_files = sorted(os.listdir("audit-reports"))
+        report_files = sorted(
+            name for name in os.listdir("audit-reports") if name.startswith("audit_")
+        )
         with open(os.path.join("audit-reports", report_files[-1])) as f:
             report = json.load(f)
 
