@@ -63,7 +63,7 @@
     "@hookform/resolvers": "^5.9.1",
     "@marsidev/react-turnstile": "^1.6.1",
     "@radix-ui/react-tooltip": "^1.2.16",
-    "@sentry/nextjs": "^10.71.0",
+    "@sentry/nextjs": "^10.74.0",
     "@serwist/next": "^9.5.12",
     "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.115.0",
