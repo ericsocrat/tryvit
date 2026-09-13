@@ -32,6 +32,7 @@ import {
   compareRouteJsReports,
   classifyRouteScriptRequest,
   compileModeReport,
+  formatRouteJsComparisonMarkdown,
   normalizeRuntimeAssetPath,
   resetRouteJsCaptureDirectory,
   routeFixtureStateForMode,
@@ -518,6 +519,58 @@ describe("cold-browser route JavaScript evidence", () => {
     expect(combined.sourceOfTruth).toBe("cold-browser-next-static-script-responses");
     expect(() => validateRouteJsReport(combined)).not.toThrow();
     expect(compareRouteJsReports(combined, combined).failed).toBe(false);
+  });
+
+  it("permits only an explicitly bound Next version transition and keeps comparison active", () => {
+    const baseline = combineModeReports([modeReport("public"), modeReport("local-authenticated")]);
+    const { reportChecksum: _oldChecksum, ...changedPayload } = {
+      ...baseline,
+      nextVersion: "16.3.5",
+    };
+    const current = {
+      ...changedPayload,
+      reportChecksum: checksum(changedPayload),
+    };
+    const transition = { baseline: "16.2.12", current: "16.3.5" };
+    expect(() => compareRouteJsReports(baseline, current)).toThrow(
+      "comparison-environment-mismatch:nextVersion",
+    );
+    const comparison = compareRouteJsReports(baseline, current, {
+      nextVersionTransition: transition,
+    });
+    expect(comparison.failed).toBe(false);
+    expect(comparison.nextVersionTransition).toEqual(transition);
+    expect(formatRouteJsComparisonMarkdown(comparison)).toContain(
+      "Framework transition: Next.js 16.2.12 → 16.3.5",
+    );
+    for (const invalid of [
+      { baseline: "16.2.12", current: "16.2.12" },
+      { baseline: "16.2.11", current: "16.3.5" },
+      { baseline: "16.2.12", current: "16.3.4" },
+      { baseline: "v16.2.12", current: "16.3.5" },
+      { ...transition, extra: "untrusted" },
+    ]) {
+      expect(() =>
+        compareRouteJsReports(baseline, current, {
+          nextVersionTransition: invalid,
+        }),
+      ).toThrow("comparison-environment-mismatch:nextVersion");
+    }
+    expect(() =>
+      compareRouteJsReports(baseline, baseline, { nextVersionTransition: transition }),
+    ).toThrow("comparison-next-version-transition-unneeded");
+
+    const { reportChecksum: _currentChecksum, ...otherDriftPayload } = {
+      ...current,
+      chromiumVersion: "152.0.0.0",
+    };
+    const otherDrift = {
+      ...otherDriftPayload,
+      reportChecksum: checksum(otherDriftPayload),
+    };
+    expect(() =>
+      compareRouteJsReports(baseline, otherDrift, { nextVersionTransition: transition }),
+    ).toThrow("comparison-environment-mismatch:chromiumVersion");
   });
 
   it("derives shared accounting from measured paths and validates all totals", () => {
