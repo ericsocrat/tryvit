@@ -9,13 +9,20 @@ import path from "node:path";
 
 const DEV_ROUTE_TYPES_IMPORT = 'import "./.next/dev/types/routes.d.ts";';
 const BUILD_ROUTE_TYPES_IMPORT = 'import "./.next/types/routes.d.ts";';
+const DEV_ROOT_PARAMS_IMPORT = 'import "./.next/dev/types/root-params.d.ts";';
+const BUILD_ROOT_PARAMS_IMPORT = 'import "./.next/types/root-params.d.ts";';
 const NEXT_BUILD_SOURCE_STATUS = " M frontend/next-env.d.ts";
 
-function canonicalContents(routeTypesImport: string, eol: "\n" | "\r\n"): string {
+function canonicalContents(
+  routeTypesImport: string,
+  rootParamsImport: string,
+  eol: "\n" | "\r\n",
+): string {
   return [
     '/// <reference types="next" />',
     '/// <reference types="next/image-types/global" />',
     routeTypesImport,
+    rootParamsImport,
     "",
     "// NOTE: This file should not be edited",
     "// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.",
@@ -51,14 +58,20 @@ function expectedBuildBytes(sourceBytes: Buffer): Buffer {
   if (!Buffer.from(contents, "utf8").equals(sourceBytes)) {
     fail("next-env-source-encoding-invalid");
   }
-  if (contents.replace(/\r\n?/gu, "\n") !== canonicalContents(DEV_ROUTE_TYPES_IMPORT, "\n")) {
+  if (
+    contents.replace(/\r\n?/gu, "\n") !==
+    canonicalContents(DEV_ROUTE_TYPES_IMPORT, DEV_ROOT_PARAMS_IMPORT, "\n")
+  ) {
     fail("next-env-source-contract-invalid");
   }
   const firstNewline = contents.indexOf("\n", 1);
   const generatedEol = firstNewline !== -1 && contents[firstNewline - 1] === "\r"
     ? "\r\n"
     : "\n";
-  return Buffer.from(canonicalContents(BUILD_ROUTE_TYPES_IMPORT, generatedEol), "utf8");
+  return Buffer.from(
+    canonicalContents(BUILD_ROUTE_TYPES_IMPORT, BUILD_ROOT_PARAMS_IMPORT, generatedEol),
+    "utf8",
+  );
 }
 
 function sourceFilename(frontendRoot: string): string {

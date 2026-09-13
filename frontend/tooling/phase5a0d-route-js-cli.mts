@@ -33,6 +33,15 @@ function argumentValue(args: readonly string[], name: string): string | undefine
   return args.find((argument) => argument.startsWith(prefix))?.slice(prefix.length);
 }
 
+function nextVersionTransition(value: string | undefined):
+  | { readonly baseline: string; readonly current: string }
+  | undefined {
+  if (value === undefined) return undefined;
+  const match = /^(\d+\.\d+\.\d+):(\d+\.\d+\.\d+)$/u.exec(value);
+  if (!match || match[1] === match[2]) fail("next-version-transition-invalid");
+  return Object.freeze({ baseline: match[1], current: match[2] });
+}
+
 const workingRoot = path.resolve(process.cwd());
 const lexicalReportsRoot = path.join(workingRoot, "performance-reports");
 const reportsRoot = path.join(realpathSync.native(workingRoot), "performance-reports");
@@ -250,7 +259,13 @@ async function main(): Promise<number> {
     return 0;
   }
   if (command === "compare") {
-    assertKnownArguments(args, ["baseline", "current", "markdown"]);
+    const transitionValue = argumentValue(args, "next-version-transition");
+    assertKnownArguments(
+      args,
+      transitionValue === undefined
+        ? ["baseline", "current", "markdown"]
+        : ["baseline", "current", "markdown", "next-version-transition"],
+    );
     const baselinePath = argumentValue(args, "baseline");
     const currentPath = argumentValue(args, "current");
     const markdownPath = argumentValue(args, "markdown");
@@ -258,6 +273,7 @@ async function main(): Promise<number> {
     const comparison = compareRouteJsReports(
       readJsonFileNoFollow(ownedInputFile(baselinePath, "baseline-input"), "baseline-input"),
       readJsonFileNoFollow(ownedInputFile(currentPath, "current-input"), "current-input"),
+      { nextVersionTransition: nextVersionTransition(transitionValue) },
     );
     const markdown = formatRouteJsComparisonMarkdown(comparison);
     writeFileSync(ownedOutputFile(markdownPath, "markdown-output", ".md"), markdown, "utf8");
