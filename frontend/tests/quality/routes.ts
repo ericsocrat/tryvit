@@ -20,6 +20,12 @@ export interface RouteEntry {
   label: string;
   /** Whether a valid Supabase session is required */
   requiresAuth: boolean;
+  /**
+   * Main-document redirect contracts by guarded browser mode. Omission means
+   * the requested path (including its complete query multiset) must render
+   * without a redirect.
+   */
+  expectedRedirect?: Partial<Record<AuditMode, RouteRedirectExpectation>>;
   /** Tab IDs available on the page (audit runners cycle through these) */
   hasTabs?: string[];
   /** Which quality-gate modes should include this route */
@@ -30,6 +36,10 @@ export interface RouteEntry {
   desktopOnly?: boolean;
 }
 
+export type AuditMode = "public" | "local-authenticated";
+export type RouteRedirectExpectation =
+  readonly string[] | Readonly<{ transport: "client"; chain: readonly string[] }>;
+
 /* ── Route Manifest ──────────────────────────────────────────────────────── */
 
 export const ROUTES: RouteEntry[] = [
@@ -39,6 +49,9 @@ export const ROUTES: RouteEntry[] = [
     label: "login",
     requiresAuth: false,
     tags: ["smoke", "full", "lighthouse"],
+    expectedRedirect: {
+      "local-authenticated": ["/auth/login", "/app/search"],
+    },
   },
   {
     path: "/",
@@ -63,12 +76,27 @@ export const ROUTES: RouteEntry[] = [
     label: "categories",
     requiresAuth: true,
     tags: ["smoke", "full"],
+    expectedRedirect: {
+      "local-authenticated": {
+        transport: "client",
+        chain: ["/app/categories", "/app/search?panel=categories"],
+      },
+    },
   },
   {
     path: `/app/categories/${FIXTURES.categorySlug}`,
     label: "category-detail",
     requiresAuth: true,
     tags: ["smoke", "full"],
+    expectedRedirect: {
+      "local-authenticated": {
+        transport: "client",
+        chain: [
+          `/app/categories/${FIXTURES.categorySlug}`,
+          "/app/search?category=Dairy&country=PL",
+        ],
+      },
+    },
   },
   {
     path: `/app/product/${FIXTURES.productId}`,
@@ -97,6 +125,9 @@ export const ROUTES: RouteEntry[] = [
     label: "signup",
     requiresAuth: false,
     tags: ["full"],
+    expectedRedirect: {
+      "local-authenticated": ["/auth/signup", "/app/search"],
+    },
   },
 
   // Onboarding
@@ -105,18 +136,27 @@ export const ROUTES: RouteEntry[] = [
     label: "onboarding",
     requiresAuth: true,
     tags: ["full"],
+    expectedRedirect: {
+      "local-authenticated": ["/onboarding", "/app/search"],
+    },
   },
   {
     path: "/onboarding/region",
     label: "onboarding-region",
     requiresAuth: true,
     tags: ["full"],
+    expectedRedirect: {
+      "local-authenticated": ["/onboarding/region", "/onboarding", "/app/search"],
+    },
   },
   {
     path: "/onboarding/preferences",
     label: "onboarding-preferences",
     requiresAuth: true,
     tags: ["full"],
+    expectedRedirect: {
+      "local-authenticated": ["/onboarding/preferences", "/onboarding", "/app/search"],
+    },
   },
 
   // Search
@@ -220,6 +260,9 @@ export const ROUTES: RouteEntry[] = [
     requiresAuth: true,
     tags: ["full"],
     desktopOnly: true,
+    expectedRedirect: {
+      "local-authenticated": ["/app/admin/monitoring", "/forbidden"],
+    },
   },
   {
     path: "/app/admin/submissions",
@@ -227,6 +270,9 @@ export const ROUTES: RouteEntry[] = [
     requiresAuth: true,
     tags: ["full"],
     desktopOnly: true,
+    expectedRedirect: {
+      "local-authenticated": ["/app/admin/submissions", "/forbidden"],
+    },
   },
   {
     path: "/app/admin/metrics",
@@ -234,6 +280,9 @@ export const ROUTES: RouteEntry[] = [
     requiresAuth: true,
     tags: ["full"],
     desktopOnly: true,
+    expectedRedirect: {
+      "local-authenticated": ["/app/admin/metrics", "/forbidden"],
+    },
   },
 
   /* ════ PUBLIC — full only (no auth) ═══════════════════════════════════════ */

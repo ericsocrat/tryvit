@@ -1,0 +1,158 @@
+# Production surveillance is isolated from every branch-selectable workflow.
+# Scheduled workflows load both definition and source from the default branch,
+# keeping the service-role credential away from feature-branch code.
+name: Production Data Integrity Audit
+
+on:
+  schedule:
+    - cron: "30 3 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-data-integrity-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    name: Production Data Integrity Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BASELINE_DATA_AUDIT: 300
+    steps:
+      - name: Record job start
+        id: timer
+        run: echo "start=$(date +%s)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - run: pip install -r requirements.txt
+
+      - name: Run production data-integrity audit
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          cleanup_private() {
+            rm -f -- data-audit.private.log audit-reports/audit_*.json
+            rmdir audit-reports 2>/dev/null || true
+          }
+          trap cleanup_private EXIT
+          set +e
+          python - <<'PY'
+          import os
+          url = os.environ.get("SUPABASE_URL", "")
+          key = os.environ.get("SUPABASE_SERVICE_KEY", "")
+          expected = "https://uskvezwftkkudvksmken.supabase.co"
+          if url not in {expected, f"{expected}/"} or not key:
+              raise SystemExit("production data-audit binding is missing or invalid")
+          PY
+          binding_status=$?
+          audit_status="$binding_status"
+          if [ "$binding_status" -eq 0 ]; then
+            # The runner's detailed output and report contain production product
+            # identifiers. Keep them off public logs and artifacts; durable
+            # details remain in the protected audit_results table.
+            python run_data_audit.py > data-audit.private.log 2>&1
+            audit_status=$?
+          fi
+          set -e
+
+          shopt -s nullglob
+          reports=(audit-reports/audit_*.json)
+          if [ "${#reports[@]}" -eq 1 ]; then
+            python - <<'PY'
+          import glob
+          import json
+          from pathlib import Path
+
+          reports = sorted(glob.glob("audit-reports/audit_*.json"))
+          report = json.loads(Path(reports[-1]).read_text(encoding="utf-8"))
+          allowed = ("total_findings", "critical", "warnings", "info")
+          source = report.get("summary")
+          timestamp = report.get("timestamp")
+          if (
+              not isinstance(source, dict)
+              or set(source) != set(allowed)
+              or any(type(source[key]) is not int or source[key] < 0 for key in allowed)
+              or not isinstance(timestamp, str)
+          ):
+              raise SystemExit("production data-audit summary contract changed")
+          summary = {
+              "timestamp": timestamp,
+              "summary": {key: source[key] for key in allowed},
+          }
+          output = Path("audit-summary/summary.json")
+          output.parent.mkdir(parents=True, exist_ok=True)
+          output.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+          PY
+          else
+            echo "::error::Production data-integrity audit did not produce exactly one private report"
+            audit_status=2
+          fi
+          if [ ! -s audit-summary/summary.json ]; then
+            echo "::error::Production data-integrity audit did not produce its count-only summary"
+            audit_status=2
+          fi
+
+          cleanup_private
+          trap - EXIT
+          if [ "$audit_status" -ne 0 ]; then
+            echo "::error::Production data-integrity audit did not pass; inspect the protected audit_results record"
+            exit "$audit_status"
+          fi
+
+      - name: Upload count-only audit summary
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: production-data-audit-summary
+          path: audit-summary/
+          retention-days: 90
+          if-no-files-found: error
+
+      - name: Summarize findings
+        if: always()
+        run: |
+          REPORT=$(cat audit-summary/summary.json 2>/dev/null || echo '{}')
+          CRITICAL=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('critical','?'))" 2>/dev/null || echo "?")
+          WARNINGS=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('warnings','?'))" 2>/dev/null || echo "?")
+          INFO=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('info','?'))" 2>/dev/null || echo "?")
+          TOTAL=$(echo "$REPORT" | python3 -c "import sys,json; print(json.load(sys.stdin).get('summary',{}).get('total_findings','?'))" 2>/dev/null || echo "?")
+          {
+            echo "## Production Data Integrity Audit"
+            echo ""
+            echo "| Severity | Count |"
+            echo "|----------|-------|"
+            echo "| Critical | $CRITICAL |"
+            echo "| Warning | $WARNINGS |"
+            echo "| Info | $INFO |"
+            echo "| **Total** | **$TOTAL** |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Record runtime
+        if: ${{ !cancelled() }}
+        run: |
+          end=$(date +%s); start=${{ steps.timer.outputs.start }}; d=$((end-start))
+          pct=0; [ "$BASELINE_DATA_AUDIT" -gt 0 ] && pct=$(( (d-BASELINE_DATA_AUDIT)*100/BASELINE_DATA_AUDIT ))
+          [ "$pct" -gt 30 ] && echo "::warning::Data audit runtime regression: ${d}s (+${pct}% vs ${BASELINE_DATA_AUDIT}s)"
+          mkdir -p ci-timings
+          printf '{"job":"production-data-audit","duration_seconds":%s,"baseline_seconds":%s,"delta_pct":%s}\n' \
+            "$d" "$BASELINE_DATA_AUDIT" "$pct" > ci-timings/data-audit.json
+
+      - name: Upload runtime evidence
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: production-data-audit-timing
+          path: ci-timings/
+          retention-days: 30

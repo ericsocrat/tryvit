@@ -1,6 +1,6 @@
 # Deployment Guide
 
-> **Last updated:** 2026-08-27
+> **Last updated:** 2026-09-13
 
 ## Vercel Deployment
 
@@ -21,6 +21,18 @@ operational fallback, but must not be emitted as the canonical public origin.
 | Build Command   | (auto)     |
 | Install Command | `npm ci`   |
 | Output Dir      | `.next`    |
+
+### Production Release Control
+
+`frontend/vercel.json` disables Git-triggered deployments for `main`; other
+branches retain Vercel's default preview behavior. A production frontend release
+must use an exact current-main SHA, build a Production-target artifact, deploy it
+with `--skip-domain`, verify that exact deployment, and only then promote it as
+documented in [Consumer promotion](docs/releases/CONSUMER_PROMOTION.md).
+
+The checked-in guard expresses repository intent; it does not by itself prove
+the provider honored the setting or that no competing deployment is queued.
+Verify provider state at release time.
 
 ### Required Environment Variables
 
@@ -142,82 +154,70 @@ Post-login redirect validation happens in the **login form** (`LoginForm.tsx`): 
 
 ---
 
-## Automated Deployment (CI)
+## Manifest-Bound Database Deployment
 
-### Overview
+`.github/workflows/deploy.yml` is the single cloud schema-migration entrypoint.
+It is manually dispatched from `main` and delegates to
+`.github/workflows/database-deploy-reusable.yml`.
 
-Database deployments are automated via **GitHub Actions** using `.github/workflows/deploy.yml`. The workflow is triggered manually from the GitHub Actions UI with an environment selector (production/staging).
+### Required Inputs
 
-### Architecture
+| Input                | Requirement |
+| -------------------- | ----------- |
+| `environment`        | `staging` or `production` |
+| `source_sha`         | Exact current-main SHA selected by the dispatch |
+| `migration_manifest` | Committed manifest containing the ordered migration paths and SHA-256 digests |
+| `dry_run`            | Explicit `true` or `false` |
+| `staging_run_id`     | Successful actual staging run for the same source and manifest; required for an actual production run |
+| `recovery_receipt`   | Committed, current backup-restore receipt matching the manifest and recovery profile; required for an actual production run |
 
-```
-Developer triggers via GitHub UI
-  → Pre-flight: Schema diff + dry-run option
-  → Approval gate (production only — GitHub Environment protection)
-  → Pre-deploy backup (supabase db dump → artifact)
-  → Push migrations (supabase db push)
-  → Post-deploy sanity checks (16 SQL checks)
-  → Summary in GitHub Actions step summary
-```
+### Enforced Checks
+
+The reusable driver fails closed unless the checkout and remote `main` both
+equal `source_sha`, the actor has write-or-higher repository permission, staging
+and production resolve to distinct expected projects, the native Supabase
+production Git binding is disabled, and the remote pending migration list
+exactly matches the committed manifest. An actual production run additionally
+validates the matching staging run and recovery receipt.
+
+Immediately before mutation, the driver rechecks current `main` and the native
+production binding. It applies only the validated migration set, verifies that
+no migrations remain, runs linked database lint, and uploads a sanitized
+deployment receipt. It does **not** create or upload a database dump and does not
+replace separately authorized post-deployment verification.
 
 ### How to Trigger a Deployment
 
-1. Go to **GitHub → Actions → Deploy Database**
-2. Click **Run workflow**
-3. Select the target **environment** (production or staging)
-4. Optionally check **Dry run** to only see the schema diff without deploying
-5. Click **Run workflow**
+1. Use a clean checkout of the exact current-main SHA.
+2. Go to **GitHub → Actions → Deploy Database → Run workflow**.
+3. Enter the exact inputs above; retain dry-run evidence before actual staging.
+4. Apply and verify staging before production.
+5. For production, provide the matching successful staging run and committed
+   recovery receipt.
 
-For **production** deployments, a reviewer must approve the deployment in the GitHub Environment approval UI before the deploy job starts.
+The workflow binds jobs to the `Staging` or `Production` GitHub Environment, but
+reviewer and wait-timer rules are provider-side configuration. Verify them at
+release time; their presence cannot be inferred from the workflow file.
 
-### Workflow Steps
+All callers share a non-cancelling mutex per actual target. Never bypass a failed
+manifest/evidence check with a direct cloud `supabase db push`.
 
-| Step                    | Description                                                         | On Failure                        |
-| ----------------------- | ------------------------------------------------------------------- | --------------------------------- |
-| Pre-flight: Schema diff | Shows pending migrations and drift between Git and remote           | Informational — does not block    |
-| Dry run gate            | If dry run is checked, stops after showing diff                     | N/A                               |
-| Approval gate           | Production requires reviewer approval via GitHub Environments       | Deploy waits indefinitely         |
-| Pre-deploy backup       | `supabase db dump --data-only` saved as artifact (30-day retention) | **Aborts deployment**             |
-| Push migrations         | `supabase db push` applies pending migrations                       | Workflow fails, backup available  |
-| Post-deploy sanity      | Runs all 16 SQL sanity checks against remote                        | Workflow fails with check details |
+### Retired Auto-Sync
 
-### GitHub Environment Protection Rules
-
-| Environment  | Approval Required | Wait Timer | Secrets                                                                         |
-| ------------ | ----------------- | ---------- | ------------------------------------------------------------------------------- |
-| `production` | Yes (1+ reviewer) | 5 minutes  | `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF`, `SUPABASE_DB_PASSWORD`         |
-| `staging`    | No                | None       | `SUPABASE_ACCESS_TOKEN`, `SUPABASE_STAGING_PROJECT_REF`, `SUPABASE_DB_PASSWORD` |
-
-### Required Secrets
-
-| Secret                         | Purpose                            | Scope                   |
-| ------------------------------ | ---------------------------------- | ----------------------- |
-| `SUPABASE_ACCESS_TOKEN`        | CLI authentication                 | Repository              |
-| `SUPABASE_PROJECT_REF`         | Production project reference       | Environment: production |
-| `SUPABASE_STAGING_PROJECT_REF` | Staging project reference          | Environment: staging    |
-| `SUPABASE_DB_PASSWORD`         | Direct DB access (backup + sanity) | Repository              |
-
-> **Security:** All secrets are accessed via `${{ secrets.* }}` — never echoed in logs or step outputs. Rotate access tokens quarterly.
-
-### Concurrency Protection
-
-The workflow uses `concurrency: deploy-<environment>` to prevent parallel deployments to the same environment. A new deployment to the same environment will wait for the current one to finish.
-
-### Existing Auto-Sync
-
-`sync-cloud-db.yml` automatically pushes migrations to **staging first** (when `STAGING_ENABLED=true`), then to production on merge to `main`. The manual `deploy.yml` workflow is intended for:
-- Controlled deployments with approval gates
-- Staging deployments
-- Re-deployments after failed syncs
-- Dry-run schema diff checks
+`.github/workflows/sync-cloud-db.yml` is retained only as a compatibility notice.
+It has no push trigger and its manual job always exits with an error without
+mutating a database. Do not restore automatic merge-to-`main` database deployment.
 
 ### Recovery from Failed Deployment
 
-If `deploy.yml` fails mid-push:
-1. Download the backup artifact from the workflow run
-2. Follow [Restore Procedures](#restore-from-dump-file) below
-3. Investigate the failing migration
-4. Fix and re-trigger the deployment
+If `deploy.yml` fails during an actual run:
+1. Preserve the sanitized deployment receipt and workflow logs.
+2. Determine whether any migration was applied from the remote ledger and the
+   post-run dry-run evidence; do not infer atomic rollback.
+3. Use the committed recovery evidence and the applicable restore procedure if
+   data or schema recovery is required.
+4. Fix the cause, create new reviewed evidence when required, and re-dispatch
+   only from the then-current exact `main`.
 
 See also: Issue #121 (Rollback Documentation) for detailed procedures.
 
@@ -237,21 +237,24 @@ See also: Issue #121 (Rollback Documentation) for detailed procedures.
 
 ## GitHub Actions CI
 
-### Required Secrets
+### Hosted-Data Boundary
 
-Add these in **GitHub > Settings > Secrets and variables > Actions > Repository secrets**:
+Browser-facing PR, main, screenshot, quality, and Lighthouse jobs use the
+checked-in loopback contract. Public runs are Supabase-independent; authenticated
+runs use a guarded job-owned local emulator. They receive no hosted Supabase URL,
+anon key, or service-role key and must fail closed rather than fall back to
+staging or production.
 
-| Secret                              | Value                                  | Used by          |
-| ----------------------------------- | -------------------------------------- | ---------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`          | Production Supabase URL                | CI (fallback)    |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY`     | Production Supabase anon key           | CI (fallback)    |
-| `SUPABASE_URL_STAGING`              | Staging Supabase URL                   | CI + preview E2E |
-| `SUPABASE_ANON_KEY_STAGING`         | Staging Supabase anon key              | CI + preview E2E |
-| `SUPABASE_SERVICE_ROLE_KEY_STAGING` | Staging service role key               | CI auth E2E      |
-| `SUPABASE_SERVICE_ROLE_KEY`         | Production service role key (fallback) | CI auth E2E      |
+Non-browser workflows have separate contracts. In particular, `deploy.yml`
+inherits the Supabase project and database credentials required by the
+manifest-bound driver. The separate schedule-only
+`Production Data Integrity Audit` alone receives the fixed production audit
+credentials. A green browser job therefore says nothing about a hosted database
+target.
 
-> **Note:** When staging secrets are configured, CI automatically uses them
-> over the production fallbacks. This ensures CI never touches production.
+Treat the `${{ secrets.* }}` expressions in the current workflow files as the
+name/scope authority. Never copy values into documentation, logs, artifacts, or
+`NEXT_PUBLIC_` variables.
 
 ### CI Pipeline
 
@@ -259,7 +262,8 @@ The CI workflows use a tiered architecture:
 
 - **PR Gate** (`.github/workflows/pr-gate.yml`): Typecheck + Lint → Unit tests + Build (parallel) → Playwright smoke E2E
 - **Main Gate** (`.github/workflows/main-gate.yml`): Full build + tests + coverage → Full Playwright E2E → SonarCloud (blocking) → Sentry sourcemaps
-- **Nightly** (`.github/workflows/nightly.yml`): Full Playwright (all projects incl. visual) + Data Integrity Audit
+- **Nightly** (`.github/workflows/nightly.yml`): Secret-free public and guarded local-emulator current-product verification
+- **Production Data Integrity Audit** (`.github/workflows/data-audit.yml`): Separate schedule-only fixed-production-target audit
 
 ### Preview → Staging Wiring
 
@@ -270,18 +274,15 @@ Vercel preview deployments are wired to the **staging** Supabase project:
 | Preview            | Staging         | Staging URL                | Staging anon key                |
 | Production         | Production      | Production URL             | Production anon key             |
 
-**How it works:**
+Vercel environment records and a deployment's build-time binding are separate
+evidence. Verify the Preview URL and anon-key records by direct provider readback,
+then verify a fresh deployment's effective public project reference before any
+authorized hosted test. `vercel env run` is not accepted as remote-value proof
+because local dotenv and process values can overlay the remote environment.
 
-1. Developer opens a PR → Vercel creates a preview deployment using **Preview** env vars (staging Supabase)
-2. CI `playwright-preview` job waits for the Vercel deployment to be ready
-3. Playwright runs smoke tests against the preview URL (no local dev server needed)
-4. Preview E2E uses `BASE_URL` env var to override `playwright.config.ts` `baseURL`
-5. The `webServer` block in Playwright config is automatically skipped when `BASE_URL` is set
-
-**Activation:** Set `STAGING_ENABLED=true` as a GitHub repository variable and configure the staging secrets listed above.
-
-> **Tip:** The preview E2E job is non-blocking during initial rollout — it runs
-> as a separate check and does not prevent merging.
+Routine browser CI does not run against Vercel Preview and there is no
+`STAGING_ENABLED` switch. Any remote preview smoke is a separate release action
+with explicit target and fixture authorization.
 
 ### Running CI Locally
 
@@ -310,6 +311,11 @@ npx playwright test   # E2E tests (auto-starts dev server via webServer config)
 ---
 
 ## Backup Procedures
+
+> These procedures support recovery and the separately guarded `RUN_REMOTE.ps1`
+> data-pipeline path. They are not the database migration entrypoint.
+> An actual production migration dispatch requires a committed recovery receipt;
+> `deploy.yml` does not create a backup on demand.
 
 ### Pre-Deployment Backup (automatic)
 
@@ -470,15 +476,14 @@ A migration was successfully applied but introduced a schema error — e.g., dro
    supabase db push --local
    .\RUN_QA.ps1
 
-   # Then production
-   supabase db push --linked
-   # Or via deploy.yml workflow with approval gate
+   # Then commit the migration and manifest, merge reviewed source, and use
+   # deploy.yml for staging before production with the required evidence.
    ```
 
 6. **Verify:**
    ```powershell
-   .\RUN_SANITY.ps1 -Env production   # 17 checks pass
-   .\RUN_QA.ps1                        # 724 checks pass
+   .\RUN_SANITY.ps1 -Env production   # all current checks pass
+   .\RUN_QA.ps1                        # all current checks pass
    ```
 
 7. **Document the incident** — write a post-mortem within 24 hours.
@@ -591,7 +596,9 @@ A bad frontend deployment was pushed — the site is broken, shows errors, or ha
    - Normal auth callback works (`/auth/callback`)
    - Password-recovery callback fails closed or reaches the reset flow (`/auth/recovery/callback`)
    - Health endpoint returns 200 (`/api/health`)
-6. If the rollback needs to stay in place, revert the bad commit on `main` to prevent the next push from re-deploying the broken code.
+6. If the rollback needs to stay in place, revert the bad commit on `main` to
+   restore source history. A push to `main` does not itself deploy; stage, verify,
+   and promote the intended production artifact through the controlled path.
 
 ### Scenario 5: Partial Failure (Migration Succeeded, Data Corrupt)
 
@@ -632,7 +639,7 @@ A migration applied successfully but introduced data corruption — e.g., an UPD
 
 ### Immediate Actions
 - [ ] Stop any in-progress deployments (cancel GitHub Actions run on deploy.yml)
-- [ ] Stop `sync-cloud-db.yml` if running (cancel workflow)
+- [ ] Check managed-provider/native deployment activity and keep the Supabase production Git binding disabled; the retired `sync-cloud-db.yml` must not be restored
 - [ ] Take a current backup if DB is accessible: `.\BACKUP.ps1 -Env remote`
 - [ ] Export user data if schema is intact: `.\scripts\export_user_data.ps1 -Env remote`
 

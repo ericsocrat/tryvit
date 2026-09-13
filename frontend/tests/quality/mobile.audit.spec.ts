@@ -20,14 +20,15 @@
 
 // eslint-disable-next-line no-restricted-imports -- quality contexts require the shared automatic egress guard
 import { expect, test } from "../../e2e/fixtures/safe-test";
-import { getRoutes } from "./routes";
-import {
-  setupErrorCollectors,
-  assertNoErrors,
-  runInvariantsForRoute,
-} from "./invariants";
+import { getRoutes, type AuditMode } from "./routes";
+import { setupErrorCollectors, assertNoErrors, runInvariantsForRoute } from "./invariants";
 import { cleanScreenshotDir, takeScreenshot } from "./helpers/screenshot";
 import { waitForStable } from "./helpers/network";
+import {
+  assertNavigationContract,
+  mainDocumentHops,
+  routeExpectation,
+} from "./helpers/route-destination";
 
 /* ── Config ──────────────────────────────────────────────────────────────── */
 
@@ -39,6 +40,8 @@ const MODE = (process.env.QA_MODE_LEVEL ?? "smoke") as "smoke" | "full";
  * mode. Credential presence must never select a browser mode.
  */
 const HAS_AUTH = process.env.VISUAL_SAFETY_MODE === "local-authenticated";
+const AUDIT_MODE: AuditMode = HAS_AUTH ? "local-authenticated" : "public";
+const APP_ORIGIN = new URL(process.env.BASE_URL ?? "http://127.0.0.1:3000").origin;
 
 /* ── Setup ───────────────────────────────────────────────────────────────── */
 
@@ -61,25 +64,35 @@ for (const route of routes) {
     const response = await page.goto(route.path, {
       waitUntil: "domcontentloaded",
     });
-    expect(response?.ok() ?? false, `Navigation to ${route.path} failed`).toBe(
-      true
-    );
+    expect(response?.ok() ?? false, `Navigation to ${route.path} failed`).toBe(true);
     await waitForStable(page);
+
+    const expectation = routeExpectation(route, AUDIT_MODE);
+    assertNavigationContract({
+      appOrigin: APP_ORIGIN,
+      pageUrl: page.url(),
+      hops: await mainDocumentHops(response),
+      expectation,
+    });
+    if (expectation.kind === "redirect") {
+      assertNoErrors(collectors, route.path);
+      return;
+    }
 
     // ── Run invariant checks ──────────────────────────────────────────────
     await runInvariantsForRoute(page, route.path, {
       isMobile: true,
-      isProductPage: route.path.includes("/product/"),
-      isRecipesPage: route.path.includes("/recipes"),
-      isSettingsPage: route.path.includes("/settings"),
-      isAdminPage: route.path.includes("/admin"),
+      isProductPage: expectation.url.includes("/product/"),
+      isRecipesPage: expectation.url.includes("/recipes"),
+      isSettingsPage: expectation.url.includes("/settings"),
+      isAdminPage: expectation.url.includes("/admin"),
     });
 
     // ── Screenshot: default state ─────────────────────────────────────────
     await takeScreenshot(page, "mobile", route.label);
 
     // Exercise the current source disclosure and rerun layout/a11y invariants.
-    if (route.path.includes("/product/")) {
+    if (expectation.url.includes("/product/")) {
       const sources = page.getByTestId("product-sources");
       const summary = sources.locator("summary");
       await expect(sources).not.toHaveAttribute("open");

@@ -8,6 +8,7 @@
 import { expect, test } from "./fixtures/safe-test";
 
 const UNIQUE_LIST_NAME = `E2E Test List ${Date.now()}`;
+test.describe.configure({ mode: "serial" });
 
 // ─── List creation ──────────────────────────────────────────────────────────
 
@@ -96,24 +97,19 @@ test.describe("Product lists: detail view", () => {
       .getByRole("link")
       .filter({ hasText: UNIQUE_LIST_NAME })
       .first();
-    const testListVisible = await listLink
-      .isVisible({ timeout: 5_000 })
-      .catch(() => false);
+    await expect(listLink).toBeVisible({ timeout: 10_000 });
+    await listLink.click();
+    await page.waitForLoadState("domcontentloaded");
 
-    if (testListVisible) {
-      await listLink.click();
-      await page.waitForLoadState("domcontentloaded");
+    // Heading should show the list name
+    await expect(
+      page.getByRole("heading", { name: new RegExp(UNIQUE_LIST_NAME, "i") }),
+    ).toBeVisible({ timeout: 10_000 });
 
-      // Heading should show the list name
-      await expect(
-        page.getByRole("heading", { name: new RegExp(UNIQUE_LIST_NAME, "i") }),
-      ).toBeVisible({ timeout: 10_000 });
-
-      // Empty list message should show (list was just created with no items)
-      await expect(
-        page.getByText(/empty|no items|Browse products/i).first(),
-      ).toBeVisible({ timeout: 5_000 });
-    }
+    // Empty list message should show (list was just created with no items)
+    await expect(page.getByText(/empty|no items|Browse products/i).first()).toBeVisible({
+      timeout: 5_000,
+    });
   });
 
   test("list detail has edit and share buttons", async ({ page }) => {
@@ -124,36 +120,17 @@ test.describe("Product lists: detail view", () => {
       .getByRole("link")
       .filter({ hasText: UNIQUE_LIST_NAME })
       .first();
-    const testListVisible = await listLink
-      .isVisible({ timeout: 5_000 })
-      .catch(() => false);
+    await expect(listLink).toBeVisible({ timeout: 10_000 });
+    await listLink.click();
+    await page.waitForLoadState("domcontentloaded");
 
-    if (testListVisible) {
-      await listLink.click();
-      await page.waitForLoadState("domcontentloaded");
-
-      // Wait for page to load
-      await expect(
-        page.getByRole("heading").first(),
-      ).toBeVisible({ timeout: 10_000 });
-
-      // Edit button should be accessible
-      const editBtn = page.getByRole("button", { name: /Edit list/i });
-      const hasEdit = await editBtn
-        .isVisible({ timeout: 5_000 })
-        .catch(() => false);
-
-      // Share button should be accessible (not on avoid list)
-      const shareBtn = page.getByRole("button", {
-        name: /Share settings/i,
-      });
-      const hasShare = await shareBtn
-        .isVisible({ timeout: 3_000 })
-        .catch(() => false);
-
-      // At least one should be visible on a custom list
-      expect(hasEdit || hasShare).toBe(true);
-    }
+    await expect(page.getByRole("heading").first()).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole("button", { name: /Edit list/i })).toBeVisible({
+      timeout: 5_000,
+    });
+    await expect(page.getByRole("button", { name: /Share settings/i })).toBeVisible({
+      timeout: 5_000,
+    });
   });
 });
 
@@ -168,38 +145,20 @@ test.describe("Product lists: sharing", () => {
       .getByRole("link")
       .filter({ hasText: UNIQUE_LIST_NAME })
       .first();
-    const testListVisible = await listLink
-      .isVisible({ timeout: 5_000 })
-      .catch(() => false);
+    await expect(listLink).toBeVisible({ timeout: 10_000 });
+    await listLink.click();
+    await page.waitForLoadState("domcontentloaded");
 
-    if (testListVisible) {
-      await listLink.click();
-      await page.waitForLoadState("domcontentloaded");
+    const shareBtn = page.getByRole("button", { name: /Share settings/i });
+    await expect(shareBtn).toBeVisible({ timeout: 5_000 });
+    await shareBtn.click();
 
-      // Click share button to open share panel
-      const shareBtn = page.getByRole("button", {
-        name: /Share settings/i,
-      });
-      const hasShare = await shareBtn
-        .isVisible({ timeout: 5_000 })
-        .catch(() => false);
-
-      if (hasShare) {
-        await shareBtn.click();
-
-        // Sharing panel should appear with "Sharing" heading
-        await expect(
-          page.getByText(/Sharing/i).first(),
-        ).toBeVisible({ timeout: 5_000 });
-
-        // Toggle (On/Off) should be visible
-        await expect(
-          page
-            .getByRole("button", { name: /^On$/i })
-            .or(page.getByRole("button", { name: /^Off$/i })),
-        ).toBeVisible({ timeout: 5_000 });
-      }
-    }
+    await expect(page.getByText(/Sharing/i).first()).toBeVisible({ timeout: 5_000 });
+    await expect(
+      page
+        .getByRole("button", { name: /^On$/i })
+        .or(page.getByRole("button", { name: /^Off$/i })),
+    ).toBeVisible({ timeout: 5_000 });
   });
 });
 
@@ -214,38 +173,19 @@ test.describe("Product lists: deletion", () => {
     const deleteBtn = page.getByRole("button", {
       name: new RegExp(`Delete ${UNIQUE_LIST_NAME}`, "i"),
     });
-    const altDeleteBtn = page.getByRole("button", { name: /Delete/i }).last();
+    await expect(deleteBtn).toBeVisible({ timeout: 10_000 });
+    await deleteBtn.click();
 
-    const targetBtn =
-      (await deleteBtn.isVisible({ timeout: 5_000 }).catch(() => false))
-        ? deleteBtn
-        : altDeleteBtn;
-
-    const hasDelete = await targetBtn
-      .isVisible({ timeout: 3_000 })
-      .catch(() => false);
-
-    if (hasDelete) {
-      await targetBtn.click();
-
-      // Confirm dialog should appear
-      await expect(
-        page.getByText(/Delete list\?|cannot be undone/i).first(),
-      ).toBeVisible({ timeout: 5_000 });
-
-      // Cancel should close dialog without deleting
-      const cancelBtn = page
-        .getByRole("dialog")
-        .getByRole("button", { name: /Cancel/i })
-        .first();
-      await expect(cancelBtn).toBeVisible();
-      await cancelBtn.click();
-
-      // List should still be present
-      await expect(page.getByText(UNIQUE_LIST_NAME)).toBeVisible({
-        timeout: 5_000,
-      });
-    }
+    await expect(page.getByText(/Delete list\?|cannot be undone/i).first()).toBeVisible({
+      timeout: 5_000,
+    });
+    const cancelBtn = page
+      .getByRole("dialog")
+      .getByRole("button", { name: /Cancel/i })
+      .first();
+    await expect(cancelBtn).toBeVisible();
+    await cancelBtn.click();
+    await expect(page.getByText(UNIQUE_LIST_NAME)).toBeVisible({ timeout: 5_000 });
   });
 
   test("confirming delete removes the list", async ({ page }) => {
@@ -255,44 +195,18 @@ test.describe("Product lists: deletion", () => {
     const deleteBtn = page.getByRole("button", {
       name: new RegExp(`Delete ${UNIQUE_LIST_NAME}`, "i"),
     });
-    const altDeleteBtn = page.getByRole("button", { name: /Delete/i }).last();
+    await expect(deleteBtn).toBeVisible({ timeout: 10_000 });
+    await deleteBtn.click();
 
-    const targetBtn =
-      (await deleteBtn.isVisible({ timeout: 5_000 }).catch(() => false))
-        ? deleteBtn
-        : altDeleteBtn;
-
-    const hasDelete = await targetBtn
-      .isVisible({ timeout: 3_000 })
-      .catch(() => false);
-
-    if (hasDelete) {
-      await targetBtn.click();
-
-      // Click the confirm Delete button inside dialog
-      await expect(
-        page.getByText(/Delete list\?|cannot be undone/i).first(),
-      ).toBeVisible({ timeout: 5_000 });
-
-      // The dialog has two "Delete" buttons area — pick the danger one
-      // The confirm dialog's delete button is typically the last visible one
-      const confirmDeleteBtns = page.getByRole("button", {
-        name: /^Delete$/i,
-      });
-      await confirmDeleteBtns.last().click();
-
-      // Wait for deletion to process
-      await page.waitForTimeout(3_000);
-
-      // List should no longer be visible
-      const stillExists = await page
-        .getByText(UNIQUE_LIST_NAME)
-        .isVisible({ timeout: 3_000 })
-        .catch(() => false);
-
-      // Expected: the list was deleted (or at least the delete action completed)
-      expect(page.locator("body")).toBeDefined();
-    }
+    await expect(page.getByText(/Delete list\?|cannot be undone/i).first()).toBeVisible({
+      timeout: 5_000,
+    });
+    const confirmDelete = page.getByRole("dialog").getByRole("button", {
+      name: /^Delete$/i,
+    });
+    await expect(confirmDelete).toBeVisible();
+    await confirmDelete.click();
+    await expect(page.getByText(UNIQUE_LIST_NAME)).not.toBeVisible({ timeout: 10_000 });
   });
 });
 

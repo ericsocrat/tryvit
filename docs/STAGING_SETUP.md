@@ -1,9 +1,9 @@
 # Staging Setup Guide
 
-> **Status: READY** — All scripts (`RUN_REMOTE.ps1`, `RUN_SEED.ps1`,
-> `RUN_SANITY.ps1`) support `-Env staging`. The `sync-cloud-db.yml` workflow
-> auto-pushes migrations to staging before production when `STAGING_ENABLED=true`
-> is set as a repository variable.
+> **Status: ACTIVE — deployment controls verified 2026-09-13.** The staging
+> project already exists. `sync-cloud-db.yml` is retired and always fails without
+> mutation; current migrations use the manually dispatched, exact-main,
+> manifest-bound `deploy.yml` workflow.
 >
 > Follow the steps below to create the Supabase staging project and configure
 > secrets. See [ENVIRONMENT_STRATEGY.md](ENVIRONMENT_STRATEGY.md) §8.1 for context.
@@ -39,18 +39,19 @@
 
 ## Step 2: Apply Migrations
 
-```powershell
-# From the repository root
-cd c:\Users\ericsocrat\Desktop\tryvit
+For the current staging project, do not relink a development checkout and push
+directly. From a clean exact-main checkout:
 
-# Link to the staging project
-npx supabase link --project-ref <staging-ref>
+1. Commit a manifest containing the exact expected migration paths and SHA-256
+   digests.
+2. Dispatch **Deploy Database** with `environment=staging`, that exact
+   `source_sha`, the manifest path, and `dry_run=true`.
+3. Review the dry-run receipt, then dispatch the same source and manifest with
+   `dry_run=false`.
+4. Preserve the successful staging receipt for any later production run.
 
-# Push all migrations
-npx supabase db push
-```
-
-Verify: All 124 migrations should apply successfully.
+For a replacement staging project, prepare and review a manifest covering its
+exact expected baseline rather than using an unbounded `--include-all` push.
 
 ---
 
@@ -79,7 +80,7 @@ This will:
 .\RUN_SANITY.ps1 -Env staging
 ```
 
-All 17 checks should pass. Fix any failures before proceeding.
+All current checks should pass. Fix any failure before proceeding.
 
 ---
 
@@ -102,22 +103,18 @@ In the Staging Supabase Dashboard → **Authentication → URL Configuration**:
 
 ### GitHub Repository Secrets
 
-Go to **Settings → Secrets and variables → Actions** and add:
+The workflow files are authoritative for names and scope. The staging database
+driver requires the following through inherited GitHub secrets:
 
-| Secret                              | Value                                                      |
-| ----------------------------------- | ---------------------------------------------------------- |
-| `SUPABASE_STAGING_PROJECT_REF`      | Staging project reference (e.g., `abcdef123456`)           |
-| `SUPABASE_URL_STAGING`              | `https://<staging-ref>.supabase.co`                        |
-| `SUPABASE_ANON_KEY_STAGING`         | Staging project anon key (from Dashboard → Settings → API) |
-| `SUPABASE_SERVICE_ROLE_KEY_STAGING` | Staging project service role key                           |
+| Secret                         | Purpose |
+| ------------------------------ | ------- |
+| `SUPABASE_ACCESS_TOKEN`        | Supabase CLI and native-binding verification |
+| `SUPABASE_PROJECT_REF`         | Production reference used to enforce distinct target bindings |
+| `SUPABASE_STAGING_PROJECT_REF` | Staging project reference |
+| `SUPABASE_STAGING_DB_PASSWORD` | Staging database access for the manifest-bound driver |
 
-### GitHub Repository Variables
-
-Go to **Settings → Secrets and variables → Actions → Variables** and add:
-
-| Variable          | Value  | Purpose                                     |
-| ----------------- | ------ | ------------------------------------------- |
-| `STAGING_ENABLED` | `true` | Enables staging sync in `sync-cloud-db.yml` |
+There is no `STAGING_ENABLED` switch. Browser-facing CI must not receive any
+hosted Supabase URL, anon key, or service-role key.
 
 ### Vercel Preview Environment
 
@@ -127,6 +124,11 @@ Go to **Vercel → Project Settings → Environment Variables**:
 2. Set `NEXT_PUBLIC_SUPABASE_ANON_KEY` for **Preview** environment to the staging anon key
 
 > **Important:** Do NOT override the Production environment variables.
+
+Verify the separate Preview records by direct provider readback, then verify a
+fresh deployment's effective public project reference. Do not use
+`vercel env run` as proof of the remote values because local dotenv and process
+values can overlay them.
 
 ### Local `.env`
 
@@ -139,30 +141,25 @@ SUPABASE_STAGING_DB_PASSWORD=<password>
 
 ---
 
-## Step 7: Verify E2E (Optional)
+## Step 7: Verify E2E
 
-Run Playwright against a staging-backed preview deployment:
+Routine browser verification uses the checked-in loopback safety contract:
+public runs are Supabase-independent and authenticated runs use the guarded
+job-owned local emulator. Do not inject hosted staging credentials into the
+standard Playwright entrypoint.
 
-```powershell
-cd frontend
-$env:NEXT_PUBLIC_SUPABASE_URL = "https://<staging-ref>.supabase.co"
-$env:NEXT_PUBLIC_SUPABASE_ANON_KEY = "<staging-anon-key>"
-npx playwright test
-```
+A hosted Preview smoke is a separate release action. Run it only after direct
+environment-record readback, fresh-deployment binding verification, deployment
+protection, and explicit fixture/mutation authorization.
 
 ---
 
-## Step 8: Wire CI (Issue #141)
+## Step 8: Verify CI Isolation
 
-Update `.github/workflows/pr-gate.yml` and `main-gate.yml` to use staging secrets for Playwright E2E:
-
-```yaml
-env:
-  NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL_STAGING }}
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY_STAGING }}
-```
-
-This ensures CI never touches production and E2E tests run against staging.
+Confirm the browser-facing workflows pass no hosted Supabase URL, anon key, or
+service-role key and that authenticated projects start and stop the local
+emulator. Missing local tooling or failed readiness must block authenticated
+coverage instead of selecting a hosted fallback.
 
 ---
 
@@ -170,14 +167,11 @@ This ensures CI never touches production and E2E tests run against staging.
 
 ### Applying New Migrations to Staging
 
-After merging a PR with new migrations, `sync-cloud-db.yml` auto-pushes to
-staging (when `STAGING_ENABLED=true`). To apply manually:
-
-```powershell
-npx supabase link --project-ref <staging-ref>
-npx supabase db push
-.\RUN_SANITY.ps1 -Env staging
-```
+After merging reviewed migration source, dispatch `deploy.yml` from the exact
+current-main SHA with the committed manifest. Retain dry-run evidence, perform
+the actual staging dispatch, preserve its receipt, and run the separately
+authorized staging verification. Never fall back to a direct cloud
+`supabase db push` after a driver refusal.
 
 ### Re-seeding Staging
 

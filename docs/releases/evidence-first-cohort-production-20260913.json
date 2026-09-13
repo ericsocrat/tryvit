@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "result": "PASS",
+  "environment": "production",
+  "consumerRelease": {
+    "sourceSha": "bc618f2c73e4d731cd8419170b0bfdcd4729a1b5",
+    "sourceTree": "d1943585bc00c0fae81c8518fd8c12cebd52da18",
+    "pullRequest": 1361,
+    "deploymentId": "dpl_BVtpSwsedvRm5cc5bSgDRwtpVATt",
+    "productionSmokeRun": 34247488747
+  },
+  "operatorRelease": {
+    "sourceSha": "82ff6ab47f60c310d7a7684e548599958d7be836",
+    "pullRequests": [1364, 1365],
+    "codeSha256": "b287e068723c608425b334e0b2ebe6f11bf2f0e5eb8e3842d82534fa2aeab30c",
+    "migrationManifestSha256": "f2f164f0e669f310fcf480eae89b4f6d09ead69fa8d0ee2e3acfe27b2bdcf048"
+  },
+  "retainedCohort": {
+    "memberCount": 60,
+    "sourceFilesVerified": 60,
+    "sourceRefetchRequests": 0,
+    "cohortSha256": "80fe4eaef2ca83e7d4e8eb0e441178ff4956bdcbf567be66557fc3710aec215e",
+    "reviewedRemainingManifestSha256": "d38750d840b852c8fedde9c5ed1dd1dca6ee24e2d0550298de0a35018018e40f"
+  },
+  "import": {
+    "pilotProductId": 178,
+    "remainingBatches": 11,
+    "maximumBatchSize": 5,
+    "appliedProducts": 55,
+    "importedProductIds": [148,178,182,195,200,398,399,400,401,402,605,634,703,943,1031,1036,1038,1040,1044,1148,2041,2049,2061,2062,2085,2467,2470,2473,2486,2488,2874,2892,2902,2946,2995,3004,3006,3065,3085,3091,3137,3151,3160,5822,5823,5831,5832,5835,6030,6036,6038,6039,6056,6057,6063],
+    "pilotPlanSha256": "7ebf1ed3ae1f55235520acbdb5bde10e30cad3f106f8beaa0f9f3e5cc8c64551",
+    "remainingBatchPlanSha256": [
+      "59173a4552199c8fb3eaa5be906fa6487521d18e0bb5857410d7cdda16e044ab",
+      "3cde0f1d9588ba5716d96d9baed5aee46e7788eb12cdb598e28cc7894bd38af2",
+      "c33f1ad8896e259c016ec5dce2ca9a9f9a5830459e372370308fbdfa8e695985",
+      "4914b0edb5ecc98a722c2ac3fe9b0de8f5b18dbfe6dad06a3b97b53d0548b061",
+      "623caf4f8ceda828cdd8ed106fe1fa9624acd7f28a545ea5b5a9498715fcc4c7",
+      "59b84210d0792e1d71d4a4c8ab5078e473057a66da78bd038d796a90ca3c2652",
+      "a525cf07f8baef42dfce50020a100c6ce8c968d92aa624c23d691d4c440bc042",
+      "f92da9ce5d025e7686f64895312e33335052c9bd1bcbce23e9f4d6260cd4fbe7",
+      "a65d8dd76b955b56ee7c5439099b2e5ed485bce56554ca8e09eba2652e04e6da",
+      "058fead993b3b2287adee3eba31ed3e220f52a7e314caf31e2634b308777dd12",
+      "3652a6521cb8ec5a88fedd1415253b78f921cc0ca76df5a0ec19e91c694daa8e"
+    ],
+    "allBatchResults": "PASS",
+    "allPeerPostimages": "PASS",
+    "remainingNotAttempted": 0,
+    "firstAppliedAt": "2026-09-13T01:53:17.987119Z",
+    "lastAppliedAt": "2026-09-13T02:29:54.596147Z"
+  },
+  "finalState": {
+    "canonicalAllowlistDigestSha256": "93d0d8c40517e719a56d9640c498cc246805f622df9f1b2215b77aacdf937bd1",
+    "sourceProposalReviewStatus": "pending-root-review",
+    "executionReviewBoundary": "exact digest and plan explicitly reviewed before execution",
+    "recoveryReceiptSha256": "93682219142784e5946b6f035d48312b9f16e01b1c8d8d2722bf6efd924e7c5b",
+    "recoveryPlanSha256": "c533ab7aa14daed8d71b30212920ec0ebccf82658e43191628b378d2d45fab41",
+    "recoveryScope": "observations-public-cohort-v1",
+    "actualIsolatedRestore": true,
+    "ingestionBatchRows": 55,
+    "sourceRecords": 55,
+    "sourceObservations": 55,
+    "sourceAssertions": 502,
+    "selectedAccepted": 55,
+    "recordedConsumerModels": 55,
+    "retiredNullScores": 55,
+    "productsWithObservationProvenance": 55,
+    "marketCounts": {"DE": 28, "PL": 27},
+    "missingExpectedProducts": 0,
+    "unexpectedProducts": 0,
+    "duplicateMarketIdentities": 0,
+    "invalidBatchRows": 0,
+    "invalidObservationRows": 0,
+    "sourceRetrievedRange": ["2026-09-05T10:25:15.946550Z", "2026-09-05T10:29:17.405020Z"],
+    "sourceUpdatedRange": ["2026-03-05T09:51:24Z", "2026-09-05T02:42:06Z"]
+  },
+  "held": {
+    "productIds": [628, 2882, 2903, 2950, 6029],
+    "sourceRows": 0,
+    "projectionsMatchReviewedPreimages": true,
+    "reasons": {
+      "628": ["identity_text_change_requires_review", "category_requires_policy_review", "retained_category_differs_from_policy_v1_1"],
+      "2882": ["category_requires_policy_review", "retained_category_differs_from_policy_v1_1"],
+      "2903": ["identity_text_change_requires_review", "category_requires_policy_review"],
+      "2950": ["identity_text_change_requires_review", "category_requires_policy_review"],
+      "6029": ["source_name_maps_to_other_id", "identity_text_change_requires_review"]
+    }
+  },
+  "boundaries": {
+    "historicalScoresRecalibrated": false,
+    "newSourceRequests": 0,
+    "lighthouseMeasurements": 0,
+    "productionTestUsersCreated": 0,
+    "authOrUserTablesInOperatorScope": false,
+    "sourceFactsArePackageVerification": false,
+    "turnstileFirstUseReplayResolved": false
+  }
+}

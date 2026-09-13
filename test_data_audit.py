@@ -209,6 +209,28 @@ class TestRunAudit(unittest.TestCase):
             "SUPABASE_SERVICE_KEY": "test-service-key",
         },
     )
+    def test_rpc_redirect_is_not_followed(self, mock_requests):
+        """Credential-bearing requests must never follow a redirect."""
+        mock_resp = MagicMock()
+        mock_resp.status_code = 307
+        mock_resp.text = "redirect withheld"
+        mock_requests.post.return_value = mock_resp
+
+        with self.assertRaises(SystemExit) as ctx:
+            run_data_audit.run_audit()
+
+        self.assertEqual(ctx.exception.code, 2)
+        self.assertEqual(mock_requests.post.call_count, 1)
+        self.assertIs(mock_requests.post.call_args.kwargs["allow_redirects"], False)
+
+    @patch("run_data_audit.requests")
+    @patch.dict(
+        os.environ,
+        {
+            "SUPABASE_URL": "https://test.supabase.co",
+            "SUPABASE_SERVICE_KEY": "test-service-key",
+        },
+    )
     def test_severity_classification(self, mock_requests):
         """Verifies correct classification of findings by severity."""
         mock_resp = MagicMock()
@@ -254,7 +276,9 @@ class TestRunAudit(unittest.TestCase):
         with self.assertRaises(SystemExit):
             run_data_audit.run_audit()
 
-        report_files = sorted(os.listdir("audit-reports"))
+        report_files = sorted(
+            name for name in os.listdir("audit-reports") if name.startswith("audit_")
+        )
         with open(os.path.join("audit-reports", report_files[-1])) as f:
             report = json.load(f)
 
@@ -290,8 +314,8 @@ class TestRunAudit(unittest.TestCase):
             "SUPABASE_SERVICE_KEY": "test-service-key",
         },
     )
-    def test_store_failure_does_not_crash(self, mock_requests):
-        """Storage failure logs warning but doesn't crash the audit."""
+    def test_store_failure_fails_closed(self, mock_requests):
+        """Storage failure cannot produce a green audit without durable findings."""
         mock_rpc_resp = MagicMock()
         mock_rpc_resp.status_code = 200
         mock_rpc_resp.json.return_value = [
@@ -310,8 +334,10 @@ class TestRunAudit(unittest.TestCase):
 
         with self.assertRaises(SystemExit) as ctx:
             run_data_audit.run_audit()
-        # Should still exit 0 (no critical findings), not crash
-        self.assertEqual(ctx.exception.code, 0)
+        self.assertEqual(ctx.exception.code, 2)
+        self.assertTrue(
+            all(call.kwargs["allow_redirects"] is False for call in mock_requests.post.call_args_list)
+        )
 
 
 class TestRunAuditHelpers(unittest.TestCase):

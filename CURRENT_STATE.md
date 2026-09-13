@@ -1,19 +1,32 @@
 # CURRENT_STATE.md
 
-## Evidence-first rebuild checkpoint — 2026-09-08
+## Evidence-first production checkpoint — 2026-09-13
 
-**Not yet released.** The active consumer implementation is draft PR #1361 on
-`codex/evidence-first-consumer`. At this checkpoint its published head is
-`904bd2c501584a4eca3e3b871e7b381d694c3d45`, based on main
-`1f66ab761a4d419f65745625dd0caad9c0ce77c5`. Revalidate remote refs before mutation;
-these are checkpoint identities, not a permanent current-head guarantee.
+The evidence-first consumer release is live. Production import executed from
+main `82ff6ab47f60c310d7a7684e548599958d7be836`, after consumer PR #1361,
+production operator PR #1364 and pooled-session fix PR #1365. Revalidate the
+repository ref before new work; this document cannot name its own future merge.
+The original deployed consumer source was
+`bc618f2c73e4d731cd8419170b0bfdcd4729a1b5`, tree
+`d1943585bc00c0fae81c8518fd8c12cebd52da18`, on Vercel deployment
+`dpl_BVtpSwsedvRm5cc5bSgDRwtpVATt`. That exact production smoke passed.
+The most recently certified production application source at this checkpoint is
+`e5000bd2dbcf2c254b4bdf8cd7ad685e3bc04d61`, tree
+`6cb59b0beba0113a272c6465f796512869e0fae2`, on Vercel deployment
+`dpl_Aae8Uj73dW4Xhc97c9HEmf7Gm2s9`. Protected pre-promotion checks and
+post-promotion smoke run `34738671744` passed; Main Gate run `34738365769`
+also passed. PR #1369's later Nightly, AppShell/AppPage containment, and settings
+accessibility candidate is not part of that certified deployment. It requires
+exact-head verification, merge, and post-merge promotion before a production claim.
 
 The release contract is [the evidence-first rebuild](docs/implementation/EVIDENCE_FIRST_REBUILD.md).
 Use [the consumer release ledger](docs/releases/EVIDENCE_FIRST_CONSUMER.md)
-for migration/recovery receipts, actual test outcomes, open gates and deployment
-sequencing. Foundation #1359 and delegated visual-review policy #1360 are merged;
-the seven consumer migrations, intentional baseline acceptance and consumer
-production promotion remain outstanding at this checkpoint.
+for migration/recovery receipts, actual test outcomes and deployment sequencing.
+The seven consumer migrations passed exact-source staging and production runs.
+The bounded retained cohort then imported 55 approved products from the preserved
+60-file source set through one pilot and eleven batches of at most five. The final
+state has 55 source records/observations and 502 assertions and passed an actual
+21-table isolated restore. Five reviewed identities remain held and unchanged.
 
 The product presents source-linked food facts and compatible quantitative
 comparisons, not a replacement universal health score. Historical formulas and
@@ -23,8 +36,17 @@ source-bound release driver. Do not infer deployment from a local build or Previ
 
 The primary user worktree and unrelated dashboard-preview work are preserved.
 Private-beta admission remains invitation-only; genuine production Turnstile
-first-use/replay proof remains unresolved. No blanket all-green/public-launch
-claim is made.
+first-use/replay proof remains unresolved. No blanket public-launch claim is made.
+Post-release PR #1370 pinned Next.js and `eslint-config-next` to 16.3.5 above
+the critical advisory floors; PR #1352 updated Sentry to 10.74.0; and PR #1371
+landed the source/lock/report-bound framework-transition contract. The production
+HIGH/CRITICAL audit is clean. Two no-patch high-severity `extract-zip` alerts
+remain in development-only Lighthouse/Puppeteer tooling under the documented
+bounded disposition. The closeout source contains explicit current-product and
+exact route-destination contracts for Nightly, but no scheduled main run has
+certified them. Secret-free Nightly verification is separate from the
+schedule-only `Production Data Integrity Audit`, which uses a fixed production
+target; neither new source path is claimed as hosted run evidence here.
 
 ## Archived May 2026 handoff
 

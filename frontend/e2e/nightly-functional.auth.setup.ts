@@ -1,0 +1,31 @@
+import path from "node:path";
+
+import { expect, test as setup } from "./fixtures/safe-test";
+import { ensureScopedTestUser, getScopedTestCredentials } from "./helpers/test-user";
+
+const authStateDirectory = process.env.VISUAL_SAFETY_AUTH_STATE_DIR;
+if (!authStateDirectory || !path.isAbsolute(authStateDirectory)) {
+  throw new Error("[VS_AUTH_STATE_DIR] owned-temporary-directory-required");
+}
+const AUTH_STATE_PATH = path.join(authStateDirectory, "nightly-functional-user.json");
+
+setup("create isolated Nightly functional user and authenticate via UI", async ({ page }) => {
+  setup.setTimeout(60_000);
+
+  await ensureScopedTestUser("nightly-functional");
+  const { email, password } = getScopedTestCredentials("nightly-functional");
+
+  await page.goto("/auth/login");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill(password);
+  await page.getByRole("button", { name: "Sign In" }).click();
+  await page.waitForURL(/\/(app\/search|onboarding)/u, { timeout: 45_000 });
+
+  if (page.url().includes("/onboarding")) {
+    await page.getByTestId("onboarding-skip-all").click();
+    await page.waitForURL(/\/app\/search/u, { timeout: 10_000 });
+  }
+
+  await expect(page).toHaveURL(/\/app\/search/u);
+  await page.context().storageState({ path: AUTH_STATE_PATH });
+});

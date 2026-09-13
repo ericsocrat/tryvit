@@ -8,8 +8,9 @@
 > **Phase 5A.3 landing PR 1 draft evidence added:** 2026-08-25
 > **Phase 5A.3 landing-governance prerequisite added:** 2026-08-25
 > **Phase 5A.3 landing PR 1 bounded revision packet added:** 2026-08-25
+> **Security, deployment controls, and inventory counts verified:** 2026-09-13
 > **Status:** Active — update when adding, renaming, or archiving docs
-> **Tracked inventory:** 73 top-level Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 8 generated/supporting artifacts in `docs/phase5/`; 45 Checkpoint 1 files and 132 Checkpoint 2 files in `docs/phase5a2/`; 24 Phase 5A.3 landing packet documents in `docs/phase5a3/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
+> **Tracked inventory:** 75 top-level Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 8 generated/supporting artifacts in `docs/phase5/`; 45 Checkpoint 1 files and 132 Checkpoint 2 files in `docs/phase5a2/`; 49 Phase 5A.3 landing packet Markdown documents in `docs/phase5a3/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
 
 ---
@@ -20,27 +21,32 @@
 
 - [Product and data policy](EVIDENCE_DATA_POLICY.md)
 - [Implementation and acceptance ledger](implementation/EVIDENCE_FIRST_REBUILD.md)
-- [Consumer release preparation](releases/EVIDENCE_FIRST_CONSUMER.md)
+- [Consumer release and production record](releases/EVIDENCE_FIRST_CONSUMER.md)
+- [Production cohort import receipt](releases/evidence-first-cohort-production-20260913.json)
+- [Original-weight usability reassessment](releases/evidence-first-usability-reassessment-20260913.md)
 - [Ordered database/frontend promotion](releases/CONSUMER_PROMOTION.md)
 - [Foundation sequencing incident and remediation](releases/FOUNDATION_DEPLOYMENT_INCIDENT_20260908.md)
 - [Preview environment isolation](releases/PREVIEW_ISOLATION.md)
 
 Implementation, candidate approval, deployment and production verification remain
-separate states; consult the release record before treating this work as shipped.
+separate evidence states. The recorded evidence-first consumer/cohort release
+completed all four for its exact recorded sources only. Later Nightly changes
+require separate scheduled-run evidence; later UI changes require exact-head
+visual verification and deployment evidence.
 
 | Domain                                                   | Count | Documents                                                                                                                                                                                                                                                                             |
 | -------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Architecture & Design](#architecture--design)           | 8     | Governance blueprint, domain boundaries, feature flags, scoring engine, search architecture, CI proposal, health-goal personalization                                                                                                                                                 |
-| [Diagrams](#diagrams)                                    | 13    | Architecture, ERDs, pipeline flow, QA overview, CI/CD, confidence, concern tiers, country expansion, scoring infographic + headers                                                                                                                                                    |
+| [Diagrams](#diagrams)                                    | 32    | Architecture, ERDs, pipeline flow, QA overview, CI/CD, confidence, concern tiers, country expansion, scoring infographic + headers                                                                                                                                                    |
 | [Brand Assets](#brand-assets)                            | 17    | Logomark SVG variants + PNG exports, wordmark, lockup variants (horizontal + stacked, light + dark)                                                                                                                                                                                   |
 | [Banners](#banners)                                      | 5     | Social preview, README hero banner (SVG + PNG), badges reference                                                                                                                                                                                                                      |
 | [API](#api)                                              | 6     | Contracts, conventions, versioning, frontend mapping, contract testing, registry                                                                                                                                                                                                      |
 | [Scoring](#scoring)                                      | 2     | Methodology (formula), engine (architecture)                                                                                                                                                                                                                                          |
 | [Data & Provenance](#data--provenance)                   | 10    | Sources, provenance, integrity audits, quality reporting, enrichment, allergen evidence semantics, EAN validation, production data                                                                                                                                                    |
 | [Security & Compliance](#security--compliance)           | 5     | Root policy, audit report, access audit, privacy checklist, rate limiting                                                                                                                                                                                                             |
-| [Observability & Operations](#observability--operations) | 9     | Monitoring, observability, log schema, alerts, on-call policy, SLOs, metrics, incident response, disaster drill                                                                                                                                                                       |
+| [Observability & Operations](#observability--operations) | 11    | Monitoring, observability, log schema, alerts, on-call policy, SLOs, metrics, incident response, disaster drill                                                                                                                                                                       |
 | [DevOps & Environment](#devops--environment)             | 3     | Environment strategy, staging setup, Sonar config                                                                                                                                                                                                                                     |
-| [Frontend & UX](#frontend--ux)                           | 37    | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec, product positioning, Phase 5 audit/blueprint/roadmap, visual-test safety, route/PWA policy, provider/locale/rendering contract, performance/visual gates, private PWA cache safety, Design System V2 foundations, completed Experience Architecture gate, Checkpoint 1/2 handoffs, landing-governance prerequisite, and Phase 5A.3 landing draft/revision evidence |
+| [Frontend & UX](#frontend--ux)                           | 40    | UX/UI design, UX impact metrics, brand guidelines, name candidates, design system, frontend README, design refresh spec, product positioning, Phase 5 audit/blueprint/roadmap, visual-test safety, route/PWA policy, provider/locale/rendering contract, performance/visual gates, private PWA cache safety, Design System V2 foundations, completed Experience Architecture gate, Checkpoint 1/2 handoffs, landing-governance prerequisite, and Phase 5A.3 landing draft/revision evidence |
 | [Process & Workflow](#process--workflow)                 | 9     | Agent workflow reference, agent review workflow, research workflow, viewing & testing, backfill standard, migration conventions, labels, country expansion, demo script                                                                                                               |
 | [Governance & Policy](#governance--policy)               | 6     | Feature sunsetting, performance report, performance guardrails, doc governance, repo governance, this index                                                                                                                                                                           |
 | [Architecture Decisions](#architecture-decisions-adrs)   | 11    | MADR template + 10 ADRs (stack, scoring, country isolation, pipeline, API versioning, migrations, ingredients, nutrient density, scoring calibration, ingredient language model)                                                                                                      |
@@ -165,7 +171,7 @@ separate states; consult the release record before treating this work as shipped
 | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------------ |
 | [DATA_SOURCES.md](DATA_SOURCES.md)                                             | Source hierarchy & validation workflow — OFF API, manual entry                                                      | [#193](https://github.com/ericsocrat/tryvit/issues/193) | 2026-02-12   |
 | [DATA_PROVENANCE.md](DATA_PROVENANCE.md)                                       | Data provenance & freshness governance — lineage tracking, staleness detection                                      | [#193](https://github.com/ericsocrat/tryvit/issues/193) | 2026-02-24   |
-| [DATA_INTEGRITY_AUDITS.md](DATA_INTEGRITY_AUDITS.md)                           | Ongoing data integrity audit framework — nightly checks, contradiction detection                                    | [#184](https://github.com/ericsocrat/tryvit/issues/184) | 2026-05-25   |
+| [DATA_INTEGRITY_AUDITS.md](DATA_INTEGRITY_AUDITS.md)                           | Schedule-only Production Data Integrity Audit — fixed production target, contradiction detection                    | [#184](https://github.com/ericsocrat/tryvit/issues/184) | 2026-09-13   |
 | [data-quality-report.md](data-quality-report.md)                               | Deterministic PostgreSQL data-quality report, baseline, and CI gate                                                 | Phase 3 audit                                           | 2026-07-28   |
 | [PHASE4A_ENRICHMENT_PILOT.md](PHASE4A_ENRICHMENT_PILOT.md)                     | Deterministic ingredient/allergen enrichment pilot, semantics, metrics, and expansion gate                          | Phase 4A audit                                          | 2026-07-28   |
 | [PHASE4B_CATEGORY_ENRICHMENT.md](PHASE4B_CATEGORY_ENRICHMENT.md)               | Controlled category ranking, enrichment results, determinism, and rollout gate                                      | Phase 4B audit                                          | 2026-07-28   |
@@ -180,8 +186,8 @@ separate states; consult the release record before treating this work as shipped
 
 | Document                                     | Purpose                                                                    | Owner Issue                                             | Last Updated |
 | -------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------- | ------------ |
-| [../SECURITY.md](../SECURITY.md)             | Root security policy — vulnerability table, reporting process              | Security domain                                         | 2026-02-24   |
-| [SECURITY_AUDIT.md](SECURITY_AUDIT.md)       | Full security audit report — RLS, function security, headers, dependencies | [#232](https://github.com/ericsocrat/tryvit/issues/232) | 2026-02-23   |
+| [../SECURITY.md](../SECURITY.md)             | Current security policy, dependency status, access-control invariants       | Security domain                                         | 2026-09-13   |
+| [SECURITY_AUDIT.md](SECURITY_AUDIT.md)       | Dated security audit with later dependency-status addenda                   | [#232](https://github.com/ericsocrat/tryvit/issues/232) | 2026-09-13   |
 | [ACCESS_AUDIT.md](ACCESS_AUDIT.md)           | Data access pattern audit — table-by-role matrix, quarterly review process | [#235](https://github.com/ericsocrat/tryvit/issues/235) | 2026-02-24   |
 | [PRIVACY_CHECKLIST.md](PRIVACY_CHECKLIST.md) | GDPR/RODO compliance checklist — data inventory, retention, subject rights | [#236](https://github.com/ericsocrat/tryvit/issues/236) | 2026-02-24   |
 | [RATE_LIMITING.md](RATE_LIMITING.md)         | Rate limiting strategy — API abuse prevention, throttle tiers              | Security domain                                         | 2026-02-23   |
@@ -208,8 +214,8 @@ separate states; consult the release record before treating this work as shipped
 
 | Document                                           | Purpose                                                                 | Owner Issue   | Last Updated                                 |
 | -------------------------------------------------- | ----------------------------------------------------------------------- | ------------- | -------------------------------------------- |
-| [ENVIRONMENT_STRATEGY.md](ENVIRONMENT_STRATEGY.md) | Local/staging/production environment strategy                           | DevOps domain | 2026-02-22 (Phase 5A.0a section: 2026-08-01) |
-| [STAGING_SETUP.md](STAGING_SETUP.md)               | Staging environment setup guide — scripts, sync workflow, configuration | DevOps domain | 2026-02-24                                   |
+| [ENVIRONMENT_STRATEGY.md](ENVIRONMENT_STRATEGY.md) | Local/staging/production strategy and current deployment controls       | DevOps domain | 2026-09-13                                   |
+| [STAGING_SETUP.md](STAGING_SETUP.md)               | Staging setup, binding verification, and manifest-bound deployment      | DevOps domain | 2026-09-13                                   |
 | [SONAR.md](SONAR.md)                               | SonarCloud configuration & quality gates                                | DevOps domain | 2026-02-23                                   |
 
 > **Relationship:** ENVIRONMENT_STRATEGY.md defines the **overall strategy** (3 environments). STAGING_SETUP.md provides **operational setup steps** for staging specifically. Complementary, not redundant.

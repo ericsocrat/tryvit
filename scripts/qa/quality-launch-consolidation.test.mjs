@@ -28,7 +28,7 @@ test('combined projects retain separated output roots and isolated sign-out iden
   assert.match(read('frontend/tests/quality/desktop.audit.spec.ts'),/cleanScreenshotDir\("desktop"\)/);
   assert.match(read('frontend/tests/quality/helpers/screenshot.ts'),/path.join\(BASE_DIR, viewport\)/);
   const config=read('frontend/playwright.config.ts');
-  assert.match(config,/workers: process.env.CI \? 1 : undefined/);
+  assert.match(config,/workers: process\.env\.CI \|\| HAS_NIGHTLY_CURRENT_BEHAVIOR \? 1 : undefined/);
   const privateProject=config.slice(config.indexOf('const privatePwaCacheProject'),config.indexOf('const privatePwaCacheProject')+1200);
   assert.match(privateProject,/authStatePath\("functional-user.json"\)/);
   assert.match(privateProject,/dependencies: \["auth-setup", "functional-auth-setup"\]/);

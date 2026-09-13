@@ -171,6 +171,18 @@ describe("ProfileSettingsPage", () => {
       expect(screen.getByText("Deutschland")).toBeInTheDocument();
     });
     expect(screen.getByText("Polska")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Polska" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "Deutschland" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    expect(screen.getByRole("button", { name: "English" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
   });
 
   it("does not show save button when no changes made", async () => {

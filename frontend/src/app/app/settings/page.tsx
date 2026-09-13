@@ -178,6 +178,9 @@ export default function ProfileSettingsPage() {
           {COUNTRIES.map((c) => (
             <button
               key={c.code}
+              type="button"
+              aria-label={c.native}
+              aria-pressed={country === c.code}
               onClick={() => {
                 setCountry(c.code);
                 // Auto-switch language to new country's default
@@ -189,7 +192,7 @@ export default function ProfileSettingsPage() {
                 .filter(Boolean)
                 .join(" ")}
             >
-              <span className="text-2xl">{c.flag}</span>
+              <span className="text-2xl" aria-hidden="true">{c.flag}</span>
               <p className="mt-1 text-sm font-medium">{c.native}</p>
             </button>
           ))}
@@ -205,6 +208,8 @@ export default function ProfileSettingsPage() {
           {getLanguagesForCountry(country).map((lang) => (
             <button
               key={lang.code}
+              type="button"
+              aria-pressed={language === lang.code}
               onClick={() => {
                 setLanguage(lang.code as SupportedLanguage);
                 markDirty();

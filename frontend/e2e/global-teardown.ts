@@ -11,6 +11,7 @@ async function globalTeardown() {
   await Promise.all([
     deleteScopedTestUser("authenticated"),
     deleteScopedTestUser("functional"),
+    deleteScopedTestUser("nightly-functional"),
   ]);
 }
 

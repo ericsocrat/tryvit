@@ -44,19 +44,36 @@ describe("ROUTES manifest", () => {
     }
   });
 
+  it("redirect contracts are mode-scoped, internal and non-degenerate", () => {
+    const validModes = new Set(["public", "local-authenticated"]);
+    for (const route of ROUTES) {
+      for (const [mode, declared] of Object.entries(route.expectedRedirect ?? {})) {
+        expect(validModes.has(mode)).toBe(true);
+        const chain = Array.isArray(declared) ? declared : declared.chain;
+        if (!Array.isArray(declared)) expect(declared.transport).toBe("client");
+        expect(chain.length).toBeGreaterThanOrEqual(2);
+        for (const target of chain) {
+          expect(target).toMatch(/^\/(?!\/)/u);
+          expect(target).not.toContain("#");
+        }
+        const normalize = (value: string) =>
+          new URL(value, "http://tryvit.test").pathname +
+          new URL(value, "http://tryvit.test").search;
+        expect(normalize(chain[0])).toBe(normalize(route.path));
+        expect(normalize(chain.at(-1) ?? "")).not.toBe(normalize(route.path));
+      }
+    }
+  });
+
   it("all auth routes start with /app or /onboarding", () => {
     const authRoutes = ROUTES.filter((r) => r.requiresAuth);
     for (const route of authRoutes) {
-      expect(
-        route.path.startsWith("/app") || route.path.startsWith("/onboarding")
-      ).toBe(true);
+      expect(route.path.startsWith("/app") || route.path.startsWith("/onboarding")).toBe(true);
     }
   });
 
   it("admin routes are desktopOnly", () => {
-    const adminRoutes = ROUTES.filter((r) =>
-      r.path.startsWith("/app/admin")
-    );
+    const adminRoutes = ROUTES.filter((r) => r.path.startsWith("/app/admin"));
     expect(adminRoutes.length).toBeGreaterThan(0);
     for (const route of adminRoutes) {
       expect(route.desktopOnly).toBe(true);
