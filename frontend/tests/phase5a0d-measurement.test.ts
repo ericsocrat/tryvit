@@ -622,6 +622,7 @@ describe("cold-browser route JavaScript evidence", () => {
     expect(comparison.failed).toBe(true);
     expect(comparison.routes.find((route) => route.id === "landing")?.regression).toMatchObject({
       failed: true,
+      exceedsAbsoluteLimit: false,
       exceedsPercentLimit: true,
     });
   });
