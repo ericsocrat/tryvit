@@ -11,8 +11,8 @@ dietary recommendation system.
 
 ## Evidence-first rebuild
 
-The current implementation work replaces the unsupported weighted health score
-with source-linked facts and explicit uncertainty. Historical scores are retained
+The released evidence-first implementation replaces the unsupported weighted
+health score with source-linked facts and explicit uncertainty. Historical scores are retained
 for audit, not republished as current winners or health outcomes. Implementation
 status is not deployment status:
 

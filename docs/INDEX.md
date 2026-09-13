@@ -20,13 +20,16 @@
 
 - [Product and data policy](EVIDENCE_DATA_POLICY.md)
 - [Implementation and acceptance ledger](implementation/EVIDENCE_FIRST_REBUILD.md)
-- [Consumer release preparation](releases/EVIDENCE_FIRST_CONSUMER.md)
+- [Consumer release and production record](releases/EVIDENCE_FIRST_CONSUMER.md)
+- [Production cohort import receipt](releases/evidence-first-cohort-production-20260913.json)
+- [Original-weight usability reassessment](releases/evidence-first-usability-reassessment-20260913.md)
 - [Ordered database/frontend promotion](releases/CONSUMER_PROMOTION.md)
 - [Foundation sequencing incident and remediation](releases/FOUNDATION_DEPLOYMENT_INCIDENT_20260908.md)
 - [Preview environment isolation](releases/PREVIEW_ISOLATION.md)
 
 Implementation, candidate approval, deployment and production verification remain
-separate states; consult the release record before treating this work as shipped.
+separate evidence states. This release completed all four; consult the production
+record before reusing that conclusion for a later source or deployment.
 
 | Domain                                                   | Count | Documents                                                                                                                                                                                                                                                                             |
 | -------------------------------------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

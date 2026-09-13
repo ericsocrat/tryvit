@@ -1,14 +1,17 @@
 # Evidence-first rebuild: implementation and release ledger
 
-Status: IN PROGRESS. No release is certified by this document alone.
+Status: RELEASED WITH EXPLICIT FOLLOW-UPS. This ledger summarizes the milestone;
+the linked production receipts remain the evidence authority.
 
-## Current checkpoint — 2026-09-08
+## Current checkpoint — 2026-09-13
 
-Foundation PR #1359 is merged at
-`7e3ec3d3be9480cde07f0c6d6e0c69aad08f4b77` (tree
-`5bcbf8e91f4f7cfa5f73c074dce70c3acc5f656d`). Consumer implementation is on
-`codex/evidence-first-consumer`, not yet released. Earlier checkpoints below
-retain their original time-specific results and are not current authority.
+Foundation PR #1359, consumer PR #1361, production operator PR #1364 and
+pooler-session fix PR #1365 are merged. Production import executed from exact
+main `82ff6ab47f60c310d7a7684e548599958d7be836`; later repository refs must be
+revalidated. The released consumer tree
+`d1943585bc00c0fae81c8518fd8c12cebd52da18` is live on deployment
+`dpl_BVtpSwsedvRm5cc5bSgDRwtpVATt`. Earlier checkpoints below retain their
+original time-specific results and are not current authority.
 
 Delegated-review policy PR #1360 subsequently merged normally to
 `1f66ab761a4d419f65745625dd0caad9c0ce77c5`, tree
@@ -16,22 +19,20 @@ Delegated-review policy PR #1360 subsequently merged normally to
 The consumer branch synchronized that main normally. The policy identifies AI
 review as AI review; it does not invent Eric's personal visual approval.
 
-Production and staging now have the 242-migration foundation baseline.
+Production and staging received the foundation baseline and exact seven-migration
+consumer manifest through the source-bound release driver.
 Production was applied by the unexpected native Supabase Git path before staging;
 that path is now disabled. See the candid
 [sequencing incident and remediation](../releases/FOUNDATION_DEPLOYMENT_INCIDENT_20260908.md).
-Actual staging run `34193369429` passed the exact source/manifest, zero-pending
-and post-application lint checks. Production Main Gate failed SonarCloud despite
-the other four engineering jobs passing. Those findings are under repair, not
-waived. Production code-scanning and secret-scanning alert reads returned zero.
-
-The seven-migration consumer rehearsal passed 296 assertions against a real
-17-table restoration; the latest full frontend suite passed 6,261 tests with
-31 opt-in tests skipped (those 31 separately passed locally). Source import,
-intentional visual acceptance, exact-head CI and deployment remain unfinished.
-Preview's current remote configuration is verified against staging, but existing
-deployment bindings are not certified. See the current
-[consumer release preparation record](../releases/EVIDENCE_FIRST_CONSUMER.md).
+Staging run `34244970981`, production run `34245139133`, exact deployment smoke
+and Main Gate passed. The retained 60-file source set was not refetched: 55
+reviewed products were applied through a pilot plus eleven bounded batches; five
+remain held. The completed state has 55 selected observations and 502 assertions
+and passed an actual isolated 21-table restore. See the current
+[consumer production record](../releases/EVIDENCE_FIRST_CONSUMER.md) and
+[cohort receipt](../releases/evidence-first-cohort-production-20260913.json).
+The [original-weight usability reassessment](../releases/evidence-first-usability-reassessment-20260913.md)
+records 64/100 as a reviewer heuristic, not a field study.
 The production Turnstile first-use/replay proof remains unresolved.
 
 ## Approved outcome
@@ -58,25 +59,25 @@ IDs, saved references, current logo, and invitation-only authorization.
 
 | ID | Requirement | Evidence required | Status |
 | --- | --- | --- | --- |
-| A1 | Partial ingestion cannot retire or clear unrelated identities | Python and live local SQL regression including 30-of-100 and PL/DE | Pending |
-| A2 | One protected database deployment path | Workflow tests, exact manifest/staging/recovery validation, concurrency | Pending |
-| A3 | Diagnostics do not disclose secrets | Synthetic-secret scanner regressions | Pending |
-| B1 | Stable source mappings and immutable observations | Forward migration, transaction/idempotency/conflict tests | Pending |
-| B2 | Precision, basis, qualifiers, missingness retained | Numeric parser and SQL projection tests | Pending |
-| B3 | Atomic source-owned ingredient/allergen sets | Replacement, interruption, other-source preservation tests | Pending |
-| B4 | Source reconciliation and recovery | Real backup restoration and fixed 60-product cohort, coverage report | Pending |
-| C1 | Canonical versioned read model | Runtime schemas plus applied-database contract tests | Pending |
-| C2 | No unsupported consumer score or winner | Search/detail/comparison/saved/export/share/notification checks | Pending |
-| C3 | Correct search and state | NOVA/image/parser/context/cache/history/back-forward regressions | Pending |
-| C4 | Fail-closed suitability and mutations | Unknown evidence and rollback tests | Pending |
-| D1 | Shared neutral shell and task navigation | Actual 390/1440/2560 renders, locales, themes, keyboard review | Pending |
-| D2 | Simplified core screens and copy | Core journey browser tests and exact candidate review | Pending |
-| E1 | Risk-based, non-duplicative CI | Classifier/rollup negative tests, completed exact-head checks | Pending |
-| E2 | Intentional visual baseline acceptance | Truthful reviewer identity, candidate hashes, comparator | Pending |
-| E3 | Normal merge and exact production release | PR/main tree, deployment, smoke and runtime evidence | Pending |
-| E4 | Final evidence and documentation | Updated API/data/scoring docs, original-weight usability review | Pending |
+| A1 | Partial ingestion cannot retire or clear unrelated identities | Python and live local SQL regression including 30-of-100 and PL/DE | Complete |
+| A2 | One protected database deployment path | Workflow tests, exact manifest/staging/recovery validation, concurrency | Complete |
+| A3 | Diagnostics do not disclose secrets | Synthetic-secret scanner regressions | Complete |
+| B1 | Stable source mappings and immutable observations | Forward migration, transaction/idempotency/conflict tests | Complete |
+| B2 | Precision, basis, qualifiers, missingness retained | Numeric parser and SQL projection tests | Complete |
+| B3 | Atomic source-owned ingredient/allergen sets | Replacement, interruption, other-source preservation tests | Complete |
+| B4 | Source reconciliation and recovery | Real backup restoration and fixed 60-product cohort, coverage report | Complete for 55 reviewed products; 5 held |
+| C1 | Canonical versioned read model | Runtime schemas plus applied-database contract tests | Complete |
+| C2 | No unsupported consumer score or winner | Search/detail/comparison/saved/export/share/notification checks | Complete |
+| C3 | Correct search and state | NOVA/image/parser/context/cache/history/back-forward regressions | Complete |
+| C4 | Fail-closed suitability and mutations | Unknown evidence and rollback tests | Complete |
+| D1 | Shared neutral shell and task navigation | Actual 390/1440/2560 renders, locales, themes, keyboard review | Complete with guarded evidence |
+| D2 | Simplified core screens and copy | Core journey browser tests and exact candidate review | Complete through delegated AI lane |
+| E1 | Risk-based, non-duplicative CI | Classifier/rollup negative tests, completed exact-head checks | Complete; stale Nightly excluded from launch evidence |
+| E2 | Intentional visual baseline acceptance | Truthful reviewer identity, candidate hashes, comparator | Complete; no claim of Eric's personal review |
+| E3 | Normal merge and exact production release | PR/main tree, deployment, smoke and runtime evidence | Complete |
+| E4 | Final evidence and documentation | Updated API/data/scoring docs, original-weight usability review | Complete; heuristic, not user study |
 
-## Release sequence
+## Executed release sequence
 
 1. Protect ingestion and deployment first; no new production import precedes this.
 2. Add source/observation schema and local/staging-tested projection logic.
@@ -157,7 +158,7 @@ These entries are additive working evidence, not final-head release certificatio
 - The mobile detail header is compacted after direct visual inspection so a
   missing photograph does not occupy most of the first screen.
 
-## Pending release boundary
+## Historical pre-release boundary
 
 ### 2026-09-08 local checkpoint (not deployment certification)
 
@@ -268,9 +269,10 @@ These entries are additive working evidence, not final-head release certificatio
   receipt does not establish staging recovery. No catchup or production migration
   was applied at this checkpoint.
 
-Deploy additive database contracts before promoting the frontend that requires
-them. Retire incompatible legacy reads with explicit refresh/unavailable errors,
-never nulls that old clients could convert into a favorable score. Validate the
-remaining score-dependent consumers, full suite, exact candidate/baselines,
-risk-based CI and recovery scope. No evidence-first product release, public-beta
-approval or production Turnstile first-use/replay PASS has occurred yet.
+The preceding checkpoint notes describe work that was pending when recorded.
+The evidence-first product release and bounded 55-product source import have now
+completed under the current production receipts. They do not constitute public-
+beta approval or production Turnstile first-use/replay PASS. Critical Next.js
+advisories discovered after release must be resolved before another frontend
+promotion or wider beta, and the obsolete authenticated Nightly assertions must
+be replaced before that scheduled suite is treated as launch evidence.

@@ -1,19 +1,24 @@
 # CURRENT_STATE.md
 
-## Evidence-first rebuild checkpoint — 2026-09-08
+## Evidence-first production checkpoint — 2026-09-13
 
-**Not yet released.** The active consumer implementation is draft PR #1361 on
-`codex/evidence-first-consumer`. At this checkpoint its published head is
-`904bd2c501584a4eca3e3b871e7b381d694c3d45`, based on main
-`1f66ab761a4d419f65745625dd0caad9c0ce77c5`. Revalidate remote refs before mutation;
-these are checkpoint identities, not a permanent current-head guarantee.
+The evidence-first consumer release is live. Production import executed from
+main `82ff6ab47f60c310d7a7684e548599958d7be836`, after consumer PR #1361,
+production operator PR #1364 and pooled-session fix PR #1365. Revalidate the
+repository ref before new work; this document cannot name its own future merge.
+The deployed
+consumer source is `bc618f2c73e4d731cd8419170b0bfdcd4729a1b5`, tree
+`d1943585bc00c0fae81c8518fd8c12cebd52da18`, on Vercel deployment
+`dpl_BVtpSwsedvRm5cc5bSgDRwtpVATt`. Exact production smoke passed.
 
 The release contract is [the evidence-first rebuild](docs/implementation/EVIDENCE_FIRST_REBUILD.md).
 Use [the consumer release ledger](docs/releases/EVIDENCE_FIRST_CONSUMER.md)
-for migration/recovery receipts, actual test outcomes, open gates and deployment
-sequencing. Foundation #1359 and delegated visual-review policy #1360 are merged;
-the seven consumer migrations, intentional baseline acceptance and consumer
-production promotion remain outstanding at this checkpoint.
+for migration/recovery receipts, actual test outcomes and deployment sequencing.
+The seven consumer migrations passed exact-source staging and production runs.
+The bounded retained cohort then imported 55 approved products from the preserved
+60-file source set through one pilot and eleven batches of at most five. The final
+state has 55 source records/observations and 502 assertions and passed an actual
+21-table isolated restore. Five reviewed identities remain held and unchanged.
 
 The product presents source-linked food facts and compatible quantitative
 comparisons, not a replacement universal health score. Historical formulas and
@@ -23,8 +28,11 @@ source-bound release driver. Do not infer deployment from a local build or Previ
 
 The primary user worktree and unrelated dashboard-preview work are preserved.
 Private-beta admission remains invitation-only; genuine production Turnstile
-first-use/replay proof remains unresolved. No blanket all-green/public-launch
-claim is made.
+first-use/replay proof remains unresolved. No blanket public-launch claim is made.
+Two critical Next.js advisories discovered after release require a focused
+dependency update before another frontend promotion or wider beta. The scheduled
+authenticated Nightly suite also contains obsolete pre-rebuild assertions and is
+not current launch evidence.
 
 ## Archived May 2026 handoff
 

@@ -1,13 +1,15 @@
-# Evidence-first consumer release — preparation record
+# Evidence-first consumer release and production record
 
-Status: **NOT RELEASED**. This record does not authorize skipping CI, visual
-review, staging application or production promotion.
+Status: **RELEASED**. Consumer PR #1361, operator PR #1364 and session-initialization
+fix PR #1365 were squash-merged normally. Historical preparation evidence below
+remains truthful for its recorded checkpoint and is not rewritten as later proof.
 
 ## Source and migration contract
 
-The implementation integrates current main
-`cc27aeca69968063e8704c5781c2c48653b1f32e` on
-`codex/evidence-first-consumer`. The seven consumer migrations are bound by
+The released consumer tree is `d1943585bc00c0fae81c8518fd8c12cebd52da18`
+from squash main `bc618f2c73e4d731cd8419170b0bfdcd4729a1b5`. Production operator
+execution used exact main `82ff6ab47f60c310d7a7684e548599958d7be836`.
+The seven consumer migrations are bound by
 [`evidence-first-consumer.migrations.json`](evidence-first-consumer.migrations.json),
 SHA-256 `f2f164f0e669f310fcf480eae89b4f6d09ead69fa8d0ee2e3acfe27b2bdcf048`.
 They retire unsafe consumer interpretations and legacy responses, supply Home
@@ -23,6 +25,42 @@ old expectation and the actual v3.3 function body match the independently checke
 hashes recorded in the migration. Formula bodies, weights, existing scores and
 the registry's original registration metadata remain unchanged. This establishes
 internal consistency, not scientific validity of the retired model.
+
+## Production release and retained-cohort import
+
+The exact seven-migration manifest passed staging run `34244970981`, then
+production run `34245139133`, each with zero remaining migrations and database
+lint passing. A clean Production-target build of consumer main produced Vercel
+deployment `dpl_BVtpSwsedvRm5cc5bSgDRwtpVATt`. Its protected staged smoke proved
+public/auth entry routes, healthy backend and production (not staging) client
+binding before that same deployment ID was promoted. Public smoke run
+`34247488747` and Main Gate run `34244938629` passed. No Lighthouse cohort ran.
+
+The [production cohort receipt](evidence-first-cohort-production-20260913.json)
+binds operator main `82ff6ab47f60c310d7a7684e548599958d7be836`, retained
+60-file cohort SHA-256 `80fe4eaef2ca83e7d4e8eb0e441178ff4956bdcbf567be66557fc3710aec215e`
+and reviewed remaining-manifest SHA-256
+`d38750d840b852c8fedde9c5ed1dd1dca6ee24e2d0550298de0a35018018e40f`.
+No new source request was made. Product 178 was applied first from a verified
+empty-source 21-table recovery. Eleven later batches imported 54 more products,
+with a fresh exact-allowlist capture and actual isolated restore before every
+batch. Every member and peer-postimage check passed; no uncertain result or retry
+occurred.
+
+Final production verification is exactly 55 batches, source records and accepted
+selected observations, 502 assertions, 55 recorded consumer models and 55 retired
+null scores. The final canonical allowlist digest is
+`93d0d8c40517e719a56d9640c498cc246805f622df9f1b2215b77aacdf937bd1`;
+the final completed-state recovery receipt is
+`93682219142784e5946b6f035d48312b9f16e01b1c8d8d2722bf6efd924e7c5b`.
+Held products 628, 2882, 2903, 2950 and 6029 have no source rows and retain their
+reviewed pre-import projections. Source retrieval and upstream update timestamps
+were preserved; the import time was not substituted for source freshness.
+
+This is source-record and recovery evidence, not independent package verification,
+universal nutrition truth or validation of a health-outcome model. The operator
+does not include Auth or user-owned tables, and no production test user was created.
+The genuine Turnstile first-use/replay proof remains unresolved.
 
 ## Recovery and applied-database rehearsal
 
@@ -131,18 +169,18 @@ separate delegated authorization are GitHub comments `5586155129` and
 review and failed acceptance records remain preserved.
 
 All required checks and the fresh base-owned acceptance/renderer checks passed
-before that normal merge. The advisory risk rollup still rejected superseded
-label-missing suites; that failure was disclosed, not bypassed or rewritten.
-The consumer integration corrects selection using verified workflow identity,
-newest execution and per-job attempts, preserving partial reruns and rejecting
-newer failures, unexpected skips, invalid IDs and spoofed contexts. Approval
-workflows capture/recheck live head/base/authorization labels rather than stale
-event labels. The context remains advisory until the base-owned hosted rollout
-has been verified; local tests and historical API replay are not that rollout.
+before that normal merge. At that historical checkpoint, the advisory risk
+rollup still rejected superseded label-missing suites; the failure was disclosed,
+not bypassed or rewritten. The consumer integration subsequently corrected
+selection using verified workflow identity, newest execution and per-job attempts,
+preserving partial reruns and rejecting newer failures, unexpected skips, invalid
+IDs and spoofed contexts. Hosted validation passed on operator head `7054b03a`;
+the exact GitHub Actions `Change Risk Gate` context is now required alongside the
+four existing contexts, with no bypass actors added.
 
-The consumer branch normally merged this exact main without modifying the
-accepted PNGs. Production import tools remain separate uncommitted work and are
-not included in this consumer release.
+The consumer branch normally merged the accepted baseline main without modifying
+the accepted PNGs. The production import tools were later versioned through
+#1364/#1365 and executed only after their separate checks and recovery proofs.
 
 ### PR 1361 integration corrections
 
@@ -173,7 +211,8 @@ The full local frontend run after these changes reported 6,286 passing tests,
 two failed expectations for the newly localized Home search label, and 31
 opt-in skips. Correcting the stale expectations passed all five affected tests;
 this is not represented as a new full-suite pass. Whole-repository Ruff and all
-six repository hygiene checks passed. Final exact-head CI is still required.
+six repository hygiene checks passed. Final exact-head CI was still required at
+that checkpoint and subsequently passed before release.
 
 The subsequent complete frontend rerun passed **6,288 tests in 418 files**, with
 31 opt-in RPC tests skipped (138.44 seconds). The unchanged CI-seeded product
@@ -212,9 +251,10 @@ now explicitly rejects redirects; 13 tests cover recipient/header binding and
 sanitized failure. No real redirect or credential leak was observed, and this
 assessment does not imply the annotation has already been closed by GitHub.
 
-Follow [Consumer promotion](CONSUMER_PROMOTION.md). Keep native Supabase
-production Git synchronization disabled and verify the Vercel main-deployment
-guard. Preview must use staging before authenticated testing. The foundation
+The completed release followed [Consumer promotion](CONSUMER_PROMOTION.md).
+Future releases must keep native Supabase production Git synchronization disabled,
+verify the Vercel main-deployment guard, and keep Preview bound to staging before
+authenticated testing. The foundation
 [sequencing incident](FOUNDATION_DEPLOYMENT_INCIDENT_20260908.md) is not erased
 by subsequent staging success.
 
@@ -224,14 +264,15 @@ no service-role key was added. It does not certify an existing deployment's
 build-time environment. Initial `env run` observations were contaminated by
 local dotenv overrides and are not reliable evidence of the prior remote target.
 
-Apply the exact consumer manifest to staging first, validate its receipt, then
-apply production with fresh matching recovery evidence. Promote an exact
-Production-target artifact only after database verification. An ordinary old
+The consumer manifest was applied to staging first, then production with matching
+recovery evidence. The exact Production-target artifact was promoted only after
+database verification. An ordinary old
 frontend rollback can reintroduce unsafe score interpretation; rollback must use
 a compatible evidence-first build or a truthful unavailable/refresh boundary.
 No destructive schema contraction or deletion of user-owned history is planned.
 
-Source-cohort reconciliation, safe bounded import, intentional baseline review,
-remote CI/Sonar closure and exact deployment certification are still required.
-The production Turnstile first-use/replay proof remains unresolved and is not
-made passing by this release.
+Source-cohort reconciliation, bounded import, intentional baseline review,
+remote CI/Sonar closure and exact deployment certification are complete for this
+release. A focused Next.js security update is required before another frontend
+promotion or wider beta. The production Turnstile first-use/replay proof remains
+unresolved and is not made passing by this release.

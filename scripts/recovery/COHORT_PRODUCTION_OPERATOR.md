@@ -1,10 +1,13 @@
 # Versioned production cohort operator
 
-Implementation independently reviewed; versioning and production execution remain pending. No cloud operation was
-performed while implementing this entrypoint. Historical clone receipts remain
-evidence for their exact earlier hashes, not production approval.
+Implementation was independently reviewed and versioned through PRs #1364/#1365.
+The bounded production import completed on 2026-09-13; the sanitized result is
+[`docs/releases/evidence-first-cohort-production-20260913.json`](../../docs/releases/evidence-first-cohort-production-20260913.json).
+Historical clone receipts remain evidence for their exact earlier hashes, not
+substitutes for that production record.
 
-`node scripts/recovery/cohort-production-operator.mjs` is local planning only.
+Without `--execute`, `node scripts/recovery/cohort-production-operator.mjs` is
+local planning only.
 The old pilot CLI refuses `--execute`; it retains read-only plan compatibility.
 Only this wrapper owns production connectivity. Its injected dependencies exist
 for synthetic/local tests, not CLI-configurable alternate recipients.
@@ -75,7 +78,7 @@ hash-pinned retained inputs into its ignored local evidence location.
    Only the audited retained product178 operation runs.
 5. Inspect the new public source state; review its new allowlist and create a
    fresh combined populated21 capture/restore. Then `--action batch --ids <1–5 IDs>
-   --reviewed-cohort-sha256 <retained cohort sha> --recovery-directory <directory>
+   --reviewed-cohort-sha256 <reviewed remaining-manifest sha> --recovery-directory <directory>
    --reviewed-allowlist-sha256 <captured public sha>`. The five held identities
    and pilot178 are excluded from remaining-batch selection.
 6. Repeat a fresh reviewed capture before each later bounded batch. Never reuse
@@ -117,12 +120,16 @@ misrepresented as rollback. Reconcile the returned envelope directories before
 deciding any further action. These controls do not claim hardware power-loss
 durability or managed Auth/storage disaster recovery.
 
-## Remaining release boundary
+## Production outcome and future-use boundary
 
-Independent code/proof review, a focused tools PR, ordinary checks and exact-main
-versioning precede production use. Actual production empty/populated capture,
-source freshness, first pilot and subsequent batches have NOT been certified by
-local implementation tests. No production authority is implied by a clone PASS.
+Exact-main production execution completed with an empty-source recovery, pilot178,
+eleven batches of at most five and a final completed-state 21-table recovery.
+Fifty-five products were applied; five identities remain held. Every batch and
+peer-postimage check passed. The final receipt and limitations are linked above.
+
+Future executions still require fresh exact-main plans, reviewed live allowlists,
+source-bound recovery and ordinary checks. The 2026-09-13 receipts do not authorize
+another import, a changed cohort or reuse after source/code/database drift.
 
 ## Implementation verification
 
@@ -141,8 +148,9 @@ with full schema/roles/grants/RLS verification. Both receipts are explicitly
 isolated-clone and reject production relabelling. This is not a new full54 or
 production transport certificate; earlier full54 receipts remain separate.
 
-The default CLI was exercised locally and returned `PLAN_BLOCKED` with all
-remote/local write flags false. No `--execute` production command was run.
+The default CLI remains offline planning. Production `--execute` was used only
+after exact-source plans and recovery proofs; every completed operation and the
+initial fail-closed attempts are retained in the production record.
 
 The final pilot engine also passed the actual restored-clone durable-envelope
 and lost-COMMIT rehearsal:
