@@ -49,8 +49,11 @@ export function retainedEntries({readFile=file=>fs.readFileSync(path.join(ROOT,f
 // those contracts separate means recovery remains reproducible after an
 // operator workstation is retired while mutation review stays strictly bound
 // to the original plan.
-export function retainedRecoveryEntries({readFile=file=>fs.readFileSync(path.join(ROOT,file))}={}) {
-  const receipt=JSON.parse(readFile(path.join(RUN,'receipt.json')));
+export function retainedRecoveryEntries({readFile=file=>fs.readFileSync(path.join(ROOT,file)),
+  receiptSha256='74249dc21691ec950611367c1845339831d4f503cbf728451304098c1b3dd8ea'}={}) {
+  const receiptBytes=readFile(path.join(RUN,'receipt.json'));
+  if(hash(receiptBytes)!==receiptSha256)fail('cohort_recovery_receipt_hash_changed');
+  const receipt=JSON.parse(receiptBytes);
   if(!Array.isArray(receipt.members)||receipt.members.length!==60||
     new Set(receipt.members.map(member=>member.product_id)).size!==60)fail('cohort_recovery_receipt_members_changed');
   const held=new Set(PERMANENTLY_HELD_PRODUCT_IDS);

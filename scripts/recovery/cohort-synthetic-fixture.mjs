@@ -58,8 +58,9 @@ export function syntheticRetainedSource() {
   }
   const plan=encode({production_checked_at:'2026-09-01T00:00:00Z',members});
   files.set('audit-reports/evidence-cohort/production-import-plan-20260908/plan.json',plan);
-  files.set('audit-reports/evidence-cohort/run-20260905T101700Z/receipt.json',encode({members:receiptMembers}));
-  return {files,planSha256:sha(plan),readFile:file=>{
+  const receipt=encode({members:receiptMembers});
+  files.set('audit-reports/evidence-cohort/run-20260905T101700Z/receipt.json',receipt);
+  return {files,planSha256:sha(plan),receiptSha256:sha(receipt),readFile:file=>{
     const bytes=files.get(file.replaceAll('\\','/'));if(!bytes)throw Error('synthetic_input_not_found');return Buffer.from(bytes);
   }};
 }

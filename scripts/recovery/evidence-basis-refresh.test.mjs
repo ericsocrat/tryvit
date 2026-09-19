@@ -35,7 +35,8 @@ function fixture() {
       proposed_basis:index<7?'per_100ml':'per_100g',exact_source_evidence:`retained ${record.payload_hash}`,blocker_reason:null});
   });
   const planBytes=Buffer.from(JSON.stringify(plan)),receiptBytes=Buffer.from(JSON.stringify(receipt));
-  source.files.set(planKey,planBytes);source.files.set(receiptKey,receiptBytes);source.planSha256=sha(planBytes);
+  source.files.set(planKey,planBytes);source.files.set(receiptKey,receiptBytes);
+  source.planSha256=sha(planBytes);source.receiptSha256=sha(receiptBytes);
   const matrix={schema_version:'fixture',generated_at:'2026-09-19T12:00:00Z',counts:{selected_observations:55,A:55,B:0,C:0},observations:rows};
   const matrixBytes=Buffer.from(JSON.stringify(matrix)),matrixSha256=sha(matrixBytes);
   const readFile=file=>file===MATRIX?matrixBytes:source.readFile(file);

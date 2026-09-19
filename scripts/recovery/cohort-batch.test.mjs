@@ -19,6 +19,11 @@ test('recovery ledger is independent of the historical mutation plan',()=>{
     return source.readFile(file);
   }};
   assert.equal(retainedRecoveryEntries(withoutPlan).length,55);
+  const replaced=syntheticRetainedSource(),receiptKey='audit-reports/evidence-cohort/run-20260905T101700Z/receipt.json';
+  const receipt=JSON.parse(replaced.files.get(receiptKey));
+  receipt.members[0].observation_sha256='0'.repeat(64);
+  replaced.files.set(receiptKey,Buffer.from(JSON.stringify(receipt)));
+  assert.throws(()=>retainedRecoveryEntries(replaced),/recovery_receipt_hash_changed/);
 });
 const validatePublicAllowlist=(rows,manifest,sha)=>validate(rows,manifest,sha,input);
 const approvedSnapshotDumpArgs=(session,options)=>dumpArgs(session,{...options,input});
