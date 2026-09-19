@@ -14,6 +14,7 @@ import math
 import os
 import re
 import sys
+import tempfile
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -118,9 +119,17 @@ def write_new(path: Path, value: Any) -> None:
 
 def write_atomic(path: Path, value: Any) -> None:
     path = confined(path)
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
-    os.replace(temporary, path)
+    temporary_root = REPORT_ROOT.resolve()
+    temporary_root.mkdir(parents=True, exist_ok=True)
+    descriptor, temporary_name = tempfile.mkstemp(prefix=".jev-advisory-", suffix=".tmp", dir=temporary_root)
+    temporary = Path(temporary_name)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8", newline="\n") as stream:
+            json.dump(value, stream, ensure_ascii=False, indent=2, allow_nan=False)
+            stream.write("\n")
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def confined(path: Path, *, must_exist: bool = False) -> Path:
