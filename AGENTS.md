@@ -37,9 +37,10 @@ npm run test
 ```
 
 Run focused checks while iterating and the smallest relevant documented
-browser/database checks for the changed surface. Use the guarded commands in
-`frontend/README.md` for browser evidence. Do not treat a local build, Preview,
-historical CI result, or provider configuration as proof of production state.
+browser/database checks for the changed surface. Use the documented smoke-test
+checklist in `frontend/README.md` for browser evidence. Do not treat a local
+build, Preview, historical CI result, or provider configuration as proof of
+production state.
 
 For hosted database or deployment-provider inspection, prefer official,
 project-scoped, read-only access. Keep schema, deployment, environment,
