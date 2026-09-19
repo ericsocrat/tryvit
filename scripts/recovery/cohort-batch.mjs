@@ -8,6 +8,7 @@ import {revisionNumber,timestampMicros,canonicalDecimal} from './cohort-pilot-op
 export const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const RUN='audit-reports/evidence-cohort/run-20260905T101700Z';
 const ORIGINAL='audit-reports/evidence-cohort/production-import-plan-20260908/plan.json';
+const PERMANENTLY_HELD_PRODUCT_IDS=Object.freeze([628,2882,2903,2950,6029]);
 export const q=value=>"'"+String(value).replaceAll("'","''")+"'";
 export const jsonSql=value=>q(JSON.stringify(value))+'::jsonb';
 export const fail=code=>{throw new RecoveryError(code);};
@@ -41,6 +42,36 @@ export function retainedEntries({readFile=file=>fs.readFileSync(path.join(ROOT,f
       afterAttributes:Object.fromEntries(attrs.map(k=>[k,record.identity[k]])),
       holdReasons:member.hold_reasons,cachedCheckedAt:old.production_checked_at,record};
   });
+}
+
+// Recovery verification needs the immutable retained source ledger, not the
+// historical pre-import product before-images used by mutation review. Keeping
+// those contracts separate means recovery remains reproducible after an
+// operator workstation is retired while mutation review stays strictly bound
+// to the original plan.
+export function retainedRecoveryEntries({readFile=file=>fs.readFileSync(path.join(ROOT,file))}={}) {
+  const receipt=JSON.parse(readFile(path.join(RUN,'receipt.json')));
+  if(!Array.isArray(receipt.members)||receipt.members.length!==60||
+    new Set(receipt.members.map(member=>member.product_id)).size!==60)fail('cohort_recovery_receipt_members_changed');
+  const held=new Set(PERMANENTLY_HELD_PRODUCT_IDS);
+  if(PERMANENTLY_HELD_PRODUCT_IDS.some(id=>!receipt.members.some(member=>member.product_id===id)))
+    fail('cohort_recovery_held_partition_changed');
+  const entries=receipt.members.filter(member=>!held.has(member.product_id)).map(member=>{
+    if(!Number.isSafeInteger(member.product_id)||member.product_id<1||!['PL','DE'].includes(member.country)||
+      typeof member.ean!=='string'||!/^\d{8,14}$/.test(member.ean)||
+      typeof member.observation_sha256!=='string'||!/^[a-f0-9]{64}$/.test(member.observation_sha256)||
+      path.basename(member.observation_file)!==member.observation_file)fail('cohort_recovery_receipt_member_invalid');
+    const file=path.join(RUN,member.observation_file),recordBytes=readFile(file);
+    if(hash(recordBytes)!==member.observation_sha256)fail('cohort_recovery_record_hash_changed');
+    const record=JSON.parse(recordBytes);
+    if(record.external_id!==member.ean||record.identity?.ean!==member.ean||
+      record.payload_hash!==hash(Buffer.from(record.payload_canonical))||
+      !equal(JSON.parse(record.payload_canonical),record.sanitized_payload))fail('cohort_recovery_record_identity_or_payload_changed');
+    return {productId:member.product_id,country:member.country,externalId:member.ean,
+      recordFile:file,recordSha256:member.observation_sha256,payloadHash:record.payload_hash,record};
+  });
+  if(entries.length!==55)fail('cohort_recovery_approved_partition_changed');
+  return entries;
 }
 export function remainingManifest(source) {
   const all=retainedEntries(source),eligible=all.filter(e=>e.productId!==178&&

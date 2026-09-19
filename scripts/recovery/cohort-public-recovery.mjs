@@ -1,6 +1,6 @@
 /** Populated21 policy adapter; no remote transport or pg_dump execution. */
 import {scopeTables,dumpArgs} from './catalog-recovery.mjs';
-import {retainedEntries,equal,digest,fail,batchFor,checkAssertions} from './cohort-batch.mjs';
+import {retainedRecoveryEntries,equal,digest,fail,batchFor,checkAssertions} from './cohort-batch.mjs';
 import {pilotPlan} from './cohort-pilot.mjs';
 import {ingestionInputs} from './cohort-pilot-operator.mjs';
 import {timestampMicros,revisionNumber} from './cohort-pilot-operator.mjs';
@@ -30,7 +30,7 @@ function sourceExpansionEntries(input={}) {
 
 function verifyPublicRows(rows,input={}) {
   if(!equal(Object.keys(rows).sort(),[...SOURCE_TABLES].sort()))fail('public_cohort_unexpected_table_set');
-  const eligible=retainedEntries(input.retainedSource).filter(e=>!e.holdReasons.length||equal(e.holdReasons,['identity_text_change_requires_review']));
+  const eligible=retainedRecoveryEntries(input.retainedSource);
   for(const table of SOURCE_TABLES) {
     if(!Array.isArray(rows[table])||rows[table].length>10000)fail('public_cohort_invalid_row_set');
     for(const row of rows[table])if(!equal(Object.keys(row).sort(),[...fields[table]].sort()))fail('public_cohort_unreviewed_column');

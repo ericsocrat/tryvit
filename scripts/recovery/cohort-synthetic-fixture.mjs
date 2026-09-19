@@ -44,13 +44,16 @@ export function syntheticRetainedSource() {
   const held=[628,2882,2903,2950,6029],ids=[178,...eligible,...held];
   const files=new Map(),members=[],receiptMembers=[];
   for(const id of ids) {
-    const record=syntheticRecord(id),bytes=encode(record),file=`synthetic-${id}.json`,recordHash=sha(bytes);
+    const country=id%2?'DE':'PL',ean=`990000${String(id).padStart(7,'0')}`;
+    const record={...syntheticRecord(id),external_id:ean};record.identity={...record.identity,ean};
+    const bytes=encode(record),file=`synthetic-${id}.json`,recordHash=sha(bytes);
     const rename=eligible.indexOf(id)>=0&&eligible.indexOf(id)<19;
     const before={...record.identity,...(rename?{product_name:`Old synthetic product ${id}`}:{})};
-    members.push({product_id:id,country:id%2?'DE':'PL',ean:`990000${String(id).padStart(7,'0')}`,record_sha256:recordHash,
+    members.push({product_id:id,country,ean,record_sha256:recordHash,
       payload_hash:record.payload_hash,before_product:before,
       hold_reasons:held.includes(id)?['synthetic-category-hold']:rename?['identity_text_change_requires_review']:[]});
-    receiptMembers.push({product_id:id,observation_file:file,observation_sha256:recordHash});
+    receiptMembers.push({product_id:id,country,category:record.identity.category,ean,
+      observation_file:file,observation_sha256:recordHash});
     files.set(`audit-reports/evidence-cohort/run-20260905T101700Z/${file}`,bytes);
   }
   const plan=encode({production_checked_at:'2026-09-01T00:00:00Z',members});
