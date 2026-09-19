@@ -94,11 +94,11 @@ function FindWorkspace() {
         </ul>}
         {query.data.pages > 1 ? <nav className={styles.pagination} aria-label={t("findUi.pagination")}><Button variant="secondary" disabled={request.page <= 1} onClick={() => router.push(findHref({ ...request, page: request.page - 1 }))}>{t("common.prev")}</Button><span>{t("findUi.page", { page: request.page, pages: query.data.pages })}</span><Button variant="secondary" disabled={request.page >= query.data.pages} onClick={() => router.push(findHref({ ...request, page: request.page + 1 }))}>{t("common.next")}</Button></nav> : null}
       </> : null}
-      <div className={styles.secondaryTools}>
-        <Link href="/app/search/saved" className={styles.textLink}>{t("savedSearches.title")}</Link>
-        {hasSelection && problems.length === 0 ? <Button variant="ghost" onClick={() => setSaveOpen(true)}>{t("findUi.saveSearch")}</Button> : null}
-      </div>
     </>}
+    <div className={styles.secondaryTools}>
+      <Link href="/app/search/saved" className={styles.textLink}>{t("savedSearches.title")}</Link>
+      {preferences.data && validContext && !preferences.error && hasSelection && problems.length === 0 ? <Button variant="ghost" onClick={() => setSaveOpen(true)}>{t("findUi.saveSearch")}</Button> : null}
+    </div>
     {preferences.data && validContext && !preferences.error ? <FilterPanel show={filtersOpen && problems.length === 0} filters={request.filters} country={country} userId={preferences.data.user_id} onClose={closeFilters} onChange={(filters) => router.push(findHref({ ...request, filters, page: 1 }, panel === "categories" ? "categories" : "filters"), { scroll: false })} /> : null}
     {saveOpen ? <SaveSearchDialog query={request.q || null} filters={request.filters} show onClose={() => setSaveOpen(false)} /> : null}
   </AppPage>;

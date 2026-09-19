@@ -49,6 +49,7 @@ function ComparisonWorkspace({ parameter }: Readonly<{ parameter: string }>) {
   const products = ids.flatMap((id) => query.data?.products.find((product) => product.product_id === id) ?? []);
   const missingCount = query.data ? ids.length - products.length : 0;
   const identityKey = products.map((product) => `${product.product_id}:${product.product_name}`).join("|");
+  const hasPrimaryComparison = enabled && Boolean(query.data) && !query.isError && products.length >= 2;
 
   useEffect(() => {
     if (!enabled || !query.data || query.isError) return;
@@ -68,6 +69,10 @@ function ComparisonWorkspace({ parameter }: Readonly<{ parameter: string }>) {
   return (
     <AppPage className="compare-print-container">
       <AppPageHeader eyebrow={t("nav.compare")} title={t("evidenceUi.compareTitle")} description={t("evidenceUi.compareIntro")} compactOnMobile />
+      {parameter && !hasPrimaryComparison ? <div className={`${styles.actions} ${styles.recoveryActions}`} data-no-print>
+        <Link href="/app/compare/saved" className={styles.textLink}>{t("compare.savedComparisons")}</Link>
+        <Button variant="secondary" onClick={clearComparison}>{t("compare.clearSelection")}</Button>
+      </div> : null}
       {invalid ? <section className={styles.state} role="alert"><h2>{t("evidenceUi.invalidComparison")}</h2><p>{t("evidenceUi.selectTwoToFour")}</p><Link href="/app/search" className={styles.textLink}>{t("nav.find")}</Link></section> : null}
       {!invalid && !enabled ? <section className={styles.state}>
         <h2>{t("evidenceUi.selectTwoToFour")}</h2>

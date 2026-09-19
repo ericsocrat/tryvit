@@ -45,6 +45,8 @@ describe("comparison URL contract", () => {
     state.search = "ids=bad";
     rerender(ui());
     expect(screen.getByRole("alert")).toHaveTextContent("This comparison link is invalid");
+    expect(screen.getByRole("link", { name: "Saved Comparisons" })).toHaveAttribute("href", "/app/compare/saved");
+    expect(screen.getByRole("button", { name: "Clear selection" })).toBeInTheDocument();
     expect(mocks.read).not.toHaveBeenCalled();
   });
 
@@ -155,12 +157,15 @@ describe("factual comparison", () => {
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Unavailable selected products: 1"));
     expect(screen.getByRole("heading", { name: "Not enough available products to compare" })).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Clear selection" })).toBeInTheDocument();
   });
 
   it("returns to valid evidence through retry after a failed request", async () => {
     mocks.read.mockResolvedValueOnce({ ok: false, error: { message: "Unavailable" } });
     mount();
     expect(await screen.findByRole("alert")).toHaveTextContent("Comparison information couldn’t load");
+    expect(screen.getByRole("link", { name: "Saved Comparisons" })).toHaveAttribute("href", "/app/compare/saved");
+    expect(screen.getByRole("button", { name: "Clear selection" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(await screen.findByRole("table")).toBeInTheDocument();
   });

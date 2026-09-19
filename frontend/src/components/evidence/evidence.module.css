@@ -78,6 +78,7 @@
 .reference { margin: 0; color: var(--color-text-secondary); font-size: 0.8125rem; line-height: 1.5; }
 .interpretation { margin: 0; padding-inline-start: 0.75rem; border-inline-start: 3px solid var(--color-border-strong); color: var(--color-text-secondary); font-size: 0.8125rem; line-height: 1.6; }
 .secondaryActions { margin-block: 0; }
+.recoveryActions { margin-block: 0; }
 .comparisonHint { display: none; margin: 0; color: var(--color-text-secondary); font-size: 0.8125rem; line-height: 1.5; }
 .comparisonTable { width: 100%; border-collapse: collapse; text-align: left; }
 .comparisonTable th, .comparisonTable td { min-width: 12.5rem; padding: 1rem; border-bottom: 1px solid var(--color-border); vertical-align: top; }

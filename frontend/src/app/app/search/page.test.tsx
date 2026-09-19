@@ -113,6 +113,8 @@ describe("evidence-first Find", () => {
     mount();
     expect(screen.getByRole("alert")).toHaveTextContent("rather than guessing your market");
     expect(mocks.find).not.toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: /Saved searches/i })).toHaveAttribute("href", "/app/search/saved");
+    expect(screen.queryByRole("button", { name: "Save this search" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(mocks.preferences.refetch).toHaveBeenCalled();
   });
