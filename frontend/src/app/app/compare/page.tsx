@@ -67,40 +67,66 @@ function ComparisonWorkspace({ parameter }: Readonly<{ parameter: string }>) {
 
   return (
     <AppPage className="compare-print-container">
-      <AppPageHeader eyebrow={t("nav.compare")} title={t("evidenceUi.compareTitle")} description={t("evidenceUi.compareIntro")} actions={<div className={styles.actions} data-no-print>
-        <Link href="/app/compare/saved" className={styles.textLink}>{t("compare.savedComparisons")}</Link>
-        {parameter ? <Button variant="secondary" onClick={clearComparison}>{t("compare.clearSelection")}</Button> : null}
-      </div>} />
+      <AppPageHeader eyebrow={t("nav.compare")} title={t("evidenceUi.compareTitle")} description={t("evidenceUi.compareIntro")} compactOnMobile />
       {invalid ? <section className={styles.state} role="alert"><h2>{t("evidenceUi.invalidComparison")}</h2><p>{t("evidenceUi.selectTwoToFour")}</p><Link href="/app/search" className={styles.textLink}>{t("nav.find")}</Link></section> : null}
       {!invalid && !enabled ? <section className={styles.state}>
         <h2>{t("evidenceUi.selectTwoToFour")}</h2>
         <p>{t("evidenceUi.selectHint")}</p>
-        <div className={styles.actions}><Link href="/app/search" className={styles.textLink}>{t("nav.find")}</Link>{selectedIds.size >= 2 ? <Link href={`/app/compare?ids=${[...selectedIds].join(",")}`} className={styles.textLink}>{t("evidenceUi.compareSelected")}</Link> : null}</div>
+        <div className={styles.actions}><Link href="/app/search" className={styles.textLink}>{t("nav.find")}</Link><Link href="/app/compare/saved" className={styles.textLink}>{t("compare.savedComparisons")}</Link>{selectedIds.size >= 2 ? <Link href={`/app/compare?ids=${[...selectedIds].join(",")}`} className={styles.textLink}>{t("evidenceUi.compareSelected")}</Link> : null}</div>
       </section> : null}
       {enabled && query.isPending ? <EvidenceLoading comparison /> : null}
       {enabled && query.isError ? <section className={styles.state} role="alert"><h2>{t("evidenceUi.comparisonError")}</h2><p>{t("evidenceUi.retryExplanation")}</p><Button loading={query.isFetching} onClick={() => void query.refetch()}>{t("common.retry")}</Button></section> : null}
       {enabled && query.data && !query.isError ? <>
         {missingCount > 0 ? <p className={styles.caution} role="status">{t("evidenceUi.comparisonMissing", { count: missingCount })}</p> : null}
         {products.length < 2 ? <section className={styles.state}><h2>{t("evidenceUi.comparisonInsufficient")}</h2><Link href="/app/search" className={styles.textLink}>{t("nav.find")}</Link></section> : <>
-          <div className={styles.actions} data-no-print>
+          <p className={styles.reference}>{t("evidenceUi.referenceProduct", { name: products[0].product_name })}</p>
+          <PrimaryComparison products={products} />
+          <p className={styles.interpretation}>{t("evidenceUi.compareIntro")}</p>
+          <div className={`${styles.actions} ${styles.secondaryActions}`} data-no-print>
             <Button variant="secondary" loading={save.isPending} onClick={() => save.mutate({ productIds: products.map((product) => product.product_id) })}>{t("compare.saveComparison")}</Button>
+            <Button variant="ghost" onClick={clearComparison}>{t("compare.clearSelection")}</Button>
+            <Link href="/app/compare/saved" className={styles.textLink}>{t("compare.savedComparisons")}</Link>
             {save.isSuccess ? <span role="status">{t("evidenceUi.comparisonSaved")}</span> : null}
             {save.isError ? <span role="alert">{t("evidenceUi.comparisonSaveFailed")}</span> : null}
-          </div>
-          <p className={styles.intro}>{t("evidenceUi.referenceProduct", { name: products[0].product_name })}</p>
-          <p id="comparison-scroll-hint" className={styles.comparisonHint}>{t("evidenceUi.comparisonScrollHint")}</p>
-          <div className={styles.comparisonScroll} role="region" aria-label={t("evidenceUi.compareTable")} aria-describedby="comparison-scroll-hint" tabIndex={0}>
-            <table className={styles.comparisonTable}>
-              <caption className="sr-only">{t("evidenceUi.compareTable")}</caption>
-              <thead><tr><th scope="col">{t("evidenceUi.nutritionTitle")}</th>{products.map((product) => <th scope="col" key={product.product_id}><Link href={`/app/product/${product.product_id}`}>{product.product_name}</Link><span>{product.brand}</span></th>)}</tr></thead>
-              <tbody>{NUTRIENT_KEYS.map((key) => <tr key={key}><th scope="row">{t(`evidenceUi.nutrient.${key}`)}</th>{products.map((product, index) => <td key={product.product_id}><NutrientValue observation={product.nutrition[key]} />{index > 0 ? <ComparisonRelation product={product} reference={products[0]} nutrient={key} /> : null}</td>)}</tr>)}</tbody>
-            </table>
           </div>
           <div className={styles.comparisonEvidence}>{products.map((product) => <section key={product.product_id} className={styles.panel} aria-label={product.product_name}><h2><Link href={`/app/product/${product.product_id}`}>{product.product_name}</Link></h2><EvidenceSummary product={product} /><h3>{t("evidenceUi.allergensTitle")}</h3><ProductAllergenSummary product={product} /><ProductSources product={product} /></section>)}</div>
         </>}
       </> : null}
     </AppPage>
   );
+}
+
+function PrimaryComparison({ products }: Readonly<{ products: ProductReadModel[] }>) {
+  const { t } = useTranslation();
+  const pairwise = products.length === 2;
+  return <div className={styles.primaryComparison} data-testid="primary-comparison">
+    {pairwise ? <section className={styles.mobilePairwise} aria-label={t("evidenceUi.compareTable")}>
+      <div className={styles.pairwiseProducts}>{products.map((product, index) => <div key={product.product_id}>
+        <span className={styles.pairwiseMarker} aria-hidden="true">{index === 0 ? "A" : "B"}</span>
+        <Link href={`/app/product/${product.product_id}`}>{product.product_name}</Link>
+        <span>{product.brand}</span>
+      </div>)}</div>
+      <div className={styles.pairwiseFacts} data-testid="first-comparison-facts">{NUTRIENT_KEYS.map((key) => {
+        const titleId = `pairwise-${key}`;
+        return <section key={key} className={styles.pairwiseFact} aria-labelledby={titleId}>
+          <h2 id={titleId}>{t(`evidenceUi.nutrient.${key}`)}</h2>
+          <div className={styles.pairwiseValues}>{products.map((product, index) => <div key={product.product_id} aria-label={`${t(`evidenceUi.nutrient.${key}`)} — ${product.product_name}`}>
+            <span className="sr-only">{product.product_name}</span>
+            <NutrientValue observation={product.nutrition[key]} />
+            {index > 0 ? <ComparisonRelation product={product} reference={products[0]} nutrient={key} /> : null}
+          </div>)}</div>
+        </section>;
+      })}</div>
+    </section> : null}
+    {!pairwise ? <p id="comparison-scroll-hint" className={styles.comparisonHint}>{t("evidenceUi.comparisonScrollHint")}</p> : null}
+    <div className={`${styles.comparisonScroll} ${pairwise ? styles.twoProductTable : ""}`} data-testid={!pairwise ? "first-comparison-facts" : undefined} role="region" aria-label={t("evidenceUi.compareTable")} aria-describedby={!pairwise ? "comparison-scroll-hint" : undefined} tabIndex={pairwise ? undefined : 0}>
+      <table className={styles.comparisonTable}>
+        <caption className="sr-only">{t("evidenceUi.compareTable")}</caption>
+        <thead><tr><th scope="col">{t("evidenceUi.nutritionTitle")}</th>{products.map((product) => <th scope="col" key={product.product_id}><Link href={`/app/product/${product.product_id}`}>{product.product_name}</Link><span>{product.brand}</span></th>)}</tr></thead>
+        <tbody>{NUTRIENT_KEYS.map((key) => <tr key={key}><th scope="row">{t(`evidenceUi.nutrient.${key}`)}</th>{products.map((product, index) => <td key={product.product_id}><NutrientValue observation={product.nutrition[key]} />{index > 0 ? <ComparisonRelation product={product} reference={products[0]} nutrient={key} /> : null}</td>)}</tr>)}</tbody>
+      </table>
+    </div>
+  </div>;
 }
 
 function ComparisonRelation({ product, reference, nutrient }: Readonly<{ product: ProductReadModel; reference: ProductReadModel; nutrient: NutrientKey }>) {

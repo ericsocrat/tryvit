@@ -95,6 +95,20 @@ describe("factual comparison", () => {
     expect(screen.queryByRole("button", { name: /export|share/i })).not.toBeInTheDocument();
   });
 
+  it("places factual comparison before secondary actions and exposes pairwise mobile semantics", async () => {
+    mount();
+    const facts = await screen.findByTestId("first-comparison-facts");
+    const primary = screen.getByTestId("primary-comparison");
+    const save = screen.getByRole("button", { name: "Save Comparison" });
+    const clear = screen.getByRole("button", { name: "Clear selection" });
+    expect(primary).toContainElement(facts);
+    expect(facts.compareDocumentPosition(save) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(facts.compareDocumentPosition(clear) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const tableRegion = screen.getAllByRole("region", { name: "Recorded nutrition comparison" })
+      .find((node) => node.querySelector("table"));
+    expect(tableRegion).not.toHaveAttribute("tabindex");
+  });
+
   it("retains legacy values but withholds arithmetic and overall ranking", async () => {
     mocks.read.mockResolvedValue({ ok: true, data: evidenceEnvelope([legacyProduct(1), legacyProduct(2)]) });
     mount();

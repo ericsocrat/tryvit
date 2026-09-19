@@ -2522,6 +2522,7 @@
     "preferencesUnavailable": "Suchpräferenzen sind nicht verfügbar",
     "preferencesRequired": "Die Suche wird pausiert, statt deinen Markt zu erraten oder Ausschlüsse zu umgehen.",
     "marketContext": "Markt: {country}",
+    "contextTitle": "Markt und Präferenzen",
     "preferenceContext": "Deine gespeicherten Ernährungs- und Allergenpräferenzen gelten. Strenge Einstellungen halten Produkte zurück, wenn die erforderlichen Angaben unbekannt sind.",
     "reviewPreferences": "Präferenzen prüfen",
     "includeAvoided": "Produkte meiner Ausschlussliste einbeziehen",
