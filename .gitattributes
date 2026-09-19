@@ -37,6 +37,8 @@ docs/phase5a2/checkpoint-2/evidence/font-assay/licenses/SOURCE-SERIF-4-OFL.md te
 docs/releases/evidence-first-foundation.migrations.json text eol=lf
 docs/releases/evidence-first-foundation.recovery.json text eol=lf
 docs/releases/evidence-first-consumer.migrations.json text eol=lf
+# Recovery validation hashes this retained evidence matrix byte-for-byte.
+audit-reports/evidence-basis-recovery/selected-observations-20260919.json text eol=lf
 
 # Design source files (if ever added)
 *.fig binary
