@@ -150,6 +150,19 @@ test('strict CLI refuses ambiguous flags and oversized or duplicate batches',()=
   assert.deepEqual(parseOptions([]),{});
   for(const args of [['--execute','--execute'],['--bogus'],['--action'],['--ids','1'],['--ids','1,1'],['--ids','1,2,3,4,5,6']])assert.throws(()=>parseOptions(args));
   assert.deepEqual(parseOptions(['--action','batch','--ids','1,2']).productIds,[1,2]);
+  assert.deepEqual(parseOptions(['--action','basis-refresh','--ids','1,2','--reviewed-refresh-sha256','a'.repeat(64)]).productIds,[1,2]);
+});
+
+test('basis refresh uses its dedicated reviewed manifest and populated recovery path',async()=>{
+  const f=fixture(),manifest={sha256:'d'.repeat(64)},entries=[{productId:1},{productId:2}];
+  f.deps.inputs=()=>({refreshManifest:manifest,entries,populatedProducerReady:true,populatedProof:{receiptSha256:'e'.repeat(64)}});
+  let calls=0;f.deps.applyRefresh=async args=>{calls++;assert.equal(args.confirmedSha256,manifest.sha256);assert.deepEqual(args.productIds,[1,2]);
+    return {result:'PASS',results:[{productId:1,result:'APPLIED'},{productId:2,result:'APPLIED'}],peerPostimages:{result:'PASS'}};};
+  const options={...f.options,action:'basis-refresh',productIds:[1,2],reviewedRefreshSha256:manifest.sha256};
+  options.confirmDigest=buildProductionPlan(options,f.deps).summary.planSha256;
+  assert.equal((await productionOperate(options,f.deps)).result,'PLAN_READY_FOR_REVIEW');assert.equal(calls,0);
+  const result=await productionOperate({...options,execute:true},f.deps);assert.equal(result.result,'PASS');assert.equal(calls,1);
+  assert.equal(result.remoteWrites,true);assert.equal(result.envelopes.length,0);
 });
 
 test('pilot rollback preserves unrelated later batches but rejects target drift',async()=>{

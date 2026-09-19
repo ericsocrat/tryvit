@@ -57,6 +57,7 @@ jobs:
           scripts/recovery/cohort-production-operator.test.mjs
           scripts/recovery/cohort-runtime.test.mjs
           scripts/recovery/combined-public-recovery.test.mjs
+          scripts/recovery/evidence-basis-refresh.test.mjs
           scripts/recovery/migration-integration.test.mjs
           scripts/recovery/opaque-containment.test.mjs
           scripts/recovery/schema-catalog-recovery.test.mjs

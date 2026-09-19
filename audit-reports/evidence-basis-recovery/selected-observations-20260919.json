@@ -1,0 +1,1070 @@
+{
+  "schema_version": "tryvit-evidence-basis-recovery-matrix-v1",
+  "generated_at": "2026-09-19T13:17:48.2768956+02:00",
+  "authority": {
+    "main": "1ebad80eaba4bd73f0f1db77232f3c48e1d9e404",
+    "tree": "0dfae3fd5dfbd5939ff36b0e265394f246bf31c7",
+    "production_deployment": "dpl_FH5bvQDF8TVVWKCxCGTtzQZz3gv1"
+  },
+  "classification_contract": {
+    "A": "RECOVERABLE_FROM_EXISTING_SOURCE",
+    "B": "REQUIRES_FRESH_SOURCE",
+    "C": "UNSUPPORTED_OR_AMBIGUOUS",
+    "rule": "Only explicit retained source fields may establish measurement basis."
+  },
+  "counts": {
+    "selected_observations": 55,
+    "current_known": 7,
+    "current_unknown": 48,
+    "A": 55,
+    "B": 0,
+    "C": 0
+  },
+  "observations": [
+    {
+      "product_id": 148,
+      "product_name": "Paluszki",
+      "selected_observation_id": "95b2df2a-62ed-4cad-bb95-4b174915b9b8",
+      "source_identity": "off_api",
+      "external_id": "5900320001303",
+      "source_url": "https://world.openfoodfacts.org/product/5900320001303",
+      "retrieved_at": "2026-09-05 10:27:18.625021+00",
+      "payload_hash": "707b896cf61bfbe21feab763f2e3c1fc321dc3e8dba023b4bc75d283ac543448",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 707b896cf61bfbe21feab763f2e3c1fc321dc3e8dba023b4bc75d283ac543448",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 178,
+      "product_name": "Chleb żytni razowy",
+      "selected_observation_id": "8c8d8136-de32-4dba-abdc-a0653858fef2",
+      "source_identity": "off_api",
+      "external_id": "5900340003615",
+      "source_url": "https://world.openfoodfacts.org/product/5900340003615",
+      "retrieved_at": "2026-09-05 10:27:34.904106+00",
+      "payload_hash": "ce4464e8f5b7bc44d82d7ce7e1ab561748a5cf9fbb046569a929bb2353c31556",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash ce4464e8f5b7bc44d82d7ce7e1ab561748a5cf9fbb046569a929bb2353c31556",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 182,
+      "product_name": "Bajgle z ziołami prowansalskimi",
+      "selected_observation_id": "237e9b7a-5a2c-4ed8-b7d1-278f5c3469d8",
+      "source_identity": "off_api",
+      "external_id": "5900320008142",
+      "source_url": "https://world.openfoodfacts.org/product/5900320008142",
+      "retrieved_at": "2026-09-05 10:27:22.641104+00",
+      "payload_hash": "d04adfe9ecf3c81dc9ac0c85543e292d857b16f08ec83a3a67b12f1c3c611bff",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash d04adfe9ecf3c81dc9ac0c85543e292d857b16f08ec83a3a67b12f1c3c611bff",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 195,
+      "product_name": "Tost maślany",
+      "selected_observation_id": "2ffd79bd-d033-48fd-b658-d4f7fb16113c",
+      "source_identity": "off_api",
+      "external_id": "5900340003424",
+      "source_url": "https://world.openfoodfacts.org/product/5900340003424",
+      "retrieved_at": "2026-09-05 10:27:30.836276+00",
+      "payload_hash": "913a5ace65e3c979511ce66b2e619a03b8189f7d1e4082eeaad8765a08591389",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 913a5ace65e3c979511ce66b2e619a03b8189f7d1e4082eeaad8765a08591389",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 200,
+      "product_name": "Chleb żytni pełnoziarnisty pasteryzowany",
+      "selected_observation_id": "125277b3-39bf-432b-86c5-f1c2d06be173",
+      "source_identity": "off_api",
+      "external_id": "5900340000294",
+      "source_url": "https://world.openfoodfacts.org/product/5900340000294",
+      "retrieved_at": "2026-09-05 10:27:26.694251+00",
+      "payload_hash": "d4fa5795f5af1870ec52601410c39457867c85a772a312203cd63fc7a2da5a18",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash d4fa5795f5af1870ec52601410c39457867c85a772a312203cd63fc7a2da5a18",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 398,
+      "product_name": "Płatki owsiane błyskawiczne",
+      "selected_observation_id": "b16d4167-7e45-4543-960f-527673296ac8",
+      "source_identity": "off_api",
+      "external_id": "20346485",
+      "source_url": "https://world.openfoodfacts.org/product/20346485",
+      "retrieved_at": "2026-09-05 10:27:43.138271+00",
+      "payload_hash": "bb2111fc980e41cd96642bdacec58eb56eea034f8046fb502e74310350cc6f4a",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash bb2111fc980e41cd96642bdacec58eb56eea034f8046fb502e74310350cc6f4a",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 399,
+      "product_name": "Space Cookies",
+      "selected_observation_id": "3cd30cfd-5813-4deb-8bcd-9fecabfd0c5d",
+      "source_identity": "off_api",
+      "external_id": "20982119",
+      "source_url": "https://world.openfoodfacts.org/product/20982119",
+      "retrieved_at": "2026-09-05 10:27:51.464252+00",
+      "payload_hash": "963c6bcd77e9f2516c8d8421d1b328fdb3df9168c19a2df241ebff7edfb6687e",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 963c6bcd77e9f2516c8d8421d1b328fdb3df9168c19a2df241ebff7edfb6687e",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 400,
+      "product_name": "Goldini",
+      "selected_observation_id": "5c89fa0d-993d-4b33-b2bf-13d95a91c673",
+      "source_identity": "off_api",
+      "external_id": "20061449",
+      "source_url": "https://world.openfoodfacts.org/product/20061449",
+      "retrieved_at": "2026-09-05 10:27:39.080826+00",
+      "payload_hash": "3146d041830c2311e0a84500b38ba934c82b2d4aa12ddbc86cfe9adce7645b9b",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 3146d041830c2311e0a84500b38ba934c82b2d4aa12ddbc86cfe9adce7645b9b",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 401,
+      "product_name": "Porridge",
+      "selected_observation_id": "bc922bf0-2615-44f7-bc97-d5db12560246",
+      "source_identity": "off_api",
+      "external_id": "4056489064497",
+      "source_url": "https://world.openfoodfacts.org/product/4056489064497",
+      "retrieved_at": "2026-09-05 10:27:55.529415+00",
+      "payload_hash": "15c1d723ca8dd1470e65afff97698845301187e9ae1d202c4ce55cc6de76fe5e",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 15c1d723ca8dd1470e65afff97698845301187e9ae1d202c4ce55cc6de76fe5e",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 402,
+      "product_name": "Owsiankaowoce i orzechy",
+      "selected_observation_id": "adec6b2f-2f51-4db3-83c0-0a9df0a15862",
+      "source_identity": "off_api",
+      "external_id": "20639747",
+      "source_url": "https://world.openfoodfacts.org/product/20639747",
+      "retrieved_at": "2026-09-05 10:27:47.292187+00",
+      "payload_hash": "d9e5ed3693d845eb7d1b213f3e89eade12db7f52c8d486eed7c774856a2c80f8",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash d9e5ed3693d845eb7d1b213f3e89eade12db7f52c8d486eed7c774856a2c80f8",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 605,
+      "product_name": "Kefir naturalny 1,5 % tłuszczu",
+      "selected_observation_id": "fbcb2297-a797-4dd6-bfb7-3080d3a1d79a",
+      "source_identity": "off_api",
+      "external_id": "5900120005136",
+      "source_url": "https://world.openfoodfacts.org/product/5900120005136",
+      "retrieved_at": "2026-09-05 10:28:11.800881+00",
+      "payload_hash": "a814394b20542b1b8243c4363450d969305336edf8401a5ae3a70a6bed48af6a",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash a814394b20542b1b8243c4363450d969305336edf8401a5ae3a70a6bed48af6a",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 634,
+      "product_name": "Mleko 1,5% bez laktozy",
+      "selected_observation_id": "d7f30e53-de23-444b-8bd3-ee686105806f",
+      "source_identity": "off_api",
+      "external_id": "5900120010277",
+      "source_url": "https://world.openfoodfacts.org/product/5900120010277",
+      "retrieved_at": "2026-09-05 10:28:16.00792+00",
+      "payload_hash": "6c0c99f0c1cffe02a4651c509340d5ac94849319c32de34ef71c75814ccd5ac3",
+      "current_basis": "per_100ml",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100ml",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100ml",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100ml', retained in immutable observation payload hash 6c0c99f0c1cffe02a4651c509340d5ac94849319c32de34ef71c75814ccd5ac3",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 703,
+      "product_name": "Sok 100% tłoczony z miąższem Pomarańcza Grejpfrut Pitaja",
+      "selected_observation_id": "dcceb457-fd2c-4593-b3f0-5d659d8d0b1b",
+      "source_identity": "off_api",
+      "external_id": "4056489315605",
+      "source_url": "https://world.openfoodfacts.org/product/4056489315605",
+      "retrieved_at": "2026-09-05 10:28:20.10055+00",
+      "payload_hash": "a50dc05232b90453132b2b435853af287078201bb788ebf1b2fdca21838a038f",
+      "current_basis": "per_100ml",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100ml",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100ml",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100ml', retained in immutable observation payload hash a50dc05232b90453132b2b435853af287078201bb788ebf1b2fdca21838a038f",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 943,
+      "product_name": "Wafle Kukurydziane",
+      "selected_observation_id": "ea884c02-fd61-41ab-a657-3e37df2987b9",
+      "source_identity": "off_api",
+      "external_id": "4056489784050",
+      "source_url": "https://world.openfoodfacts.org/product/4056489784050",
+      "retrieved_at": "2026-09-05 10:29:17.40502+00",
+      "payload_hash": "9e421b40505fa1699c2ed77537c17c1627db2211cdd8f18245e95645b8ca6e90",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 9e421b40505fa1699c2ed77537c17c1627db2211cdd8f18245e95645b8ca6e90",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 1031,
+      "product_name": "Passata",
+      "selected_observation_id": "3c26ebdd-8c3e-4133-9c55-d5116ae9b2c9",
+      "source_identity": "off_api",
+      "external_id": "20164041",
+      "source_url": "https://world.openfoodfacts.org/product/20164041",
+      "retrieved_at": "2026-09-05 10:28:48.912006+00",
+      "payload_hash": "f2d9d23f3b03dc5f701e06b113755a2dcfd9ecc3232f9638286b92dee3c8be51",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash f2d9d23f3b03dc5f701e06b113755a2dcfd9ecc3232f9638286b92dee3c8be51",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 1036,
+      "product_name": "Passata garlic",
+      "selected_observation_id": "c00fce8a-3d5b-4c73-a576-40b646a2498e",
+      "source_identity": "off_api",
+      "external_id": "2098765745579",
+      "source_url": "https://world.openfoodfacts.org/product/2098765745579",
+      "retrieved_at": "2026-09-05 10:28:52.884998+00",
+      "payload_hash": "10e1b4583d5632b7cb0e5205b135ecdef89e1894e872250523b1a8bd58e70ae4",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 10e1b4583d5632b7cb0e5205b135ecdef89e1894e872250523b1a8bd58e70ae4",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 1038,
+      "product_name": "Pesto alla Genovese",
+      "selected_observation_id": "37ae22a6-1179-46af-9baa-a726649c688a",
+      "source_identity": "off_api",
+      "external_id": "20069490",
+      "source_url": "https://world.openfoodfacts.org/product/20069490",
+      "retrieved_at": "2026-09-05 10:28:44.804277+00",
+      "payload_hash": "7777ed05c1fd0b6869bac8d50f58b2bc075e9dd9341ba2e64581c732cdbdbdcb",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 7777ed05c1fd0b6869bac8d50f58b2bc075e9dd9341ba2e64581c732cdbdbdcb",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 1040,
+      "product_name": "Pesto verde",
+      "selected_observation_id": "4f889586-9cf3-487c-af01-cebc1e249f0c",
+      "source_identity": "off_api",
+      "external_id": "3245413808196",
+      "source_url": "https://world.openfoodfacts.org/product/3245413808196",
+      "retrieved_at": "2026-09-05 10:28:57.057921+00",
+      "payload_hash": "e29271049731f7c597eb9b8cd11b28cf7532f0aee4a2424e8a069935e8124fa4",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash e29271049731f7c597eb9b8cd11b28cf7532f0aee4a2424e8a069935e8124fa4",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 1044,
+      "product_name": "Piri-Piri",
+      "selected_observation_id": "9a8ae4b7-7c46-402f-be73-ed076c33e91c",
+      "source_identity": "off_api",
+      "external_id": "20026752",
+      "source_url": "https://world.openfoodfacts.org/product/20026752",
+      "retrieved_at": "2026-09-05 10:28:40.644662+00",
+      "payload_hash": "b5f485134d6d8c5e7d472f275277b1335a8edd88b695b072971a681ff120a77d",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash b5f485134d6d8c5e7d472f275277b1335a8edd88b695b072971a681ff120a77d",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 1148,
+      "product_name": "Bruschette Chips Pizza Flavour",
+      "selected_observation_id": "988dd016-0201-4511-b98d-60b6b9e2ecda",
+      "source_identity": "off_api",
+      "external_id": "3800205871255",
+      "source_url": "https://world.openfoodfacts.org/product/3800205871255",
+      "retrieved_at": "2026-09-05 10:29:05.196646+00",
+      "payload_hash": "4d7191eebaf7dbbdf3df42907bea5bce05c21766d1f0e7b7fd5c28112da1c4ea",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 4d7191eebaf7dbbdf3df42907bea5bce05c21766d1f0e7b7fd5c28112da1c4ea",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2041,
+      "product_name": "Westfälischer Pumpernickel",
+      "selected_observation_id": "5f7addd0-33e6-4d98-9de1-be39e9e35fd3",
+      "source_identity": "off_api",
+      "external_id": "4000446001018",
+      "source_url": "https://world.openfoodfacts.org/product/4000446001018",
+      "retrieved_at": "2026-09-05 10:25:19.595854+00",
+      "payload_hash": "fd8be2112c6ee3b42474e9e4136f784313315571a269f355aabd4107f3486eb0",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash fd8be2112c6ee3b42474e9e4136f784313315571a269f355aabd4107f3486eb0",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2049,
+      "product_name": "High Protein Eiweißbrot",
+      "selected_observation_id": "8299a543-8f3f-4265-bc79-224234a03034",
+      "source_identity": "off_api",
+      "external_id": "4000446011376",
+      "source_url": "https://world.openfoodfacts.org/product/4000446011376",
+      "retrieved_at": "2026-09-05 10:25:23.692944+00",
+      "payload_hash": "95856b5e288278616bbfb2a71e95a5e580aa341af84653283ff3ec641972e600",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 95856b5e288278616bbfb2a71e95a5e580aa341af84653283ff3ec641972e600",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2061,
+      "product_name": "Semmelbrösel",
+      "selected_observation_id": "376f5b92-2b90-482b-9e66-30e3e6463120",
+      "source_identity": "off_api",
+      "external_id": "4000186010400",
+      "source_url": "https://world.openfoodfacts.org/product/4000186010400",
+      "retrieved_at": "2026-09-05 10:25:15.94655+00",
+      "payload_hash": "415af74d8a6223b47aa623bb49a05256ff8e2403f3284dc40c61f252cb40c74c",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 415af74d8a6223b47aa623bb49a05256ff8e2403f3284dc40c61f252cb40c74c",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2062,
+      "product_name": "Eiweißbrot mit Karotten",
+      "selected_observation_id": "5fa2c939-895f-4acd-a4d7-beaba53fc072",
+      "source_identity": "off_api",
+      "external_id": "4000446011420",
+      "source_url": "https://world.openfoodfacts.org/product/4000446011420",
+      "retrieved_at": "2026-09-05 10:25:27.795368+00",
+      "payload_hash": "96961b53d0f32e26c74a0545a1466c3e234e9d7fac3f72fe3757ea9af83ac009",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 96961b53d0f32e26c74a0545a1466c3e234e9d7fac3f72fe3757ea9af83ac009",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2085,
+      "product_name": "Dinkel Wraps",
+      "selected_observation_id": "b9205f87-ccbc-48a3-86cd-abeb934a95ba",
+      "source_identity": "off_api",
+      "external_id": "4000446015497",
+      "source_url": "https://world.openfoodfacts.org/product/4000446015497",
+      "retrieved_at": "2026-09-05 10:25:32.010017+00",
+      "payload_hash": "6a80ac45c025269289dacbf71bc72a8c663aca59ae43df4d029c5fb17734af73",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 6a80ac45c025269289dacbf71bc72a8c663aca59ae43df4d029c5fb17734af73",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2467,
+      "product_name": "Vollkorn-Haferflocken",
+      "selected_observation_id": "fbc625e9-47da-47c1-bca5-42d8a4717eb4",
+      "source_identity": "off_api",
+      "external_id": "4000540000108",
+      "source_url": "https://world.openfoodfacts.org/product/4000540000108",
+      "retrieved_at": "2026-09-05 10:25:44.329053+00",
+      "payload_hash": "5cf6fa8eae555a6e64a66a132c31f9b60f29daf41f43bd8952d478b5912ee3ff",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 5cf6fa8eae555a6e64a66a132c31f9b60f29daf41f43bd8952d478b5912ee3ff",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2470,
+      "product_name": "Kernige Haferflocken",
+      "selected_observation_id": "e95442e5-05ea-408f-9544-1a1cf7d9a0b0",
+      "source_identity": "off_api",
+      "external_id": "4000540000306",
+      "source_url": "https://world.openfoodfacts.org/product/4000540000306",
+      "retrieved_at": "2026-09-05 10:25:48.451475+00",
+      "payload_hash": "08d12a8b525456b9271450e6a5315add32f42dc475c2518ff7d2a60850d0719c",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 08d12a8b525456b9271450e6a5315add32f42dc475c2518ff7d2a60850d0719c",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2473,
+      "product_name": "Bio-Haferflocken zart",
+      "selected_observation_id": "cb1363b8-4c4a-475e-8bb0-ae583d46cc20",
+      "source_identity": "off_api",
+      "external_id": "4000540000641",
+      "source_url": "https://world.openfoodfacts.org/product/4000540000641",
+      "retrieved_at": "2026-09-05 10:25:52.44423+00",
+      "payload_hash": "e8e454876d11c58bb2c96c51d89f73e90738bcea8fa236dab3ebfafad4a4cb91",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash e8e454876d11c58bb2c96c51d89f73e90738bcea8fa236dab3ebfafad4a4cb91",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2486,
+      "product_name": "Flocons D'Avoine",
+      "selected_observation_id": "42425b96-9310-48eb-a56c-7daadb81291a",
+      "source_identity": "off_api",
+      "external_id": "20003166",
+      "source_url": "https://world.openfoodfacts.org/product/20003166",
+      "retrieved_at": "2026-09-05 10:25:36.038641+00",
+      "payload_hash": "2f352e681679f83f089f654b0ac96eadbb45ae04eca6180087920ef86ae81ef9",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 2f352e681679f83f089f654b0ac96eadbb45ae04eca6180087920ef86ae81ef9",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2488,
+      "product_name": "FITNESS Cerealien",
+      "selected_observation_id": "86a1ebef-a0db-4f5b-a014-4925fde76140",
+      "source_identity": "off_api",
+      "external_id": "3387390339499",
+      "source_url": "https://world.openfoodfacts.org/product/3387390339499",
+      "retrieved_at": "2026-09-05 10:25:40.140993+00",
+      "payload_hash": "852c800b5e0aeda29f7be46050b58f2e8c19431997d0bc87e4b2d732009331eb",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 852c800b5e0aeda29f7be46050b58f2e8c19431997d0bc87e4b2d732009331eb",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2874,
+      "product_name": "Roslinne Nie Mleko",
+      "selected_observation_id": "6325d9f1-959e-4ca8-bcfd-4e22df58a826",
+      "source_identity": "off_api",
+      "external_id": "5900001421611",
+      "source_url": "https://world.openfoodfacts.org/product/5900001421611",
+      "retrieved_at": "2026-09-05 10:28:07.741815+00",
+      "payload_hash": "fd60dfb31d645fd9b6d5ff5512ce38b52803531cc6ba784c2cdcb785cf2c47c5",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash fd60dfb31d645fd9b6d5ff5512ce38b52803531cc6ba784c2cdcb785cf2c47c5",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2892,
+      "product_name": "Frischkäse Almette Kräuter",
+      "selected_observation_id": "99c99471-f055-4611-92d8-85a8970fd735",
+      "source_identity": "off_api",
+      "external_id": "4002468084017",
+      "source_url": "https://world.openfoodfacts.org/product/4002468084017",
+      "retrieved_at": "2026-09-05 10:26:00.629587+00",
+      "payload_hash": "6590fd6e8307ef4ca7a12e36274e091f053545441993505b5e23645d1e9084d5",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 6590fd6e8307ef4ca7a12e36274e091f053545441993505b5e23645d1e9084d5",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2902,
+      "product_name": "Grünländer Mild & Nussig",
+      "selected_observation_id": "c5f82e03-919c-4fe2-aa78-e30e8d02545e",
+      "source_identity": "off_api",
+      "external_id": "4002468210454",
+      "source_url": "https://world.openfoodfacts.org/product/4002468210454",
+      "retrieved_at": "2026-09-05 10:26:08.831346+00",
+      "payload_hash": "e831a1a5fa49efeaef60d0989deb90b04e9365c241dfa82906b9e92adf5257d5",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash e831a1a5fa49efeaef60d0989deb90b04e9365c241dfa82906b9e92adf5257d5",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2946,
+      "product_name": "Feta (Schaf- & Ziegenmilch)",
+      "selected_observation_id": "f9ea7e3d-a2cb-422f-ae85-d31f481a6035",
+      "source_identity": "off_api",
+      "external_id": "4002468134361",
+      "source_url": "https://world.openfoodfacts.org/product/4002468134361",
+      "retrieved_at": "2026-09-05 10:26:04.790802+00",
+      "payload_hash": "8609cab30510cd9f73e59089d7a57c6f82744e0a6c831381d203d6ccc3f90d6f",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 8609cab30510cd9f73e59089d7a57c6f82744e0a6c831381d203d6ccc3f90d6f",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 2995,
+      "product_name": "Napój roślinny Owies Bio",
+      "selected_observation_id": "da9e92ab-ded1-417a-96af-1fad9412a7ba",
+      "source_identity": "off_api",
+      "external_id": "5900001421697",
+      "source_url": "https://world.openfoodfacts.org/product/5900001421697",
+      "retrieved_at": "2026-09-05 10:28:32.38755+00",
+      "payload_hash": "761bb490532158feb3a96290963fc3c7685f6d9de9b5df113795efe174d4a9e5",
+      "current_basis": "per_100ml",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100ml",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100ml",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100ml', retained in immutable observation payload hash 761bb490532158feb3a96290963fc3c7685f6d9de9b5df113795efe174d4a9e5",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 3004,
+      "product_name": "Napój Roślinny - Midgał",
+      "selected_observation_id": "b6cc880c-9e93-485b-b554-f6b29c08aef8",
+      "source_identity": "off_api",
+      "external_id": "5900001421673",
+      "source_url": "https://world.openfoodfacts.org/product/5900001421673",
+      "retrieved_at": "2026-09-05 10:28:28.242521+00",
+      "payload_hash": "a1ef6394ba4fb85809ca14e1d08cf06212e9c4bb39366d120b743b1d7653f4b1",
+      "current_basis": "per_100ml",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100ml",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100ml",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100ml', retained in immutable observation payload hash a1ef6394ba4fb85809ca14e1d08cf06212e9c4bb39366d120b743b1d7653f4b1",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 3006,
+      "product_name": "Żatecky 0,0% nealko",
+      "selected_observation_id": "67fc7100-709d-4c32-8f39-6dd68520b480",
+      "source_identity": "off_api",
+      "external_id": "5900014003477",
+      "source_url": "https://world.openfoodfacts.org/product/5900014003477",
+      "retrieved_at": "2026-09-05 10:28:36.440636+00",
+      "payload_hash": "d5bc4ae5672f4f9badebaa4219ea0e0bc8f08ea1cfa55f5408ac77b011bb5b08",
+      "current_basis": "per_100ml",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100ml",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100ml",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100ml', retained in immutable observation payload hash d5bc4ae5672f4f9badebaa4219ea0e0bc8f08ea1cfa55f5408ac77b011bb5b08",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 3065,
+      "product_name": "Barista salted caramel",
+      "selected_observation_id": "d124c068-7ee9-4107-9180-7025104cee9e",
+      "source_identity": "off_api",
+      "external_id": "5900001421635",
+      "source_url": "https://world.openfoodfacts.org/product/5900001421635",
+      "retrieved_at": "2026-09-05 10:28:24.153036+00",
+      "payload_hash": "6c8f28d47b08b8fb884024efb7ace1913c7b24cb4c2c291d19d36bc16b9accd1",
+      "current_basis": "per_100ml",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100ml",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100ml",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100ml', retained in immutable observation payload hash 6c8f28d47b08b8fb884024efb7ace1913c7b24cb4c2c291d19d36bc16b9accd1",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 3085,
+      "product_name": "Gerolsteiner Wasser Medium Kiste Medium mit wenig Kohlensäure (türkis) 12x1l 0.50€ ( Angebot ) 5.99€ + Pfand 3.30€",
+      "selected_observation_id": "50ddf087-fd84-4328-8203-a8cf93861de3",
+      "source_identity": "off_api",
+      "external_id": "4001513000620",
+      "source_url": "https://world.openfoodfacts.org/product/4001513000620",
+      "retrieved_at": "2026-09-05 10:26:25.198361+00",
+      "payload_hash": "1c91d245cfb40de50bcceb6bfb112e5c7b26b3546e55b76a20ae3078727b976b",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 1c91d245cfb40de50bcceb6bfb112e5c7b26b3546e55b76a20ae3078727b976b",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 3091,
+      "product_name": "Gerolsteiner Medium 1,5 Liter",
+      "selected_observation_id": "56433bb2-3618-4da3-9992-2779cff11da8",
+      "source_identity": "off_api",
+      "external_id": "4001513007704",
+      "source_url": "https://world.openfoodfacts.org/product/4001513007704",
+      "retrieved_at": "2026-09-05 10:26:33.49244+00",
+      "payload_hash": "a656e3a4ccb89896f2b4e35af0f9ad79c25d2add6da6fe3e05aec36291039ff1",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash a656e3a4ccb89896f2b4e35af0f9ad79c25d2add6da6fe3e05aec36291039ff1",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 3137,
+      "product_name": "Capri-Sonne - Multivitamin",
+      "selected_observation_id": "b8a6b1da-a4c4-4a9e-95b7-da5b9a94d84a",
+      "source_identity": "off_api",
+      "external_id": "4000177032695",
+      "source_url": "https://world.openfoodfacts.org/product/4000177032695",
+      "retrieved_at": "2026-09-05 10:26:21.229278+00",
+      "payload_hash": "46fd17e5acca5ba65b2f05ef969d87f56e2c5e71013d84dd8e3cfff439138d4a",
+      "current_basis": "per_100ml",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100ml",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100ml",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100ml', retained in immutable observation payload hash 46fd17e5acca5ba65b2f05ef969d87f56e2c5e71013d84dd8e3cfff439138d4a",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 3151,
+      "product_name": "Mineralwasser Naturell",
+      "selected_observation_id": "f0c72eb6-32b2-4329-8170-2ec6b7985aac",
+      "source_identity": "off_api",
+      "external_id": "4001513004161",
+      "source_url": "https://world.openfoodfacts.org/product/4001513004161",
+      "retrieved_at": "2026-09-05 10:26:29.409866+00",
+      "payload_hash": "2f36f574b5ffa9ed75ee503f988dabcdc28bdbeb417c5aa9258f242f22331dff",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 2f36f574b5ffa9ed75ee503f988dabcdc28bdbeb417c5aa9258f242f22331dff",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 3160,
+      "product_name": "Wasser Volvic naturelle, 6erPack",
+      "selected_observation_id": "c8f67956-e716-4f0d-b687-1aad1bbfefb2",
+      "source_identity": "off_api",
+      "external_id": "3057640186158",
+      "source_url": "https://world.openfoodfacts.org/product/3057640186158",
+      "retrieved_at": "2026-09-05 10:26:17.040901+00",
+      "payload_hash": "42d7054bad04416122a98b060c9c5abaad4e391e4b8325ff393a4fb761449757",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 42d7054bad04416122a98b060c9c5abaad4e391e4b8325ff393a4fb761449757",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 5822,
+      "product_name": "Tomatenmark",
+      "selected_observation_id": "ebcb817f-2d26-4e61-90bb-bd96e57c6102",
+      "source_identity": "off_api",
+      "external_id": "20004125",
+      "source_url": "https://world.openfoodfacts.org/product/20004125",
+      "retrieved_at": "2026-09-05 10:26:41.67847+00",
+      "payload_hash": "63ed56b9c67535f680b56418077c57fcc9e792507f2928f8041ed09633fea6a5",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 63ed56b9c67535f680b56418077c57fcc9e792507f2928f8041ed09633fea6a5",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 5823,
+      "product_name": "Feinste passierte Tomaten Bio",
+      "selected_observation_id": "70db95dd-61e0-4fdb-b338-c012d453368f",
+      "source_identity": "off_api",
+      "external_id": "20884260",
+      "source_url": "https://world.openfoodfacts.org/product/20884260",
+      "retrieved_at": "2026-09-05 10:26:53.986712+00",
+      "payload_hash": "c9d12204e933724a96b91c13ec68f21c66fcd630fc4055c23ad65b96a3a68aa3",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash c9d12204e933724a96b91c13ec68f21c66fcd630fc4055c23ad65b96a3a68aa3",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 5831,
+      "product_name": "Bolognese",
+      "selected_observation_id": "729072da-68b9-4b43-982b-ee5c79d52c53",
+      "source_identity": "off_api",
+      "external_id": "20003937",
+      "source_url": "https://world.openfoodfacts.org/product/20003937",
+      "retrieved_at": "2026-09-05 10:26:37.668224+00",
+      "payload_hash": "725d18b2aa6b9645f5b872857e725185ccf06c47392156b79c631056377ef444",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 725d18b2aa6b9645f5b872857e725185ccf06c47392156b79c631056377ef444",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 5832,
+      "product_name": "Isliamo",
+      "selected_observation_id": "bf64c431-7da9-4081-ab2f-8f5c9a154cde",
+      "source_identity": "off_api",
+      "external_id": "20164034",
+      "source_url": "https://world.openfoodfacts.org/product/20164034",
+      "retrieved_at": "2026-09-05 10:26:45.775494+00",
+      "payload_hash": "f4e86fe9888700078713ac47ef5ff7dfdf0bad1093d658da2a036cea70cb19ef",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash f4e86fe9888700078713ac47ef5ff7dfdf0bad1093d658da2a036cea70cb19ef",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 5835,
+      "product_name": "Arrabbiata",
+      "selected_observation_id": "7f2a3432-cd01-4fd1-b64b-066fef8a695b",
+      "source_identity": "off_api",
+      "external_id": "20300623",
+      "source_url": "https://world.openfoodfacts.org/product/20300623",
+      "retrieved_at": "2026-09-05 10:26:49.942299+00",
+      "payload_hash": "3b89cd51914bb156c65da469bbbcf744af55e23d19429bc8717418ce53c95698",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 3b89cd51914bb156c65da469bbbcf744af55e23d19429bc8717418ce53c95698",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 6030,
+      "product_name": "Monte Snack",
+      "selected_observation_id": "61c201b9-3295-4a9c-a714-1bc59013a822",
+      "source_identity": "off_api",
+      "external_id": "4014500513485",
+      "source_url": "https://world.openfoodfacts.org/product/4014500513485",
+      "retrieved_at": "2026-09-05 10:29:09.277932+00",
+      "payload_hash": "52227c18561cc20aa37e391fd8e68e6e46b5551322e9bee22774a9daf63be20f",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 52227c18561cc20aa37e391fd8e68e6e46b5551322e9bee22774a9daf63be20f",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 6036,
+      "product_name": "Brioche tressée",
+      "selected_observation_id": "11ad0887-7685-46fd-8021-12e6db422c0a",
+      "source_identity": "off_api",
+      "external_id": "3258561400242",
+      "source_url": "https://world.openfoodfacts.org/product/3258561400242",
+      "retrieved_at": "2026-09-05 10:29:01.046566+00",
+      "payload_hash": "ad770daf098c1139be73294faf1c9a8befb4f7a5ef30255c5a04640e579b257d",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash ad770daf098c1139be73294faf1c9a8befb4f7a5ef30255c5a04640e579b257d",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 6038,
+      "product_name": "POM-BÄR Original",
+      "selected_observation_id": "1c081b46-b4e1-42c1-bb13-2724eddcff2d",
+      "source_identity": "off_api",
+      "external_id": "4000522105210",
+      "source_url": "https://world.openfoodfacts.org/product/4000522105210",
+      "retrieved_at": "2026-09-05 10:27:14.443187+00",
+      "payload_hash": "e5269695af79e3ce7e2c2de264667c4ee5177756fc470dc5d0e091dc01c8dfdf",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash e5269695af79e3ce7e2c2de264667c4ee5177756fc470dc5d0e091dc01c8dfdf",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 6039,
+      "product_name": "Schwäbische Knusper-Brezel",
+      "selected_observation_id": "3b163b77-2275-4a4a-9845-8e27ede35f2b",
+      "source_identity": "off_api",
+      "external_id": "4000381003030",
+      "source_url": "https://world.openfoodfacts.org/product/4000381003030",
+      "retrieved_at": "2026-09-05 10:27:10.3415+00",
+      "payload_hash": "c50d37d557331c02523737224161bed83bfe9c5dffafbba1fe41527dac576d20",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash c50d37d557331c02523737224161bed83bfe9c5dffafbba1fe41527dac576d20",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 6056,
+      "product_name": "Cruspies Paprika",
+      "selected_observation_id": "10ff1441-b1ca-40ef-ade3-ecaedb90b36f",
+      "source_identity": "off_api",
+      "external_id": "20005702",
+      "source_url": "https://world.openfoodfacts.org/product/20005702",
+      "retrieved_at": "2026-09-05 10:26:58.079758+00",
+      "payload_hash": "638b20bc3169be8b1ee913f54111f1d888dc61d9dcb419b3241a5938e0cde516",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 638b20bc3169be8b1ee913f54111f1d888dc61d9dcb419b3241a5938e0cde516",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 6057,
+      "product_name": "Erdnuss Flips",
+      "selected_observation_id": "f6764954-c42e-4e65-9d33-9de314ff9fbd",
+      "source_identity": "off_api",
+      "external_id": "20045852",
+      "source_url": "https://world.openfoodfacts.org/product/20045852",
+      "retrieved_at": "2026-09-05 10:27:02.217545+00",
+      "payload_hash": "8bf6d733ce25017a520c5efee3847a47fa3a983ce2552cf23b1085a1d794a5b1",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash 8bf6d733ce25017a520c5efee3847a47fa3a983ce2552cf23b1085a1d794a5b1",
+      "blocker_reason": null
+    },
+    {
+      "product_id": 6063,
+      "product_name": "Bruschette Chips Knoblauch",
+      "selected_observation_id": "99caa7c3-481b-4790-be54-1f7d4c2a4602",
+      "source_identity": "off_api",
+      "external_id": "3800205872924",
+      "source_url": "https://world.openfoodfacts.org/product/3800205872924",
+      "retrieved_at": "2026-09-05 10:27:06.297309+00",
+      "payload_hash": "fadc4e3881fe61b77d5fd5ed8ddf9e9c84e9709a11df32d6d9be28abc9749331",
+      "current_basis": "unknown",
+      "relevant_source_basis_fields": {
+        "nutrition_data_per": "100g",
+        "nutrition_data_per_unit": null
+      },
+      "recoverability_class": "A",
+      "proposed_basis": "per_100g",
+      "exact_source_evidence": "sanitized_payload.nutrition_data_per = '100g', retained in immutable observation payload hash fadc4e3881fe61b77d5fd5ed8ddf9e9c84e9709a11df32d6d9be28abc9749331",
+      "blocker_reason": null
+    }
+  ]
+}

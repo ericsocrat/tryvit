@@ -16,7 +16,9 @@ from decimal import Decimal, InvalidOperation
 
 from pipeline.categories import CATEGORY_POLICY_VERSION
 
-EXTRACTOR_VERSION = "off-observations-v1"
+EXTRACTOR_VERSION_V1 = "off-observations-v1"
+EXTRACTOR_VERSION = "off-observations-v2"
+SUPPORTED_EXTRACTOR_VERSIONS = frozenset({EXTRACTOR_VERSION_V1, EXTRACTOR_VERSION})
 NUTRIENTS = {
     "calories_100g": ("energy-kcal", "kcal"),
     "fat_100g": ("fat", "g"),
@@ -55,18 +57,38 @@ def parse_quantity(value: object) -> dict:
     return {"value": format(number, "f"), "qualifier": qualifier, "state": "recorded"}
 
 
-def observation_from_off(raw: dict, product: dict) -> dict:
+def _nutrition_basis(raw: dict, extractor_version: str) -> str:
+    """Return only a basis explicitly declared by the retained OFF source.
+
+    V1 is preserved byte-for-behaviour for historical replay. V2 never treats
+    the normalized ``_100g`` field suffix, category, quantities, or unit alone
+    as evidence. A contradictory explicit unit invalidates the declaration but
+    a matching unit is not independently sufficient.
+    """
+    declared = raw.get("nutrition_data_per")
+    explicit_unit = raw.get("nutrition_data_per_unit")
+    if extractor_version == EXTRACTOR_VERSION_V1:
+        basis = {"g": "per_100g", "ml": "per_100ml"}.get(explicit_unit, "unknown")
+        return "per_100ml" if declared == "100ml" else basis
+    if extractor_version != EXTRACTOR_VERSION:
+        raise ValueError("Unsupported OFF observation extractor version")
+    declared_basis = {"100g": "per_100g", "100ml": "per_100ml"}.get(declared)
+    contradictory_unit = {"g": "per_100g", "ml": "per_100ml"}.get(explicit_unit)
+    if declared_basis is None or (contradictory_unit is not None and contradictory_unit != declared_basis):
+        return "unknown"
+    return declared_basis
+
+
+def observation_from_off(raw: dict, product: dict, *, extractor_version: str = EXTRACTOR_VERSION) -> dict:
     """Create an immutable-ready record without retaining contributor identities."""
     nutrients = raw.get("nutriments")
     if not isinstance(nutrients, dict):
         nutrients = {}
-    # OFF normalized data uses _100g even for liquids. nutrition_data_per alone
-    # does not establish g versus ml; use explicit package nutrition unit only.
+    # OFF normalized data uses _100g even for liquids. Only the exact retained
+    # declaration establishes mass versus volume under the v2 contract.
     explicit_unit = raw.get("nutrition_data_per_unit")
-    basis = {"g": "per_100g", "ml": "per_100ml"}.get(explicit_unit, "unknown")
     declared_basis = raw.get("nutrition_data_per")
-    if declared_basis == "100ml":
-        basis = "per_100ml"
+    basis = _nutrition_basis(raw, extractor_version)
     fields = {}
     sanitized_nutrients = {}
     for logical, (off_name, unit) in NUTRIENTS.items():
@@ -213,10 +235,10 @@ def observation_from_off(raw: dict, product: dict) -> dict:
                  for tag in payload["allergens_tags"] + payload["traces_tags"]) or complete_ingredients)
         else "missing",
     }
-    return seal_observation(record)
+    return seal_observation(record, extractor_version=extractor_version)
 
 
-def seal_observation(record: dict) -> dict:
+def seal_observation(record: dict, *, extractor_version: str | None = None) -> dict:
     """Bind the trusted versioned extractor's outputs to its retained raw inputs.
 
     SQL validates this equality/lineage; it does not reimplement this parser.
@@ -224,7 +246,10 @@ def seal_observation(record: dict) -> dict:
     """
     sealed = deepcopy(record)
     payload = sealed["sanitized_payload"]
-    payload["extractor_version"] = EXTRACTOR_VERSION
+    version = extractor_version or payload.get("extractor_version") or EXTRACTOR_VERSION
+    if version not in SUPPORTED_EXTRACTOR_VERSIONS:
+        raise ValueError("Unsupported OFF observation extractor version")
+    payload["extractor_version"] = version
     payload["extraction"] = deepcopy(sealed["extracted_fields"])
     payload["projected_identity"] = deepcopy(sealed["identity"])
     payload["ingredient_assertions"] = deepcopy(sealed.get("ingredients"))
@@ -245,6 +270,22 @@ def seal_observation(record: dict) -> dict:
     sealed["payload_canonical"] = canonical
     sealed["payload_hash"] = hashlib.sha256(canonical.encode()).hexdigest()
     return sealed
+
+
+def upgrade_observation_to_v2(record: dict, derivation: dict) -> dict:
+    """Derive a v2 observation from one immutable, canonical v1 observation."""
+    if record.get("sanitized_payload", {}).get("extractor_version") != EXTRACTOR_VERSION_V1:
+        raise ValueError("Basis recovery requires an OFF v1 source observation")
+    if hashlib.sha256(record.get("payload_canonical", "").encode()).hexdigest() != record.get("payload_hash"):
+        raise ValueError("Source observation payload hash mismatch")
+    if json.loads(record["payload_canonical"]) != record["sanitized_payload"]:
+        raise ValueError("Source observation canonical payload mismatch")
+    upgraded = deepcopy(record)
+    basis = _nutrition_basis(upgraded["sanitized_payload"], EXTRACTOR_VERSION)
+    for nutrient in NUTRIENTS:
+        upgraded["extracted_fields"][nutrient]["basis"] = basis
+    upgraded["sanitized_payload"]["derivation"] = deepcopy(derivation)
+    return seal_observation(upgraded, extractor_version=EXTRACTOR_VERSION)
 
 
 def _source_updated_at(value: object) -> str | None:
@@ -299,11 +340,15 @@ def observation_sql(category: str, products: list[dict], country: str) -> str:
             raise ValueError("A source observation requires an explicit successful retrieval timestamp")
         record["identity"] = {**record["identity"], "category": category}
         records.append(seal_observation(record))
+    versions = {record["sanitized_payload"]["extractor_version"] for record in records}
+    if len(versions) != 1:
+        raise ValueError("One observation batch cannot mix extractor versions")
+    extractor_version = versions.pop()
     digest = hashlib.sha256(json.dumps(records, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
     batch = {
         "source_key": "off_api",
         "country": country,
-        "extractor_version": EXTRACTOR_VERSION,
+        "extractor_version": extractor_version,
         "idempotency_key": f"{country}:{digest}",
         "scope": {"category": category, "kind": "partial_upsert"},
     }

@@ -30,6 +30,10 @@
     {
       "path": "supabase/migrations/20260908085203_evidence_compute_score_registry_correction.sql",
       "sha256": "ff4a979722b05eb826ab36ffc38acb421ba0dcea65c051a0f18fac73f9603b21"
+    },
+    {
+      "path": "supabase/migrations/20260919120048_admit_off_observations_v2.sql",
+      "sha256": "c3a5ecb50f8ccda8fe71abf7e3049ef83c2f51bb2910eeda8cdaea9a3e9cca76"
     }
   ]
 }

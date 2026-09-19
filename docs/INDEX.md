@@ -10,7 +10,7 @@
 > **Phase 5A.3 landing PR 1 bounded revision packet added:** 2026-08-25
 > **Security, deployment controls, and inventory counts verified:** 2026-09-13
 > **Status:** Active — update when adding, renaming, or archiving docs
-> **Tracked inventory:** 75 top-level Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 8 generated/supporting artifacts in `docs/phase5/`; 45 Checkpoint 1 files and 132 Checkpoint 2 files in `docs/phase5a2/`; 49 Phase 5A.3 landing packet Markdown documents in `docs/phase5a3/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
+> **Tracked inventory:** 76 top-level Markdown documents and 1 API registry in `docs/`; 11 ADR files in `docs/decisions/`; 8 generated/supporting artifacts in `docs/phase5/`; 45 Checkpoint 1 files and 132 Checkpoint 2 files in `docs/phase5a2/`; 49 Phase 5A.3 landing packet Markdown documents in `docs/phase5a3/`; 25 logo assets; 7 banner assets; and 7 Markdown documents at the repository root
 > **Reference:** Issue [#200](https://github.com/ericsocrat/tryvit/issues/200), [#201](https://github.com/ericsocrat/tryvit/issues/201)
 
 ---
@@ -22,6 +22,7 @@
 - [Product and data policy](EVIDENCE_DATA_POLICY.md)
 - [Implementation and acceptance ledger](implementation/EVIDENCE_FIRST_REBUILD.md)
 - [Consumer release and production record](releases/EVIDENCE_FIRST_CONSUMER.md)
+- [OFF extractor v2 and source-refresh runbook](releases/EVIDENCE_BASIS_REFRESH_V2.md)
 - [Production cohort import receipt](releases/evidence-first-cohort-production-20260913.json)
 - [Original-weight usability reassessment](releases/evidence-first-usability-reassessment-20260913.md)
 - [Ordered database/frontend promotion](releases/CONSUMER_PROMOTION.md)

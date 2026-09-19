@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { CONSUMER_TABLES } from './recovery-scopes.mjs';
+import { CONSUMER_TABLES, PUBLIC_EVIDENCE_TABLES } from './recovery-scopes.mjs';
 import { checkNativeProductionBinding, containedFile, hash, pendingMigrations, validateDatabaseAccess, validateManifest, validateNativeProductionBinding, validatePendingMigrations, validateProjectBinding, validateRecovery, validateStaging } from './database-release.mjs';
 
 test('native production Git deployment must be explicitly disabled', () => {
@@ -164,6 +164,24 @@ test('consumer recovery requires the exact expanded tables and authority proof',
     { catalogTables: [...CONSUMER_TABLES.slice(0, 16), CONSUMER_TABLES[0]] },
     { checks: { ...receipt.checks, roleAttributes: false } }]) assert.throws(() => validate({ ...receipt, ...patch }));
   assert.throws(() => validateRecovery(receipt, manifestHash, 'schema-and-catalog', now));
+});
+test('reviewed public observation recovery is a strict consumer superset', () => {
+  const binding={environment:'production',project:'uskvezwftkkudvksmken',sourceHead:'f'.repeat(40),
+    migrationManifestSha256:manifestHash,codeSha256:'a'.repeat(64),publicAllowlistSha256:'b'.repeat(64)};
+  const receipt={...recovery,schemaVersion:2,scopeProfile:'observations-public-cohort-v1',scope:'schema-and-catalog',
+    catalogTables:[...PUBLIC_EVIDENCE_TABLES],catalogTableCount:PUBLIC_EVIDENCE_TABLES.length,
+    observationDisposition:'exact-reviewed-public-cohort-in-export-snapshot',publicAllowlistSha256:binding.publicAllowlistSha256,binding,
+    encryptedBackupSha256:'c'.repeat(64),catalogSha256:'d'.repeat(64),restoredCatalogSha256:'d'.repeat(64),
+    checks:{...recovery.checks,schema:true,grants:true,rls:true,functions:true,roleAttributes:true,roleMemberships:true,extensionBootstrap:true,syntheticRoles:true},
+    privateProductionRowsExported:false,sourceFingerprints:{schema:'e'.repeat(64),grants:'e'.repeat(64),rls:'e'.repeat(64),functions:'e'.repeat(64)},
+    restoredFingerprints:{schema:'e'.repeat(64),grants:'e'.repeat(64),rls:'e'.repeat(64),functions:'e'.repeat(64)},
+    exclusions:['privateUserRows','historyRows','managedAuthServices','storageObjects']};
+  const validate=value=>validateRecovery(value,manifestHash,'schema-and-catalog',now,'consumer-v1');
+  assert.doesNotThrow(()=>validate(receipt));
+  for(const patch of [{catalogTableCount:17},{catalogTables:[...CONSUMER_TABLES]},
+    {observationDisposition:'empty-in-export-snapshot'},{publicAllowlistSha256:'0'.repeat(64)},
+    {binding:{...binding,sourceHead:'invalid'}},{binding:{...binding,migrationManifestSha256:'0'.repeat(64)}}])
+    assert.throws(()=>validate({...receipt,...patch}));
 });
 test('only recognized pinned CLI dry-run output is accepted', () => {
   assert.deepEqual(pendingMigrations('DRY RUN: migrations will *not* be pushed to the database.\nWould push these migrations:\n • 20260905000000_evidence.sql\n'), ['20260905000000_evidence.sql']);

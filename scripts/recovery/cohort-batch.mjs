@@ -87,7 +87,7 @@ SELECT product_id FROM public.product_field_provenance WHERE product_id=${id} FO
 SELECT id FROM public.product_source_records WHERE ${sourceWhere(entry)} FOR UPDATE;
 SELECT source_record_id FROM public.product_source_assertions WHERE source_record_id IN (${sourceIds(entry)}) FOR UPDATE;`;
 }
-export function snapshotSql(entry) {
+export function snapshotSql(entry,{batch=batchFor(entry)}={}) {
   const id=entry.productId;
   if(!Number.isSafeInteger(id)||id<1)fail('cohort_invalid_product_id');
   // Each transaction owns one member, not every member of its reviewed batch.
@@ -98,7 +98,7 @@ export function snapshotSql(entry) {
     if(['products','nutrition_facts','product_field_provenance'].includes(table))where=`product_id NOT IN (${id})`;
     if(table==='product_source_records')where=`NOT (${ownWhere})`;
     if(['product_source_observations','product_source_assertions'].includes(table))where=`source_record_id NOT IN (${ownSourceIds})`;
-    if(table==='ingestion_batches')where=`idempotency_key<>${q(batchFor(entry).idempotency_key)}`;
+    if(table==='ingestion_batches')where=`idempotency_key<>${q(batch.idempotency_key)}`;
     return `${q(table)},(SELECT encode(sha256(convert_to(COALESCE(string_agg(to_jsonb(t)::text,E'\\n' ORDER BY to_jsonb(t)::text COLLATE "C"),''),'UTF8')),'hex') FROM public.${table} t${where?' WHERE '+where:''})`;
   }).join(',');
   const numeric=Object.values(NUTRIENTS).map(k=>`${q(k)},${k}::text`).join(',');
@@ -107,7 +107,7 @@ export function snapshotSql(entry) {
   'provenance',${aggregate('product_field_provenance',`product_id=${id}`)},
   'source',(SELECT to_jsonb(s) FROM public.product_source_records s WHERE ${sourceWhere(entry)}),
   'assertions',${aggregate('product_source_assertions',`source_record_id IN (${sourceIds(entry)})`)},
-  'observations',(SELECT COALESCE(jsonb_agg(jsonb_build_object('id',o.id,'payload_hash',payload_hash,'source_revision',source_revision::text,
+  'observations',(SELECT COALESCE(jsonb_agg(jsonb_build_object('id',o.id,'payload_hash',payload_hash,'extractor_version',extractor_version,'source_revision',source_revision::text,
     'retrieved_at',retrieved_at,'source_updated_at',source_updated_at,'status',status,
     'rowSha256',encode(sha256(convert_to(to_jsonb(o)::text,'UTF8')),'hex')) ORDER BY id),'[]'::jsonb)
     FROM public.product_source_observations o WHERE source_record_id IN (${sourceIds(entry)})),

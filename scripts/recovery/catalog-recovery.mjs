@@ -8,16 +8,15 @@ import fs from 'node:fs';
 import path from 'node:path';
 import readline from 'node:readline';
 import {fileURLToPath} from 'node:url';
-import {CATALOG_TABLES,CONSUMER_TABLES} from '../ci/recovery-scopes.mjs';
+import {CATALOG_TABLES,CONSUMER_TABLES,OBSERVATION_TABLES,PUBLIC_EVIDENCE_TABLES} from '../ci/recovery-scopes.mjs';
 
 export const TABLES = CATALOG_TABLES;
-export const OBSERVATION_TABLES = Object.freeze(['ingestion_batches','product_source_records',
-  'product_source_observations','product_source_assertions']);
+export {OBSERVATION_TABLES};
 export const SCOPE_PROFILES = Object.freeze({
   'catalog-v1': TABLES,
   'consumer-v1': CONSUMER_TABLES,
-  'observations-v1': Object.freeze([...CONSUMER_TABLES,...OBSERVATION_TABLES]),
-  'observations-public-cohort-v1': Object.freeze([...CONSUMER_TABLES,...OBSERVATION_TABLES]),
+  'observations-v1': PUBLIC_EVIDENCE_TABLES,
+  'observations-public-cohort-v1': PUBLIC_EVIDENCE_TABLES,
 });
 export function scopeTables(scopeProfile='catalog-v1') {
   if(!Object.hasOwn(SCOPE_PROFILES,scopeProfile)) throw new RecoveryError('unknown_catalog_scope_profile');

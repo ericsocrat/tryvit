@@ -7,7 +7,13 @@ import json
 
 import pytest
 
-from pipeline.observations import observation_from_off, observation_sql, parse_quantity
+from pipeline.observations import (
+    EXTRACTOR_VERSION_V1,
+    observation_from_off,
+    observation_sql,
+    parse_quantity,
+    upgrade_observation_to_v2,
+)
 from pipeline.off_client import extract_product_data
 from pipeline.sql_generator import _gen_01_insert_products, _gen_03_add_nutrition, _sql_num
 
@@ -65,6 +71,64 @@ def test_precision_qualifiers_unknown_basis_and_sanitized_snapshot():
     assert record["allergen_assertions"] == [{"tag": "milk", "type": "contains"}]
     raw["nutrition_data_per"] = "100ml"
     assert observation_from_off(raw, product)["extracted_fields"]["fat_100g"]["basis"] == "per_100ml"
+
+
+@pytest.mark.parametrize(
+    ("declared", "explicit_unit", "expected"),
+    [
+        ("100g", None, "per_100g"),
+        ("100ml", None, "per_100ml"),
+        (None, None, "unknown"),
+        ("100 g", None, "unknown"),
+        ("100G", None, "unknown"),
+        ("serving", None, "unknown"),
+        ("100g", "ml", "unknown"),
+        ("100ml", "g", "unknown"),
+        (None, "g", "unknown"),
+    ],
+)
+def test_v2_basis_uses_only_exact_non_conflicting_source_declaration(declared, explicit_unit, expected):
+    raw, product = fixture()
+    if declared is not None:
+        raw["nutrition_data_per"] = declared
+    if explicit_unit is not None:
+        raw["nutrition_data_per_unit"] = explicit_unit
+    record = observation_from_off(raw, product)
+    observed = {
+        record["extracted_fields"][field]["basis"]
+        for field in record["extracted_fields"]
+        if field.endswith("_100g")
+    }
+    assert observed == {expected}
+
+
+def test_v2_basis_has_no_category_or_numeric_fallback():
+    raw, product = fixture()
+    raw.pop("nutrition_data_per", None)
+    raw["categories_tags"] = ["en:beverages"]
+    raw["nutriments"]["fat_100g"] = 99
+    record = observation_from_off(raw, product)
+    assert record["extracted_fields"]["fat_100g"]["basis"] == "unknown"
+
+
+def test_v1_remains_historical_and_v2_derivation_retains_source_hash():
+    raw, product = fixture()
+    raw["nutrition_data_per"] = "100g"
+    historical = observation_from_off(raw, product, extractor_version=EXTRACTOR_VERSION_V1)
+    assert historical["extracted_fields"]["fat_100g"]["basis"] == "unknown"
+    derivation = {
+        "kind": "existing-source-basis-refresh-v2",
+        "source_payload_hash": historical["payload_hash"],
+        "source_observation_id": "11111111-1111-4111-8111-111111111111",
+        "matrix_sha256": "a" * 64,
+        "extracted_at": "2026-09-19T12:00:00Z",
+    }
+    upgraded = upgrade_observation_to_v2(historical, derivation)
+    assert upgraded["sanitized_payload"]["extractor_version"] == "off-observations-v2"
+    assert upgraded["sanitized_payload"]["derivation"] == derivation
+    assert upgraded["extracted_fields"]["fat_100g"]["basis"] == "per_100g"
+    assert upgraded["extracted_fields"]["fat_100g"]["value"] == historical["extracted_fields"]["fat_100g"]["value"]
+    assert historical["sanitized_payload"]["extractor_version"] == EXTRACTOR_VERSION_V1
 
 
 def test_real_import_is_atomic_observations_not_rescore_or_retirement():
