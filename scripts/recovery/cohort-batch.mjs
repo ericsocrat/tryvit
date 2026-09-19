@@ -69,9 +69,11 @@ export function reviewSelection(manifest,ids,confirmedSha256,source) {
   return selected.map(e=>({...e,batchScope}));
 }
 export function batchFor(entry) {
+  const profile=entry.batchProfile??'retained-cohort-v1';
+  if(!['retained-cohort-v1','source-expansion-v1'].includes(profile))fail('cohort_batch_profile_invalid');
   return {source_key:'off_api',country:entry.country,extractor_version:entry.record.sanitized_payload.extractor_version,
-    idempotency_key:`retained-cohort-v1:${entry.country}:${entry.recordSha256}`,
-    scope:{category:entry.record.identity.category,kind:'partial_upsert'}};
+    idempotency_key:`${profile}:${entry.country}:${entry.recordSha256}`,
+    scope:{category:entry.record.identity.category,kind:'partial_upsert',...(profile==='source-expansion-v1'?{cohort:profile}:{})}};
 }
 const sourceWhere=e=>`source_key='off_api' AND country=${q(e.country)} AND external_id=${q(e.externalId)}`;
 const sourceIds=e=>`SELECT id FROM public.product_source_records WHERE ${sourceWhere(e)}`;

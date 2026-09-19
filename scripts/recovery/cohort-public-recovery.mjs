@@ -20,6 +20,14 @@ const rowsFingerprint=(table,rows)=>rows.map(row=>({id:id(table)(row),rowSha256:
 export const publicSnapshotSql=`SELECT jsonb_build_object(${SOURCE_TABLES.map(t=>
   `'${t}',(SELECT COALESCE(jsonb_agg(to_jsonb(r) ORDER BY to_jsonb(r)::text COLLATE "C"),'[]'::jsonb) FROM public.${t} r)`).join(',')})`;
 
+function sourceExpansionEntries(input={}) {
+  const entries=input.sourceExpansionEntries??input.expansionManifest?.entries??[];
+  if(!Array.isArray(entries)||entries.some(entry=>entry.batchProfile!=='source-expansion-v1'||!entry.record||
+    entry.country!=='PL'||entry.externalId!==entry.record.external_id||entry.payloadHash!==entry.record.payload_hash))
+    fail('public_cohort_expansion_manifest_invalid');
+  return entries;
+}
+
 function verifyPublicRows(rows,input={}) {
   if(!equal(Object.keys(rows).sort(),[...SOURCE_TABLES].sort()))fail('public_cohort_unexpected_table_set');
   const eligible=retainedEntries(input.retainedSource).filter(e=>!e.holdReasons.length||equal(e.holdReasons,['identity_text_change_requires_review']));
@@ -31,8 +39,10 @@ function verifyPublicRows(rows,input={}) {
   const sources=new Map(rows.product_source_records.map(r=>[r.id,r]));
   const batches=new Map(rows.ingestion_batches.map(r=>[r.id,r]));
   const observations=new Map(rows.product_source_observations.map(r=>[r.id,r]));
+  const expansion=sourceExpansionEntries(input);
   let refresh=null;
-  if([...observations.values()].some(observation=>observation.extractor_version===EXTRACTOR_V2)) {
+  if([...observations.values()].some(observation=>observation.extractor_version===EXTRACTOR_V2&&
+    observation.sanitized_payload?.derivation)) {
     const manifest=refreshManifest({readFile:input.refreshReadFile,retainedSource:input.retainedSource,
       expectedMatrixSha256:input.expectedMatrixSha256});
     refresh=new Map(manifest.entries.map(plan=>{
@@ -43,9 +53,12 @@ function verifyPublicRows(rows,input={}) {
   }
   const approvedFor=(observation,source)=>eligible.find(e=>e.payloadHash===observation?.payload_hash&&e.productId===source?.product_id&&e.country===source?.country)??
     (observation?.extractor_version===EXTRACTOR_V2&&refresh?.get(observation.payload_hash)?.productId===source?.product_id?
-      refresh.get(observation.payload_hash):null);
+      refresh.get(observation.payload_hash):null)??
+    expansion.find(entry=>entry.payloadHash===observation?.payload_hash&&entry.productId===source?.product_id&&
+      entry.country===source?.country&&entry.externalId===source?.external_id)??null;
   for(const source of sources.values()) {
-    if(source.source_key!=='off_api'||!eligible.some(e=>e.productId===source.product_id&&e.country===source.country&&e.externalId===source.external_id))
+    if(source.source_key!=='off_api'||(!eligible.some(e=>e.productId===source.product_id&&e.country===source.country&&e.externalId===source.external_id)&&
+      !expansion.some(entry=>entry.productId===source.product_id&&entry.country===source.country&&entry.externalId===source.external_id)))
       fail('public_cohort_unapproved_source_identity');
     if(source.selected_observation_id!==null&&observations.get(source.selected_observation_id)?.source_record_id!==source.id)
       fail('public_cohort_selected_reference_not_closed');
@@ -101,14 +114,20 @@ function verifyPublicRows(rows,input={}) {
 }
 export function proposedPublicAllowlist(rows,input) {
   verifyPublicRows(rows,input);
+  const presentPayloads=new Set(rows.product_source_observations.map(observation=>observation.payload_hash));
+  const expansion=sourceExpansionEntries(input).filter(entry=>presentPayloads.has(entry.payloadHash)).map(entry=>{
+    const {recordRoot: _recordRoot,batchScope: _batchScope,...retained}=entry;return retained;
+  }).sort((a,b)=>a.productId-b.productId);
   const manifest={schemaVersion:1,profile:PROFILE,reviewStatus:'pending-root-review',tables:scopeTables('observations-v1'),
     allowed: Object.fromEntries(SOURCE_TABLES.map(t=>[t,rowsFingerprint(t,rows[t])])),
     sourceEvidence:rows.product_source_observations.map(o=>({id:o.id,sourceRecordId:o.source_record_id,batchId:o.batch_id,
-      payloadHash:o.payload_hash,sourceUrl:o.source_url,license:o.license,extractorVersion:o.extractor_version})).sort((a,b)=>a.id.localeCompare(b.id))};
+      payloadHash:o.payload_hash,sourceUrl:o.source_url,license:o.license,extractorVersion:o.extractor_version})).sort((a,b)=>a.id.localeCompare(b.id)),
+    ...(expansion.length?{sourceExpansionEntries:expansion}:{})};
   return {...manifest,sha256:digest(manifest)};
 }
 export function validatePublicAllowlist(rows,manifest,reviewedSha256,input) {
-  if(reviewedSha256!==manifest.sha256||!equal(proposedPublicAllowlist(rows,input),manifest))fail('public_cohort_exact_reviewed_allowlist_mismatch');
+  const verificationInput=manifest.sourceExpansionEntries?{...input,sourceExpansionEntries:manifest.sourceExpansionEntries}:input;
+  if(reviewedSha256!==manifest.sha256||!equal(proposedPublicAllowlist(rows,verificationInput),manifest))fail('public_cohort_exact_reviewed_allowlist_mismatch');
   return {result:'PASS',profile:PROFILE,manifestSha256:manifest.sha256,
     tableCount:21,sourceRows:Object.fromEntries(SOURCE_TABLES.map(t=>[t,rows[t].length])),relationalClosure:true,productionRecoveryCertified:false};
 }
