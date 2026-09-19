@@ -7,3 +7,7 @@ export const CATALOG_TABLES = Object.freeze([
 ]);
 export const CONSUMER_TABLES = Object.freeze([...CATALOG_TABLES,
   'formula_source_hashes','scoring_model_versions']);
+export const OBSERVATION_TABLES = Object.freeze([
+  'ingestion_batches','product_source_records','product_source_observations','product_source_assertions',
+]);
+export const PUBLIC_EVIDENCE_TABLES = Object.freeze([...CONSUMER_TABLES,...OBSERVATION_TABLES]);

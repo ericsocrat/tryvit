@@ -3,7 +3,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { CONSUMER_TABLES } from './recovery-scopes.mjs';
+import { CONSUMER_TABLES, PUBLIC_EVIDENCE_TABLES } from './recovery-scopes.mjs';
 
 const sha = /^[a-f0-9]{40}$/u;
 const digest = /^[a-f0-9]{64}$/u;
@@ -89,10 +89,19 @@ export function validateRecovery(receipt, manifestHash, scope, now = Date.now(),
   requireThat(['catalog-v1','consumer-v1'].includes(requiredProfile), 'unsupported-recovery-profile');
   const consumer = requiredProfile === 'consumer-v1';
   requireThat(receipt.schemaVersion === (consumer ? 2 : 1) && receipt.environment === 'production' && receipt.method === 'backup-restore' && receipt.result === 'PASS', 'recovery-not-a-successful-backup-restore');
-  requireThat((receipt.scopeProfile ?? 'catalog-v1') === requiredProfile, 'recovery-profile-mismatch');
+  const actualProfile=receipt.scopeProfile??'catalog-v1';
+  const publicEvidence=consumer&&actualProfile==='observations-public-cohort-v1';
+  requireThat(actualProfile===requiredProfile||publicEvidence, 'recovery-profile-mismatch');
   if (consumer) {
-    requireThat(scope === 'schema-and-catalog' && receipt.catalogTableCount === CONSUMER_TABLES.length && Array.isArray(receipt.catalogTables) && JSON.stringify([...receipt.catalogTables].sort()) === JSON.stringify([...CONSUMER_TABLES].sort()), 'consumer-recovery-table-scope-mismatch');
+    const expectedTables=publicEvidence?PUBLIC_EVIDENCE_TABLES:CONSUMER_TABLES;
+    requireThat(scope === 'schema-and-catalog' && receipt.catalogTableCount === expectedTables.length && Array.isArray(receipt.catalogTables) && JSON.stringify([...receipt.catalogTables].sort()) === JSON.stringify([...expectedTables].sort()), 'consumer-recovery-table-scope-mismatch');
     requireThat(['roleAttributes','roleMemberships','extensionBootstrap','syntheticRoles'].every(key => receipt.checks?.[key] === true), 'consumer-recovery-authority-checks-incomplete');
+    if(publicEvidence)requireThat(receipt.observationDisposition==='exact-reviewed-public-cohort-in-export-snapshot'&&
+      digest.test(receipt.publicAllowlistSha256??'')&&receipt.binding?.environment==='production'&&
+      receipt.binding?.project==='uskvezwftkkudvksmken'&&sha.test(receipt.binding?.sourceHead??'')&&
+      receipt.binding?.migrationManifestSha256===manifestHash&&digest.test(receipt.binding?.codeSha256??'')&&
+      receipt.binding?.publicAllowlistSha256===receipt.publicAllowlistSha256,
+      'public-evidence-recovery-binding-incomplete');
   }
   requireThat(receipt.migrationManifestSha256 === manifestHash && receipt.scope === scope, 'recovery-manifest-or-scope-mismatch');
   requireThat(digest.test(receipt.backupSha256 ?? '') && receipt.restoredBackupSha256 === receipt.backupSha256, 'recovery-backup-mismatch');
