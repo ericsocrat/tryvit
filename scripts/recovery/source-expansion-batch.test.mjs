@@ -9,6 +9,14 @@ import {loadExpansionManifest,reviewExpansionSelection,semanticManifestSha256} f
 import {retainedEntries} from './cohort-batch.mjs';
 import {syntheticRetainedSource} from './cohort-synthetic-fixture.mjs';
 import {proposedPublicAllowlist,validatePublicAllowlist} from './cohort-public-recovery.mjs';
+import {EXPANSION_CLONE_LIFETIME_SECONDS} from './source-expansion-rehearsal.mjs';
+import {containmentArgs} from './opaque-containment.mjs';
+
+test('expansion rehearsal uses an approved bounded clone lifetime',()=>{
+  assert.equal(EXPANSION_CLONE_LIFETIME_SECONDS,1200);
+  assert.doesNotThrow(()=>containmentArgs('tryvit_recovery_probe_'+('a'.repeat(12)),
+    {database:true,lifetimeSeconds:EXPANSION_CLONE_LIFETIME_SECONDS}));
+});
 
 function fixture() {
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'tryvit-expansion-'));

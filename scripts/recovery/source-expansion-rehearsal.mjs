@@ -14,6 +14,7 @@ import {hash} from '../ci/database-release.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const fail=code=>{throw new RecoveryError(code);};
+export const EXPANSION_CLONE_LIFETIME_SECONDS=1200;
 
 function locate(context) {
   const marker=randomBytes(16).toString('hex');
@@ -74,7 +75,7 @@ export async function runExpansionRehearsal({recoveryDirectory,bindingFile,manif
   const sourceHashes=Object.fromEntries(sourceFiles.map(file=>[file,hash(fs.readFileSync(path.join(ROOT,'scripts/recovery',file)))]));
   const result=await schemaCatalogRecovery({catalogDirectory:recovery,schemaDirectory:recovery,combinedCapture:{binding},
     scopeProfile:'observations-public-cohort-v1',manifestSha256:binding.migrationManifestSha256,execute:true,writeReceipt:false,
-    cloneLifetimeSeconds:1800,onVerifiedRestore:async context=>{
+    cloneLifetimeSeconds:EXPANSION_CLONE_LIFETIME_SECONDS,onVerifiedRestore:async context=>{
       const name=locate(context),beforeSession=connect(name);let before,beforePairs;
       try{before=JSON.parse(await beforeSession.query(summarySql));beforePairs=JSON.parse(await beforeSession.query(comparisonSummary));
         await assertCombinedFreshness(beforeSession,proof);}finally{await beforeSession.close();}
