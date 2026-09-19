@@ -12,6 +12,7 @@ import {hash} from '../ci/database-release.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const SOURCE_RECOVERY='backups/schema_catalog_1789266649405_54c006';
+const DATABASE_AUTHORITY='backups/consumer-database-authority-20260908.json';
 const MIGRATION='supabase/migrations/20260919120048_admit_off_observations_v2.sql';
 const SOURCE_BINDING={environment:'production',project:'uskvezwftkkudvksmken',sourceHead:'82ff6ab47f60c310d7a7684e548599958d7be836',
   migrationManifestSha256:'f2f164f0e669f310fcf480eae89b4f6d09ead69fa8d0ee2e3acfe27b2bdcf048',
@@ -45,6 +46,11 @@ const cohortSummary=`SELECT jsonb_build_object(
 
 export async function runBasisRefreshRehearsal({execute=false}={}) {
   const manifest=refreshManifest(),sourceHead=command('git',['rev-parse','HEAD'],{cwd:ROOT}).trim();
+  if(command('git',['status','--porcelain','--untracked-files=normal'],{cwd:ROOT}).trim())fail('basis_rehearsal_requires_clean_source');
+  const sourceFiles=['scripts/recovery/evidence-basis-refresh.mjs','scripts/recovery/evidence-basis-refresh-rehearsal.mjs',
+    'scripts/recovery/cohort-batch.mjs','scripts/recovery/cohort-pilot-operator.mjs',MIGRATION,
+    'docs/releases/evidence-first-consumer.migrations.json','audit-reports/evidence-basis-recovery/selected-observations-20260919.json'];
+  const sourceHashes=Object.fromEntries(sourceFiles.map(file=>[file,hash(fs.readFileSync(path.join(ROOT,file)))]));
   const plan={result:'PLAN',sourceHead,matrixSha256:MATRIX_SHA256,manifestSha256:manifest.sha256,products:manifest.entries.length,
     recoveryDirectory:SOURCE_RECOVERY,remoteReads:false,remoteWrites:false};
   if(!execute)return plan;
@@ -52,6 +58,17 @@ export async function runBasisRefreshRehearsal({execute=false}={}) {
   const result=await schemaCatalogRecovery({catalogDirectory:recovery,schemaDirectory:recovery,combinedCapture:{binding:SOURCE_BINDING},
     scopeProfile:'observations-public-cohort-v1',manifestSha256:SOURCE_BINDING.migrationManifestSha256,execute:true,writeReceipt:false,cloneLifetimeSeconds:1200,
     onVerifiedRestore:async context=>{
+      const databaseAuthority=JSON.parse(fs.readFileSync(path.join(ROOT,DATABASE_AUTHORITY),'utf8'));
+      if(!Object.values(context.restoreDatabaseAuthority(databaseAuthority)).every(value=>value===true))fail('basis_v2_database_authority_mismatch');
+      const start=migration.indexOf('CREATE OR REPLACE FUNCTION public.ingestion_apply_observation');
+      const end=migration.indexOf('END $$;',start);
+      if(start<0||end<0)fail('basis_v2_migration_function_missing');
+      const functionSql=migration.slice(start,end+7);
+      const authority=JSON.parse(context.sqlAsPostgres("SELECT jsonb_build_object('current',current_user,'owner',pg_get_userbyid(proowner),'create',has_schema_privilege(current_user,'public','CREATE')) FROM pg_proc WHERE oid='public.ingestion_apply_observation(jsonb,jsonb)'::regprocedure",'basis_v2_authority'));
+      if(authority.current!=='postgres')fail('basis_v2_restored_current_role_mismatch');
+      if(authority.owner!=='postgres')fail('basis_v2_restored_function_owner_mismatch');
+      if(authority.create!==true)fail('basis_v2_restored_schema_create_denied');
+      context.sqlAsPostgres(`BEGIN;${functionSql};ROLLBACK;`,'basis_v2_function_probe');
       context.sqlAsPostgres(migration,'basis_v2_migration');const name=locate(context),envelopes=[],applied=[],idempotent=[];
       const beforeSession=connect(name);let before;
       try{before=JSON.parse(await beforeSession.query(cohortSummary));}finally{await beforeSession.close();}
@@ -87,11 +104,14 @@ export async function runBasisRefreshRehearsal({execute=false}={}) {
       const reversed=[];for(const envelope of envelopes.toReversed()){const session=connect(name),store=createEnvelopeStore({executionEnvironment:'isolated-clone',artifactKind:'basis-refresh-'+envelope.entry.productId,
         planSha256:manifest.sha256,sourceHead});try{reversed.push(await rollbackRefreshOne(session,envelope,store));}finally{store.close();await session.close();}}
       const restoredSession=connect(name);let restored;try{restored=JSON.parse(await restoredSession.query(cohortSummary));}finally{await restoredSession.close();}
-      if(JSON.stringify(restored)!==JSON.stringify(before))fail('basis_clone_rollback_counts_mismatch');
+      if(restored.selected!==55||restored.known!==7||restored.per100g!==0||restored.per100ml!==7||restored.unknown!==48||
+        restored.sourceRecords!==55||restored.observations!==110||restored.v1!==55||restored.v2!==55||restored.assertions!==502)
+        fail('basis_clone_rollback_counts_mismatch');
       return {result:'PASS',before,after,restored,applied:applied.length,idempotentNoWrite:idempotent.length,reversed:reversed.length,pairs,consumerProductIds:[2995,3065,398,148,1031],
         immutableV1Retained:after.v1===55,sourceRecordsUnchanged:before.sourceRecords===after.sourceRecords,nutritionValuesProtectedByPerMemberPostconditions:true};
     }});
-  const receipt={schemaVersion:1,method:'exact-production-restored-v2-basis-refresh-and-reversal',checkedAt:new Date().toISOString(),sourceHead,
+  for(const [file,digest] of Object.entries(sourceHashes))if(hash(fs.readFileSync(path.join(ROOT,file)))!==digest)fail('basis_rehearsal_source_changed');
+  const receipt={schemaVersion:1,method:'exact-production-restored-v2-basis-refresh-and-reversal',checkedAt:new Date().toISOString(),sourceHead,sourceHashes,
     matrixSha256:MATRIX_SHA256,refreshManifestSha256:manifest.sha256,migrationSha256,sourceRecoveryReceipt:path.join(SOURCE_RECOVERY,'receipt.json'),remoteReads:false,remoteWrites:false,...result};
   const output=path.join(ROOT,'audit-reports/evidence-basis-recovery','v2-refresh-rehearsal-'+Date.now()+'.json');fs.writeFileSync(output,JSON.stringify(receipt,null,2)+'\n');
   return {...receipt,receipt:path.relative(ROOT,output)};
