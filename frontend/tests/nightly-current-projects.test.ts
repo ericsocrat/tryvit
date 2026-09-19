@@ -31,7 +31,7 @@ function allowlistedFilenames(block: string, prefix: string): string[] {
 }
 
 describe("Nightly current behavior projects", () => {
-  it("allowlists exactly the six proven authenticated specifications", () => {
+  it("allowlists exactly the seven proven authenticated specifications", () => {
     const block = projectBlock("nightlyAuthenticatedCurrentProject");
     const filenames = allowlistedFilenames(block, "authenticated");
 
@@ -41,6 +41,7 @@ describe("Nightly current behavior projects", () => {
       "authenticated-evidence-first.spec.ts",
       "authenticated-health-profile-archive.spec.ts",
       "authenticated-landing.spec.ts",
+      "authenticated-mobile-hierarchy.spec.ts",
       "authenticated-server-logout.spec.ts",
     ]);
     expect(filenames.every((filename) => e2eFilenames.has(filename))).toBe(true);

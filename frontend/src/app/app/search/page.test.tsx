@@ -53,6 +53,16 @@ describe("evidence-first Find", () => {
     expect(screen.queryByText("/100")).not.toBeInTheDocument();
   });
 
+  it("keeps search context collapsed and places secondary saved-search actions after results", async () => {
+    mount();
+    const resultCard = (await screen.findByRole("link", { name: /Fixture product 1/ })).closest('[data-testid="product-register-card"]');
+    const context = screen.getByText("Market and preferences").closest("details");
+    const savedSearches = screen.getByRole("link", { name: /Saved searches/i });
+    expect(resultCard).not.toBeNull();
+    expect(context).not.toHaveAttribute("open");
+    expect(resultCard!.compareDocumentPosition(savedSearches) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it("has one quiet starting point and no unrequested filter/catalog fetch", () => {
     nav.search = ""; mount();
     expect(screen.getByRole("heading", { name: "Start with something on your label" })).toBeInTheDocument();
@@ -103,6 +113,8 @@ describe("evidence-first Find", () => {
     mount();
     expect(screen.getByRole("alert")).toHaveTextContent("rather than guessing your market");
     expect(mocks.find).not.toHaveBeenCalled();
+    expect(screen.getByRole("link", { name: /Saved searches/i })).toHaveAttribute("href", "/app/search/saved");
+    expect(screen.queryByRole("button", { name: "Save this search" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(mocks.preferences.refetch).toHaveBeenCalled();
   });

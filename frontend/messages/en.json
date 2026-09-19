@@ -2522,6 +2522,7 @@
     "preferencesUnavailable": "Search preferences are unavailable",
     "preferencesRequired": "Search is paused rather than guessing your market or bypassing your exclusions.",
     "marketContext": "Market: {country}",
+    "contextTitle": "Market and preferences",
     "preferenceContext": "Your saved dietary and allergen preferences apply. Strict settings withhold products when the required evidence is unknown.",
     "reviewPreferences": "Review preferences",
     "includeAvoided": "Include products from my avoid list",

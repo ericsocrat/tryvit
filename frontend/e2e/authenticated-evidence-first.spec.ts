@@ -206,29 +206,25 @@ test.describe("Evidence-first product and comparison", () => {
           await capture(page, info, "legacy-detail");
 
           await page.goto(`/app/compare?ids=${ids.join(",")}`, { waitUntil: "domcontentloaded" });
-          await expect(page.getByRole("table", { name: translate(language, "evidenceUi.compareTable") })).toBeVisible();
+          await expect(page.getByTestId("primary-comparison")).toBeVisible();
           await expect(page.getByText(translate(language, "evidenceUi.notComparable.evidence_unavailable")).first()).toBeVisible();
           await expect(page.locator("main meter")).toHaveCount(0);
           await expect(page).toHaveTitle(/Compare Products/);
           if (width === 390) {
-            await expect(page.getByText(translate(language, "evidenceUi.comparisonScrollHint"))).toBeVisible();
-            const region = page.getByRole("region", { name: translate(language, "evidenceUi.compareTable") });
-            const label = region.locator("tbody th").first();
-            const before = await label.boundingBox();
-            await region.focus();
-            await page.keyboard.press("ArrowRight");
-            await expect.poll(() => region.evaluate((node) => node.scrollLeft)).toBeGreaterThan(0);
-            const after = await label.boundingBox();
-            expect(Math.abs(after!.x - before!.x)).toBeLessThan(2);
-            await region.evaluate((node) => { node.scrollLeft = 0; });
+            await expect(page.getByText(translate(language, "evidenceUi.comparisonScrollHint"))).toHaveCount(0);
+            await expect(page.getByRole("table", { name: translate(language, "evidenceUi.compareTable") })).not.toBeVisible();
+            const primary = page.getByTestId("primary-comparison");
+            expect(await primary.evaluate((node) => node.scrollWidth)).toBeLessThanOrEqual(await primary.evaluate((node) => node.clientWidth));
+          } else {
+            await expect(page.getByRole("table", { name: translate(language, "evidenceUi.compareTable") })).toBeVisible();
           }
           await assertReadyPageA11y(page);
           await capture(page, info, "comparison");
           await page.getByRole("button", { name: translate(language, "compare.clearSelection") }).click();
           await expect(page).toHaveURL(/\/app\/compare$/);
-          await expect(page.getByRole("table")).toHaveCount(0);
+          await expect(page.getByTestId("primary-comparison")).toHaveCount(0);
           await page.goBack();
-          await expect(page.getByRole("table")).toBeVisible();
+          await expect(page.getByTestId("primary-comparison")).toBeVisible();
           expect(errors).toEqual([]);
         });
       }

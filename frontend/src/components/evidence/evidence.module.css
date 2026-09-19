@@ -73,6 +73,12 @@
 .sourceContent dl > div { display: grid; grid-template-columns: minmax(6rem, 0.7fr) minmax(0, 1fr); gap: 0.75rem; }
 .sourceContent dd { margin: 0; color: var(--color-text-secondary); overflow-wrap: anywhere; }
 .comparisonScroll { max-width: 100%; overflow-x: auto; border: 1px solid var(--color-border); border-radius: 1rem; background: var(--color-surface); }
+.primaryComparison { min-width: 0; }
+.mobilePairwise { display: none; }
+.reference { margin: 0; color: var(--color-text-secondary); font-size: 0.8125rem; line-height: 1.5; }
+.interpretation { margin: 0; padding-inline-start: 0.75rem; border-inline-start: 3px solid var(--color-border-strong); color: var(--color-text-secondary); font-size: 0.8125rem; line-height: 1.6; }
+.secondaryActions { margin-block: 0; }
+.recoveryActions { margin-block: 0; }
 .comparisonHint { display: none; margin: 0; color: var(--color-text-secondary); font-size: 0.8125rem; line-height: 1.5; }
 .comparisonTable { width: 100%; border-collapse: collapse; text-align: left; }
 .comparisonTable th, .comparisonTable td { min-width: 12.5rem; padding: 1rem; border-bottom: 1px solid var(--color-border); vertical-align: top; }
@@ -91,6 +97,8 @@
   .sources::details-content { content-visibility: visible !important; display: block !important; }
   .sources > .sourceContent { display: block !important; }
   .comparisonScroll { overflow: visible; }
+  .twoProductTable { display: block !important; }
+  .mobilePairwise { display: none !important; }
   .comparisonTable th, .comparisonTable td, .comparisonTable th:first-child { min-width: 0; padding: 0.5rem; }
   .sources, .panel { break-inside: avoid; }
 }
@@ -106,6 +114,23 @@
   .photoPlaceholder p { font-size: 0.6875rem; line-height: 1.4; }
   .photo figcaption { font-size: 0.6875rem; }
   .detailColumns, .comparisonEvidence { grid-template-columns: 1fr; }
+  .twoProductTable { display: none; }
+  .mobilePairwise { display: grid; gap: 1rem; }
+  .pairwiseProducts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: hidden; border: 1px solid var(--color-border); border-radius: 1rem; background: var(--color-surface-muted); }
+  .pairwiseProducts > div { display: grid; min-width: 0; align-content: start; gap: 0.25rem; padding: 0.85rem; }
+  .pairwiseProducts > div + div { border-inline-start: 1px solid var(--color-border); }
+  .pairwiseProducts a { color: var(--color-brand); font-size: 0.8125rem; font-weight: 650; line-height: 1.35; text-decoration: underline; text-underline-offset: 0.15em; overflow-wrap: anywhere; }
+  .pairwiseProducts > div > span:last-child { color: var(--color-text-secondary); font-size: 0.75rem; line-height: 1.4; overflow-wrap: anywhere; }
+  .pairwiseMarker { width: fit-content; border-radius: 999px; padding: 0.1rem 0.4rem; background: var(--color-brand-subtle); color: var(--color-brand); font-size: 0.6875rem; font-weight: 700; }
+  .pairwiseFacts { overflow: hidden; border: 1px solid var(--color-border); border-radius: 1rem; background: var(--color-surface); }
+  .pairwiseFact { padding: 0.9rem; border-block-end: 1px solid var(--color-border); }
+  .pairwiseFact:last-child { border-block-end: 0; }
+  .pairwiseFact h2 { margin: 0 0 0.65rem; font-size: 0.875rem; font-weight: 650; line-height: 1.4; }
+  .pairwiseValues { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; }
+  .pairwiseValues > div { min-width: 0; padding-inline: 0.1rem 0.75rem; }
+  .pairwiseValues > div + div { border-inline-start: 1px solid var(--color-border); padding-inline: 0.75rem 0.1rem; }
+  .pairwiseValues .quantity { font-size: 0.9375rem; }
+  .pairwiseValues .basis, .pairwiseValues .factState, .pairwiseValues .relation { font-size: 0.6875rem; }
   .panel, .state { padding: 1.25rem; }
   .nutrientRow { grid-template-columns: minmax(6.5rem, 0.8fr) minmax(0, 1fr); }
 }

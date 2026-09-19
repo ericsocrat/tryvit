@@ -248,7 +248,7 @@ const functionalProject = {
 const nightlyAuthenticatedCurrentProject = {
   name: "nightly-authenticated-current",
   testMatch:
-    /(?:^|[\\/])authenticated-(?:a11y|anonymous-landing-copy|evidence-first|health-profile-archive|landing|server-logout)\.spec\.ts$/u,
+    /(?:^|[\\/])authenticated-(?:a11y|anonymous-landing-copy|evidence-first|health-profile-archive|landing|mobile-hierarchy|server-logout)\.spec\.ts$/u,
   dependencies: ["auth-setup"],
   fullyParallel: false,
   workers: 1,

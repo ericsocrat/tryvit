@@ -12,15 +12,17 @@ export function AppPageHeader({
   description,
   actions,
   register,
+  compactOnMobile = false,
 }: Readonly<{
   eyebrow: string;
   title: string;
   description?: string;
   actions?: ReactNode;
   register?: ReactNode;
+  compactOnMobile?: boolean;
 }>) {
   return (
-    <header className={styles.header}>
+    <header className={`${styles.header} ${compactOnMobile ? styles.compactMobile : ""}`}>
       <div className={styles.copy}>
         <p className={styles.eyebrow}>{eyebrow}</p>
         <h1 className={styles.title}>{title}</h1>

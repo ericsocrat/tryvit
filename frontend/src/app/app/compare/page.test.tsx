@@ -45,6 +45,8 @@ describe("comparison URL contract", () => {
     state.search = "ids=bad";
     rerender(ui());
     expect(screen.getByRole("alert")).toHaveTextContent("This comparison link is invalid");
+    expect(screen.getByRole("link", { name: "Saved Comparisons" })).toHaveAttribute("href", "/app/compare/saved");
+    expect(screen.getByRole("button", { name: "Clear selection" })).toBeInTheDocument();
     expect(mocks.read).not.toHaveBeenCalled();
   });
 
@@ -95,6 +97,20 @@ describe("factual comparison", () => {
     expect(screen.queryByRole("button", { name: /export|share/i })).not.toBeInTheDocument();
   });
 
+  it("places factual comparison before secondary actions and exposes pairwise mobile semantics", async () => {
+    mount();
+    const facts = await screen.findByTestId("first-comparison-facts");
+    const primary = screen.getByTestId("primary-comparison");
+    const save = screen.getByRole("button", { name: "Save Comparison" });
+    const clear = screen.getByRole("button", { name: "Clear selection" });
+    expect(primary).toContainElement(facts);
+    expect(facts.compareDocumentPosition(save) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(facts.compareDocumentPosition(clear) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const tableRegion = screen.getAllByRole("region", { name: "Recorded nutrition comparison" })
+      .find((node) => node.querySelector("table"));
+    expect(tableRegion).not.toHaveAttribute("tabindex");
+  });
+
   it("retains legacy values but withholds arithmetic and overall ranking", async () => {
     mocks.read.mockResolvedValue({ ok: true, data: evidenceEnvelope([legacyProduct(1), legacyProduct(2)]) });
     mount();
@@ -141,12 +157,15 @@ describe("factual comparison", () => {
     await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Unavailable selected products: 1"));
     expect(screen.getByRole("heading", { name: "Not enough available products to compare" })).toBeInTheDocument();
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Clear selection" })).toBeInTheDocument();
   });
 
   it("returns to valid evidence through retry after a failed request", async () => {
     mocks.read.mockResolvedValueOnce({ ok: false, error: { message: "Unavailable" } });
     mount();
     expect(await screen.findByRole("alert")).toHaveTextContent("Comparison information couldn’t load");
+    expect(screen.getByRole("link", { name: "Saved Comparisons" })).toHaveAttribute("href", "/app/compare/saved");
+    expect(screen.getByRole("button", { name: "Clear selection" })).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
     expect(await screen.findByRole("table")).toBeInTheDocument();
   });

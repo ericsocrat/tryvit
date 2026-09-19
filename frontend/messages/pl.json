@@ -2522,6 +2522,7 @@
     "preferencesUnavailable": "Preferencje wyszukiwania są niedostępne",
     "preferencesRequired": "Wyszukiwanie jest wstrzymane, aby nie zgadywać rynku ani nie pomijać wykluczeń.",
     "marketContext": "Rynek: {country}",
+    "contextTitle": "Rynek i preferencje",
     "preferenceContext": "Obowiązują zapisane preferencje żywieniowe i alergeny. Ustawienia ścisłe wykluczają produkty, gdy wymagane dane są nieznane.",
     "reviewPreferences": "Sprawdź preferencje",
     "includeAvoided": "Uwzględnij produkty z listy unikania",
