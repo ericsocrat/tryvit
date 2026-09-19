@@ -63,7 +63,7 @@ function remoteMain() {
 }
 
 function loadInputs(options,authority) {
-  const migrationManifestSha256=hash(fs.readFileSync(path.join(ROOT,'docs/releases/evidence-first-consumer.migrations.json')));
+  const migrationManifestSha256=hash(fs.readFileSync(path.join(ROOT,'docs/releases/evidence-basis-v2.migrations.json')));
   const binding={environment:'production',project:TARGET,sourceHead:authority.sourceHead,migrationManifestSha256,
     codeSha256:digest(authority.code),publicAllowlistSha256:options.reviewedAllowlistSha256};
   if(['inspect','rollback'].includes(options.action)) {

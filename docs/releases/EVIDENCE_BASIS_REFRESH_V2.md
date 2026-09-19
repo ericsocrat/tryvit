@@ -35,7 +35,8 @@ separate `basis-refresh` action accepts this manifest.
 
 1. Merge and certify exact main.
 2. Run the ordinary staging/production migration release for the v2 ingestion
-   admission migration, with fresh recovery evidence.
+   admission migration from
+   `docs/releases/evidence-basis-v2.migrations.json`, with fresh recovery evidence.
 3. Capture a fresh reviewed populated-21 recovery from the exact production
    state before each batch.
 4. Plan at most five IDs without `--execute`; review the returned plan SHA.

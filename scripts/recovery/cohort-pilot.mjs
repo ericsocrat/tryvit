@@ -150,7 +150,7 @@ export function pilotPlan({readFile=file=>fs.readFileSync(path.join(ROOT,file)),
     throw new RecoveryError('retained_observation_changed');
   const manifestBytes=readFile(MANIFEST),manifest=JSON.parse(manifestBytes);
   validateMigrationManifest(manifest);
-  if(manifest.recoveryProfile!=='consumer-v1'||manifest.migrations.length!==8)throw new RecoveryError('pilot_manifest_scope_changed');
+  if(manifest.recoveryProfile!=='consumer-v1'||manifest.migrations.length!==7)throw new RecoveryError('pilot_manifest_scope_changed');
   const mutation=original.toString('utf8').replace('-- DRY PLAN ONLY: requires a fresh 19-table recovery proof and isolated import/reversal rehearsal.',
     '-- MUTATION ARTIFACT: imports retained product 178 and COMMITS. Only execute through reviewed clone rehearsal or a separately approved production workflow.');
   const sql={prepare:preparationSql(),mutation,verify:acceptedSql(observation),rollback:rollbackSql};

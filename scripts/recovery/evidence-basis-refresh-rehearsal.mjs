@@ -49,7 +49,7 @@ export async function runBasisRefreshRehearsal({execute=false}={}) {
   if(command('git',['status','--porcelain','--untracked-files=normal'],{cwd:ROOT}).trim())fail('basis_rehearsal_requires_clean_source');
   const sourceFiles=['scripts/recovery/evidence-basis-refresh.mjs','scripts/recovery/evidence-basis-refresh-rehearsal.mjs',
     'scripts/recovery/cohort-batch.mjs','scripts/recovery/cohort-pilot-operator.mjs',MIGRATION,
-    'docs/releases/evidence-first-consumer.migrations.json','audit-reports/evidence-basis-recovery/selected-observations-20260919.json'];
+    'docs/releases/evidence-basis-v2.migrations.json','audit-reports/evidence-basis-recovery/selected-observations-20260919.json'];
   const sourceHashes=Object.fromEntries(sourceFiles.map(file=>[file,hash(fs.readFileSync(path.join(ROOT,file)))]));
   const plan={result:'PLAN',sourceHead,matrixSha256:MATRIX_SHA256,manifestSha256:manifest.sha256,products:manifest.entries.length,
     recoveryDirectory:SOURCE_RECOVERY,remoteReads:false,remoteWrites:false};

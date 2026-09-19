@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "scope": "schema-and-catalog",
+  "recoveryProfile": "consumer-v1",
+  "migrations": [
+    {
+      "path": "supabase/migrations/20260919120048_admit_off_observations_v2.sql",
+      "sha256": "c3a5ecb50f8ccda8fe71abf7e3049ef83c2f51bb2910eeda8cdaea9a3e9cca76"
+    }
+  ]
+}
