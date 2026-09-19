@@ -153,6 +153,19 @@ def test_output_traversal_is_rejected(tmp_path, monkeypatch):
         advisory.prepare(source, advisory.REPORT_ROOT / ".." / "escaped")
 
 
+def test_atomic_write_cleans_owned_temporary_file_on_replace_failure(tmp_path, monkeypatch):
+    monkeypatch.setattr(advisory, "REPORT_ROOT", tmp_path / "reports")
+    advisory.REPORT_ROOT.mkdir()
+
+    def fail_replace(_source, _destination):
+        raise OSError("simulated replace failure")
+
+    monkeypatch.setattr(advisory.os, "replace", fail_replace)
+    with pytest.raises(OSError, match="simulated replace failure"):
+        advisory.write_atomic(advisory.REPORT_ROOT / "run" / "results.json", {"advisory_only": True})
+    assert list(advisory.REPORT_ROOT.glob(".jev-advisory-*.tmp")) == []
+
+
 def test_offline_is_default_and_never_calls_provider(tmp_path, monkeypatch):
     manifest = prepare_run(tmp_path, monkeypatch)
     session = FakeSession()
