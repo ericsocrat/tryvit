@@ -64,6 +64,16 @@ are allowed. Authentication and request-validation failures are not retried.
 Unexpected model substitution fails the advisory call. None of these outcomes
 can fail, approve, reject, hold, release, select, or write an observation.
 
+Every persisted results checkpoint carries a digest over the complete document
+except the digest field itself. Resume, report generation, and shadow-label
+initialization recompute and verify it before trusting any retained result.
+Interrupted runs remain resumable because each completed-case checkpoint is
+independently sealed.
+
+Before human review, deterministic `semantic_ambiguity` and JEV identity answers
+use different vocabularies and are shown as `not directly comparable`. The
+report does not infer disagreement or agreement until a later human label exists.
+
 ## Real shadow cohort
 
 After inference, `init-shadow-labels` creates a blank local label ledger. Human

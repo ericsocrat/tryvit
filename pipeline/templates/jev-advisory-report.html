@@ -29,7 +29,7 @@
   <section class="banner">ADVISORY — NOT AN APPROVAL DECISION</section>
   <section class="controls">
     <label>Identity<select id="identity"><option value="">All</option><option>consistent</option><option>inconsistent</option><option>insufficient_evidence</option></select></label>
-    <label>Disagreement<select id="disagreement"><option value="">All</option><option value="true">Deterministic/JEV disagreement</option><option value="false">No disagreement / unavailable</option></select></label>
+    <label>Explicit conflict<select id="explicit_conflict"><option value="">All</option><option>conflict</option><option>no_explicit_conflict</option><option>insufficient_evidence</option></select></label>
     <label>Confidence<select id="confidence"><option value="">All</option><option value="true">High confidence ≥ 0.95</option><option value="false">Below 0.95 / unavailable</option></select></label>
     <label>Status<select id="status"><option value="">All</option><option>completed</option><option>offline_disabled</option><option>skipped_deterministic_authority</option><option value="failed">Failed calls</option></select></label>
     <label>Market<select id="market"><option value="">All</option><option>PL</option><option>DE</option></select></label>
@@ -49,15 +49,15 @@
       return `<p><strong>${esc(title)}:</strong> ${esc(value.answer)} · confidence ${Number(value.confidence).toFixed(3)}<br><small>${probabilities}</small></p>`;
     }
     function render() {
-      const filters = Object.fromEntries(['identity','disagreement','confidence','status','market'].map(key=>[key,document.getElementById(key).value]));
+      const filters = Object.fromEntries(['identity','explicit_conflict','confidence','status','market'].map(key=>[key,document.getElementById(key).value]));
       const rows = data.rows.filter(row =>
         (!filters.identity || row.identity?.answer === filters.identity) &&
-        (!filters.disagreement || String(row.disagreement) === filters.disagreement) &&
+        (!filters.explicit_conflict || row.explicit_conflict?.answer === filters.explicit_conflict) &&
         (!filters.confidence || String(row.high_confidence) === filters.confidence) &&
         (!filters.market || row.market === filters.market) &&
         (!filters.status || (filters.status === 'failed' ? row.status.startsWith('failed_') : row.status === filters.status))
       );
-      root.innerHTML = rows.length ? rows.map(row => `<article class="case"><div class="head"><strong>${esc(row.local_case_hash.slice(0,16))}</strong><span class="badge">${esc(row.market)}</span><span class="badge">deterministic: ${esc(row.deterministic.state)}</span><span class="badge">status: ${esc(row.status)}</span></div><div class="pair">${side('Reference',row.reference)}${side('Source candidate',row.source)}</div><div class="answers">${answer('Identity',row.identity)}${answer('Explicit conflict',row.explicit_conflict)}${answer('Wording difference',row.wording_difference)}<p><strong>Model:</strong> ${esc(row.model)} · <strong>Prompt:</strong> ${esc(row.prompt_id)}<br><code>${esc(row.prompt_sha256)}</code></p>${row.error?`<p class="error"><strong>Execution error:</strong> ${esc(row.error)}</p>`:''}<p><a href="${esc(row.source_url)}" rel="noreferrer">Public source</a></p></div></article>`).join('') : '<div class="empty">No cases match these filters.</div>';
+      root.innerHTML = rows.length ? rows.map(row => `<article class="case"><div class="head"><strong>${esc(row.local_case_hash.slice(0,16))}</strong><span class="badge">${esc(row.market)}</span><span class="badge">deterministic: ${esc(row.deterministic.state)}</span><span class="badge">comparison: ${esc(row.comparison_status.replaceAll('_',' '))}</span><span class="badge">status: ${esc(row.status)}</span></div><div class="pair">${side('Reference',row.reference)}${side('Source candidate',row.source)}</div><div class="answers">${answer('Identity',row.identity)}${answer('Explicit conflict',row.explicit_conflict)}${answer('Wording difference',row.wording_difference)}<p><strong>Model:</strong> ${esc(row.model)} · <strong>Prompt:</strong> ${esc(row.prompt_id)}<br><code>${esc(row.prompt_sha256)}</code></p>${row.error?`<p class="error"><strong>Execution error:</strong> ${esc(row.error)}</p>`:''}<p><a href="${esc(row.source_url)}" rel="noreferrer">Public source</a></p></div></article>`).join('') : '<div class="empty">No cases match these filters.</div>';
     }
     document.querySelectorAll('select').forEach(element=>element.addEventListener('change',render)); render();
   </script>
