@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TryVit JEV advisory source review</title>
+  <style>
+    :root { --bg:#f4f6f3; --card:#fff; --ink:#18211b; --muted:#637067; --line:#d8dfd9; --accent:#176b45; --warn:#963b2d; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,sans-serif; }
+    main { max-width:1180px; margin:auto; padding:28px; }
+    h1 { margin:0 0 4px; } .note { color:var(--muted); margin:0 0 22px; }
+    .banner,.controls,.case { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:14px; }
+    .banner { font-weight:750; color:var(--warn); }
+    .controls { display:grid; grid-template-columns:repeat(5,minmax(150px,1fr)); gap:10px; position:sticky; top:0; z-index:2; }
+    label { font-size:12px; color:var(--muted); } select { display:block; width:100%; padding:8px; margin-top:4px; }
+    .head { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .badge { border:1px solid var(--line); border-radius:999px; padding:2px 8px; font-size:12px; }
+    .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+    .side,.answers { background:#f8faf8; border-radius:8px; padding:12px; } dt { color:var(--muted); font-size:12px; }
+    dd { margin:0 0 7px; overflow-wrap:anywhere; } a { color:var(--accent); } .error { color:var(--warn); }
+    .empty { text-align:center; color:var(--muted); padding:36px; }
+    @media(max-width:780px) { .controls,.pair { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body><main>
+  <h1>TryVit JEV advisory source review</h1>
+  <p class="note">Local shadow evidence. Existing deterministic review remains authoritative.</p>
+  <section class="banner">ADVISORY — NOT AN APPROVAL DECISION</section>
+  <section class="controls">
+    <label>Identity<select id="identity"><option value="">All</option><option>consistent</option><option>inconsistent</option><option>insufficient_evidence</option></select></label>
+    <label>Disagreement<select id="disagreement"><option value="">All</option><option value="true">Deterministic/JEV disagreement</option><option value="false">No disagreement / unavailable</option></select></label>
+    <label>Confidence<select id="confidence"><option value="">All</option><option value="true">High confidence ≥ 0.95</option><option value="false">Below 0.95 / unavailable</option></select></label>
+    <label>Status<select id="status"><option value="">All</option><option>completed</option><option>offline_disabled</option><option>skipped_deterministic_authority</option><option value="failed">Failed calls</option></select></label>
+    <label>Market<select id="market"><option value="">All</option><option>PL</option><option>DE</option></select></label>
+  </section>
+  <section id="cases"></section>
+  <script id="payload" type="application/json">__PAYLOAD__</script>
+  <script>
+    const data = JSON.parse(document.getElementById('payload').textContent);
+    const root = document.getElementById('cases');
+    const esc = value => String(value ?? '—').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    function side(title, value) {
+      return `<div class="side"><strong>${esc(title)}</strong><dl>${['brand','product_name','variant','package','quantity'].map(key=>`<dt>${esc(key)}</dt><dd>${esc(value[key])}</dd>`).join('')}</dl></div>`;
+    }
+    function answer(title, value) {
+      if (!value || !value.probabilities) return `<p><strong>${esc(title)}:</strong> —</p>`;
+      const probabilities = Object.entries(value.probabilities).map(([key,probability])=>`${esc(key)} ${(100*probability).toFixed(1)}%`).join(' · ');
+      return `<p><strong>${esc(title)}:</strong> ${esc(value.answer)} · confidence ${Number(value.confidence).toFixed(3)}<br><small>${probabilities}</small></p>`;
+    }
+    function render() {
+      const filters = Object.fromEntries(['identity','disagreement','confidence','status','market'].map(key=>[key,document.getElementById(key).value]));
+      const rows = data.rows.filter(row =>
+        (!filters.identity || row.identity?.answer === filters.identity) &&
+        (!filters.disagreement || String(row.disagreement) === filters.disagreement) &&
+        (!filters.confidence || String(row.high_confidence) === filters.confidence) &&
+        (!filters.market || row.market === filters.market) &&
+        (!filters.status || (filters.status === 'failed' ? row.status.startsWith('failed_') : row.status === filters.status))
+      );
+      root.innerHTML = rows.length ? rows.map(row => `<article class="case"><div class="head"><strong>${esc(row.local_case_hash.slice(0,16))}</strong><span class="badge">${esc(row.market)}</span><span class="badge">deterministic: ${esc(row.deterministic.state)}</span><span class="badge">status: ${esc(row.status)}</span></div><div class="pair">${side('Reference',row.reference)}${side('Source candidate',row.source)}</div><div class="answers">${answer('Identity',row.identity)}${answer('Explicit conflict',row.explicit_conflict)}${answer('Wording difference',row.wording_difference)}<p><strong>Model:</strong> ${esc(row.model)} · <strong>Prompt:</strong> ${esc(row.prompt_id)}<br><code>${esc(row.prompt_sha256)}</code></p>${row.error?`<p class="error"><strong>Execution error:</strong> ${esc(row.error)}</p>`:''}<p><a href="${esc(row.source_url)}" rel="noreferrer">Public source</a></p></div></article>`).join('') : '<div class="empty">No cases match these filters.</div>';
+    }
+    document.querySelectorAll('select').forEach(element=>element.addEventListener('change',render)); render();
+  </script>
+</main></body>
+</html>

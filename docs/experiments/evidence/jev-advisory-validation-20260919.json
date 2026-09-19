@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "evidence_id": "jev-advisory-validation-20260919",
+  "model": "jev-1.13.0",
+  "prompt_id": "generic-abstention-v2",
+  "prompt_sha256": "014135aad814b77554b79680146e5156c11e6f12b0f756127d290b468b846447",
+  "historical_pilot": {
+    "commit": "99cee5772f91e423783a66dd2384be7d979b4a70",
+    "decision": "REJECT_OR_ITERATE",
+    "overall_macro_f1": 0.79354040129428,
+    "german_macro_f1": 0.5398925175692435,
+    "manifest_file_sha256": "d5e2dcf01798530cf8a2a7b07a28d36fa24c9d39057ff578f23c908d58069d36",
+    "results_file_sha256": "4880e60c80d2d06c3960ce7c4a7b4d8bf504c80737ba5fc9f2706b4cdc1b09f9"
+  },
+  "fresh_validation": {
+    "experiment_head": "0778741f",
+    "decision": "ADOPT_AS_ADVISORY_CANDIDATE",
+    "german_heldout_cases": 120,
+    "german_baseline_macro_f1": 0.6825396825396824,
+    "german_revised_macro_f1": 0.974996093139553,
+    "german_revised_inconsistent_recall": 0.95,
+    "polish_safety_cases": 60,
+    "polish_revised_macro_f1": 0.9833229101521784,
+    "polish_revised_inconsistent_recall": 1.0,
+    "high_confidence_inconsistent_to_consistent": 0,
+    "completion": 1.0,
+    "family_leakage": 0,
+    "label_leakage": 0,
+    "development_freeze_sha256": "a1d2639443096c73becb1497ac02927b040b308b8ab05b87a678447e8814397c",
+    "final_freeze_sha256": "2b0506cef3ab2bf9184bc2a6a1d2f843a79e3b480930dd975eb011512e1d412f",
+    "prompt_selection_sha256": "c9117218947cb8b1d762d358b023646a785ffa447983ee49871e023cc6a446ec"
+  },
+  "acceptance_gates": {
+    "german_macro_f1_at_least_0_75": true,
+    "german_inconsistent_recall_at_least_0_90": true,
+    "german_no_high_confidence_failure": true,
+    "polish_macro_f1_at_least_0_90": true,
+    "polish_non_regression_within_0_03": true,
+    "polish_inconsistent_recall_at_least_0_90": true,
+    "polish_no_high_confidence_failure": true,
+    "completion_at_least_0_99": true,
+    "no_family_or_label_leakage": true
+  },
+  "authorized_capability": "LOCAL_READ_ONLY_ADVISORY_SHADOW_TOOL",
+  "production_effect": "NONE",
+  "hosted_execution": "NOT_CONFIGURED"
+}
