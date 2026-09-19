@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {writeReviewPlan} from './cohort-batch.mjs';
-import {remainingManifest as makeManifest,reviewSelection as select,retainedEntries as readEntries,batchFor,snapshotSql,rollbackSql,rollbackOne,applyOne,verifyBatchPostimages,targetSnapshot,checkBefore,checkAssertions,digest,NUTRIENTS} from './cohort-batch.mjs';
+import {remainingManifest as makeManifest,reviewSelection as select,retainedEntries as readEntries,retainedRecoveryEntries,batchFor,snapshotSql,rollbackSql,rollbackOne,applyOne,verifyBatchPostimages,targetSnapshot,checkBefore,checkAssertions,digest,NUTRIENTS} from './cohort-batch.mjs';
 import {proposedPublicAllowlist as propose,validatePublicAllowlist as validate,approvedSnapshotDumpArgs as dumpArgs} from './cohort-public-recovery.mjs';
 import {syntheticRetainedSource} from './cohort-synthetic-fixture.mjs';
 import {hash} from '../ci/database-release.mjs';
@@ -9,6 +9,22 @@ const source=syntheticRetainedSource(),input={retainedSource:source};
 const remainingManifest=()=>makeManifest(source),retainedEntries=()=>readEntries(source);
 const reviewSelection=(manifest,ids,sha)=>select(manifest,ids,sha,source);
 const proposedPublicAllowlist=rows=>propose(rows,input);
+
+test('recovery ledger is independent of the historical mutation plan',()=>{
+  const recovery=retainedRecoveryEntries(source);
+  assert.equal(recovery.length,55);
+  assert.deepEqual(recovery.map(entry=>entry.productId).filter(id=>[628,2882,2903,2950,6029].includes(id)),[]);
+  const withoutPlan={...source,readFile:file=>{
+    if(file.replaceAll('\\','/').endsWith('/production-import-plan-20260908/plan.json'))throw Error('historical_plan_unavailable');
+    return source.readFile(file);
+  }};
+  assert.equal(retainedRecoveryEntries(withoutPlan).length,55);
+  const replaced=syntheticRetainedSource(),receiptKey='audit-reports/evidence-cohort/run-20260905T101700Z/receipt.json';
+  const receipt=JSON.parse(replaced.files.get(receiptKey));
+  receipt.members[0].observation_sha256='0'.repeat(64);
+  replaced.files.set(receiptKey,Buffer.from(JSON.stringify(receipt)));
+  assert.throws(()=>retainedRecoveryEntries(replaced),/recovery_receipt_hash_changed/);
+});
 const validatePublicAllowlist=(rows,manifest,sha)=>validate(rows,manifest,sha,input);
 const approvedSnapshotDumpArgs=(session,options)=>dumpArgs(session,{...options,input});
 
