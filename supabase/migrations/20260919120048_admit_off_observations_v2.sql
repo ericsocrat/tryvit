@@ -1,4 +1,6 @@
--- Admit the versioned OFF v2 extractor without reinterpreting v1.
+-- Migration: Admit the versioned OFF v2 extractor without reinterpreting v1.
+-- Rollback: Restore the prior v1-only ingestion function from exact schema recovery;
+-- keep all immutable v2 observations and reselect v1 projections through reviewed envelopes.
 -- V2 basis is bound only to exact retained source declarations. A derivation
 -- optionally binds a refresh to the exact currently selected immutable v1 row.
 BEGIN;

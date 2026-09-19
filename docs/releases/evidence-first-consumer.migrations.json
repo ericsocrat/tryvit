@@ -33,7 +33,7 @@
     },
     {
       "path": "supabase/migrations/20260919120048_admit_off_observations_v2.sql",
-      "sha256": "c8099fa3f52984c3122d28e2471cbe63d23b49421fec3825088cb45117be61a1"
+      "sha256": "e6b57cbd4496c5f3cf2d79bb723ddf761acf3b250b1e1125b39310b12c370aaa"
     }
   ]
 }
