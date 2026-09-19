@@ -27,7 +27,7 @@ export function syntheticPilotSource() {
   const sql=Buffer.from('-- DRY PLAN ONLY: requires a fresh 19-table recovery proof and isolated import/reversal rehearsal.\n'+
     '-- Fixed operator identity contract: 5900340003615\nBEGIN;\n'+pilot.sql.mutation+'\nCOMMIT;');
   const observation=encode(record),manifest={schemaVersion:1,scope:'schema-and-catalog',recoveryProfile:'consumer-v1',
-    migrations:Array.from({length:8},(_,i)=>({path:`supabase/migrations/2099010100000${i}_synthetic.sql`,sha256:sha(Buffer.from(`SELECT ${i};`))}))};
+    migrations:Array.from({length:7},(_,i)=>({path:`supabase/migrations/2099010100000${i}_synthetic.sql`,sha256:sha(Buffer.from(`SELECT ${i};`))}))};
   const files=new Map([
     ['audit-reports/evidence-cohort/production-import-plan-20260908/pilot-178.sql',sql],
     ['audit-reports/evidence-cohort/run-20260905T101700Z/PL-178-5900340003615.observation.json',observation],
@@ -36,7 +36,7 @@ export function syntheticPilotSource() {
   return {files,pilotSha256:sha(sql),observationSha256:sha(observation),
     readFile:file=>{const bytes=files.get(file.replaceAll('\\','/'));if(!bytes)throw Error('synthetic_input_not_found');return Buffer.from(bytes);},
     // Manifest validator itself has separate filesystem-backed unit coverage.
-    // This injected boundary asserts exactly the fabricated eight input hashes.
+    // This injected boundary asserts exactly the fabricated seven input hashes.
     validateMigrationManifest:value=>{if(JSON.stringify(value)!==JSON.stringify(manifest))throw Error('synthetic_manifest_changed');}};
 }
 export function syntheticRetainedSource() {
