@@ -24,8 +24,8 @@ unrelated changes and active worktrees.
 ## Stack and commands
 
 The frontend is `frontend/` (Next.js, React, TypeScript, npm, Vitest,
-Playwright). Supabase/Postgres owns the database and authorization boundary;
-Vercel is the established frontend deployment path.
+Playwright). The hosted Postgres service owns the database and authorization
+boundary; use the repository's established frontend deployment path.
 
 From `frontend/`, use the committed npm lockfile:
 
@@ -41,9 +41,10 @@ browser/database checks for the changed surface. Use the guarded commands in
 `frontend/README.md` for browser evidence. Do not treat a local build, Preview,
 historical CI result, or provider configuration as proof of production state.
 
-For Supabase or Vercel inspection, prefer official project-scoped, read-only
-access. Keep schema, deployment, environment, promotion, and rollback actions
-approval-gated. Never print credentials or `.env` contents.
+For hosted database or deployment-provider inspection, prefer official,
+project-scoped, read-only access. Keep schema, deployment, environment,
+promotion, and rollback actions approval-gated. Never print credentials or
+`.env` contents.
 
 Before handoff, report the exact checks run, their results, checks not run,
 source/branch identity, and any remaining uncertainty. Do not weaken a gate to
