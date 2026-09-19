@@ -379,12 +379,22 @@ def bind_production_review(
         raise ValueError("Exact production identity review digest is required")
     review = json.loads(review_bytes)
     expected_ids = [entry["productId"] for entry in acquisition["entries"]]
-    reviewed_ids = [entry.get("productId") for entry in review.get("members", [])]
+    review_members = review.get("members", [])
+    if not isinstance(review_members, list) or any(
+        not isinstance(entry, dict)
+        or set(entry) != {"productId", "holdReasons"}
+        or not isinstance(entry["productId"], int)
+        or not isinstance(entry["holdReasons"], list)
+        or any(not isinstance(reason, str) or not reason for reason in entry["holdReasons"])
+        for entry in review_members
+    ):
+        raise ValueError("Production identity review member verdict is invalid")
+    reviewed_ids = [entry["productId"] for entry in review_members]
     if (
         review.get("schemaVersion") != 1
         or review.get("profile") != "source-expansion-production-identity-review-v1"
         or reviewed_ids != expected_ids
-        or any(entry.get("holdReasons") for entry in review["members"])
+        or any(entry["holdReasons"] for entry in review_members)
     ):
         raise ValueError("Production identity review does not approve the exact accepted cohort")
     body = {

@@ -12,24 +12,26 @@ WITH quotas(category, quota) AS (VALUES
 ), linked AS (
   SELECT DISTINCT product_id FROM public.product_source_records
 ), event_views AS (
-  SELECT (event_data->>'product_id')::bigint product_id, count(*) n
-  FROM public.analytics_events
-  WHERE event_name='product_viewed' AND event_data->>'product_id' ~ '^[0-9]+$'
-  GROUP BY 1
+  SELECT p.product_id, count(*) n
+  FROM public.analytics_events e JOIN public.products p
+    ON e.event_data->>'product_id'=p.product_id::text
+  WHERE e.event_name='product_viewed'
+  GROUP BY p.product_id
 ), saved_views AS (
   SELECT product_id, count(*) n FROM public.user_product_views GROUP BY product_id
 ), scans AS (
   SELECT product_id, count(*) n FROM public.scan_history
   WHERE product_id IS NOT NULL AND found GROUP BY product_id
 ), compares AS (
-  SELECT value::bigint product_id, count(*) n
+  SELECT p.product_id, count(*) n
   FROM public.analytics_events e
   CROSS JOIN LATERAL jsonb_array_elements_text(
     CASE WHEN jsonb_typeof(e.event_data->'product_ids')='array'
       THEN e.event_data->'product_ids' ELSE '[]'::jsonb END
   ) value
-  WHERE e.event_name='compare_opened' AND value ~ '^[0-9]+$'
-  GROUP BY 1
+  JOIN public.products p ON value=p.product_id::text
+  WHERE e.event_name='compare_opened'
+  GROUP BY p.product_id
 ), families AS (
   SELECT lower(btrim(brand)) brand_key, count(*) n
   FROM public.products

@@ -162,6 +162,20 @@ def test_release_manifest_binds_selection_receipt_and_record_hashes(tmp_path: Pa
     )
     assert release["profile"] == "source-expansion-cohort-v1"
     assert release["productionIdentityReviewSha256"] == review_digest
+    incomplete_review = {
+        **review,
+        "members": [{"productId": entry["productId"]} for entry in acquisition["entries"]],
+    }
+    incomplete_path = output / "incomplete-review.json"
+    incomplete_path.write_text(json.dumps(incomplete_review), encoding="utf-8")
+    with pytest.raises(ValueError, match="verdict"):
+        bind_production_review(
+            acquisition_path,
+            hashlib.sha256(acquisition_path.read_bytes()).hexdigest(),
+            incomplete_path,
+            hashlib.sha256(incomplete_path.read_bytes()).hexdigest(),
+            output / "incomplete-release.json",
+        )
     with pytest.raises(ValueError, match="receipt digest"):
         build_release_manifest(selection_path, selection_digest, receipt, "0" * 64, tmp_path / "bad.json")
     first_record = output / acquisition["entries"][0]["recordFile"]
