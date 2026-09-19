@@ -8,6 +8,8 @@ import {SqlSession,RecoveryError,command,readPassword,scopeTables} from './catal
 import {operatorPlan,rollbackPlan,applyInSession,rollbackInSession,inspectOutcome,
   snapshotSql as pilotSnapshot,createEnvelopeStore,TARGET} from './cohort-pilot-operator.mjs';
 import {remainingManifest,reviewSelection,retainedEntries,digest,applyReviewedBatch,rollbackOne,snapshotSql as batchSnapshot,inspectBatchOutcome} from './cohort-batch.mjs';
+import {refreshManifest,refreshSelection,applyReviewedRefreshBatch,rollbackRefreshOne,
+  snapshotSql as refreshSnapshot,inspectRefreshOutcome} from './evidence-basis-refresh.mjs';
 import {proposedPublicAllowlist,publicSnapshotSql,SOURCE_TABLES} from './cohort-public-recovery.mjs';
 import {loadCombinedPublicRecovery,captureCombinedPublicRecovery,assertCombinedFreshness} from './combined-public-recovery.mjs';
 import {SCHEMA_QUERIES,canonicalStructure,rolesQuery,membershipsQuery} from './schema-catalog-recovery.mjs';
@@ -67,8 +69,11 @@ function loadInputs(options,authority) {
   if(['inspect','rollback'].includes(options.action)) {
     const pilot=rollbackPlan(options);
     if(pilot.envelope.entry) {
-      const manifest=remainingManifest(),ids=pilot.envelope.entry.batchScope?.map(e=>e.productId)??[pilot.envelope.entry.productId];
-      const expected=reviewSelection(manifest,ids,options.reviewedCohortSha256).find(e=>e.productId===pilot.envelope.entry.productId);
+      const refresh=pilot.envelope.entry.operation==='existing-source-basis-refresh-v2';
+      const manifest=refresh?refreshManifest():remainingManifest();
+      const ids=pilot.envelope.entry.batchScope?.map(e=>e.productId)??[pilot.envelope.entry.productId];
+      const expected=(refresh?refreshSelection(manifest,ids,options.reviewedRefreshSha256):
+        reviewSelection(manifest,ids,options.reviewedCohortSha256)).find(e=>e.productId===pilot.envelope.entry.productId);
       if(!same(expected,pilot.envelope.entry))fail('production_envelope_entry_not_reviewed');
     }
     if(options.action==='rollback'&&options.recoveryDirectory) {
@@ -97,6 +102,11 @@ function loadInputs(options,authority) {
     return {manifest,entries,populatedProof:combinedProof,populatedProducerReady:true,migrationManifestSha256,
       pilotPayloadHash:retainedEntries().find(e=>e.productId===178).payloadHash};
   }
+  if(options.action==='basis-refresh') {
+    const manifest=refreshManifest();
+    const entries=refreshSelection(manifest,options.productIds,options.reviewedRefreshSha256);
+    return {refreshManifest:manifest,entries,populatedProof:combinedProof,populatedProducerReady:true,migrationManifestSha256};
+  }
   const pilot=operatorPlan({sourceHead:options.sourceHead,target:TARGET});
   if(combinedProof) {
     if(SOURCE_TABLES.some(t=>combinedProof.sourceMetadata.fingerprints[t].count!==0))fail('production_first_pilot_requires_empty21');
@@ -109,9 +119,9 @@ function loadInputs(options,authority) {
 
 export function buildProductionPlan(options={},dependencies={}) {
   const action=options.action??'pilot';
-  if(!['pilot','batch','inspect','rollback','capture','inspect-sources'].includes(action))fail('production_action_invalid');
-  if((options.productIds&&action!=='batch')||(options.envelopeDirectory&&!['inspect','rollback'].includes(action))||
-    (options.allowlistFile&&action!=='capture')||(options.recoveryDirectory&&!['pilot','batch','rollback'].includes(action)))
+  if(!['pilot','batch','basis-refresh','inspect','rollback','capture','inspect-sources'].includes(action))fail('production_action_invalid');
+  if((options.productIds&&!['batch','basis-refresh'].includes(action))||(options.envelopeDirectory&&!['inspect','rollback'].includes(action))||
+    (options.allowlistFile&&action!=='capture')||(options.recoveryDirectory&&!['pilot','batch','basis-refresh','rollback'].includes(action)))
     fail('production_option_action_mismatch');
   if(options.target&&options.target!==TARGET)fail('production_project_mismatch');
   const authority=(dependencies.authority??localAuthority)();
@@ -123,14 +133,16 @@ export function buildProductionPlan(options={},dependencies={}) {
   if(action==='rollback'&&!input.pilot?.proof?.combined)blocker??='schema_bound_combined_recovery_required_for_rollback';
   if(action==='batch'&&!input.populatedProducerReady)blocker??='combined_populated21_production_producer_not_integrated';
   else if(action==='batch'&&!input.populatedProof)blocker??='fresh_combined_populated21_recovery_required';
+  if(action==='basis-refresh'&&!input.populatedProducerReady)blocker??='combined_populated21_production_producer_not_integrated';
+  else if(action==='basis-refresh'&&!input.populatedProof)blocker??='fresh_combined_populated21_recovery_required';
   if(action==='batch'&&input.populatedProof?.sourceMetadata&&input.populatedProof.sourceMetadata.fingerprints.product_source_observations.count===0)
     blocker??='production_remaining_batch_requires_completed_pilot';
   if(input.captureReviewMissing)blocker??='production_exact_public_allowlist_review_required';
   if(!caSha256)blocker??='reviewed_tls_ca_required';
   const binding={schemaVersion:1,action,target:TARGET,repository:'ericsocrat/tryvit',sourceHead:authority.sourceHead,
     mainHead:authority.mainHead,codeSha256:digest(authority.code),caSha256,
-    productIds:action==='batch'?input.entries.map(e=>e.productId):['capture','inspect-sources'].includes(action)?[]:[input.pilot?.envelope?.entry?.productId??178],
-    inputPlanSha256:input.pilot?.planSha256??input.manifest?.sha256??input.captureManifest?.sha256??null,
+    productIds:['batch','basis-refresh'].includes(action)?input.entries.map(e=>e.productId):['capture','inspect-sources'].includes(action)?[]:[input.pilot?.envelope?.entry?.productId??178],
+    inputPlanSha256:input.pilot?.planSha256??input.manifest?.sha256??input.refreshManifest?.sha256??input.captureManifest?.sha256??null,
     pilotPayloadHash:input.pilotPayloadHash??null,
     recoverySha256:input.pilot?.proof?.receiptSha256??input.populatedProof?.receiptSha256??null,
     migrationManifestSha256:input.migrationManifestSha256??input.pilot?.migrationManifestSha256??input.populatedProof?.migrationManifestSha256??null};
@@ -237,6 +249,33 @@ async function runProductionBatch(options,plan,dependencies) {
   return receipt;
 }
 
+async function runProductionBasisRefresh(options,plan,dependencies) {
+  const proof=plan.input.populatedProof,stores=[];
+  const connect=async()=>{
+    const session=await (dependencies.connect??connectProduction)(options,false);
+    try{await initializeSession(session);return session;}catch(error){await session.close().catch(()=>{});throw error;}
+  };
+  const executionPlan={planSha256:plan.summary.planSha256,sourceHead:plan.summary.sourceHead,executionEnvironment:'production'};
+  let result;
+  try {result=await (dependencies.applyRefresh??applyReviewedRefreshBatch)({manifest:plan.input.refreshManifest,
+    productIds:plan.summary.productIds,confirmedSha256:plan.input.refreshManifest.sha256,connect,
+    verifyRecovery:async(session,{index})=>{if(index===0)await assertCombinedFreshness(session,proof);else await structureFreshness(session,proof);},
+    storeFor:entry=>{const store=(dependencies.store??createEnvelopeStore)({...executionPlan,artifactKind:'basis-refresh-'+entry.productId});
+      stores.push({productId:entry.productId,directory:store.directory});return store;}});}
+  catch(error) {const classified=error instanceof RecoveryError?error:new RecoveryError('production_refresh_failed_inspect_envelopes_no_retry');
+    classified.envelopeDirectories=stores.map(s=>path.relative(ROOT,s.directory));throw classified;}
+  const uncertain=result.results?.some(r=>/uncertain/.test(r.code??''));
+  const receipt={...result,sourceHead:plan.summary.sourceHead,mainHead:plan.summary.mainHead,planSha256:plan.summary.planSha256,
+    codeSha256:plan.summary.codeSha256,target:TARGET,remoteExecutionImplemented:true,remoteReads:true,
+    remoteWrites:uncertain?null:result.results?.some(r=>r.result==='APPLIED')??false,
+    writeDisposition:uncertain?'UNKNOWN_RECONCILE_NO_RETRY':'REPORTED_PER_MEMBER',
+    envelopes:stores.map(s=>({productId:s.productId,directory:path.relative(ROOT,s.directory)}))};
+  if(stores.length)try{(dependencies.receipt??receiptFile)(stores[0].directory,receipt);}catch{
+    const error=new RecoveryError('production_refresh_receipt_failed_inspect_envelopes_no_retry');
+    error.envelopeDirectories=stores.map(s=>path.relative(ROOT,s.directory));throw error;}
+  return receipt;
+}
+
 export async function productionOperate(options={},dependencies={}) {
   const plan=buildProductionPlan(options,dependencies);
   if(!options.execute)return plan.summary;
@@ -254,6 +293,7 @@ export async function productionOperate(options={},dependencies={}) {
     return {...captured,planSha256:plan.summary.planSha256,mainHead:liveMain,remoteReads:true,remoteWrites:false,localWrites:true};
   }
   if(action==='batch')return runProductionBatch(options,plan,dependencies);
+  if(action==='basis-refresh')return runProductionBasisRefresh(options,plan,dependencies);
   const session=await (dependencies.connect??connectProduction)(options,readOnly);
   let store;
   try {
@@ -268,13 +308,15 @@ export async function productionOperate(options={},dependencies={}) {
     }
     if(readOnly) {
       await session.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
-      const entry=original.envelope.entry,currentTarget=JSON.parse(await session.query(entry?batchSnapshot(entry):pilotSnapshot));
-      const result=entry?inspectBatchOutcome(original.envelope,currentTarget):
+      const entry=original.envelope.entry,refresh=entry?.operation==='existing-source-basis-refresh-v2';
+      const currentTarget=JSON.parse(await session.query(entry?(refresh?refreshSnapshot(entry):batchSnapshot(entry)):pilotSnapshot));
+      const result=entry?(refresh?inspectRefreshOutcome(original.envelope,currentTarget):inspectBatchOutcome(original.envelope,currentTarget)):
         inspectOutcome(original.envelope,currentTarget);
       return {...plan.summary,result,blocker:null,remoteReads:true,remoteWrites:false};
     }
     const executionPlan={...original,sourceHead:plan.summary.sourceHead,planSha256:plan.summary.planSha256,executionEnvironment:'production',
-      artifactKind:original.envelope?.entry?'cohort-batch-'+original.envelope.entry.productId:'pilot178',
+      artifactKind:original.envelope?.entry?(original.envelope.entry.operation==='existing-source-basis-refresh-v2'?
+        'basis-refresh-'+original.envelope.entry.productId:'cohort-batch-'+original.envelope.entry.productId):'pilot178',
       ...(original.proof?.combined?{verifyRecovery:s=>assertCombinedFreshness(s,original.proof.combined)}:{})};
     store=(dependencies.store??createEnvelopeStore)(executionPlan);
     if(action==='pilot')result=await (dependencies.applyPilot??applyInSession)(session,executionPlan,store);
@@ -283,7 +325,9 @@ export async function productionOperate(options={},dependencies={}) {
       const beforeHash=store.save('before',{...(entry?{entry}:{}),before:original.envelope.before});
       store.save('after',{...(entry?{entry}:{}),before:original.envelope.before,after:original.envelope.after,beforeEncryptedSha256:beforeHash});
       const verification={verifyRecovery:s=>structureFreshness(s,original.proof.combined)};
-      result=entry?await (dependencies.rollbackBatch??rollbackOne)(session,original.envelope,store,verification):
+      result=entry?.operation==='existing-source-basis-refresh-v2'?
+        await (dependencies.rollbackRefresh??rollbackRefreshOne)(session,original.envelope,store,verification):entry?
+        await (dependencies.rollbackBatch??rollbackOne)(session,original.envelope,store,verification):
         await (dependencies.rollbackPilot??rollbackInSession)(session,original.envelope,value=>store.save('reversal',value),verification);
     }
     const receipt={...result,sourceHead:plan.summary.sourceHead,mainHead:liveMain,planSha256:plan.summary.planSha256,
@@ -301,7 +345,8 @@ export function parseOptions(args) {
   const names={'--action':'action','--project':'target','--source-head':'sourceHead','--main-sha':'mainHead',
     '--confirm-sha256':'confirmDigest','--source-ca':'sourceCa','--source-env-file':'envFile',
     '--recovery-directory':'recoveryDirectory','--envelope-directory':'envelopeDirectory','--allowlist-file':'allowlistFile',
-    '--reviewed-allowlist-sha256':'reviewedAllowlistSha256','--ids':'productIds','--reviewed-cohort-sha256':'reviewedCohortSha256'};
+    '--reviewed-allowlist-sha256':'reviewedAllowlistSha256','--ids':'productIds','--reviewed-cohort-sha256':'reviewedCohortSha256',
+    '--reviewed-refresh-sha256':'reviewedRefreshSha256'};
   const result={},seen=new Set();
   for(let i=0;i<args.length;i++) {
     const flag=args[i];if(seen.has(flag))fail('production_duplicate_option');seen.add(flag);
@@ -310,7 +355,7 @@ export function parseOptions(args) {
     result[names[flag]]=args[++i];
   }
   if(result.productIds) {
-    if(result.action!=='batch')fail('production_option_action_mismatch');
+    if(!['batch','basis-refresh'].includes(result.action))fail('production_option_action_mismatch');
     if(!/^\d+(,\d+){0,4}$/.test(result.productIds))fail('production_batch_ids_invalid');
     result.productIds=result.productIds.split(',').map(Number);
     if(new Set(result.productIds).size!==result.productIds.length||result.productIds.some(id=>!Number.isSafeInteger(id)||id<1))fail('production_batch_ids_invalid');

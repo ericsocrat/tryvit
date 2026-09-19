@@ -131,6 +131,23 @@ Future executions still require fresh exact-main plans, reviewed live allowlists
 source-bound recovery and ordinary checks. The 2026-09-13 receipts do not authorize
 another import, a changed cohort or reuse after source/code/database drift.
 
+## Versioned existing-source basis refresh
+
+The initial `batch` path still rejects an existing different source selection
+with `cohort_existing_source_refresh_requires_new_manifest`. It is not relaxed.
+The separate `basis-refresh` action consumes the exact v2 recovery matrix and
+retained source hashes, admits no more than five reviewed product IDs, and
+requires `--reviewed-refresh-sha256` plus the same fresh populated-21 recovery,
+source/main/project, CA, and plan-confirmation controls.
+
+Each member receives its own transaction and encrypted before/after envelope.
+The old selected v1 ID/hash must match the matrix; an unexpected or unselected
+v2 record is a HOLD. A fully selected matching v2 record is a verified no-write
+rerun. The action creates a new immutable observation through
+`ingestion_apply_observation`, verifies unchanged nutrition/identity/assertion
+contents and unrelated fingerprints, then selects the v2 lineage. See
+[`EVIDENCE_BASIS_REFRESH_V2.md`](../../docs/releases/EVIDENCE_BASIS_REFRESH_V2.md).
+
 ## Implementation verification
 
 The pre-session-fix operator passed 88 recovery unit tests with no skips. The

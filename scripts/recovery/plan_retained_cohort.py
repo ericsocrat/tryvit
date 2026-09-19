@@ -11,7 +11,7 @@ from pathlib import Path
 
 from pipeline import evidence_cohort as cohort
 from pipeline.categories import CATEGORY_POLICY_VERSION, resolve_category
-from pipeline.observations import EXTRACTOR_VERSION, seal_observation
+from pipeline.observations import seal_observation
 from pipeline.sql_generator import _sql_text
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -260,7 +260,7 @@ def pilot():
     batch = {
         "source_key": "off_api",
         "country": member["country"],
-        "extractor_version": EXTRACTOR_VERSION,
+        "extractor_version": record["sanitized_payload"]["extractor_version"],
         "idempotency_key": f"{member['country']}:{digest}",
         "scope": {"category": member["category"], "kind": "partial_upsert"},
     }

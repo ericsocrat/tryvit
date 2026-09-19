@@ -121,6 +121,9 @@ Adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Version explicit Open Food Facts nutrition bases as `off-observations-v2`,
+  preserving unknown for missing/malformed/conflicting declarations and adding a
+  hash-bound, reversible existing-source refresh path without altering v1 history.
 - Withhold unproven scores from scan-found, sharing, metadata, Open Graph, and
   structured-data surfaces; replace percentage-health claims with explicit
   TryVit Score deltas; gate comparison export/public sharing on field evidence;
