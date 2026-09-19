@@ -25,6 +25,7 @@
 - [OFF extractor v2 and source-refresh runbook](releases/EVIDENCE_BASIS_REFRESH_V2.md)
 - [OFF extractor v2 incremental migration manifest](releases/evidence-basis-v2.migrations.json)
 - [OFF extractor v2 production recovery receipt](releases/evidence-basis-v2-production-recovery-20260919.json)
+- [OFF extractor v2 incremental-release recovery receipt](releases/evidence-basis-v2-release-recovery-20260919.json)
 - [Production cohort import receipt](releases/evidence-first-cohort-production-20260913.json)
 - [Original-weight usability reassessment](releases/evidence-first-usability-reassessment-20260913.md)
 - [Ordered database/frontend promotion](releases/CONSUMER_PROMOTION.md)
