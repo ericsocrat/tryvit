@@ -10,6 +10,7 @@ import {operatorPlan,rollbackPlan,applyInSession,rollbackInSession,inspectOutcom
 import {remainingManifest,reviewSelection,retainedEntries,digest,applyReviewedBatch,rollbackOne,snapshotSql as batchSnapshot,inspectBatchOutcome} from './cohort-batch.mjs';
 import {refreshManifest,refreshSelection,applyReviewedRefreshBatch,rollbackRefreshOne,
   snapshotSql as refreshSnapshot,inspectRefreshOutcome} from './evidence-basis-refresh.mjs';
+import {loadExpansionManifest,reviewExpansionSelection,applyExpansionBatch} from './source-expansion-batch.mjs';
 import {proposedPublicAllowlist,publicSnapshotSql,SOURCE_TABLES} from './cohort-public-recovery.mjs';
 import {loadCombinedPublicRecovery,captureCombinedPublicRecovery,assertCombinedFreshness} from './combined-public-recovery.mjs';
 import {SCHEMA_QUERIES,canonicalStructure,rolesQuery,membershipsQuery} from './schema-catalog-recovery.mjs';
@@ -69,10 +70,13 @@ function loadInputs(options,authority) {
   if(['inspect','rollback'].includes(options.action)) {
     const pilot=rollbackPlan(options);
     if(pilot.envelope.entry) {
+      const expansion=pilot.envelope.entry.batchProfile==='source-expansion-v1';
       const refresh=pilot.envelope.entry.operation==='existing-source-basis-refresh-v2';
-      const manifest=refresh?refreshManifest():remainingManifest();
+      const manifest=expansion?loadExpansionManifest(options.expansionManifestFile,options.reviewedExpansionSha256):
+        refresh?refreshManifest():remainingManifest();
       const ids=pilot.envelope.entry.batchScope?.map(e=>e.productId)??[pilot.envelope.entry.productId];
-      const expected=(refresh?refreshSelection(manifest,ids,options.reviewedRefreshSha256):
+      const expected=(expansion?reviewExpansionSelection(manifest,ids,options.reviewedExpansionSha256):
+        refresh?refreshSelection(manifest,ids,options.reviewedRefreshSha256):
         reviewSelection(manifest,ids,options.reviewedCohortSha256)).find(e=>e.productId===pilot.envelope.entry.productId);
       if(!same(expected,pilot.envelope.entry))fail('production_envelope_entry_not_reviewed');
     }
@@ -83,7 +87,11 @@ function loadInputs(options,authority) {
     }
     return {pilot,migrationManifestSha256};
   }
-  if(options.action==='inspect-sources')return {migrationManifestSha256};
+  if(options.action==='inspect-sources') {
+    const expansionManifest=options.expansionManifestFile?
+      loadExpansionManifest(options.expansionManifestFile,options.reviewedExpansionSha256):null;
+    return {migrationManifestSha256,publicInput:expansionManifest?{expansionManifest}:undefined};
+  }
   if(options.action==='capture') {
     const manifest=options.allowlistFile?JSON.parse(fs.readFileSync(options.allowlistFile)):
       proposedPublicAllowlist(Object.fromEntries(SOURCE_TABLES.map(t=>[t,[]])));
@@ -102,6 +110,11 @@ function loadInputs(options,authority) {
     return {manifest,entries,populatedProof:combinedProof,populatedProducerReady:true,migrationManifestSha256,
       pilotPayloadHash:retainedEntries().find(e=>e.productId===178).payloadHash};
   }
+  if(options.action==='expansion-batch') {
+    const manifest=loadExpansionManifest(options.expansionManifestFile,options.reviewedExpansionSha256);
+    const entries=reviewExpansionSelection(manifest,options.productIds,options.reviewedExpansionSha256);
+    return {expansionManifest:manifest,entries,populatedProof:combinedProof,populatedProducerReady:true,migrationManifestSha256};
+  }
   if(options.action==='basis-refresh') {
     const manifest=refreshManifest();
     const entries=refreshSelection(manifest,options.productIds,options.reviewedRefreshSha256);
@@ -119,10 +132,13 @@ function loadInputs(options,authority) {
 
 export function buildProductionPlan(options={},dependencies={}) {
   const action=options.action??'pilot';
-  if(!['pilot','batch','basis-refresh','inspect','rollback','capture','inspect-sources'].includes(action))fail('production_action_invalid');
-  if((options.productIds&&!['batch','basis-refresh'].includes(action))||(options.envelopeDirectory&&!['inspect','rollback'].includes(action))||
-    (options.allowlistFile&&action!=='capture')||(options.recoveryDirectory&&!['pilot','batch','basis-refresh','rollback'].includes(action)))
+  if(!['pilot','batch','basis-refresh','expansion-batch','inspect','rollback','capture','inspect-sources'].includes(action))fail('production_action_invalid');
+  if((options.productIds&&!['batch','basis-refresh','expansion-batch'].includes(action))||(options.envelopeDirectory&&!['inspect','rollback'].includes(action))||
+    (options.allowlistFile&&action!=='capture')||
+    (options.recoveryDirectory&&!['pilot','batch','basis-refresh','expansion-batch','rollback'].includes(action)))
     fail('production_option_action_mismatch');
+  if((options.expansionManifestFile||options.reviewedExpansionSha256)&&
+    !['expansion-batch','inspect','rollback','inspect-sources'].includes(action))fail('production_option_action_mismatch');
   if(options.target&&options.target!==TARGET)fail('production_project_mismatch');
   const authority=(dependencies.authority??localAuthority)();
   const input=(dependencies.inputs??loadInputs)({...options,action},authority);
@@ -135,14 +151,16 @@ export function buildProductionPlan(options={},dependencies={}) {
   else if(action==='batch'&&!input.populatedProof)blocker??='fresh_combined_populated21_recovery_required';
   if(action==='basis-refresh'&&!input.populatedProducerReady)blocker??='combined_populated21_production_producer_not_integrated';
   else if(action==='basis-refresh'&&!input.populatedProof)blocker??='fresh_combined_populated21_recovery_required';
+  if(action==='expansion-batch'&&!input.populatedProducerReady)blocker??='combined_populated21_production_producer_not_integrated';
+  else if(action==='expansion-batch'&&!input.populatedProof)blocker??='fresh_combined_populated21_recovery_required';
   if(action==='batch'&&input.populatedProof?.sourceMetadata&&input.populatedProof.sourceMetadata.fingerprints.product_source_observations.count===0)
     blocker??='production_remaining_batch_requires_completed_pilot';
   if(input.captureReviewMissing)blocker??='production_exact_public_allowlist_review_required';
   if(!caSha256)blocker??='reviewed_tls_ca_required';
   const binding={schemaVersion:1,action,target:TARGET,repository:'ericsocrat/tryvit',sourceHead:authority.sourceHead,
     mainHead:authority.mainHead,codeSha256:digest(authority.code),caSha256,
-    productIds:['batch','basis-refresh'].includes(action)?input.entries.map(e=>e.productId):['capture','inspect-sources'].includes(action)?[]:[input.pilot?.envelope?.entry?.productId??178],
-    inputPlanSha256:input.pilot?.planSha256??input.manifest?.sha256??input.refreshManifest?.sha256??input.captureManifest?.sha256??null,
+    productIds:['batch','basis-refresh','expansion-batch'].includes(action)?input.entries.map(e=>e.productId):['capture','inspect-sources'].includes(action)?[]:[input.pilot?.envelope?.entry?.productId??178],
+    inputPlanSha256:input.pilot?.planSha256??input.manifest?.sha256??input.refreshManifest?.sha256??input.expansionManifest?.fileSha256??input.captureManifest?.sha256??null,
     pilotPayloadHash:input.pilotPayloadHash??null,
     recoverySha256:input.pilot?.proof?.receiptSha256??input.populatedProof?.receiptSha256??null,
     migrationManifestSha256:input.migrationManifestSha256??input.pilot?.migrationManifestSha256??input.populatedProof?.migrationManifestSha256??null};
@@ -249,6 +267,39 @@ async function runProductionBatch(options,plan,dependencies) {
   return receipt;
 }
 
+async function runProductionExpansionBatch(options,plan,dependencies) {
+  const proof=plan.input.populatedProof,stores=[];
+  const connect=async()=>{
+    const session=await (dependencies.connect??connectProduction)(options,false);
+    try{await initializeSession(session);return session;}catch(error){await session.close().catch(()=>{});throw error;}
+  };
+  const executionPlan={planSha256:plan.summary.planSha256,sourceHead:plan.summary.sourceHead,executionEnvironment:'production'};
+  let result;
+  try {result=await (dependencies.applyExpansion??applyExpansionBatch)({manifest:plan.input.expansionManifest,
+    productIds:plan.summary.productIds,confirmedSha256:plan.input.expansionManifest.fileSha256,connect,
+    verifyRecovery:async(session,{index})=>{
+      if(index===0)await assertCombinedFreshness(session,proof);else await structureFreshness(session,proof);
+    },storeFor:entry=>{
+      const store=(dependencies.store??createEnvelopeStore)({...executionPlan,artifactKind:'source-expansion-'+entry.productId});
+      stores.push({productId:entry.productId,directory:store.directory});return store;
+    }});}
+  catch(error) {
+    const classified=error instanceof RecoveryError?error:new RecoveryError('production_expansion_failed_inspect_envelopes_no_retry');
+    classified.envelopeDirectories=stores.map(store=>path.relative(ROOT,store.directory));throw classified;
+  }
+  const uncertain=result.results?.some(item=>/uncertain/u.test(item.code??''));
+  const receipt={...result,sourceHead:plan.summary.sourceHead,mainHead:plan.summary.mainHead,planSha256:plan.summary.planSha256,
+    codeSha256:plan.summary.codeSha256,target:TARGET,remoteExecutionImplemented:true,remoteReads:true,
+    remoteWrites:uncertain?null:result.results?.some(item=>item.result==='APPLIED')??false,
+    writeDisposition:uncertain?'UNKNOWN_RECONCILE_NO_RETRY':'REPORTED_PER_MEMBER',
+    expansionManifestSha256:plan.input.expansionManifest.fileSha256,
+    envelopes:stores.map(store=>({productId:store.productId,directory:path.relative(ROOT,store.directory)}))};
+  if(stores.length)try{(dependencies.receipt??receiptFile)(stores[0].directory,receipt);}catch{
+    const error=new RecoveryError('production_expansion_receipt_failed_inspect_envelopes_no_retry');
+    error.envelopeDirectories=stores.map(store=>path.relative(ROOT,store.directory));throw error;}
+  return receipt;
+}
+
 async function runProductionBasisRefresh(options,plan,dependencies) {
   const proof=plan.input.populatedProof,stores=[];
   const connect=async()=>{
@@ -293,6 +344,7 @@ export async function productionOperate(options={},dependencies={}) {
     return {...captured,planSha256:plan.summary.planSha256,mainHead:liveMain,remoteReads:true,remoteWrites:false,localWrites:true};
   }
   if(action==='batch')return runProductionBatch(options,plan,dependencies);
+  if(action==='expansion-batch')return runProductionExpansionBatch(options,plan,dependencies);
   if(action==='basis-refresh')return runProductionBasisRefresh(options,plan,dependencies);
   const session=await (dependencies.connect??connectProduction)(options,readOnly);
   let store;
@@ -303,7 +355,7 @@ export async function productionOperate(options={},dependencies={}) {
     let result;
     if(action==='inspect-sources') {
       await session.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
-      const manifest=proposedPublicAllowlist(JSON.parse(await session.query(publicSnapshotSql)));
+      const manifest=proposedPublicAllowlist(JSON.parse(await session.query(publicSnapshotSql)),plan.input.publicInput);
       return {...plan.summary,result:'PUBLIC_ALLOWLIST_PROPOSAL',manifest,remoteReads:true,remoteWrites:false,localWrites:false};
     }
     if(readOnly) {
@@ -316,7 +368,8 @@ export async function productionOperate(options={},dependencies={}) {
     }
     const executionPlan={...original,sourceHead:plan.summary.sourceHead,planSha256:plan.summary.planSha256,executionEnvironment:'production',
       artifactKind:original.envelope?.entry?(original.envelope.entry.operation==='existing-source-basis-refresh-v2'?
-        'basis-refresh-'+original.envelope.entry.productId:'cohort-batch-'+original.envelope.entry.productId):'pilot178',
+        'basis-refresh-'+original.envelope.entry.productId:original.envelope.entry.batchProfile==='source-expansion-v1'?
+          'source-expansion-'+original.envelope.entry.productId:'cohort-batch-'+original.envelope.entry.productId):'pilot178',
       ...(original.proof?.combined?{verifyRecovery:s=>assertCombinedFreshness(s,original.proof.combined)}:{})};
     store=(dependencies.store??createEnvelopeStore)(executionPlan);
     if(action==='pilot')result=await (dependencies.applyPilot??applyInSession)(session,executionPlan,store);
@@ -346,7 +399,8 @@ export function parseOptions(args) {
     '--confirm-sha256':'confirmDigest','--source-ca':'sourceCa','--source-env-file':'envFile',
     '--recovery-directory':'recoveryDirectory','--envelope-directory':'envelopeDirectory','--allowlist-file':'allowlistFile',
     '--reviewed-allowlist-sha256':'reviewedAllowlistSha256','--ids':'productIds','--reviewed-cohort-sha256':'reviewedCohortSha256',
-    '--reviewed-refresh-sha256':'reviewedRefreshSha256'};
+    '--reviewed-refresh-sha256':'reviewedRefreshSha256','--expansion-manifest':'expansionManifestFile',
+    '--reviewed-expansion-sha256':'reviewedExpansionSha256'};
   const result={},seen=new Set();
   for(let i=0;i<args.length;i++) {
     const flag=args[i];if(seen.has(flag))fail('production_duplicate_option');seen.add(flag);
@@ -355,8 +409,9 @@ export function parseOptions(args) {
     result[names[flag]]=args[++i];
   }
   if(result.productIds) {
-    if(!['batch','basis-refresh'].includes(result.action))fail('production_option_action_mismatch');
-    if(!/^\d+(,\d+){0,4}$/.test(result.productIds))fail('production_batch_ids_invalid');
+    if(!['batch','basis-refresh','expansion-batch'].includes(result.action))fail('production_option_action_mismatch');
+    const pattern=result.action==='expansion-batch'?/^\d+(,\d+){0,149}$/:/^\d+(,\d+){0,4}$/;
+    if(!pattern.test(result.productIds))fail('production_batch_ids_invalid');
     result.productIds=result.productIds.split(',').map(Number);
     if(new Set(result.productIds).size!==result.productIds.length||result.productIds.some(id=>!Number.isSafeInteger(id)||id<1))fail('production_batch_ids_invalid');
   }

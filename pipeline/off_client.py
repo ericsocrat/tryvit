@@ -124,7 +124,9 @@ def _with_fetch_metadata(product: dict, fetched_at: str) -> dict:
     return stamped
 
 
-def _get_json(session: requests.Session, url: str, params: dict) -> dict | None:
+def _get_json_result(
+    session: requests.Session, url: str, params: dict
+) -> tuple[dict | None, int | None, str]:
     """GET with retry on timeout / server error.
 
     Handles HTTP errors, connection failures, timeouts, and malformed JSON
@@ -132,20 +134,21 @@ def _get_json(session: requests.Session, url: str, params: dict) -> dict | None:
     gracefully degrade.
     """
     for attempt in range(MAX_RETRIES + 1):
+        resp: requests.Response | None = None
         try:
             _wait_for_request_slot(url)
             resp = session.get(url, params=params, timeout=REQUEST_TIMEOUT)
             _respect_retry_after(url, resp.headers.get("Retry-After"))
             if 400 <= resp.status_code < 500 and resp.status_code not in (408, 429):
                 logger.warning("OFF read rejected: HTTP %s at %s", resp.status_code, url)
-                return None
+                return None, resp.status_code, "http_error"
             resp.raise_for_status()
-            return resp.json()
+            return resp.json(), resp.status_code, "ok"
         except (ValueError, KeyError) as exc:
             # json.JSONDecodeError is a subclass of ValueError — catches
             # malformed responses (e.g. HTML error pages returned as 200).
             logger.warning("Malformed JSON from %s: %s", url, exc)
-            return None
+            return None, resp.status_code if resp is not None else None, "malformed_json"
         except (requests.RequestException, TimeoutError, ConnectionError) as exc:
             if attempt < MAX_RETRIES:
                 wait = REQUEST_DELAY * (attempt + 1) * 2
@@ -153,8 +156,13 @@ def _get_json(session: requests.Session, url: str, params: dict) -> dict | None:
                 time.sleep(wait)
                 continue
             logger.warning("Request failed after %d retries: %s", MAX_RETRIES, exc)
-            return None
-    return None
+            return None, resp.status_code if resp is not None else None, "fetch_failed"
+    return None, None, "fetch_failed"
+
+
+def _get_json(session: requests.Session, url: str, params: dict) -> dict | None:
+    """Compatibility wrapper for callers that only need the decoded payload."""
+    return _get_json_result(session, url, params)[0]
 
 
 def _session() -> requests.Session:
@@ -345,19 +353,49 @@ def fetch_product_by_ean(ean: str) -> dict | None:
     dict | None
         The raw OFF product dict, or *None* on failure / not found.
     """
+    result = fetch_product_by_ean_result(ean)
+    return result["product"] if result["disposition"] == "found" else None
+
+
+def fetch_product_by_ean_result(ean: str) -> dict:
+    """Fetch one EAN while preserving not-found versus transport failure.
+
+    The returned product is stamped only after a successful provider response.
+    No retry result is promoted to not-found, and malformed success payloads are
+    failures rather than silent absence.
+    """
     with _session() as session:
         url = OFF_PRODUCT_URL.format(ean=ean)
-        data = _get_json(session, url, {})
+        data, http_status, read_disposition = _get_json_result(session, url, {})
         if data is None:
-            return None
-
-        if data.get("status") != 1:
-            return None
-
+            disposition = "not_found" if http_status == 404 else "fetch_failed"
+            return {
+                "disposition": disposition,
+                "product": None,
+                "http_status": http_status,
+                "read_disposition": read_disposition,
+            }
+        if data.get("status") == 0:
+            return {
+                "disposition": "not_found",
+                "product": None,
+                "http_status": http_status,
+                "read_disposition": "source_status_not_found",
+            }
         product = data.get("product")
-        if not isinstance(product, dict):
-            return None
-        return _with_fetch_metadata(product, _utc_now_iso())
+        if data.get("status") != 1 or not isinstance(product, dict):
+            return {
+                "disposition": "fetch_failed",
+                "product": None,
+                "http_status": http_status,
+                "read_disposition": "malformed_product_envelope",
+            }
+        return {
+            "disposition": "found",
+            "product": _with_fetch_metadata(product, _utc_now_iso()),
+            "http_status": http_status,
+            "read_disposition": "ok",
+        }
 
 
 # ---------------------------------------------------------------------------

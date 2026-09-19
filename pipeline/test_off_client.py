@@ -57,8 +57,8 @@ def test_product_lookup_captures_successful_fetch_time(monkeypatch: pytest.Monke
     monkeypatch.setattr(off_client, "_session", _ContextSession)
     monkeypatch.setattr(
         off_client,
-        "_get_json",
-        lambda *_args, **_kwargs: {"status": 1, "product": raw},
+        "_get_json_result",
+        lambda *_args, **_kwargs: ({"status": 1, "product": raw}, 200, "ok"),
     )
     monkeypatch.setattr(off_client, "_utc_now_iso", lambda: "2026-09-04T16:01:00Z")
 
@@ -68,6 +68,36 @@ def test_product_lookup_captures_successful_fetch_time(monkeypatch: pytest.Monke
     assert result["rev"] == 42
     assert result["_tryvit_fetched_at"] == "2026-09-04T16:01:00Z"
     assert "_tryvit_fetched_at" not in raw
+
+
+@pytest.mark.parametrize(
+    ("payload", "http_status", "read_disposition", "expected"),
+    [
+        ({"status": 0}, 200, "ok", "not_found"),
+        (None, 404, "http_error", "not_found"),
+        (None, 503, "fetch_failed", "fetch_failed"),
+        ({"status": 1}, 200, "ok", "fetch_failed"),
+    ],
+)
+def test_product_lookup_preserves_fetch_disposition(
+    monkeypatch: pytest.MonkeyPatch,
+    payload: dict | None,
+    http_status: int,
+    read_disposition: str,
+    expected: str,
+) -> None:
+    monkeypatch.setattr(off_client, "_session", _ContextSession)
+    monkeypatch.setattr(
+        off_client,
+        "_get_json_result",
+        lambda *_args, **_kwargs: (payload, http_status, read_disposition),
+    )
+
+    result = off_client.fetch_product_by_ean_result("5901234123457")
+
+    assert result["disposition"] == expected
+    assert result["product"] is None
+    assert result["http_status"] == http_status
 
 
 def test_extractor_retains_revision_fetch_time_and_explicit_field_presence() -> None:

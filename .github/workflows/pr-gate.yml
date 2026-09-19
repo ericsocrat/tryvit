@@ -61,6 +61,7 @@ jobs:
           scripts/recovery/migration-integration.test.mjs
           scripts/recovery/opaque-containment.test.mjs
           scripts/recovery/schema-catalog-recovery.test.mjs
+          scripts/recovery/source-expansion-batch.test.mjs
           scripts/recovery/staging-catchup-plan.test.mjs
           scripts/recovery/staging-read-capture.test.mjs
 
