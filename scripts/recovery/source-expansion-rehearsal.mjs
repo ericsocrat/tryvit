@@ -8,7 +8,7 @@ import {SqlSession,command,RecoveryError} from './catalog-recovery.mjs';
 import {createEnvelopeStore,loadEnvelope} from './cohort-pilot-operator.mjs';
 import {applyOne,rollbackOne,verifyBatchPostimages} from './cohort-batch.mjs';
 import {loadExpansionManifest,reviewExpansionSelection} from './source-expansion-batch.mjs';
-import {loadCombinedPublicRecovery,assertCombinedFreshness} from './combined-public-recovery.mjs';
+import {loadCombinedPublicRecovery,assertCombinedCatalogFreshness} from './combined-public-recovery.mjs';
 import {hash} from '../ci/database-release.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
@@ -73,7 +73,9 @@ export async function runExpansionRehearsal({recoveryDirectory,bindingFile,manif
     cloneLifetimeSeconds:EXPANSION_CLONE_LIFETIME_SECONDS,onVerifiedRestore:async context=>{
       const name=locate(context),beforeSession=connect(name);let before,beforePairs;
       try{before=JSON.parse(await beforeSession.query(summarySql));beforePairs=JSON.parse(await beforeSession.query(comparisonSummary));
-        await assertCombinedFreshness(beforeSession,proof);}finally{await beforeSession.close();}
+        // schemaCatalogRecovery has just certified schema, grants, roles and
+        // RLS for this exact clone; recheck the complete catalog preimage here.
+        await assertCombinedCatalogFreshness(beforeSession,proof);}finally{await beforeSession.close();}
       if(before.selected!==55||before.per100g!==48||before.per100ml!==7||before.unknown!==0||beforePairs.pairs!==96||beforePairs.groups!==12)
         fail('expansion_clone_preimage_mismatch');
       const envelopes=[],applied=[],idempotent=[],peerChecks=[];

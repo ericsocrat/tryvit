@@ -23,6 +23,7 @@ test('expansion rehearsal locates the owned clone without a marker write',()=>{
   assert.match(code,/context\.containerName/);assert.doesNotMatch(code,/CREATE SCHEMA recovery_source_expansion/);
   const recovery=fs.readFileSync(new URL('./schema-catalog-recovery.mjs',import.meta.url),'utf8');
   assert.match(recovery,/containerName:name/);
+  assert.match(code,/assertCombinedCatalogFreshness/);assert.doesNotMatch(code,/assertCombinedFreshness\(/);
 });
 
 function fixture() {
