@@ -1,7 +1,6 @@
 /** Exact restored-production rehearsal for one reviewed source-expansion manifest. */
 import fs from 'node:fs';
 import path from 'node:path';
-import {randomBytes} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {schemaCatalogRecovery} from './schema-catalog-recovery.mjs';
 import {assertContained} from './opaque-containment.mjs';
@@ -17,13 +16,9 @@ const fail=code=>{throw new RecoveryError(code);};
 export const EXPANSION_CLONE_LIFETIME_SECONDS=1200;
 
 function locate(context) {
-  const marker=randomBytes(16).toString('hex');
-  context.sqlAsPostgres(`CREATE SCHEMA recovery_source_expansion; COMMENT ON SCHEMA recovery_source_expansion IS '${marker}';`,'expansion_marker');
-  const names=command('docker',['ps','--filter','label=tryvit.recovery.scope=containment-probe','--format','{{.Names}}']).trim().split(/\r?\n/u).filter(Boolean);
-  const matches=names.filter(name=>{assertContained(JSON.parse(command('docker',['inspect',name]))[0]);
-    return command('docker',['exec',name,'psql','-h','/tmp','-U','postgres','-d','postgres','-X','-qAt','-c',
-      "SELECT COALESCE(obj_description(oid,'pg_namespace'),'') FROM pg_namespace WHERE nspname='recovery_source_expansion'"]).trim()===marker;});
-  if(matches.length!==1)fail('expansion_clone_marker_not_unique');return matches[0];
+  const name=context.containerName;
+  if(typeof name!=='string'||!/^tryvit_recovery_probe_[a-f0-9]{12}$/.test(name))fail('expansion_clone_name_invalid');
+  assertContained(JSON.parse(command('docker',['inspect',name]))[0]);return name;
 }
 function connect(name) {assertContained(JSON.parse(command('docker',['inspect',name]))[0]);
   return new SqlSession('docker',['exec','-i',name,'psql','-h','/tmp','-U','postgres','-d','postgres','-X','-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate'],

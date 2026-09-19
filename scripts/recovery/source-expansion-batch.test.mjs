@@ -18,6 +18,13 @@ test('expansion rehearsal uses an approved bounded clone lifetime',()=>{
     {database:true,lifetimeSeconds:EXPANSION_CLONE_LIFETIME_SECONDS}));
 });
 
+test('expansion rehearsal locates the owned clone without a marker write',()=>{
+  const code=fs.readFileSync(new URL('./source-expansion-rehearsal.mjs',import.meta.url),'utf8');
+  assert.match(code,/context\.containerName/);assert.doesNotMatch(code,/CREATE SCHEMA recovery_source_expansion/);
+  const recovery=fs.readFileSync(new URL('./schema-catalog-recovery.mjs',import.meta.url),'utf8');
+  assert.match(recovery,/containerName:name/);
+});
+
 function fixture() {
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'tryvit-expansion-'));
   const directory=path.join(root,'audit-reports','source-expansion','run-v1');fs.mkdirSync(directory,{recursive:true});

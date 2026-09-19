@@ -345,6 +345,7 @@ export async function schemaCatalogRecovery({envFile,sourceCa,catalogDirectory,m
     if(onVerifiedRestore) {
       if(receipt.result!=='PASS')throw new RecoveryError('integration_requires_verified_restore');
       integration=await onVerifiedRestore({
+        containerName:name,
         originalPostgresAttributes:roles.find(r=>r.name==='postgres'),
         sqlAsPostgres:(sql,stage='integration')=>localSql(name,sql,'postgres',stage),
         lintManagedSchemas:()=>JSON.parse(localSql(name,String.raw`BEGIN;
