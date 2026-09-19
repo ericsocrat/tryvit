@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import hmac
 import json
 import math
 import os
@@ -293,6 +294,58 @@ def load_manifest(path: Path) -> dict:
     return manifest
 
 
+def results_digest(document: dict) -> str:
+    return digest({key: value for key, value in document.items() if key != "results_sha256"})
+
+
+def seal_results_checkpoint(document: dict) -> None:
+    document["results_sha256"] = results_digest(document)
+
+
+def validate_results_checkpoint(document: Any, manifest: dict | None = None) -> dict:
+    if not isinstance(document, dict):
+        raise AdvisoryError("Invalid results checkpoint")
+    recorded_digest = document.get("results_sha256")
+    if not isinstance(recorded_digest, str) or len(recorded_digest) != 64:
+        raise AdvisoryError("Results checkpoint is missing its integrity digest")
+    if not hmac.compare_digest(recorded_digest, results_digest(document)):
+        raise AdvisoryError("Results checkpoint integrity digest mismatch")
+    cases = document.get("cases")
+    if (
+        document.get("schema_version") != 1
+        or document.get("contract") != "JEVSourceReviewAdvisoryV1"
+        or document.get("advisory_only") is not True
+        or document.get("prompt_sha256") != PROMPT_SHA256
+        or document.get("requested_model_id") != MODEL
+        or not isinstance(cases, list)
+    ):
+        raise AdvisoryError("Results checkpoint contract, prompt, or model drifted")
+    case_hashes = [case.get("local_case_hash") for case in cases if isinstance(case, dict)]
+    if len(case_hashes) != len(cases) or len(set(case_hashes)) != len(case_hashes):
+        raise AdvisoryError("Results checkpoint case identities are invalid")
+    if manifest is not None:
+        if document.get("manifest_sha256") != manifest["manifest_sha256"]:
+            raise AdvisoryError("Results do not match manifest")
+        manifest_cases = {case["local_case_hash"]: case for case in manifest["cases"]}
+        for result in cases:
+            case = manifest_cases.get(result["local_case_hash"])
+            if case is None or any(
+                result.get(field) != case[field]
+                for field in (
+                    "input_sha256",
+                    "reference_public_sha256",
+                    "source_public_sha256",
+                )
+            ):
+                raise AdvisoryError("Results checkpoint case does not match manifest")
+    return document
+
+
+def write_results_checkpoint(path: Path, document: dict) -> None:
+    seal_results_checkpoint(document)
+    write_atomic(path, document)
+
+
 def validate_response(document: Any) -> dict:
     if not isinstance(document, dict) or document.get("model") != MODEL:
         raise AdvisoryError("Unexpected or missing returned model ID")
@@ -372,10 +425,9 @@ def evaluate(
     manifest = load_manifest(manifest_path)
     results_path = manifest_path.parent / "results.json"
     if results_path.exists():
-        document = read_json(results_path)
+        document = validate_results_checkpoint(read_json(results_path), manifest)
         if (
-            document.get("manifest_sha256") != manifest["manifest_sha256"]
-            or document.get("prompt_sha256") != PROMPT_SHA256
+            document.get("prompt_sha256") != PROMPT_SHA256
             or document.get("requested_model_id") != MODEL
         ):
             raise AdvisoryError("Resume requires identical manifest, prompt, and model hashes")
@@ -391,6 +443,8 @@ def evaluate(
             "cases": [],
         }
     existing = {result["local_case_hash"]: result for result in document["cases"]}
+    if len(existing) == len(manifest["cases"]) and document.get("finished_at"):
+        return results_path
     terminal_provider_error = next(
         (
             result["execution_status"]
@@ -425,10 +479,9 @@ def evaluate(
             }:
                 terminal_provider_error = result["execution_status"]
         document["cases"].append(result)
-        write_atomic(results_path, document)
+        write_results_checkpoint(results_path, document)
     document["finished_at"] = datetime.now(UTC).isoformat()
-    document["results_sha256"] = digest({key: value for key, value in document.items() if key != "results_sha256"})
-    write_atomic(results_path, document)
+    write_results_checkpoint(results_path, document)
     return results_path
 
 
@@ -511,9 +564,7 @@ def report(manifest_path: Path) -> Path:
     manifest_path = confined(manifest_path, must_exist=True)
     manifest = load_manifest(manifest_path)
     results_path = manifest_path.parent / "results.json"
-    results = read_json(results_path) if results_path.exists() else {"cases": []}
-    if results.get("cases") and results.get("manifest_sha256") != manifest["manifest_sha256"]:
-        raise AdvisoryError("Results do not match manifest")
+    results = validate_results_checkpoint(read_json(results_path), manifest) if results_path.exists() else {"cases": []}
     result_map = {row["local_case_hash"]: row for row in results["cases"]}
     rows = []
     for case in manifest["cases"]:
@@ -533,7 +584,11 @@ def report(manifest_path: Path) -> Path:
                 "wording_difference": result.get("wording_difference"),
                 "status": result["execution_status"],
                 "error": result.get("execution_error"),
-                "disagreement": bool(identity.get("answer") and identity["answer"] != deterministic),
+                "comparison_status": (
+                    "not_directly_comparable"
+                    if deterministic == "semantic_ambiguity" and identity.get("answer")
+                    else "unavailable"
+                ),
                 "high_confidence": max(identity.get("probabilities", {}).values(), default=0) >= 0.95,
                 "model": result.get("returned_model_id"),
                 "prompt_id": result["prompt_id"],
@@ -562,9 +617,7 @@ def init_shadow_labels(manifest_path: Path, output: Path) -> Path:
     results_path = manifest_path.parent / "results.json"
     if not results_path.exists():
         raise AdvisoryError("Shadow labels can be initialized only after advisory inference")
-    results = read_json(results_path)
-    if results.get("manifest_sha256") != manifest["manifest_sha256"]:
-        raise AdvisoryError("Results do not match manifest")
+    results = validate_results_checkpoint(read_json(results_path), manifest)
     template = {
         "schema_version": 1,
         "cohort_id": manifest["cohort_id"],

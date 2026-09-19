@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import inspect
 import json
+import re
 
 import pytest
 import requests
@@ -311,14 +312,110 @@ def test_invalid_json_is_local_advisory_failure(tmp_path, monkeypatch):
     assert results["cases"][0]["deterministic_review_state"]["state"] == "semantic_ambiguity"
 
 
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda document: document["cases"][0]["identity"].update(answer="inconsistent"),
+        lambda document: document["cases"][0]["identity"]["probabilities"].update(consistent=0.4),
+        lambda document: document["cases"][0].update(execution_status="failed_provider"),
+        lambda document: document["cases"][0].update(local_case_hash="0" * 64),
+        lambda document: document.update(finished_at="2099-01-01T00:00:00+00:00"),
+    ],
+)
+def test_results_checkpoint_rejects_post_write_mutation(tmp_path, monkeypatch, mutation):
+    manifest = prepare_run(tmp_path, monkeypatch)
+    monkeypatch.setenv("TYPESAFE_API_KEY", "test-key")
+    results_path = advisory.evaluate(manifest, jev_live=True, session=FakeSession(FakeResponse()))
+    document = json.loads(results_path.read_text(encoding="utf-8"))
+    mutation(document)
+    results_path.write_text(json.dumps(document), encoding="utf-8")
+
+    with pytest.raises(advisory.AdvisoryError, match="integrity digest mismatch"):
+        advisory.validate_results_checkpoint(advisory.read_json(results_path), advisory.load_manifest(manifest))
+
+
+def test_resume_validates_checkpoint_integrity(tmp_path, monkeypatch):
+    manifest = prepare_run(tmp_path, monkeypatch)
+    results_path = advisory.evaluate(manifest)
+    document = advisory.read_json(results_path)
+    document["cases"][0]["execution_status"] = "completed"
+    results_path.write_text(json.dumps(document), encoding="utf-8")
+
+    with pytest.raises(advisory.AdvisoryError, match="integrity digest mismatch"):
+        advisory.evaluate(manifest)
+
+
+def test_report_validates_checkpoint_integrity(tmp_path, monkeypatch):
+    manifest = prepare_run(tmp_path, monkeypatch)
+    results_path = advisory.evaluate(manifest)
+    document = advisory.read_json(results_path)
+    document["cases"][0]["input_tokens"] = 123456
+    results_path.write_text(json.dumps(document), encoding="utf-8")
+
+    with pytest.raises(advisory.AdvisoryError, match="integrity digest mismatch"):
+        advisory.report(manifest)
+
+
+def test_shadow_labels_validate_checkpoint_integrity(tmp_path, monkeypatch):
+    manifest = prepare_run(tmp_path, monkeypatch)
+    results_path = advisory.evaluate(manifest)
+    document = advisory.read_json(results_path)
+    document["cases"][0]["attempt_count"] = 99
+    results_path.write_text(json.dumps(document), encoding="utf-8")
+
+    with pytest.raises(advisory.AdvisoryError, match="integrity digest mismatch"):
+        advisory.init_shadow_labels(manifest, advisory.REPORT_ROOT / "labels.json")
+
+
+def test_valid_interrupted_checkpoint_resumes(tmp_path, monkeypatch):
+    second = raw_case(source_name="Zweites Produkt")
+    second["case_ref"] = "local-review-2"
+    second["source_public_sha256"] = advisory.digest(second["source"])
+    manifest = prepare_run(tmp_path, monkeypatch, raw_case(), second)
+    monkeypatch.setenv("TYPESAFE_API_KEY", "test-key")
+
+    class InterruptingSession(FakeSession):
+        def post(self, url, **kwargs):
+            if self.calls:
+                raise KeyboardInterrupt
+            self.calls.append((url, kwargs))
+            return FakeResponse()
+
+    with pytest.raises(KeyboardInterrupt):
+        advisory.evaluate(manifest, jev_live=True, session=InterruptingSession())
+
+    results_path = manifest.parent / "results.json"
+    checkpoint = advisory.validate_results_checkpoint(
+        advisory.read_json(results_path), advisory.load_manifest(manifest)
+    )
+    assert len(checkpoint["cases"]) == 1
+    resumed = advisory.read_json(
+        advisory.evaluate(
+            manifest,
+            jev_live=True,
+            session=FakeSession(FakeResponse(body=valid_response("consistent"))),
+        )
+    )
+    advisory.validate_results_checkpoint(resumed, advisory.load_manifest(manifest))
+    assert len(resumed["cases"]) == 2
+
+
+def test_completed_checkpoint_resume_is_immutable(tmp_path, monkeypatch):
+    manifest = prepare_run(tmp_path, monkeypatch)
+    results_path = advisory.evaluate(manifest)
+    original = results_path.read_bytes()
+    assert advisory.evaluate(manifest).read_bytes() == original
+
+
 def test_resume_requires_identical_manifest_prompt_and_model(tmp_path, monkeypatch):
     manifest = prepare_run(tmp_path, monkeypatch)
     advisory.evaluate(manifest)
     results_path = manifest.parent / "results.json"
     results = advisory.read_json(results_path)
     results["prompt_sha256"] = "0" * 64
+    advisory.seal_results_checkpoint(results)
     results_path.write_text(json.dumps(results), encoding="utf-8")
-    with pytest.raises(advisory.AdvisoryError, match="identical manifest"):
+    with pytest.raises(advisory.AdvisoryError, match="contract, prompt, or model drifted"):
         advisory.evaluate(manifest)
 
 
@@ -332,6 +429,21 @@ def test_report_escapes_malicious_product_text(tmp_path, monkeypatch):
     assert "ADVISORY — NOT AN APPROVAL DECISION" in rendered
     assert "approve" not in rendered.lower()
     assert "!value || !value.probabilities" in rendered
+
+
+@pytest.mark.parametrize("identity", ["insufficient_evidence", "consistent", "inconsistent"])
+def test_semantic_ambiguity_is_not_reported_as_disagreement(tmp_path, monkeypatch, identity):
+    manifest = prepare_run(tmp_path, monkeypatch)
+    monkeypatch.setenv("TYPESAFE_API_KEY", "test-key")
+    advisory.evaluate(manifest, jev_live=True, session=FakeSession(FakeResponse(body=valid_response(identity))))
+    rendered = advisory.report(manifest).read_text(encoding="utf-8")
+    payload_text = re.search(r'<script id="payload" type="application/json">(.*?)</script>', rendered, re.DOTALL)
+    assert payload_text is not None
+    row = json.loads(payload_text.group(1))["rows"][0]
+    assert row["comparison_status"] == "not_directly_comparable"
+    assert "disagreement" not in row
+    assert "Disagreement" not in rendered
+    assert 'id="explicit_conflict"' in rendered
 
 
 def test_shadow_label_template_is_created_only_after_inference(tmp_path, monkeypatch):
