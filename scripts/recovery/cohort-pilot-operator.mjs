@@ -192,12 +192,16 @@ function durableFile(filename,bytes) {
   const fd=fs.openSync(filename,'wx',0o600);
   try {fs.writeFileSync(fd,bytes);fs.fsyncSync(fd);} finally {fs.closeSync(fd);}
 }
+export function validateArtifactKind(kind) {
+  if(!/^(pilot178|cohort-batch-[1-9][0-9]*|basis-refresh-[1-9][0-9]*|source-expansion-[1-9][0-9]*)$/.test(kind))
+    fail('operator_invalid_artifact_kind');
+  return kind;
+}
 export function createEnvelopeStore(plan) {
   fs.mkdirSync(path.join(ROOT,'backups'),{recursive:true,mode:0o700});
   const executionEnvironment=plan.executionEnvironment??'production';
   if(!['production','isolated-clone'].includes(executionEnvironment))fail('operator_unknown_execution_environment');
-  const kind=plan.artifactKind??'pilot178';
-  if(!/^(pilot178|cohort-batch-[1-9][0-9]*|basis-refresh-[1-9][0-9]*)$/.test(kind))fail('operator_invalid_artifact_kind');
+  const kind=validateArtifactKind(plan.artifactKind??'pilot178');
   const directory=path.join(ROOT,'backups',kind+(executionEnvironment==='isolated-clone'?'_rehearsal_':'_')+Date.now()+'_'+randomBytes(6).toString('hex'));
   privateDirectory(directory);
   const key=randomBytes(32);

@@ -9,6 +9,22 @@ import {loadExpansionManifest,reviewExpansionSelection,semanticManifestSha256} f
 import {retainedEntries} from './cohort-batch.mjs';
 import {syntheticRetainedSource} from './cohort-synthetic-fixture.mjs';
 import {proposedPublicAllowlist,validatePublicAllowlist} from './cohort-public-recovery.mjs';
+import {EXPANSION_CLONE_LIFETIME_SECONDS} from './source-expansion-rehearsal.mjs';
+import {containmentArgs} from './opaque-containment.mjs';
+
+test('expansion rehearsal uses an approved bounded clone lifetime',()=>{
+  assert.equal(EXPANSION_CLONE_LIFETIME_SECONDS,1200);
+  assert.doesNotThrow(()=>containmentArgs('tryvit_recovery_probe_'+('a'.repeat(12)),
+    {database:true,lifetimeSeconds:EXPANSION_CLONE_LIFETIME_SECONDS}));
+});
+
+test('expansion rehearsal locates the owned clone without a marker write',()=>{
+  const code=fs.readFileSync(new URL('./source-expansion-rehearsal.mjs',import.meta.url),'utf8');
+  assert.match(code,/context\.containerName/);assert.doesNotMatch(code,/CREATE SCHEMA recovery_source_expansion/);
+  const recovery=fs.readFileSync(new URL('./schema-catalog-recovery.mjs',import.meta.url),'utf8');
+  assert.match(recovery,/containerName:name/);
+  assert.match(code,/assertCombinedCatalogFreshness/);assert.doesNotMatch(code,/assertCombinedFreshness\(/);
+});
 
 function fixture() {
   const root=fs.mkdtempSync(path.join(os.tmpdir(),'tryvit-expansion-'));

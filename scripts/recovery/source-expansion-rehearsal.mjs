@@ -1,7 +1,6 @@
 /** Exact restored-production rehearsal for one reviewed source-expansion manifest. */
 import fs from 'node:fs';
 import path from 'node:path';
-import {randomBytes} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {schemaCatalogRecovery} from './schema-catalog-recovery.mjs';
 import {assertContained} from './opaque-containment.mjs';
@@ -9,20 +8,17 @@ import {SqlSession,command,RecoveryError} from './catalog-recovery.mjs';
 import {createEnvelopeStore,loadEnvelope} from './cohort-pilot-operator.mjs';
 import {applyOne,rollbackOne,verifyBatchPostimages} from './cohort-batch.mjs';
 import {loadExpansionManifest,reviewExpansionSelection} from './source-expansion-batch.mjs';
-import {loadCombinedPublicRecovery,assertCombinedFreshness} from './combined-public-recovery.mjs';
+import {loadCombinedPublicRecovery,assertCombinedCatalogFreshness} from './combined-public-recovery.mjs';
 import {hash} from '../ci/database-release.mjs';
 
 const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
 const fail=code=>{throw new RecoveryError(code);};
+export const EXPANSION_CLONE_LIFETIME_SECONDS=1200;
 
 function locate(context) {
-  const marker=randomBytes(16).toString('hex');
-  context.sqlAsPostgres(`CREATE SCHEMA recovery_source_expansion; COMMENT ON SCHEMA recovery_source_expansion IS '${marker}';`,'expansion_marker');
-  const names=command('docker',['ps','--filter','label=tryvit.recovery.scope=containment-probe','--format','{{.Names}}']).trim().split(/\r?\n/u).filter(Boolean);
-  const matches=names.filter(name=>{assertContained(JSON.parse(command('docker',['inspect',name]))[0]);
-    return command('docker',['exec',name,'psql','-h','/tmp','-U','postgres','-d','postgres','-X','-qAt','-c',
-      "SELECT COALESCE(obj_description(oid,'pg_namespace'),'') FROM pg_namespace WHERE nspname='recovery_source_expansion'"]).trim()===marker;});
-  if(matches.length!==1)fail('expansion_clone_marker_not_unique');return matches[0];
+  const name=context.containerName;
+  if(typeof name!=='string'||!/^tryvit_recovery_probe_[a-f0-9]{12}$/.test(name))fail('expansion_clone_name_invalid');
+  assertContained(JSON.parse(command('docker',['inspect',name]))[0]);return name;
 }
 function connect(name) {assertContained(JSON.parse(command('docker',['inspect',name]))[0]);
   return new SqlSession('docker',['exec','-i',name,'psql','-h','/tmp','-U','postgres','-d','postgres','-X','-qAt','-v','ON_ERROR_STOP=1','-v','VERBOSITY=sqlstate'],
@@ -74,10 +70,12 @@ export async function runExpansionRehearsal({recoveryDirectory,bindingFile,manif
   const sourceHashes=Object.fromEntries(sourceFiles.map(file=>[file,hash(fs.readFileSync(path.join(ROOT,'scripts/recovery',file)))]));
   const result=await schemaCatalogRecovery({catalogDirectory:recovery,schemaDirectory:recovery,combinedCapture:{binding},
     scopeProfile:'observations-public-cohort-v1',manifestSha256:binding.migrationManifestSha256,execute:true,writeReceipt:false,
-    cloneLifetimeSeconds:1800,onVerifiedRestore:async context=>{
+    cloneLifetimeSeconds:EXPANSION_CLONE_LIFETIME_SECONDS,onVerifiedRestore:async context=>{
       const name=locate(context),beforeSession=connect(name);let before,beforePairs;
       try{before=JSON.parse(await beforeSession.query(summarySql));beforePairs=JSON.parse(await beforeSession.query(comparisonSummary));
-        await assertCombinedFreshness(beforeSession,proof);}finally{await beforeSession.close();}
+        // schemaCatalogRecovery has just certified schema, grants, roles and
+        // RLS for this exact clone; recheck the complete catalog preimage here.
+        await assertCombinedCatalogFreshness(beforeSession,proof);}finally{await beforeSession.close();}
       if(before.selected!==55||before.per100g!==48||before.per100ml!==7||before.unknown!==0||beforePairs.pairs!==96||beforePairs.groups!==12)
         fail('expansion_clone_preimage_mismatch');
       const envelopes=[],applied=[],idempotent=[],peerChecks=[];

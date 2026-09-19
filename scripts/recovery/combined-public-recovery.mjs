@@ -101,11 +101,16 @@ export function loadCombinedPublicRecovery(directory,{expectedBinding,requireRes
       receiptSha256:receipt?hash(fs.readFileSync(path.join(directory,'receipt.json'))):null};
   } catch(error){archive?.fill(0);throw error;}finally{key.fill(0);}
 }
-export async function assertCombinedFreshness(session,proof) {
-  // Caller owns its mutation transaction and locks; this performs no writes.
+export async function assertCombinedCatalogFreshness(session,proof) {
+  // Caller owns its transaction; this performs no writes.
   validatePublicAllowlist(JSON.parse(await session.query(publicSnapshotSql)),proof.manifest,proof.binding.publicAllowlistSha256);
   for(const table of scopeTables(PROFILE))if(!equal(JSON.parse(await session.query(fingerprintQuery(table,PROFILE))),proof.sourceMetadata.fingerprints[table]))
     fail('combined_live_catalog_drift');
+  return true;
+}
+export async function assertCombinedFreshness(session,proof) {
+  // Production mutation callers additionally recheck schema and roles.
+  await assertCombinedCatalogFreshness(session,proof);
   for(const [kind,query] of Object.entries(SCHEMA_QUERIES))if(!equal(JSON.parse(await session.query(query)),proof.source[kind]))fail('combined_live_schema_drift');
   if(!equal(JSON.parse(await session.query(rolesQuery)),proof.roles)||!equal(JSON.parse(await session.query(membershipsQuery)),proof.memberships))
     fail('combined_live_roles_drift');

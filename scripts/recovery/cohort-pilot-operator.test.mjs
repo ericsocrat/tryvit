@@ -8,6 +8,13 @@ import {SCHEMA_QUERIES} from './schema-catalog-recovery.mjs';
 import {hash} from '../ci/database-release.mjs';
 import {ingestionInputs,applyInSession,rollbackInSession,snapshotSql,validateBefore,validateAfter,validateReversal,
   reversalSql,validateCombinedProof,inspectOutcome,canonicalDecimal,timestampMicros,revisionNumber} from './cohort-pilot-operator.mjs';
+import {validateArtifactKind} from './cohort-pilot-operator.mjs';
+
+test('durable artifact kinds admit exact expansion members only',()=>{
+  assert.equal(validateArtifactKind('source-expansion-77'),'source-expansion-77');
+  for(const value of ['source-expansion-0','source-expansion-01','source-expansion-77/after','source-expansion-all','../source-expansion-77'])
+    assert.throws(()=>validateArtifactKind(value),/operator_invalid_artifact_kind/);
+});
 
 function fixture() {
   const {pilot}=syntheticPilot(),[,record]=ingestionInputs(pilot.sql.mutation);
