@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 2,
+  "scopeProfile": "observations-public-cohort-v1",
+  "catalogTables": [
+    "allergen_ref",
+    "category_ref",
+    "concern_tier_ref",
+    "country_ref",
+    "data_sources",
+    "freshness_policies",
+    "ingredient_ref",
+    "language_ref",
+    "nutri_score_ref",
+    "nutrition_facts",
+    "product_allergen_info",
+    "product_field_provenance",
+    "product_images",
+    "product_ingredient",
+    "products",
+    "formula_source_hashes",
+    "scoring_model_versions",
+    "ingestion_batches",
+    "product_source_records",
+    "product_source_observations",
+    "product_source_assertions"
+  ],
+  "binding": {
+    "environment": "production",
+    "project": "uskvezwftkkudvksmken",
+    "sourceHead": "dce53c0dbf26b2b9f040e88bcb65b20b83c3f935",
+    "migrationManifestSha256": "85ac1f6d56fcb4a039a7d9b13e0a7509cea799a26014bd34cf29dc19aa00e533",
+    "codeSha256": "76275d5bc239eeecd4f5a09ca188c77061786e1adf35b47f1865dbd233f12ac5",
+    "publicAllowlistSha256": "93d0d8c40517e719a56d9640c498cc246805f622df9f1b2215b77aacdf937bd1"
+  },
+  "observationDisposition": "exact-reviewed-public-cohort-in-export-snapshot",
+  "publicAllowlistSha256": "93d0d8c40517e719a56d9640c498cc246805f622df9f1b2215b77aacdf937bd1",
+  "environment": "production",
+  "scope": "schema-and-catalog",
+  "method": "backup-restore",
+  "migrationManifestSha256": "85ac1f6d56fcb4a039a7d9b13e0a7509cea799a26014bd34cf29dc19aa00e533",
+  "backupSha256": "3ad1fb070caed66b4967cb69a38081278de17c3c6ee15d7bf7ff94523c0be279",
+  "restoredBackupSha256": "3ad1fb070caed66b4967cb69a38081278de17c3c6ee15d7bf7ff94523c0be279",
+  "encryptedBackupSha256": "0c95e8dbe99d534215be6ddb3a30ec6dddda5816275248778747d5a95667906f",
+  "bootstrapSupplementSha256": "226926909d2d14f701178ff9fe54ea2d4e1b79e359d23f00f2f85e5fcb1def01",
+  "catalogSha256": "90c7b78544cabd7679e1d4e240e76b3490cd3b78e58028d4a22398e0ab876f4c",
+  "restoredCatalogSha256": "90c7b78544cabd7679e1d4e240e76b3490cd3b78e58028d4a22398e0ab876f4c",
+  "restoredAt": "2026-09-19T14:19:18.668Z",
+  "result": "PASS",
+  "checks": {
+    "schema": true,
+    "functions": true,
+    "grants": true,
+    "rls": true,
+    "roleAttributes": true,
+    "roleMemberships": true,
+    "extensionBootstrap": true,
+    "rowCounts": true,
+    "identityReferences": true,
+    "representativeValues": true,
+    "syntheticRoles": true
+  },
+  "exclusions": [
+    "privateUserRows",
+    "historyRows",
+    "managedAuthServices",
+    "storageObjects"
+  ],
+  "storageDisposition": "not-affected",
+  "privateProductionRowsExported": false,
+  "containerImage": "public.ecr.aws/supabase/postgres:17.6.1.075",
+  "databaseLocale": "en_US.UTF-8",
+  "catalogTableCount": 21,
+  "catalogRowCount": 98025,
+  "limitations": [
+    "No private-user/history row recovery claim",
+    "No role-password or platform-role-setting recovery claim",
+    "No managed Auth service, cloud configuration or storage-object recovery claim"
+  ],
+  "sourceFingerprints": {
+    "schema": "43a0b0eb0f1b1d104e228701fccb7abd9584fc44057699ae81672b4a896da3cb",
+    "functions": "97f9d8b39288da19e0d986a5ff216e28d513ae488a77b76e0d63523ebf328f89",
+    "grants": "c31e4916f8d0e1f849f6e8b3e09ecf52c6828b2bad377ca1bdb44ca6186aaf98",
+    "rls": "d7005ac381a5caadf6909a0557be4f789d2b1b25663946608cc6fcbfba655d43"
+  },
+  "restoredFingerprints": {
+    "schema": "43a0b0eb0f1b1d104e228701fccb7abd9584fc44057699ae81672b4a896da3cb",
+    "functions": "97f9d8b39288da19e0d986a5ff216e28d513ae488a77b76e0d63523ebf328f89",
+    "grants": "c31e4916f8d0e1f849f6e8b3e09ecf52c6828b2bad377ca1bdb44ca6186aaf98",
+    "rls": "d7005ac381a5caadf6909a0557be4f789d2b1b25663946608cc6fcbfba655d43"
+  }
+}
