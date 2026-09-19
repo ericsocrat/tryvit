@@ -4,7 +4,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {RecoveryError} from './catalog-recovery.mjs';
-import {retainedEntries,locks,snapshotSql as cohortSnapshot,rollbackSql,targetSnapshot,equal,digest,NUTRIENTS,jsonSql} from './cohort-batch.mjs';
+import {retainedEntries,retainedRecoveryEntries,locks,snapshotSql as cohortSnapshot,rollbackSql,targetSnapshot,equal,digest,NUTRIENTS,jsonSql} from './cohort-batch.mjs';
 import {revisionNumber,timestampMicros} from './cohort-pilot-operator.mjs';
 
 export const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../..');
@@ -64,6 +64,30 @@ export function refreshManifest({readFile=file=>fs.readFileSync(path.join(ROOT,f
   const reviewed={schemaVersion:1,profile:'existing-source-basis-refresh-v2',matrixSha256:expectedMatrixSha256,
     extractorVersion:EXTRACTOR_V2,entries};
   return {...reviewed,sha256:digest(reviewed)};
+}
+
+// Public recovery validates the already-applied v2 lineage from immutable
+// source evidence. It deliberately does not require the historical mutation
+// plan or its product before-images.
+export function refreshRecoveryEntries({readFile=file=>fs.readFileSync(path.join(ROOT,file)),retainedSource,
+  expectedMatrixSha256=MATRIX_SHA256}={}) {
+  const bytes=readFile(MATRIX);
+  if(sha(bytes)!==expectedMatrixSha256)fail('refresh_matrix_hash_mismatch');
+  const matrix=JSON.parse(bytes),rows=matrix.observations,retained=retainedRecoveryEntries(retainedSource);
+  if(matrix.counts?.selected_observations!==55||rows?.length!==55||matrix.counts?.A!==55||matrix.counts?.B!==0||matrix.counts?.C!==0)
+    fail('refresh_matrix_membership_mismatch');
+  const entries=rows.map(row=>{
+    const source=retained.find(entry=>entry.productId===Number(row.product_id));
+    if(!source||source.externalId!==row.external_id||source.payloadHash!==row.payload_hash||
+      row.recoverability_class!=='A'||!uuid(row.selected_observation_id))fail('refresh_matrix_source_binding_mismatch');
+    const record=deriveV2Record(source,row,matrix,expectedMatrixSha256);
+    return {...source,oldObservationId:row.selected_observation_id,oldPayloadHash:source.payloadHash,
+      expectedBasis:row.proposed_basis,newPayloadHash:record.payload_hash,matrixSha256:expectedMatrixSha256,
+      operation:'existing-source-basis-refresh-v2',record};
+  }).sort((a,b)=>a.productId-b.productId);
+  if(new Set(entries.map(entry=>entry.productId)).size!==55||entries.filter(entry=>entry.expectedBasis==='per_100g').length!==48||
+    entries.filter(entry=>entry.expectedBasis==='per_100ml').length!==7)fail('refresh_expected_basis_counts_mismatch');
+  return entries;
 }
 
 export function refreshSelection(manifest,ids,confirmedSha256,{readFile,retainedSource,expectedMatrixSha256=MATRIX_SHA256}={}) {

@@ -1,13 +1,12 @@
 /** Populated21 policy adapter; no remote transport or pg_dump execution. */
 import {scopeTables,dumpArgs} from './catalog-recovery.mjs';
 import {retainedRecoveryEntries,equal,digest,fail,batchFor,checkAssertions} from './cohort-batch.mjs';
-import {pilotPlan} from './cohort-pilot.mjs';
-import {ingestionInputs} from './cohort-pilot-operator.mjs';
 import {timestampMicros,revisionNumber} from './cohort-pilot-operator.mjs';
-import {refreshManifest,refreshSelection,refreshBatch,EXTRACTOR_V2} from './evidence-basis-refresh.mjs';
+import {refreshRecoveryEntries,refreshBatch,EXTRACTOR_V2} from './evidence-basis-refresh.mjs';
 
 export const PROFILE='observations-public-cohort-v1';
 export const SOURCE_TABLES=Object.freeze(['ingestion_batches','product_source_records','product_source_observations','product_source_assertions']);
+const PILOT_178_IDEMPOTENCY_KEY='PL:d4d1c01b62d7384eb46e70478e7f7b4cf5651fa28409c7a080b1143a120f87a5';
 const fields={
   ingestion_batches:['id','source_key','country','extractor_version','idempotency_key','scope','status','counts','created_at'],
   product_source_records:['id','source_key','external_id','country','product_id','selected_observation_id'],
@@ -43,13 +42,8 @@ function verifyPublicRows(rows,input={}) {
   let refresh=null;
   if([...observations.values()].some(observation=>observation.extractor_version===EXTRACTOR_V2&&
     observation.sanitized_payload?.derivation)) {
-    const manifest=refreshManifest({readFile:input.refreshReadFile,retainedSource:input.retainedSource,
-      expectedMatrixSha256:input.expectedMatrixSha256});
-    refresh=new Map(manifest.entries.map(plan=>{
-      const entry=refreshSelection(manifest,[plan.productId],manifest.sha256,{readFile:input.refreshReadFile,
-        retainedSource:input.retainedSource,expectedMatrixSha256:input.expectedMatrixSha256})[0];
-      return [entry.newPayloadHash,entry];
-    }));
+    refresh=new Map(refreshRecoveryEntries({readFile:input.refreshReadFile,retainedSource:input.retainedSource,
+      expectedMatrixSha256:input.expectedMatrixSha256}).map(entry=>[entry.newPayloadHash,entry]));
   }
   const approvedFor=(observation,source)=>eligible.find(e=>e.payloadHash===observation?.payload_hash&&e.productId===source?.product_id&&e.country===source?.country)??
     (observation?.extractor_version===EXTRACTOR_V2&&refresh?.get(observation.payload_hash)?.productId===source?.product_id?
@@ -77,6 +71,11 @@ function verifyPublicRows(rows,input={}) {
     const approved=approvedFor(observation,source);
     if(!source||!batch||!approved||observation.status!=='accepted'||observation.reason!==null)fail('public_cohort_observation_not_approved');
     const record=approved.record;
+    if(observation.extractor_version===EXTRACTOR_V2&&approved.operation==='existing-source-basis-refresh-v2') {
+      const original=observations.get(approved.oldObservationId);
+      if(!original||original.source_record_id!==observation.source_record_id||original.payload_hash!==approved.oldPayloadHash||
+        original.extractor_version!=='off-observations-v1')fail('public_cohort_refresh_source_lineage_changed');
+    }
     if(!equal(observation.sanitized_payload,record.sanitized_payload)||!equal(observation.extracted_fields,record.extracted_fields)||
       observation.source_url!==record.source_url||observation.license!==record.license||observation.extractor_version!==record.sanitized_payload.extractor_version||
       !equal(observation.validation_findings,record.validation_findings)||revisionNumber(observation.source_revision)!==revisionNumber(record.source_revision)||
@@ -94,7 +93,7 @@ function verifyPublicRows(rows,input={}) {
     if(!members.length||!equal(batch.counts,{accepted:members.length}))fail('public_cohort_batch_members_not_closed');
     const member=members[0],source=sources.get(member.source_record_id);
     const approved=approvedFor(member,source);
-    const pilotKey=approved?.productId===178&&approved.operation!=='existing-source-basis-refresh-v2'?ingestionInputs(input.pilotMutation??pilotPlan().sql.mutation)[0].idempotency_key:null;
+    const pilotKey=approved?.productId===178&&approved.operation!=='existing-source-basis-refresh-v2'?PILOT_178_IDEMPOTENCY_KEY:null;
     const expectedKey=approved?.operation==='existing-source-basis-refresh-v2'?refreshBatch(approved).idempotency_key:approved?batchFor(approved).idempotency_key:null;
     if(members.length!==1||![expectedKey,pilotKey].includes(batch.idempotency_key))
       fail('public_cohort_unapproved_batch_identity');

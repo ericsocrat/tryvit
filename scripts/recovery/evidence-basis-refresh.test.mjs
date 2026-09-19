@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {createHash} from 'node:crypto';
 import {syntheticRetainedSource} from './cohort-synthetic-fixture.mjs';
-import {MATRIX,EXTRACTOR_V1,EXTRACTOR_V2,explicitBasis,refreshManifest,refreshSelection,refreshBatch,checkRefreshBefore} from './evidence-basis-refresh.mjs';
+import {MATRIX,EXTRACTOR_V1,EXTRACTOR_V2,explicitBasis,refreshManifest,refreshSelection,refreshRecoveryEntries,refreshBatch,checkRefreshBefore} from './evidence-basis-refresh.mjs';
 import {batchFor} from './cohort-batch.mjs';
 import {proposedPublicAllowlist,validatePublicAllowlist} from './cohort-public-recovery.mjs';
 
@@ -63,6 +63,16 @@ test('refresh manifest binds all 55 old hashes and deterministic v2 results',()=
   assert.equal(entry.record.sanitized_payload.derivation.matrix_sha256,f.matrixSha256);
   assert.equal(entry.record.sanitized_payload.extractor_version,EXTRACTOR_V2);
   assert.equal(refreshBatch(entry).extractor_version,EXTRACTOR_V2);
+});
+
+test('recovery derives all v2 records without the historical mutation plan',()=>{
+  const f=fixture(),withoutPlan={...f.source,readFile:file=>{
+    if(file.replaceAll('\\','/').endsWith('/production-import-plan-20260908/plan.json'))throw Error('historical_plan_unavailable');
+    return f.source.readFile(file);
+  }};
+  const entries=refreshRecoveryEntries({readFile:f.readFile,retainedSource:withoutPlan,expectedMatrixSha256:f.matrixSha256});
+  assert.equal(entries.length,55);assert.equal(entries.filter(entry=>entry.expectedBasis==='per_100g').length,48);
+  assert.ok(entries.every(entry=>entry.record.sanitized_payload.derivation.source_observation_id===entry.oldObservationId));
 });
 
 test('matrix, source, selection and batch drift are rejected before SQL',()=>{
