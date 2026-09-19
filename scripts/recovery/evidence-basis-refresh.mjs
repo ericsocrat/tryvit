@@ -75,14 +75,16 @@ export function refreshSelection(manifest,ids,confirmedSha256,{readFile,retained
   return ids.map(id=>{
     const plan=current.entries.find(e=>e.productId===id),source=retained.find(e=>e.productId===id),row=matrix.observations.find(e=>Number(e.product_id)===id);
     if(!plan||!source||!row)fail('refresh_product_outside_manifest');
-    return {...source,...plan,operation:'existing-source-basis-refresh-v2',record:deriveV2Record(source,row,matrix,expectedMatrixSha256)};
+    return {...source,...plan,sourceRecord:source.record,matrixSha256:current.matrixSha256,
+      operation:'existing-source-basis-refresh-v2',record:deriveV2Record(source,row,matrix,expectedMatrixSha256)};
   }).sort((a,b)=>a.country.localeCompare(b.country)||a.externalId.localeCompare(b.externalId));
 }
 
 export function refreshBatch(entry) {
+  const matrixSha256=entry.matrixSha256??MATRIX_SHA256;
   return {source_key:'off_api',country:entry.country,extractor_version:EXTRACTOR_V2,
-    idempotency_key:`basis-refresh-v2:${MATRIX_SHA256}:${entry.productId}:${entry.newPayloadHash}`,
-    scope:{kind:'existing_source_basis_refresh',product_id:entry.productId,matrix_sha256:MATRIX_SHA256}};
+    idempotency_key:`basis-refresh-v2:${matrixSha256}:${entry.productId}:${entry.newPayloadHash}`,
+    scope:{kind:'existing_source_basis_refresh',product_id:entry.productId,matrix_sha256:matrixSha256}};
 }
 export const snapshotSql=entry=>cohortSnapshot(entry,{batch:refreshBatch(entry)});
 

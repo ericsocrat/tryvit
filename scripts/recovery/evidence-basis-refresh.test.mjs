@@ -3,6 +3,8 @@ import test from 'node:test';
 import {createHash} from 'node:crypto';
 import {syntheticRetainedSource} from './cohort-synthetic-fixture.mjs';
 import {MATRIX,EXTRACTOR_V1,EXTRACTOR_V2,explicitBasis,refreshManifest,refreshSelection,refreshBatch,checkRefreshBefore} from './evidence-basis-refresh.mjs';
+import {batchFor} from './cohort-batch.mjs';
+import {proposedPublicAllowlist,validatePublicAllowlist} from './cohort-public-recovery.mjs';
 
 const sha=value=>createHash('sha256').update(value).digest('hex');
 const stable=value=>Array.isArray(value)?value.map(stable):value&&typeof value==='object'?
@@ -81,4 +83,26 @@ test('preimage requires exact selected v1 and rejects existing unselected v2',()
   assert.throws(()=>checkRefreshBefore(entry,unselected),/partial_or_unselected/);
   const drift=structuredClone(before);drift.source.selected_observation_id='22222222-2222-4222-8222-222222222222';
   assert.throws(()=>checkRefreshBefore(entry,drift),/preimage/);
+});
+
+test('populated recovery accepts only the exact selected v2 derivation beside retained v1',()=>{
+  const f=fixture(),manifest=refreshManifest({readFile:f.readFile,retainedSource:f.source,expectedMatrixSha256:f.matrixSha256});
+  const entry=refreshSelection(manifest,[148],manifest.sha256,{readFile:f.readFile,retainedSource:f.source,expectedMatrixSha256:f.matrixSha256})[0];
+  const sourceId='10000000-0000-4000-8000-000000000001',oldBatchId='20000000-0000-4000-8000-000000000001';
+  const newBatchId='20000000-0000-4000-8000-000000000002',newObservationId='30000000-0000-4000-8000-000000000002';
+  const observation=(record,id,batchId)=>({id,source_record_id:sourceId,batch_id:batchId,source_revision:record.source_revision,
+    extractor_version:record.sanitized_payload.extractor_version,payload_hash:record.payload_hash,sanitized_payload:record.sanitized_payload,
+    extracted_fields:record.extracted_fields,source_url:record.source_url,license:record.license,retrieved_at:record.retrieved_at,
+    received_at:'2026-09-19T12:01:00Z',source_updated_at:record.source_updated_at,validation_findings:record.validation_findings,status:'accepted',reason:null});
+  const oldBatch=batchFor({...entry,record:entry.sourceRecord}),nextBatch=refreshBatch(entry);
+  const rows={ingestion_batches:[{id:oldBatchId,...oldBatch,status:'applied',counts:{accepted:1},created_at:'2026-09-19T12:00:00Z'},
+    {id:newBatchId,...nextBatch,status:'applied',counts:{accepted:1},created_at:'2026-09-19T12:01:00Z'}],
+    product_source_records:[{id:sourceId,source_key:'off_api',external_id:entry.externalId,country:entry.country,product_id:entry.productId,selected_observation_id:newObservationId}],
+    product_source_observations:[observation(entry.record,entry.oldObservationId,oldBatchId),observation(entry.record,newObservationId,newBatchId)],
+    product_source_assertions:[]};
+  rows.product_source_observations[0]=observation(entry.sourceRecord,entry.oldObservationId,oldBatchId);
+  const input={retainedSource:f.source,refreshReadFile:f.readFile,expectedMatrixSha256:f.matrixSha256};
+  const allowlist=proposedPublicAllowlist(rows,input);assert.equal(validatePublicAllowlist(rows,allowlist,allowlist.sha256,input).result,'PASS');
+  const changed=structuredClone(rows);changed.product_source_observations[1].sanitized_payload.derivation.matrix_sha256='0'.repeat(64);
+  assert.throws(()=>proposedPublicAllowlist(changed,input));
 });

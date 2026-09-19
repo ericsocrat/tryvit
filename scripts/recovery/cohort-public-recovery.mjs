@@ -4,6 +4,7 @@ import {retainedEntries,equal,digest,fail,batchFor,checkAssertions} from './coho
 import {pilotPlan} from './cohort-pilot.mjs';
 import {ingestionInputs} from './cohort-pilot-operator.mjs';
 import {timestampMicros,revisionNumber} from './cohort-pilot-operator.mjs';
+import {refreshManifest,refreshSelection,refreshBatch,EXTRACTOR_V2} from './evidence-basis-refresh.mjs';
 
 export const PROFILE='observations-public-cohort-v1';
 export const SOURCE_TABLES=Object.freeze(['ingestion_batches','product_source_records','product_source_observations','product_source_assertions']);
@@ -30,6 +31,19 @@ function verifyPublicRows(rows,input={}) {
   const sources=new Map(rows.product_source_records.map(r=>[r.id,r]));
   const batches=new Map(rows.ingestion_batches.map(r=>[r.id,r]));
   const observations=new Map(rows.product_source_observations.map(r=>[r.id,r]));
+  let refresh=null;
+  if([...observations.values()].some(observation=>observation.extractor_version===EXTRACTOR_V2)) {
+    const manifest=refreshManifest({readFile:input.refreshReadFile,retainedSource:input.retainedSource,
+      expectedMatrixSha256:input.expectedMatrixSha256});
+    refresh=new Map(manifest.entries.map(plan=>{
+      const entry=refreshSelection(manifest,[plan.productId],manifest.sha256,{readFile:input.refreshReadFile,
+        retainedSource:input.retainedSource,expectedMatrixSha256:input.expectedMatrixSha256})[0];
+      return [entry.newPayloadHash,entry];
+    }));
+  }
+  const approvedFor=(observation,source)=>eligible.find(e=>e.payloadHash===observation?.payload_hash&&e.productId===source?.product_id&&e.country===source?.country)??
+    (observation?.extractor_version===EXTRACTOR_V2&&refresh?.get(observation.payload_hash)?.productId===source?.product_id?
+      refresh.get(observation.payload_hash):null);
   for(const source of sources.values()) {
     if(source.source_key!=='off_api'||!eligible.some(e=>e.productId===source.product_id&&e.country===source.country&&e.externalId===source.external_id))
       fail('public_cohort_unapproved_source_identity');
@@ -40,14 +54,14 @@ function verifyPublicRows(rows,input={}) {
       fail('public_cohort_withdrawn_source_assertions');
     if(source.selected_observation_id!==null) {
       const selected=observations.get(source.selected_observation_id);
-      const approved=eligible.find(e=>e.payloadHash===selected?.payload_hash&&e.productId===source.product_id&&e.country===source.country);
+      const approved=approvedFor(selected,source);
       if(!approved)fail('public_cohort_selected_payload_not_approved');
       checkAssertions(approved.record,rows.product_source_assertions.filter(a=>a.source_record_id===source.id));
     }
   }
   for(const observation of observations.values()) {
     const source=sources.get(observation.source_record_id),batch=batches.get(observation.batch_id);
-    const approved=eligible.find(e=>e.payloadHash===observation.payload_hash&&e.productId===source?.product_id&&e.country===source?.country);
+    const approved=approvedFor(observation,source);
     if(!source||!batch||!approved||observation.status!=='accepted'||observation.reason!==null)fail('public_cohort_observation_not_approved');
     const record=approved.record;
     if(!equal(observation.sanitized_payload,record.sanitized_payload)||!equal(observation.extracted_fields,record.extracted_fields)||
@@ -57,24 +71,27 @@ function verifyPublicRows(rows,input={}) {
       timestampMicros(observation.source_updated_at,{nullable:true})!==timestampMicros(record.source_updated_at,{nullable:true}))
       fail('public_cohort_payload_or_metadata_changed');
     timestampMicros(observation.received_at);
+    const expectedBatch=approved.operation==='existing-source-basis-refresh-v2'?refreshBatch(approved):batchFor(approved);
     if(batch.source_key!=='off_api'||batch.country!==source.country||batch.extractor_version!==record.sanitized_payload.extractor_version||
-      batch.status!=='applied'||!equal(batch.scope,{category:record.identity.category,kind:'partial_upsert'}))fail('public_cohort_batch_scope_changed');
+      batch.status!=='applied'||!equal(batch.scope,expectedBatch.scope))fail('public_cohort_batch_scope_changed');
   }
   for(const batch of batches.values()) {
     timestampMicros(batch.created_at);
     const members=[...observations.values()].filter(o=>o.batch_id===batch.id);
     if(!members.length||!equal(batch.counts,{accepted:members.length}))fail('public_cohort_batch_members_not_closed');
     const member=members[0],source=sources.get(member.source_record_id);
-    const approved=eligible.find(e=>e.payloadHash===member.payload_hash&&e.productId===source.product_id&&e.country===source.country);
-    const pilotKey=approved.productId===178?ingestionInputs(input.pilotMutation??pilotPlan().sql.mutation)[0].idempotency_key:null;
-    if(members.length!==1||![batchFor(approved).idempotency_key,pilotKey].includes(batch.idempotency_key))
+    const approved=approvedFor(member,source);
+    const pilotKey=approved?.productId===178&&approved.operation!=='existing-source-basis-refresh-v2'?ingestionInputs(input.pilotMutation??pilotPlan().sql.mutation)[0].idempotency_key:null;
+    const expectedKey=approved?.operation==='existing-source-basis-refresh-v2'?refreshBatch(approved).idempotency_key:approved?batchFor(approved).idempotency_key:null;
+    if(members.length!==1||![expectedKey,pilotKey].includes(batch.idempotency_key))
       fail('public_cohort_unapproved_batch_identity');
   }
   for(const assertion of rows.product_source_assertions) {
     const observation=observations.get(assertion.observation_id);
     if(!observation||observation.source_record_id!==assertion.source_record_id||!Number.isSafeInteger(assertion.position)||assertion.position<0)
       fail('public_cohort_assertion_reference_not_closed');
-    const approved=eligible.find(e=>e.payloadHash===observation.payload_hash&&e.productId===sources.get(observation.source_record_id)?.product_id);
+    const approved=approvedFor(observation,sources.get(observation.source_record_id));
+    if(!approved)fail('public_cohort_assertion_observation_not_approved');
     const record=approved.record;
     if(assertion.kind==='ingredient') {
       if(record.ingredients_state!=='reported'||!equal(record.ingredients?.[assertion.position-1],assertion.assertion))fail('public_cohort_unapproved_ingredient_assertion');
