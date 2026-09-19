@@ -8,7 +8,10 @@ The tool attaches after deterministic reconciliation has produced a local review
 artifact. `pipeline.evidence_cohort.reconcile()` already reports identity text
 differences, and `scripts/recovery/plan_retained_cohort.py` assigns authoritative
 hold reasons such as `identity_text_change_requires_review`. Neither module calls
-JEV. An operator may translate a genuinely ambiguous pair into the strict public
+JEV. The bounded source-expansion path likewise classifies explicit differences
+as `SOURCE_MATCH_HELD` in `pipeline.source_expansion.classify_source()`, while
+`bind_production_review()` keeps the later human verdict authoritative. An
+operator may translate a genuinely ambiguous held pair into the strict public
 manifest accepted by `pipeline.jev_advisory`.
 
 Deterministic conflicts and decisions remain authoritative. The advisory tool
@@ -20,7 +23,7 @@ Preparation and reporting are offline:
 
 ```powershell
 python -m pipeline.jev_advisory prepare `
-  --input <local-public-review-cases.json> `
+  --input audit-reports/jev-advisory/inbox/<local-public-review-cases.json> `
   --output audit-reports/jev-advisory/<new-run>
 
 python -m pipeline.jev_advisory evaluate `
@@ -33,6 +36,10 @@ python -m pipeline.jev_advisory report `
 The default evaluation records `offline_disabled`. A live call requires both
 `--jev-live` and process-local `TYPESAFE_API_KEY`. No repository, Vercel,
 GitHub, or Supabase secret is configured by this feature.
+
+Every CLI file read and write is confined below `audit-reports/jev-advisory`.
+Absolute paths, parent traversal, symlinks, and junctions that escape or alias
+that boundary are rejected before file access.
 
 ## Public input boundary
 

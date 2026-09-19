@@ -35,7 +35,8 @@ def input_document(*cases: dict) -> dict:
 
 def prepare_run(tmp_path, monkeypatch, *cases: dict):
     monkeypatch.setattr(advisory, "REPORT_ROOT", tmp_path / "reports")
-    source = tmp_path / "input.json"
+    source = advisory.REPORT_ROOT / "inbox" / "input.json"
+    source.parent.mkdir(parents=True)
     source.write_text(json.dumps(input_document(*cases)), encoding="utf-8")
     return advisory.prepare(source, advisory.REPORT_ROOT / "run")
 
@@ -125,6 +126,31 @@ def test_public_field_hash_mismatch_is_rejected():
     case["source"]["brand"] = "Changed"
     with pytest.raises(advisory.AdvisoryError, match="hash mismatch"):
         advisory.sanitize_case(case)
+
+
+def test_all_file_io_is_confined_to_advisory_root(tmp_path, monkeypatch):
+    monkeypatch.setattr(advisory, "REPORT_ROOT", tmp_path / "reports")
+    outside = tmp_path / "outside.json"
+    outside.write_text(json.dumps(input_document(raw_case())), encoding="utf-8")
+
+    with pytest.raises(advisory.AdvisoryError, match="must stay below"):
+        advisory.read_json(outside)
+    with pytest.raises(advisory.AdvisoryError, match="must stay below"):
+        advisory.write_new(outside, {})
+    with pytest.raises(advisory.AdvisoryError, match="must stay below"):
+        advisory.write_atomic(outside, {})
+    with pytest.raises(advisory.AdvisoryError, match="must stay below"):
+        advisory.prepare(outside, advisory.REPORT_ROOT / "run")
+
+
+def test_output_traversal_is_rejected(tmp_path, monkeypatch):
+    monkeypatch.setattr(advisory, "REPORT_ROOT", tmp_path / "reports")
+    source = advisory.REPORT_ROOT / "inbox" / "input.json"
+    source.parent.mkdir(parents=True)
+    source.write_text(json.dumps(input_document(raw_case())), encoding="utf-8")
+
+    with pytest.raises(advisory.AdvisoryError, match="must stay below"):
+        advisory.prepare(source, advisory.REPORT_ROOT / ".." / "escaped")
 
 
 def test_offline_is_default_and_never_calls_provider(tmp_path, monkeypatch):
@@ -298,12 +324,15 @@ def test_report_escapes_malicious_product_text(tmp_path, monkeypatch):
 def test_shadow_label_template_is_created_only_after_inference(tmp_path, monkeypatch):
     manifest = prepare_run(tmp_path, monkeypatch)
     with pytest.raises(advisory.AdvisoryError, match="only after"):
-        advisory.init_shadow_labels(manifest, tmp_path / "labels-before.json")
+        advisory.init_shadow_labels(manifest, advisory.REPORT_ROOT / "labels-before.json")
     advisory.evaluate(manifest)
-    labels = advisory.read_json(advisory.init_shadow_labels(manifest, tmp_path / "labels.json"))
+    labels = advisory.read_json(advisory.init_shadow_labels(manifest, advisory.REPORT_ROOT / "labels.json"))
     assert labels["labels_created_after_inference"] is True
     assert labels["promotion_target_minimum_cases"] == 150
     assert labels["entries"][0]["human_final_label"] is None
+
+    with pytest.raises(advisory.AdvisoryError, match="must stay below"):
+        advisory.init_shadow_labels(manifest, tmp_path / "escaped-labels.json")
 
 
 def test_module_has_no_database_or_write_dependency():

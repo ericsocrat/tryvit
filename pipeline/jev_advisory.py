@@ -104,10 +104,12 @@ if digest(QUESTIONS) != PROMPT_SHA256:
 
 
 def read_json(path: Path) -> Any:
+    path = confined(path, must_exist=True)
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def write_new(path: Path, value: Any) -> None:
+    path = confined(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("x", encoding="utf-8", newline="\n") as stream:
         json.dump(value, stream, ensure_ascii=False, indent=2, allow_nan=False)
@@ -115,6 +117,7 @@ def write_new(path: Path, value: Any) -> None:
 
 
 def write_atomic(path: Path, value: Any) -> None:
+    path = confined(path)
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     os.replace(temporary, path)
@@ -124,7 +127,7 @@ def confined(path: Path, *, must_exist: bool = False) -> Path:
     boundary = REPORT_ROOT.resolve()
     candidate = Path(path).absolute()
     if ".." in Path(path).parts or candidate == boundary or not candidate.is_relative_to(boundary):
-        raise AdvisoryError("Advisory output must stay below audit-reports/jev-advisory")
+        raise AdvisoryError("Advisory file path must stay below audit-reports/jev-advisory")
     for component in (candidate, *candidate.parents):
         if component == boundary:
             break
@@ -132,7 +135,7 @@ def confined(path: Path, *, must_exist: bool = False) -> Path:
             raise AdvisoryError("Advisory output cannot contain links or junctions")
     resolved = candidate.resolve(strict=must_exist)
     if resolved == boundary or not resolved.is_relative_to(boundary):
-        raise AdvisoryError("Advisory output escaped its root")
+        raise AdvisoryError("Advisory file path escaped its root")
     return resolved
 
 
@@ -545,6 +548,7 @@ def report(manifest_path: Path) -> Path:
 
 def init_shadow_labels(manifest_path: Path, output: Path) -> Path:
     manifest_path = confined(manifest_path, must_exist=True)
+    output = confined(output)
     manifest = load_manifest(manifest_path)
     results_path = manifest_path.parent / "results.json"
     if not results_path.exists():
