@@ -72,6 +72,11 @@ SELECT is((public.api_find_products('zxfind')->>'total')::integer,2,'may-contain
 UPDATE public.user_preferences SET treat_may_contain_as_unsafe=true WHERE user_id='eeeeeeee-1111-4111-8111-111111111111';
 SELECT is((public.api_find_products('zxfind')->>'total')::integer,0,'may-contain exclusions include legacy and source evidence');
 UPDATE public.user_preferences SET avoid_allergens=ARRAY[]::text[],treat_may_contain_as_unsafe=false WHERE user_id='eeeeeeee-1111-4111-8111-111111111111';
+SELECT is((public.api_find_products('zxfind','{"allergen_free":["peanuts"]}')->>'total')::integer,2,'explicit filter does not treat trace evidence as unsafe when that setting is disabled');
+UPDATE public.user_preferences SET treat_may_contain_as_unsafe=true WHERE user_id='eeeeeeee-1111-4111-8111-111111111111';
+SELECT is((public.api_find_products('zxfind','{"allergen_free":["peanuts"]}')->>'total')::integer,0,'explicit filter honors trace evidence when the saved unsafe setting is enabled');
+SELECT ok((public.api_find_products('9910000000119','{"allergen_free":["peanuts"]}')->'excluded_exact_match'->'reasons') ? 'explicit_filter','exact trace-only exclusion reports the explicit filter decision');
+UPDATE public.user_preferences SET treat_may_contain_as_unsafe=false WHERE user_id='eeeeeeee-1111-4111-8111-111111111111';
 INSERT INTO public.product_ingredient(product_id,ingredient_id,position)
 SELECT product_id,5087,1 FROM find_fixture WHERE product_name='Zxfind Alpha Skyr' ON CONFLICT DO NOTHING;
 UPDATE public.user_preferences SET diet_preference='vegan',strict_diet=false WHERE user_id='eeeeeeee-1111-4111-8111-111111111111';
@@ -105,6 +110,7 @@ SELECT is((public.api_find_products('zxfind')->>'total')::integer,1,'partial sea
 SELECT is((public.api_find_products('zxfind')->'excluded_summary'->>'total_hidden')::integer,2,'partial search reports the two hidden catalog matches as a distinct-product count');
 SELECT is(public.api_find_products('zxfind')->'excluded_exact_match','null'::jsonb,'partial search does not pretend that an ambiguous text query is an exact identity');
 UPDATE public.products SET is_deprecated=true WHERE country='PL' AND ean='9910000000140';
+DELETE FROM public.api_rate_limit_log WHERE user_id='eeeeeeee-1111-4111-8111-111111111111' AND endpoint='api_search_products';
 SELECT is((public.api_find_products('9910000000140')->>'total')::integer,0,'deprecated exact EAN stays outside Find results');
 SELECT is(public.api_find_products('9910000000140')->'excluded_exact_match','null'::jsonb,'deprecated exact EAN does not leak through exclusion metadata');
 SELECT is((public.api_find_products('9910000000133','{"country":"PL"}')->>'total')::integer,0,'wrong-market exact EAN stays isolated');

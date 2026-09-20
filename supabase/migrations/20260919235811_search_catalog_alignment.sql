@@ -86,7 +86,8 @@ BEGIN
     FROM base b LEFT JOIN exact_probe probe USING(product_id)
     LEFT JOIN LATERAL (
       SELECT
-        COALESCE(array_agg(DISTINCT tag ORDER BY tag) FILTER (WHERE evidence_type='contains' AND tag=ANY(v_explicit_excluded)),ARRAY[]::text[]) AS explicit_tags,
+        COALESCE(array_agg(DISTINCT tag ORDER BY tag) FILTER (WHERE tag=ANY(v_explicit_excluded)
+          AND (evidence_type='contains' OR (COALESCE(v_prefs.treat_may_contain_as_unsafe,false) AND evidence_type='traces'))),ARRAY[]::text[]) AS explicit_tags,
         COALESCE(array_agg(DISTINCT tag ORDER BY tag) FILTER (WHERE tag=ANY(v_saved_excluded)
           AND (evidence_type='contains' OR (COALESCE(v_prefs.treat_may_contain_as_unsafe,false) AND evidence_type='traces'))),ARRAY[]::text[]) AS saved_tags
       FROM (
