@@ -436,6 +436,15 @@ def test_v11_raw_count_does_not_bypass_safe_pool_readiness():
     assert report["initial_blind_review_ready"] is False
 
 
+def test_v1_pool_does_not_apply_v11_collision_filter():
+    envelope, _, _ = consensus_input()
+    raw_duplicate = candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 9999)
+    raw_duplicate["hidden_dossier"]["verified_skus"] = envelope["candidates"][0]["hidden_dossier"]["verified_skus"]
+    envelope["candidates"].append(raw_duplicate)
+    validated = challenge.validate_candidate_pool(envelope, set())
+    assert len(validated) == len(envelope["candidates"])
+
+
 def test_v11_replenishment_keeps_frozen_order_and_freeze_requires_150_consensus():
     envelope, author_document, blind_document = consensus_input()
     candidates = challenge.validate_candidate_pool(envelope, set())

@@ -456,7 +456,6 @@ def validate_candidate_pool(document: Any, exclusion_index: set[str]) -> list[di
     tokens = [candidate["blind_review_token"] for candidate in candidates]
     if len(ids) != len(set(ids)) or len(tokens) != len(set(tokens)):
         raise ChallengeError("Candidate pool contains duplicate IDs or blind review tokens")
-    candidates, _ = v11_safe_pool(candidates)
     counts = defaultdict(int)
     stratum_counts = defaultdict(int)
     for candidate in candidates:
