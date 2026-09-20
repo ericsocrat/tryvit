@@ -111,7 +111,10 @@ def test_consensus_selection_requires_exact_quotas_and_rejects_disagreement():
     blind[candidates[0]["candidate_id"]] = "INCONSISTENT"
     with pytest.raises(challenge.ChallengeError, match="Consensus shortage"):
         challenge.consensus_select(candidates, author, blind)
-    rejected = challenge._rejected_entry(candidates[0], "reviewer_disagreement", author[candidates[0]["candidate_id"]], blind[candidates[0]["candidate_id"]])
+    candidate_id = candidates[0]["candidate_id"]
+    rejected = challenge._rejected_entry(
+        candidates[0], "reviewer_disagreement", author[candidate_id], blind[candidate_id]
+    )
     assert {
         "candidate_id",
         "candidate_sha256",
