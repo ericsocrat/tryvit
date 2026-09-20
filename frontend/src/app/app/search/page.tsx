@@ -9,10 +9,11 @@ import { ProductRegisterCard } from "@/components/product/ProductRegisterCard";
 import { FilterPanel } from "@/components/search/FilterPanel";
 import { SaveSearchDialog } from "@/components/search/SaveSearchDialog";
 import { useUserPreferencesQuery } from "@/hooks/use-user-preferences-query";
-import { findContext, findHref, findProducts, findQueryKeys, parseFindParams } from "@/lib/evidence/search";
+import { findContext, findHref, findProducts, findQueryKeys, parseFindParams, type FindEnvelope, type FindRequest } from "@/lib/evidence/search";
 import { useTranslation } from "@/lib/i18n";
 import { createClient } from "@/lib/supabase/client";
 import { useAvoidStore } from "@/stores/avoid-store";
+import { ALLERGEN_TAGS } from "@/lib/constants";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Search, SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
@@ -87,6 +88,8 @@ function FindWorkspace() {
       {hasSelection && problems.length === 0 && query.isError ? <section className={styles.notice} role="alert"><h2>{t("findUi.loadFailed")}</h2><p>{t("evidenceUi.retryExplanation")}</p><Button loading={query.isFetching} onClick={() => void query.refetch()}>{t("common.retry")}</Button></section> : null}
       {query.data && hasSelection && problems.length === 0 && !query.isError ? <>
         <p className={styles.resultCount} role="status">{t("findUi.resultCount", { count: query.data.total })}</p>
+        {query.data.excluded_exact_match ? <ExcludedExactMatch notice={query.data.excluded_exact_match} query={request} onIncludeAvoided={() => router.push(findHref({ ...request, showAvoided: true, page: 1 }))} /> : null}
+        {!query.data.excluded_exact_match && (query.data.excluded_summary?.total_hidden ?? 0) > 0 ? <p className={styles.hiddenSummary} role="status">{t("findUi.hiddenSummary", { count: query.data.excluded_summary?.total_hidden ?? 0 })} <Link href="/app/settings/nutrition">{t("findUi.reviewPreferences")}</Link></p> : null}
         {query.data.results.length === 0 ? <section className={styles.empty}><h2>{t(query.data.total > 0 ? "findUi.emptyPage" : "findUi.noEligibleTitle")}</h2><p>{t("findUi.noEligibleDescription")}</p><div className={styles.emptyActions}><Button variant="secondary" onClick={() => router.push(findHref({ ...request, filters: query.data.total > 0 ? request.filters : {}, page: 1 }), { scroll: false })}>{t(query.data.total > 0 ? "findUi.firstPage" : "filters.clearAll")}</Button><Link href="/app/settings/nutrition" className={styles.textLink}>{t("findUi.reviewPreferences")}</Link></div></section> : <ul className={styles.results}>
           {query.data.results.map((product) => <ProductRegisterCard key={product.product_id} productId={product.product_id} name={product.product_name} brand={product.brand} category={product.category} href={`/app/product/${product.product_id}`} imageUrl={product.image?.url} readModel={product}
             meta={<ProductAllergenSummary product={product} compact />}
@@ -102,6 +105,31 @@ function FindWorkspace() {
     {preferences.data && validContext && !preferences.error ? <FilterPanel show={filtersOpen && problems.length === 0} filters={request.filters} country={country} userId={preferences.data.user_id} onClose={closeFilters} onChange={(filters) => router.push(findHref({ ...request, filters, page: 1 }, panel === "categories" ? "categories" : "filters"), { scroll: false })} /> : null}
     {saveOpen ? <SaveSearchDialog query={request.q || null} filters={request.filters} show onClose={() => setSaveOpen(false)} /> : null}
   </AppPage>;
+}
+
+function ExcludedExactMatch({ notice, query, onIncludeAvoided }: Readonly<{ notice: NonNullable<FindEnvelope["excluded_exact_match"]>; query: FindRequest; onIncludeAvoided: () => void }>) {
+  const { t } = useTranslation();
+  const labels = notice.allergen_tags.map((tag) => {
+    const allergen = ALLERGEN_TAGS.find((candidate) => candidate.tag === tag);
+    return allergen ? t(allergen.labelKey) : tag;
+  });
+  const reasons = notice.reasons.map((reason) => {
+    if (reason === "allergen_preference") return labels.length ? t("findUi.exclusionAllergenEvidence", { allergens: labels.join(", ") }) : t("findUi.exclusionAllergenPreference");
+    if (reason === "diet_preference") return t("findUi.exclusionDietPreference");
+    if (reason === "strict_unknown") return t("findUi.exclusionStrictUnknown");
+    if (reason === "avoid_list") return t("findUi.exclusionAvoidList");
+    return t("findUi.exclusionExplicitFilter");
+  });
+  return <section className={styles.exactNotice} aria-labelledby="exact-hidden-product-title">
+    <h2 id="exact-hidden-product-title">{t("findUi.exactExcludedTitle")}</h2>
+    <p>{notice.brand ? `${notice.brand} · ` : ""}{notice.product_name}{notice.ean ? ` · ${notice.ean}` : ""}</p>
+    <ul>{reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>
+    <div className={styles.emptyActions}>
+      <Link href={`/app/product/${notice.product_id}`} className={styles.textLink}>{t("findUi.openExactProduct")}</Link>
+      <Link href="/app/settings/nutrition" className={styles.textLink}>{t("findUi.reviewPreferences")}</Link>
+      {notice.reasons.length === 1 && notice.reasons[0] === "avoid_list" && !query.showAvoided ? <Button variant="secondary" onClick={onIncludeAvoided}>{t("findUi.includeAvoided")}</Button> : null}
+    </div>
+  </section>;
 }
 
 function QueryInput({ query, onNavigate }: Readonly<{ query: string; onNavigate: (query: string, explicit: boolean) => void }>) {

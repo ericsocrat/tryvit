@@ -15,11 +15,28 @@ export const FindFiltersSchema = z.strictObject({
 export type FindFilters = z.infer<typeof FindFiltersSchema>;
 export interface FindRequest { q: string; filters: FindFilters; page: number; showAvoided: boolean; }
 export type FindProblem = "unsupported_filters" | "invalid_filters" | "invalid_query" | "invalid_page";
+const ExclusionReasonSchema = z.enum(["explicit_filter", "avoid_list", "diet_preference", "allergen_preference", "strict_unknown"]);
+const ExcludedSummarySchema = z.object({
+  total_hidden: EvidenceInteger.check(z.nonnegative()),
+  by_reason: z.object({
+    explicit_filter: EvidenceInteger.check(z.nonnegative()), avoid_list: EvidenceInteger.check(z.nonnegative()),
+    diet_preference: EvidenceInteger.check(z.nonnegative()), allergen_preference: EvidenceInteger.check(z.nonnegative()),
+    strict_unknown: EvidenceInteger.check(z.nonnegative()),
+  }),
+  reason_count_semantics: z.literal("overlapping"),
+});
+const ExcludedExactMatchSchema = z.object({
+  match_type: z.enum(["ean", "identity"]), product_id: EvidenceInteger.check(z.positive()), product_name: z.string().check(z.minLength(1)),
+  brand: z.string(), ean: z.nullable(z.string()), category: z.string(), reasons: z.array(ExclusionReasonSchema).check(z.minLength(1)), allergen_tags: z.array(z.string()),
+});
 export const FindEnvelopeSchema = z.object({
   api_version: z.literal("2"), policy_version: z.literal(EVIDENCE_POLICY_VERSION), query: z.nullable(z.string()),
   country: z.enum(["PL", "DE"]), language: z.enum(["en", "pl", "de"]),
   total: EvidenceInteger.check(z.nonnegative()), page: EvidenceInteger.check(z.positive()), pages: EvidenceInteger.check(z.positive()), page_size: EvidenceInteger.check(z.minimum(1)).check(z.maximum(50)),
   filters_applied: FindFiltersSchema, preferences_applied: z.boolean(), results: z.array(ProductReadModelSchema),
+  // Additive fields are optional while a staged database migration rolls out.
+  excluded_summary: z.optional(z.nullable(ExcludedSummarySchema)),
+  excluded_exact_match: z.optional(z.nullable(ExcludedExactMatchSchema)),
 });
 export type FindEnvelope = z.infer<typeof FindEnvelopeSchema>;
 

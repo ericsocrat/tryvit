@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { findContext, findHref, findProducts, findQueryKeys, parseFindParams } from "./search";
+import { FindEnvelopeSchema, findContext, findHref, findProducts, findQueryKeys, parseFindParams } from "./search";
 import { findPreferencesFixture } from "./search.fixtures";
 
 const mockRpc = vi.hoisted(() => vi.fn());
@@ -74,5 +74,21 @@ describe("Find request and cache identity", () => {
     const client = {} as Parameters<typeof findProducts>[0];
     findProducts(client, parse("q=milk&page=2").request, "pl", "PL");
     expect(mockRpc).toHaveBeenCalledWith(client, "api_find_products", expect.anything(), { p_query: "milk", p_filters: { country: "PL" }, p_page: 2, p_page_size: 20, p_show_avoided: false, p_language: "pl" });
+  });
+});
+
+describe("Find hidden-match contract", () => {
+  const base = { api_version: "2", policy_version: "evidence-first-v1", query: "5900000000000", country: "PL", language: "en", total: 0, page: 1, pages: 1, page_size: 20, filters_applied: {}, preferences_applied: true, results: [] } as const;
+
+  it("accepts an additive exact match with explicitly overlapping reason counts", () => {
+    const parsed = FindEnvelopeSchema.safeParse({ ...base,
+      excluded_summary: { total_hidden: 1, by_reason: { explicit_filter: 0, avoid_list: 0, diet_preference: 1, allergen_preference: 1, strict_unknown: 0 }, reason_count_semantics: "overlapping" },
+      excluded_exact_match: { match_type: "ean", product_id: 7, product_name: "Fixture", brand: "Brand", ean: "5900000000000", category: "Drinks", reasons: ["diet_preference", "allergen_preference"], allergen_tags: ["gluten"] },
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("remains compatible with a pre-migration response", () => {
+    expect(FindEnvelopeSchema.safeParse(base).success).toBe(true);
   });
 });

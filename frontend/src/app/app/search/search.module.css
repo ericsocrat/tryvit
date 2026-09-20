@@ -21,6 +21,12 @@
 .toggle input { width: 1.1rem; height: 1.1rem; accent-color: var(--color-brand); }
 .notice, .empty { padding: 1.5rem; border: 1px solid var(--color-border); border-radius: 1rem; background: var(--color-surface); }
 .notice { border-inline-start: 3px solid var(--color-warning); }
+.exactNotice { padding: 1rem 1.125rem; border: 1px solid var(--color-warning); border-inline-start-width: 3px; border-radius: 0.875rem; background: var(--color-surface-subtle); }
+.exactNotice h2 { margin: 0; font-size: 1rem; line-height: 1.4; }
+.exactNotice p, .exactNotice ul { margin: 0.5rem 0; color: var(--color-text-secondary); font-size: 0.875rem; line-height: 1.55; }
+.exactNotice ul { padding-inline-start: 1.2rem; }
+.hiddenSummary { margin: 0; color: var(--color-text-secondary); font-size: 0.875rem; line-height: 1.5; }
+.hiddenSummary a { color: var(--color-brand); font-weight: 600; text-decoration: underline; text-underline-offset: 0.2em; }
 .notice h2, .empty h2 { margin: 0; font-size: 1.25rem; font-weight: 650; line-height: 1.4; }
 .notice p, .empty p { max-width: 65ch; margin: 0.65rem 0 1rem; color: var(--color-text-secondary); font-size: 0.9375rem; line-height: 1.6; }
 .emptyActions { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; }
