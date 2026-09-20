@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "scope": "schema-and-catalog",
+  "recoveryProfile": "consumer-v1",
+  "migrations": [
+    {
+      "path": "supabase/migrations/20260919235811_search_catalog_alignment.sql",
+      "sha256": "4e5a4e569c7659e5522413c1c67e4edbd25351fa4e13b50d1e1fd8cbf5ef8e40"
+    }
+  ]
+}

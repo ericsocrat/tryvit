@@ -140,6 +140,28 @@ describe("evidence-first Find", () => {
     expect(screen.getByText(/does not mean the catalog is empty/)).toBeInTheDocument();
   });
 
+  it("explains an exact product hidden by saved preferences without returning it as an eligible result", async () => {
+    mocks.find.mockImplementation((_client: unknown, request: FindRequest) => Promise.resolve({ ok: true, data: { ...result(request), total: 0, results: [], preferences_applied: true,
+      excluded_summary: { total_hidden: 1, by_reason: { explicit_filter: 0, avoid_list: 0, diet_preference: 0, allergen_preference: 1, strict_unknown: 0 }, reason_count_semantics: "overlapping" as const },
+      excluded_exact_match: { match_type: "ean" as const, product_id: 156, product_name: "Breadcrumbs", brand: "Fixture", ean: "5900000000000", category: "Bread", reasons: ["allergen_preference" as const], allergen_tags: ["gluten"] },
+    } }));
+    mount();
+    expect(await screen.findByRole("heading", { name: "Exact product found, but hidden by your filters" })).toBeInTheDocument();
+    expect(screen.getByText(/positive allergen evidence/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open product information" })).toHaveAttribute("href", "/app/product/156");
+    expect(screen.queryByRole("link", { name: /Fixture product 1/ })).not.toBeInTheDocument();
+  });
+
+  it("summarizes hidden partial matches without presenting reason counts as a split", async () => {
+    mocks.find.mockImplementation((_client: unknown, request: FindRequest) => Promise.resolve({ ok: true, data: { ...result(request), preferences_applied: true,
+      excluded_summary: { total_hidden: 1, by_reason: { explicit_filter: 0, avoid_list: 0, diet_preference: 1, allergen_preference: 1, strict_unknown: 0 }, reason_count_semantics: "overlapping" as const },
+      excluded_exact_match: null,
+    } }));
+    mount();
+    expect(await screen.findByText("Additional catalog matches hidden by your filters or preferences: 1.")).toBeInTheDocument();
+    expect(screen.queryByText("2 hidden products")).not.toBeInTheDocument();
+  });
+
   it("shows and recovers a failed request without turning it into zero results", async () => {
     mocks.find.mockResolvedValueOnce({ ok: false, error: { message: "Unavailable" } });
     mount();

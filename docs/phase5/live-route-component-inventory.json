@@ -2,9 +2,9 @@
   "schemaVersion": 3,
   "kind": "phase5-live-route-component-inventory",
   "provenance": {
-    "baseSha": "cc27aeca69968063e8704c5781c2c48653b1f32e",
+    "baseSha": "b89f2a3df133bd97334c53e97d1c1f5af026c8a2",
     "baseReference": "merge-base HEAD origin/main",
-    "sourceFingerprint": "21c03c69d51973baedda962bf137b97a9b6c7d50ed0b4e8eb4e6deb53a339f68"
+    "sourceFingerprint": "4d2913084a9232c4f3d664a7ca7ccc6b6d73134884273dcc217f6af3b933b925"
   },
   "sourceRoots": [
     "frontend/src/app",
@@ -1742,6 +1742,7 @@
         "frontend/src/components/search/FilterPanel.tsx",
         "frontend/src/components/search/SaveSearchDialog.tsx",
         "frontend/src/hooks/use-user-preferences-query.ts",
+        "frontend/src/lib/constants.ts",
         "frontend/src/lib/evidence/search.ts",
         "frontend/src/lib/i18n.ts",
         "frontend/src/lib/supabase/client.ts",
@@ -18076,7 +18077,7 @@
     ],
     "inspectedModuleCount": 562,
     "violations": [],
-    "sourceFingerprint": "19a3cf6d7b43271da0712538173b150c07ddea7b4bfbf613aeb08626124d9b4f"
+    "sourceFingerprint": "dac96bcb7db0e75871e798a90ddb7d585c68f3ad1695e5f1a134fcae8a63317c"
   },
   "compatibilityFacadeAudit": {
     "auditedBarrel": "frontend/src/components/common/index.ts",
