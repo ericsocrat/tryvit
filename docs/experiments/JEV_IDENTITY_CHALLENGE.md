@@ -1,5 +1,10 @@
 # JEV identity challenge benchmark
 
+The historical v1 construction protocol remains documented below.  The
+prospective pre-inference v1.1 amendment is recorded in
+[`JEV_IDENTITY_CHALLENGE_V1_1.md`](JEV_IDENTITY_CHALLENGE_V1_1.md); it does
+not rewrite v1 evidence or its terminal overgeneration result.
+
 This benchmark is a balanced identity challenge, not an estimate of live TryVit
 class prevalence or expected production accuracy. It is separate from the
 36-case operational shadow cohort and has no product or source-selection authority.

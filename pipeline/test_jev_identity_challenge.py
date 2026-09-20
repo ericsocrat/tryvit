@@ -341,3 +341,72 @@ def test_result_validator_binds_manifest_and_rejects_invalid_probability():
     document["results"][0]["identity_probabilities"]["CONSISTENT"] = 0.8
     with pytest.raises(challenge.ChallengeError, match="distribution"):
         challenge.validate_arm_results(document, manifest)
+
+
+def test_v11_readiness_uses_30_per_cell_and_diversity_floors():
+    envelope, _, _ = consensus_input()
+    v11 = {"schema_version": 1, "protocol_id": challenge.AMENDMENT_PROTOCOL_ID, "candidates": envelope["candidates"]}
+    candidates = challenge.validate_v11_candidate_pool(v11, set())
+    report = challenge.v11_readiness_report(candidates)
+    assert report["initial_blind_review_ready"] is True
+    queue = challenge.v11_initial_review_queue(candidates)
+    assert len(queue["queues"]) == 6
+    assert all(len(cell["packets"]) == 30 for cell in queue["queues"])
+    assert all("candidate_id" not in packet for cell in queue["queues"] for packet in cell["packets"])
+
+
+def test_v11_rejects_cell_below_initial_review_size():
+    envelope, _, _ = consensus_input()
+    retained = [
+        candidate
+        for candidate in envelope["candidates"]
+        if not (candidate["market"] == "PL" and candidate["intended_label"] == "CONSISTENT")
+    ]
+    retained.extend(candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 1000 + index) for index in range(29))
+    v11 = {"schema_version": 1, "protocol_id": challenge.AMENDMENT_PROTOCOL_ID, "candidates": retained}
+    with pytest.raises(challenge.ChallengeError, match="needs 30 candidates"):
+        challenge.validate_v11_candidate_pool(v11, set())
+
+
+def test_v11_consensus_selection_uses_diversity_bounds_and_exact_balance():
+    envelope, author_document, blind_document = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    author = challenge._validate_author_ledger(author_document, candidates)
+    blind = challenge._validate_blind_ledger(blind_document, candidates)
+    selected = challenge.v11_select_consensus(candidates, author, blind)
+    assert len(selected) == 150
+    for market in challenge.MARKETS:
+        for label in challenge.LABELS:
+            cell = [item for item in selected if item["market"] == market and item["intended_label"] == label]
+            assert len(cell) == 25
+            bounds = challenge.DIVERSITY_BOUNDS_V11[label]
+            for stratum in challenge.STRATUM_TARGETS[label]:
+                count = sum(item["stratum"] == stratum for item in cell)
+                assert bounds["minimum"] <= count <= bounds["maximum"]
+
+
+def test_persisted_candidate_derived_evidence_is_recomputed_and_verified():
+    raw = candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 2001)
+    persisted = challenge.validate_candidate(raw, set())
+    assert challenge.validate_candidate(persisted, set())["candidate_id"] == raw["candidate_id"]
+    persisted["blind_review_token"] = persisted["blind_review_token"][::-1]
+    with pytest.raises(challenge.ChallengeError, match="derived evidence"):
+        challenge.validate_candidate(persisted, set())
+
+
+def test_v11_initial_queue_excludes_duplicate_sku_alternatives():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    duplicate = dict(candidates[0])
+    duplicate["candidate_id"] = "duplicate-sku-alternative"
+    duplicate["family_id"] = "different-family"
+    duplicate["fingerprints"] = ["different-fingerprint"]
+    duplicate["hidden_dossier"] = dict(duplicate["hidden_dossier"])
+    duplicate["hidden_dossier"]["verified_skus"] = candidates[0]["hidden_dossier"]["verified_skus"]
+    for key in ("hidden_dossier_sha256", "model_visible_payload_sha256", "blind_review_token"):
+        del duplicate[key]
+    duplicate = challenge.validate_candidate(duplicate, set())
+    queue = challenge.v11_initial_review_queue([*candidates, duplicate])
+    assert queue["collision_exclusions"]
+    all_tokens = {packet["review_token"] for cell in queue["queues"] for packet in cell["packets"]}
+    assert not ({candidates[0]["blind_review_token"], duplicate["blind_review_token"]} <= all_tokens)

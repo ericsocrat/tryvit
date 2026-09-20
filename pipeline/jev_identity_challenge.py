@@ -21,6 +21,7 @@ from typing import Any
 LABELS = ("CONSISTENT", "INCONSISTENT", "INSUFFICIENT_EVIDENCE")
 MARKETS = ("PL", "DE")
 CHALLENGE_ID = "jev-identity-challenge-v1"
+AMENDMENT_PROTOCOL_ID = "jev-identity-challenge-v1.1"
 SCHEMA_VERSION = 1
 MODEL_ID = "jev-1.13.0"
 ARM_A_PROMPT_ID = "generic-abstention-v2"
@@ -102,6 +103,15 @@ RAW_STRATUM_MINIMA = {
     label: {stratum: math.ceil(target * 40 / 25) for stratum, target in strata.items()}
     for label, strata in STRATUM_TARGETS.items()
 }
+
+# v1.1 amendment: diversity replaces exact final stratum counts.  The v1
+# targets remain intact above as historical protocol evidence and a tie-break.
+DIVERSITY_BOUNDS_V11 = {
+    "CONSISTENT": {"minimum": 2, "maximum": 6},
+    "INCONSISTENT": {"minimum": 2, "maximum": 5},
+    "INSUFFICIENT_EVIDENCE": {"minimum": 3, "maximum": 7},
+}
+INITIAL_REVIEW_QUEUE_PER_CELL_V11 = 30
 
 
 class ChallengeError(ValueError):
@@ -326,7 +336,14 @@ def validate_candidate(candidate: Any, exclusion_index: set[str]) -> dict:
         "model_visible_payload",
         "hidden_dossier",
     }
-    if not isinstance(candidate, dict) or set(candidate) != required:
+    derived_keys = {"hidden_dossier_sha256", "model_visible_payload_sha256", "blind_review_token"}
+    if not isinstance(candidate, dict):
+        raise ChallengeError("Candidate dossier has an unexpected shape")
+    supplied_derived: dict[str, Any] = {}
+    if set(candidate) == required | derived_keys:
+        supplied_derived = {key: candidate[key] for key in derived_keys}
+        candidate = {key: candidate[key] for key in required}
+    elif set(candidate) != required:
         raise ChallengeError("Candidate dossier has an unexpected shape")
     if not isinstance(candidate["candidate_id"], str) or not candidate["candidate_id"]:
         raise ChallengeError("Candidate ID is invalid")
@@ -348,7 +365,7 @@ def validate_candidate(candidate: Any, exclusion_index: set[str]) -> dict:
         raise ChallengeError("Candidate market and model-visible market differ")
     _validate_hidden_dossier(candidate["hidden_dossier"], candidate["intended_label"])
     dossier_sha256 = digest(candidate["hidden_dossier"])
-    return {
+    normalized = {
         **candidate,
         "fingerprints": sorted(fingerprints),
         "model_visible_payload": visible,
@@ -356,6 +373,9 @@ def validate_candidate(candidate: Any, exclusion_index: set[str]) -> dict:
         "hidden_dossier_sha256": dossier_sha256,
         "blind_review_token": _opaque_review_token(candidate["candidate_id"], dossier_sha256),
     }
+    if supplied_derived and any(supplied_derived[key] != normalized[key] for key in derived_keys):
+        raise ChallengeError("Persisted candidate derived evidence does not match its raw dossier")
+    return normalized
 
 
 def _validate_hidden_dossier(dossier: Any, intended_label: str) -> None:
@@ -448,6 +468,171 @@ def validate_candidate_pool(document: Any, exclusion_index: set[str]) -> list[di
                 if stratum_counts[(market, label, stratum)] < minimum:
                     raise ChallengeError(f"Candidate pool undersupplies raw {market}/{label}/{stratum}")
     return candidates
+
+
+def validate_v11_candidate_pool(document: Any, exclusion_index: set[str]) -> list[dict]:
+    """Validate the v1.1 initial-review corpus without applying v1 raw quotas.
+
+    v1 evidence remains immutable.  v1.1 changes only review readiness: every
+    market/class cell needs thirty valid unratified candidates and enough
+    stratum diversity to make a final 25-case selection possible after review.
+    """
+    expected = {"schema_version", "protocol_id", "candidates"}
+    if not isinstance(document, dict) or set(document) != expected:
+        raise ChallengeError("v1.1 candidate pool schema is invalid")
+    if document["schema_version"] != SCHEMA_VERSION or document["protocol_id"] != AMENDMENT_PROTOCOL_ID:
+        raise ChallengeError("v1.1 candidate pool identity is invalid")
+    if not isinstance(document["candidates"], list):
+        raise ChallengeError("v1.1 candidates must be a list")
+    candidates = [validate_candidate(candidate, exclusion_index) for candidate in document["candidates"]]
+    ids = [candidate["candidate_id"] for candidate in candidates]
+    tokens = [candidate["blind_review_token"] for candidate in candidates]
+    if len(ids) != len(set(ids)) or len(tokens) != len(set(tokens)):
+        raise ChallengeError("v1.1 candidate pool contains duplicate IDs or review tokens")
+    counts = defaultdict(int)
+    strata = defaultdict(int)
+    for candidate in candidates:
+        key = (candidate["market"], candidate["intended_label"])
+        counts[key] += 1
+        strata[(candidate["market"], candidate["intended_label"], candidate["stratum"])] += 1
+    for market in MARKETS:
+        for label in LABELS:
+            key = (market, label)
+            if counts[key] < INITIAL_REVIEW_QUEUE_PER_CELL_V11:
+                raise ChallengeError(f"v1.1 initial review needs 30 candidates for {market}/{label}")
+            floor = DIVERSITY_BOUNDS_V11[label]["minimum"]
+            for stratum in STRATUM_TARGETS[label]:
+                if strata[(market, label, stratum)] < floor:
+                    raise ChallengeError(f"v1.1 candidate pool lacks diversity floor for {market}/{label}/{stratum}")
+    return candidates
+
+
+def _candidate_order_key(candidate: dict) -> str:
+    return digest(
+        {
+            "protocol": AMENDMENT_PROTOCOL_ID,
+            "candidate": candidate["candidate_id"],
+            "payload": candidate["model_visible_payload_sha256"],
+        }
+    )
+
+
+def _v11_collision_filter(candidates: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Deterministically retain one candidate for each repeated verified SKU.
+
+    Raw alternatives remain in the audit-only corpus; a released reviewer queue
+    must not contain alternatives that can never coexist in the final benchmark.
+    """
+    by_sku: dict[str, list[dict]] = defaultdict(list)
+    for candidate in candidates:
+        for sku in candidate["hidden_dossier"]["verified_skus"]:
+            by_sku[sku].append(candidate)
+    blocked: set[str] = set()
+    exclusions = []
+    for sku, entries in by_sku.items():
+        if len(entries) > 1:
+            winner = min(entries, key=_candidate_order_key)
+            for candidate in entries:
+                if candidate["candidate_id"] != winner["candidate_id"]:
+                    blocked.add(candidate["candidate_id"])
+                    exclusions.append(
+                        {
+                            "candidate_id": candidate["candidate_id"],
+                            "verified_sku": sku,
+                            "kept_candidate_id": winner["candidate_id"],
+                            "reason": "v1_1_duplicate_verified_sku",
+                        }
+                    )
+    return [candidate for candidate in candidates if candidate["candidate_id"] not in blocked], exclusions
+
+
+def v11_initial_review_queue(candidates: list[dict]) -> dict:
+    """Create deterministic, reviewer/model-independent 30-case queues.
+
+    Strata with fewer queued cases are preferred, then candidate hash breaks
+    ties.  Reviewers receive only the existing opaque packet shape.
+    """
+    eligible, exclusions = _v11_collision_filter(candidates)
+    grouped: dict[tuple[str, str], list[dict]] = defaultdict(list)
+    for candidate in eligible:
+        grouped[(candidate["market"], candidate["intended_label"])].append(candidate)
+    queues = []
+    for market in MARKETS:
+        for label in LABELS:
+            pool = sorted(grouped[(market, label)], key=_candidate_order_key)
+            if len(pool) < INITIAL_REVIEW_QUEUE_PER_CELL_V11:
+                raise ChallengeError(f"v1.1 review queue lacks candidates for {market}/{label}")
+            selected: list[dict] = []
+            stratum_counts: dict[str, int] = defaultdict(int)
+            remaining = list(pool)
+            while len(selected) < INITIAL_REVIEW_QUEUE_PER_CELL_V11:
+                remaining.sort(key=lambda item: (stratum_counts[item["stratum"]], _candidate_order_key(item)))
+                choice = remaining.pop(0)
+                selected.append(choice)
+                stratum_counts[choice["stratum"]] += 1
+            queues.append(
+                {
+                    "market": market,
+                    "intended_class": label,
+                    "packets": [
+                        {
+                            "review_token": candidate["blind_review_token"],
+                            "model_visible_payload": candidate["model_visible_payload"],
+                            "model_visible_payload_sha256": candidate["model_visible_payload_sha256"],
+                        }
+                        for candidate in selected
+                    ],
+                    "unused_candidate_ids": [candidate["candidate_id"] for candidate in remaining],
+                }
+            )
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "protocol_id": AMENDMENT_PROTOCOL_ID,
+        "review_queue_size_per_cell": INITIAL_REVIEW_QUEUE_PER_CELL_V11,
+        "collision_exclusions": exclusions,
+        "queues": queues,
+    }
+
+
+def v11_readiness_report(candidates: list[dict]) -> dict:
+    """Describe v1.1 review readiness without creating a reviewer packet."""
+    counts = defaultdict(int)
+    strata = defaultdict(int)
+    for candidate in candidates:
+        counts[(candidate["market"], candidate["intended_label"])] += 1
+        strata[(candidate["market"], candidate["intended_label"], candidate["stratum"])] += 1
+    cells = []
+    ready = True
+    for market in MARKETS:
+        for label in LABELS:
+            required = INITIAL_REVIEW_QUEUE_PER_CELL_V11
+            valid = counts[(market, label)]
+            floor = DIVERSITY_BOUNDS_V11[label]["minimum"]
+            diversity = {stratum: strata[(market, label, stratum)] for stratum in STRATUM_TARGETS[label]}
+            floor_ready = all(value >= floor for value in diversity.values())
+            cells.append(
+                {
+                    "market": market,
+                    "intended_class": label,
+                    "valid_unratified": valid,
+                    "initial_review_required": required,
+                    "shortage": max(0, required - valid),
+                    "diversity_floor": floor,
+                    "stratum_coverage": diversity,
+                    "diversity_floor_satisfied": floor_ready,
+                }
+            )
+            ready = ready and valid >= required and floor_ready
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "protocol_id": AMENDMENT_PROTOCOL_ID,
+        "candidate_count": len(candidates),
+        "initial_review_queue_total": INITIAL_REVIEW_QUEUE_PER_CELL_V11 * len(MARKETS) * len(LABELS),
+        "cells": cells,
+        "initial_blind_review_ready": ready,
+        "blind_review": "NOT_RUN",
+        "benchmark_freeze": "NOT_RUN",
+    }
 
 
 def blind_review_packets(candidates: list[dict]) -> dict:
@@ -628,6 +813,82 @@ def _assert_unique_verified_skus(selected: list[dict]) -> None:
             if sku in seen:
                 raise ChallengeError(f"Final benchmark reuses verified EAN/SKU across cases: {sku}")
             seen[sku] = candidate["candidate_id"]
+
+
+def _v11_consensus_candidates(candidates: list[dict], author: dict[str, Any], blind: dict[str, Any]) -> list[dict]:
+    approved = []
+    for candidate in candidates:
+        author_label = author.get(candidate["candidate_id"], {}).get("label")
+        blind_label = blind.get(candidate["candidate_id"], {}).get("label")
+        if author_label == blind_label == candidate["intended_label"]:
+            approved.append(candidate)
+    return approved
+
+
+def v11_select_consensus(candidates: list[dict], author: dict[str, Any], blind: dict[str, Any]) -> list[dict]:
+    """Select 150 consensus cases under v1.1 diversity bounds.
+
+    Diversity floors are satisfied first.  Remaining cases minimize distance to
+    the historical v1 target distribution; candidate hashes resolve all ties.
+    Existing family and verified-SKU safety checks stay mandatory.
+    """
+    approved = _v11_consensus_candidates(candidates, author, blind)
+    selected: list[dict] = []
+    used_families: set[str] = set()
+    used_skus: set[str] = set()
+
+    def take(candidate: dict) -> bool:
+        skus = set(candidate["hidden_dossier"]["verified_skus"])
+        if candidate["family_id"] in used_families or skus & used_skus:
+            return False
+        selected.append(candidate)
+        used_families.add(candidate["family_id"])
+        used_skus.update(skus)
+        return True
+
+    for market in MARKETS:
+        for label in LABELS:
+            pool = [item for item in approved if item["market"] == market and item["intended_label"] == label]
+            pool.sort(key=_candidate_order_key)
+            local: list[dict] = []
+            for stratum in STRATUM_TARGETS[label]:
+                floor = DIVERSITY_BOUNDS_V11[label]["minimum"]
+                choices = [item for item in pool if item["stratum"] == stratum]
+                for candidate in choices:
+                    if sum(item["stratum"] == stratum for item in local) >= floor:
+                        break
+                    if take(candidate):
+                        local.append(candidate)
+                if sum(item["stratum"] == stratum for item in local) < floor:
+                    raise ChallengeError(f"v1.1 consensus lacks diversity floor for {market}/{label}/{stratum}")
+            cap = DIVERSITY_BOUNDS_V11[label]["maximum"]
+            while len(local) < 25:
+                candidates_left = [
+                    item
+                    for item in pool
+                    if item not in local and sum(entry["stratum"] == item["stratum"] for entry in local) < cap
+                ]
+                if not candidates_left:
+                    raise ChallengeError(f"v1.1 consensus lacks 25 safe cases for {market}/{label}")
+                counts = {
+                    stratum: sum(item["stratum"] == stratum for item in local) for stratum in STRATUM_TARGETS[label]
+                }
+                candidates_left.sort(
+                    key=lambda item: (
+                        abs((counts[item["stratum"]] + 1) - STRATUM_TARGETS[label][item["stratum"]]),
+                        counts[item["stratum"]],
+                        _candidate_order_key(item),
+                    )
+                )
+                choice = next((item for item in candidates_left if take(item)), None)
+                if choice is None:
+                    raise ChallengeError(f"v1.1 consensus cannot satisfy unique family/SKU safety for {market}/{label}")
+                local.append(choice)
+    if len(selected) != 150:
+        raise ChallengeError("v1.1 consensus did not select exactly 150 cases")
+    _assert_selected_balance(selected)
+    _assert_unique_verified_skus(selected)
+    return selected
 
 
 def freeze_benchmark(
