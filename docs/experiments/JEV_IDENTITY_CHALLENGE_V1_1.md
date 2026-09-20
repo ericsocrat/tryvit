@@ -27,3 +27,11 @@ reviewer consensus and pass all final safety checks.
 
 This benchmark remains a balanced identity challenge, not an estimate of live
 TryVit prevalence or production accuracy.
+
+The v1.1 commands are separate from v1: `v1-1-prepare-review`,
+`v1-1-replenish`, and `v1-1-freeze`. Preparation writes an internal immutable
+queue manifest with full candidate order and release ranges, plus a separate
+blind export that contains only an opaque token, semantic payload, and payload
+hash. Replenishment may append only the next fixed range from that frozen
+order. The v1.1 freeze command is the only v1.1 path that creates inference
+manifests, and it requires exactly 150 `MODEL_REVIEWED_CONSENSUS` cases.

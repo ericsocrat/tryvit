@@ -349,10 +349,13 @@ def test_v11_readiness_uses_30_per_cell_and_diversity_floors():
     candidates = challenge.validate_v11_candidate_pool(v11, set())
     report = challenge.v11_readiness_report(candidates)
     assert report["initial_blind_review_ready"] is True
-    queue = challenge.v11_initial_review_queue(candidates)
-    assert len(queue["queues"]) == 6
-    assert all(len(cell["packets"]) == 30 for cell in queue["queues"])
-    assert all("candidate_id" not in packet for cell in queue["queues"] for packet in cell["packets"])
+    manifest = challenge.v11_create_queue_manifest(candidates)
+    export = challenge.v11_blind_review_export(manifest, candidates)
+    assert len(manifest["cells"]) == 6
+    assert len(export) == 180
+    assert all(
+        set(packet) == {"review_token", "model_visible_payload", "model_visible_payload_sha256"} for packet in export
+    )
 
 
 def test_v11_rejects_cell_below_initial_review_size():
@@ -406,7 +409,60 @@ def test_v11_initial_queue_excludes_duplicate_sku_alternatives():
     for key in ("hidden_dossier_sha256", "model_visible_payload_sha256", "blind_review_token"):
         del duplicate[key]
     duplicate = challenge.validate_candidate(duplicate, set())
-    queue = challenge.v11_initial_review_queue([*candidates, duplicate])
-    assert queue["collision_exclusions"]
-    all_tokens = {packet["review_token"] for cell in queue["queues"] for packet in cell["packets"]}
+    manifest = challenge.v11_create_queue_manifest([*candidates, duplicate])
+    assert manifest["collision_family_exclusions"]
+    all_tokens = {
+        packet["review_token"] for packet in challenge.v11_blind_review_export(manifest, [*candidates, duplicate])
+    }
     assert not ({candidates[0]["blind_review_token"], duplicate["blind_review_token"]} <= all_tokens)
+
+
+def test_v11_raw_count_does_not_bypass_safe_pool_readiness():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    pl_consistent = [item for item in candidates if item["market"] == "PL" and item["intended_label"] == "CONSISTENT"]
+    retained = [item for item in candidates if item not in pl_consistent] + pl_consistent[:29]
+    duplicate = dict(pl_consistent[0])
+    duplicate["candidate_id"] = "v11-safe-pool-duplicate"
+    duplicate["family_id"] = "v11-safe-pool-different-family"
+    duplicate["fingerprints"] = ["v11-safe-pool-fingerprint"]
+    duplicate["hidden_dossier"] = dict(duplicate["hidden_dossier"])
+    for key in ("hidden_dossier_sha256", "model_visible_payload_sha256", "blind_review_token"):
+        del duplicate[key]
+    retained.append(challenge.validate_candidate(duplicate, set()))
+    report = challenge.v11_readiness_report(retained)
+    cell = next(item for item in report["cells"] if item["market"] == "PL" and item["intended_class"] == "CONSISTENT")
+    assert cell["valid_unratified"] == 29
+    assert report["initial_blind_review_ready"] is False
+
+
+def test_v11_replenishment_keeps_frozen_order_and_freeze_requires_150_consensus():
+    envelope, author_document, blind_document = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    manifest = challenge.v11_create_queue_manifest(candidates)
+    author = challenge._validate_author_ledger(author_document, candidates)
+    blind = challenge._validate_blind_ledger(blind_document, candidates)
+    original_orders = [cell["ordered_candidate_ids"] for cell in manifest["cells"]]
+    state = challenge.v11_replenish(manifest, candidates, author, blind)
+    assert [cell["ordered_candidate_ids"] for cell in state["cells"]] == original_orders
+    frozen = challenge.v11_freeze_benchmark(state, candidates, author, blind)
+    assert len(frozen["label_ledger"]) == 150
+    assert len(frozen["inference_manifests"]["arm_a"]) == 150
+
+
+def test_v11_reviewer_export_has_no_internal_metadata_recursively():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    exported = challenge.v11_blind_review_export(challenge.v11_create_queue_manifest(candidates), candidates)
+    forbidden = {"intended_class", "stratum", "candidate_id", "family_id", "verified_skus", "collision_exclusions"}
+
+    def visit(value):
+        if isinstance(value, dict):
+            assert not (set(value) & forbidden)
+            for nested in value.values():
+                visit(nested)
+        elif isinstance(value, list):
+            for nested in value:
+                visit(nested)
+
+    visit(exported)
