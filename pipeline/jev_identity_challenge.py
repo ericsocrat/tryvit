@@ -661,7 +661,7 @@ def freeze_benchmark(
         label_entries.append(
             {
                 "case_ref": case_ref,
-                "expected_label": candidate["intended_label"],
+                "model_reviewed_consensus_label": candidate["intended_label"],
                 "market": candidate["market"],
                 "hidden_dossier_sha256": candidate["hidden_dossier_sha256"],
                 "label_status": "MODEL_REVIEWED_CONSENSUS",
@@ -796,7 +796,10 @@ def verify_freeze(output_dir: Path) -> dict:
     if len(labels.get("entries", [])) != 150:
         raise ChallengeError("Frozen label ledger must contain exactly 150 cases")
     _assert_selected_balance(
-        [{"market": entry["market"], "intended_label": entry["expected_label"]} for entry in labels["entries"]]
+        [
+            {"market": entry["market"], "intended_label": entry["model_reviewed_consensus_label"]}
+            for entry in labels["entries"]
+        ]
     )
     for filename in ("arm-a-minimal-manifest.json", "arm-b-enriched-manifest.json"):
         manifest = read_json(output_dir / filename)
@@ -984,7 +987,7 @@ def comparison_report(arm_a_document: Any, arm_b_document: Any, output_dir: Path
     arm_a_manifest = read_json(output_dir / "arm-a-minimal-manifest.json")
     arm_b_manifest = read_json(output_dir / "arm-b-enriched-manifest.json")
     labels = read_json(output_dir / "consensus-label-ledger.json")["entries"]
-    expected = [entry["expected_label"] for entry in labels]
+    expected = [entry["model_reviewed_consensus_label"] for entry in labels]
     markets = [entry["market"] for entry in labels]
     results_a = validate_arm_results(arm_a_document, arm_a_manifest)
     results_b = validate_arm_results(arm_b_document, arm_b_manifest)

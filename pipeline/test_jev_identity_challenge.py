@@ -232,6 +232,8 @@ def test_freeze_keeps_labels_out_of_arm_manifests_and_verifies_integrity(tmp_pat
     artifacts = challenge.freeze_benchmark(envelope, author, blind, set())
     assert artifacts["freeze_receipt"]["inference_status"] == "NOT_RUN"
     assert len(artifacts["label_ledger"]["entries"]) == 150
+    assert artifacts["label_ledger"]["entries"][0]["label_status"] == "MODEL_REVIEWED_CONSENSUS"
+    assert "model_reviewed_consensus_label" in artifacts["label_ledger"]["entries"][0]
     arm_text = repr(artifacts["arm_a_manifest"]) + repr(artifacts["arm_b_manifest"])
     assert "expected_label" not in arm_text
     assert "hidden_dossier" not in arm_text
