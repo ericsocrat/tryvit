@@ -412,11 +412,10 @@ def _validate_hidden_dossier(dossier: Any, intended_label: str) -> None:
         publishers.add(source["publisher"].casefold())
     exception = dossier.get("single_source_exception")
     if len(sources) == 1:
-        if not isinstance(exception, str) or not exception.strip():
+        if sources[0]["role"] != "official" or not isinstance(exception, str) or not exception.strip():
             raise ChallengeError("Single authoritative source needs an explicit justification")
     elif len(domains) < 2 or len(publishers) < 2:
-        if not isinstance(exception, str) or not exception.strip():
-            raise ChallengeError("Syndicated, same-publisher, or same-domain evidence needs an independence rationale")
+        raise ChallengeError("Normal corroboration needs distinct independent publishers and domains")
     elif exception is not None:
         raise ChallengeError("Independent evidence must not carry an exception")
     if not isinstance(dossier["independence_attestation"], str) or not dossier["independence_attestation"].strip():

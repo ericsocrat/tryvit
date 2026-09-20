@@ -252,7 +252,7 @@ def test_freeze_keeps_labels_out_of_arm_manifests_and_verifies_integrity(tmp_pat
 def test_same_domain_sources_require_authoritative_exception():
     item = candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 99)
     item["hidden_dossier"]["sources"][1]["domain"] = "official.example"
-    with pytest.raises(challenge.ChallengeError, match="same-domain"):
+    with pytest.raises(challenge.ChallengeError, match="distinct independent publishers"):
         challenge.validate_candidate(item, set())
 
 
@@ -260,7 +260,10 @@ def test_same_publisher_different_domain_is_not_independent():
     item = candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 98)
     item["hidden_dossier"]["sources"][1]["publisher"] = "Official brand owner"
     item["hidden_dossier"]["sources"][1]["domain"] = "shop.official.example"
-    with pytest.raises(challenge.ChallengeError, match="same-publisher"):
+    with pytest.raises(challenge.ChallengeError, match="distinct independent publishers"):
+        challenge.validate_candidate(item, set())
+    item["hidden_dossier"]["single_source_exception"] = "Two pages preserve the same publisher record."
+    with pytest.raises(challenge.ChallengeError, match="distinct independent publishers"):
         challenge.validate_candidate(item, set())
 
 
