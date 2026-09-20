@@ -35,3 +35,31 @@ blind export that contains only an opaque token, semantic payload, and payload
 hash. Replenishment may append only the next fixed range from that frozen
 order. The v1.1 freeze command is the only v1.1 path that creates inference
 manifests, and it requires exactly 150 `MODEL_REVIEWED_CONSENSUS` cases.
+
+Every export, replenishment and freeze reconstructs and validates the complete
+queue order against the validated safe pool. The queue binds the full pool and
+its own state by SHA-256. Release ranges must be contiguous prefixes, starting
+with `[0,30)`; later batches contain at most the next ten entries per cell.
+Both reviews, nonempty attestations and timezone-bearing ISO timestamps are
+required for every released case before replenishment. Recorded reviews cannot
+be changed in later states.
+
+`v1-1-replenish` requires `--reviewer-output` and emits only newly released
+packets. Exported prefixes are persisted in the next queue state; blind packets
+are sorted by opaque token, never grouped by hidden class. Transitions claim the
+input queue using an exclusive adjacent `.consumed` receipt, so replaying that
+parent under different output names fails closed. A crash after claiming a
+transition requires manual recovery of the retained artifacts; never delete the
+claim and automatically resend a potentially delivered batch. All output files
+are create-only, and historical queues remain unchanged.
+
+`v1-1-freeze` emits a single create-only bundle containing both pinned arm
+manifests, the consensus ledger, the validated review-state snapshot, and a
+receipt binding all four documents. Each case binds its semantic payload
+separately. Use `verify-v1-1-freeze --candidate-pool ... --exclusion-index ...
+--freeze ...` to recompute the entire selection, pins, balance, diversity,
+family/SKU uniqueness, payload leakage checks and receipt bindings.
+`v11_verified_provider_payloads` is the v1.1 runner boundary and verifies the
+whole bundle before returning any semantic-only payload. There is no v1.1
+network runner in this amendment; individual manifests are not authorization
+to call JEV. The receipt keeps `inference_status = NOT_RUN`.

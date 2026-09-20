@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from copy import deepcopy
+
 import pytest
 
 from pipeline import jev_identity_challenge as challenge
@@ -449,14 +451,18 @@ def test_v11_replenishment_keeps_frozen_order_and_freeze_requires_150_consensus(
     envelope, author_document, blind_document = consensus_input()
     candidates = challenge.validate_candidate_pool(envelope, set())
     manifest = challenge.v11_create_queue_manifest(candidates)
+    challenge.v11_blind_review_export(manifest, candidates)
     author = challenge._validate_author_ledger(author_document, candidates)
     blind = challenge._validate_blind_ledger(blind_document, candidates)
+    released = released_ids(manifest)
+    author = {cid: value for cid, value in author.items() if cid in released}
+    blind = {cid: value for cid, value in blind.items() if cid in released}
     original_orders = [cell["ordered_candidate_ids"] for cell in manifest["cells"]]
     state = challenge.v11_replenish(manifest, candidates, author, blind)
     assert [cell["ordered_candidate_ids"] for cell in state["cells"]] == original_orders
     frozen = challenge.v11_freeze_benchmark(state, candidates, author, blind)
     assert len(frozen["label_ledger"]) == 150
-    assert len(frozen["inference_manifests"]["arm_a"]) == 150
+    assert len(frozen["inference_manifests"]["arm_a"]["cases"]) == 150
 
 
 def test_v11_reviewer_export_has_no_internal_metadata_recursively():
@@ -475,3 +481,186 @@ def test_v11_reviewer_export_has_no_internal_metadata_recursively():
                 visit(nested)
 
     visit(exported)
+
+
+def released_ids(queue):
+    return {cid for cell in queue["cells"]
+            for cid in cell["ordered_candidate_ids"][:cell["release_ranges"][-1]["end"]]}
+
+
+def v11_fixture():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    queue = challenge.v11_create_queue_manifest(candidates)
+    packets = challenge.v11_blind_review_export(queue, candidates)
+    author, blind = fixture_reviews(queue, candidates)
+    return candidates, queue, packets, author, blind
+
+
+def fixture_reviews(queue, candidates):
+    author = {item["candidate_id"]: {"label": item["intended_label"],
+              "attestation": "Synthetic test review", "reviewed_at": "2026-09-20T00:00:00Z"}
+              for item in candidates if item["candidate_id"] in released_ids(queue)}
+    return author, deepcopy(author)
+
+
+@pytest.mark.parametrize("mutation", ["id", "order", "hash", "pool", "cell", "missing", "duplicate",
+                                    "initial", "overlap", "gap", "backwards", "bounds"])
+def test_v11_queue_tampering_rejected_by_every_transition(mutation):
+    candidates, queue, _, author, blind = v11_fixture()
+    cell = queue["cells"][0]
+    if mutation == "id":
+        cell["ordered_candidate_ids"][0] = "not-safe"
+    elif mutation == "order":
+        cell["ordered_candidate_ids"][:2] = reversed(cell["ordered_candidate_ids"][:2])
+        cell["ordered_queue_sha256"] = challenge.digest(cell["ordered_candidate_ids"])
+    elif mutation == "hash":
+        cell["ordered_queue_sha256"] = "0" * 64
+    elif mutation == "pool":
+        queue["safe_pool_sha256"] = "0" * 64
+    elif mutation == "cell":
+        cell["market"] = "DE"
+    elif mutation == "missing":
+        queue["cells"].pop()
+    elif mutation == "duplicate":
+        queue["cells"][1] = deepcopy(cell)
+    elif mutation == "initial":
+        cell["release_ranges"] = [{"start": 0, "end": 29}]
+    else:
+        cell["release_ranges"].append({"start": {"overlap": 0, "gap": 31}.get(mutation, 30),
+                                       "end": {"backwards": 20, "bounds": 999}.get(mutation, 40)})
+    challenge._v11_seal_queue(queue)  # Even recomputing the state digest must not bypass reconstruction.
+    for transition in (lambda: challenge.v11_blind_review_export(queue, candidates),
+                       lambda: challenge.v11_replenish(queue, candidates, author, blind),
+                       lambda: challenge.v11_freeze_benchmark(queue, candidates, author, blind)):
+        with pytest.raises(challenge.ChallengeError, match="queue"):
+            transition()
+
+
+@pytest.mark.parametrize("role", ["author", "blind"])
+@pytest.mark.parametrize("fault", ["missing", "attestation", "timestamp"])
+def test_v11_incomplete_or_invalid_reviews_cannot_replenish(role, fault):
+    candidates, queue, _, author, blind = v11_fixture()
+    original = deepcopy(queue)
+    ledger = author if role == "author" else blind
+    cid = next(iter(ledger))
+    if fault == "missing":
+        del ledger[cid]
+    else:
+        ledger[cid]["reviewed_at" if fault == "timestamp" else "attestation"] = ""
+    with pytest.raises(challenge.ChallengeError, match="review"):
+        challenge.v11_replenish(queue, candidates, author, blind)
+    assert queue == original
+
+
+def test_v11_incremental_exports_and_order_independence(tmp_path):
+    candidates, queue, initial, author, blind = v11_fixture()
+    # Force shortage without changing candidate ordering.
+    for cid in queue["cells"][0]["ordered_candidate_ids"][:10]:
+        blind[cid]["label"] = "INSUFFICIENT_EVIDENCE"
+    state = challenge.v11_replenish(queue, candidates, author, blind)
+    assert [c["ordered_candidate_ids"] for c in state["cells"]] == [c["ordered_candidate_ids"] for c in queue["cells"]]
+    new = challenge.v11_blind_review_export(state, candidates)
+    assert len(new) == 60
+    assert not {p["review_token"] for p in new} & {p["review_token"] for p in initial}
+    assert challenge.v11_blind_review_export(state, candidates) == []
+    with pytest.raises(challenge.ChallengeError, match="incomplete"):
+        challenge.v11_replenish(state, candidates, author, blind)
+    path = tmp_path / "queue.json"
+    challenge._v11_claim_transition(path, queue)
+    with pytest.raises(FileExistsError):
+        challenge._v11_claim_transition(path, queue)
+
+
+def test_v11_freeze_pins_bindings_and_verified_provider_adapter():
+    candidates, queue, _, author, blind = v11_fixture()
+    frozen = challenge.v11_freeze_benchmark(queue, candidates, author, blind)
+    receipt = challenge.verify_v11_freeze(frozen, candidates)
+    assert receipt["case_count"] == 150
+    assert receipt["inference_status"] == "NOT_RUN"
+    assert receipt["queue_manifest_sha256"] == challenge.digest(frozen["queue_manifest"])
+    assert receipt["label_ledger_sha256"] == challenge.digest(frozen["label_ledger"])
+    for key, arm, prompt, prompt_hash in (
+        ("arm_a", "A_MINIMAL", challenge.ARM_A_PROMPT_ID, challenge.ARM_A_PROMPT_SHA256),
+        ("arm_b", "B_ENRICHED", challenge.ARM_B_PROMPT_ID, challenge.ARM_B_PROMPT_SHA256),
+    ):
+        manifest = frozen["inference_manifests"][key]
+        assert manifest["requested_model_id"] == "jev-1.13.0"
+        assert (manifest["prompt_id"], manifest["prompt_sha256"]) == (prompt, prompt_hash)
+        assert receipt[key + "_manifest_sha256"] == challenge.digest(manifest)
+        assert len(challenge.v11_verified_provider_payloads(frozen, candidates, arm=arm)) == 150
+
+
+@pytest.mark.parametrize("fault", ["receipt", "model", "prompt", "prompt_hash", "label", "leakage"])
+def test_v11_mutated_freeze_cannot_reach_provider(fault):
+    candidates, queue, _, author, blind = v11_fixture()
+    frozen = challenge.v11_freeze_benchmark(queue, candidates, author, blind)
+    manifest = frozen["inference_manifests"]["arm_b"]
+    if fault == "receipt":
+        frozen["freeze_receipt"]["case_count"] = 149
+    elif fault == "label":
+        frozen["label_ledger"][0]["label_status"] = "UNREVIEWED"
+    elif fault == "leakage":
+        case = manifest["cases"][0]
+        case["model_visible_payload"]["enrichment"]["reference"]["aliases"] = "https://private.test/sku"
+        case["model_visible_payload_sha256"] = challenge.digest(case["model_visible_payload"])
+    else:
+        key = {"model": "requested_model_id", "prompt": "prompt_id", "prompt_hash": "prompt_sha256"}[fault]
+        manifest[key] = "wrong"
+    # Rehash an altered manifest to exercise semantic verification, not just digest checks.
+    frozen["freeze_receipt"]["arm_b_manifest_sha256"] = challenge.digest(manifest)
+    with pytest.raises(challenge.ChallengeError):
+        challenge.v11_verified_provider_payloads(frozen, candidates, arm="B_ENRICHED")
+
+
+def test_v11_cli_state_machine_replenish_freeze_verify_and_replay(tmp_path):
+    candidates, queue, _, author, blind = v11_fixture()
+    paths = {name: tmp_path / (name + ".json") for name in ("pool", "index", "queue", "author", "blind")}
+    challenge.write_new(paths["pool"], {"schema_version": 1, "protocol_id": challenge.AMENDMENT_PROTOCOL_ID,
+                                        "candidates": candidates})
+    challenge.write_new(paths["index"], {"challenge_id": challenge.CHALLENGE_ID, "fingerprints": []})
+    challenge.write_new(paths["queue"], queue)
+    tokens = {item["candidate_id"]: item["blind_review_token"] for item in candidates}
+    rejected = queue["cells"][0]["ordered_candidate_ids"][:6]
+    for cid in rejected:
+        blind[cid]["label"] = "INSUFFICIENT_EVIDENCE"
+
+    def write_ledgers(a_path, b_path, author, blind):
+        for path, ledger, is_blind in ((a_path, author, False), (b_path, blind, True)):
+            challenge.write_new(path, {"schema_version": 1, "protocol_id": challenge.AMENDMENT_PROTOCOL_ID,
+                "entries": [{**entry, "review_token" if is_blind else "candidate_id": tokens[cid] if is_blind else cid}
+                            for cid, entry in ledger.items()]})
+
+    write_ledgers(paths["author"], paths["blind"], author, blind)
+    base = ["--candidate-pool", str(paths["pool"]), "--exclusion-index", str(paths["index"])]
+    new_queue, new_export = tmp_path / "next.json", tmp_path / "next-packets.json"
+    args = ["v1-1-replenish", *base, "--queue-manifest", str(paths["queue"]),
+            "--author-ledger", str(paths["author"]), "--blind-ledger", str(paths["blind"]),
+            "--output", str(new_queue), "--reviewer-output", str(new_export)]
+    assert challenge.main(args) == 0
+    # Reusing a consumed parent cannot produce the same batch under fresh output names.
+    args[-3], args[-1] = str(tmp_path / "replay.json"), str(tmp_path / "replay-packets.json")
+    with pytest.raises(FileExistsError):
+        challenge.main(args)
+    assert not (tmp_path / "replay-packets.json").exists()
+    state = challenge.read_json(new_queue)
+    author, blind = fixture_reviews(state, candidates)
+    for cid in rejected:
+        blind[cid]["label"] = "INSUFFICIENT_EVIDENCE"
+    final_a, final_b = tmp_path / "final-author.json", tmp_path / "final-blind.json"
+    write_ledgers(final_a, final_b, author, blind)
+    frozen_path = tmp_path / "freeze.json"
+    assert challenge.main(["v1-1-freeze", *base, "--queue-manifest", str(new_queue),
+                           "--author-ledger", str(final_a), "--blind-ledger", str(final_b),
+                           "--output", str(frozen_path)]) == 0
+    assert challenge.main(["verify-v1-1-freeze", *base, "--freeze", str(frozen_path)]) == 0
+    frozen = challenge.read_json(frozen_path)
+    for market in challenge.MARKETS:
+        for label in challenge.LABELS:
+            entries = [entry for entry in frozen["label_ledger"] if entry["market"] == market
+                       and entry["model_reviewed_consensus_label"] == label]
+            assert len(entries) == 25
+            for stratum in challenge.STRATUM_TARGETS[label]:
+                count = sum(entry["stratum"] == stratum for entry in entries)
+                assert challenge.DIVERSITY_BOUNDS_V11[label]["minimum"] <= count
+                assert count <= challenge.DIVERSITY_BOUNDS_V11[label]["maximum"]

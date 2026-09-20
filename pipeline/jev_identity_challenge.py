@@ -15,6 +15,8 @@ import random
 import re
 import sys
 from collections import defaultdict
+from copy import deepcopy
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -641,26 +643,143 @@ def v11_create_queue_manifest(candidates: list[dict]) -> dict:
                     "release_ranges": [{"start": 0, "end": INITIAL_REVIEW_QUEUE_PER_CELL_V11}],
                     "reviewed_candidate_ids": [],
                     "consensus_candidate_ids": [],
+                    "exported_end": 0,
                 }
             )
-    return {
+    return _v11_seal_queue({
         "schema_version": SCHEMA_VERSION,
         "protocol_id": AMENDMENT_PROTOCOL_ID,
-        "safe_pool_sha256": digest([item["candidate_id"] for item in safe_candidates]),
+        "safe_pool_sha256": digest(safe_candidates),
         "collision_family_exclusions": exclusions,
         "cells": cells,
         "blind_review": "NOT_RUN",
         "benchmark_freeze": "NOT_RUN",
-    }
+        "review_records": {"author": {}, "blind": {}},
+    })
+
+
+def _v11_seal_queue(queue: dict) -> dict:
+    queue["state_sha256"] = digest({key: value for key, value in queue.items() if key != "state_sha256"})
+    return queue
+
+
+def validate_v11_queue_manifest(queue: Any, candidates: list[dict]) -> None:
+    """Reconstruct the pre-review order; validate every released/exported prefix."""
+    for candidate in candidates:
+        validate_candidate(candidate, set())  # Historical index is enforced at the CLI pool boundary.
+    expected = v11_create_queue_manifest(candidates)
+    if not isinstance(queue, dict) or set(queue) != set(expected):
+        raise ChallengeError("v1.1 queue schema is invalid")
+    if queue["state_sha256"] != digest({key: value for key, value in queue.items() if key != "state_sha256"}):
+        raise ChallengeError("v1.1 queue state hash mismatch")
+    for key in ("schema_version", "protocol_id", "safe_pool_sha256", "collision_family_exclusions", "benchmark_freeze"):
+        if queue[key] != expected[key]:
+            raise ChallengeError(f"v1.1 queue {key} mismatch")
+    if not isinstance(queue["cells"], list) or len(queue["cells"]) != 6:
+        raise ChallengeError("v1.1 queue requires exactly six cells")
+    released_ids = set()
+    for cell, original in zip(queue["cells"], expected["cells"], strict=True):
+        if not isinstance(cell, dict) or set(cell) != set(original):
+            raise ChallengeError("v1.1 queue cell schema is invalid")
+        for key in ("market", "intended_class", "ordered_candidate_ids", "ordered_queue_sha256"):
+            if cell[key] != original[key]:
+                raise ChallengeError(f"v1.1 queue {key} mismatch")
+        ranges = cell["release_ranges"]
+        if not isinstance(ranges, list) or not ranges or ranges[0] != {"start": 0, "end": 30}:
+            raise ChallengeError("v1.1 queue initial release must be [0,30)")
+        end = 0
+        endpoints = {0}
+        for index, interval in enumerate(ranges):
+            if (
+                not isinstance(interval, dict) or set(interval) != {"start", "end"}
+                or type(interval["start"]) is not int or type(interval["end"]) is not int
+                or interval["start"] != end or interval["end"] <= end
+                or interval["end"] > len(cell["ordered_candidate_ids"])
+                or (index and interval["end"] != min(end + V11_REPLENISHMENT_BATCH_SIZE,
+                                                     len(cell["ordered_candidate_ids"])))
+            ):
+                raise ChallengeError("v1.1 queue release range is invalid or replayed")
+            end = interval["end"]
+            endpoints.add(end)
+        if type(cell["exported_end"]) is not int or cell["exported_end"] not in endpoints:
+            raise ChallengeError("v1.1 queue exported prefix is invalid")
+        ids = cell["ordered_candidate_ids"][:end]
+        released_ids.update(ids)
+        for key in ("reviewed_candidate_ids", "consensus_candidate_ids"):
+            value = cell[key]
+            if not isinstance(value, list) or value != [cid for cid in ids if cid in value]:
+                raise ChallengeError("v1.1 queue review state is invalid")
+    records = queue["review_records"]
+    if not isinstance(records, dict) or set(records) != {"author", "blind"}:
+        raise ChallengeError("v1.1 queue review records are invalid")
+    for ledger in records.values():
+        _v11_check_reviews(ledger, released_ids, require_complete=False)
+    by_id = {item["candidate_id"]: item for item in candidates}
+    for cell in queue["cells"]:
+        ids = cell["ordered_candidate_ids"][:cell["exported_end"]]
+        reviewed = [cid for cid in ids if cid in records["author"] and cid in records["blind"]]
+        consensus = [cid for cid in reviewed if records["author"][cid]["label"]
+                     == records["blind"][cid]["label"] == by_id[cid]["intended_label"]]
+        if cell["reviewed_candidate_ids"] != reviewed or cell["consensus_candidate_ids"] != consensus:
+            raise ChallengeError("v1.1 queue review/consensus state mismatch")
+        previous_end = cell["release_ranges"][-1]["start"]
+        if not set(cell["ordered_candidate_ids"][:previous_end]) <= set(reviewed):
+            raise ChallengeError("v1.1 queue extended before reviews completed")
+    expected_review = "NOT_RUN" if not records["blind"] else "REVIEWED"
+    if queue["blind_review"] != expected_review:
+        raise ChallengeError("v1.1 queue blind review state mismatch")
+
+
+def _v11_check_reviews(ledger: Any, released: set[str], *, require_complete: bool = True) -> None:
+    if not isinstance(ledger, dict) or not set(ledger) <= released:
+        raise ChallengeError("v1.1 review ledger includes unreleased candidates")
+    if require_complete and set(ledger) != released:
+        raise ChallengeError("v1.1 incomplete released reviews")
+    for entry in ledger.values():
+        if not isinstance(entry, dict) or entry.get("label") not in LABELS:
+            raise ChallengeError("v1.1 review label is invalid")
+        if not isinstance(entry.get("attestation"), str) or not entry["attestation"].strip():
+            raise ChallengeError("v1.1 review requires attestation")
+        try:
+            timestamp = datetime.fromisoformat(entry["reviewed_at"].replace("Z", "+00:00"))
+            if timestamp.tzinfo is None:
+                raise ValueError("timezone required")
+        except (KeyError, AttributeError, TypeError, ValueError) as exc:
+            raise ChallengeError("v1.1 review requires valid timestamp") from exc
+
+
+def _v11_reviewed_state(queue: dict, candidates: list[dict], author: dict, blind: dict) -> dict:
+    validate_v11_queue_manifest(queue, candidates)
+    released = {cid for cell in queue["cells"]
+                for cid in cell["ordered_candidate_ids"][:cell["release_ranges"][-1]["end"]]}
+    if any(cell["exported_end"] != cell["release_ranges"][-1]["end"] for cell in queue["cells"]):
+        raise ChallengeError("v1.1 released packets have not been exported")
+    for role, ledger in (("author", author), ("blind", blind)):
+        _v11_check_reviews(ledger, released)
+        for cid, entry in queue["review_records"][role].items():
+            if ledger.get(cid) != entry:
+                raise ChallengeError("v1.1 prior review was modified")
+    result = deepcopy(queue)
+    result["review_records"] = {"author": deepcopy(author), "blind": deepcopy(blind)}
+    by_id = {item["candidate_id"]: item for item in candidates}
+    for cell in result["cells"]:
+        ids = cell["ordered_candidate_ids"][:cell["exported_end"]]
+        cell["reviewed_candidate_ids"] = ids
+        cell["consensus_candidate_ids"] = [cid for cid in ids if author[cid]["label"]
+                                           == blind[cid]["label"] == by_id[cid]["intended_label"]]
+    result["blind_review"] = "REVIEWED"
+    return _v11_seal_queue(result)
 
 
 def v11_blind_review_export(queue_manifest: dict, candidates: list[dict]) -> list[dict]:
-    """Export only opaque semantic packets for currently released entries."""
+    """Consume unexported released prefixes; caller must persist the updated state."""
+    validate_v11_queue_manifest(queue_manifest, candidates)
     candidate_by_id = {item["candidate_id"]: item for item in candidates}
     packets = []
     for cell in queue_manifest["cells"]:
         for release in cell["release_ranges"]:
-            for candidate_id in cell["ordered_candidate_ids"][release["start"] : release["end"]]:
+            start = max(cell["exported_end"], release["start"])
+            for candidate_id in cell["ordered_candidate_ids"][start : release["end"]]:
                 candidate = candidate_by_id[candidate_id]
                 packets.append(
                     {
@@ -669,7 +788,13 @@ def v11_blind_review_export(queue_manifest: dict, candidates: list[dict]) -> lis
                         "model_visible_payload_sha256": candidate["model_visible_payload_sha256"],
                     }
                 )
-    return packets
+        cell["exported_end"] = cell["release_ranges"][-1]["end"]
+    for packet in packets:
+        visible = validate_model_visible_payload(packet["model_visible_payload"])
+        if digest(visible) != packet["model_visible_payload_sha256"]:
+            raise ChallengeError("v1.1 reviewer payload hash mismatch")
+    _v11_seal_queue(queue_manifest)
+    return sorted(packets, key=lambda packet: packet["review_token"])
 
 
 def blind_review_packets(candidates: list[dict]) -> dict:
@@ -919,6 +1044,7 @@ def v11_select_consensus(candidates: list[dict], author: dict[str, Any], blind: 
 
 def v11_replenish(queue_manifest: dict, candidates: list[dict], author: dict[str, Any], blind: dict[str, Any]) -> dict:
     """Append only the next frozen queue range when consensus cannot freeze."""
+    queue_manifest = _v11_reviewed_state(queue_manifest, candidates, author, blind)
     candidate_by_id = {item["candidate_id"]: item for item in candidates}
     released_ids = {
         candidate_id
@@ -928,13 +1054,8 @@ def v11_replenish(queue_manifest: dict, candidates: list[dict], author: dict[str
     }
     released = [candidate_by_id[candidate_id] for candidate_id in released_ids]
     try:
-        selected = v11_select_consensus(released, author, blind)
-        return {
-            **queue_manifest,
-            "reviewed_candidate_ids": sorted(released_ids),
-            "consensus_candidate_ids": [item["candidate_id"] for item in selected],
-            "ready_to_freeze": True,
-        }
+        v11_select_consensus(released, author, blind)
+        return queue_manifest
     except ChallengeError:
         pass
     updated_cells = []
@@ -949,12 +1070,7 @@ def v11_replenish(queue_manifest: dict, candidates: list[dict], author: dict[str
         updated_cells.append({**cell, "release_ranges": releases})
     if exhausted:
         raise ChallengeError("v1.1 replenishment queue is exhausted before feasible consensus")
-    return {
-        **queue_manifest,
-        "cells": updated_cells,
-        "reviewed_candidate_ids": sorted(released_ids),
-        "ready_to_freeze": False,
-    }
+    return _v11_seal_queue({**queue_manifest, "cells": updated_cells})
 
 
 def _v11_validate_review_ledger(document: Any, candidates: list[dict], *, blind: bool) -> dict[str, dict]:
@@ -991,6 +1107,7 @@ def v11_freeze_benchmark(
     queue_manifest: dict, candidates: list[dict], author: dict[str, dict], blind: dict[str, dict]
 ) -> dict:
     """Create v1.1 inference manifests only after exactly 150 consensus cases."""
+    queue_manifest = _v11_reviewed_state(queue_manifest, candidates, author, blind)
     released_ids = {
         candidate_id
         for cell in queue_manifest["cells"]
@@ -1014,6 +1131,10 @@ def v11_freeze_benchmark(
                 "market": candidate["market"],
                 "label_status": "MODEL_REVIEWED_CONSENSUS",
                 "hidden_dossier_sha256": candidate["hidden_dossier_sha256"],
+                "candidate_id": candidate["candidate_id"],
+                "family_id": candidate["family_id"],
+                "stratum": candidate["stratum"],
+                "verified_skus": candidate["hidden_dossier"]["verified_skus"],
             }
         )
         arm_a.append(
@@ -1021,6 +1142,7 @@ def v11_freeze_benchmark(
                 "case_ref": case_ref,
                 "market": candidate["market"],
                 "model_visible_payload": minimal_arm_payload(candidate["model_visible_payload"]),
+                "model_visible_payload_sha256": digest(minimal_arm_payload(candidate["model_visible_payload"])),
             }
         )
         arm_b.append(
@@ -1028,17 +1150,80 @@ def v11_freeze_benchmark(
                 "case_ref": case_ref,
                 "market": candidate["market"],
                 "model_visible_payload": enriched_arm_payload(candidate["model_visible_payload"]),
+                "model_visible_payload_sha256": digest(enriched_arm_payload(candidate["model_visible_payload"])),
             }
         )
     _assert_selected_balance(selected)
     _assert_unique_verified_skus(selected)
+    manifests = {}
+    for key, arm, prompt, prompt_hash, cases in (
+        ("arm_a", "A_MINIMAL", ARM_A_PROMPT_ID, ARM_A_PROMPT_SHA256, arm_a),
+        ("arm_b", "B_ENRICHED", ARM_B_PROMPT_ID, ARM_B_PROMPT_SHA256, arm_b),
+    ):
+        for case in cases:
+            provider_payload(case, arm=arm)
+        manifests[key] = {
+            "schema_version": SCHEMA_VERSION, "protocol_id": AMENDMENT_PROTOCOL_ID,
+            "challenge_id": CHALLENGE_ID, "arm": arm, "requested_model_id": MODEL_ID,
+            "prompt_id": prompt, "prompt_sha256": prompt_hash, "case_count": 150, "cases": cases,
+        }
+    receipt = {
+        "protocol_id": AMENDMENT_PROTOCOL_ID, "inference_status": "NOT_RUN", "case_count": 150,
+        "balance": {market: dict.fromkeys(LABELS, 25) for market in MARKETS},
+        "queue_manifest_sha256": digest(queue_manifest), "label_ledger_sha256": digest(labels),
+        "arm_a_manifest_sha256": digest(manifests["arm_a"]),
+        "arm_b_manifest_sha256": digest(manifests["arm_b"]),
+    }
+    receipt["receipt_sha256"] = digest(receipt)
     return {
         "schema_version": SCHEMA_VERSION,
         "protocol_id": AMENDMENT_PROTOCOL_ID,
         "status": "FROZEN_MODEL_REVIEWED_CONSENSUS",
         "label_ledger": labels,
-        "inference_manifests": {"arm_a": arm_a, "arm_b": arm_b},
+        "inference_manifests": manifests,
+        "queue_manifest": queue_manifest,
+        "freeze_receipt": receipt,
     }
+
+
+def verify_v11_freeze(artifact: Any, candidates: list[dict]) -> dict:
+    """Verify bindings AND semantics; a rehashed mutation cannot bypass the pins."""
+    keys = {"schema_version", "protocol_id", "status", "label_ledger", "inference_manifests",
+            "queue_manifest", "freeze_receipt"}
+    if not isinstance(artifact, dict) or set(artifact) != keys:
+        raise ChallengeError("v1.1 freeze schema is invalid")
+    queue = artifact["queue_manifest"]
+    validate_v11_queue_manifest(queue, candidates)
+    records = queue["review_records"]
+    expected = v11_freeze_benchmark(queue, candidates, records["author"], records["blind"])
+    # Independently revalidate outbound documents even when their stored hashes agree.
+    for key, arm in (("arm_a", "A_MINIMAL"), ("arm_b", "B_ENRICHED")):
+        manifest = artifact["inference_manifests"].get(key)
+        if not isinstance(manifest, dict) or not isinstance(manifest.get("cases"), list):
+            raise ChallengeError("v1.1 arm manifest is invalid")
+        for case in manifest["cases"]:
+            provider_payload(case, arm=arm)
+    if artifact != expected:
+        raise ChallengeError("v1.1 freeze binding, balance, diversity or model/prompt pin mismatch")
+    return deepcopy(artifact["freeze_receipt"])
+
+
+def v11_verified_provider_payloads(artifact: dict, candidates: list[dict], *, arm: str) -> list[dict]:
+    """Sole v1.1 runner adapter: verify the entire freeze before exposing any request."""
+    verify_v11_freeze(artifact, candidates)
+    key = {"A_MINIMAL": "arm_a", "B_ENRICHED": "arm_b"}.get(arm)
+    if key is None:
+        raise ChallengeError("Unknown challenge arm")
+    return [provider_payload(case, arm=arm) for case in artifact["inference_manifests"][key]["cases"]]
+
+
+def _v11_claim_transition(queue_path: Path, queue: dict) -> None:
+    """Exclusive durable claim prevents applying the same persisted parent twice.
+
+    A crash after the claim fails closed: retain it for recovery, never replay a
+    batch automatically. New states are always written to a new path.
+    """
+    write_new(queue_path.with_name(queue_path.name + ".consumed"), {"state_sha256": queue["state_sha256"]})
 
 
 def freeze_benchmark(
@@ -1521,6 +1706,7 @@ def main(argv: list[str] | None = None) -> int:
     v11_replenish_parser.add_argument("--author-ledger", type=_cli_path, required=True)
     v11_replenish_parser.add_argument("--blind-ledger", type=_cli_path, required=True)
     v11_replenish_parser.add_argument("--output", type=_cli_path, required=True)
+    v11_replenish_parser.add_argument("--reviewer-output", type=_cli_path, required=True)
     v11_freeze_parser = commands.add_parser("v1-1-freeze")
     v11_freeze_parser.add_argument("--candidate-pool", type=_cli_path, required=True)
     v11_freeze_parser.add_argument("--exclusion-index", type=_cli_path, required=True)
@@ -1528,6 +1714,10 @@ def main(argv: list[str] | None = None) -> int:
     v11_freeze_parser.add_argument("--author-ledger", type=_cli_path, required=True)
     v11_freeze_parser.add_argument("--blind-ledger", type=_cli_path, required=True)
     v11_freeze_parser.add_argument("--output", type=_cli_path, required=True)
+    v11_verify = commands.add_parser("verify-v1-1-freeze")
+    v11_verify.add_argument("--candidate-pool", type=_cli_path, required=True)
+    v11_verify.add_argument("--exclusion-index", type=_cli_path, required=True)
+    v11_verify.add_argument("--freeze", type=_cli_path, required=True)
     args = parser.parse_args(argv)
     if args.command == "build-exclusion-index":
         document = build_exclusion_index(args.source)
@@ -1548,11 +1738,14 @@ def main(argv: list[str] | None = None) -> int:
         )
         paths = write_freeze(args.output_dir, artifacts)
         result = {"status": "ok", "paths": {name: str(path) for name, path in paths.items()}}
-    elif args.command in {"v1-1-prepare-review", "v1-1-replenish", "v1-1-freeze"}:
+    elif args.command in {"v1-1-prepare-review", "v1-1-replenish", "v1-1-freeze", "verify-v1-1-freeze"}:
         candidates = validate_v11_candidate_pool(
             read_json(args.candidate_pool), _read_exclusion_index(args.exclusion_index)
         )
-        if args.command == "v1-1-prepare-review":
+        if args.command == "verify-v1-1-freeze":
+            receipt = verify_v11_freeze(read_json(args.freeze), candidates)
+            result = {"status": "ok", "freeze_receipt_sha256": digest(receipt)}
+        elif args.command == "v1-1-prepare-review":
             queue = v11_create_queue_manifest(candidates)
             reviewer_export = v11_blind_review_export(queue, candidates)
             write_new(args.queue_output, queue)
@@ -1567,7 +1760,20 @@ def main(argv: list[str] | None = None) -> int:
                 if args.command == "v1-1-replenish"
                 else v11_freeze_benchmark(queue, candidates, author, blind)
             )
+            if args.command == "v1-1-replenish":
+                reviewer_export = v11_blind_review_export(artifact, candidates)
+                if not reviewer_export:
+                    raise ChallengeError("v1.1 consensus ready; freeze instead of exporting a duplicate batch")
+                if args.reviewer_output.exists():
+                    raise ChallengeError("v1.1 reviewer output already exists")
+            else:
+                verify_v11_freeze(artifact, candidates)
+            if args.output.exists():
+                raise ChallengeError("v1.1 transition output already exists")
+            _v11_claim_transition(args.queue_manifest, queue)
             write_new(args.output, artifact)
+            if args.command == "v1-1-replenish":
+                write_new(args.reviewer_output, reviewer_export)
             result = {"status": "ok", "sha256": digest(artifact)}
     else:
         if args.command == "verify-freeze":
