@@ -606,13 +606,16 @@ def _v11_freeze_inputs(*, distinctive_insufficient_missingness: bool = False):
     return candidates, queue, author, blind
 
 
-def test_v11_freeze_rejects_distinctive_insufficient_missingness():
+def test_v11_freeze_rejects_distinctive_insufficient_missingness(monkeypatch):
+    # Simulate a queue frozen by an earlier implementation, before feasibility
+    # became a pre-review gate. The final selector must still fail closed.
+    monkeypatch.setattr(challenge, "v11_pre_review_feasibility", lambda candidates: {"status": "FEASIBLE"})
     candidates, queue, author, blind = _v11_freeze_inputs(distinctive_insufficient_missingness=True)
     diagnostic = challenge.v11_missingness_diagnostic(candidates)
     by_field = {(row["class"], row["side"], row["semantic_field"]): row for row in diagnostic["counts"]}
     assert by_field[("INSUFFICIENT_EVIDENCE", "reference", "variant")]["null_count"] == 0
     assert by_field[("CONSISTENT", "reference", "variant")]["null_count"] > 0
-    with pytest.raises(challenge.ChallengeError, match="missingness is not matched"):
+    with pytest.raises(challenge.ChallengeError, match="matched-missingness"):
         challenge.v11_freeze_benchmark(queue, candidates, author, blind)
 
 
@@ -628,7 +631,77 @@ def test_v11_verify_reconstructs_missingness_guard(monkeypatch):
 
     monkeypatch.setattr(challenge, "_assert_matched_missingness", checked)
     challenge.verify_v11_freeze(frozen, candidates)
-    assert calls == [150]
+    assert calls and set(calls) == {150}
+
+
+def test_v11_global_selector_finds_missingness_aware_counterexample(monkeypatch):
+    envelope, _, _ = consensus_input()
+    bad = candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 9001)
+    bad["candidate_id"] = "000-distinctive-null-pattern"
+    bad["family_id"] = "family-a-distinctive-null-pattern"
+    bad["model_visible_payload"]["reference"]["variant"] = "retained variant"
+    bad["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
+    good = candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 9002)
+    good["candidate_id"] = "zzz-matched-alternative"
+    good["family_id"] = "family-z-matched-alternative"
+    envelope["candidates"].extend((bad, good))
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    monkeypatch.setattr(challenge, "_candidate_order_key", lambda item: item["candidate_id"])
+
+    old_selection = []
+    for market in challenge.MARKETS:
+        for label in challenge.LABELS:
+            cell = [item for item in candidates if item["market"] == market and item["intended_label"] == label]
+            old_selection.extend(challenge._v11_exact_cell_selection(cell, label))
+    assert bad["candidate_id"] in {item["candidate_id"] for item in old_selection}
+    with pytest.raises(challenge.ChallengeError, match="missingness is not matched"):
+        challenge._assert_matched_missingness(old_selection)
+
+    reviews = {item["candidate_id"]: {"label": item["intended_label"]} for item in candidates}
+    selected = challenge.v11_select_consensus(candidates, reviews, reviews)
+    selected_ids = {item["candidate_id"] for item in selected}
+    assert bad["candidate_id"] not in selected_ids
+    challenge._assert_selected_balance(selected)
+    challenge._assert_matched_missingness(selected)
+    challenge._assert_unique_verified_skus(selected)
+
+
+def test_v11_pre_review_feasibility_witness_is_valid_and_order_independent():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    first = challenge.v11_pre_review_feasibility(candidates)
+    second = challenge.v11_pre_review_feasibility(list(reversed(candidates)))
+    assert first["status"] == "FEASIBLE"
+    assert first["witness_candidate_ids"] == second["witness_candidate_ids"]
+    assert first["witness_sha256"] == second["witness_sha256"]
+    assert first["class_missingness_sha256"] == second["class_missingness_sha256"]
+    witness_by_id = {item["candidate_id"]: item for item in candidates}
+    selected = [witness_by_id[candidate_id] for candidate_id in first["witness_candidate_ids"]]
+    challenge._assert_selected_balance(selected)
+    challenge._assert_matched_missingness(selected)
+    challenge._assert_unique_verified_skus(selected)
+    for label in challenge.LABELS:
+        for market in challenge.MARKETS:
+            counts = first["stratum_counts"][label][market]
+            assert sum(counts.values()) == 25
+            bounds = challenge.DIVERSITY_BOUNDS_V11[label]
+            assert all(bounds["minimum"] <= count <= bounds["maximum"] for count in counts.values())
+
+
+def test_v11_truly_infeasible_missingness_blocks_queue_and_consensus():
+    envelope, _, _ = consensus_input()
+    for item in envelope["candidates"]:
+        if item["intended_label"] == "INSUFFICIENT_EVIDENCE":
+            item["model_visible_payload"]["reference"]["variant"] = "retained variant"
+            item["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    feasibility = challenge.v11_pre_review_feasibility(candidates)
+    assert feasibility["status"] == "INFEASIBLE"
+    with pytest.raises(challenge.ChallengeError, match="globally infeasible"):
+        challenge.v11_create_queue_manifest(candidates)
+    reviews = {item["candidate_id"]: {"label": item["intended_label"]} for item in candidates}
+    with pytest.raises(challenge.ChallengeError, match="globally feasible"):
+        challenge.v11_select_consensus(candidates, reviews, reviews)
 
 
 @pytest.mark.parametrize("fault", ["receipt", "model", "prompt", "prompt_hash", "label", "leakage"])
@@ -695,6 +768,7 @@ def test_v11_cli_state_machine_replenish_freeze_verify_and_replay(tmp_path):
                            "--output", str(frozen_path)]) == 0
     assert challenge.main(["verify-v1-1-freeze", *base, "--freeze", str(frozen_path)]) == 0
     assert challenge.main(["v1-1-missingness-diagnostic", *base]) == 0
+    assert challenge.main(["v1-1-feasibility", *base]) == 0
     frozen = challenge.read_json(frozen_path)
     for market in challenge.MARKETS:
         for label in challenge.LABELS:

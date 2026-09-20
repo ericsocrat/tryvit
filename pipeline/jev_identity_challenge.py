@@ -627,6 +627,9 @@ def v11_create_queue_manifest(candidates: list[dict]) -> dict:
     report = v11_readiness_report(candidates)
     if not report["initial_blind_review_ready"]:
         raise ChallengeError("v1.1 initial blind-review readiness is not satisfied")
+    feasibility = v11_pre_review_feasibility(candidates)
+    if feasibility["status"] != "FEASIBLE":
+        raise ChallengeError("v1.1 candidate pool is globally infeasible before blind review")
     safe_candidates, exclusions = v11_safe_pool(candidates)
     cells = []
     for market in MARKETS:
@@ -650,6 +653,7 @@ def v11_create_queue_manifest(candidates: list[dict]) -> dict:
         "schema_version": SCHEMA_VERSION,
         "protocol_id": AMENDMENT_PROTOCOL_ID,
         "safe_pool_sha256": digest(safe_candidates),
+        "pre_review_feasibility_sha256": digest(feasibility),
         "collision_family_exclusions": exclusions,
         "cells": cells,
         "blind_review": "NOT_RUN",
@@ -672,7 +676,10 @@ def validate_v11_queue_manifest(queue: Any, candidates: list[dict]) -> None:
         raise ChallengeError("v1.1 queue schema is invalid")
     if queue["state_sha256"] != digest({key: value for key, value in queue.items() if key != "state_sha256"}):
         raise ChallengeError("v1.1 queue state hash mismatch")
-    for key in ("schema_version", "protocol_id", "safe_pool_sha256", "collision_family_exclusions", "benchmark_freeze"):
+    for key in (
+        "schema_version", "protocol_id", "safe_pool_sha256", "pre_review_feasibility_sha256",
+        "collision_family_exclusions", "benchmark_freeze",
+    ):
         if queue[key] != expected[key]:
             raise ChallengeError(f"v1.1 queue {key} mismatch")
     if not isinstance(queue["cells"], list) or len(queue["cells"]) != 6:
@@ -1056,15 +1063,207 @@ def _v11_exact_cell_selection(candidates: list[dict], label: str) -> list[dict]:
     return best[1]
 
 
+def _v11_missingness_vector(candidate: dict) -> tuple[int, ...]:
+    visible = candidate["model_visible_payload"]["enrichment"]
+    return tuple(
+        int(visible[side][field] is None)
+        for side in ("reference", "candidate")
+        for field in SEMANTIC_FIELDS
+    )
+
+
+def _v11_add_vectors(left: tuple[int, ...], right: tuple[int, ...]) -> tuple[int, ...]:
+    return tuple(a + b for a, b in zip(left, right, strict=True))
+
+
+def _v11_merge_choices(
+    left: tuple[tuple[str, str], ...], right: tuple[tuple[str, str], ...]
+) -> tuple[tuple[str, str], ...]:
+    return tuple(sorted((*left, *right)))
+
+
+def _v11_cell_options(candidates: list[dict], market: str, label: str) -> dict[tuple[int, ...], dict]:
+    """Return the best exact 25-case option for every reachable missingness vector."""
+    cell = [item for item in candidates if item["market"] == market and item["intended_label"] == label]
+    strata = list(STRATUM_TARGETS[label])
+    bounds = DIVERSITY_BOUNDS_V11[label]
+    width = len(SEMANTIC_FIELDS) * 2
+    zero = (0,) * width
+    by_id = {item["candidate_id"]: item for item in cell}
+    stratum_options: list[tuple[str, dict[tuple[int, tuple[int, ...]], tuple[tuple[str, str], ...]]]] = []
+
+    for stratum in strata:
+        groups: dict[tuple[int, ...], list[dict]] = defaultdict(list)
+        for candidate in cell:
+            if candidate["stratum"] == stratum:
+                groups[_v11_missingness_vector(candidate)].append(candidate)
+        local: dict[tuple[int, tuple[int, ...]], tuple[tuple[str, str], ...]] = {(0, zero): ()}
+        for profile in sorted(groups):
+            members = sorted(groups[profile], key=_candidate_order_key)
+            prefixes = [
+                tuple((_candidate_order_key(item), item["candidate_id"]) for item in members[:count])
+                for count in range(min(len(members), bounds["maximum"]) + 1)
+            ]
+            updated: dict[tuple[int, tuple[int, ...]], tuple[tuple[str, str], ...]] = {}
+            for (chosen, vector), choice in local.items():
+                for count, prefix in enumerate(prefixes):
+                    total = chosen + count
+                    if total > bounds["maximum"]:
+                        continue
+                    combined_vector = tuple(value + count * bit for value, bit in zip(vector, profile, strict=True))
+                    combined_choice = _v11_merge_choices(choice, prefix)
+                    key = (total, combined_vector)
+                    if key not in updated or combined_choice < updated[key]:
+                        updated[key] = combined_choice
+            local = updated
+        feasible = {
+            key: value
+            for key, value in local.items()
+            if bounds["minimum"] <= key[0] <= bounds["maximum"]
+        }
+        if not feasible:
+            return {}
+        stratum_options.append((stratum, feasible))
+
+    # (selected count, vector) -> (deviation, deterministic choice, stratum counts)
+    states: dict[tuple[int, tuple[int, ...]], tuple[int, tuple[tuple[str, str], ...], tuple[int, ...]]] = {
+        (0, zero): (0, (), ())
+    }
+    for stratum, options in stratum_options:
+        updated = {}
+        target = STRATUM_TARGETS[label][stratum]
+        for (selected_count, vector), (cost, choice, counts) in states.items():
+            for (stratum_count, stratum_vector), stratum_choice in options.items():
+                total = selected_count + stratum_count
+                if total > 25:
+                    continue
+                combined_vector = _v11_add_vectors(vector, stratum_vector)
+                combined_choice = _v11_merge_choices(choice, stratum_choice)
+                value = (cost + abs(stratum_count - target), combined_choice, (*counts, stratum_count))
+                key = (total, combined_vector)
+                if key not in updated or value[:2] < updated[key][:2]:
+                    updated[key] = value
+        states = updated
+
+    result = {}
+    for (count, vector), (cost, choice, counts) in states.items():
+        if count != 25:
+            continue
+        result[vector] = {
+            "cost": cost,
+            "choice": choice,
+            "candidates": [by_id[candidate_id] for _, candidate_id in choice],
+            "stratum_counts": dict(zip(strata, counts, strict=True)),
+        }
+    return result
+
+
+def _v11_class_options(candidates: list[dict], label: str) -> dict[tuple[int, ...], dict]:
+    per_market = {market: _v11_cell_options(candidates, market, label) for market in MARKETS}
+    if any(not options for options in per_market.values()):
+        return {}
+    combined = {}
+    for pl_vector, pl in per_market["PL"].items():
+        for de_vector, de in per_market["DE"].items():
+            vector = _v11_add_vectors(pl_vector, de_vector)
+            choice = _v11_merge_choices(pl["choice"], de["choice"])
+            value = {
+                "cost": pl["cost"] + de["cost"],
+                "choice": choice,
+                "candidates": [*pl["candidates"], *de["candidates"]],
+                "stratum_counts": {"PL": pl["stratum_counts"], "DE": de["stratum_counts"]},
+            }
+            if vector not in combined or (value["cost"], choice) < (
+                combined[vector]["cost"], combined[vector]["choice"]
+            ):
+                combined[vector] = value
+    return combined
+
+
+def _v11_global_selection(candidates: list[dict]) -> tuple[list[dict], dict]:
+    """Find the globally optimal feasible selection, including missingness parity."""
+    class_options = {label: _v11_class_options(candidates, label) for label in LABELS}
+    common_vectors = set.intersection(*(set(options) for options in class_options.values()))
+    if not common_vectors:
+        raise ChallengeError("v1.1 candidate pool has no globally feasible matched-missingness selection")
+    best = None
+    for vector in common_vectors:
+        options = [class_options[label][vector] for label in LABELS]
+        choice = _v11_merge_choices((), tuple(item for option in options for item in option["choice"]))
+        score = (sum(option["cost"] for option in options), choice)
+        if best is None or score < best[0]:
+            best = (score, vector, options)
+    if best is None:
+        raise ChallengeError("v1.1 global selection search failed unexpectedly")
+    score, vector, options = best
+    selected = [candidate for option in options for candidate in option["candidates"]]
+    selected.sort(key=_candidate_order_key)
+    details = {
+        "total_stratum_deviation": score[0],
+        "missingness_vector": vector,
+        "stratum_counts": {
+            label: options[index]["stratum_counts"] for index, label in enumerate(LABELS)
+        },
+    }
+    return selected, details
+
+
+def _v11_missingness_vectors(selected: list[dict]) -> dict:
+    vectors = {}
+    for label in LABELS:
+        vector = [0] * (len(SEMANTIC_FIELDS) * 2)
+        for candidate in selected:
+            if candidate["intended_label"] != label:
+                continue
+            vector = list(_v11_add_vectors(tuple(vector), _v11_missingness_vector(candidate)))
+        vectors[label] = {
+            side: {
+                field: vector[side_index * len(SEMANTIC_FIELDS) + field_index]
+                for field_index, field in enumerate(SEMANTIC_FIELDS)
+            }
+            for side_index, side in enumerate(("reference", "candidate"))
+        }
+    return vectors
+
+
+def v11_pre_review_feasibility(candidates: list[dict]) -> dict:
+    """Prove feasibility from construction labels before any reviewer packet exists."""
+    safe_candidates, exclusions = v11_safe_pool(candidates)
+    try:
+        selected, details = _v11_global_selection(safe_candidates)
+    except ChallengeError:
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "protocol_id": AMENDMENT_PROTOCOL_ID,
+            "status": "INFEASIBLE",
+            "safe_candidate_count": len(safe_candidates),
+            "collision_family_exclusions": exclusions,
+        }
+    _assert_selected_balance(selected)
+    _assert_matched_missingness(selected)
+    _assert_unique_verified_skus(selected)
+    vectors = _v11_missingness_vectors(selected)
+    witness = [candidate["candidate_id"] for candidate in selected]
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "protocol_id": AMENDMENT_PROTOCOL_ID,
+        "status": "FEASIBLE",
+        "safe_candidate_count": len(safe_candidates),
+        "collision_family_exclusions": exclusions,
+        "witness_candidate_ids": witness,
+        "witness_sha256": digest(witness),
+        "stratum_counts": details["stratum_counts"],
+        "class_missingness_vectors": vectors,
+        "class_missingness_sha256": digest(vectors),
+        "total_stratum_deviation": details["total_stratum_deviation"],
+    }
+
+
 def v11_select_consensus(candidates: list[dict], author: dict[str, Any], blind: dict[str, Any]) -> list[dict]:
     """Select exactly 150 reviewed consensus cases under v1.1 constraints."""
     safe_candidates, _ = v11_safe_pool(candidates)
     approved = _v11_consensus_candidates(safe_candidates, author, blind)
-    selected = []
-    for market in MARKETS:
-        for label in LABELS:
-            cell = [item for item in approved if item["market"] == market and item["intended_label"] == label]
-            selected.extend(_v11_exact_cell_selection(cell, label))
+    selected, _ = _v11_global_selection(approved)
     if len(selected) != 150:
         raise ChallengeError("v1.1 consensus did not select exactly 150 cases")
     _assert_selected_balance(selected)
@@ -1753,6 +1952,9 @@ def main(argv: list[str] | None = None) -> int:
     v11_missingness = commands.add_parser("v1-1-missingness-diagnostic")
     v11_missingness.add_argument("--candidate-pool", type=_cli_path, required=True)
     v11_missingness.add_argument("--exclusion-index", type=_cli_path, required=True)
+    v11_feasibility = commands.add_parser("v1-1-feasibility")
+    v11_feasibility.add_argument("--candidate-pool", type=_cli_path, required=True)
+    v11_feasibility.add_argument("--exclusion-index", type=_cli_path, required=True)
     args = parser.parse_args(argv)
     if args.command == "build-exclusion-index":
         document = build_exclusion_index(args.source)
@@ -1775,12 +1977,14 @@ def main(argv: list[str] | None = None) -> int:
         result = {"status": "ok", "paths": {name: str(path) for name, path in paths.items()}}
     elif args.command in {
         "v1-1-prepare-review", "v1-1-replenish", "v1-1-freeze", "verify-v1-1-freeze",
-        "v1-1-missingness-diagnostic",
+        "v1-1-missingness-diagnostic", "v1-1-feasibility",
     }:
         candidates = validate_v11_candidate_pool(
             read_json(args.candidate_pool), _read_exclusion_index(args.exclusion_index)
         )
-        if args.command == "v1-1-missingness-diagnostic":
+        if args.command == "v1-1-feasibility":
+            result = v11_pre_review_feasibility(candidates)
+        elif args.command == "v1-1-missingness-diagnostic":
             result = v11_missingness_diagnostic(candidates)
         elif args.command == "verify-v1-1-freeze":
             receipt = verify_v11_freeze(read_json(args.freeze), candidates)
