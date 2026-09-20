@@ -58,7 +58,10 @@ def candidate(market: str, label: str, stratum: str, ordinal: int) -> dict:
                     "source_sha256": "b" * 64,
                 },
             ],
-            "independence_attestation": True,
+            "independence_attestation": (
+                "Distinct official and retailer publishers independently corroborate this identity."
+            ),
+            "verified_skus": [ean] if label != "INCONSISTENT" else [ean, ground_truth["candidate_ean"]],
         },
     }
 
@@ -108,6 +111,20 @@ def test_consensus_selection_requires_exact_quotas_and_rejects_disagreement():
     blind[candidates[0]["candidate_id"]] = "INCONSISTENT"
     with pytest.raises(challenge.ChallengeError, match="Consensus shortage"):
         challenge.consensus_select(candidates, author, blind)
+    rejected = challenge._rejected_entry(candidates[0], "reviewer_disagreement", author[candidates[0]["candidate_id"]], blind[candidates[0]["candidate_id"]])
+    assert {
+        "candidate_id",
+        "candidate_sha256",
+        "market",
+        "intended_class",
+        "stratum",
+        "construction_author_label",
+        "blind_reviewer_label",
+        "reason",
+        "hidden_dossier_sha256",
+        "construction_author_attestation",
+        "blind_reviewer_reviewed_at",
+    }.issubset(rejected)
 
 
 def test_metrics_and_ece_are_deterministic():
@@ -116,7 +133,7 @@ def test_metrics_and_ece_are_deterministic():
     assert metrics["accuracy"] == 1.0
     assert metrics["dangerous_false_consistent"] == 0
     probabilities = [{label: 1.0 if label == actual else 0.0 for label in challenge.LABELS} for actual in labels]
-    assert challenge.top_label_ece(labels, probabilities) == 0.0
+    assert challenge.top_label_ece(labels, probabilities, [f"case-{index:03d}" for index in range(150)]) == 0.0
     assert challenge.multiclass_brier(labels, probabilities) == 0.0
 
 
@@ -145,32 +162,44 @@ def consensus_input() -> tuple[dict, dict, dict]:
                     normalized = challenge.validate_candidate(item, set())
                     candidates.append(item)
                     author_entries.append(
-                        {"candidate_id": item["candidate_id"], "label": label, "attestation": "Reviewed full dossier."}
+                        {
+                            "candidate_id": item["candidate_id"],
+                            "label": label,
+                            "attestation": "Reviewed full dossier.",
+                            "reviewed_at": "2026-09-20T00:00:00Z",
+                        }
                     )
                     blind_entries.append(
                         {
                             "review_token": normalized["blind_review_token"],
                             "label": label,
                             "attestation": "Reviewed semantic packet only.",
+                            "reviewed_at": "2026-09-20T00:00:00Z",
                         }
                     )
         for label, strata in challenge.STRATUM_TARGETS.items():
-            stratum = next(iter(strata))
-            for _ in range(15):
-                ordinal += 1
-                item = candidate(market, label, stratum, ordinal)
-                normalized = challenge.validate_candidate(item, set())
-                candidates.append(item)
-                author_entries.append(
-                    {"candidate_id": item["candidate_id"], "label": label, "attestation": "Reviewed full dossier."}
-                )
-                blind_entries.append(
-                    {
-                        "review_token": normalized["blind_review_token"],
-                        "label": label,
-                        "attestation": "Reviewed semantic packet only.",
-                    }
-                )
+            for stratum, target in strata.items():
+                for _ in range(challenge.RAW_STRATUM_MINIMA[label][stratum] - target):
+                    ordinal += 1
+                    item = candidate(market, label, stratum, ordinal)
+                    normalized = challenge.validate_candidate(item, set())
+                    candidates.append(item)
+                    author_entries.append(
+                        {
+                            "candidate_id": item["candidate_id"],
+                            "label": label,
+                            "attestation": "Reviewed full dossier.",
+                            "reviewed_at": "2026-09-20T00:00:00Z",
+                        }
+                    )
+                    blind_entries.append(
+                        {
+                            "review_token": normalized["blind_review_token"],
+                            "label": label,
+                            "attestation": "Reviewed semantic packet only.",
+                            "reviewed_at": "2026-09-20T00:00:00Z",
+                        }
+                    )
     envelope = {"schema_version": 1, "challenge_id": challenge.CHALLENGE_ID, "candidates": candidates}
     author = {"schema_version": 1, "challenge_id": challenge.CHALLENGE_ID, "entries": author_entries}
     blind = {"schema_version": 1, "challenge_id": challenge.CHALLENGE_ID, "entries": blind_entries}
@@ -181,7 +210,7 @@ def test_blind_packets_expose_only_an_opaque_token_and_semantic_payload():
     envelope, _, _ = consensus_input()
     candidates = challenge.validate_candidate_pool(envelope, set())
     packets = challenge.blind_review_packets(candidates)
-    assert len(packets["packets"]) == 240
+    assert len(packets["packets"]) == 252
     packet = packets["packets"][0]
     assert set(packet) == {"review_token", "model_visible_payload", "model_visible_payload_sha256"}
     assert "CONSISTENT" not in packet["review_token"]
@@ -222,11 +251,58 @@ def test_same_domain_sources_require_authoritative_exception():
         challenge.validate_candidate(item, set())
 
 
+def test_same_publisher_different_domain_is_not_independent():
+    item = candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 98)
+    item["hidden_dossier"]["sources"][1]["publisher"] = "Official brand owner"
+    item["hidden_dossier"]["sources"][1]["domain"] = "shop.official.example"
+    with pytest.raises(challenge.ChallengeError, match="same-publisher"):
+        challenge.validate_candidate(item, set())
+
+
+def test_single_authoritative_source_exception_is_allowed_only_with_justification():
+    item = candidate("DE", "CONSISTENT", "manufacturer_consumer_brand", 97)
+    item["hidden_dossier"]["sources"] = item["hidden_dossier"]["sources"][:1]
+    item["hidden_dossier"]["single_source_exception"] = (
+        "The official manufacturer SKU page is the only public authority."
+    )
+    assert challenge.validate_candidate(item, set())["candidate_id"] == item["candidate_id"]
+
+
 def test_insufficient_candidate_requires_hidden_dual_plausibility_attestation():
     item = candidate("DE", "INSUFFICIENT_EVIDENCE", "generic_product_name", 99)
     del item["hidden_dossier"]["ground_truth"]["visible_packet_dual_plausible"]
     with pytest.raises(challenge.ChallengeError, match="competing completions"):
         challenge.validate_candidate(item, set())
+
+
+def test_final_selection_rejects_reused_verified_sku_across_different_families():
+    first = challenge.validate_candidate(candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 201), set())
+    second = candidate("DE", "CONSISTENT", "manufacturer_consumer_brand", 202)
+    second["hidden_dossier"]["verified_skus"] = first["hidden_dossier"]["verified_skus"]
+    second = challenge.validate_candidate(second, set())
+    with pytest.raises(challenge.ChallengeError, match="reuses verified EAN/SKU"):
+        challenge._assert_unique_verified_skus([first, second])
+
+
+def test_final_selection_rejects_reference_sku_reused_as_candidate_sku():
+    first = challenge.validate_candidate(candidate("PL", "INCONSISTENT", "flavor", 203), set())
+    second = candidate("DE", "INCONSISTENT", "flavor", 204)
+    second["hidden_dossier"]["verified_skus"] = ["different-sku", first["hidden_dossier"]["verified_skus"][0]]
+    second = challenge.validate_candidate(second, set())
+    with pytest.raises(challenge.ChallengeError, match="reuses verified EAN/SKU"):
+        challenge._assert_unique_verified_skus([first, second])
+
+
+def test_ece_is_invariant_to_ledger_order_when_case_refs_are_preserved():
+    labels = [label for label in challenge.LABELS for _ in range(50)]
+    probabilities = [{"CONSISTENT": 0.6, "INCONSISTENT": 0.2, "INSUFFICIENT_EVIDENCE": 0.2} for _ in labels]
+    refs = [f"case-{index:03d}" for index in range(150)]
+    original = challenge.top_label_ece(labels, probabilities, refs)
+    order = list(reversed(range(150)))
+    shuffled = challenge.top_label_ece(
+        [labels[index] for index in order], [probabilities[index] for index in order], [refs[index] for index in order]
+    )
+    assert shuffled == original
 
 
 def test_result_validator_binds_manifest_and_rejects_invalid_probability():

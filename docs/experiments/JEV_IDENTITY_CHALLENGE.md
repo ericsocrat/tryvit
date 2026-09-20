@@ -30,7 +30,9 @@ candidate pool must contain at least 40 candidates in each class/market cell
 before review; deterministic replenishment adds candidates without weakening
 that requirement.
 candidate with same-publisher evidence is rejected unless its hidden dossier
-records an explicit authoritative-source exception. Every final dossier must
+records an explicit independence rationale. Normal corroboration requires
+distinct publishers and domains; a one-source exception requires a documented
+authoritative-source justification. Every final dossier must
 record the public source URL, publisher/domain, capture time, evidence role,
 and source digest; these facts never enter either model payload.
 
@@ -59,6 +61,13 @@ counts for every visible semantic field/side match across the three classes.
 That makes naturally incomplete consistent and inconsistent cases mandatory,
 rather than allowing missingness itself to reveal the expected label.
 
+Final labels are `MODEL_REVIEWED_CONSENSUS`, never described as human ground
+truth. A freeze also rejects any reused verified hidden EAN/SKU, including a
+reference SKU reused as another case's candidate SKU. The rejected-candidate
+audit preserves the candidate and evidence hashes, class/stratum/market,
+both review labels and attestations/timestamps, and the rejection reason; it
+is excluded from model manifests and benchmark metrics.
+
 ## Predefined analysis
 
 For both arms, the later comparison computes per-class precision/recall/F1,
@@ -71,7 +80,7 @@ It reports 10,000 stratified paired bootstrap percentile intervals over the six
 override the zero dangerous-false-consistent safety gate.
 
 Arm B can be considered for a later advisory decision only when all frozen
-gates pass: valid completion at least 99%, zero dangerous errors, inconsistent
+gates pass: 100% valid completion after the bounded retry policy, zero dangerous errors, inconsistent
 recall at least 96%, consistent precision at least 95%, consistent recall at
 least 90%, insufficient-evidence recall at least 80%, macro-F1 at least 0.88,
 macro-F1 improvement over Arm A at least 0.05, no additional dangerous errors,

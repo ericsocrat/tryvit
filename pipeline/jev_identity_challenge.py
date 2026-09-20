@@ -98,6 +98,10 @@ STRATUM_TARGETS = {
         "dual_plausible_masking": 5,
     },
 }
+RAW_STRATUM_MINIMA = {
+    label: {stratum: math.ceil(target * 40 / 25) for stratum, target in strata.items()}
+    for label, strata in STRATUM_TARGETS.items()
+}
 
 
 class ChallengeError(ValueError):
@@ -356,7 +360,7 @@ def validate_candidate(candidate: Any, exclusion_index: set[str]) -> dict:
 
 def _validate_hidden_dossier(dossier: Any, intended_label: str) -> None:
     """Require source independence and a ground-truth basis before review."""
-    required = {"ground_truth", "sources", "independence_attestation"}
+    required = {"ground_truth", "sources", "independence_attestation", "verified_skus"}
     if not isinstance(dossier, dict) or not required.issubset(dossier):
         raise ChallengeError("Candidate hidden dossier is incomplete")
     ground_truth = dossier["ground_truth"]
@@ -380,10 +384,16 @@ def _validate_hidden_dossier(dossier: Any, intended_label: str) -> None:
             or ground_truth.get("visible_packet_dual_plausible") is not True
         ):
             raise ChallengeError("Insufficient-evidence candidate needs hidden competing completions")
+    verified_skus = dossier["verified_skus"]
+    invalid_skus = not isinstance(verified_skus, list) or not verified_skus
+    if not invalid_skus:
+        invalid_skus = any(not isinstance(item, str) or not item for item in verified_skus)
+    if invalid_skus:
+        raise ChallengeError("Candidate needs verified hidden EAN/SKU values")
     sources = dossier["sources"]
-    if not isinstance(sources, list) or len(sources) < 2:
-        raise ChallengeError("Candidate needs at least two recorded public sources")
-    domains = set()
+    if not isinstance(sources, list) or not sources:
+        raise ChallengeError("Candidate needs recorded public sources")
+    domains, publishers = set(), set()
     for source in sources:
         if not isinstance(source, dict) or set(source) != {
             "url",
@@ -399,14 +409,18 @@ def _validate_hidden_dossier(dossier: Any, intended_label: str) -> None:
         if not all(isinstance(source[field], str) and source[field] for field in source):
             raise ChallengeError("Candidate source record is incomplete")
         domains.add(source["domain"].lower())
+        publishers.add(source["publisher"].casefold())
     exception = dossier.get("single_source_exception")
-    if len(domains) < 2:
+    if len(sources) == 1:
         if not isinstance(exception, str) or not exception.strip():
-            raise ChallengeError("Syndicated or same-domain evidence needs an authoritative-source exception")
+            raise ChallengeError("Single authoritative source needs an explicit justification")
+    elif len(domains) < 2 or len(publishers) < 2:
+        if not isinstance(exception, str) or not exception.strip():
+            raise ChallengeError("Syndicated, same-publisher, or same-domain evidence needs an independence rationale")
     elif exception is not None:
-        raise ChallengeError("Independent evidence must not carry a single-source exception")
-    if dossier["independence_attestation"] is not True:
-        raise ChallengeError("Candidate source independence must be explicitly attested")
+        raise ChallengeError("Independent evidence must not carry an exception")
+    if not isinstance(dossier["independence_attestation"], str) or not dossier["independence_attestation"].strip():
+        raise ChallengeError("Candidate source independence needs an explicit attestation")
 
 
 def validate_candidate_pool(document: Any, exclusion_index: set[str]) -> list[dict]:
@@ -423,12 +437,17 @@ def validate_candidate_pool(document: Any, exclusion_index: set[str]) -> list[di
     if len(ids) != len(set(ids)) or len(tokens) != len(set(tokens)):
         raise ChallengeError("Candidate pool contains duplicate IDs or blind review tokens")
     counts = defaultdict(int)
+    stratum_counts = defaultdict(int)
     for candidate in candidates:
         counts[(candidate["market"], candidate["intended_label"])] += 1
+        stratum_counts[(candidate["market"], candidate["intended_label"], candidate["stratum"])] += 1
     for market in MARKETS:
         for label in LABELS:
             if counts[(market, label)] < 40:
                 raise ChallengeError(f"Candidate pool needs at least 40 raw candidates for {market}/{label}")
+            for stratum, minimum in RAW_STRATUM_MINIMA[label].items():
+                if stratum_counts[(market, label, stratum)] < minimum:
+                    raise ChallengeError(f"Candidate pool undersupplies raw {market}/{label}/{stratum}")
     return candidates
 
 
@@ -460,14 +479,16 @@ def _validate_author_ledger(document: Any, candidates: list[dict]) -> dict[str, 
     known = {candidate["candidate_id"] for candidate in candidates}
     labels: dict[str, str] = {}
     for entry in document["entries"]:
-        if not isinstance(entry, dict) or set(entry) != {"candidate_id", "label", "attestation"}:
+        if not isinstance(entry, dict) or set(entry) != {"candidate_id", "label", "attestation", "reviewed_at"}:
             raise ChallengeError("Construction-author ledger entry is invalid")
         candidate_id, label = entry["candidate_id"], entry["label"]
         if candidate_id not in known or candidate_id in labels or label not in LABELS:
             raise ChallengeError("Construction-author ledger has unknown, duplicate, or invalid label")
         if not isinstance(entry["attestation"], str) or not entry["attestation"]:
             raise ChallengeError("Construction-author attestation is required")
-        labels[candidate_id] = label
+        if not isinstance(entry["reviewed_at"], str) or not entry["reviewed_at"]:
+            raise ChallengeError("Construction-author review timestamp is required")
+        labels[candidate_id] = entry
     return labels
 
 
@@ -479,19 +500,21 @@ def _validate_blind_ledger(document: Any, candidates: list[dict]) -> dict[str, s
     token_to_id = {candidate["blind_review_token"]: candidate["candidate_id"] for candidate in candidates}
     labels: dict[str, str] = {}
     for entry in document["entries"]:
-        if not isinstance(entry, dict) or set(entry) != {"review_token", "label", "attestation"}:
+        if not isinstance(entry, dict) or set(entry) != {"review_token", "label", "attestation", "reviewed_at"}:
             raise ChallengeError("Blind-review ledger entry is invalid")
         token, label = entry["review_token"], entry["label"]
         if token not in token_to_id or token in labels or label not in LABELS:
             raise ChallengeError("Blind-review ledger has unknown, duplicate, or invalid label")
         if not isinstance(entry["attestation"], str) or not entry["attestation"]:
             raise ChallengeError("Blind-review attestation is required")
-        labels[token_to_id[token]] = label
+        if not isinstance(entry["reviewed_at"], str) or not entry["reviewed_at"]:
+            raise ChallengeError("Blind-review timestamp is required")
+        labels[token_to_id[token]] = entry
     return labels
 
 
 def consensus_select(
-    candidates: list[dict], author_labels: dict[str, str], blind_labels: dict[str, str]
+    candidates: list[dict], author_labels: dict[str, Any], blind_labels: dict[str, Any]
 ) -> tuple[list[dict], list[dict]]:
     """Select exact consensus quotas deterministically; retain all rejections."""
     approved: dict[tuple[str, str, str], list[dict]] = defaultdict(list)
@@ -499,8 +522,9 @@ def consensus_select(
     families: set[str] = set()
     for candidate in candidates:
         candidate_id = candidate["candidate_id"]
-        author = author_labels.get(candidate_id)
-        blind = blind_labels.get(candidate_id)
+        author_record, blind_record = author_labels.get(candidate_id), blind_labels.get(candidate_id)
+        author = author_record.get("label") if isinstance(author_record, dict) else author_record
+        blind = blind_record.get("label") if isinstance(blind_record, dict) else blind_record
         reason = None
         if author not in LABELS or blind not in LABELS:
             reason = "incomplete_review"
@@ -511,9 +535,7 @@ def consensus_select(
         elif candidate["family_id"] in families:
             reason = "duplicate_family"
         if reason:
-            rejected.append(
-                {"candidate_id": candidate_id, "reason": reason, "author_label": author, "blind_label": blind}
-            )
+            rejected.append(_rejected_entry(candidate, reason, author_record, blind_record))
             continue
         families.add(candidate["family_id"])
         approved[(candidate["market"], candidate["intended_label"], candidate["stratum"])].append(candidate)
@@ -529,11 +551,47 @@ def consensus_select(
                 selected.extend(bucket[:target])
                 for candidate in bucket[target:]:
                     rejected.append(
-                        {"candidate_id": candidate["candidate_id"], "reason": "deterministic_quota_overflow"}
+                        _rejected_entry(
+                            candidate,
+                            "deterministic_quota_overflow",
+                            author_labels.get(candidate["candidate_id"]),
+                            blind_labels.get(candidate["candidate_id"]),
+                        )
                     )
     if len(selected) != 150:
         raise ChallengeError("Consensus selection did not produce exactly 150 cases")
     return selected, rejected
+
+
+def _rejected_entry(candidate: dict, reason: str, author_record: Any, blind_record: Any) -> dict:
+    author = (
+        author_record
+        if isinstance(author_record, dict)
+        else {"label": author_record, "attestation": None, "reviewed_at": None}
+    )
+    blind = (
+        blind_record
+        if isinstance(blind_record, dict)
+        else {"label": blind_record, "attestation": None, "reviewed_at": None}
+    )
+    dossier_sha256 = candidate.get("hidden_dossier_sha256", digest(candidate["hidden_dossier"]))
+    payload_sha256 = candidate.get("model_visible_payload_sha256", digest(candidate["model_visible_payload"]))
+    return {
+        "candidate_id": candidate["candidate_id"],
+        "candidate_sha256": digest(candidate),
+        "market": candidate["market"],
+        "intended_class": candidate["intended_label"],
+        "stratum": candidate["stratum"],
+        "reason": reason,
+        "construction_author_label": author.get("label"),
+        "blind_reviewer_label": blind.get("label"),
+        "hidden_dossier_sha256": dossier_sha256,
+        "model_visible_payload_sha256": payload_sha256,
+        "construction_author_attestation": author.get("attestation"),
+        "construction_author_reviewed_at": author.get("reviewed_at"),
+        "blind_reviewer_attestation": blind.get("attestation"),
+        "blind_reviewer_reviewed_at": blind.get("reviewed_at"),
+    }
 
 
 def _assert_selected_balance(selected: list[dict]) -> None:
@@ -564,6 +622,15 @@ def _assert_matched_missingness(selected: list[dict]) -> None:
         raise ChallengeError("Final benchmark missingness is not matched across classes")
 
 
+def _assert_unique_verified_skus(selected: list[dict]) -> None:
+    seen: dict[str, str] = {}
+    for candidate in selected:
+        for sku in candidate["hidden_dossier"]["verified_skus"]:
+            if sku in seen:
+                raise ChallengeError(f"Final benchmark reuses verified EAN/SKU across cases: {sku}")
+            seen[sku] = candidate["candidate_id"]
+
+
 def freeze_benchmark(
     candidate_pool: Any,
     author_ledger: Any,
@@ -582,6 +649,7 @@ def freeze_benchmark(
     selected, rejected = consensus_select(candidates, author_labels, blind_labels)
     _assert_selected_balance(selected)
     _assert_matched_missingness(selected)
+    _assert_unique_verified_skus(selected)
     selected_by_id = {candidate["candidate_id"]: candidate for candidate in selected}
     label_entries = []
     hidden_dossiers = []
@@ -596,8 +664,9 @@ def freeze_benchmark(
                 "expected_label": candidate["intended_label"],
                 "market": candidate["market"],
                 "hidden_dossier_sha256": candidate["hidden_dossier_sha256"],
-                "construction_author_label": author_labels[candidate["candidate_id"]],
-                "blind_reviewer_label": blind_labels[candidate["candidate_id"]],
+                "label_status": "MODEL_REVIEWED_CONSENSUS",
+                "construction_author_label": author_labels[candidate["candidate_id"]]["label"],
+                "blind_reviewer_label": blind_labels[candidate["candidate_id"]]["label"],
                 "consensus": True,
             }
         )
@@ -727,10 +796,7 @@ def verify_freeze(output_dir: Path) -> dict:
     if len(labels.get("entries", [])) != 150:
         raise ChallengeError("Frozen label ledger must contain exactly 150 cases")
     _assert_selected_balance(
-        [
-            {"market": entry["market"], "intended_label": entry["expected_label"]}
-            for entry in labels["entries"]
-        ]
+        [{"market": entry["market"], "intended_label": entry["expected_label"]} for entry in labels["entries"]]
     )
     for filename in ("arm-a-minimal-manifest.json", "arm-b-enriched-manifest.json"):
         manifest = read_json(output_dir / filename)
@@ -783,15 +849,16 @@ def classification_metrics(labels: list[str], predictions: list[str]) -> dict:
     }
 
 
-def top_label_ece(labels: list[str], probabilities: list[dict[str, float]]) -> float:
-    if len(labels) != len(probabilities) or len(labels) != 150:
+def top_label_ece(labels: list[str], probabilities: list[dict[str, float]], case_refs: list[str]) -> float:
+    lengths_match = len(labels) == len(probabilities) == len(case_refs) == 150
+    if not lengths_match or len(set(case_refs)) != 150:
         raise ChallengeError("ECE requires exactly 150 aligned challenge cases")
     rows = []
-    for index, (label, values) in enumerate(zip(labels, probabilities, strict=True)):
+    for label, values, case_ref in zip(labels, probabilities, case_refs, strict=True):
         if set(values) != set(LABELS):
             raise ChallengeError("Probability keys do not match labels")
         prediction = max(LABELS, key=lambda item: (values[item], item))
-        rows.append((max(values.values()), prediction == label, index))
+        rows.append((max(values.values()), prediction == label, case_ref))
     rows.sort(key=lambda item: (item[0], item[2]))
     total = 0.0
     for offset in range(0, 150, 15):
@@ -945,7 +1012,7 @@ def comparison_report(arm_a_document: Any, arm_b_document: Any, output_dir: Path
     completion_b = len(complete_b) / 150
     delta = metrics_b["macro_f1"] - metrics_a["macro_f1"]
     gates = {
-        "valid_completion_at_least_99_percent": completion_b >= 0.99,
+        "valid_completion_100_percent": completion_b == 1.0,
         "zero_dangerous_false_consistent": metrics_b["dangerous_false_consistent"] == 0,
         "inconsistent_recall_at_least_96_percent": metrics_b["per_class"]["INCONSISTENT"]["recall"] >= 0.96,
         "consistent_precision_at_least_95_percent": metrics_b["per_class"]["CONSISTENT"]["precision"] >= 0.95,
@@ -956,7 +1023,7 @@ def comparison_report(arm_a_document: Any, arm_b_document: Any, output_dir: Path
         "no_more_dangerous_errors_than_arm_a": (
             metrics_b["dangerous_false_consistent"] <= metrics_a["dangerous_false_consistent"]
         ),
-        "ece_at_most_0_10": top_label_ece(expected, probabilities_b) <= 0.10,
+        "ece_at_most_0_10": top_label_ece(expected, probabilities_b, [entry["case_ref"] for entry in labels]) <= 0.10,
         "brier_at_most_0_25": multiclass_brier(expected, probabilities_b) <= 0.25,
         "cost_at_most_0_10": sum(result["estimated_cost_usd"] for result in results_b) <= 0.10,
         "p95_latency_at_most_5_seconds": p95_latency <= 5.0,
@@ -972,12 +1039,12 @@ def comparison_report(arm_a_document: Any, arm_b_document: Any, output_dir: Path
         "freeze_receipt_sha256": digest(receipt),
         "arm_a": {
             "metrics": metrics_a,
-            "ece": top_label_ece(expected, probabilities_a),
+            "ece": top_label_ece(expected, probabilities_a, [entry["case_ref"] for entry in labels]),
             "brier": multiclass_brier(expected, probabilities_a),
         },
         "arm_b": {
             "metrics": metrics_b,
-            "ece": top_label_ece(expected, probabilities_b),
+            "ece": top_label_ece(expected, probabilities_b, [entry["case_ref"] for entry in labels]),
             "brier": multiclass_brier(expected, probabilities_b),
             "completion_rate": completion_b,
             "high_confidence_dangerous_false_consistent": confidence_failures,
