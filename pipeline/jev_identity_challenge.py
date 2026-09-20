@@ -968,6 +968,36 @@ def _assert_matched_missingness(selected: list[dict]) -> None:
         raise ChallengeError("Final benchmark missingness is not matched across classes")
 
 
+def v11_missingness_diagnostic(candidates: list[dict]) -> dict:
+    """Report safe-pool semantic null counts without creating or changing an artifact."""
+    safe_candidates, _ = v11_safe_pool(candidates)
+    rows = []
+    for label in LABELS:
+        class_candidates = [item for item in safe_candidates if item["intended_label"] == label]
+        for side in ("reference", "candidate"):
+            for field in SEMANTIC_FIELDS:
+                null_count = sum(
+                    item["model_visible_payload"]["enrichment"][side][field] is None
+                    for item in class_candidates
+                )
+                rows.append(
+                    {
+                        "class": label,
+                        "side": side,
+                        "semantic_field": field,
+                        "null_count": null_count,
+                        "non_null_count": len(class_candidates) - null_count,
+                        "candidate_count": len(class_candidates),
+                    }
+                )
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "protocol_id": AMENDMENT_PROTOCOL_ID,
+        "safe_candidate_count": len(safe_candidates),
+        "counts": rows,
+    }
+
+
 def _assert_unique_verified_skus(selected: list[dict]) -> None:
     seen: dict[str, str] = {}
     for candidate in selected:
@@ -1038,6 +1068,7 @@ def v11_select_consensus(candidates: list[dict], author: dict[str, Any], blind: 
     if len(selected) != 150:
         raise ChallengeError("v1.1 consensus did not select exactly 150 cases")
     _assert_selected_balance(selected)
+    _assert_matched_missingness(selected)
     _assert_unique_verified_skus(selected)
     return selected
 
@@ -1195,6 +1226,7 @@ def verify_v11_freeze(artifact: Any, candidates: list[dict]) -> dict:
     queue = artifact["queue_manifest"]
     validate_v11_queue_manifest(queue, candidates)
     records = queue["review_records"]
+    # Reconstruction calls the same v1 missingness assertion used by the freeze.
     expected = v11_freeze_benchmark(queue, candidates, records["author"], records["blind"])
     # Independently revalidate outbound documents even when their stored hashes agree.
     for key, arm in (("arm_a", "A_MINIMAL"), ("arm_b", "B_ENRICHED")):
@@ -1718,6 +1750,9 @@ def main(argv: list[str] | None = None) -> int:
     v11_verify.add_argument("--candidate-pool", type=_cli_path, required=True)
     v11_verify.add_argument("--exclusion-index", type=_cli_path, required=True)
     v11_verify.add_argument("--freeze", type=_cli_path, required=True)
+    v11_missingness = commands.add_parser("v1-1-missingness-diagnostic")
+    v11_missingness.add_argument("--candidate-pool", type=_cli_path, required=True)
+    v11_missingness.add_argument("--exclusion-index", type=_cli_path, required=True)
     args = parser.parse_args(argv)
     if args.command == "build-exclusion-index":
         document = build_exclusion_index(args.source)
@@ -1738,11 +1773,16 @@ def main(argv: list[str] | None = None) -> int:
         )
         paths = write_freeze(args.output_dir, artifacts)
         result = {"status": "ok", "paths": {name: str(path) for name, path in paths.items()}}
-    elif args.command in {"v1-1-prepare-review", "v1-1-replenish", "v1-1-freeze", "verify-v1-1-freeze"}:
+    elif args.command in {
+        "v1-1-prepare-review", "v1-1-replenish", "v1-1-freeze", "verify-v1-1-freeze",
+        "v1-1-missingness-diagnostic",
+    }:
         candidates = validate_v11_candidate_pool(
             read_json(args.candidate_pool), _read_exclusion_index(args.exclusion_index)
         )
-        if args.command == "verify-v1-1-freeze":
+        if args.command == "v1-1-missingness-diagnostic":
+            result = v11_missingness_diagnostic(candidates)
+        elif args.command == "verify-v1-1-freeze":
             receipt = verify_v11_freeze(read_json(args.freeze), candidates)
             result = {"status": "ok", "freeze_receipt_sha256": digest(receipt)}
         elif args.command == "v1-1-prepare-review":

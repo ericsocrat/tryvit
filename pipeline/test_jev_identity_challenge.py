@@ -591,6 +591,46 @@ def test_v11_freeze_pins_bindings_and_verified_provider_adapter():
         assert len(challenge.v11_verified_provider_payloads(frozen, candidates, arm=arm)) == 150
 
 
+def _v11_freeze_inputs(*, distinctive_insufficient_missingness: bool = False):
+    envelope, _, _ = consensus_input()
+    if distinctive_insufficient_missingness:
+        for item in envelope["candidates"]:
+            if item["intended_label"] != "INSUFFICIENT_EVIDENCE":
+                continue
+            item["model_visible_payload"]["reference"]["variant"] = "retained variant"
+            item["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    queue = challenge.v11_create_queue_manifest(candidates)
+    challenge.v11_blind_review_export(queue, candidates)
+    author, blind = fixture_reviews(queue, candidates)
+    return candidates, queue, author, blind
+
+
+def test_v11_freeze_rejects_distinctive_insufficient_missingness():
+    candidates, queue, author, blind = _v11_freeze_inputs(distinctive_insufficient_missingness=True)
+    diagnostic = challenge.v11_missingness_diagnostic(candidates)
+    by_field = {(row["class"], row["side"], row["semantic_field"]): row for row in diagnostic["counts"]}
+    assert by_field[("INSUFFICIENT_EVIDENCE", "reference", "variant")]["null_count"] == 0
+    assert by_field[("CONSISTENT", "reference", "variant")]["null_count"] > 0
+    with pytest.raises(challenge.ChallengeError, match="missingness is not matched"):
+        challenge.v11_freeze_benchmark(queue, candidates, author, blind)
+
+
+def test_v11_verify_reconstructs_missingness_guard(monkeypatch):
+    candidates, queue, author, blind = _v11_freeze_inputs()
+    frozen = challenge.v11_freeze_benchmark(queue, candidates, author, blind)
+    original = challenge._assert_matched_missingness
+    calls = []
+
+    def checked(selected):
+        calls.append(len(selected))
+        original(selected)
+
+    monkeypatch.setattr(challenge, "_assert_matched_missingness", checked)
+    challenge.verify_v11_freeze(frozen, candidates)
+    assert calls == [150]
+
+
 @pytest.mark.parametrize("fault", ["receipt", "model", "prompt", "prompt_hash", "label", "leakage"])
 def test_v11_mutated_freeze_cannot_reach_provider(fault):
     candidates, queue, _, author, blind = v11_fixture()
@@ -654,6 +694,7 @@ def test_v11_cli_state_machine_replenish_freeze_verify_and_replay(tmp_path):
                            "--author-ledger", str(final_a), "--blind-ledger", str(final_b),
                            "--output", str(frozen_path)]) == 0
     assert challenge.main(["verify-v1-1-freeze", *base, "--freeze", str(frozen_path)]) == 0
+    assert challenge.main(["v1-1-missingness-diagnostic", *base]) == 0
     frozen = challenge.read_json(frozen_path)
     for market in challenge.MARKETS:
         for label in challenge.LABELS:
