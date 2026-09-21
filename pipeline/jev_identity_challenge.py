@@ -15,12 +15,15 @@ import random
 import re
 import sys
 from collections import defaultdict
+from copy import deepcopy
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 LABELS = ("CONSISTENT", "INCONSISTENT", "INSUFFICIENT_EVIDENCE")
 MARKETS = ("PL", "DE")
 CHALLENGE_ID = "jev-identity-challenge-v1"
+AMENDMENT_PROTOCOL_ID = "jev-identity-challenge-v1.1"
 SCHEMA_VERSION = 1
 MODEL_ID = "jev-1.13.0"
 ARM_A_PROMPT_ID = "generic-abstention-v2"
@@ -102,6 +105,19 @@ RAW_STRATUM_MINIMA = {
     label: {stratum: math.ceil(target * 40 / 25) for stratum, target in strata.items()}
     for label, strata in STRATUM_TARGETS.items()
 }
+
+# v1.1 amendment: diversity replaces exact final stratum counts.  The v1
+# targets remain intact above as historical protocol evidence and a tie-break.
+DIVERSITY_BOUNDS_V11 = {
+    "CONSISTENT": {"minimum": 2, "maximum": 6},
+    "INCONSISTENT": {"minimum": 2, "maximum": 5},
+    "INSUFFICIENT_EVIDENCE": {"minimum": 3, "maximum": 7},
+}
+INITIAL_REVIEW_QUEUE_PER_CELL_V11 = 30
+V11_REPLENISHMENT_BATCH_SIZE = 10
+V11_MISSINGNESS_POLICY_ID = "market-conditional-null-spread-v1"
+V11_MISSINGNESS_SCOPE = "market_x_side_x_semantic_field"
+V11_MISSINGNESS_TOLERANCE = 2
 
 
 class ChallengeError(ValueError):
@@ -326,7 +342,14 @@ def validate_candidate(candidate: Any, exclusion_index: set[str]) -> dict:
         "model_visible_payload",
         "hidden_dossier",
     }
-    if not isinstance(candidate, dict) or set(candidate) != required:
+    derived_keys = {"hidden_dossier_sha256", "model_visible_payload_sha256", "blind_review_token"}
+    if not isinstance(candidate, dict):
+        raise ChallengeError("Candidate dossier has an unexpected shape")
+    supplied_derived: dict[str, Any] = {}
+    if set(candidate) == required | derived_keys:
+        supplied_derived = {key: candidate[key] for key in derived_keys}
+        candidate = {key: candidate[key] for key in required}
+    elif set(candidate) != required:
         raise ChallengeError("Candidate dossier has an unexpected shape")
     if not isinstance(candidate["candidate_id"], str) or not candidate["candidate_id"]:
         raise ChallengeError("Candidate ID is invalid")
@@ -348,7 +371,7 @@ def validate_candidate(candidate: Any, exclusion_index: set[str]) -> dict:
         raise ChallengeError("Candidate market and model-visible market differ")
     _validate_hidden_dossier(candidate["hidden_dossier"], candidate["intended_label"])
     dossier_sha256 = digest(candidate["hidden_dossier"])
-    return {
+    normalized = {
         **candidate,
         "fingerprints": sorted(fingerprints),
         "model_visible_payload": visible,
@@ -356,6 +379,9 @@ def validate_candidate(candidate: Any, exclusion_index: set[str]) -> dict:
         "hidden_dossier_sha256": dossier_sha256,
         "blind_review_token": _opaque_review_token(candidate["candidate_id"], dossier_sha256),
     }
+    if supplied_derived and any(supplied_derived[key] != normalized[key] for key in derived_keys):
+        raise ChallengeError("Persisted candidate derived evidence does not match its raw dossier")
+    return normalized
 
 
 def _validate_hidden_dossier(dossier: Any, intended_label: str) -> None:
@@ -448,6 +474,337 @@ def validate_candidate_pool(document: Any, exclusion_index: set[str]) -> list[di
                 if stratum_counts[(market, label, stratum)] < minimum:
                     raise ChallengeError(f"Candidate pool undersupplies raw {market}/{label}/{stratum}")
     return candidates
+
+
+def validate_v11_candidate_pool(document: Any, exclusion_index: set[str]) -> list[dict]:
+    """Validate the v1.1 initial-review corpus without applying v1 raw quotas.
+
+    v1 evidence remains immutable.  v1.1 changes only review readiness: every
+    market/class cell needs thirty valid unratified candidates and enough
+    stratum diversity to make a final 25-case selection possible after review.
+    """
+    expected = {"schema_version", "protocol_id", "candidates"}
+    if not isinstance(document, dict) or set(document) != expected:
+        raise ChallengeError("v1.1 candidate pool schema is invalid")
+    if document["schema_version"] != SCHEMA_VERSION or document["protocol_id"] != AMENDMENT_PROTOCOL_ID:
+        raise ChallengeError("v1.1 candidate pool identity is invalid")
+    if not isinstance(document["candidates"], list):
+        raise ChallengeError("v1.1 candidates must be a list")
+    candidates = [validate_candidate(candidate, exclusion_index) for candidate in document["candidates"]]
+    ids = [candidate["candidate_id"] for candidate in candidates]
+    tokens = [candidate["blind_review_token"] for candidate in candidates]
+    if len(ids) != len(set(ids)) or len(tokens) != len(set(tokens)):
+        raise ChallengeError("v1.1 candidate pool contains duplicate IDs or review tokens")
+    candidates, _ = v11_safe_pool(candidates)
+    counts = defaultdict(int)
+    strata = defaultdict(int)
+    for candidate in candidates:
+        key = (candidate["market"], candidate["intended_label"])
+        counts[key] += 1
+        strata[(candidate["market"], candidate["intended_label"], candidate["stratum"])] += 1
+    for market in MARKETS:
+        for label in LABELS:
+            key = (market, label)
+            if counts[key] < INITIAL_REVIEW_QUEUE_PER_CELL_V11:
+                raise ChallengeError(f"v1.1 initial review needs 30 candidates for {market}/{label}")
+            floor = DIVERSITY_BOUNDS_V11[label]["minimum"]
+            for stratum in STRATUM_TARGETS[label]:
+                if strata[(market, label, stratum)] < floor:
+                    raise ChallengeError(f"v1.1 candidate pool lacks diversity floor for {market}/{label}/{stratum}")
+    return candidates
+
+
+def _candidate_order_key(candidate: dict) -> str:
+    return digest(
+        {
+            "protocol": AMENDMENT_PROTOCOL_ID,
+            "candidate": candidate["candidate_id"],
+            "payload": candidate["model_visible_payload_sha256"],
+        }
+    )
+
+
+def v11_safe_pool(candidates: list[dict]) -> tuple[list[dict], list[dict]]:
+    """Make one deterministic, conflict-free universe for every v1.1 stage."""
+    selected: list[dict] = []
+    exclusions: list[dict] = []
+    used_families: set[str] = set()
+    used_skus: set[str] = set()
+    for candidate in sorted(candidates, key=_candidate_order_key):
+        skus = set(candidate["hidden_dossier"]["verified_skus"])
+        reasons = []
+        if candidate["family_id"] in used_families:
+            reasons.append("v1_1_duplicate_family")
+        if skus & used_skus:
+            reasons.append("v1_1_duplicate_verified_sku")
+        if reasons:
+            exclusions.append(
+                {
+                    "candidate_id": candidate["candidate_id"],
+                    "reason": reasons,
+                    "family_id": candidate["family_id"],
+                    "verified_skus": sorted(skus & used_skus),
+                }
+            )
+            continue
+        selected.append(candidate)
+        used_families.add(candidate["family_id"])
+        used_skus.update(skus)
+    return selected, exclusions
+
+
+def v11_readiness_report(candidates: list[dict]) -> dict:
+    """Describe v1.1 review readiness without creating a reviewer packet."""
+    safe_candidates, exclusions = v11_safe_pool(candidates)
+    counts = defaultdict(int)
+    strata = defaultdict(int)
+    for candidate in safe_candidates:
+        counts[(candidate["market"], candidate["intended_label"])] += 1
+        strata[(candidate["market"], candidate["intended_label"], candidate["stratum"])] += 1
+    cells = []
+    ready = True
+    for market in MARKETS:
+        for label in LABELS:
+            required = INITIAL_REVIEW_QUEUE_PER_CELL_V11
+            valid = counts[(market, label)]
+            floor = DIVERSITY_BOUNDS_V11[label]["minimum"]
+            diversity = {stratum: strata[(market, label, stratum)] for stratum in STRATUM_TARGETS[label]}
+            floor_ready = all(value >= floor for value in diversity.values())
+            cells.append(
+                {
+                    "market": market,
+                    "intended_class": label,
+                    "valid_unratified": valid,
+                    "initial_review_required": required,
+                    "shortage": max(0, required - valid),
+                    "diversity_floor": floor,
+                    "stratum_coverage": diversity,
+                    "diversity_floor_satisfied": floor_ready,
+                }
+            )
+            ready = ready and valid >= required and floor_ready
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "protocol_id": AMENDMENT_PROTOCOL_ID,
+        "candidate_count": len(candidates),
+        "safe_candidate_count": len(safe_candidates),
+        "collision_family_exclusions": exclusions,
+        "initial_review_queue_total": INITIAL_REVIEW_QUEUE_PER_CELL_V11 * len(MARKETS) * len(LABELS),
+        "cells": cells,
+        "initial_blind_review_ready": ready,
+        "blind_review": "NOT_RUN",
+        "benchmark_freeze": "NOT_RUN",
+    }
+
+
+def _v11_order_cell(candidates: list[dict], label: str) -> list[dict]:
+    """Freeze a full order before any reviewer information exists."""
+    remaining = sorted(candidates, key=_candidate_order_key)
+    ordered: list[dict] = []
+    counts: dict[str, int] = defaultdict(int)
+    for stratum in STRATUM_TARGETS[label]:
+        floor = DIVERSITY_BOUNDS_V11[label]["minimum"]
+        for candidate in list(remaining):
+            if counts[stratum] >= floor:
+                break
+            if candidate["stratum"] == stratum:
+                ordered.append(candidate)
+                remaining.remove(candidate)
+                counts[stratum] += 1
+    while remaining:
+        remaining.sort(
+            key=lambda item: (
+                abs((counts[item["stratum"]] + 1) - STRATUM_TARGETS[label][item["stratum"]]),
+                counts[item["stratum"]],
+                _candidate_order_key(item),
+            )
+        )
+        choice = remaining.pop(0)
+        ordered.append(choice)
+        counts[choice["stratum"]] += 1
+    return ordered
+
+
+def v11_create_queue_manifest(candidates: list[dict]) -> dict:
+    """Create the immutable internal pre-review ordering and initial releases."""
+    report = v11_readiness_report(candidates)
+    if not report["initial_blind_review_ready"]:
+        raise ChallengeError("v1.1 initial blind-review readiness is not satisfied")
+    feasibility = v11_pre_review_feasibility(candidates)
+    if feasibility["status"] != "FEASIBLE":
+        raise ChallengeError("v1.1 candidate pool is globally infeasible before blind review")
+    safe_candidates, exclusions = v11_safe_pool(candidates)
+    cells = []
+    for market in MARKETS:
+        for label in LABELS:
+            pool = [item for item in safe_candidates if item["market"] == market and item["intended_label"] == label]
+            ordered = _v11_order_cell(pool, label)
+            ids = [item["candidate_id"] for item in ordered]
+            cells.append(
+                {
+                    "market": market,
+                    "intended_class": label,
+                    "ordered_candidate_ids": ids,
+                    "ordered_queue_sha256": digest(ids),
+                    "release_ranges": [{"start": 0, "end": INITIAL_REVIEW_QUEUE_PER_CELL_V11}],
+                    "reviewed_candidate_ids": [],
+                    "consensus_candidate_ids": [],
+                    "exported_end": 0,
+                }
+            )
+    return _v11_seal_queue({
+        "schema_version": SCHEMA_VERSION,
+        "protocol_id": AMENDMENT_PROTOCOL_ID,
+        "safe_pool_sha256": digest(safe_candidates),
+        "pre_review_feasibility_sha256": digest(feasibility),
+        "collision_family_exclusions": exclusions,
+        "cells": cells,
+        "blind_review": "NOT_RUN",
+        "benchmark_freeze": "NOT_RUN",
+        "review_records": {"author": {}, "blind": {}},
+    })
+
+
+def _v11_seal_queue(queue: dict) -> dict:
+    queue["state_sha256"] = digest({key: value for key, value in queue.items() if key != "state_sha256"})
+    return queue
+
+
+def validate_v11_queue_manifest(queue: Any, candidates: list[dict]) -> None:
+    """Reconstruct the pre-review order; validate every released/exported prefix."""
+    for candidate in candidates:
+        validate_candidate(candidate, set())  # Historical index is enforced at the CLI pool boundary.
+    expected = v11_create_queue_manifest(candidates)
+    if not isinstance(queue, dict) or set(queue) != set(expected):
+        raise ChallengeError("v1.1 queue schema is invalid")
+    if queue["state_sha256"] != digest({key: value for key, value in queue.items() if key != "state_sha256"}):
+        raise ChallengeError("v1.1 queue state hash mismatch")
+    for key in (
+        "schema_version", "protocol_id", "safe_pool_sha256", "pre_review_feasibility_sha256",
+        "collision_family_exclusions", "benchmark_freeze",
+    ):
+        if queue[key] != expected[key]:
+            raise ChallengeError(f"v1.1 queue {key} mismatch")
+    if not isinstance(queue["cells"], list) or len(queue["cells"]) != 6:
+        raise ChallengeError("v1.1 queue requires exactly six cells")
+    released_ids = set()
+    for cell, original in zip(queue["cells"], expected["cells"], strict=True):
+        if not isinstance(cell, dict) or set(cell) != set(original):
+            raise ChallengeError("v1.1 queue cell schema is invalid")
+        for key in ("market", "intended_class", "ordered_candidate_ids", "ordered_queue_sha256"):
+            if cell[key] != original[key]:
+                raise ChallengeError(f"v1.1 queue {key} mismatch")
+        ranges = cell["release_ranges"]
+        if not isinstance(ranges, list) or not ranges or ranges[0] != {"start": 0, "end": 30}:
+            raise ChallengeError("v1.1 queue initial release must be [0,30)")
+        end = 0
+        endpoints = {0}
+        for index, interval in enumerate(ranges):
+            if (
+                not isinstance(interval, dict) or set(interval) != {"start", "end"}
+                or type(interval["start"]) is not int or type(interval["end"]) is not int
+                or interval["start"] != end or interval["end"] <= end
+                or interval["end"] > len(cell["ordered_candidate_ids"])
+                or (index and interval["end"] != min(end + V11_REPLENISHMENT_BATCH_SIZE,
+                                                     len(cell["ordered_candidate_ids"])))
+            ):
+                raise ChallengeError("v1.1 queue release range is invalid or replayed")
+            end = interval["end"]
+            endpoints.add(end)
+        if type(cell["exported_end"]) is not int or cell["exported_end"] not in endpoints:
+            raise ChallengeError("v1.1 queue exported prefix is invalid")
+        ids = cell["ordered_candidate_ids"][:end]
+        released_ids.update(ids)
+        for key in ("reviewed_candidate_ids", "consensus_candidate_ids"):
+            value = cell[key]
+            if not isinstance(value, list) or value != [cid for cid in ids if cid in value]:
+                raise ChallengeError("v1.1 queue review state is invalid")
+    records = queue["review_records"]
+    if not isinstance(records, dict) or set(records) != {"author", "blind"}:
+        raise ChallengeError("v1.1 queue review records are invalid")
+    for ledger in records.values():
+        _v11_check_reviews(ledger, released_ids, require_complete=False)
+    by_id = {item["candidate_id"]: item for item in candidates}
+    for cell in queue["cells"]:
+        ids = cell["ordered_candidate_ids"][:cell["exported_end"]]
+        reviewed = [cid for cid in ids if cid in records["author"] and cid in records["blind"]]
+        consensus = [cid for cid in reviewed if records["author"][cid]["label"]
+                     == records["blind"][cid]["label"] == by_id[cid]["intended_label"]]
+        if cell["reviewed_candidate_ids"] != reviewed or cell["consensus_candidate_ids"] != consensus:
+            raise ChallengeError("v1.1 queue review/consensus state mismatch")
+        previous_end = cell["release_ranges"][-1]["start"]
+        if not set(cell["ordered_candidate_ids"][:previous_end]) <= set(reviewed):
+            raise ChallengeError("v1.1 queue extended before reviews completed")
+    expected_review = "NOT_RUN" if not records["blind"] else "REVIEWED"
+    if queue["blind_review"] != expected_review:
+        raise ChallengeError("v1.1 queue blind review state mismatch")
+
+
+def _v11_check_reviews(ledger: Any, released: set[str], *, require_complete: bool = True) -> None:
+    if not isinstance(ledger, dict) or not set(ledger) <= released:
+        raise ChallengeError("v1.1 review ledger includes unreleased candidates")
+    if require_complete and set(ledger) != released:
+        raise ChallengeError("v1.1 incomplete released reviews")
+    for entry in ledger.values():
+        if not isinstance(entry, dict) or entry.get("label") not in LABELS:
+            raise ChallengeError("v1.1 review label is invalid")
+        if not isinstance(entry.get("attestation"), str) or not entry["attestation"].strip():
+            raise ChallengeError("v1.1 review requires attestation")
+        try:
+            timestamp = datetime.fromisoformat(entry["reviewed_at"].replace("Z", "+00:00"))
+            if timestamp.tzinfo is None:
+                raise ValueError("timezone required")
+        except (KeyError, AttributeError, TypeError, ValueError) as exc:
+            raise ChallengeError("v1.1 review requires valid timestamp") from exc
+
+
+def _v11_reviewed_state(queue: dict, candidates: list[dict], author: dict, blind: dict) -> dict:
+    validate_v11_queue_manifest(queue, candidates)
+    released = {cid for cell in queue["cells"]
+                for cid in cell["ordered_candidate_ids"][:cell["release_ranges"][-1]["end"]]}
+    if any(cell["exported_end"] != cell["release_ranges"][-1]["end"] for cell in queue["cells"]):
+        raise ChallengeError("v1.1 released packets have not been exported")
+    for role, ledger in (("author", author), ("blind", blind)):
+        _v11_check_reviews(ledger, released)
+        for cid, entry in queue["review_records"][role].items():
+            if ledger.get(cid) != entry:
+                raise ChallengeError("v1.1 prior review was modified")
+    result = deepcopy(queue)
+    result["review_records"] = {"author": deepcopy(author), "blind": deepcopy(blind)}
+    by_id = {item["candidate_id"]: item for item in candidates}
+    for cell in result["cells"]:
+        ids = cell["ordered_candidate_ids"][:cell["exported_end"]]
+        cell["reviewed_candidate_ids"] = ids
+        cell["consensus_candidate_ids"] = [cid for cid in ids if author[cid]["label"]
+                                           == blind[cid]["label"] == by_id[cid]["intended_label"]]
+    result["blind_review"] = "REVIEWED"
+    return _v11_seal_queue(result)
+
+
+def v11_blind_review_export(queue_manifest: dict, candidates: list[dict]) -> list[dict]:
+    """Consume unexported released prefixes; caller must persist the updated state."""
+    validate_v11_queue_manifest(queue_manifest, candidates)
+    candidate_by_id = {item["candidate_id"]: item for item in candidates}
+    packets = []
+    for cell in queue_manifest["cells"]:
+        for release in cell["release_ranges"]:
+            start = max(cell["exported_end"], release["start"])
+            for candidate_id in cell["ordered_candidate_ids"][start : release["end"]]:
+                candidate = candidate_by_id[candidate_id]
+                packets.append(
+                    {
+                        "review_token": candidate["blind_review_token"],
+                        "model_visible_payload": candidate["model_visible_payload"],
+                        "model_visible_payload_sha256": candidate["model_visible_payload_sha256"],
+                    }
+                )
+        cell["exported_end"] = cell["release_ranges"][-1]["end"]
+    for packet in packets:
+        visible = validate_model_visible_payload(packet["model_visible_payload"])
+        if digest(visible) != packet["model_visible_payload_sha256"]:
+            raise ChallengeError("v1.1 reviewer payload hash mismatch")
+    _v11_seal_queue(queue_manifest)
+    return sorted(packets, key=lambda packet: packet["review_token"])
 
 
 def blind_review_packets(candidates: list[dict]) -> dict:
@@ -621,6 +978,82 @@ def _assert_matched_missingness(selected: list[dict]) -> None:
         raise ChallengeError("Final benchmark missingness is not matched across classes")
 
 
+def _v11_market_missingness_vectors(selected: list[dict]) -> dict[str, dict[str, dict[str, dict[str, int]]]]:
+    """Return v1.1 missingness counts without collapsing visible markets."""
+    vectors: dict[str, dict[str, dict[str, dict[str, int]]]] = {}
+    for market in MARKETS:
+        by_label: dict[str, dict[str, dict[str, int]]] = {}
+        for label in LABELS:
+            values = [0] * (len(SEMANTIC_FIELDS) * 2)
+            for candidate in selected:
+                if candidate["market"] == market and candidate["intended_label"] == label:
+                    values = list(_v11_add_vectors(tuple(values), _v11_missingness_vector(candidate)))
+            by_label[label] = {
+                side: {
+                    field: values[side_index * len(SEMANTIC_FIELDS) + field_index]
+                    for field_index, field in enumerate(SEMANTIC_FIELDS)
+                }
+                for side_index, side in enumerate(("reference", "candidate"))
+            }
+        vectors[market] = by_label
+    return vectors
+
+
+def _v11_market_missingness_spread(selected: list[dict]) -> tuple[int, list[dict[str, Any]]]:
+    """Measure the model-visible class gap independently inside each market."""
+    vectors = _v11_market_missingness_vectors(selected)
+    maximum = 0
+    nonzero: list[dict[str, Any]] = []
+    for market in MARKETS:
+        for side in ("reference", "candidate"):
+            for field in SEMANTIC_FIELDS:
+                counts = {label: vectors[market][label][side][field] for label in LABELS}
+                spread = max(counts.values()) - min(counts.values())
+                maximum = max(maximum, spread)
+                if spread:
+                    nonzero.append(
+                        {"market": market, "side": side, "semantic_field": field, "spread": spread, "counts": counts}
+                    )
+    return maximum, nonzero
+
+
+def _assert_v11_market_missingness(selected: list[dict]) -> None:
+    """Fail closed when market-visible null patterns differ by more than T=2."""
+    maximum, _ = _v11_market_missingness_spread(selected)
+    if maximum > V11_MISSINGNESS_TOLERANCE:
+        raise ChallengeError("v1.1 market-conditional missingness spread exceeds tolerance")
+
+
+def v11_missingness_diagnostic(candidates: list[dict]) -> dict:
+    """Report safe-pool semantic null counts without creating or changing an artifact."""
+    safe_candidates, _ = v11_safe_pool(candidates)
+    rows = []
+    for label in LABELS:
+        class_candidates = [item for item in safe_candidates if item["intended_label"] == label]
+        for side in ("reference", "candidate"):
+            for field in SEMANTIC_FIELDS:
+                null_count = sum(
+                    item["model_visible_payload"]["enrichment"][side][field] is None
+                    for item in class_candidates
+                )
+                rows.append(
+                    {
+                        "class": label,
+                        "side": side,
+                        "semantic_field": field,
+                        "null_count": null_count,
+                        "non_null_count": len(class_candidates) - null_count,
+                        "candidate_count": len(class_candidates),
+                    }
+                )
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "protocol_id": AMENDMENT_PROTOCOL_ID,
+        "safe_candidate_count": len(safe_candidates),
+        "counts": rows,
+    }
+
+
 def _assert_unique_verified_skus(selected: list[dict]) -> None:
     seen: dict[str, str] = {}
     for candidate in selected:
@@ -628,6 +1061,470 @@ def _assert_unique_verified_skus(selected: list[dict]) -> None:
             if sku in seen:
                 raise ChallengeError(f"Final benchmark reuses verified EAN/SKU across cases: {sku}")
             seen[sku] = candidate["candidate_id"]
+
+
+def _v11_consensus_candidates(candidates: list[dict], author: dict[str, Any], blind: dict[str, Any]) -> list[dict]:
+    return [
+        candidate
+        for candidate in candidates
+        if author.get(candidate["candidate_id"], {}).get("label")
+        == blind.get(candidate["candidate_id"], {}).get("label")
+        == candidate["intended_label"]
+    ]
+
+
+def _v11_exact_cell_selection(candidates: list[dict], label: str) -> list[dict]:
+    """Enumerate feasible stratum counts and choose the globally best profile."""
+    strata = list(STRATUM_TARGETS[label])
+    by_stratum = {
+        stratum: sorted([item for item in candidates if item["stratum"] == stratum], key=_candidate_order_key)
+        for stratum in strata
+    }
+    bounds = DIVERSITY_BOUNDS_V11[label]
+    best: tuple[tuple[Any, ...], list[dict]] | None = None
+
+    def visit(index: int, remaining: int, counts: list[int]) -> None:
+        nonlocal best
+        if index == len(strata):
+            if remaining:
+                return
+            chosen = [
+                item for stratum, count in zip(strata, counts, strict=True) for item in by_stratum[stratum][:count]
+            ]
+            score = (
+                sum(
+                    abs(count - STRATUM_TARGETS[label][stratum]) for stratum, count in zip(strata, counts, strict=True)
+                ),
+                tuple(_candidate_order_key(item) for item in chosen),
+            )
+            if best is None or score < best[0]:
+                best = (score, chosen)
+            return
+        stratum = strata[index]
+        lower = bounds["minimum"]
+        upper = min(bounds["maximum"], len(by_stratum[stratum]), remaining)
+        for count in range(lower, upper + 1):
+            visit(index + 1, remaining - count, [*counts, count])
+
+    visit(0, 25, [])
+    if best is None:
+        raise ChallengeError(f"v1.1 consensus lacks a feasible exact 25-case profile for {label}")
+    return best[1]
+
+
+def _v11_missingness_vector(candidate: dict) -> tuple[int, ...]:
+    visible = candidate["model_visible_payload"]["enrichment"]
+    return tuple(
+        int(visible[side][field] is None)
+        for side in ("reference", "candidate")
+        for field in SEMANTIC_FIELDS
+    )
+
+
+def _v11_add_vectors(left: tuple[int, ...], right: tuple[int, ...]) -> tuple[int, ...]:
+    return tuple(a + b for a, b in zip(left, right, strict=True))
+
+
+def _v11_merge_choices(
+    left: tuple[tuple[str, str], ...], right: tuple[tuple[str, str], ...]
+) -> tuple[tuple[str, str], ...]:
+    return tuple(sorted((*left, *right)))
+
+
+def _v11_cell_options(candidates: list[dict], market: str, label: str) -> dict[tuple[int, ...], dict]:
+    """Return the best exact 25-case option for every reachable missingness vector."""
+    cell = [item for item in candidates if item["market"] == market and item["intended_label"] == label]
+    strata = list(STRATUM_TARGETS[label])
+    bounds = DIVERSITY_BOUNDS_V11[label]
+    width = len(SEMANTIC_FIELDS) * 2
+    zero = (0,) * width
+    by_id = {item["candidate_id"]: item for item in cell}
+    stratum_options: list[tuple[str, dict[tuple[int, tuple[int, ...]], tuple[tuple[str, str], ...]]]] = []
+
+    for stratum in strata:
+        groups: dict[tuple[int, ...], list[dict]] = defaultdict(list)
+        for candidate in cell:
+            if candidate["stratum"] == stratum:
+                groups[_v11_missingness_vector(candidate)].append(candidate)
+        local: dict[tuple[int, tuple[int, ...]], tuple[tuple[str, str], ...]] = {(0, zero): ()}
+        for profile in sorted(groups):
+            members = sorted(groups[profile], key=_candidate_order_key)
+            prefixes = [
+                tuple((_candidate_order_key(item), item["candidate_id"]) for item in members[:count])
+                for count in range(min(len(members), bounds["maximum"]) + 1)
+            ]
+            updated: dict[tuple[int, tuple[int, ...]], tuple[tuple[str, str], ...]] = {}
+            for (chosen, vector), choice in local.items():
+                for count, prefix in enumerate(prefixes):
+                    total = chosen + count
+                    if total > bounds["maximum"]:
+                        continue
+                    combined_vector = tuple(value + count * bit for value, bit in zip(vector, profile, strict=True))
+                    combined_choice = _v11_merge_choices(choice, prefix)
+                    key = (total, combined_vector)
+                    if key not in updated or combined_choice < updated[key]:
+                        updated[key] = combined_choice
+            local = updated
+        feasible = {
+            key: value
+            for key, value in local.items()
+            if bounds["minimum"] <= key[0] <= bounds["maximum"]
+        }
+        if not feasible:
+            return {}
+        stratum_options.append((stratum, feasible))
+
+    # (selected count, vector) -> (deviation, deterministic choice, stratum counts)
+    states: dict[tuple[int, tuple[int, ...]], tuple[int, tuple[tuple[str, str], ...], tuple[int, ...]]] = {
+        (0, zero): (0, (), ())
+    }
+    for stratum, options in stratum_options:
+        updated = {}
+        target = STRATUM_TARGETS[label][stratum]
+        for (selected_count, vector), (cost, choice, counts) in states.items():
+            for (stratum_count, stratum_vector), stratum_choice in options.items():
+                total = selected_count + stratum_count
+                if total > 25:
+                    continue
+                combined_vector = _v11_add_vectors(vector, stratum_vector)
+                combined_choice = _v11_merge_choices(choice, stratum_choice)
+                value = (cost + abs(stratum_count - target), combined_choice, (*counts, stratum_count))
+                key = (total, combined_vector)
+                if key not in updated or value[:2] < updated[key][:2]:
+                    updated[key] = value
+        states = updated
+
+    result = {}
+    for (count, vector), (cost, choice, counts) in states.items():
+        if count != 25:
+            continue
+        result[vector] = {
+            "cost": cost,
+            "choice": choice,
+            "candidates": [by_id[candidate_id] for _, candidate_id in choice],
+            "stratum_counts": dict(zip(strata, counts, strict=True)),
+        }
+    return result
+
+
+def _v11_market_selection(candidates: list[dict], market: str) -> tuple[list[dict], dict]:
+    """Find the best 75-case market selection under the bounded v1.1 rule."""
+    options = {label: _v11_cell_options(candidates, market, label) for label in LABELS}
+    if any(not value for value in options.values()):
+        raise ChallengeError(f"v1.1 {market} candidate pool lacks a feasible cell selection")
+    best: tuple[tuple[Any, ...], list[dict], dict] | None = None
+    for consistent_vector, consistent in options["CONSISTENT"].items():
+        for inconsistent_vector, inconsistent in options["INCONSISTENT"].items():
+            lower = tuple(min(left, right) for left, right in zip(consistent_vector, inconsistent_vector, strict=True))
+            upper = tuple(max(left, right) for left, right in zip(consistent_vector, inconsistent_vector, strict=True))
+            if any(value - minimum > V11_MISSINGNESS_TOLERANCE for minimum, value in zip(lower, upper, strict=True)):
+                continue
+            for insufficient_vector, insufficient in options["INSUFFICIENT_EVIDENCE"].items():
+                bounded_lower = tuple(
+                    min(minimum, value) for minimum, value in zip(lower, insufficient_vector, strict=True)
+                )
+                bounded_upper = tuple(
+                    max(maximum, value) for maximum, value in zip(upper, insufficient_vector, strict=True)
+                )
+                if any(
+                    value - minimum > V11_MISSINGNESS_TOLERANCE
+                    for minimum, value in zip(bounded_lower, bounded_upper, strict=True)
+                ):
+                    continue
+                choice = _v11_merge_choices(
+                    _v11_merge_choices(consistent["choice"], inconsistent["choice"]), insufficient["choice"]
+                )
+                score = (consistent["cost"] + inconsistent["cost"] + insufficient["cost"], choice)
+                details = {
+                    "stratum_counts": {label: options[label][vector]["stratum_counts"] for label, vector in (
+                        ("CONSISTENT", consistent_vector),
+                        ("INCONSISTENT", inconsistent_vector),
+                        ("INSUFFICIENT_EVIDENCE", insufficient_vector),
+                    )},
+                    "missingness_vectors": {
+                        "CONSISTENT": consistent_vector,
+                        "INCONSISTENT": inconsistent_vector,
+                        "INSUFFICIENT_EVIDENCE": insufficient_vector,
+                    },
+                }
+                selected = [*consistent["candidates"], *inconsistent["candidates"], *insufficient["candidates"]]
+                if best is None or score < best[0]:
+                    best = (score, selected, details)
+    if best is None:
+        raise ChallengeError(f"v1.1 {market} candidate pool has no bounded market-parity selection")
+    return best[1], {"cost": best[0][0], "choice": best[0][1], **best[2]}
+
+
+def _v11_global_selection(candidates: list[dict]) -> tuple[list[dict], dict]:
+    """Find the deterministic v1.1 selection under market-conditional T=2 parity."""
+    selected: list[dict] = []
+    market_details = {}
+    for market in MARKETS:
+        try:
+            market_selected, details = _v11_market_selection(candidates, market)
+        except ChallengeError as exc:
+            raise ChallengeError(
+                "v1.1 candidate pool has no globally feasible bounded market-parity selection"
+            ) from exc
+        selected.extend(market_selected)
+        market_details[market] = details
+    selected.sort(key=_candidate_order_key)
+    _assert_selected_balance(selected)
+    _assert_v11_market_missingness(selected)
+    maximum_spread, nonzero_dimensions = _v11_market_missingness_spread(selected)
+    return selected, {
+        "total_stratum_deviation": sum(details["cost"] for details in market_details.values()),
+        "stratum_counts": {
+            label: {market: market_details[market]["stratum_counts"][label] for market in MARKETS}
+            for label in LABELS
+        },
+        "market_missingness_vectors": _v11_market_missingness_vectors(selected),
+        "maximum_missingness_spread": maximum_spread,
+        "nonzero_missingness_dimensions": nonzero_dimensions,
+    }
+
+
+def v11_pre_review_feasibility(candidates: list[dict]) -> dict:
+    """Prove feasibility from construction labels before any reviewer packet exists."""
+    safe_candidates, exclusions = v11_safe_pool(candidates)
+    try:
+        selected, details = _v11_global_selection(safe_candidates)
+    except ChallengeError:
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "protocol_id": AMENDMENT_PROTOCOL_ID,
+            "status": "INFEASIBLE",
+            "safe_candidate_count": len(safe_candidates),
+            "collision_family_exclusions": exclusions,
+        }
+    _assert_selected_balance(selected)
+    _assert_v11_market_missingness(selected)
+    _assert_unique_verified_skus(selected)
+    witness = [candidate["candidate_id"] for candidate in selected]
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "protocol_id": AMENDMENT_PROTOCOL_ID,
+        "status": "FEASIBLE",
+        "safe_candidate_count": len(safe_candidates),
+        "collision_family_exclusions": exclusions,
+        "witness_candidate_ids": witness,
+        "witness_sha256": digest(witness),
+        "stratum_counts": details["stratum_counts"],
+        "missingness_policy": {
+            "policy_id": V11_MISSINGNESS_POLICY_ID,
+            "scope": V11_MISSINGNESS_SCOPE,
+            "tolerance": V11_MISSINGNESS_TOLERANCE,
+        },
+        "market_missingness_vectors": details["market_missingness_vectors"],
+        "market_missingness_vectors_sha256": digest(details["market_missingness_vectors"]),
+        "maximum_missingness_spread": details["maximum_missingness_spread"],
+        "nonzero_missingness_dimensions": details["nonzero_missingness_dimensions"],
+        "total_stratum_deviation": details["total_stratum_deviation"],
+    }
+
+
+def v11_select_consensus(candidates: list[dict], author: dict[str, Any], blind: dict[str, Any]) -> list[dict]:
+    """Select exactly 150 reviewed consensus cases under v1.1 constraints."""
+    safe_candidates, _ = v11_safe_pool(candidates)
+    approved = _v11_consensus_candidates(safe_candidates, author, blind)
+    selected, _ = _v11_global_selection(approved)
+    if len(selected) != 150:
+        raise ChallengeError("v1.1 consensus did not select exactly 150 cases")
+    _assert_selected_balance(selected)
+    _assert_v11_market_missingness(selected)
+    _assert_unique_verified_skus(selected)
+    return selected
+
+
+def v11_replenish(queue_manifest: dict, candidates: list[dict], author: dict[str, Any], blind: dict[str, Any]) -> dict:
+    """Append only the next frozen queue range when consensus cannot freeze."""
+    queue_manifest = _v11_reviewed_state(queue_manifest, candidates, author, blind)
+    candidate_by_id = {item["candidate_id"]: item for item in candidates}
+    released_ids = {
+        candidate_id
+        for cell in queue_manifest["cells"]
+        for release in cell["release_ranges"]
+        for candidate_id in cell["ordered_candidate_ids"][release["start"] : release["end"]]
+    }
+    released = [candidate_by_id[candidate_id] for candidate_id in released_ids]
+    try:
+        v11_select_consensus(released, author, blind)
+        return queue_manifest
+    except ChallengeError:
+        pass
+    updated_cells = []
+    exhausted = True
+    for cell in queue_manifest["cells"]:
+        next_start = max(release["end"] for release in cell["release_ranges"])
+        next_end = min(next_start + V11_REPLENISHMENT_BATCH_SIZE, len(cell["ordered_candidate_ids"]))
+        releases = list(cell["release_ranges"])
+        if next_start < next_end:
+            releases.append({"start": next_start, "end": next_end})
+            exhausted = False
+        updated_cells.append({**cell, "release_ranges": releases})
+    if exhausted:
+        raise ChallengeError("v1.1 replenishment queue is exhausted before feasible consensus")
+    return _v11_seal_queue({**queue_manifest, "cells": updated_cells})
+
+
+def _v11_validate_review_ledger(document: Any, candidates: list[dict], *, blind: bool) -> dict[str, dict]:
+    if not isinstance(document, dict) or set(document) != {"schema_version", "protocol_id", "entries"}:
+        raise ChallengeError("v1.1 review ledger schema is invalid")
+    if document["schema_version"] != SCHEMA_VERSION or document["protocol_id"] != AMENDMENT_PROTOCOL_ID:
+        raise ChallengeError("v1.1 review ledger identity is invalid")
+    token_to_id = {candidate["blind_review_token"]: candidate["candidate_id"] for candidate in candidates}
+    known = set(token_to_id.values())
+    entries: dict[str, dict] = {}
+    for entry in document["entries"]:
+        expected = (
+            {"review_token", "label", "attestation", "reviewed_at"}
+            if blind
+            else {"candidate_id", "label", "attestation", "reviewed_at"}
+        )
+        if not isinstance(entry, dict) or set(entry) != expected or entry["label"] not in LABELS:
+            raise ChallengeError("v1.1 review ledger entry is invalid")
+        candidate_id = token_to_id.get(entry["review_token"]) if blind else entry["candidate_id"]
+        if candidate_id not in known or candidate_id in entries:
+            raise ChallengeError("v1.1 review ledger contains unknown or duplicate candidate")
+        if (
+            not isinstance(entry["attestation"], str)
+            or not entry["attestation"]
+            or not isinstance(entry["reviewed_at"], str)
+            or not entry["reviewed_at"]
+        ):
+            raise ChallengeError("v1.1 review ledger requires attestation and timestamp")
+        entries[candidate_id] = entry
+    return entries
+
+
+def v11_freeze_benchmark(
+    queue_manifest: dict, candidates: list[dict], author: dict[str, dict], blind: dict[str, dict]
+) -> dict:
+    """Create v1.1 inference manifests only after exactly 150 consensus cases."""
+    queue_manifest = _v11_reviewed_state(queue_manifest, candidates, author, blind)
+    released_ids = {
+        candidate_id
+        for cell in queue_manifest["cells"]
+        for release in cell["release_ranges"]
+        for candidate_id in cell["ordered_candidate_ids"][release["start"] : release["end"]]
+    }
+    released = [candidate for candidate in candidates if candidate["candidate_id"] in released_ids]
+    selected = v11_select_consensus(released, author, blind)
+    if len(selected) != 150:
+        raise ChallengeError("v1.1 inference manifests require exactly 150 MODEL_REVIEWED_CONSENSUS cases")
+    selected.sort(key=_candidate_order_key)
+    labels = []
+    arm_a = []
+    arm_b = []
+    for ordinal, candidate in enumerate(selected, start=1):
+        case_ref = f"v11-challenge-case-{ordinal:03d}"
+        labels.append(
+            {
+                "case_ref": case_ref,
+                "model_reviewed_consensus_label": candidate["intended_label"],
+                "market": candidate["market"],
+                "label_status": "MODEL_REVIEWED_CONSENSUS",
+                "hidden_dossier_sha256": candidate["hidden_dossier_sha256"],
+                "candidate_id": candidate["candidate_id"],
+                "family_id": candidate["family_id"],
+                "stratum": candidate["stratum"],
+                "verified_skus": candidate["hidden_dossier"]["verified_skus"],
+            }
+        )
+        arm_a.append(
+            {
+                "case_ref": case_ref,
+                "market": candidate["market"],
+                "model_visible_payload": minimal_arm_payload(candidate["model_visible_payload"]),
+                "model_visible_payload_sha256": digest(minimal_arm_payload(candidate["model_visible_payload"])),
+            }
+        )
+        arm_b.append(
+            {
+                "case_ref": case_ref,
+                "market": candidate["market"],
+                "model_visible_payload": enriched_arm_payload(candidate["model_visible_payload"]),
+                "model_visible_payload_sha256": digest(enriched_arm_payload(candidate["model_visible_payload"])),
+            }
+        )
+    _assert_selected_balance(selected)
+    _assert_v11_market_missingness(selected)
+    _assert_unique_verified_skus(selected)
+    manifests = {}
+    for key, arm, prompt, prompt_hash, cases in (
+        ("arm_a", "A_MINIMAL", ARM_A_PROMPT_ID, ARM_A_PROMPT_SHA256, arm_a),
+        ("arm_b", "B_ENRICHED", ARM_B_PROMPT_ID, ARM_B_PROMPT_SHA256, arm_b),
+    ):
+        for case in cases:
+            provider_payload(case, arm=arm)
+        manifests[key] = {
+            "schema_version": SCHEMA_VERSION, "protocol_id": AMENDMENT_PROTOCOL_ID,
+            "challenge_id": CHALLENGE_ID, "arm": arm, "requested_model_id": MODEL_ID,
+            "prompt_id": prompt, "prompt_sha256": prompt_hash, "case_count": 150, "cases": cases,
+        }
+    receipt = {
+        "protocol_id": AMENDMENT_PROTOCOL_ID, "inference_status": "NOT_RUN", "case_count": 150,
+        "balance": {market: dict.fromkeys(LABELS, 25) for market in MARKETS},
+        "queue_manifest_sha256": digest(queue_manifest), "label_ledger_sha256": digest(labels),
+        "arm_a_manifest_sha256": digest(manifests["arm_a"]),
+        "arm_b_manifest_sha256": digest(manifests["arm_b"]),
+        "missingness_policy": {
+            "policy_id": V11_MISSINGNESS_POLICY_ID,
+            "scope": V11_MISSINGNESS_SCOPE,
+            "tolerance": V11_MISSINGNESS_TOLERANCE,
+        },
+    }
+    receipt["receipt_sha256"] = digest(receipt)
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "protocol_id": AMENDMENT_PROTOCOL_ID,
+        "status": "FROZEN_MODEL_REVIEWED_CONSENSUS",
+        "label_ledger": labels,
+        "inference_manifests": manifests,
+        "queue_manifest": queue_manifest,
+        "freeze_receipt": receipt,
+    }
+
+
+def verify_v11_freeze(artifact: Any, candidates: list[dict]) -> dict:
+    """Verify bindings AND semantics; a rehashed mutation cannot bypass the pins."""
+    keys = {"schema_version", "protocol_id", "status", "label_ledger", "inference_manifests",
+            "queue_manifest", "freeze_receipt"}
+    if not isinstance(artifact, dict) or set(artifact) != keys:
+        raise ChallengeError("v1.1 freeze schema is invalid")
+    queue = artifact["queue_manifest"]
+    validate_v11_queue_manifest(queue, candidates)
+    records = queue["review_records"]
+    # Reconstruction calls the same v1 missingness assertion used by the freeze.
+    expected = v11_freeze_benchmark(queue, candidates, records["author"], records["blind"])
+    # Independently revalidate outbound documents even when their stored hashes agree.
+    for key, arm in (("arm_a", "A_MINIMAL"), ("arm_b", "B_ENRICHED")):
+        manifest = artifact["inference_manifests"].get(key)
+        if not isinstance(manifest, dict) or not isinstance(manifest.get("cases"), list):
+            raise ChallengeError("v1.1 arm manifest is invalid")
+        for case in manifest["cases"]:
+            provider_payload(case, arm=arm)
+    if artifact != expected:
+        raise ChallengeError("v1.1 freeze binding, balance, diversity or model/prompt pin mismatch")
+    return deepcopy(artifact["freeze_receipt"])
+
+
+def v11_verified_provider_payloads(artifact: dict, candidates: list[dict], *, arm: str) -> list[dict]:
+    """Sole v1.1 runner adapter: verify the entire freeze before exposing any request."""
+    verify_v11_freeze(artifact, candidates)
+    key = {"A_MINIMAL": "arm_a", "B_ENRICHED": "arm_b"}.get(arm)
+    if key is None:
+        raise ChallengeError("Unknown challenge arm")
+    return [provider_payload(case, arm=arm) for case in artifact["inference_manifests"][key]["cases"]]
+
+
+def _v11_claim_transition(queue_path: Path, queue: dict) -> None:
+    """Exclusive durable claim prevents applying the same persisted parent twice.
+
+    A crash after the claim fails closed: retain it for recovery, never replay a
+    batch automatically. New states are always written to a new path.
+    """
+    write_new(queue_path.with_name(queue_path.name + ".consumed"), {"state_sha256": queue["state_sha256"]})
 
 
 def freeze_benchmark(
@@ -1098,6 +1995,36 @@ def main(argv: list[str] | None = None) -> int:
     compare_parser.add_argument("--arm-a-results", type=_cli_path, required=True)
     compare_parser.add_argument("--arm-b-results", type=_cli_path, required=True)
     compare_parser.add_argument("--output", type=_cli_path, required=True)
+    v11_prepare = commands.add_parser("v1-1-prepare-review")
+    v11_prepare.add_argument("--candidate-pool", type=_cli_path, required=True)
+    v11_prepare.add_argument("--exclusion-index", type=_cli_path, required=True)
+    v11_prepare.add_argument("--queue-output", type=_cli_path, required=True)
+    v11_prepare.add_argument("--reviewer-output", type=_cli_path, required=True)
+    v11_replenish_parser = commands.add_parser("v1-1-replenish")
+    v11_replenish_parser.add_argument("--candidate-pool", type=_cli_path, required=True)
+    v11_replenish_parser.add_argument("--exclusion-index", type=_cli_path, required=True)
+    v11_replenish_parser.add_argument("--queue-manifest", type=_cli_path, required=True)
+    v11_replenish_parser.add_argument("--author-ledger", type=_cli_path, required=True)
+    v11_replenish_parser.add_argument("--blind-ledger", type=_cli_path, required=True)
+    v11_replenish_parser.add_argument("--output", type=_cli_path, required=True)
+    v11_replenish_parser.add_argument("--reviewer-output", type=_cli_path, required=True)
+    v11_freeze_parser = commands.add_parser("v1-1-freeze")
+    v11_freeze_parser.add_argument("--candidate-pool", type=_cli_path, required=True)
+    v11_freeze_parser.add_argument("--exclusion-index", type=_cli_path, required=True)
+    v11_freeze_parser.add_argument("--queue-manifest", type=_cli_path, required=True)
+    v11_freeze_parser.add_argument("--author-ledger", type=_cli_path, required=True)
+    v11_freeze_parser.add_argument("--blind-ledger", type=_cli_path, required=True)
+    v11_freeze_parser.add_argument("--output", type=_cli_path, required=True)
+    v11_verify = commands.add_parser("verify-v1-1-freeze")
+    v11_verify.add_argument("--candidate-pool", type=_cli_path, required=True)
+    v11_verify.add_argument("--exclusion-index", type=_cli_path, required=True)
+    v11_verify.add_argument("--freeze", type=_cli_path, required=True)
+    v11_missingness = commands.add_parser("v1-1-missingness-diagnostic")
+    v11_missingness.add_argument("--candidate-pool", type=_cli_path, required=True)
+    v11_missingness.add_argument("--exclusion-index", type=_cli_path, required=True)
+    v11_feasibility = commands.add_parser("v1-1-feasibility")
+    v11_feasibility.add_argument("--candidate-pool", type=_cli_path, required=True)
+    v11_feasibility.add_argument("--exclusion-index", type=_cli_path, required=True)
     args = parser.parse_args(argv)
     if args.command == "build-exclusion-index":
         document = build_exclusion_index(args.source)
@@ -1118,6 +2045,50 @@ def main(argv: list[str] | None = None) -> int:
         )
         paths = write_freeze(args.output_dir, artifacts)
         result = {"status": "ok", "paths": {name: str(path) for name, path in paths.items()}}
+    elif args.command in {
+        "v1-1-prepare-review", "v1-1-replenish", "v1-1-freeze", "verify-v1-1-freeze",
+        "v1-1-missingness-diagnostic", "v1-1-feasibility",
+    }:
+        candidates = validate_v11_candidate_pool(
+            read_json(args.candidate_pool), _read_exclusion_index(args.exclusion_index)
+        )
+        if args.command == "v1-1-feasibility":
+            result = v11_pre_review_feasibility(candidates)
+        elif args.command == "v1-1-missingness-diagnostic":
+            result = v11_missingness_diagnostic(candidates)
+        elif args.command == "verify-v1-1-freeze":
+            receipt = verify_v11_freeze(read_json(args.freeze), candidates)
+            result = {"status": "ok", "freeze_receipt_sha256": digest(receipt)}
+        elif args.command == "v1-1-prepare-review":
+            queue = v11_create_queue_manifest(candidates)
+            reviewer_export = v11_blind_review_export(queue, candidates)
+            write_new(args.queue_output, queue)
+            write_new(args.reviewer_output, reviewer_export)
+            result = {"status": "ok", "queue_sha256": digest(queue), "review_packet_count": len(reviewer_export)}
+        else:
+            queue = read_json(args.queue_manifest)
+            author = _v11_validate_review_ledger(read_json(args.author_ledger), candidates, blind=False)
+            blind = _v11_validate_review_ledger(read_json(args.blind_ledger), candidates, blind=True)
+            artifact = (
+                v11_replenish(queue, candidates, author, blind)
+                if args.command == "v1-1-replenish"
+                else v11_freeze_benchmark(queue, candidates, author, blind)
+            )
+            if args.command == "v1-1-replenish":
+                reviewer_export = v11_blind_review_export(artifact, candidates)
+                if not reviewer_export:
+                    raise ChallengeError("v1.1 consensus ready; freeze instead of exporting a duplicate batch")
+                if args.reviewer_output.exists():
+                    raise ChallengeError("v1.1 reviewer output already exists")
+            else:
+                verify_v11_freeze(artifact, candidates)
+            if args.output.exists():
+                raise ChallengeError("v1.1 transition output already exists")
+            _v11_claim_transition(args.queue_manifest, queue)
+            write_new(args.output, artifact)
+            if args.command == "v1-1-replenish":
+                write_new(args.reviewer_output, reviewer_export)
+            result = {"status": "ok", "sha256": digest(artifact)}
     else:
         if args.command == "verify-freeze":
             receipt = verify_freeze(args.output_dir)

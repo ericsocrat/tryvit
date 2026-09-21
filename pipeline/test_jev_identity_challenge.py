@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from copy import deepcopy
+
 import pytest
 
 from pipeline import jev_identity_challenge as challenge
@@ -341,3 +343,478 @@ def test_result_validator_binds_manifest_and_rejects_invalid_probability():
     document["results"][0]["identity_probabilities"]["CONSISTENT"] = 0.8
     with pytest.raises(challenge.ChallengeError, match="distribution"):
         challenge.validate_arm_results(document, manifest)
+
+
+def test_v11_readiness_uses_30_per_cell_and_diversity_floors():
+    envelope, _, _ = consensus_input()
+    v11 = {"schema_version": 1, "protocol_id": challenge.AMENDMENT_PROTOCOL_ID, "candidates": envelope["candidates"]}
+    candidates = challenge.validate_v11_candidate_pool(v11, set())
+    report = challenge.v11_readiness_report(candidates)
+    assert report["initial_blind_review_ready"] is True
+    manifest = challenge.v11_create_queue_manifest(candidates)
+    export = challenge.v11_blind_review_export(manifest, candidates)
+    assert len(manifest["cells"]) == 6
+    assert len(export) == 180
+    assert all(
+        set(packet) == {"review_token", "model_visible_payload", "model_visible_payload_sha256"} for packet in export
+    )
+
+
+def test_v11_rejects_cell_below_initial_review_size():
+    envelope, _, _ = consensus_input()
+    retained = [
+        candidate
+        for candidate in envelope["candidates"]
+        if not (candidate["market"] == "PL" and candidate["intended_label"] == "CONSISTENT")
+    ]
+    retained.extend(candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 1000 + index) for index in range(29))
+    v11 = {"schema_version": 1, "protocol_id": challenge.AMENDMENT_PROTOCOL_ID, "candidates": retained}
+    with pytest.raises(challenge.ChallengeError, match="needs 30 candidates"):
+        challenge.validate_v11_candidate_pool(v11, set())
+
+
+def test_v11_consensus_selection_uses_diversity_bounds_and_exact_balance():
+    envelope, author_document, blind_document = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    author = challenge._validate_author_ledger(author_document, candidates)
+    blind = challenge._validate_blind_ledger(blind_document, candidates)
+    selected = challenge.v11_select_consensus(candidates, author, blind)
+    assert len(selected) == 150
+    for market in challenge.MARKETS:
+        for label in challenge.LABELS:
+            cell = [item for item in selected if item["market"] == market and item["intended_label"] == label]
+            assert len(cell) == 25
+            bounds = challenge.DIVERSITY_BOUNDS_V11[label]
+            for stratum in challenge.STRATUM_TARGETS[label]:
+                count = sum(item["stratum"] == stratum for item in cell)
+                assert bounds["minimum"] <= count <= bounds["maximum"]
+
+
+def test_persisted_candidate_derived_evidence_is_recomputed_and_verified():
+    raw = candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 2001)
+    persisted = challenge.validate_candidate(raw, set())
+    assert challenge.validate_candidate(persisted, set())["candidate_id"] == raw["candidate_id"]
+    persisted["blind_review_token"] = persisted["blind_review_token"][::-1]
+    with pytest.raises(challenge.ChallengeError, match="derived evidence"):
+        challenge.validate_candidate(persisted, set())
+
+
+def test_v11_initial_queue_excludes_duplicate_sku_alternatives():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    duplicate = dict(candidates[0])
+    duplicate["candidate_id"] = "duplicate-sku-alternative"
+    duplicate["family_id"] = "different-family"
+    duplicate["fingerprints"] = ["different-fingerprint"]
+    duplicate["hidden_dossier"] = dict(duplicate["hidden_dossier"])
+    duplicate["hidden_dossier"]["verified_skus"] = candidates[0]["hidden_dossier"]["verified_skus"]
+    for key in ("hidden_dossier_sha256", "model_visible_payload_sha256", "blind_review_token"):
+        del duplicate[key]
+    duplicate = challenge.validate_candidate(duplicate, set())
+    manifest = challenge.v11_create_queue_manifest([*candidates, duplicate])
+    assert manifest["collision_family_exclusions"]
+    all_tokens = {
+        packet["review_token"] for packet in challenge.v11_blind_review_export(manifest, [*candidates, duplicate])
+    }
+    assert not ({candidates[0]["blind_review_token"], duplicate["blind_review_token"]} <= all_tokens)
+
+
+def test_v11_raw_count_does_not_bypass_safe_pool_readiness():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    pl_consistent = [item for item in candidates if item["market"] == "PL" and item["intended_label"] == "CONSISTENT"]
+    retained = [item for item in candidates if item not in pl_consistent] + pl_consistent[:29]
+    duplicate = dict(pl_consistent[0])
+    duplicate["candidate_id"] = "v11-safe-pool-duplicate"
+    duplicate["family_id"] = "v11-safe-pool-different-family"
+    duplicate["fingerprints"] = ["v11-safe-pool-fingerprint"]
+    duplicate["hidden_dossier"] = dict(duplicate["hidden_dossier"])
+    for key in ("hidden_dossier_sha256", "model_visible_payload_sha256", "blind_review_token"):
+        del duplicate[key]
+    retained.append(challenge.validate_candidate(duplicate, set()))
+    report = challenge.v11_readiness_report(retained)
+    cell = next(item for item in report["cells"] if item["market"] == "PL" and item["intended_class"] == "CONSISTENT")
+    assert cell["valid_unratified"] == 29
+    assert report["initial_blind_review_ready"] is False
+
+
+def test_v1_pool_does_not_apply_v11_collision_filter():
+    envelope, _, _ = consensus_input()
+    raw_duplicate = candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 9999)
+    raw_duplicate["hidden_dossier"]["verified_skus"] = envelope["candidates"][0]["hidden_dossier"]["verified_skus"]
+    envelope["candidates"].append(raw_duplicate)
+    validated = challenge.validate_candidate_pool(envelope, set())
+    assert len(validated) == len(envelope["candidates"])
+
+
+def test_v11_replenishment_keeps_frozen_order_and_freeze_requires_150_consensus():
+    envelope, author_document, blind_document = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    manifest = challenge.v11_create_queue_manifest(candidates)
+    challenge.v11_blind_review_export(manifest, candidates)
+    author = challenge._validate_author_ledger(author_document, candidates)
+    blind = challenge._validate_blind_ledger(blind_document, candidates)
+    released = released_ids(manifest)
+    author = {cid: value for cid, value in author.items() if cid in released}
+    blind = {cid: value for cid, value in blind.items() if cid in released}
+    original_orders = [cell["ordered_candidate_ids"] for cell in manifest["cells"]]
+    state = challenge.v11_replenish(manifest, candidates, author, blind)
+    assert [cell["ordered_candidate_ids"] for cell in state["cells"]] == original_orders
+    frozen = challenge.v11_freeze_benchmark(state, candidates, author, blind)
+    assert len(frozen["label_ledger"]) == 150
+    assert len(frozen["inference_manifests"]["arm_a"]["cases"]) == 150
+
+
+def test_v11_reviewer_export_has_no_internal_metadata_recursively():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    exported = challenge.v11_blind_review_export(challenge.v11_create_queue_manifest(candidates), candidates)
+    forbidden = {"intended_class", "stratum", "candidate_id", "family_id", "verified_skus", "collision_exclusions"}
+
+    def visit(value):
+        if isinstance(value, dict):
+            assert not (set(value) & forbidden)
+            for nested in value.values():
+                visit(nested)
+        elif isinstance(value, list):
+            for nested in value:
+                visit(nested)
+
+    visit(exported)
+
+
+def released_ids(queue):
+    return {cid for cell in queue["cells"]
+            for cid in cell["ordered_candidate_ids"][:cell["release_ranges"][-1]["end"]]}
+
+
+def v11_fixture():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    queue = challenge.v11_create_queue_manifest(candidates)
+    packets = challenge.v11_blind_review_export(queue, candidates)
+    author, blind = fixture_reviews(queue, candidates)
+    return candidates, queue, packets, author, blind
+
+
+def fixture_reviews(queue, candidates):
+    author = {item["candidate_id"]: {"label": item["intended_label"],
+              "attestation": "Synthetic test review", "reviewed_at": "2026-09-20T00:00:00Z"}
+              for item in candidates if item["candidate_id"] in released_ids(queue)}
+    return author, deepcopy(author)
+
+
+@pytest.mark.parametrize("mutation", ["id", "order", "hash", "pool", "cell", "missing", "duplicate",
+                                    "initial", "overlap", "gap", "backwards", "bounds"])
+def test_v11_queue_tampering_rejected_by_every_transition(mutation):
+    candidates, queue, _, author, blind = v11_fixture()
+    cell = queue["cells"][0]
+    if mutation == "id":
+        cell["ordered_candidate_ids"][0] = "not-safe"
+    elif mutation == "order":
+        cell["ordered_candidate_ids"][:2] = reversed(cell["ordered_candidate_ids"][:2])
+        cell["ordered_queue_sha256"] = challenge.digest(cell["ordered_candidate_ids"])
+    elif mutation == "hash":
+        cell["ordered_queue_sha256"] = "0" * 64
+    elif mutation == "pool":
+        queue["safe_pool_sha256"] = "0" * 64
+    elif mutation == "cell":
+        cell["market"] = "DE"
+    elif mutation == "missing":
+        queue["cells"].pop()
+    elif mutation == "duplicate":
+        queue["cells"][1] = deepcopy(cell)
+    elif mutation == "initial":
+        cell["release_ranges"] = [{"start": 0, "end": 29}]
+    else:
+        cell["release_ranges"].append({"start": {"overlap": 0, "gap": 31}.get(mutation, 30),
+                                       "end": {"backwards": 20, "bounds": 999}.get(mutation, 40)})
+    challenge._v11_seal_queue(queue)  # Even recomputing the state digest must not bypass reconstruction.
+    for transition in (lambda: challenge.v11_blind_review_export(queue, candidates),
+                       lambda: challenge.v11_replenish(queue, candidates, author, blind),
+                       lambda: challenge.v11_freeze_benchmark(queue, candidates, author, blind)):
+        with pytest.raises(challenge.ChallengeError, match="queue"):
+            transition()
+
+
+@pytest.mark.parametrize("role", ["author", "blind"])
+@pytest.mark.parametrize("fault", ["missing", "attestation", "timestamp"])
+def test_v11_incomplete_or_invalid_reviews_cannot_replenish(role, fault):
+    candidates, queue, _, author, blind = v11_fixture()
+    original = deepcopy(queue)
+    ledger = author if role == "author" else blind
+    cid = next(iter(ledger))
+    if fault == "missing":
+        del ledger[cid]
+    else:
+        ledger[cid]["reviewed_at" if fault == "timestamp" else "attestation"] = ""
+    with pytest.raises(challenge.ChallengeError, match="review"):
+        challenge.v11_replenish(queue, candidates, author, blind)
+    assert queue == original
+
+
+def test_v11_incremental_exports_and_order_independence(tmp_path):
+    candidates, queue, initial, author, blind = v11_fixture()
+    # Force shortage without changing candidate ordering.
+    for cid in queue["cells"][0]["ordered_candidate_ids"][:10]:
+        blind[cid]["label"] = "INSUFFICIENT_EVIDENCE"
+    state = challenge.v11_replenish(queue, candidates, author, blind)
+    assert [c["ordered_candidate_ids"] for c in state["cells"]] == [c["ordered_candidate_ids"] for c in queue["cells"]]
+    new = challenge.v11_blind_review_export(state, candidates)
+    assert len(new) == 60
+    assert not {p["review_token"] for p in new} & {p["review_token"] for p in initial}
+    assert challenge.v11_blind_review_export(state, candidates) == []
+    with pytest.raises(challenge.ChallengeError, match="incomplete"):
+        challenge.v11_replenish(state, candidates, author, blind)
+    path = tmp_path / "queue.json"
+    challenge._v11_claim_transition(path, queue)
+    with pytest.raises(FileExistsError):
+        challenge._v11_claim_transition(path, queue)
+
+
+def test_v11_freeze_pins_bindings_and_verified_provider_adapter():
+    candidates, queue, _, author, blind = v11_fixture()
+    frozen = challenge.v11_freeze_benchmark(queue, candidates, author, blind)
+    receipt = challenge.verify_v11_freeze(frozen, candidates)
+    assert receipt["case_count"] == 150
+    assert receipt["inference_status"] == "NOT_RUN"
+    assert receipt["queue_manifest_sha256"] == challenge.digest(frozen["queue_manifest"])
+    assert receipt["label_ledger_sha256"] == challenge.digest(frozen["label_ledger"])
+    for key, arm, prompt, prompt_hash in (
+        ("arm_a", "A_MINIMAL", challenge.ARM_A_PROMPT_ID, challenge.ARM_A_PROMPT_SHA256),
+        ("arm_b", "B_ENRICHED", challenge.ARM_B_PROMPT_ID, challenge.ARM_B_PROMPT_SHA256),
+    ):
+        manifest = frozen["inference_manifests"][key]
+        assert manifest["requested_model_id"] == "jev-1.13.0"
+        assert (manifest["prompt_id"], manifest["prompt_sha256"]) == (prompt, prompt_hash)
+        assert receipt[key + "_manifest_sha256"] == challenge.digest(manifest)
+        assert len(challenge.v11_verified_provider_payloads(frozen, candidates, arm=arm)) == 150
+
+
+def test_v11_freeze_verification_rejects_missingness_policy_mutation():
+    candidates, queue, _, author, blind = v11_fixture()
+    frozen = challenge.v11_freeze_benchmark(queue, candidates, author, blind)
+    frozen["freeze_receipt"]["missingness_policy"]["tolerance"] = 3
+    with pytest.raises(challenge.ChallengeError, match="freeze binding"):
+        challenge.verify_v11_freeze(frozen, candidates)
+
+
+def _v11_freeze_inputs(*, distinctive_insufficient_missingness: bool = False):
+    envelope, _, _ = consensus_input()
+    if distinctive_insufficient_missingness:
+        for item in envelope["candidates"]:
+            if item["intended_label"] != "INSUFFICIENT_EVIDENCE":
+                continue
+            item["model_visible_payload"]["reference"]["variant"] = "retained variant"
+            item["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    queue = challenge.v11_create_queue_manifest(candidates)
+    challenge.v11_blind_review_export(queue, candidates)
+    author, blind = fixture_reviews(queue, candidates)
+    return candidates, queue, author, blind
+
+
+def test_v11_freeze_rejects_distinctive_insufficient_missingness(monkeypatch):
+    # Simulate a queue frozen by an earlier implementation, before feasibility
+    # became a pre-review gate. The final selector must still fail closed.
+    monkeypatch.setattr(challenge, "v11_pre_review_feasibility", lambda candidates: {"status": "FEASIBLE"})
+    candidates, queue, author, blind = _v11_freeze_inputs(distinctive_insufficient_missingness=True)
+    diagnostic = challenge.v11_missingness_diagnostic(candidates)
+    by_field = {(row["class"], row["side"], row["semantic_field"]): row for row in diagnostic["counts"]}
+    assert by_field[("INSUFFICIENT_EVIDENCE", "reference", "variant")]["null_count"] == 0
+    assert by_field[("CONSISTENT", "reference", "variant")]["null_count"] > 0
+    with pytest.raises(challenge.ChallengeError, match="bounded market-parity"):
+        challenge.v11_freeze_benchmark(queue, candidates, author, blind)
+
+
+def test_v11_verify_reconstructs_missingness_guard(monkeypatch):
+    candidates, queue, author, blind = _v11_freeze_inputs()
+    frozen = challenge.v11_freeze_benchmark(queue, candidates, author, blind)
+    original = challenge._assert_v11_market_missingness
+    calls = []
+
+    def checked(selected):
+        calls.append(len(selected))
+        original(selected)
+
+    monkeypatch.setattr(challenge, "_assert_v11_market_missingness", checked)
+    challenge.verify_v11_freeze(frozen, candidates)
+    assert calls and set(calls) == {150}
+
+
+def _first_cell_cases(candidates, market, label):
+    return [item for item in candidates if item["market"] == market and item["intended_label"] == label][:25]
+
+
+def _balanced_first_cells(candidates):
+    return [
+        item
+        for market in challenge.MARKETS
+        for label in challenge.LABELS
+        for item in _first_cell_cases(candidates, market, label)
+    ]
+
+
+def test_v1_exact_missingness_remains_unchanged():
+    envelope, _, _ = consensus_input()
+    for item in _first_cell_cases(envelope["candidates"], "PL", "CONSISTENT")[:2]:
+        item["model_visible_payload"]["reference"]["variant"] = "retained variant"
+        item["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    selected = _balanced_first_cells(candidates)
+    with pytest.raises(challenge.ChallengeError, match="missingness is not matched"):
+        challenge._assert_matched_missingness(selected)
+
+
+def test_v11_market_parity_accepts_spread_two_and_rejects_spread_three():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    selected = _balanced_first_cells(candidates)
+    for item in _first_cell_cases(selected, "PL", "CONSISTENT")[:2]:
+        item["model_visible_payload"]["reference"]["variant"] = "retained variant"
+        item["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
+    challenge._assert_v11_market_missingness(selected)
+    extra = _first_cell_cases(selected, "PL", "CONSISTENT")[2]
+    extra["model_visible_payload"]["reference"]["variant"] = "retained variant"
+    extra["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
+    with pytest.raises(challenge.ChallengeError, match="spread exceeds tolerance"):
+        challenge._assert_v11_market_missingness(selected)
+
+
+def test_v11_market_parity_rejects_aggregate_cancellation():
+    envelope, _, _ = consensus_input()
+    for market, label in (("PL", "CONSISTENT"), ("DE", "INCONSISTENT"), ("DE", "INSUFFICIENT_EVIDENCE")):
+        for item in _first_cell_cases(envelope["candidates"], market, label)[:3]:
+            item["model_visible_payload"]["reference"]["variant"] = "retained variant"
+            item["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    selected = _balanced_first_cells(candidates)
+    challenge._assert_matched_missingness(selected)
+    with pytest.raises(challenge.ChallengeError, match="spread exceeds tolerance"):
+        challenge._assert_v11_market_missingness(selected)
+
+
+def test_v11_global_selector_finds_t2_feasible_cohort_deterministically():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    first = challenge.v11_pre_review_feasibility(candidates)
+    second = challenge.v11_pre_review_feasibility(list(reversed(candidates)))
+    assert first["status"] == second["status"] == "FEASIBLE"
+    assert first["witness_candidate_ids"] == second["witness_candidate_ids"]
+    assert first["maximum_missingness_spread"] <= 2
+
+
+def test_v11_pre_review_feasibility_witness_is_valid_and_order_independent():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    first = challenge.v11_pre_review_feasibility(candidates)
+    second = challenge.v11_pre_review_feasibility(list(reversed(candidates)))
+    assert first["status"] == "FEASIBLE"
+    assert first["witness_candidate_ids"] == second["witness_candidate_ids"]
+    assert first["witness_sha256"] == second["witness_sha256"]
+    assert first["market_missingness_vectors_sha256"] == second["market_missingness_vectors_sha256"]
+    assert first["missingness_policy"]["tolerance"] == 2
+    witness_by_id = {item["candidate_id"]: item for item in candidates}
+    selected = [witness_by_id[candidate_id] for candidate_id in first["witness_candidate_ids"]]
+    challenge._assert_selected_balance(selected)
+    challenge._assert_v11_market_missingness(selected)
+    challenge._assert_unique_verified_skus(selected)
+    for label in challenge.LABELS:
+        for market in challenge.MARKETS:
+            counts = first["stratum_counts"][label][market]
+            assert sum(counts.values()) == 25
+            bounds = challenge.DIVERSITY_BOUNDS_V11[label]
+            assert all(bounds["minimum"] <= count <= bounds["maximum"] for count in counts.values())
+
+
+def test_v11_truly_infeasible_missingness_blocks_queue_and_consensus():
+    envelope, _, _ = consensus_input()
+    for item in envelope["candidates"]:
+        if item["intended_label"] == "INSUFFICIENT_EVIDENCE":
+            item["model_visible_payload"]["reference"]["variant"] = "retained variant"
+            item["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    feasibility = challenge.v11_pre_review_feasibility(candidates)
+    assert feasibility["status"] == "INFEASIBLE"
+    with pytest.raises(challenge.ChallengeError, match="globally infeasible"):
+        challenge.v11_create_queue_manifest(candidates)
+    reviews = {item["candidate_id"]: {"label": item["intended_label"]} for item in candidates}
+    with pytest.raises(challenge.ChallengeError, match="globally feasible bounded market-parity"):
+        challenge.v11_select_consensus(candidates, reviews, reviews)
+
+
+@pytest.mark.parametrize("fault", ["receipt", "model", "prompt", "prompt_hash", "label", "leakage"])
+def test_v11_mutated_freeze_cannot_reach_provider(fault):
+    candidates, queue, _, author, blind = v11_fixture()
+    frozen = challenge.v11_freeze_benchmark(queue, candidates, author, blind)
+    manifest = frozen["inference_manifests"]["arm_b"]
+    if fault == "receipt":
+        frozen["freeze_receipt"]["case_count"] = 149
+    elif fault == "label":
+        frozen["label_ledger"][0]["label_status"] = "UNREVIEWED"
+    elif fault == "leakage":
+        case = manifest["cases"][0]
+        case["model_visible_payload"]["enrichment"]["reference"]["aliases"] = "https://private.test/sku"
+        case["model_visible_payload_sha256"] = challenge.digest(case["model_visible_payload"])
+    else:
+        key = {"model": "requested_model_id", "prompt": "prompt_id", "prompt_hash": "prompt_sha256"}[fault]
+        manifest[key] = "wrong"
+    # Rehash an altered manifest to exercise semantic verification, not just digest checks.
+    frozen["freeze_receipt"]["arm_b_manifest_sha256"] = challenge.digest(manifest)
+    with pytest.raises(challenge.ChallengeError):
+        challenge.v11_verified_provider_payloads(frozen, candidates, arm="B_ENRICHED")
+
+
+def test_v11_cli_state_machine_replenish_freeze_verify_and_replay(tmp_path):
+    candidates, queue, _, author, blind = v11_fixture()
+    paths = {name: tmp_path / (name + ".json") for name in ("pool", "index", "queue", "author", "blind")}
+    challenge.write_new(paths["pool"], {"schema_version": 1, "protocol_id": challenge.AMENDMENT_PROTOCOL_ID,
+                                        "candidates": candidates})
+    challenge.write_new(paths["index"], {"challenge_id": challenge.CHALLENGE_ID, "fingerprints": []})
+    challenge.write_new(paths["queue"], queue)
+    tokens = {item["candidate_id"]: item["blind_review_token"] for item in candidates}
+    rejected = queue["cells"][0]["ordered_candidate_ids"][:6]
+    for cid in rejected:
+        blind[cid]["label"] = "INSUFFICIENT_EVIDENCE"
+
+    def write_ledgers(a_path, b_path, author, blind):
+        for path, ledger, is_blind in ((a_path, author, False), (b_path, blind, True)):
+            challenge.write_new(path, {"schema_version": 1, "protocol_id": challenge.AMENDMENT_PROTOCOL_ID,
+                "entries": [{**entry, "review_token" if is_blind else "candidate_id": tokens[cid] if is_blind else cid}
+                            for cid, entry in ledger.items()]})
+
+    write_ledgers(paths["author"], paths["blind"], author, blind)
+    base = ["--candidate-pool", str(paths["pool"]), "--exclusion-index", str(paths["index"])]
+    new_queue, new_export = tmp_path / "next.json", tmp_path / "next-packets.json"
+    args = ["v1-1-replenish", *base, "--queue-manifest", str(paths["queue"]),
+            "--author-ledger", str(paths["author"]), "--blind-ledger", str(paths["blind"]),
+            "--output", str(new_queue), "--reviewer-output", str(new_export)]
+    assert challenge.main(args) == 0
+    # Reusing a consumed parent cannot produce the same batch under fresh output names.
+    args[-3], args[-1] = str(tmp_path / "replay.json"), str(tmp_path / "replay-packets.json")
+    with pytest.raises(FileExistsError):
+        challenge.main(args)
+    assert not (tmp_path / "replay-packets.json").exists()
+    state = challenge.read_json(new_queue)
+    author, blind = fixture_reviews(state, candidates)
+    for cid in rejected:
+        blind[cid]["label"] = "INSUFFICIENT_EVIDENCE"
+    final_a, final_b = tmp_path / "final-author.json", tmp_path / "final-blind.json"
+    write_ledgers(final_a, final_b, author, blind)
+    frozen_path = tmp_path / "freeze.json"
+    assert challenge.main(["v1-1-freeze", *base, "--queue-manifest", str(new_queue),
+                           "--author-ledger", str(final_a), "--blind-ledger", str(final_b),
+                           "--output", str(frozen_path)]) == 0
+    assert challenge.main(["verify-v1-1-freeze", *base, "--freeze", str(frozen_path)]) == 0
+    assert challenge.main(["v1-1-missingness-diagnostic", *base]) == 0
+    assert challenge.main(["v1-1-feasibility", *base]) == 0
+    frozen = challenge.read_json(frozen_path)
+    for market in challenge.MARKETS:
+        for label in challenge.LABELS:
+            entries = [entry for entry in frozen["label_ledger"] if entry["market"] == market
+                       and entry["model_reviewed_consensus_label"] == label]
+            assert len(entries) == 25
+            for stratum in challenge.STRATUM_TARGETS[label]:
+                count = sum(entry["stratum"] == stratum for entry in entries)
+                assert challenge.DIVERSITY_BOUNDS_V11[label]["minimum"] <= count
+                assert count <= challenge.DIVERSITY_BOUNDS_V11[label]["maximum"]
