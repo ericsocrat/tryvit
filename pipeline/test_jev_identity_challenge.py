@@ -591,6 +591,14 @@ def test_v11_freeze_pins_bindings_and_verified_provider_adapter():
         assert len(challenge.v11_verified_provider_payloads(frozen, candidates, arm=arm)) == 150
 
 
+def test_v11_freeze_verification_rejects_missingness_policy_mutation():
+    candidates, queue, _, author, blind = v11_fixture()
+    frozen = challenge.v11_freeze_benchmark(queue, candidates, author, blind)
+    frozen["freeze_receipt"]["missingness_policy"]["tolerance"] = 3
+    with pytest.raises(challenge.ChallengeError, match="freeze binding"):
+        challenge.verify_v11_freeze(frozen, candidates)
+
+
 def _v11_freeze_inputs(*, distinctive_insufficient_missingness: bool = False):
     envelope, _, _ = consensus_input()
     if distinctive_insufficient_missingness:
@@ -615,55 +623,85 @@ def test_v11_freeze_rejects_distinctive_insufficient_missingness(monkeypatch):
     by_field = {(row["class"], row["side"], row["semantic_field"]): row for row in diagnostic["counts"]}
     assert by_field[("INSUFFICIENT_EVIDENCE", "reference", "variant")]["null_count"] == 0
     assert by_field[("CONSISTENT", "reference", "variant")]["null_count"] > 0
-    with pytest.raises(challenge.ChallengeError, match="matched-missingness"):
+    with pytest.raises(challenge.ChallengeError, match="bounded market-parity"):
         challenge.v11_freeze_benchmark(queue, candidates, author, blind)
 
 
 def test_v11_verify_reconstructs_missingness_guard(monkeypatch):
     candidates, queue, author, blind = _v11_freeze_inputs()
     frozen = challenge.v11_freeze_benchmark(queue, candidates, author, blind)
-    original = challenge._assert_matched_missingness
+    original = challenge._assert_v11_market_missingness
     calls = []
 
     def checked(selected):
         calls.append(len(selected))
         original(selected)
 
-    monkeypatch.setattr(challenge, "_assert_matched_missingness", checked)
+    monkeypatch.setattr(challenge, "_assert_v11_market_missingness", checked)
     challenge.verify_v11_freeze(frozen, candidates)
     assert calls and set(calls) == {150}
 
 
-def test_v11_global_selector_finds_missingness_aware_counterexample(monkeypatch):
+def _first_cell_cases(candidates, market, label):
+    return [item for item in candidates if item["market"] == market and item["intended_label"] == label][:25]
+
+
+def _balanced_first_cells(candidates):
+    return [
+        item
+        for market in challenge.MARKETS
+        for label in challenge.LABELS
+        for item in _first_cell_cases(candidates, market, label)
+    ]
+
+
+def test_v1_exact_missingness_remains_unchanged():
     envelope, _, _ = consensus_input()
-    bad = candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 9001)
-    bad["candidate_id"] = "000-distinctive-null-pattern"
-    bad["family_id"] = "family-a-distinctive-null-pattern"
-    bad["model_visible_payload"]["reference"]["variant"] = "retained variant"
-    bad["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
-    good = candidate("PL", "CONSISTENT", "manufacturer_consumer_brand", 9002)
-    good["candidate_id"] = "zzz-matched-alternative"
-    good["family_id"] = "family-z-matched-alternative"
-    envelope["candidates"].extend((bad, good))
+    for item in _first_cell_cases(envelope["candidates"], "PL", "CONSISTENT")[:2]:
+        item["model_visible_payload"]["reference"]["variant"] = "retained variant"
+        item["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
     candidates = challenge.validate_candidate_pool(envelope, set())
-    monkeypatch.setattr(challenge, "_candidate_order_key", lambda item: item["candidate_id"])
-
-    old_selection = []
-    for market in challenge.MARKETS:
-        for label in challenge.LABELS:
-            cell = [item for item in candidates if item["market"] == market and item["intended_label"] == label]
-            old_selection.extend(challenge._v11_exact_cell_selection(cell, label))
-    assert bad["candidate_id"] in {item["candidate_id"] for item in old_selection}
+    selected = _balanced_first_cells(candidates)
     with pytest.raises(challenge.ChallengeError, match="missingness is not matched"):
-        challenge._assert_matched_missingness(old_selection)
+        challenge._assert_matched_missingness(selected)
 
-    reviews = {item["candidate_id"]: {"label": item["intended_label"]} for item in candidates}
-    selected = challenge.v11_select_consensus(candidates, reviews, reviews)
-    selected_ids = {item["candidate_id"] for item in selected}
-    assert bad["candidate_id"] not in selected_ids
-    challenge._assert_selected_balance(selected)
+
+def test_v11_market_parity_accepts_spread_two_and_rejects_spread_three():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    selected = _balanced_first_cells(candidates)
+    for item in _first_cell_cases(selected, "PL", "CONSISTENT")[:2]:
+        item["model_visible_payload"]["reference"]["variant"] = "retained variant"
+        item["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
+    challenge._assert_v11_market_missingness(selected)
+    extra = _first_cell_cases(selected, "PL", "CONSISTENT")[2]
+    extra["model_visible_payload"]["reference"]["variant"] = "retained variant"
+    extra["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
+    with pytest.raises(challenge.ChallengeError, match="spread exceeds tolerance"):
+        challenge._assert_v11_market_missingness(selected)
+
+
+def test_v11_market_parity_rejects_aggregate_cancellation():
+    envelope, _, _ = consensus_input()
+    for market, label in (("PL", "CONSISTENT"), ("DE", "INCONSISTENT"), ("DE", "INSUFFICIENT_EVIDENCE")):
+        for item in _first_cell_cases(envelope["candidates"], market, label)[:3]:
+            item["model_visible_payload"]["reference"]["variant"] = "retained variant"
+            item["model_visible_payload"]["enrichment"]["reference"]["variant"] = "retained variant"
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    selected = _balanced_first_cells(candidates)
     challenge._assert_matched_missingness(selected)
-    challenge._assert_unique_verified_skus(selected)
+    with pytest.raises(challenge.ChallengeError, match="spread exceeds tolerance"):
+        challenge._assert_v11_market_missingness(selected)
+
+
+def test_v11_global_selector_finds_t2_feasible_cohort_deterministically():
+    envelope, _, _ = consensus_input()
+    candidates = challenge.validate_candidate_pool(envelope, set())
+    first = challenge.v11_pre_review_feasibility(candidates)
+    second = challenge.v11_pre_review_feasibility(list(reversed(candidates)))
+    assert first["status"] == second["status"] == "FEASIBLE"
+    assert first["witness_candidate_ids"] == second["witness_candidate_ids"]
+    assert first["maximum_missingness_spread"] <= 2
 
 
 def test_v11_pre_review_feasibility_witness_is_valid_and_order_independent():
@@ -674,11 +712,12 @@ def test_v11_pre_review_feasibility_witness_is_valid_and_order_independent():
     assert first["status"] == "FEASIBLE"
     assert first["witness_candidate_ids"] == second["witness_candidate_ids"]
     assert first["witness_sha256"] == second["witness_sha256"]
-    assert first["class_missingness_sha256"] == second["class_missingness_sha256"]
+    assert first["market_missingness_vectors_sha256"] == second["market_missingness_vectors_sha256"]
+    assert first["missingness_policy"]["tolerance"] == 2
     witness_by_id = {item["candidate_id"]: item for item in candidates}
     selected = [witness_by_id[candidate_id] for candidate_id in first["witness_candidate_ids"]]
     challenge._assert_selected_balance(selected)
-    challenge._assert_matched_missingness(selected)
+    challenge._assert_v11_market_missingness(selected)
     challenge._assert_unique_verified_skus(selected)
     for label in challenge.LABELS:
         for market in challenge.MARKETS:
@@ -700,7 +739,7 @@ def test_v11_truly_infeasible_missingness_blocks_queue_and_consensus():
     with pytest.raises(challenge.ChallengeError, match="globally infeasible"):
         challenge.v11_create_queue_manifest(candidates)
     reviews = {item["candidate_id"]: {"label": item["intended_label"]} for item in candidates}
-    with pytest.raises(challenge.ChallengeError, match="globally feasible"):
+    with pytest.raises(challenge.ChallengeError, match="globally feasible bounded market-parity"):
         challenge.v11_select_consensus(candidates, reviews, reviews)
 
 

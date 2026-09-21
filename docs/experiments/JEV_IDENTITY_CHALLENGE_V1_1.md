@@ -63,3 +63,25 @@ family/SKU uniqueness, payload leakage checks and receipt bindings.
 whole bundle before returning any semantic-only payload. There is no v1.1
 network runner in this amendment; individual manifests are not authorization
 to call JEV. The receipt keeps `inference_status = NOT_RUN`.
+
+## Missingness-leakage amendment
+
+Before blind review or JEV inference, v1.1 replaced exact aggregate parity
+with `market-conditional-null-spread-v1`. The original v1 exact-parity rule
+and its historical artifacts remain unchanged.
+
+The former v1.1 aggregate check could cancel PL and DE null-count differences
+even though market is visible to the classifier. The current policy computes
+each `market × side × semantic field` independently and fails closed when the
+range across the three labels exceeds two cases. With 25 cases per
+market/class cell, this is at most an 8 percentage-point marginal gap.
+
+This bound was selected before inference: T=0 and T=1 were infeasible; T=2
+was the smallest feasible market-conditional bound. A deterministic
+missingness-only five-fold study at T=2 achieved 30.7% accuracy and 0.299
+macro-F1, near or below the 33.3% chance baseline; adding market did not
+improve it. Looser bounds of T=4 and above increased predictive leakage.
+
+The v1.1 queue, feasibility check, consensus selector, freeze and verification
+all reconstruct this policy. Every v1.1 freeze receipt binds its policy ID,
+scope and tolerance, preventing later evaluation under a different rule.

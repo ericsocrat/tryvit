@@ -115,6 +115,9 @@ DIVERSITY_BOUNDS_V11 = {
 }
 INITIAL_REVIEW_QUEUE_PER_CELL_V11 = 30
 V11_REPLENISHMENT_BATCH_SIZE = 10
+V11_MISSINGNESS_POLICY_ID = "market-conditional-null-spread-v1"
+V11_MISSINGNESS_SCOPE = "market_x_side_x_semantic_field"
+V11_MISSINGNESS_TOLERANCE = 2
 
 
 class ChallengeError(ValueError):
@@ -975,6 +978,52 @@ def _assert_matched_missingness(selected: list[dict]) -> None:
         raise ChallengeError("Final benchmark missingness is not matched across classes")
 
 
+def _v11_market_missingness_vectors(selected: list[dict]) -> dict[str, dict[str, dict[str, dict[str, int]]]]:
+    """Return v1.1 missingness counts without collapsing visible markets."""
+    vectors: dict[str, dict[str, dict[str, dict[str, int]]]] = {}
+    for market in MARKETS:
+        by_label: dict[str, dict[str, dict[str, int]]] = {}
+        for label in LABELS:
+            values = [0] * (len(SEMANTIC_FIELDS) * 2)
+            for candidate in selected:
+                if candidate["market"] == market and candidate["intended_label"] == label:
+                    values = list(_v11_add_vectors(tuple(values), _v11_missingness_vector(candidate)))
+            by_label[label] = {
+                side: {
+                    field: values[side_index * len(SEMANTIC_FIELDS) + field_index]
+                    for field_index, field in enumerate(SEMANTIC_FIELDS)
+                }
+                for side_index, side in enumerate(("reference", "candidate"))
+            }
+        vectors[market] = by_label
+    return vectors
+
+
+def _v11_market_missingness_spread(selected: list[dict]) -> tuple[int, list[dict[str, Any]]]:
+    """Measure the model-visible class gap independently inside each market."""
+    vectors = _v11_market_missingness_vectors(selected)
+    maximum = 0
+    nonzero: list[dict[str, Any]] = []
+    for market in MARKETS:
+        for side in ("reference", "candidate"):
+            for field in SEMANTIC_FIELDS:
+                counts = {label: vectors[market][label][side][field] for label in LABELS}
+                spread = max(counts.values()) - min(counts.values())
+                maximum = max(maximum, spread)
+                if spread:
+                    nonzero.append(
+                        {"market": market, "side": side, "semantic_field": field, "spread": spread, "counts": counts}
+                    )
+    return maximum, nonzero
+
+
+def _assert_v11_market_missingness(selected: list[dict]) -> None:
+    """Fail closed when market-visible null patterns differ by more than T=2."""
+    maximum, _ = _v11_market_missingness_spread(selected)
+    if maximum > V11_MISSINGNESS_TOLERANCE:
+        raise ChallengeError("v1.1 market-conditional missingness spread exceeds tolerance")
+
+
 def v11_missingness_diagnostic(candidates: list[dict]) -> dict:
     """Report safe-pool semantic null counts without creating or changing an artifact."""
     safe_candidates, _ = v11_safe_pool(candidates)
@@ -1158,72 +1207,81 @@ def _v11_cell_options(candidates: list[dict], market: str, label: str) -> dict[t
     return result
 
 
-def _v11_class_options(candidates: list[dict], label: str) -> dict[tuple[int, ...], dict]:
-    per_market = {market: _v11_cell_options(candidates, market, label) for market in MARKETS}
-    if any(not options for options in per_market.values()):
-        return {}
-    combined = {}
-    for pl_vector, pl in per_market["PL"].items():
-        for de_vector, de in per_market["DE"].items():
-            vector = _v11_add_vectors(pl_vector, de_vector)
-            choice = _v11_merge_choices(pl["choice"], de["choice"])
-            value = {
-                "cost": pl["cost"] + de["cost"],
-                "choice": choice,
-                "candidates": [*pl["candidates"], *de["candidates"]],
-                "stratum_counts": {"PL": pl["stratum_counts"], "DE": de["stratum_counts"]},
-            }
-            if vector not in combined or (value["cost"], choice) < (
-                combined[vector]["cost"], combined[vector]["choice"]
-            ):
-                combined[vector] = value
-    return combined
+def _v11_market_selection(candidates: list[dict], market: str) -> tuple[list[dict], dict]:
+    """Find the best 75-case market selection under the bounded v1.1 rule."""
+    options = {label: _v11_cell_options(candidates, market, label) for label in LABELS}
+    if any(not value for value in options.values()):
+        raise ChallengeError(f"v1.1 {market} candidate pool lacks a feasible cell selection")
+    best: tuple[tuple[Any, ...], list[dict], dict] | None = None
+    for consistent_vector, consistent in options["CONSISTENT"].items():
+        for inconsistent_vector, inconsistent in options["INCONSISTENT"].items():
+            lower = tuple(min(left, right) for left, right in zip(consistent_vector, inconsistent_vector, strict=True))
+            upper = tuple(max(left, right) for left, right in zip(consistent_vector, inconsistent_vector, strict=True))
+            if any(value - minimum > V11_MISSINGNESS_TOLERANCE for minimum, value in zip(lower, upper, strict=True)):
+                continue
+            for insufficient_vector, insufficient in options["INSUFFICIENT_EVIDENCE"].items():
+                bounded_lower = tuple(
+                    min(minimum, value) for minimum, value in zip(lower, insufficient_vector, strict=True)
+                )
+                bounded_upper = tuple(
+                    max(maximum, value) for maximum, value in zip(upper, insufficient_vector, strict=True)
+                )
+                if any(
+                    value - minimum > V11_MISSINGNESS_TOLERANCE
+                    for minimum, value in zip(bounded_lower, bounded_upper, strict=True)
+                ):
+                    continue
+                choice = _v11_merge_choices(
+                    _v11_merge_choices(consistent["choice"], inconsistent["choice"]), insufficient["choice"]
+                )
+                score = (consistent["cost"] + inconsistent["cost"] + insufficient["cost"], choice)
+                details = {
+                    "stratum_counts": {label: options[label][vector]["stratum_counts"] for label, vector in (
+                        ("CONSISTENT", consistent_vector),
+                        ("INCONSISTENT", inconsistent_vector),
+                        ("INSUFFICIENT_EVIDENCE", insufficient_vector),
+                    )},
+                    "missingness_vectors": {
+                        "CONSISTENT": consistent_vector,
+                        "INCONSISTENT": inconsistent_vector,
+                        "INSUFFICIENT_EVIDENCE": insufficient_vector,
+                    },
+                }
+                selected = [*consistent["candidates"], *inconsistent["candidates"], *insufficient["candidates"]]
+                if best is None or score < best[0]:
+                    best = (score, selected, details)
+    if best is None:
+        raise ChallengeError(f"v1.1 {market} candidate pool has no bounded market-parity selection")
+    return best[1], {"cost": best[0][0], "choice": best[0][1], **best[2]}
 
 
 def _v11_global_selection(candidates: list[dict]) -> tuple[list[dict], dict]:
-    """Find the globally optimal feasible selection, including missingness parity."""
-    class_options = {label: _v11_class_options(candidates, label) for label in LABELS}
-    common_vectors = set.intersection(*(set(options) for options in class_options.values()))
-    if not common_vectors:
-        raise ChallengeError("v1.1 candidate pool has no globally feasible matched-missingness selection")
-    best = None
-    for vector in common_vectors:
-        options = [class_options[label][vector] for label in LABELS]
-        choice = _v11_merge_choices((), tuple(item for option in options for item in option["choice"]))
-        score = (sum(option["cost"] for option in options), choice)
-        if best is None or score < best[0]:
-            best = (score, vector, options)
-    if best is None:
-        raise ChallengeError("v1.1 global selection search failed unexpectedly")
-    score, vector, options = best
-    selected = [candidate for option in options for candidate in option["candidates"]]
+    """Find the deterministic v1.1 selection under market-conditional T=2 parity."""
+    selected: list[dict] = []
+    market_details = {}
+    for market in MARKETS:
+        try:
+            market_selected, details = _v11_market_selection(candidates, market)
+        except ChallengeError as exc:
+            raise ChallengeError(
+                "v1.1 candidate pool has no globally feasible bounded market-parity selection"
+            ) from exc
+        selected.extend(market_selected)
+        market_details[market] = details
     selected.sort(key=_candidate_order_key)
-    details = {
-        "total_stratum_deviation": score[0],
-        "missingness_vector": vector,
+    _assert_selected_balance(selected)
+    _assert_v11_market_missingness(selected)
+    maximum_spread, nonzero_dimensions = _v11_market_missingness_spread(selected)
+    return selected, {
+        "total_stratum_deviation": sum(details["cost"] for details in market_details.values()),
         "stratum_counts": {
-            label: options[index]["stratum_counts"] for index, label in enumerate(LABELS)
+            label: {market: market_details[market]["stratum_counts"][label] for market in MARKETS}
+            for label in LABELS
         },
+        "market_missingness_vectors": _v11_market_missingness_vectors(selected),
+        "maximum_missingness_spread": maximum_spread,
+        "nonzero_missingness_dimensions": nonzero_dimensions,
     }
-    return selected, details
-
-
-def _v11_missingness_vectors(selected: list[dict]) -> dict:
-    vectors = {}
-    for label in LABELS:
-        vector = [0] * (len(SEMANTIC_FIELDS) * 2)
-        for candidate in selected:
-            if candidate["intended_label"] != label:
-                continue
-            vector = list(_v11_add_vectors(tuple(vector), _v11_missingness_vector(candidate)))
-        vectors[label] = {
-            side: {
-                field: vector[side_index * len(SEMANTIC_FIELDS) + field_index]
-                for field_index, field in enumerate(SEMANTIC_FIELDS)
-            }
-            for side_index, side in enumerate(("reference", "candidate"))
-        }
-    return vectors
 
 
 def v11_pre_review_feasibility(candidates: list[dict]) -> dict:
@@ -1240,9 +1298,8 @@ def v11_pre_review_feasibility(candidates: list[dict]) -> dict:
             "collision_family_exclusions": exclusions,
         }
     _assert_selected_balance(selected)
-    _assert_matched_missingness(selected)
+    _assert_v11_market_missingness(selected)
     _assert_unique_verified_skus(selected)
-    vectors = _v11_missingness_vectors(selected)
     witness = [candidate["candidate_id"] for candidate in selected]
     return {
         "schema_version": SCHEMA_VERSION,
@@ -1253,8 +1310,15 @@ def v11_pre_review_feasibility(candidates: list[dict]) -> dict:
         "witness_candidate_ids": witness,
         "witness_sha256": digest(witness),
         "stratum_counts": details["stratum_counts"],
-        "class_missingness_vectors": vectors,
-        "class_missingness_sha256": digest(vectors),
+        "missingness_policy": {
+            "policy_id": V11_MISSINGNESS_POLICY_ID,
+            "scope": V11_MISSINGNESS_SCOPE,
+            "tolerance": V11_MISSINGNESS_TOLERANCE,
+        },
+        "market_missingness_vectors": details["market_missingness_vectors"],
+        "market_missingness_vectors_sha256": digest(details["market_missingness_vectors"]),
+        "maximum_missingness_spread": details["maximum_missingness_spread"],
+        "nonzero_missingness_dimensions": details["nonzero_missingness_dimensions"],
         "total_stratum_deviation": details["total_stratum_deviation"],
     }
 
@@ -1267,7 +1331,7 @@ def v11_select_consensus(candidates: list[dict], author: dict[str, Any], blind: 
     if len(selected) != 150:
         raise ChallengeError("v1.1 consensus did not select exactly 150 cases")
     _assert_selected_balance(selected)
-    _assert_matched_missingness(selected)
+    _assert_v11_market_missingness(selected)
     _assert_unique_verified_skus(selected)
     return selected
 
@@ -1384,6 +1448,7 @@ def v11_freeze_benchmark(
             }
         )
     _assert_selected_balance(selected)
+    _assert_v11_market_missingness(selected)
     _assert_unique_verified_skus(selected)
     manifests = {}
     for key, arm, prompt, prompt_hash, cases in (
@@ -1403,6 +1468,11 @@ def v11_freeze_benchmark(
         "queue_manifest_sha256": digest(queue_manifest), "label_ledger_sha256": digest(labels),
         "arm_a_manifest_sha256": digest(manifests["arm_a"]),
         "arm_b_manifest_sha256": digest(manifests["arm_b"]),
+        "missingness_policy": {
+            "policy_id": V11_MISSINGNESS_POLICY_ID,
+            "scope": V11_MISSINGNESS_SCOPE,
+            "tolerance": V11_MISSINGNESS_TOLERANCE,
+        },
     }
     receipt["receipt_sha256"] = digest(receipt)
     return {
