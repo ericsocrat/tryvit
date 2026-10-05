@@ -109,7 +109,7 @@ jobs:
         timeout-minutes: 8
 
       - name: Install pinned Supabase CLI
-        uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v1
+        uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v1
         with:
           # Match the already-green scheduled Quality Gate instead of letting
           # Nightly silently move to an unreviewed local-runtime contract.
