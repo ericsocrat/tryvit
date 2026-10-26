@@ -62,7 +62,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
@@ -216,7 +216,7 @@ jobs:
         run: bash frontend/e2e/scripts/local-supabase-ci.sh stop
 
       - name: Upload Playwright report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: ${{ !cancelled() && steps.public_safety_assert.outcome == 'success' && steps.auth_safety_assert.outcome == 'success' && steps.local_fixture_teardown.outcome == 'success' && steps.local_supabase_stop.outcome == 'success' }}
         with:
           name: nightly-playwright-report
@@ -230,7 +230,7 @@ jobs:
           retention-days: 30
 
       - name: Upload Phase 5A.1 catalog candidates
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: ${{ always() && steps.catalog_candidates.outcome == 'success' && steps.public_safety_assert.outcome == 'success' && steps.auth_safety_assert.outcome == 'success' && steps.local_fixture_teardown.outcome == 'success' && steps.local_supabase_stop.outcome == 'success' }}
         with:
           name: nightly-phase5a1-catalog-candidates
@@ -239,7 +239,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload Phase 5A.1 catalog diagnostics
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: ${{ always() && steps.public_safety_assert.outcome == 'success' && steps.auth_safety_assert.outcome == 'success' && steps.local_fixture_teardown.outcome == 'success' && steps.local_supabase_stop.outcome == 'success' }}
         with:
           name: nightly-phase5a1-catalog-diagnostics
@@ -261,7 +261,7 @@ jobs:
 
       - name: Upload CI timings
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ci-timings-comprehensive
           path: ci-timings/
