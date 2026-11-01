@@ -3,4 +3,4 @@
 #   --default-index https://pypi.org/simple --no-config requirements-test.in
 #   --output-file requirements-test.txt
 -r requirements.txt
-pytest==9.1.1
+pytest==9.2.0
